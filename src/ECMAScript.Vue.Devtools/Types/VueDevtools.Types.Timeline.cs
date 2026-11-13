@@ -66,7 +66,6 @@ public static partial class VueDevtools
     /// <summary>写入 Devtools timeline 的一个业务 event。</summary>
     /// <typeparam name="TData">event 的业务数据类型。</typeparam>
     /// <typeparam name="TMeta">event 的可选元数据类型。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record TimelineEvent<TData, TMeta> : Vue.VueProps
     {
@@ -102,7 +101,6 @@ public static partial class VueDevtools
     /// <summary>添加 timeline layer 所需的基础选项。</summary>
     /// <typeparam name="TData">该 layer 事件的数据类型。</typeparam>
     /// <typeparam name="TMeta">该 layer 事件的元数据类型。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record TimelineLayerOptions<TData, TMeta> : Vue.VueProps
     {
@@ -134,7 +132,6 @@ public static partial class VueDevtools
     /// <summary>包含同步 screenshot overlay renderer 的 timeline layer。</summary>
     /// <typeparam name="TData">该 layer 事件的数据类型。</typeparam>
     /// <typeparam name="TMeta">该 layer 事件的元数据类型。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record TimelineLayerOptionsWithOverlay<TData, TMeta> : TimelineLayerOptions<TData, TMeta>
     {
@@ -146,7 +143,6 @@ public static partial class VueDevtools
     /// <summary>包含异步 screenshot overlay renderer 的 timeline layer。</summary>
     /// <typeparam name="TData">该 layer 事件的数据类型。</typeparam>
     /// <typeparam name="TMeta">该 layer 事件的元数据类型。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record AsyncTimelineLayerOptionsWithOverlay<TData, TMeta> : TimelineLayerOptions<TData, TMeta>
     {
@@ -158,7 +154,6 @@ public static partial class VueDevtools
     /// <summary>向指定 layer 写 event 的包装对象。</summary>
     /// <typeparam name="TData">event 的业务数据类型。</typeparam>
     /// <typeparam name="TMeta">event 的可选元数据类型。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record TimelineEventOptions<TData, TMeta> : Vue.VueProps
     {
@@ -176,7 +171,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Devtools 截图时间点。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record ScreenshotData : Vue.VueProps
     {
@@ -188,7 +182,6 @@ public static partial class VueDevtools
     /// <summary>带 layer id 的 screenshot overlay event。</summary>
     /// <typeparam name="TData">event 的业务数据类型。</typeparam>
     /// <typeparam name="TMeta">event 的可选元数据类型。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record ScreenshotOverlayEvent<TData, TMeta> : TimelineEvent<TData, TMeta>
     {

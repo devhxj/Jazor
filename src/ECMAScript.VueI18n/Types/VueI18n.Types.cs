@@ -28,7 +28,6 @@ public enum VueI18nScope
 /// <c>createI18n()</c> 的选项对象。
 /// Options for <c>createI18n()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueI18nCreateOptions
 {
@@ -85,7 +84,6 @@ public record VueI18nCreateOptions
 /// <c>useI18n()</c> 的选项对象。
 /// Options for <c>useI18n()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueI18nUseOptions
 {
@@ -130,7 +128,6 @@ public record VueI18nUseOptions
 /// <c>t()</c> 的命名选项对象；覆盖 named 插值、复数与 locale 等参数。
 /// The named options object for <c>t()</c>; it covers named interpolation, pluralization, and locale overrides.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueI18nTranslateOptions
 {

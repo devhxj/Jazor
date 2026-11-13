@@ -588,21 +588,8 @@ public static class Util
     }
 
     public static bool IsObjectLiteralHostType(ITypeSymbol? typeSymbol)
-    {
-        if (typeSymbol is not INamedTypeSymbol namedType)
-            return false;
-
-        if (StructuralRecordSupport.IsStructuralRecordType(namedType))
-            return true;
-
-        if (!HasECMAScriptSupportMarker(namedType) &&
-            !HasECMAScriptSupportMarkerBaseType(namedType))
-        {
-            return false;
-        }
-
-        return HasNameResolutionBoundary(namedType);
-    }
+        // Name boundaries only control naming. They must never erase a class constructor.
+        => StructuralRecordSupport.IsStructuralRecordType(typeSymbol);
 
     public static bool IsECMAScriptRecordProxyMember(ISymbol? symbol, ITypeSymbol? hostType = null)
     {

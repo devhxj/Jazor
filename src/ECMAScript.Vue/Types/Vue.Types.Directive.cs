@@ -24,7 +24,6 @@ public static partial class Vue
 	/// Unlike the read-side <see cref="VueModelModifiers"/> abstraction, this record is
 	/// meant for declaring component input contracts such as <c>modelModifiers</c>.
 	/// </summary>
-	[ECMAScript]
 	[Description("@#")]
 	public record VueModelModifierBag : VueDictionary<bool>
 	{
@@ -305,7 +304,6 @@ public static partial class Vue
 	/// Direct object-form Vue directive authoring surface. This maps to a plain JavaScript
 	/// directive object whose lifecycle hooks are invoked by Vue.
 	/// </summary>
-	[ECMAScript]
 	[Description("@#")]
 	public record VueDirective : IVueOptionsBag
 	{
@@ -379,7 +377,6 @@ public static partial class Vue
 	/// value strongly typed while still lowering to the same plain JavaScript directive object.
 	/// </summary>
 	/// <typeparam name="TValue">指令绑定值的类型化契约。The typed contract of the directive's binding value.</typeparam>
-	[ECMAScript]
 	[Description("@#")]
 	public record VueDirective<TValue> : VueDirective
 	{

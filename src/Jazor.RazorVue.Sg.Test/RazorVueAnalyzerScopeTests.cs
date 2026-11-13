@@ -9,6 +9,53 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed partial class RazorVueAnalyzerScopeTests
 {
     [TestMethod]
+    public async Task UnmarkedSourceHelper_IsAnalyzedFromModuleRoot_WithoutAnalyzingBackendClasses()
+    {
+        var diagnostics = await AnalyzeAsync("""
+            using ECMAScript;
+            [ECMAScriptModule("./app")]
+            public static class App
+            {
+                public static bool Read() => FrontendHelper.Read();
+            }
+            internal static class FrontendHelper
+            {
+                public static bool Read() => System.IO.File.Exists("frontend");
+            }
+            internal static class BackendOnly
+            {
+                public static bool Read() => System.IO.File.Exists("backend");
+            }
+            """);
+        Assert.IsTrue(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001" &&
+            diagnostic.GetMessage().Contains("System.IO.File", StringComparison.Ordinal)));
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Location.SourceTree is { } tree &&
+            tree.GetText().ToString(diagnostic.Location.SourceSpan).Contains("backend", StringComparison.Ordinal)));
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.GetMessage().Contains("FrontendHelper", StringComparison.Ordinal)),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
+    public async Task UnmarkedSourceTypes_AreAcceptedWithoutHostPermission()
+    {
+        var diagnostics = await AnalyzeAsync("""
+            using ECMAScript;
+            [ECMAScriptModule("./app")]
+            public static class App
+            {
+                public static int Read() => new Model().Read(new Options(3));
+            }
+            internal sealed class Model
+            {
+                public int Read(Options options) => options.Value;
+            }
+            internal sealed record Options(int Value);
+            """);
+        Assert.IsFalse(diagnostics.Any(static diagnostic => diagnostic.Id == "JAZOR001"),
+            string.Join(Environment.NewLine, diagnostics));
+    }
+
+    [TestMethod]
     public async Task WhitelistedInvocation_DoesNotDiagnoseItsCompilerProtocolReturnType()
     {
         var diagnostics = await AnalyzeAsync(

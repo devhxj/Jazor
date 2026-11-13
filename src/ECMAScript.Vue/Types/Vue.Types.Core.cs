@@ -638,7 +638,6 @@ public static partial class Vue
 	/// Convenience non-generic dictionary surface for common Vue object authoring.
 	/// This is the direct default when the value contract is the general <see cref="VueValue"/>.
 	/// </summary>
-	[ECMAScript]
 	[Description("@#")]
 	public record VueDictionary : VueDictionary<VueValue>
 	{

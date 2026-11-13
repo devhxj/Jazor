@@ -8,7 +8,6 @@ namespace ECMAScript;
 /// </remarks>
 /// <param name="Changed">CookieChangeEventInit 字典中的 changed 成员，WebIDL 类型为 CookieList。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiechangeeventinit-changed">Cookie Store API Standard: 5.1 The CookieChangeEvent interface</see></param>
 /// <param name="Deleted">CookieChangeEventInit 字典中的 deleted 成员，WebIDL 类型为 CookieList。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiechangeeventinit-deleted">Cookie Store API Standard: 5.1 The CookieChangeEvent interface</see></param>
-[ECMAScript]
 [Description("@#CookieChangeEventInit")]
 public record CookieChangeEventInit(
     [property: Description("@#changed")]CookieList? Changed = default,
@@ -28,7 +27,6 @@ public record CookieChangeEventInit(
 /// <param name="SameSite">CookieInit 字典中的 sameSite 成员，WebIDL 类型为 CookieSameSite。可省略。WebIDL 默认值：strict。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookieinit-samesite">Cookie Store API Standard: 3 The CookieStore interface</see></param>
 /// <param name="Partitioned">CookieInit 字典中的 partitioned 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookieinit-partitioned">Cookie Store API Standard: 3 The CookieStore interface</see></param>
 /// <param name="MaxAge">CookieInit 字典中的 maxAge 成员，WebIDL 类型为 long long?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookieinit-maxage">Cookie Store API Standard: 3 The CookieStore interface</see></param>
-[ECMAScript]
 [Description("@#CookieInit")]
 public record CookieInit(
     [property: Description("@#name")]string? Name = default,
@@ -48,7 +46,6 @@ public record CookieInit(
 /// </remarks>
 /// <param name="Name">CookieListItem 字典中的 name 成员，WebIDL 类型为 USVString。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookielistitem-name">Cookie Store API Standard: 3 The CookieStore interface</see></param>
 /// <param name="Value">CookieListItem 字典中的 value 成员，WebIDL 类型为 USVString。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookielistitem-value">Cookie Store API Standard: 3 The CookieStore interface</see></param>
-[ECMAScript]
 [Description("@#CookieListItem")]
 public record CookieListItem(
     [property: Description("@#name")]string? Name = default,
@@ -64,7 +61,6 @@ public record CookieListItem(
 /// <param name="Domain">CookieStoreDeleteOptions 字典中的 domain 成员，WebIDL 类型为 USVString?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiestoredeleteoptions-domain">Cookie Store API Standard: 3 The CookieStore interface</see></param>
 /// <param name="Path">CookieStoreDeleteOptions 字典中的 path 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：/。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiestoredeleteoptions-path">Cookie Store API Standard: 3 The CookieStore interface</see></param>
 /// <param name="Partitioned">CookieStoreDeleteOptions 字典中的 partitioned 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiestoredeleteoptions-partitioned">Cookie Store API Standard: 3 The CookieStore interface</see></param>
-[ECMAScript]
 [Description("@#CookieStoreDeleteOptions")]
 public record CookieStoreDeleteOptions(
     [property: Description("@#name")]string? Name = default,
@@ -80,7 +76,6 @@ public record CookieStoreDeleteOptions(
 /// </remarks>
 /// <param name="Name">CookieStoreGetOptions 字典中的 name 成员，WebIDL 类型为 USVString。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiestoregetoptions-name">Cookie Store API Standard: 3 The CookieStore interface</see></param>
 /// <param name="Url">CookieStoreGetOptions 字典中的 url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-cookiestoregetoptions-url">Cookie Store API Standard: 3 The CookieStore interface</see></param>
-[ECMAScript]
 [Description("@#CookieStoreGetOptions")]
 public record CookieStoreGetOptions(
     [property: Description("@#name")]string? Name = default,
@@ -94,7 +89,6 @@ public record CookieStoreGetOptions(
 /// </remarks>
 /// <param name="Changed">ExtendableCookieChangeEventInit 字典中的 changed 成员，WebIDL 类型为 CookieList。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-extendablecookiechangeeventinit-changed">Cookie Store API Standard: 5.2 The ExtendableCookieChangeEvent interface</see></param>
 /// <param name="Deleted">ExtendableCookieChangeEventInit 字典中的 deleted 成员，WebIDL 类型为 CookieList。可省略。 <see href="https://cookiestore.spec.whatwg.org/#dom-extendablecookiechangeeventinit-deleted">Cookie Store API Standard: 5.2 The ExtendableCookieChangeEvent interface</see></param>
-[ECMAScript]
 [Description("@#ExtendableCookieChangeEventInit")]
 public record ExtendableCookieChangeEventInit(
     [property: Description("@#changed")]CookieList? Changed = default,
@@ -109,7 +103,6 @@ public record ExtendableCookieChangeEventInit(
 /// <param name="Passive">If invoked when the cancelable attribute value is true, and while executing a listener for the event with passive set to false, signals to the operation that caused event to be dispatched that it needs to be canceled. <see href="https://dom.spec.whatwg.org/#dom-addeventlisteneroptions-passive">DOM Standard: 2.7 Interface EventTarget</see></param>
 /// <param name="Once">When set to true, options&apos;s once indicates that the callback will only be invoked once after which the event listener will be removed. <see href="https://dom.spec.whatwg.org/#dom-addeventlisteneroptions-once">DOM Standard: 2.7 Interface EventTarget</see></param>
 /// <param name="Signal">AddEventListenerOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://dom.spec.whatwg.org/#dom-addeventlisteneroptions-signal">DOM Standard: 2.7 Interface EventTarget</see></param>
-[ECMAScript]
 [Description("@#AddEventListenerOptions")]
 public record AddEventListenerOptions(
     [property: Description("@#passive")]bool Passive = default,
@@ -123,7 +116,6 @@ public record AddEventListenerOptions(
 /// <see href="https://dom.spec.whatwg.org/#dictdef-customeventinit">DOM Standard: 2.4 Interface CustomEvent</see>
 /// </remarks>
 /// <param name="Detail">CustomEventInit 字典中的 detail 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://dom.spec.whatwg.org/#dom-customeventinit-detail">DOM Standard: 2.4 Interface CustomEvent</see></param>
-[ECMAScript]
 [Description("@#CustomEventInit")]
 public record CustomEventInit(
     [property: Description("@#detail")]object? Detail = default) : EventInit;
@@ -136,7 +128,6 @@ public record CustomEventInit(
 /// </remarks>
 /// <param name="CustomElementRegistry">When supplied, options&apos;s customElementRegistry can be used to set the CustomElementRegistry. <see href="https://dom.spec.whatwg.org/#dom-elementcreationoptions-customelementregistry">DOM Standard: 4.5 Interface Document</see></param>
 /// <param name="Is">ElementCreationOptions 字典中的 is 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://dom.spec.whatwg.org/#dom-elementcreationoptions-is">DOM Standard: 4.5 Interface Document</see></param>
-[ECMAScript]
 [Description("@#ElementCreationOptions")]
 public record ElementCreationOptions(
     [property: Description("@#customElementRegistry")]CustomElementRegistry? CustomElementRegistry = default,
@@ -151,7 +142,6 @@ public record ElementCreationOptions(
 /// <param name="Bubbles">Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name. <see href="https://dom.spec.whatwg.org/#dom-eventinit-bubbles">DOM Standard: 2.2 Interface Event</see></param>
 /// <param name="Cancelable">Returns a new event whose type attribute value is set to type. The eventInitDict argument allows for setting the bubbles and cancelable attributes via object members of the same name. <see href="https://dom.spec.whatwg.org/#dom-eventinit-cancelable">DOM Standard: 2.2 Interface Event</see></param>
 /// <param name="Composed">initEvent() is redundant with event constructors and incapable of setting composed. It has to be supported for legacy content. <see href="https://dom.spec.whatwg.org/#dom-eventinit-composed">DOM Standard: 2.2 Interface Event</see></param>
-[ECMAScript]
 [Description("@#EventInit")]
 public record EventInit(
     [property: Description("@#bubbles")]bool Bubbles = false,
@@ -165,7 +155,6 @@ public record EventInit(
 /// <see href="https://dom.spec.whatwg.org/#dictdef-eventlisteneroptions">DOM Standard: 2.7 Interface EventTarget</see>
 /// </remarks>
 /// <param name="Capture">The options argument sets listener-specific options. For compatibility this can be a boolean, in which case the method behaves exactly as if the value was specified as options&apos;s capture. <see href="https://dom.spec.whatwg.org/#dom-eventlisteneroptions-capture">DOM Standard: 2.7 Interface EventTarget</see></param>
-[ECMAScript]
 [Description("@#EventListenerOptions")]
 public record EventListenerOptions(
     [property: Description("@#capture")]bool Capture = false);
@@ -177,7 +166,6 @@ public record EventListenerOptions(
 /// <see href="https://dom.spec.whatwg.org/#dictdef-getrootnodeoptions">DOM Standard: 4.4 Interface Node</see>
 /// </remarks>
 /// <param name="Composed">GetRootNodeOptions 字典中的 composed 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://dom.spec.whatwg.org/#dom-getrootnodeoptions-composed">DOM Standard: 4.4 Interface Node</see></param>
-[ECMAScript]
 [Description("@#GetRootNodeOptions")]
 public record GetRootNodeOptions(
     [property: Description("@#composed")]bool Composed = false);
@@ -190,7 +178,6 @@ public record GetRootNodeOptions(
 /// </remarks>
 /// <param name="CustomElementRegistry">options&apos;s customElementRegistry can be used to set the CustomElementRegistry of elements that have none. <see href="https://dom.spec.whatwg.org/#dom-importnodeoptions-customelementregistry">DOM Standard: 4.5 Interface Document</see></param>
 /// <param name="SelfOnly">Returns a copy of node. If options is true or options is a dictionary whose selfOnly is false, the copy also includes the node&apos;s descendants. <see href="https://dom.spec.whatwg.org/#dom-importnodeoptions-selfonly">DOM Standard: 4.5 Interface Document</see></param>
-[ECMAScript]
 [Description("@#ImportNodeOptions")]
 public record ImportNodeOptions(
     [property: Description("@#customElementRegistry")]CustomElementRegistry? CustomElementRegistry = default,
@@ -206,7 +193,6 @@ public record ImportNodeOptions(
 /// <param name="StartOffset">Set this&apos;s start to (init[&quot;startContainer&quot;], init[&quot;startOffset&quot;]) and end to (init[&quot;endContainer&quot;], init[&quot;endOffset&quot;]). <see href="https://dom.spec.whatwg.org/#dom-staticrangeinit-startoffset">DOM Standard: 5.4 Interface StaticRange</see></param>
 /// <param name="EndContainer">If init[&quot;startContainer&quot;] or init[&quot;endContainer&quot;] is a DocumentType or Attr node, then throw an &quot;InvalidNodeTypeError!!exception&quot; DOMException. <see href="https://dom.spec.whatwg.org/#dom-staticrangeinit-endcontainer">DOM Standard: 5.4 Interface StaticRange</see></param>
 /// <param name="EndOffset">Set this&apos;s start to (init[&quot;startContainer&quot;], init[&quot;startOffset&quot;]) and end to (init[&quot;endContainer&quot;], init[&quot;endOffset&quot;]). <see href="https://dom.spec.whatwg.org/#dom-staticrangeinit-endoffset">DOM Standard: 5.4 Interface StaticRange</see></param>
-[ECMAScript]
 [Description("@#StaticRangeInit")]
 public record StaticRangeInit(
     [property: Description("@#startContainer")]Node? StartContainer = default,
@@ -250,7 +236,6 @@ public record AnimationEventInit(
 /// <see href="https://drafts.csswg.org/css-contain-2/#dictdef-contentvisibilityautostatechangeeventinit">CSS Containment Module Level 2: 4.4 Detecting content-visibility: auto state changes: the contentvisibilityautostatechange event</see>
 /// </remarks>
 /// <param name="Skipped">ContentVisibilityAutoStateChangeEventInit 字典中的 skipped 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://drafts.csswg.org/css-contain-2/#dom-contentvisibilityautostatechangeeventinit-skipped">CSS Containment Module Level 2: 4.4 Detecting content-visibility: auto state changes: the contentvisibilityautostatechange event</see></param>
-[ECMAScript]
 [Description("@#ContentVisibilityAutoStateChangeEventInit")]
 public record ContentVisibilityAutoStateChangeEventInit(
     [property: Description("@#skipped")]bool Skipped = false) : EventInit;
@@ -271,7 +256,6 @@ public record ContentVisibilityAutoStateChangeEventInit(
 /// <param name="AscentOverride">FontFaceDescriptors 字典中的 ascentOverride 成员，WebIDL 类型为 CSSOMString。可省略。WebIDL 默认值：normal。 <see href="https://drafts.csswg.org/css-font-loading-3/#dom-fontfacedescriptors-ascentoverride">CSS Font Loading Module Level 3: 2 The FontFace Interface</see></param>
 /// <param name="DescentOverride">FontFaceDescriptors 字典中的 descentOverride 成员，WebIDL 类型为 CSSOMString。可省略。WebIDL 默认值：normal。 <see href="https://drafts.csswg.org/css-font-loading-3/#dom-fontfacedescriptors-descentoverride">CSS Font Loading Module Level 3: 2 The FontFace Interface</see></param>
 /// <param name="LineGapOverride">FontFaceDescriptors 字典中的 lineGapOverride 成员，WebIDL 类型为 CSSOMString。可省略。WebIDL 默认值：normal。 <see href="https://drafts.csswg.org/css-font-loading-3/#dom-fontfacedescriptors-linegapoverride">CSS Font Loading Module Level 3: 2 The FontFace Interface</see></param>
-[ECMAScript]
 [Description("@#FontFaceDescriptors")]
 public record FontFaceDescriptors(
     [property: Description("@#style")]string? Style = default,
@@ -292,7 +276,6 @@ public record FontFaceDescriptors(
 /// <see href="https://drafts.csswg.org/css-font-loading-3/#dictdef-fontfacesetloadeventinit">CSS Font Loading Module Level 3: 3 The FontFaceSet Interface</see>
 /// </remarks>
 /// <param name="Fontfaces">FontFaceSetLoadEventInit 字典中的 fontfaces 成员，WebIDL 类型为 sequence&lt;FontFace&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.csswg.org/css-font-loading-3/#dom-fontfacesetloadeventinit-fontfaces">CSS Font Loading Module Level 3: 3 The FontFaceSet Interface</see></param>
-[ECMAScript]
 [Description("@#FontFaceSetLoadEventInit")]
 public record FontFaceSetLoadEventInit(
     [property: Description("@#fontfaces")]FontFace[]? Fontfaces = default) : EventInit;
@@ -306,7 +289,6 @@ public record FontFaceSetLoadEventInit(
 /// <param name="Name">The name of the function parameter. <see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-name">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see></param>
 /// <param name="Type">FunctionParameter 字典中的 type 成员，WebIDL 类型为 CSSOMString。必须提供该成员。 <see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-type">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see></param>
 /// <param name="DefaultValue">FunctionParameter 字典中的 defaultValue 成员，WebIDL 类型为 CSSOMString。可省略。 <see href="https://drafts.csswg.org/css-mixins-1/#dom-functionparameter-defaultvalue">CSS Custom Functions and Mixins Module Level 1: 7.1 The CSSFunctionRule Interface</see></param>
-[ECMAScript]
 [Description("@#FunctionParameter")]
 public record FunctionParameter(
     [property: Description("@#name")]string? Name = default,
@@ -321,7 +303,6 @@ public record FunctionParameter(
 /// </remarks>
 /// <param name="SnapTargetBlock">SnapEventInit 字典中的 snapTargetBlock 成员，WebIDL 类型为 Node?。可省略。 <see href="https://drafts.csswg.org/css-scroll-snap-2/#dom-snapeventinit-snaptargetblock">CSS Scroll Snap Module Level 2: 5.2 SnapEvent interface</see></param>
 /// <param name="SnapTargetInline">SnapEventInit 字典中的 snapTargetInline 成员，WebIDL 类型为 Node?。可省略。 <see href="https://drafts.csswg.org/css-scroll-snap-2/#dom-snapeventinit-snaptargetinline">CSS Scroll Snap Module Level 2: 5.2 SnapEvent interface</see></param>
-[ECMAScript]
 [Description("@#SnapEventInit")]
 public record SnapEventInit(
     [property: Description("@#snapTargetBlock")]Node? SnapTargetBlock = default,
@@ -334,7 +315,6 @@ public record SnapEventInit(
 /// <see href="https://drafts.csswg.org/css-spatial-nav-1/#dictdef-focusableareasoption">CSS Spatial Navigation Module Level 1: 5.2 Low level APIs</see>
 /// </remarks>
 /// <param name="Mode">FocusableAreasOption 字典中的 mode 成员，WebIDL 类型为 FocusableAreaSearchMode。可省略。 <see href="https://drafts.csswg.org/css-spatial-nav-1/#dom-focusableareasoption-mode">CSS Spatial Navigation Module Level 1: 5.2 Low level APIs</see></param>
-[ECMAScript]
 [Description("@#FocusableAreasOption")]
 public record FocusableAreasOption(
     [property: Description("@#mode")]FocusableAreaSearchMode? Mode = default);
@@ -347,7 +327,6 @@ public record FocusableAreasOption(
 /// </remarks>
 /// <param name="Dir">NavigationEventInit 字典中的 dir 成员，WebIDL 类型为 SpatialNavigationDirection。可省略。 <see href="https://drafts.csswg.org/css-spatial-nav-1/#dom-navigationeventinit-dir">CSS Spatial Navigation Module Level 1: 6.1 Interface NavigationEvent</see></param>
 /// <param name="RelatedTarget">NavigationEventInit 字典中的 relatedTarget 成员，WebIDL 类型为 EventTarget?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/css-spatial-nav-1/#dom-navigationeventinit-relatedtarget">CSS Spatial Navigation Module Level 1: 6.1 Interface NavigationEvent</see></param>
-[ECMAScript]
 [Description("@#NavigationEventInit")]
 public record NavigationEventInit(
     [property: Description("@#dir")]SpatialNavigationDirection? Dir = default,
@@ -361,7 +340,6 @@ public record NavigationEventInit(
 /// </remarks>
 /// <param name="Candidates">SpatialNavigationSearchOptions 字典中的 candidates 成员，WebIDL 类型为 sequence&lt;Node&gt;?。可省略。 <see href="https://drafts.csswg.org/css-spatial-nav-1/#dom-spatialnavigationsearchoptions-candidates">CSS Spatial Navigation Module Level 1: 5.2 Low level APIs</see></param>
 /// <param name="Container">SpatialNavigationSearchOptions 字典中的 container 成员，WebIDL 类型为 Node?。可省略。 <see href="https://drafts.csswg.org/css-spatial-nav-1/#dom-spatialnavigationsearchoptions-container">CSS Spatial Navigation Module Level 1: 5.2 Low level APIs</see></param>
-[ECMAScript]
 [Description("@#SpatialNavigationSearchOptions")]
 public record SpatialNavigationSearchOptions(
     [property: Description("@#candidates")]Node[]? Candidates = default,
@@ -404,7 +382,6 @@ public record TransitionEventInit(
 /// </remarks>
 /// <param name="Update">StartViewTransitionOptions 字典中的 update 成员，WebIDL 类型为 ViewTransitionUpdateCallback?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/css-view-transitions-2/#dom-startviewtransitionoptions-update">CSS View Transitions Module Level 2: 2.1 Additions to Document</see></param>
 /// <param name="Types">StartViewTransitionOptions 字典中的 types 成员，WebIDL 类型为 sequence&lt;DOMString&gt;?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/css-view-transitions-2/#dom-startviewtransitionoptions-types">CSS View Transitions Module Level 2: 2.1 Additions to Document</see></param>
-[ECMAScript]
 [Description("@#StartViewTransitionOptions")]
 public record StartViewTransitionOptions(
     [property: Description("@#update")]ViewTransitionUpdateCallback? Update = null,
@@ -418,7 +395,6 @@ public record StartViewTransitionOptions(
 /// </remarks>
 /// <param name="Box">BoxQuadOptions 字典中的 box 成员，WebIDL 类型为 CSSBoxType。可省略。WebIDL 默认值：border。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-boxquadoptions-box">CSSOM View Module Level 1: 11.1 The GeometryUtils Interface</see></param>
 /// <param name="RelativeTo">BoxQuadOptions 字典中的 relativeTo 成员，WebIDL 类型为 GeometryNode。可省略。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-boxquadoptions-relativeto">CSSOM View Module Level 1: 11.1 The GeometryUtils Interface</see></param>
-[ECMAScript]
 [Description("@#BoxQuadOptions")]
 public record BoxQuadOptions(
     [property: Description("@#box")]CSSBoxType Box = CSSBoxType.Border,
@@ -431,7 +407,6 @@ public record BoxQuadOptions(
 /// <see href="https://drafts.csswg.org/cssom-view-1/#dictdef-caretpositionfrompointoptions">CSSOM View Module Level 1: 5 Extensions to the Document Interface</see>
 /// </remarks>
 /// <param name="ShadowRoots">CaretPositionFromPointOptions 字典中的 shadowRoots 成员，WebIDL 类型为 sequence&lt;ShadowRoot&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-caretpositionfrompointoptions-shadowroots">CSSOM View Module Level 1: 5 Extensions to the Document Interface</see></param>
-[ECMAScript]
 [Description("@#CaretPositionFromPointOptions")]
 public record CaretPositionFromPointOptions(
     [property: Description("@#shadowRoots")]ShadowRoot[]? ShadowRoots = default);
@@ -447,7 +422,6 @@ public record CaretPositionFromPointOptions(
 /// <param name="ContentVisibilityAuto">CheckVisibilityOptions 字典中的 contentVisibilityAuto 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-checkvisibilityoptions-contentvisibilityauto">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see></param>
 /// <param name="OpacityProperty">CheckVisibilityOptions 字典中的 opacityProperty 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-checkvisibilityoptions-opacityproperty">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see></param>
 /// <param name="VisibilityProperty">CheckVisibilityOptions 字典中的 visibilityProperty 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-checkvisibilityoptions-visibilityproperty">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see></param>
-[ECMAScript]
 [Description("@#CheckVisibilityOptions")]
 public record CheckVisibilityOptions(
     [property: Description("@#checkOpacity")]bool CheckOpacity = false,
@@ -464,7 +438,6 @@ public record CheckVisibilityOptions(
 /// </remarks>
 /// <param name="FromBox">ConvertCoordinateOptions 字典中的 fromBox 成员，WebIDL 类型为 CSSBoxType。可省略。WebIDL 默认值：border。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-convertcoordinateoptions-frombox">CSSOM View Module Level 1: 11.1 The GeometryUtils Interface</see></param>
 /// <param name="ToBox">ConvertCoordinateOptions 字典中的 toBox 成员，WebIDL 类型为 CSSBoxType。可省略。WebIDL 默认值：border。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-convertcoordinateoptions-tobox">CSSOM View Module Level 1: 11.1 The GeometryUtils Interface</see></param>
-[ECMAScript]
 [Description("@#ConvertCoordinateOptions")]
 public record ConvertCoordinateOptions(
     [property: Description("@#fromBox")]CSSBoxType FromBox = CSSBoxType.Border,
@@ -478,7 +451,6 @@ public record ConvertCoordinateOptions(
 /// </remarks>
 /// <param name="Media">MediaQueryListEventInit 字典中的 media 成员，WebIDL 类型为 CSSOMString。可省略。WebIDL 默认值：。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-mediaquerylisteventinit-media">CSSOM View Module Level 1: 4.2 The MediaQueryList Interface</see></param>
 /// <param name="Matches">MediaQueryListEventInit 字典中的 matches 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-mediaquerylisteventinit-matches">CSSOM View Module Level 1: 4.2 The MediaQueryList Interface</see></param>
-[ECMAScript]
 [Description("@#MediaQueryListEventInit")]
 public record MediaQueryListEventInit(
     [property: Description("@#media")]string? Media = default,
@@ -493,7 +465,6 @@ public record MediaQueryListEventInit(
 /// <param name="Block">ScrollIntoViewOptions 字典中的 block 成员，WebIDL 类型为 ScrollLogicalPosition。可省略。WebIDL 默认值：start。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-scrollintoviewoptions-block">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see></param>
 /// <param name="Inline">ScrollIntoViewOptions 字典中的 inline 成员，WebIDL 类型为 ScrollLogicalPosition。可省略。WebIDL 默认值：nearest。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-scrollintoviewoptions-inline">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see></param>
 /// <param name="Container">ScrollIntoViewOptions 字典中的 container 成员，WebIDL 类型为 ScrollIntoViewContainer。可省略。WebIDL 默认值：all。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-scrollintoviewoptions-container">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see></param>
-[ECMAScript]
 [Description("@#ScrollIntoViewOptions")]
 public record ScrollIntoViewOptions(
     [property: Description("@#block")]ScrollLogicalPosition Block = ScrollLogicalPosition.Start,
@@ -507,7 +478,6 @@ public record ScrollIntoViewOptions(
 /// <see href="https://drafts.csswg.org/cssom-view-1/#dictdef-scrolloptions">CSSOM View Module Level 1: 4 Extensions to the Window Interface</see>
 /// </remarks>
 /// <param name="Behavior">ScrollOptions 字典中的 behavior 成员，WebIDL 类型为 ScrollBehavior。可省略。WebIDL 默认值：auto。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-scrolloptions-behavior">CSSOM View Module Level 1: 4 Extensions to the Window Interface</see></param>
-[ECMAScript]
 [Description("@#ScrollOptions")]
 public record ScrollOptions(
     [property: Description("@#behavior")]ScrollBehavior Behavior = ScrollBehavior.Auto);
@@ -520,7 +490,6 @@ public record ScrollOptions(
 /// </remarks>
 /// <param name="Left">ScrollToOptions 字典中的 left 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-scrolltooptions-left">CSSOM View Module Level 1: 4 Extensions to the Window Interface</see></param>
 /// <param name="Top">ScrollToOptions 字典中的 top 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://drafts.csswg.org/cssom-view-1/#dom-scrolltooptions-top">CSSOM View Module Level 1: 4 Extensions to the Window Interface</see></param>
-[ECMAScript]
 [Description("@#ScrollToOptions")]
 public record ScrollToOptions(
     [property: Description("@#left")]double Left = default,
@@ -544,7 +513,6 @@ public record ScrollToOptions(
 /// <param name="M22">DOMMatrix2DInit 字典中的 m22 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-dommatrix2dinit-m22">Geometry Interfaces Module Level 1: 6 The DOMMatrix interfaces</see></param>
 /// <param name="M41">DOMMatrix2DInit 字典中的 m41 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-dommatrix2dinit-m41">Geometry Interfaces Module Level 1: 6 The DOMMatrix interfaces</see></param>
 /// <param name="M42">DOMMatrix2DInit 字典中的 m42 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-dommatrix2dinit-m42">Geometry Interfaces Module Level 1: 6 The DOMMatrix interfaces</see></param>
-[ECMAScript]
 [Description("@#DOMMatrix2DInit")]
 public record DOMMatrix2DInit(
     [property: Description("@#a")]double A = default,
@@ -577,7 +545,6 @@ public record DOMMatrix2DInit(
 /// <param name="M43">DOMMatrixInit 字典中的 m43 成员，WebIDL 类型为 unrestricted double。可省略。WebIDL 默认值：0。 <see href="https://drafts.csswg.org/geometry-1/#dom-dommatrixinit-m43">Geometry Interfaces Module Level 1: 6 The DOMMatrix interfaces</see></param>
 /// <param name="M44">DOMMatrixInit 字典中的 m44 成员，WebIDL 类型为 unrestricted double。可省略。WebIDL 默认值：1。 <see href="https://drafts.csswg.org/geometry-1/#dom-dommatrixinit-m44">Geometry Interfaces Module Level 1: 6 The DOMMatrix interfaces</see></param>
 /// <param name="Is2D">DOMMatrixInit 字典中的 is2D 成员，WebIDL 类型为 boolean。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-dommatrixinit-is2d">Geometry Interfaces Module Level 1: 6 The DOMMatrix interfaces</see></param>
-[ECMAScript]
 [Description("@#DOMMatrixInit")]
 public record DOMMatrixInit(
     [property: Description("@#m13")]double M13 = 0d,
@@ -602,7 +569,6 @@ public record DOMMatrixInit(
 /// <param name="Y">DOMPointInit 字典中的 y 成员，WebIDL 类型为 unrestricted double。可省略。WebIDL 默认值：0。 <see href="https://drafts.csswg.org/geometry-1/#dom-dompointinit-y">Geometry Interfaces Module Level 1: 2 The DOMPoint interfaces</see></param>
 /// <param name="Z">DOMPointInit 字典中的 z 成员，WebIDL 类型为 unrestricted double。可省略。WebIDL 默认值：0。 <see href="https://drafts.csswg.org/geometry-1/#dom-dompointinit-z">Geometry Interfaces Module Level 1: 2 The DOMPoint interfaces</see></param>
 /// <param name="W">DOMPointInit 字典中的 w 成员，WebIDL 类型为 unrestricted double。可省略。WebIDL 默认值：1。 <see href="https://drafts.csswg.org/geometry-1/#dom-dompointinit-w">Geometry Interfaces Module Level 1: 2 The DOMPoint interfaces</see></param>
-[ECMAScript]
 [Description("@#DOMPointInit")]
 public record DOMPointInit(
     [property: Description("@#x")]double X = 0d,
@@ -620,7 +586,6 @@ public record DOMPointInit(
 /// <param name="P2">DOMQuadInit 字典中的 p2 成员，WebIDL 类型为 DOMPointInit。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-domquadinit-p2">Geometry Interfaces Module Level 1: 5 The DOMQuad interface</see></param>
 /// <param name="P3">DOMQuadInit 字典中的 p3 成员，WebIDL 类型为 DOMPointInit。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-domquadinit-p3">Geometry Interfaces Module Level 1: 5 The DOMQuad interface</see></param>
 /// <param name="P4">DOMQuadInit 字典中的 p4 成员，WebIDL 类型为 DOMPointInit。可省略。 <see href="https://drafts.csswg.org/geometry-1/#dom-domquadinit-p4">Geometry Interfaces Module Level 1: 5 The DOMQuad interface</see></param>
-[ECMAScript]
 [Description("@#DOMQuadInit")]
 public record DOMQuadInit(
     [property: Description("@#p1")]DOMPointInit? P1 = default,
@@ -638,7 +603,6 @@ public record DOMQuadInit(
 /// <param name="Y">DOMRectInit 字典中的 y 成员，WebIDL 类型为 unrestricted double。可省略。WebIDL 默认值：0。 <see href="https://drafts.csswg.org/geometry-1/#dom-domrectinit-y">Geometry Interfaces Module Level 1: 3 The DOMRect interfaces</see></param>
 /// <param name="Width">Let x, y, width and height be the value of other&apos;s x, y, width and height dictionary members, respectively. 2. Let point1 be a new DOMPoint object with x coordinate set to x, y coordinate set to y, z coordinate set to &apos;&apos;0&apos;&apos; and w perspective set to &apos;&apos;1&apos;&apos;. 3. Let point2 be a new DOMPoint object with x coordinate set to x + width, y coordinate set to y, z coordinate set to &apos;&apos;0&apos;&apos; and w perspective set to &apos;&apos;1&apos;&apos;. 4. Let point3 be a new DOMPoint object with x coordinate set to x + width, y coordinate set to y + height, z coordinate set to &apos;&apos;0&apos;&apos; and w perspective set to &apos;&apos;1&apos;&apos;. 5.... <see href="https://drafts.csswg.org/geometry-1/#dom-domrectinit-width">Geometry Interfaces Module Level 1: 3 The DOMRect interfaces</see></param>
 /// <param name="Height">Let x, y, width and height be the value of other&apos;s x, y, width and height dictionary members, respectively. 2. Let point1 be a new DOMPoint object with x coordinate set to x, y coordinate set to y, z coordinate set to &apos;&apos;0&apos;&apos; and w perspective set to &apos;&apos;1&apos;&apos;. 3. Let point2 be a new DOMPoint object with x coordinate set to x + width, y coordinate set to y, z coordinate set to &apos;&apos;0&apos;&apos; and w perspective set to &apos;&apos;1&apos;&apos;. 4. Let point3 be a new DOMPoint object with x coordinate set to x + width, y coordinate set to y + height, z coordinate set to &apos;&apos;0&apos;&apos; and w perspective set to &apos;&apos;1&apos;&apos;. 5.... <see href="https://drafts.csswg.org/geometry-1/#dom-domrectinit-height">Geometry Interfaces Module Level 1: 3 The DOMRect interfaces</see></param>
-[ECMAScript]
 [Description("@#DOMRectInit")]
 public record DOMRectInit(
     [property: Description("@#x")]double X = 0d,
@@ -654,7 +618,6 @@ public record DOMRectInit(
 /// </remarks>
 /// <param name="Source">PointerTimelineOptions 字典中的 source 成员，WebIDL 类型为 Element?。可省略。 <see href="https://drafts.csswg.org/pointer-animations-1/#dom-pointertimelineoptions-source">Pointer-driven Animations Module Level 1: 2.3.2 The PointerTimeline Interface</see></param>
 /// <param name="Axis">PointerTimelineOptions 字典中的 axis 成员，WebIDL 类型为 PointerAxis。可省略。WebIDL 默认值：block。 <see href="https://drafts.csswg.org/pointer-animations-1/#dom-pointertimelineoptions-axis">Pointer-driven Animations Module Level 1: 2.3.2 The PointerTimeline Interface</see></param>
-[ECMAScript]
 [Description("@#PointerTimelineOptions")]
 public record PointerTimelineOptions(
     [property: Description("@#source")]Element? Source = default,
@@ -667,7 +630,6 @@ public record PointerTimelineOptions(
 /// <see href="https://drafts.csswg.org/resize-observer-1/#dictdef-resizeobserveroptions">Resize Observer Module Level 1: 2.1 ResizeObserver interface</see>
 /// </remarks>
 /// <param name="Box">ResizeObserverOptions 字典中的 box 成员，WebIDL 类型为 ResizeObserverBoxOptions。可省略。WebIDL 默认值：content-box。 <see href="https://drafts.csswg.org/resize-observer-1/#dom-resizeobserveroptions-box">Resize Observer Module Level 1: 2.1 ResizeObserver interface</see></param>
-[ECMAScript]
 [Description("@#ResizeObserverOptions")]
 public record ResizeObserverOptions(
     [property: Description("@#box")]ResizeObserverBoxOptions Box = ResizeObserverBoxOptions.ContentBox);
@@ -680,7 +642,6 @@ public record ResizeObserverOptions(
 /// </remarks>
 /// <param name="Source">ScrollTimelineOptions 字典中的 source 成员，WebIDL 类型为 Element?。可省略。 <see href="https://drafts.csswg.org/scroll-animations-1/#dom-scrolltimelineoptions-source">Scroll-driven Animations Module Level 1: 2.2.2 The ScrollTimeline Interface</see></param>
 /// <param name="Axis">ScrollTimelineOptions 字典中的 axis 成员，WebIDL 类型为 ScrollAxis。可省略。WebIDL 默认值：block。 <see href="https://drafts.csswg.org/scroll-animations-1/#dom-scrolltimelineoptions-axis">Scroll-driven Animations Module Level 1: 2.2.2 The ScrollTimeline Interface</see></param>
-[ECMAScript]
 [Description("@#ScrollTimelineOptions")]
 public record ScrollTimelineOptions(
     [property: Description("@#source")]Element? Source = default,
@@ -695,7 +656,6 @@ public record ScrollTimelineOptions(
 /// <param name="Subject">ViewTimelineOptions 字典中的 subject 成员，WebIDL 类型为 Element。可省略。 <see href="https://drafts.csswg.org/scroll-animations-1/#dom-viewtimelineoptions-subject">Scroll-driven Animations Module Level 1: 3.3.2 The ViewTimeline Interface</see></param>
 /// <param name="Axis">ViewTimelineOptions 字典中的 axis 成员，WebIDL 类型为 ScrollAxis。可省略。WebIDL 默认值：block。 <see href="https://drafts.csswg.org/scroll-animations-1/#dom-viewtimelineoptions-axis">Scroll-driven Animations Module Level 1: 3.3.2 The ViewTimeline Interface</see></param>
 /// <param name="Inset">ViewTimelineOptions 字典中的 inset 成员，WebIDL 类型为 DOMString, CSSNumericValue, CSSKeywordValue。可省略。WebIDL 默认值：auto。 <see href="https://drafts.csswg.org/scroll-animations-1/#dom-viewtimelineoptions-inset">Scroll-driven Animations Module Level 1: 3.3.2 The ViewTimeline Interface</see></param>
-[ECMAScript]
 [Description("@#ViewTimelineOptions")]
 public record ViewTimelineOptions(
     [property: Description("@#subject")]Element? Subject = default,
@@ -712,7 +672,6 @@ public record ViewTimelineOptions(
 /// <param name="ComputedOffset">BaseComputedKeyframe 字典中的 computedOffset 成员，WebIDL 类型为 double。可省略。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basecomputedkeyframe-computedoffset">Web Animations Module Level 1: 6.6 The KeyframeEffect interface</see></param>
 /// <param name="Easing">BaseComputedKeyframe 字典中的 easing 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：linear。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basecomputedkeyframe-easing">Web Animations Module Level 1: 6.6 The KeyframeEffect interface</see></param>
 /// <param name="Composite">BaseComputedKeyframe 字典中的 composite 成员，WebIDL 类型为 CompositeOperationOrAuto。可省略。WebIDL 默认值：auto。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basecomputedkeyframe-composite">Web Animations Module Level 1: 6.6 The KeyframeEffect interface</see></param>
-[ECMAScript]
 [Description("@#BaseComputedKeyframe")]
 public record BaseComputedKeyframe(
     [property: Description("@#offset")]double? Offset = null,
@@ -729,7 +688,6 @@ public record BaseComputedKeyframe(
 /// <param name="Offset">BaseKeyframe 字典中的 offset 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basekeyframe-offset">Web Animations Module Level 1: 6.6.3 Processing a keyframes argument</see></param>
 /// <param name="Easing">BaseKeyframe 字典中的 easing 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：linear。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basekeyframe-easing">Web Animations Module Level 1: 6.6.3 Processing a keyframes argument</see></param>
 /// <param name="Composite">BaseKeyframe 字典中的 composite 成员，WebIDL 类型为 CompositeOperationOrAuto。可省略。WebIDL 默认值：auto。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basekeyframe-composite">Web Animations Module Level 1: 6.6.3 Processing a keyframes argument</see></param>
-[ECMAScript]
 [Description("@#BaseKeyframe")]
 public record BaseKeyframe(
     [property: Description("@#offset")]double? Offset = null,
@@ -745,7 +703,6 @@ public record BaseKeyframe(
 /// <param name="Offset">BasePropertyIndexedKeyframe 字典中的 offset 成员，WebIDL 类型为 double, double。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basepropertyindexedkeyframe-offset">Web Animations Module Level 1: 6.6.3 Processing a keyframes argument</see></param>
 /// <param name="Easing">BasePropertyIndexedKeyframe 字典中的 easing 成员，WebIDL 类型为 DOMString, DOMString。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basepropertyindexedkeyframe-easing">Web Animations Module Level 1: 6.6.3 Processing a keyframes argument</see></param>
 /// <param name="Composite">BasePropertyIndexedKeyframe 字典中的 composite 成员，WebIDL 类型为 CompositeOperationOrAuto, CompositeOperationOrAuto。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.csswg.org/web-animations-1/#dom-basepropertyindexedkeyframe-composite">Web Animations Module Level 1: 6.6.3 Processing a keyframes argument</see></param>
-[ECMAScript]
 [Description("@#BasePropertyIndexedKeyframe")]
 public record BasePropertyIndexedKeyframe(
     [property: Description("@#offset")]BasePropertyIndexedKeyframeOffset? Offset = default,
@@ -794,7 +751,6 @@ public record ComputedEffectTiming(
 /// <see href="https://drafts.csswg.org/web-animations-1/#dictdef-documenttimelineoptions">Web Animations Module Level 1: 6.3 The DocumentTimeline interface</see>
 /// </remarks>
 /// <param name="OriginTime">DocumentTimelineOptions 字典中的 originTime 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。WebIDL 默认值：0。 <see href="https://drafts.csswg.org/web-animations-1/#dom-documenttimelineoptions-origintime">Web Animations Module Level 1: 6.3 The DocumentTimeline interface</see></param>
-[ECMAScript]
 [Description("@#DocumentTimelineOptions")]
 public record DocumentTimelineOptions(
     [property: Description("@#originTime")]double OriginTime = 0d);
@@ -851,7 +807,6 @@ public record EffectTiming(
 /// </remarks>
 /// <param name="Subtree">GetAnimationsOptions 字典中的 subtree 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://drafts.csswg.org/web-animations-1/#dom-getanimationsoptions-subtree">Web Animations Module Level 1: 6.8 The Animatable interface mixin</see></param>
 /// <param name="PseudoElement">GetAnimationsOptions 字典中的 pseudoElement 成员，WebIDL 类型为 CSSOMString?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/web-animations-1/#dom-getanimationsoptions-pseudoelement">Web Animations Module Level 1: 6.8 The Animatable interface mixin</see></param>
-[ECMAScript]
 [Description("@#GetAnimationsOptions")]
 public record GetAnimationsOptions(
     [property: Description("@#subtree")]bool Subtree = false,
@@ -967,7 +922,6 @@ public record OptionalEffectTiming(
 /// </remarks>
 /// <param name="CurrentTime">AnimationPlaybackEventInit 字典中的 currentTime 成员，WebIDL 类型为 CSSNumberish?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/web-animations-2/#dom-animationplaybackeventinit-currenttime">Web Animations Module Level 2: 4.15 The AnimationPlaybackEvent interface</see></param>
 /// <param name="TimelineTime">AnimationPlaybackEventInit 字典中的 timelineTime 成员，WebIDL 类型为 CSSNumberish?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.csswg.org/web-animations-2/#dom-animationplaybackeventinit-timelinetime">Web Animations Module Level 2: 4.15 The AnimationPlaybackEvent interface</see></param>
-[ECMAScript]
 [Description("@#AnimationPlaybackEventInit")]
 public record AnimationPlaybackEventInit(
     [property: Description("@#currentTime")]CSSNumberish? CurrentTime = null,
@@ -981,7 +935,6 @@ public record AnimationPlaybackEventInit(
 /// </remarks>
 /// <param name="RangeName">TimelineRangeOffset 字典中的 rangeName 成员，WebIDL 类型为 CSSOMString?。可省略。 <see href="https://drafts.csswg.org/web-animations-2/#dom-timelinerangeoffset-rangename">Web Animations Module Level 2: 4.14 The Animatable interface mixin</see></param>
 /// <param name="Offset">TimelineRangeOffset 字典中的 offset 成员，WebIDL 类型为 CSSNumericValue。可省略。 <see href="https://drafts.csswg.org/web-animations-2/#dom-timelinerangeoffset-offset">Web Animations Module Level 2: 4.14 The Animatable interface mixin</see></param>
-[ECMAScript]
 [Description("@#TimelineRangeOffset")]
 public record TimelineRangeOffset(
     [property: Description("@#rangeName")]string? RangeName = default,
@@ -995,7 +948,6 @@ public record TimelineRangeOffset(
 /// </remarks>
 /// <param name="Read">Runs the UTF-8 encoder on source, stores the result of that operation into destination, and returns the progress made as an object wherein read is the number of converted code units of source and written is the number of bytes modified in destination. <see href="https://encoding.spec.whatwg.org/#dom-textencoderencodeintoresult-read">Encoding Standard: 7.4 Interface TextEncoder</see></param>
 /// <param name="Written">Runs the UTF-8 encoder on source, stores the result of that operation into destination, and returns the progress made as an object wherein read is the number of converted code units of source and written is the number of bytes modified in destination. <see href="https://encoding.spec.whatwg.org/#dom-textencoderencodeintoresult-written">Encoding Standard: 7.4 Interface TextEncoder</see></param>
-[ECMAScript]
 [Description("@#TextEncoderEncodeIntoResult")]
 public record TextEncoderEncodeIntoResult(
     [property: Description("@#read")]Number? Read = default,
@@ -1008,7 +960,6 @@ public record TextEncoderEncodeIntoResult(
 /// <see href="https://encoding.spec.whatwg.org/#textdecodeoptions">Encoding Standard: 7.2 Interface TextDecoder</see>
 /// </remarks>
 /// <param name="Stream">Set this&apos;s do not flush to options[&quot;stream&quot;]. <see href="https://encoding.spec.whatwg.org/#dom-textdecodeoptions-stream">Encoding Standard: 7.2 Interface TextDecoder</see></param>
-[ECMAScript]
 [Description("@#TextDecodeOptions")]
 public record TextDecodeOptions(
     [property: Description("@#stream")]bool Stream = false);
@@ -1021,7 +972,6 @@ public record TextDecodeOptions(
 /// </remarks>
 /// <param name="Fatal">If options[&quot;fatal&quot;] is true, then set this&apos;s error mode to &quot;fatal&quot;. <see href="https://encoding.spec.whatwg.org/#dom-textdecoderoptions-fatal">Encoding Standard: 7.2 Interface TextDecoder</see></param>
 /// <param name="IgnoreBOM">Set this&apos;s ignore BOM to options[&quot;ignoreBOM&quot;]. <see href="https://encoding.spec.whatwg.org/#dom-textdecoderoptions-ignorebom">Encoding Standard: 7.2 Interface TextDecoder</see></param>
-[ECMAScript]
 [Description("@#TextDecoderOptions")]
 public record TextDecoderOptions(
     [property: Description("@#fatal")]bool Fatal = false,
@@ -1034,7 +984,6 @@ public record TextDecoderOptions(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/DeferredRequestInit">MDN Web Docs: DeferredRequestInit</see>
 /// </remarks>
 /// <param name="ActivateAfter">If init is given and init[&quot;activateAfter&quot;] exists, then set activateAfter to init[&quot;activateAfter&quot;]. <see href="https://fetch.spec.whatwg.org/#dom-deferredrequestinit-activateafter">Fetch Standard: 5.6 Fetch methods</see></param>
-[ECMAScript]
 [Description("@#DeferredRequestInit")]
 public record DeferredRequestInit(
     [property: Description("@#activateAfter")]double ActivateAfter = default) : RequestInit;
@@ -1119,7 +1068,6 @@ public record RequestInit(
 /// <param name="Status">If init[&quot;status&quot;] is not in the range 200 to 599, inclusive, then throw a RangeError. <see href="https://fetch.spec.whatwg.org/#dom-responseinit-status">Fetch Standard: 5.5 Response class</see></param>
 /// <param name="StatusText">If init[&quot;statusText&quot;] is not the empty string and does not match the reason-phrase token production, then throw a TypeError. <see href="https://fetch.spec.whatwg.org/#dom-responseinit-statustext">Fetch Standard: 5.5 Response class</see></param>
 /// <param name="Headers">If init[&quot;headers&quot;] exists, then fill response&apos;s headers with init[&quot;headers&quot;]. <see href="https://fetch.spec.whatwg.org/#dom-responseinit-headers">Fetch Standard: 5.5 Response class</see></param>
-[ECMAScript]
 [Description("@#ResponseInit")]
 public record ResponseInit(
     [property: Description("@#status")]ushort Status = 200,
@@ -1134,7 +1082,6 @@ public record ResponseInit(
 /// </remarks>
 /// <param name="Salt1">HMACGetSecretInput 字典中的 salt1 成员，WebIDL 类型为 ArrayBuffer。必须提供该成员。 <see href="https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#dom-hmacgetsecretinput-salt1">Client to Authenticator Protocol (CTAP): 12.5 HMAC Secret Extension (hmac-secret)</see></param>
 /// <param name="Salt2">HMACGetSecretInput 字典中的 salt2 成员，WebIDL 类型为 ArrayBuffer。可省略。 <see href="https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#dom-hmacgetsecretinput-salt2">Client to Authenticator Protocol (CTAP): 12.5 HMAC Secret Extension (hmac-secret)</see></param>
-[ECMAScript]
 [Description("@#HMACGetSecretInput")]
 public record HMACGetSecretInput(
     [property: Description("@#salt1")]ArrayBuffer? Salt1 = default,
@@ -1148,7 +1095,6 @@ public record HMACGetSecretInput(
 /// </remarks>
 /// <param name="Output1">HMACGetSecretOutput 字典中的 output1 成员，WebIDL 类型为 ArrayBuffer。必须提供该成员。 <see href="https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#dom-hmacgetsecretoutput-output1">Client to Authenticator Protocol (CTAP): 12.5 HMAC Secret Extension (hmac-secret)</see></param>
 /// <param name="Output2">HMACGetSecretOutput 字典中的 output2 成员，WebIDL 类型为 ArrayBuffer。可省略。 <see href="https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#dom-hmacgetsecretoutput-output2">Client to Authenticator Protocol (CTAP): 12.5 HMAC Secret Extension (hmac-secret)</see></param>
-[ECMAScript]
 [Description("@#HMACGetSecretOutput")]
 public record HMACGetSecretOutput(
     [property: Description("@#output1")]ArrayBuffer? Output1 = default,
@@ -1161,7 +1107,6 @@ public record HMACGetSecretOutput(
 /// <see href="https://fs.spec.whatwg.org/#dictdef-filesystemcreatewritableoptions">File System Standard: 2.3 The FileSystemFileHandle interface</see>
 /// </remarks>
 /// <param name="KeepExistingData">FileSystemCreateWritableOptions 字典中的 keepExistingData 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://fs.spec.whatwg.org/#dom-filesystemcreatewritableoptions-keepexistingdata">File System Standard: 2.3 The FileSystemFileHandle interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemCreateWritableOptions")]
 public record FileSystemCreateWritableOptions(
     [property: Description("@#keepExistingData")]bool KeepExistingData = false);
@@ -1173,7 +1118,6 @@ public record FileSystemCreateWritableOptions(
 /// <see href="https://fs.spec.whatwg.org/#dictdef-filesystemgetdirectoryoptions">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see>
 /// </remarks>
 /// <param name="Create">FileSystemGetDirectoryOptions 字典中的 create 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://fs.spec.whatwg.org/#dom-filesystemgetdirectoryoptions-create">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemGetDirectoryOptions")]
 public record FileSystemGetDirectoryOptions(
     [property: Description("@#create")]bool Create = false);
@@ -1185,7 +1129,6 @@ public record FileSystemGetDirectoryOptions(
 /// <see href="https://fs.spec.whatwg.org/#dictdef-filesystemgetfileoptions">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see>
 /// </remarks>
 /// <param name="Create">FileSystemGetFileOptions 字典中的 create 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://fs.spec.whatwg.org/#dom-filesystemgetfileoptions-create">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemGetFileOptions")]
 public record FileSystemGetFileOptions(
     [property: Description("@#create")]bool Create = false);
@@ -1197,7 +1140,6 @@ public record FileSystemGetFileOptions(
 /// <see href="https://fs.spec.whatwg.org/#dictdef-filesystemreadwriteoptions">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see>
 /// </remarks>
 /// <param name="At">FileSystemReadWriteOptions 字典中的 at 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://fs.spec.whatwg.org/#dom-filesystemreadwriteoptions-at">File System Standard: 2.6 The FileSystemSyncAccessHandle interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemReadWriteOptions")]
 public record FileSystemReadWriteOptions(
     [property: Description("@#at")]Number? At = default);
@@ -1209,7 +1151,6 @@ public record FileSystemReadWriteOptions(
 /// <see href="https://fs.spec.whatwg.org/#dictdef-filesystemremoveoptions">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see>
 /// </remarks>
 /// <param name="Recursive">FileSystemRemoveOptions 字典中的 recursive 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://fs.spec.whatwg.org/#dom-filesystemremoveoptions-recursive">File System Standard: 2.4 The FileSystemDirectoryHandle interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemRemoveOptions")]
 public record FileSystemRemoveOptions(
     [property: Description("@#recursive")]bool Recursive = false);
@@ -1224,7 +1165,6 @@ public record FileSystemRemoveOptions(
 /// <param name="Size">WriteParams 字典中的 size 成员，WebIDL 类型为 unsigned long long?。可省略。 <see href="https://fs.spec.whatwg.org/#dom-writeparams-size">File System Standard: 2.5 The FileSystemWritableFileStream interface</see></param>
 /// <param name="Position">WriteParams 字典中的 position 成员，WebIDL 类型为 unsigned long long?。可省略。 <see href="https://fs.spec.whatwg.org/#dom-writeparams-position">File System Standard: 2.5 The FileSystemWritableFileStream interface</see></param>
 /// <param name="Data">WriteParams 字典中的 data 成员，WebIDL 类型为 BufferSource, Blob, USVString?。可省略。 <see href="https://fs.spec.whatwg.org/#dom-writeparams-data">File System Standard: 2.5 The FileSystemWritableFileStream interface</see></param>
-[ECMAScript]
 [Description("@#WriteParams")]
 public record WriteParams(
     [property: Description("@#type")]WriteCommandType? Type = default,
@@ -1266,7 +1206,6 @@ public record FullscreenOptions(
 /// </remarks>
 /// <param name="Type">ImageEncodeOptions 字典中的 type 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：image/png。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ImageEncodeOptions.type</see></param>
 /// <param name="Quality">ImageEncodeOptions 字典中的 quality 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ImageEncodeOptions.quality</see></param>
-[ECMAScript]
 [Description("@#ImageEncodeOptions")]
 public record ImageEncodeOptions(
     [property: Description("@#type")]string? Type = default,
@@ -1283,7 +1222,6 @@ public record ImageEncodeOptions(
 /// <param name="LastEventId">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-lasteventid">HTML Standard: 9.1 The MessageEvent interface</see></param>
 /// <param name="Source">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-source">HTML Standard: 9.1 The MessageEvent interface</see></param>
 /// <param name="Ports">The initMessageEvent(type, bubbles, cancelable, data, origin, lastEventId, source, ports) method must initialize the event in a manner analogous to the similarly-named initEvent() method. DOM <see href="https://html.spec.whatwg.org/multipage/comms.html#dom-messageeventinit-ports">HTML Standard: 9.1 The MessageEvent interface</see></param>
-[ECMAScript]
 [Description("@#MessageEventInit")]
 public record MessageEventInit(
     [property: Description("@#data")]object? Data = default,
@@ -1299,7 +1237,6 @@ public record MessageEventInit(
 /// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#elementdefinitionoptions">HTML Standard: 4.13.4 The CustomElementRegistry interface</see>
 /// </remarks>
 /// <param name="Extends">ElementDefinitionOptions 字典中的 extends 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#dom-elementdefinitionoptions-extends">HTML Standard: 4.13.4 The CustomElementRegistry interface</see></param>
-[ECMAScript]
 [Description("@#ElementDefinitionOptions")]
 public record ElementDefinitionOptions(
     [property: Description("@#extends")]string? Extends = default);
@@ -1320,7 +1257,6 @@ public record ElementDefinitionOptions(
 /// <param name="StepMismatch">ValidityStateFlags 字典中的 stepMismatch 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ValidityStateFlags.stepMismatch</see></param>
 /// <param name="BadInput">ValidityStateFlags 字典中的 badInput 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ValidityStateFlags.badInput</see></param>
 /// <param name="CustomError">ValidityStateFlags 字典中的 customError 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ValidityStateFlags.customError</see></param>
-[ECMAScript]
 [Description("@#ValidityStateFlags")]
 public record ValidityStateFlags(
     [property: Description("@#valueMissing")]bool ValueMissing = false,
@@ -1341,7 +1277,6 @@ public record ValidityStateFlags(
 /// <see href="https://html.spec.whatwg.org/multipage/dnd.html#drageventinit">HTML Standard: 6.11.4 The DragEvent interface</see>
 /// </remarks>
 /// <param name="DataTransfer">DragEventInit 字典中的 dataTransfer 成员，WebIDL 类型为 DataTransfer?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: DragEventInit.dataTransfer</see></param>
-[ECMAScript]
 [Description("@#DragEventInit")]
 public record DragEventInit(
     [property: Description("@#dataTransfer")]DataTransfer? DataTransfer = null) : MouseEventInit;
@@ -1353,7 +1288,6 @@ public record DragEventInit(
 /// <see href="https://html.spec.whatwg.org/multipage/dom.html#showpopoveroptions">HTML Standard: 3.2.2 Elements in the DOM</see>
 /// </remarks>
 /// <param name="Source">Let source be options[&quot;source&quot;] if it exists; otherwise, null. <see href="https://html.spec.whatwg.org/multipage/dom.html#dom-showpopoveroptions-source">HTML Standard: 3.2.2 Elements in the DOM</see></param>
-[ECMAScript]
 [Description("@#ShowPopoverOptions")]
 public record ShowPopoverOptions(
     [property: Description("@#source")]HTMLElement? Source = default);
@@ -1365,7 +1299,6 @@ public record ShowPopoverOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/dom.html#togglepopoveroptions">HTML Standard: 3.2.2 Elements in the DOM</see>
 /// </remarks>
 /// <param name="Force">Otherwise, if options[&quot;force&quot;] exists, set force to options[&quot;force&quot;]. <see href="https://html.spec.whatwg.org/multipage/dom.html#dom-togglepopoveroptions-force">HTML Standard: 3.2.2 Elements in the DOM</see></param>
-[ECMAScript]
 [Description("@#TogglePopoverOptions")]
 public record TogglePopoverOptions(
     [property: Description("@#force")]bool Force = default) : ShowPopoverOptions;
@@ -1378,7 +1311,6 @@ public record TogglePopoverOptions(
 /// </remarks>
 /// <param name="SerializableShadowRoots">If serializableShadowRoots is true, then all shadow roots marked as serializable are serialized. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-gethtmloptions-serializableshadowroots">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 /// <param name="ShadowRoots">GetHTMLOptions 字典中的 shadowRoots 成员，WebIDL 类型为 sequence&lt;ShadowRoot&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-gethtmloptions-shadowroots">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
-[ECMAScript]
 [Description("@#GetHTMLOptions")]
 public record GetHTMLOptions(
     [property: Description("@#serializableShadowRoots")]bool SerializableShadowRoots = false,
@@ -1391,7 +1323,6 @@ public record GetHTMLOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#parsehtmlunsafeoptions">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </remarks>
 /// <param name="Sanitizer">Note that script elements are not evaluated during parsing, and the resulting document&apos;s encoding will always be UTF-8. The document&apos;s URL will be about:blank. If the options dictionary contains a &quot;sanitizer&quot; member, it is used to sanitize the resulting DOM. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-parsehtmlunsafeoptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
-[ECMAScript]
 [Description("@#ParseHTMLUnsafeOptions")]
 public record ParseHTMLUnsafeOptions(
     [property: Description("@#sanitizer")]ParseHTMLUnsafeOptionsSanitizer? Sanitizer = default);
@@ -1403,7 +1334,6 @@ public record ParseHTMLUnsafeOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sethtmloptions">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </remarks>
 /// <param name="Sanitizer">Parses html using the HTML parser with options options, and replaces the children of element with the result. element provides context for the HTML parser. The parsed fragment is sanitized based on the options&apos;s &quot;sanitizer&quot; member, and unsafe content is removed. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmloptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
-[ECMAScript]
 [Description("@#SetHTMLOptions")]
 public record SetHTMLOptions(
     [property: Description("@#sanitizer")]SetHTMLOptionsSanitizer? Sanitizer = default);
@@ -1416,7 +1346,6 @@ public record SetHTMLOptions(
 /// </remarks>
 /// <param name="Sanitizer">Parses html using the HTML parser with options options, and replaces the children of element with the result. element provides context for the HTML parser. If the options dictionary contains a &quot;sanitizer&quot; member, it is used to sanitize the parsed fragment before it is inserted into element. If the options dictionary&apos;s &quot;runScripts&quot; member is true, scripts contained in html will be executed immediately after the node tree is updated. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmlunsafeoptions-sanitizer">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
 /// <param name="RunScripts">Parses html using the HTML parser with options options, and replaces the children of element with the result. element provides context for the HTML parser. If the options dictionary contains a &quot;sanitizer&quot; member, it is used to sanitize the parsed fragment before it is inserted into element. If the options dictionary&apos;s &quot;runScripts&quot; member is true, scripts contained in html will be executed immediately after the node tree is updated. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sethtmlunsafeoptions-runscripts">HTML Standard: 8.5 DOM parsing and serialization APIs</see></param>
-[ECMAScript]
 [Description("@#SetHTMLUnsafeOptions")]
 public record SetHTMLUnsafeOptions(
     [property: Description("@#sanitizer")]SetHTMLUnsafeOptionsSanitizer? Sanitizer = default,
@@ -1429,7 +1358,6 @@ public record SetHTMLUnsafeOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#formdataeventinit">HTML Standard: 4.10.22.11 The FormDataEvent interface</see>
 /// </remarks>
 /// <param name="FormData">FormDataEventInit 字典中的 formData 成员，WebIDL 类型为 FormData。必须提供该成员。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: FormDataEventInit.formData</see></param>
-[ECMAScript]
 [Description("@#FormDataEventInit")]
 public record FormDataEventInit(
     [property: Description("@#formData")]FormData? FormData = default) : EventInit;
@@ -1441,7 +1369,6 @@ public record FormDataEventInit(
 /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#submiteventinit">HTML Standard: 4.10.22.10 The SubmitEvent interface</see>
 /// </remarks>
 /// <param name="Submitter">SubmitEventInit 字典中的 submitter 成员，WebIDL 类型为 HTMLElement?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: SubmitEventInit.submitter</see></param>
-[ECMAScript]
 [Description("@#SubmitEventInit")]
 public record SubmitEventInit(
     [property: Description("@#submitter")]HTMLElement? Submitter = null) : EventInit;
@@ -1458,7 +1385,6 @@ public record SubmitEventInit(
 /// <param name="ResizeWidth">If either options&apos;s resizeWidth or options&apos;s resizeHeight is present and is 0, then return a promise rejected with an &quot;InvalidStateError&quot; DOMException. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizewidth">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
 /// <param name="ResizeHeight">If either options&apos;s resizeWidth or options&apos;s resizeHeight is present and is 0, then return a promise rejected with an &quot;InvalidStateError&quot; DOMException. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizeheight">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
 /// <param name="ResizeQuality">Scale output to the size specified by outputWidth and outputHeight. The user agent should use the value of the resizeQuality option to guide the choice of scaling algorithm. <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagebitmapoptions-resizequality">HTML Standard: 8.11.2 The ImageBitmap interface</see></param>
-[ECMAScript]
 [Description("@#ImageBitmapOptions")]
 public record ImageBitmapOptions(
     [property: Description("@#imageOrientation")]ImageOrientation ImageOrientation = ImageOrientation.FromImage,
@@ -1475,7 +1401,6 @@ public record ImageBitmapOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/interaction.html#closewatcheroptions">HTML Standard: 6.10.3 The CloseWatcher interface</see>
 /// </remarks>
 /// <param name="Signal">If the signal option is provided, then watcher can be destroyed (as if by watcher.destroy()) by aborting the given AbortSignal. <see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-closewatcheroptions-signal">HTML Standard: 6.10.3 The CloseWatcher interface</see></param>
-[ECMAScript]
 [Description("@#CloseWatcherOptions")]
 public record CloseWatcherOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -1488,7 +1413,6 @@ public record CloseWatcherOptions(
 /// </remarks>
 /// <param name="Source">CommandEventInit 字典中的 source 成员，WebIDL 类型为 Element?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: CommandEventInit.source</see></param>
 /// <param name="Command">CommandEventInit 字典中的 command 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: CommandEventInit.command</see></param>
-[ECMAScript]
 [Description("@#CommandEventInit")]
 public record CommandEventInit(
     [property: Description("@#source")]Element? Source = null,
@@ -1502,7 +1426,6 @@ public record CommandEventInit(
 /// </remarks>
 /// <param name="PreventScroll">By default, this method also scrolls element into view. Providing the preventScroll option and setting it to true prevents this behavior. <see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-focusoptions-preventscroll">HTML Standard: 6.6.6 Focus management APIs</see></param>
 /// <param name="FocusVisible">By default, user agents use implementation-defined heuristics to determine whether to indicate focus via a focus ring. Providing the focusVisible option and setting it to true will ensure the focus ring is always visible. <see href="https://html.spec.whatwg.org/multipage/interaction.html#dom-focusoptions-focusvisible">HTML Standard: 6.6.6 Focus management APIs</see></param>
-[ECMAScript]
 [Description("@#FocusOptions")]
 public record FocusOptions(
     [property: Description("@#preventScroll")]bool PreventScroll = false,
@@ -1517,7 +1440,6 @@ public record FocusOptions(
 /// <param name="OldState">ToggleEventInit 字典中的 oldState 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ToggleEventInit.oldState</see></param>
 /// <param name="NewState">ToggleEventInit 字典中的 newState 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ToggleEventInit.newState</see></param>
 /// <param name="Source">ToggleEventInit 字典中的 source 成员，WebIDL 类型为 Element?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ToggleEventInit.source</see></param>
-[ECMAScript]
 [Description("@#ToggleEventInit")]
 public record ToggleEventInit(
     [property: Description("@#oldState")]string? OldState = default,
@@ -1531,7 +1453,6 @@ public record ToggleEventInit(
 /// <see href="https://html.spec.whatwg.org/multipage/media.html#trackeventinit">HTML Standard: 4.8.11.15 The TrackEvent interface</see>
 /// </remarks>
 /// <param name="Track">TrackEventInit 字典中的 track 成员，WebIDL 类型为 VideoTrack, AudioTrack, TextTrack?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: TrackEventInit.track</see></param>
-[ECMAScript]
 [Description("@#TrackEventInit")]
 public record TrackEventInit(
     [property: Description("@#track")]TrackEventInitTrack? Track = default) : EventInit;
@@ -1544,7 +1465,6 @@ public record TrackEventInit(
 /// </remarks>
 /// <param name="OldURL">HashChangeEventInit 字典中的 oldURL 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: HashChangeEventInit.oldURL</see></param>
 /// <param name="NewURL">HashChangeEventInit 字典中的 newURL 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: HashChangeEventInit.newURL</see></param>
-[ECMAScript]
 [Description("@#HashChangeEventInit")]
 public record HashChangeEventInit(
     [property: Description("@#oldURL")]string? OldURL = default,
@@ -1567,7 +1487,6 @@ public record HashChangeEventInit(
 /// <param name="Info">NavigateEventInit 字典中的 info 成员，WebIDL 类型为 any。可省略。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigateeventinit-info">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
 /// <param name="HasUAVisualTransition">NavigateEventInit 字典中的 hasUAVisualTransition 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigateeventinit-hasuavisualtransition">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
 /// <param name="SourceElement">NavigateEventInit 字典中的 sourceElement 成员，WebIDL 类型为 Element?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigateeventinit-sourceelement">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
-[ECMAScript]
 [Description("@#NavigateEventInit")]
 public record NavigateEventInit(
     [property: Description("@#navigationType")]NavigationType NavigationType = NavigationType.Push,
@@ -1590,7 +1509,6 @@ public record NavigateEventInit(
 /// </remarks>
 /// <param name="NavigationType">NavigationCurrentEntryChangeEventInit 字典中的 navigationType 成员，WebIDL 类型为 NavigationType?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationcurrententrychangeeventinit-navigationtype">HTML Standard: 7.2.7.1 The NavigationCurrentEntryChangeEvent interface</see></param>
 /// <param name="From">NavigationCurrentEntryChangeEventInit 字典中的 from 成员，WebIDL 类型为 NavigationHistoryEntry。必须提供该成员。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationcurrententrychangeeventinit-from">HTML Standard: 7.2.7.1 The NavigationCurrentEntryChangeEvent interface</see></param>
-[ECMAScript]
 [Description("@#NavigationCurrentEntryChangeEventInit")]
 public record NavigationCurrentEntryChangeEventInit(
     [property: Description("@#navigationType")]NavigationType? NavigationType = default,
@@ -1606,7 +1524,6 @@ public record NavigationCurrentEntryChangeEventInit(
 /// <param name="Handler">NavigationInterceptOptions 字典中的 handler 成员，WebIDL 类型为 NavigationInterceptHandler。可省略。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-handler">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
 /// <param name="FocusReset">By default, using this method will cause focus to reset when any handlers&apos; returned promises settle. Focus will be reset to the first element with the autofocus attribute set, or the body element if the attribute isn&apos;t present. The focusReset option can be set to &quot;manual&quot; to avoid this behavior. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-focusreset">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
 /// <param name="Scroll">By default, using this method will delay the browser&apos;s scroll restoration logic for &quot;traverse&quot; or &quot;reload&quot; navigations, or its scroll-reset/scroll-to-a-fragment logic for &quot;push&quot; or &quot;replace&quot; navigations, until any handlers&apos; returned promises settle. The scroll option can be set to &quot;manual&quot; to turn off any browser-driven scroll behavior entirely for this navigation, or scroll() can be called before the promise settles to trigger this behavior early. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationinterceptoptions-scroll">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see></param>
-[ECMAScript]
 [Description("@#NavigationInterceptOptions")]
 public record NavigationInterceptOptions(
     [property: Description("@#precommitHandler")]NavigationPrecommitHandler? PrecommitHandler = default,
@@ -1625,7 +1542,6 @@ public record NavigationInterceptOptions(
 /// </example>
 /// <param name="State">state can be set to any serializable value; it will populate the state retrieved by navigation.currentEntry.getState() once the navigation completes, for same-document navigations. (It will be ignored for navigations that end up cross-document.) <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationnavigateoptions-state">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
 /// <param name="History">history can be set to &quot;replace&quot; to replace the current session history entry, instead of pushing a new one. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationnavigateoptions-history">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-[ECMAScript]
 [Description("@#NavigationNavigateOptions")]
 public record NavigationNavigateOptions(
     [property: Description("@#state")]object? State = default,
@@ -1638,7 +1554,6 @@ public record NavigationNavigateOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationoptions">HTML Standard: 7.2.6.2 The Navigation interface</see>
 /// </remarks>
 /// <param name="Info">info can be set to any value; it will populate the info property of the corresponding NavigateEvent. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationoptions-info">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-[ECMAScript]
 [Description("@#NavigationOptions")]
 public record NavigationOptions(
     [property: Description("@#info")]object? Info = default);
@@ -1650,7 +1565,6 @@ public record NavigationOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationreloadoptions">HTML Standard: 7.2.6.2 The Navigation interface</see>
 /// </remarks>
 /// <param name="State">NavigationReloadOptions 字典中的 state 成员，WebIDL 类型为 any。可省略。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: NavigationReloadOptions.state</see></param>
-[ECMAScript]
 [Description("@#NavigationReloadOptions")]
 public record NavigationReloadOptions(
     [property: Description("@#state")]object? State = default) : NavigationOptions;
@@ -1662,7 +1576,6 @@ public record NavigationReloadOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationupdatecurrententryoptions">HTML Standard: 7.2.6.2 The Navigation interface</see>
 /// </remarks>
 /// <param name="State">Let serializedState be StructuredSerializeForStorage(options[&quot;state&quot;]), rethrowing any exceptions. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationupdatecurrententryoptions-state">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-[ECMAScript]
 [Description("@#NavigationUpdateCurrentEntryOptions")]
 public record NavigationUpdateCurrentEntryOptions(
     [property: Description("@#state")]object? State = default);
@@ -1674,7 +1587,6 @@ public record NavigationUpdateCurrentEntryOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#pagerevealeventinit">HTML Standard: 7.2.7.5 The PageRevealEvent interface</see>
 /// </remarks>
 /// <param name="ViewTransition">PageRevealEventInit 字典中的 viewTransition 成员，WebIDL 类型为 ViewTransition?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-pagerevealeventinit-viewtransition">HTML Standard: 7.2.7.5 The PageRevealEvent interface</see></param>
-[ECMAScript]
 [Description("@#PageRevealEventInit")]
 public record PageRevealEventInit(
     [property: Description("@#viewTransition")]ViewTransition? ViewTransition = null) : EventInit;
@@ -1687,7 +1599,6 @@ public record PageRevealEventInit(
 /// </remarks>
 /// <param name="Activation">PageSwapEventInit 字典中的 activation 成员，WebIDL 类型为 NavigationActivation?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-pageswapeventinit-activation">HTML Standard: 7.2.7.4 The PageSwapEvent interface</see></param>
 /// <param name="ViewTransition">PageSwapEventInit 字典中的 viewTransition 成员，WebIDL 类型为 ViewTransition?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-pageswapeventinit-viewtransition">HTML Standard: 7.2.7.4 The PageSwapEvent interface</see></param>
-[ECMAScript]
 [Description("@#PageSwapEventInit")]
 public record PageSwapEventInit(
     [property: Description("@#activation")]NavigationActivation? Activation = null,
@@ -1700,7 +1611,6 @@ public record PageSwapEventInit(
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#pagetransitioneventinit">HTML Standard: 7.2.7.6 The PageTransitionEvent interface</see>
 /// </remarks>
 /// <param name="Persisted">PageTransitionEventInit 字典中的 persisted 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: PageTransitionEventInit.persisted</see></param>
-[ECMAScript]
 [Description("@#PageTransitionEventInit")]
 public record PageTransitionEventInit(
     [property: Description("@#persisted")]bool Persisted = false) : EventInit;
@@ -1713,7 +1623,6 @@ public record PageTransitionEventInit(
 /// </remarks>
 /// <param name="State">PopStateEventInit 字典中的 state 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-popstateeventinit-state">HTML Standard: 7.2.7.2 The PopStateEvent interface</see></param>
 /// <param name="HasUAVisualTransition">PopStateEventInit 字典中的 hasUAVisualTransition 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-popstateeventinit-hasuavisualtransition">HTML Standard: 7.2.7.2 The PopStateEvent interface</see></param>
-[ECMAScript]
 [Description("@#PopStateEventInit")]
 public record PopStateEventInit(
     [property: Description("@#state")]object? State = default,
@@ -1726,7 +1635,6 @@ public record PopStateEventInit(
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#windowpostmessageoptions">HTML Standard: 7.2.2 The Window object</see>
 /// </remarks>
 /// <param name="TargetOrigin">A target origin can be specified using the targetOrigin member of options. If not provided, it defaults to &quot;/&quot;. This default restricts the message to same-origin targets only. <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-windowpostmessageoptions-targetorigin">HTML Standard: 7.2.2 The Window object</see></param>
-[ECMAScript]
 [Description("@#WindowPostMessageOptions")]
 public record WindowPostMessageOptions(
     [property: Description("@#targetOrigin")]string? TargetOrigin = default) : StructuredSerializeOptions;
@@ -1738,7 +1646,6 @@ public record WindowPostMessageOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/scripting.html#assignednodesoptions">HTML Standard: 4.12.4 The slot element</see>
 /// </remarks>
 /// <param name="Flatten">AssignedNodesOptions 字典中的 flatten 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: AssignedNodesOptions.flatten</see></param>
-[ECMAScript]
 [Description("@#AssignedNodesOptions")]
 public record AssignedNodesOptions(
     [property: Description("@#flatten")]bool Flatten = false);
@@ -1750,7 +1657,6 @@ public record AssignedNodesOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/server-sent-events.html#eventsourceinit">HTML Standard: 9.2.2 The EventSource interface</see>
 /// </remarks>
 /// <param name="WithCredentials">Setting withCredentials to true will set the credentials mode for connection requests to url to &quot;include&quot;. <see href="https://html.spec.whatwg.org/multipage/server-sent-events.html#dom-eventsourceinit-withcredentials">HTML Standard: 9.2.2 The EventSource interface</see></param>
-[ECMAScript]
 [Description("@#EventSourceInit")]
 public record EventSourceInit(
     [property: Description("@#withCredentials")]bool WithCredentials = false);
@@ -1762,7 +1668,6 @@ public record EventSourceInit(
 /// <see href="https://html.spec.whatwg.org/multipage/web-messaging.html#structuredserializeoptions">HTML Standard: 9.4.4 Message ports</see>
 /// </remarks>
 /// <param name="Transfer">Takes the input value and returns a deep copy by performing the structured clone algorithm. Transferable objects listed in the transfer array are transferred, not just cloned, meaning that they are no longer usable in the input value. <see href="https://html.spec.whatwg.org/multipage/web-messaging.html#dom-structuredserializeoptions-transfer">HTML Standard: 9.4.4 Message ports</see></param>
-[ECMAScript]
 [Description("@#StructuredSerializeOptions")]
 public record StructuredSerializeOptions(
     [property: Description("@#transfer")]object[]? Transfer = default);
@@ -1778,7 +1683,6 @@ public record StructuredSerializeOptions(
 /// <param name="Lineno">ErrorEventInit 字典中的 lineno 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ErrorEventInit.lineno</see></param>
 /// <param name="Colno">ErrorEventInit 字典中的 colno 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ErrorEventInit.colno</see></param>
 /// <param name="Error">ErrorEventInit 字典中的 error 成员，WebIDL 类型为 any。可省略。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: ErrorEventInit.error</see></param>
-[ECMAScript]
 [Description("@#ErrorEventInit")]
 public record ErrorEventInit(
     [property: Description("@#message")]string? Message = default,
@@ -1795,7 +1699,6 @@ public record ErrorEventInit(
 /// </remarks>
 /// <param name="Promise">PromiseRejectionEventInit 字典中的 promise 成员，WebIDL 类型为 object。必须提供该成员。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: PromiseRejectionEventInit.promise</see></param>
 /// <param name="Reason">PromiseRejectionEventInit 字典中的 reason 成员，WebIDL 类型为 any。可省略。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: PromiseRejectionEventInit.reason</see></param>
-[ECMAScript]
 [Description("@#PromiseRejectionEventInit")]
 public record PromiseRejectionEventInit(
     [property: Description("@#promise")]object? Promise = default,
@@ -1812,7 +1715,6 @@ public record PromiseRejectionEventInit(
 /// <param name="NewValue">StorageEventInit 字典中的 newValue 成员，WebIDL 类型为 DOMString?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: StorageEventInit.newValue</see></param>
 /// <param name="Url">StorageEventInit 字典中的 url 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: StorageEventInit.url</see></param>
 /// <param name="StorageArea">StorageEventInit 字典中的 storageArea 成员，WebIDL 类型为 Storage?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: StorageEventInit.storageArea</see></param>
-[ECMAScript]
 [Description("@#StorageEventInit")]
 public record StorageEventInit(
     [property: Description("@#key")]string? Key = null,
@@ -1853,7 +1755,6 @@ public record SharedWorkerOptions(
 /// <param name="Name">Set worker global scope&apos;s name to options[&quot;name&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-name">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
 /// <param name="Type">Set worker global scope&apos;s type to options[&quot;type&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-type">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
 /// <param name="Credentials">Set worker global scope&apos;s credentials to options[&quot;credentials&quot;]. <see href="https://html.spec.whatwg.org/multipage/workers.html#dom-workeroptions-credentials">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see></param>
-[ECMAScript]
 [Description("@#WorkerOptions")]
 public record WorkerOptions(
     [property: Description("@#name")]string? Name = default,
@@ -1867,7 +1768,6 @@ public record WorkerOptions(
 /// <see href="https://html.spec.whatwg.org/multipage/worklets.html#workletoptions">HTML Standard: 11.3.2 The Worklet class</see>
 /// </remarks>
 /// <param name="Credentials">await worklet.addModule(moduleURL[, { credentials }]) <see href="https://html.spec.whatwg.org/multipage/worklets.html#dom-workletoptions-credentials">HTML Standard: 11.3.2 The Worklet class</see></param>
-[ECMAScript]
 [Description("@#WorkletOptions")]
 public record WorkletOptions(
     [property: Description("@#credentials")]RequestCredentials Credentials = RequestCredentials.SameOrigin);
@@ -1882,7 +1782,6 @@ public record WorkletOptions(
 /// <param name="DataFormatPreference">XRDepthStateInit 字典中的 dataFormatPreference 成员，WebIDL 类型为 sequence&lt;XRDepthDataFormat&gt;。必须提供该成员。 <see href="https://immersive-web.github.io/depth-sensing/#dom-xrdepthstateinit-dataformatpreference">WebXR Depth Sensing Module: 2.3 Session configuration</see></param>
 /// <param name="DepthTypeRequest">XRDepthStateInit 字典中的 depthTypeRequest 成员，WebIDL 类型为 sequence&lt;XRDepthType&gt;。可省略。 <see href="https://immersive-web.github.io/depth-sensing/#dom-xrdepthstateinit-depthtyperequest">WebXR Depth Sensing Module: 2.3 Session configuration</see></param>
 /// <param name="MatchDepthView">XRDepthStateInit 字典中的 matchDepthView 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://immersive-web.github.io/depth-sensing/#dom-xrdepthstateinit-matchdepthview">WebXR Depth Sensing Module: 2.3 Session configuration</see></param>
-[ECMAScript]
 [Description("@#XRDepthStateInit")]
 public record XRDepthStateInit(
     [property: Description("@#usagePreference")]XRDepthUsage[]? UsagePreference = default,
@@ -1897,7 +1796,6 @@ public record XRDepthStateInit(
 /// <see href="https://immersive-web.github.io/dom-overlays/#dictdef-xrdomoverlayinit">WebXR DOM Overlays Module: 4 Initialization</see>
 /// </remarks>
 /// <param name="Root">XRDOMOverlayInit 字典中的 root 成员，WebIDL 类型为 Element。必须提供该成员。 <see href="https://immersive-web.github.io/dom-overlays/#dom-xrdomoverlayinit-root">WebXR DOM Overlays Module: WebXR DOM Overlays Module</see></param>
-[ECMAScript]
 [Description("@#XRDOMOverlayInit")]
 public record XRDOMOverlayInit(
     [property: Description("@#root")]Element? Root = default);
@@ -1909,7 +1807,6 @@ public record XRDOMOverlayInit(
 /// <see href="https://immersive-web.github.io/dom-overlays/#dictdef-xrdomoverlaystate">WebXR DOM Overlays Module: WebXR DOM Overlays Module</see>
 /// </remarks>
 /// <param name="Type">XRDOMOverlayState 字典中的 type 成员，WebIDL 类型为 XRDOMOverlayType。可省略。 <see href="https://immersive-web.github.io/dom-overlays/#dom-xrdomoverlaystate-type">WebXR DOM Overlays Module: WebXR DOM Overlays Module</see></param>
-[ECMAScript]
 [Description("@#XRDOMOverlayState")]
 public record XRDOMOverlayState(
     [property: Description("@#type")]XRDOMOverlayType? Type = default);
@@ -1923,7 +1820,6 @@ public record XRDOMOverlayState(
 /// <param name="Space">XRHitTestOptionsInit 字典中的 space 成员，WebIDL 类型为 XRSpace。必须提供该成员。 <see href="https://immersive-web.github.io/hit-test/#dom-xrhittestoptionsinit-space">WebXR Hit Test Module: 3.2 XRHitTestOptionsInit</see></param>
 /// <param name="EntityTypes">XRHitTestOptionsInit 字典中的 entityTypes 成员，WebIDL 类型为 sequence&lt;XRHitTestTrackableType&gt;。可省略。 <see href="https://immersive-web.github.io/hit-test/#dom-xrhittestoptionsinit-entitytypes">WebXR Hit Test Module: WebXR Hit Test Module</see></param>
 /// <param name="OffsetRay">XRHitTestOptionsInit 字典中的 offsetRay 成员，WebIDL 类型为 XRRay。可省略。 <see href="https://immersive-web.github.io/hit-test/#dom-xrhittestoptionsinit-offsetray">WebXR Hit Test Module: WebXR Hit Test Module</see></param>
-[ECMAScript]
 [Description("@#XRHitTestOptionsInit")]
 public record XRHitTestOptionsInit(
     [property: Description("@#space")]XRSpace? Space = default,
@@ -1940,7 +1836,6 @@ public record XRHitTestOptionsInit(
 /// <param name="Y">XRRayDirectionInit 字典中的 y 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://immersive-web.github.io/hit-test/#dom-xrraydirectioninit-y">WebXR Hit Test Module: 9.1 XRRayDirectionInit</see></param>
 /// <param name="Z">XRRayDirectionInit 字典中的 z 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：-1。 <see href="https://immersive-web.github.io/hit-test/#dom-xrraydirectioninit-z">WebXR Hit Test Module: 9.1 XRRayDirectionInit</see></param>
 /// <param name="W">XRRayDirectionInit 字典中的 w 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://immersive-web.github.io/hit-test/#dom-xrraydirectioninit-w">WebXR Hit Test Module: 9.1 XRRayDirectionInit</see></param>
-[ECMAScript]
 [Description("@#XRRayDirectionInit")]
 public record XRRayDirectionInit(
     [property: Description("@#x")]double X = 0d,
@@ -1957,7 +1852,6 @@ public record XRRayDirectionInit(
 /// <param name="Profile">XRTransientInputHitTestOptionsInit 字典中的 profile 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://immersive-web.github.io/hit-test/#dom-xrtransientinputhittestoptionsinit-profile">WebXR Hit Test Module: 3.3 XRTransientInputHitTestOptionsInit</see></param>
 /// <param name="EntityTypes">XRTransientInputHitTestOptionsInit 字典中的 entityTypes 成员，WebIDL 类型为 sequence&lt;XRHitTestTrackableType&gt;。可省略。 <see href="https://immersive-web.github.io/hit-test/#dom-xrtransientinputhittestoptionsinit-entitytypes">WebXR Hit Test Module: WebXR Hit Test Module</see></param>
 /// <param name="OffsetRay">XRTransientInputHitTestOptionsInit 字典中的 offsetRay 成员，WebIDL 类型为 XRRay。可省略。 <see href="https://immersive-web.github.io/hit-test/#dom-xrtransientinputhittestoptionsinit-offsetray">WebXR Hit Test Module: WebXR Hit Test Module</see></param>
-[ECMAScript]
 [Description("@#XRTransientInputHitTestOptionsInit")]
 public record XRTransientInputHitTestOptionsInit(
     [property: Description("@#profile")]string? Profile = default,
@@ -1971,7 +1865,6 @@ public record XRTransientInputHitTestOptionsInit(
 /// <see href="https://immersive-web.github.io/layers/#dictdef-xrcubelayerinit">WebXR Layers API Level 1: 6.8 XRCubeLayerInit</see>
 /// </remarks>
 /// <param name="Orientation">If init&apos;s orientation is set <see href="https://immersive-web.github.io/layers/#dom-xrcubelayerinit-orientation">WebXR Layers API Level 1: 6.8 XRCubeLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRCubeLayerInit")]
 public record XRCubeLayerInit(
     [property: Description("@#orientation")]DOMPointReadOnly? Orientation = default) : XRLayerInit;
@@ -1986,7 +1879,6 @@ public record XRCubeLayerInit(
 /// <param name="Radius">XRCylinderLayerInit 字典中的 radius 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：2.0。 <see href="https://immersive-web.github.io/layers/#dom-xrcylinderlayerinit-radius">WebXR Layers API Level 1: 6.6 XRCylinderLayerInit</see></param>
 /// <param name="CentralAngle">XRCylinderLayerInit 字典中的 centralAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0.78539。 <see href="https://immersive-web.github.io/layers/#dom-xrcylinderlayerinit-centralangle">WebXR Layers API Level 1: 6.6 XRCylinderLayerInit</see></param>
 /// <param name="AspectRatio">XRCylinderLayerInit 字典中的 aspectRatio 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：2.0。 <see href="https://immersive-web.github.io/layers/#dom-xrcylinderlayerinit-aspectratio">WebXR Layers API Level 1: 6.6 XRCylinderLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRCylinderLayerInit")]
 public record XRCylinderLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2005,7 +1897,6 @@ public record XRCylinderLayerInit(
 /// <param name="CentralHorizontalAngle">XREquirectLayerInit 字典中的 centralHorizontalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：6.28318。 <see href="https://immersive-web.github.io/layers/#dom-xrequirectlayerinit-centralhorizontalangle">WebXR Layers API Level 1: 6.7 XREquirectLayerInit</see></param>
 /// <param name="UpperVerticalAngle">XREquirectLayerInit 字典中的 upperVerticalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.570795。 <see href="https://immersive-web.github.io/layers/#dom-xrequirectlayerinit-upperverticalangle">WebXR Layers API Level 1: 6.7 XREquirectLayerInit</see></param>
 /// <param name="LowerVerticalAngle">XREquirectLayerInit 字典中的 lowerVerticalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：-1.570795。 <see href="https://immersive-web.github.io/layers/#dom-xrequirectlayerinit-lowerverticalangle">WebXR Layers API Level 1: 6.7 XREquirectLayerInit</see></param>
-[ECMAScript]
 [Description("@#XREquirectLayerInit")]
 public record XREquirectLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2021,7 +1912,6 @@ public record XREquirectLayerInit(
 /// <see href="https://immersive-web.github.io/layers/#dictdef-xrlayereventinit">WebXR Layers API Level 1: 8.1 XRLayerEvent</see>
 /// </remarks>
 /// <param name="Layer">XRLayerEventInit 字典中的 layer 成员，WebIDL 类型为 XRLayer。必须提供该成员。 <see href="https://immersive-web.github.io/layers/#dom-xrlayereventinit-layer">WebXR Layers API Level 1: 8.1 XRLayerEvent</see></param>
-[ECMAScript]
 [Description("@#XRLayerEventInit")]
 public record XRLayerEventInit(
     [property: Description("@#layer")]XRLayer? Layer = default) : EventInit;
@@ -2042,7 +1932,6 @@ public record XRLayerEventInit(
 /// <param name="Layout">Return array and abort these steps. 1. If layer&apos;s layout is stereo-left-right, initialize array with 1 new instance of an opaque texture in the relevant realm of context created as a textureType texture using context and init&apos;s colorFormat, mipLevels, double of viewPixelWidth and viewPixelHeight values. 1. If layer&apos;s layout is stereo-top-bottom, initialize array with 1 new instance of an opaque texture in the relevant realm of context created as a textureType texture using context and init&apos;s colorFormat, mipLevels, viewPixelWidth and double of viewPixelHeight values. 1. return array. <see href="https://immersive-web.github.io/layers/#dom-xrlayerinit-layout">WebXR Layers API Level 1: 6.4 XRLayerInit</see></param>
 /// <param name="IsStatic">Let layer&apos;s transform be a new XRRigidTransform in the relevant realm of layer initialized with a DOMPointInit position of { x: 0.0, y: 0.0, z: 0.0, w: 1.0 }. 1. Initialize layer&apos;s XRCompositionLayer/isStatic to init&apos;s isStatic <see href="https://immersive-web.github.io/layers/#dom-xrlayerinit-isstatic">WebXR Layers API Level 1: 6.4 XRLayerInit</see></param>
 /// <param name="ClearOnAccess">XRLayerInit 字典中的 clearOnAccess 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://immersive-web.github.io/layers/#dom-xrlayerinit-clearonaccess">WebXR Layers API Level 1: 6.4 XRLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRLayerInit")]
 public record XRLayerInit(
     [property: Description("@#space")]XRSpace? Space = default,
@@ -2066,7 +1955,6 @@ public record XRLayerInit(
 /// <param name="Radius">XRMediaCylinderLayerInit 字典中的 radius 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：2.0。 <see href="https://immersive-web.github.io/layers/#dom-xrmediacylinderlayerinit-radius">WebXR Layers API Level 1: 7.3 XRMediaCylinderLayerInit</see></param>
 /// <param name="CentralAngle">XRMediaCylinderLayerInit 字典中的 centralAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0.78539。 <see href="https://immersive-web.github.io/layers/#dom-xrmediacylinderlayerinit-centralangle">WebXR Layers API Level 1: 7.3 XRMediaCylinderLayerInit</see></param>
 /// <param name="AspectRatio">XRMediaCylinderLayerInit 字典中的 aspectRatio 成员，WebIDL 类型为 float?。可省略。 <see href="https://immersive-web.github.io/layers/#dom-xrmediacylinderlayerinit-aspectratio">WebXR Layers API Level 1: 7.3 XRMediaCylinderLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRMediaCylinderLayerInit")]
 public record XRMediaCylinderLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2085,7 +1973,6 @@ public record XRMediaCylinderLayerInit(
 /// <param name="CentralHorizontalAngle">XRMediaEquirectLayerInit 字典中的 centralHorizontalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：6.28318。 <see href="https://immersive-web.github.io/layers/#dom-xrmediaequirectlayerinit-centralhorizontalangle">WebXR Layers API Level 1: 7.4 XRMediaEquirectLayerInit</see></param>
 /// <param name="UpperVerticalAngle">XRMediaEquirectLayerInit 字典中的 upperVerticalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.570795。 <see href="https://immersive-web.github.io/layers/#dom-xrmediaequirectlayerinit-upperverticalangle">WebXR Layers API Level 1: 7.4 XRMediaEquirectLayerInit</see></param>
 /// <param name="LowerVerticalAngle">XRMediaEquirectLayerInit 字典中的 lowerVerticalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：-1.570795。 <see href="https://immersive-web.github.io/layers/#dom-xrmediaequirectlayerinit-lowerverticalangle">WebXR Layers API Level 1: 7.4 XRMediaEquirectLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRMediaEquirectLayerInit")]
 public record XRMediaEquirectLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2103,7 +1990,6 @@ public record XRMediaEquirectLayerInit(
 /// <param name="Space">XRMediaLayerInit 字典中的 space 成员，WebIDL 类型为 XRSpace。必须提供该成员。 <see href="https://immersive-web.github.io/layers/#dom-xrmedialayerinit-space">WebXR Layers API Level 1: 7.1 XRMediaLayerInit</see></param>
 /// <param name="Layout">XRMediaLayerInit 字典中的 layout 成员，WebIDL 类型为 XRLayerLayout。可省略。WebIDL 默认值：mono。 <see href="https://immersive-web.github.io/layers/#dom-xrmedialayerinit-layout">WebXR Layers API Level 1: 7.1 XRMediaLayerInit</see></param>
 /// <param name="InvertStereo">XRMediaLayerInit 字典中的 invertStereo 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://immersive-web.github.io/layers/#dom-xrmedialayerinit-invertstereo">WebXR Layers API Level 1: 7.1 XRMediaLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRMediaLayerInit")]
 public record XRMediaLayerInit(
     [property: Description("@#space")]XRSpace? Space = default,
@@ -2119,7 +2005,6 @@ public record XRMediaLayerInit(
 /// <param name="Transform">XRMediaQuadLayerInit 字典中的 transform 成员，WebIDL 类型为 XRRigidTransform?。可省略。 <see href="https://immersive-web.github.io/layers/#dom-xrmediaquadlayerinit-transform">WebXR Layers API Level 1: 7.2 XRMediaQuadLayerInit</see></param>
 /// <param name="Width">XRMediaQuadLayerInit 字典中的 width 成员，WebIDL 类型为 float?。可省略。 <see href="https://immersive-web.github.io/layers/#dom-xrmediaquadlayerinit-width">WebXR Layers API Level 1: 7.2 XRMediaQuadLayerInit</see></param>
 /// <param name="Height">XRMediaQuadLayerInit 字典中的 height 成员，WebIDL 类型为 float?。可省略。 <see href="https://immersive-web.github.io/layers/#dom-xrmediaquadlayerinit-height">WebXR Layers API Level 1: 7.2 XRMediaQuadLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRMediaQuadLayerInit")]
 public record XRMediaQuadLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2137,7 +2022,6 @@ public record XRMediaQuadLayerInit(
 /// <param name="DepthFormat">If init&apos;s depthFormat is false and the XR Compositor will make use of depth values <see href="https://immersive-web.github.io/layers/#dom-xrprojectionlayerinit-depthformat">WebXR Layers API Level 1: 6.3 XRProjectionLayerInit</see></param>
 /// <param name="ScaleFactor">Initialize layer&apos;s ignoreDepthValues to true 1. Initialize layer&apos;s fixedFoveation to 0. 1. let layout be the result of determine the layout attributedetermining the layout attribute with init&apos;s textureType, context| and &quot;default&quot;. 1. Let maximum scalefactor be the result of determine the maximum scalefactordetermining the maximum scalefactor with session, context and layout|. 1. If scaleFactor is larger than maximum scalefactor, set scaleFactor to maximum scalefactor. 1. Initialize layer&apos;s layout to layout. 1. Initialize layer&apos;s needsRedraw to true. 1.... <see href="https://immersive-web.github.io/layers/#dom-xrprojectionlayerinit-scalefactor">WebXR Layers API Level 1: 6.3 XRProjectionLayerInit</see></param>
 /// <param name="ClearOnAccess">XRProjectionLayerInit 字典中的 clearOnAccess 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://immersive-web.github.io/layers/#dom-xrprojectionlayerinit-clearonaccess">WebXR Layers API Level 1: 6.3 XRProjectionLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRProjectionLayerInit")]
 public record XRProjectionLayerInit(
     [property: Description("@#textureType")]XRTextureType TextureType = XRTextureType.Texture,
@@ -2155,7 +2039,6 @@ public record XRProjectionLayerInit(
 /// <param name="Transform">If init&apos;s transform is set <see href="https://immersive-web.github.io/layers/#dom-xrquadlayerinit-transform">WebXR Layers API Level 1: 6.5 XRQuadLayerInit</see></param>
 /// <param name="Width">XRQuadLayerInit 字典中的 width 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.0。 <see href="https://immersive-web.github.io/layers/#dom-xrquadlayerinit-width">WebXR Layers API Level 1: 6.5 XRQuadLayerInit</see></param>
 /// <param name="Height">XRQuadLayerInit 字典中的 height 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.0。 <see href="https://immersive-web.github.io/layers/#dom-xrquadlayerinit-height">WebXR Layers API Level 1: 6.5 XRQuadLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRQuadLayerInit")]
 public record XRQuadLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2169,7 +2052,6 @@ public record XRQuadLayerInit(
 /// <see href="https://immersive-web.github.io/lighting-estimation/#dictdef-xrlightprobeinit">WebXR Lighting Estimation API Level 1: 3.2 XRSession</see>
 /// </remarks>
 /// <param name="ReflectionFormat">XRLightProbeInit 字典中的 reflectionFormat 成员，WebIDL 类型为 XRReflectionFormat。可省略。WebIDL 默认值：srgba8。 <see href="https://immersive-web.github.io/lighting-estimation/#dom-xrlightprobeinit-reflectionformat">WebXR Lighting Estimation API Level 1: 3.2 XRSession</see></param>
-[ECMAScript]
 [Description("@#XRLightProbeInit")]
 public record XRLightProbeInit(
     [property: Description("@#reflectionFormat")]XRReflectionFormat ReflectionFormat = XRReflectionFormat.Srgba8);
@@ -2181,7 +2063,6 @@ public record XRLightProbeInit(
 /// <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dictdef-xrgpucubelayerinit">WebXR/WebGPU Binding Module - Level 1: 5.8 XRGPUCubeLayerInit</see>
 /// </remarks>
 /// <param name="Orientation">XRGPUCubeLayerInit 字典中的 orientation 成员，WebIDL 类型为 DOMPointReadOnly?。可省略。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucubelayerinit-orientation">WebXR/WebGPU Binding Module - Level 1: 5.8 XRGPUCubeLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRGPUCubeLayerInit")]
 public record XRGPUCubeLayerInit(
     [property: Description("@#orientation")]DOMPointReadOnly? Orientation = default) : XRGPULayerInit;
@@ -2196,7 +2077,6 @@ public record XRGPUCubeLayerInit(
 /// <param name="Radius">XRGPUCylinderLayerInit 字典中的 radius 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：2.0。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-radius">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
 /// <param name="CentralAngle">XRGPUCylinderLayerInit 字典中的 centralAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0.78539。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-centralangle">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
 /// <param name="AspectRatio">XRGPUCylinderLayerInit 字典中的 aspectRatio 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：2.0。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpucylinderlayerinit-aspectratio">WebXR/WebGPU Binding Module - Level 1: 5.6 XRGPUCylinderLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRGPUCylinderLayerInit")]
 public record XRGPUCylinderLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2215,7 +2095,6 @@ public record XRGPUCylinderLayerInit(
 /// <param name="CentralHorizontalAngle">XRGPUEquirectLayerInit 字典中的 centralHorizontalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：6.28318。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-centralhorizontalangle">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
 /// <param name="UpperVerticalAngle">XRGPUEquirectLayerInit 字典中的 upperVerticalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.570795。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-upperverticalangle">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
 /// <param name="LowerVerticalAngle">XRGPUEquirectLayerInit 字典中的 lowerVerticalAngle 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：-1.570795。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuequirectlayerinit-lowerverticalangle">WebXR/WebGPU Binding Module - Level 1: 5.7 XRGPUEquirectLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRGPUEquirectLayerInit")]
 public record XRGPUEquirectLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2239,7 +2118,6 @@ public record XRGPUEquirectLayerInit(
 /// <param name="ViewPixelHeight">XRGPULayerInit 字典中的 viewPixelHeight 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-viewpixelheight">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
 /// <param name="Layout">XRGPULayerInit 字典中的 layout 成员，WebIDL 类型为 XRLayerLayout。可省略。WebIDL 默认值：mono。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-layout">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
 /// <param name="IsStatic">XRGPULayerInit 字典中的 isStatic 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpulayerinit-isstatic">WebXR/WebGPU Binding Module - Level 1: 5.4 XRGPULayerInit</see></param>
-[ECMAScript]
 [Description("@#XRGPULayerInit")]
 public record XRGPULayerInit(
     [property: Description("@#colorFormat")]GPUTextureFormat? ColorFormat = default,
@@ -2262,7 +2140,6 @@ public record XRGPULayerInit(
 /// <param name="DepthStencilFormat">XRGPUProjectionLayerInit 字典中的 depthStencilFormat 成员，WebIDL 类型为 GPUTextureFormat?。可省略。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-depthstencilformat">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
 /// <param name="TextureUsage">XRGPUProjectionLayerInit 字典中的 textureUsage 成员，WebIDL 类型为 GPUTextureUsageFlags。可省略。WebIDL 默认值：0x10。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-textureusage">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
 /// <param name="ScaleFactor">XRGPUProjectionLayerInit 字典中的 scaleFactor 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1.0。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuprojectionlayerinit-scalefactor">WebXR/WebGPU Binding Module - Level 1: 5.3 XRGPUProjectionLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRGPUProjectionLayerInit")]
 public record XRGPUProjectionLayerInit(
     [property: Description("@#colorFormat")]GPUTextureFormat? ColorFormat = default,
@@ -2279,7 +2156,6 @@ public record XRGPUProjectionLayerInit(
 /// <param name="Transform">XRGPUQuadLayerInit 字典中的 transform 成员，WebIDL 类型为 XRRigidTransform?。可省略。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-transform">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see></param>
 /// <param name="Width">XRGPUQuadLayerInit 字典中的 width 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.0。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-width">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see></param>
 /// <param name="Height">XRGPUQuadLayerInit 字典中的 height 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.0。 <see href="https://immersive-web.github.io/webxr-webgpu-binding/#dom-xrgpuquadlayerinit-height">WebXR/WebGPU Binding Module - Level 1: 5.5 XRGPUQuadLayerInit</see></param>
-[ECMAScript]
 [Description("@#XRGPUQuadLayerInit")]
 public record XRGPUQuadLayerInit(
     [property: Description("@#transform")]XRRigidTransform? Transform = default,
@@ -2294,7 +2170,6 @@ public record XRGPUQuadLayerInit(
 /// </remarks>
 /// <param name="Frame">XRInputSourceEventInit 字典中的 frame 成员，WebIDL 类型为 XRFrame。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceeventinit-frame">WebXR Device API: 12.2 XRInputSourceEvent</see></param>
 /// <param name="InputSource">XRInputSourceEventInit 字典中的 inputSource 成员，WebIDL 类型为 XRInputSource。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceeventinit-inputsource">WebXR Device API: 12.2 XRInputSourceEvent</see></param>
-[ECMAScript]
 [Description("@#XRInputSourceEventInit")]
 public record XRInputSourceEventInit(
     [property: Description("@#frame")]XRFrame? Frame = default,
@@ -2309,7 +2184,6 @@ public record XRInputSourceEventInit(
 /// <param name="Session">XRInputSourcesChangeEventInit 字典中的 session 成员，WebIDL 类型为 XRSession。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceschangeeventinit-session">WebXR Device API: 12.3 XRInputSourcesChangeEvent</see></param>
 /// <param name="Added">XRInputSourcesChangeEventInit 字典中的 added 成员，WebIDL 类型为 sequence&lt;XRInputSource&gt;。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceschangeeventinit-added">WebXR Device API: 12.3 XRInputSourcesChangeEvent</see></param>
 /// <param name="Removed">XRInputSourcesChangeEventInit 字典中的 removed 成员，WebIDL 类型为 sequence&lt;XRInputSource&gt;。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrinputsourceschangeeventinit-removed">WebXR Device API: 12.3 XRInputSourcesChangeEvent</see></param>
-[ECMAScript]
 [Description("@#XRInputSourcesChangeEventInit")]
 public record XRInputSourcesChangeEventInit(
     [property: Description("@#session")]XRSession? Session = default,
@@ -2325,7 +2199,6 @@ public record XRInputSourcesChangeEventInit(
 /// <param name="Mode">XRPermissionDescriptor 字典中的 mode 成员，WebIDL 类型为 XRSessionMode。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrpermissiondescriptor-mode">WebXR Device API: 14.2 Permissions API Integration</see></param>
 /// <param name="RequiredFeatures">XRPermissionDescriptor 字典中的 requiredFeatures 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrpermissiondescriptor-requiredfeatures">WebXR Device API: 14.2 Permissions API Integration</see></param>
 /// <param name="OptionalFeatures">XRPermissionDescriptor 字典中的 optionalFeatures 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrpermissiondescriptor-optionalfeatures">WebXR Device API: 14.2 Permissions API Integration</see></param>
-[ECMAScript]
 [Description("@#XRPermissionDescriptor")]
 public record XRPermissionDescriptor(
     [property: Description("@#mode")]XRSessionMode? Mode = default,
@@ -2340,7 +2213,6 @@ public record XRPermissionDescriptor(
 /// </remarks>
 /// <param name="ReferenceSpace">XRReferenceSpaceEventInit 字典中的 referenceSpace 成员，WebIDL 类型为 XRReferenceSpace。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrreferencespaceeventinit-referencespace">WebXR Device API: 12.4 XRReferenceSpaceEvent</see></param>
 /// <param name="Transform">XRReferenceSpaceEventInit 字典中的 transform 成员，WebIDL 类型为 XRRigidTransform?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://immersive-web.github.io/webxr/#dom-xrreferencespaceeventinit-transform">WebXR Device API: 12.4 XRReferenceSpaceEvent</see></param>
-[ECMAScript]
 [Description("@#XRReferenceSpaceEventInit")]
 public record XRReferenceSpaceEventInit(
     [property: Description("@#referenceSpace")]XRReferenceSpace? ReferenceSpace = default,
@@ -2358,7 +2230,6 @@ public record XRReferenceSpaceEventInit(
 /// <param name="InlineVerticalFieldOfView">XRRenderStateInit 字典中的 inlineVerticalFieldOfView 成员，WebIDL 类型为 double。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrrenderstateinit-inlineverticalfieldofview">WebXR Device API: 4.2 XRRenderState</see></param>
 /// <param name="BaseLayer">XRRenderStateInit 字典中的 baseLayer 成员，WebIDL 类型为 XRWebGLLayer?。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrrenderstateinit-baselayer">WebXR Device API: 4.2 XRRenderState</see></param>
 /// <param name="Layers">XRRenderStateInit 字典中的 layers 成员，WebIDL 类型为 sequence&lt;XRLayer&gt;?。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrrenderstateinit-layers">WebXR Device API: 4.2 XRRenderState</see></param>
-[ECMAScript]
 [Description("@#XRRenderStateInit")]
 public record XRRenderStateInit(
     [property: Description("@#depthNear")]double DepthNear = default,
@@ -2375,7 +2246,6 @@ public record XRRenderStateInit(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRSessionEvent/XRSessionEvent">MDN Web Docs: XRSessionEventInit</see>
 /// </remarks>
 /// <param name="Session">XRSessionEventInit 字典中的 session 成员，WebIDL 类型为 XRSession。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrsessioneventinit-session">WebXR Device API: 12.1 XRSessionEvent</see></param>
-[ECMAScript]
 [Description("@#XRSessionEventInit")]
 public record XRSessionEventInit(
     [property: Description("@#session")]XRSession? Session = default) : EventInit;
@@ -2419,7 +2289,6 @@ public record XRSessionInit(
 /// <see href="https://immersive-web.github.io/webxr/#dictdef-xrsessionsupportedpermissiondescriptor">WebXR Device API: 13.8.1 Fingerprinting considerations of isSessionSupported()</see>
 /// </remarks>
 /// <param name="Mode">XRSessionSupportedPermissionDescriptor 字典中的 mode 成员，WebIDL 类型为 XRSessionMode。可省略。 <see href="https://immersive-web.github.io/webxr/#dom-xrsessionsupportedpermissiondescriptor-mode">WebXR Device API: 13.8.1 Fingerprinting considerations of isSessionSupported()</see></param>
-[ECMAScript]
 [Description("@#XRSessionSupportedPermissionDescriptor")]
 public record XRSessionSupportedPermissionDescriptor(
     [property: Description("@#mode")]XRSessionMode? Mode = default) : PermissionDescriptor;
@@ -2435,7 +2304,6 @@ public record XRSessionSupportedPermissionDescriptor(
 /// <param name="Index">XRVisibilityMaskChangeEventInit 字典中的 index 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrvisibilitymaskchangeeventinit-index">WebXR Device API: 12.5 XRVisibilityMaskChangeEvent</see></param>
 /// <param name="Vertices">XRVisibilityMaskChangeEventInit 字典中的 vertices 成员，WebIDL 类型为 Float32Array。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrvisibilitymaskchangeeventinit-vertices">WebXR Device API: 12.5 XRVisibilityMaskChangeEvent</see></param>
 /// <param name="Indices">XRVisibilityMaskChangeEventInit 字典中的 indices 成员，WebIDL 类型为 Uint32Array。必须提供该成员。 <see href="https://immersive-web.github.io/webxr/#dom-xrvisibilitymaskchangeeventinit-indices">WebXR Device API: 12.5 XRVisibilityMaskChangeEvent</see></param>
-[ECMAScript]
 [Description("@#XRVisibilityMaskChangeEventInit")]
 public record XRVisibilityMaskChangeEventInit(
     [property: Description("@#session")]XRSession? Session = default,
@@ -2456,7 +2324,6 @@ public record XRVisibilityMaskChangeEventInit(
 /// <param name="Alpha">XRWebGLLayerInit 字典中的 alpha 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://immersive-web.github.io/webxr/#dom-xrwebgllayerinit-alpha">WebXR Device API: 11.2 XRWebGLLayer</see></param>
 /// <param name="IgnoreDepthValues">XRWebGLLayerInit 字典中的 ignoreDepthValues 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://immersive-web.github.io/webxr/#dom-xrwebgllayerinit-ignoredepthvalues">WebXR Device API: 11.2 XRWebGLLayer</see></param>
 /// <param name="FramebufferScaleFactor">XRWebGLLayerInit 字典中的 framebufferScaleFactor 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1.0。 <see href="https://immersive-web.github.io/webxr/#dom-xrwebgllayerinit-framebufferscalefactor">WebXR Device API: 11.2 XRWebGLLayer</see></param>
-[ECMAScript]
 [Description("@#XRWebGLLayerInit")]
 public record XRWebGLLayerInit(
     [property: Description("@#antialias")]bool Antialias = false,
@@ -2473,7 +2340,6 @@ public record XRWebGLLayerInit(
 /// <see href="https://notifications.spec.whatwg.org/#dictdef-getnotificationoptions">Notifications API Standard: 4 Service worker API</see>
 /// </remarks>
 /// <param name="Tag">Let tag be filter[&quot;tag&quot;]. <see href="https://notifications.spec.whatwg.org/#dom-getnotificationoptions-tag">Notifications API Standard: 4 Service worker API</see></param>
-[ECMAScript]
 [Description("@#GetNotificationOptions")]
 public record GetNotificationOptions(
     [property: Description("@#tag")]string? Tag = default);
@@ -2488,7 +2354,6 @@ public record GetNotificationOptions(
 /// <param name="Title">Set action&apos;s title to entry[&quot;title&quot;]. <see href="https://notifications.spec.whatwg.org/#dom-notificationaction-title">Notifications API Standard: 3 API</see></param>
 /// <param name="Navigate">If entry[&quot;navigate&quot;] exists, then parse it using baseURL, and if that does not return failure, set action&apos;s navigation URL to the return value. (Otherwise action&apos;s navigation URL remains null.) <see href="https://notifications.spec.whatwg.org/#dom-notificationaction-navigate">Notifications API Standard: 3 API</see></param>
 /// <param name="Icon">icon resource <see href="https://notifications.spec.whatwg.org/#dom-notificationaction-icon">Notifications API Standard: 3 API</see></param>
-[ECMAScript]
 [Description("@#NotificationAction")]
 public record NotificationAction(
     [property: Description("@#action")]string? Action = default,
@@ -2504,7 +2369,6 @@ public record NotificationAction(
 /// </remarks>
 /// <param name="Notification">NotificationEventInit 字典中的 notification 成员，WebIDL 类型为 Notification。必须提供该成员。 <see href="https://notifications.spec.whatwg.org/#dom-notificationeventinit-notification">Notifications API Standard: 4 Service worker API</see></param>
 /// <param name="Action">NotificationEventInit 字典中的 action 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://notifications.spec.whatwg.org/#dom-notificationeventinit-action">Notifications API Standard: 4 Service worker API</see></param>
-[ECMAScript]
 [Description("@#NotificationEventInit")]
 public record NotificationEventInit(
     [property: Description("@#notification")]Notification? Notification = default,
@@ -2531,7 +2395,6 @@ public record NotificationEventInit(
 /// <param name="RequireInteraction">Set notification&apos;s require interaction preference to options[&quot;requireInteraction&quot;]. <see href="https://notifications.spec.whatwg.org/#dom-notificationoptions-requireinteraction">Notifications API Standard: 3 API</see></param>
 /// <param name="Data">Set notification&apos;s data to StructuredSerializeForStorage(options[&quot;data&quot;]). <see href="https://notifications.spec.whatwg.org/#dom-notificationoptions-data">Notifications API Standard: 3 API</see></param>
 /// <param name="Actions">NotificationOptions 字典中的 actions 成员，WebIDL 类型为 sequence&lt;NotificationAction&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://notifications.spec.whatwg.org/#dom-notificationoptions-actions">Notifications API Standard: 3 API</see></param>
-[ECMAScript]
 [Description("@#NotificationOptions")]
 public record NotificationOptions(
     [property: Description("@#dir")]NotificationDirection Dir = NotificationDirection.Auto,
@@ -2569,7 +2432,6 @@ public record NotificationOptions(
 /// <param name="RevokeObjectURL">StorageAccessTypes 字典中的 revokeObjectURL 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://privacycg.github.io/saa-non-cookie-storage/#dom-storageaccesstypes-revokeobjecturl">Extending Storage Access API (SAA) to non-cookie storage: 2.1 Changes to Document</see></param>
 /// <param name="BroadcastChannel">StorageAccessTypes 字典中的 BroadcastChannel 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://privacycg.github.io/saa-non-cookie-storage/#dom-storageaccesstypes-broadcastchannel">Extending Storage Access API (SAA) to non-cookie storage: 2.1 Changes to Document</see></param>
 /// <param name="SharedWorker">StorageAccessTypes 字典中的 SharedWorker 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://privacycg.github.io/saa-non-cookie-storage/#dom-storageaccesstypes-sharedworker">Extending Storage Access API (SAA) to non-cookie storage: 2.1 Changes to Document</see></param>
-[ECMAScript]
 [Description("@#StorageAccessTypes")]
 public record StorageAccessTypes(
     [property: Description("@#all")]bool All = false,
@@ -2594,7 +2456,6 @@ public record StorageAccessTypes(
 /// </remarks>
 /// <param name="HighWaterMark">QueuingStrategy 字典中的 highWaterMark 成员，WebIDL 类型为 unrestricted double。可省略。 <see href="https://streams.spec.whatwg.org/#dom-queuingstrategy-highwatermark">Streams Standard: 7.1 The queuing strategy API</see></param>
 /// <param name="Size">We cannot declare the underlyingSource argument as having the UnderlyingSource type directly, because doing so would lose the reference to the original object. We need to retain the object so we can invoke the various methods on it. 1. Perform ! [$InitializeReadableStream$](this). 1. If underlyingSourceDict[&quot;type&quot;] is &quot;bytes&quot;: 1. If strategy[&quot;size&quot;] map/exists, throw a RangeError exception. 1. Let highWaterMark be ? [$ExtractHighWaterMark$](strategy, 0). 1. Perform ? [$SetUpReadableByteStreamControllerFromUnderlyingSource$](this, underlyingSource, underlyingSourceDict, highWaterMark). 1. Otherwise, 1.... <see href="https://streams.spec.whatwg.org/#dom-queuingstrategy-size">Streams Standard: 7.1 The queuing strategy API</see></param>
-[ECMAScript]
 [Description("@#QueuingStrategy")]
 public record QueuingStrategy(
     [property: Description("@#highWaterMark")]double HighWaterMark = default,
@@ -2607,7 +2468,6 @@ public record QueuingStrategy(
 /// <see href="https://streams.spec.whatwg.org/#dictdef-queuingstrategyinit">Streams Standard: 7.1 The queuing strategy API</see>
 /// </remarks>
 /// <param name="HighWaterMark">QueuingStrategyInit 字典中的 highWaterMark 成员，WebIDL 类型为 unrestricted double。必须提供该成员。 <see href="https://streams.spec.whatwg.org/#dom-queuingstrategyinit-highwatermark">Streams Standard: 7.1 The queuing strategy API</see></param>
-[ECMAScript]
 [Description("@#QueuingStrategyInit")]
 public record QueuingStrategyInit(
     [property: Description("@#highWaterMark")]double HighWaterMark = default);
@@ -2619,7 +2479,6 @@ public record QueuingStrategyInit(
 /// <see href="https://streams.spec.whatwg.org/#dictdef-readablestreambyobreaderreadoptions">Streams Standard: 4.5.1 Interface definition</see>
 /// </remarks>
 /// <param name="Min">{ value, done } = await reader.read(view[, { min }]) <see href="https://streams.spec.whatwg.org/#dom-readablestreambyobreaderreadoptions-min">Streams Standard: 4.5.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#ReadableStreamBYOBReaderReadOptions")]
 public record ReadableStreamBYOBReaderReadOptions(
     [property: Description("@#min")]Number? Min = default);
@@ -2631,7 +2490,6 @@ public record ReadableStreamBYOBReaderReadOptions(
 /// <see href="https://streams.spec.whatwg.org/#dictdef-readablestreamgetreaderoptions">Streams Standard: 4.2.1 Interface definition</see>
 /// </remarks>
 /// <param name="Mode">This is equivalent to calling stream.getReader({ mode: &quot;byob&quot; }). <see href="https://streams.spec.whatwg.org/#dom-readablestreamgetreaderoptions-mode">Streams Standard: 4.2.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#ReadableStreamGetReaderOptions")]
 public record ReadableStreamGetReaderOptions(
     [property: Description("@#mode")]ReadableStreamReaderMode? Mode = default);
@@ -2643,7 +2501,6 @@ public record ReadableStreamGetReaderOptions(
 /// <see href="https://streams.spec.whatwg.org/#dictdef-readablestreamiteratoroptions">Streams Standard: 4.2.1 Interface definition</see>
 /// </remarks>
 /// <param name="PreventCancel">for await (const chunk of stream.values({ preventCancel: true })) { ... } <see href="https://streams.spec.whatwg.org/#dom-readablestreamiteratoroptions-preventcancel">Streams Standard: 4.2.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#ReadableStreamIteratorOptions")]
 public record ReadableStreamIteratorOptions(
     [property: Description("@#preventCancel")]bool PreventCancel = false);
@@ -2656,7 +2513,6 @@ public record ReadableStreamIteratorOptions(
 /// </remarks>
 /// <param name="Value">ReadableStreamReadResult 字典中的 value 成员，WebIDL 类型为 any。可省略。 <see href="https://streams.spec.whatwg.org/#dom-readablestreamreadresult-value">Streams Standard: 4.4.1 Interface definition</see></param>
 /// <param name="Done">ReadableStreamReadResult 字典中的 done 成员，WebIDL 类型为 boolean。可省略。 <see href="https://streams.spec.whatwg.org/#dom-readablestreamreadresult-done">Streams Standard: 4.4.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#ReadableStreamReadResult")]
 public record ReadableStreamReadResult(
     [property: Description("@#value")]object? Value = default,
@@ -2670,7 +2526,6 @@ public record ReadableStreamReadResult(
 /// </remarks>
 /// <param name="Readable">ReadableWritablePair 字典中的 readable 成员，WebIDL 类型为 ReadableStream。必须提供该成员。 <see href="https://streams.spec.whatwg.org/#dom-readablewritablepair-readable">Streams Standard: 4.2.1 Interface definition</see></param>
 /// <param name="Writable">ReadableWritablePair 字典中的 writable 成员，WebIDL 类型为 WritableStream。必须提供该成员。 <see href="https://streams.spec.whatwg.org/#dom-readablewritablepair-writable">Streams Standard: 4.2.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#ReadableWritablePair")]
 public record ReadableWritablePair(
     [property: Description("@#readable")]ReadableStream? Readable = default,
@@ -2686,7 +2541,6 @@ public record ReadableWritablePair(
 /// <param name="PreventAbort">await stream.pipeTo(destination[, { preventClose, preventAbort, preventCancel, signal }]) <see href="https://streams.spec.whatwg.org/#dom-streampipeoptions-preventabort">Streams Standard: 4.2.1 Interface definition</see></param>
 /// <param name="PreventCancel">await stream.pipeTo(destination[, { preventClose, preventAbort, preventCancel, signal }]) <see href="https://streams.spec.whatwg.org/#dom-streampipeoptions-preventcancel">Streams Standard: 4.2.1 Interface definition</see></param>
 /// <param name="Signal">await stream.pipeTo(destination[, { preventClose, preventAbort, preventCancel, signal }]) <see href="https://streams.spec.whatwg.org/#dom-streampipeoptions-signal">Streams Standard: 4.2.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#StreamPipeOptions")]
 public record StreamPipeOptions(
     [property: Description("@#preventClose")]bool PreventClose = false,
@@ -2705,7 +2559,6 @@ public record StreamPipeOptions(
 /// <param name="Close">This is different from the behavior of the close and abort options of a WritableStream&apos;s underlying sink, which upon failure put the corresponding WritableStream into an errored state. Those correspond to specific actions the producer is requesting and, if those actions fail, they indicate something more persistently wrong. <see href="https://streams.spec.whatwg.org/#dom-underlyingsink-close">Streams Standard: 5.2.3 The underlying sink API</see></param>
 /// <param name="Abort">This is different from the behavior of the close and abort options of a WritableStream&apos;s underlying sink, which upon failure put the corresponding WritableStream into an errored state. Those correspond to specific actions the producer is requesting and, if those actions fail, they indicate something more persistently wrong. <see href="https://streams.spec.whatwg.org/#dom-underlyingsink-abort">Streams Standard: 5.2.3 The underlying sink API</see></param>
 /// <param name="Type">UnderlyingSink 字典中的 type 成员，WebIDL 类型为 any。可省略。 <see href="https://streams.spec.whatwg.org/#dom-underlyingsink-type">Streams Standard: 5.2.3 The underlying sink API</see></param>
-[ECMAScript]
 [Description("@#UnderlyingSink")]
 public record UnderlyingSink(
     [property: Description("@#start")]UnderlyingSinkStartCallback? Start = default,
@@ -2725,7 +2578,6 @@ public record UnderlyingSink(
 /// <param name="Cancel">cancel a readable stream|Cancels the stream, signaling a loss of interest in the stream by a consumer. The supplied reason argument will be given to the underlying source&apos;s cancel() method, which might or might not use it. <see href="https://streams.spec.whatwg.org/#dom-underlyingsource-cancel">Streams Standard: 4.2.3 The underlying source API</see></param>
 /// <param name="Type">UnderlyingSource 字典中的 type 成员，WebIDL 类型为 ReadableStreamType。可省略。 <see href="https://streams.spec.whatwg.org/#dom-underlyingsource-type">Streams Standard: 4.2.3 The underlying source API</see></param>
 /// <param name="AutoAllocateChunkSize">UnderlyingSource 字典中的 autoAllocateChunkSize 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://streams.spec.whatwg.org/#dom-underlyingsource-autoallocatechunksize">Streams Standard: 4.2.3 The underlying source API</see></param>
-[ECMAScript]
 [Description("@#UnderlyingSource")]
 public record UnderlyingSource(
     [property: Description("@#start")]UnderlyingSourceStartCallback? Start = default,
@@ -2742,7 +2594,6 @@ public record UnderlyingSource(
 /// </remarks>
 /// <param name="Input">URLPatternComponentResult 字典中的 input 成员，WebIDL 类型为 USVString。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatterncomponentresult-input">URL Pattern Standard: 1.2 The URLPattern class</see></param>
 /// <param name="Groups">URLPatternComponentResult 字典中的 groups 成员，WebIDL 类型为 record&lt;USVString, USVString, undefined&gt;。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatterncomponentresult-groups">URL Pattern Standard: 1.2 The URLPattern class</see></param>
-[ECMAScript]
 [Description("@#URLPatternComponentResult")]
 public record URLPatternComponentResult(
     [property: Description("@#input")]string? Input = default,
@@ -2763,7 +2614,6 @@ public record URLPatternComponentResult(
 /// <param name="Pathname">URLPatternResult 字典中的 pathname 成员，WebIDL 类型为 URLPatternComponentResult。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatternresult-pathname">URL Pattern Standard: 1.2 The URLPattern class</see></param>
 /// <param name="Search">URLPatternResult 字典中的 search 成员，WebIDL 类型为 URLPatternComponentResult。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatternresult-search">URL Pattern Standard: 1.2 The URLPattern class</see></param>
 /// <param name="Hash">URLPatternResult 字典中的 hash 成员，WebIDL 类型为 URLPatternComponentResult。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatternresult-hash">URL Pattern Standard: 1.2 The URLPattern class</see></param>
-[ECMAScript]
 [Description("@#URLPatternResult")]
 public record URLPatternResult(
     [property: Description("@#inputs")]URLPatternInput[]? Inputs = default,
@@ -2783,7 +2633,6 @@ public record URLPatternResult(
 /// <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefscanoptions">Web NFC: 9.10 The NDEFScanOptions dictionary</see>
 /// </remarks>
 /// <param name="Signal">Read NDEF messages for 3 seconds by using signal. <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefscanoptions-signal">Web NFC: 9.10 The NDEFScanOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#NDEFScanOptions")]
 public record NDEFScanOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -2795,7 +2644,6 @@ public record NDEFScanOptions(
 /// <see href="https://w3c-fedid.github.io/FedCM/#dictdef-disconnectedaccount">Federated Credential Management API: 2.2.1.1 Disconnect request</see>
 /// </remarks>
 /// <param name="AccountId">DisconnectedAccount 字典中的 account_id 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c-fedid.github.io/FedCM/#dom-disconnectedaccount-account_id">Federated Credential Management API: 3.6 Disconnect endpoint</see></param>
-[ECMAScript]
 [Description("@#DisconnectedAccount")]
 public record DisconnectedAccount(
     [property: Description("@#account_id")]string? AccountId = default);
@@ -2809,7 +2657,6 @@ public record DisconnectedAccount(
 /// <param name="Token">IdentityAssertionResponse 字典中的 token 成员，WebIDL 类型为 any。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityassertionresponse-token">Federated Credential Management API: 3.5 Identity assertion endpoint</see></param>
 /// <param name="ContinueOn">IdentityAssertionResponse 字典中的 continue_on 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityassertionresponse-continue_on">Federated Credential Management API: 3.5 Identity assertion endpoint</see></param>
 /// <param name="Error">IdentityAssertionResponse 字典中的 error 成员，WebIDL 类型为 IdentityCredentialErrorInit。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityassertionresponse-error">Federated Credential Management API: 3.5 Identity assertion endpoint</see></param>
-[ECMAScript]
 [Description("@#IdentityAssertionResponse")]
 public record IdentityAssertionResponse(
     [property: Description("@#token")]object? Token = default,
@@ -2823,7 +2670,6 @@ public record IdentityAssertionResponse(
 /// <see href="https://w3c-fedid.github.io/FedCM/#dictdef-identitycredentialdisconnectoptions">Federated Credential Management API: 2.2 The IdentityCredential Interface</see>
 /// </remarks>
 /// <param name="AccountHint">IdentityCredentialDisconnectOptions 字典中的 accountHint 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identitycredentialdisconnectoptions-accounthint">Federated Credential Management API: 2.2 The IdentityCredential Interface</see></param>
-[ECMAScript]
 [Description("@#IdentityCredentialDisconnectOptions")]
 public record IdentityCredentialDisconnectOptions(
     [property: Description("@#accountHint")]string? AccountHint = default) : IdentityProviderConfig;
@@ -2836,7 +2682,6 @@ public record IdentityCredentialDisconnectOptions(
 /// </remarks>
 /// <param name="Error">IdentityCredentialErrorInit 字典中的 error 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identitycredentialerrorinit-error">Federated Credential Management API: 2.3 The IdentityCredentialError Interface</see></param>
 /// <param name="Url">IdentityCredentialErrorInit 字典中的 url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identitycredentialerrorinit-url">Federated Credential Management API: 2.3 The IdentityCredentialError Interface</see></param>
-[ECMAScript]
 [Description("@#IdentityCredentialErrorInit")]
 public record IdentityCredentialErrorInit(
     [property: Description("@#error")]string? Error = default,
@@ -2851,7 +2696,6 @@ public record IdentityCredentialErrorInit(
 /// <param name="Providers">IdentityCredentialRequestOptions 字典中的 providers 成员，WebIDL 类型为 sequence&lt;IdentityProviderRequestOptions&gt;。必须提供该成员。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identitycredentialrequestoptions-providers">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
 /// <param name="Context">IdentityCredentialRequestOptions 字典中的 context 成员，WebIDL 类型为 IdentityCredentialRequestOptionsContext。可省略。WebIDL 默认值：signin。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identitycredentialrequestoptions-context">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
 /// <param name="Mode">IdentityCredentialRequestOptions 字典中的 mode 成员，WebIDL 类型为 IdentityCredentialRequestOptionsMode。可省略。WebIDL 默认值：passive。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identitycredentialrequestoptions-mode">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
-[ECMAScript]
 [Description("@#IdentityCredentialRequestOptions")]
 public record IdentityCredentialRequestOptions(
     [property: Description("@#providers")]IdentityProviderRequestOptions[]? Providers = default,
@@ -2875,7 +2719,6 @@ public record IdentityCredentialRequestOptions(
 /// <param name="LoginHints">IdentityProviderAccount 字典中的 login_hints 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityprovideraccount-login_hints">Federated Credential Management API: 3.3 Accounts endpoint</see></param>
 /// <param name="DomainHints">IdentityProviderAccount 字典中的 domain_hints 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityprovideraccount-domain_hints">Federated Credential Management API: 3.3 Accounts endpoint</see></param>
 /// <param name="LabelHints">IdentityProviderAccount 字典中的 label_hints 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityprovideraccount-label_hints">Federated Credential Management API: 3.3 Accounts endpoint</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderAccount")]
 public record IdentityProviderAccount(
     [property: Description("@#id")]string? Id = default,
@@ -2897,7 +2740,6 @@ public record IdentityProviderAccount(
 /// <see href="https://w3c-fedid.github.io/FedCM/#dictdef-identityprovideraccountlist">Federated Credential Management API: 2.5.3 Fetch the accounts</see>
 /// </remarks>
 /// <param name="Accounts">IdentityProviderAccountList 字典中的 accounts 成员，WebIDL 类型为 sequence&lt;IdentityProviderAccount&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityprovideraccountlist-accounts">Federated Credential Management API: 2.5.3 Fetch the accounts</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderAccountList")]
 public record IdentityProviderAccountList(
     [property: Description("@#accounts")]IdentityProviderAccount[]? Accounts = default);
@@ -2916,7 +2758,6 @@ public record IdentityProviderAccountList(
 /// <param name="Branding">IdentityProviderAPIConfig 字典中的 branding 成员，WebIDL 类型为 IdentityProviderBranding。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderapiconfig-branding">Federated Credential Management API: 3.2 The config file</see></param>
 /// <param name="SupportsUseOtherAccount">IdentityProviderAPIConfig 字典中的 supports_use_other_account 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderapiconfig-supports_use_other_account">Federated Credential Management API: 3.2 The config file</see></param>
 /// <param name="AccountLabel">IdentityProviderAPIConfig 字典中的 account_label 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderapiconfig-account_label">Federated Credential Management API: 3.2 The config file</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderAPIConfig")]
 public record IdentityProviderAPIConfig(
     [property: Description("@#accounts_endpoint")]string? AccountsEndpoint = default,
@@ -2938,7 +2779,6 @@ public record IdentityProviderAPIConfig(
 /// <param name="Color">IdentityProviderBranding 字典中的 color 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderbranding-color">Federated Credential Management API: 3.2 The config file</see></param>
 /// <param name="Icons">IdentityProviderBranding 字典中的 icons 成员，WebIDL 类型为 sequence&lt;IdentityProviderIcon&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderbranding-icons">Federated Credential Management API: 3.2 The config file</see></param>
 /// <param name="Name">IdentityProviderBranding 字典中的 name 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderbranding-name">Federated Credential Management API: 3.2 The config file</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderBranding")]
 public record IdentityProviderBranding(
     [property: Description("@#background_color")]string? BackgroundColor = default,
@@ -2955,7 +2795,6 @@ public record IdentityProviderBranding(
 /// <param name="PrivacyPolicyUrl">IdentityProviderClientMetadata 字典中的 privacy_policy_url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderclientmetadata-privacy_policy_url">Federated Credential Management API: 3.4 Extension: Client Metadata</see></param>
 /// <param name="TermsOfServiceUrl">IdentityProviderClientMetadata 字典中的 terms_of_service_url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderclientmetadata-terms_of_service_url">Federated Credential Management API: 3.4 Extension: Client Metadata</see></param>
 /// <param name="ClientIsThirdPartyToTopFrameOrigin">IdentityProviderClientMetadata 字典中的 client_is_third_party_to_top_frame_origin 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderclientmetadata-client_is_third_party_to_top_frame_origin">Federated Credential Management API: 2.5.5 Extension: Request permission to sign-up</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderClientMetadata")]
 public record IdentityProviderClientMetadata(
     [property: Description("@#privacy_policy_url")]string? PrivacyPolicyUrl = default,
@@ -2970,7 +2809,6 @@ public record IdentityProviderClientMetadata(
 /// </remarks>
 /// <param name="ConfigURL">IdentityProviderConfig 字典中的 configURL 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderconfig-configurl">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
 /// <param name="ClientId">IdentityProviderConfig 字典中的 clientId 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderconfig-clientid">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderConfig")]
 public record IdentityProviderConfig(
     [property: Description("@#configURL")]string? ConfigURL = default,
@@ -2984,7 +2822,6 @@ public record IdentityProviderConfig(
 /// </remarks>
 /// <param name="Url">IdentityProviderIcon 字典中的 url 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityprovidericon-url">Federated Credential Management API: 3.2 The config file</see></param>
 /// <param name="Size">IdentityProviderIcon 字典中的 size 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityprovidericon-size">Federated Credential Management API: 3.2 The config file</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderIcon")]
 public record IdentityProviderIcon(
     [property: Description("@#url")]string? Url = default,
@@ -3000,7 +2837,6 @@ public record IdentityProviderIcon(
 /// <param name="DomainHint">IdentityProviderRequestOptions 字典中的 domainHint 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderrequestoptions-domainhint">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
 /// <param name="Fields">IdentityProviderRequestOptions 字典中的 fields 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderrequestoptions-fields">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
 /// <param name="Params">IdentityProviderRequestOptions 字典中的 params 成员，WebIDL 类型为 any。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderrequestoptions-params">Federated Credential Management API: 2.4 The CredentialRequestOptions</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderRequestOptions")]
 public record IdentityProviderRequestOptions(
     [property: Description("@#loginHint")]string? LoginHint = default,
@@ -3017,7 +2853,6 @@ public record IdentityProviderRequestOptions(
 /// <param name="ProviderUrls">IdentityProviderWellKnown 字典中的 provider_urls 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderwellknown-provider_urls">Federated Credential Management API: 3.1 The Well-Known File</see></param>
 /// <param name="AccountsEndpoint">IdentityProviderWellKnown 字典中的 accounts_endpoint 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderwellknown-accounts_endpoint">Federated Credential Management API: 3.1 The Well-Known File</see></param>
 /// <param name="LoginUrl">IdentityProviderWellKnown 字典中的 login_url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityproviderwellknown-login_url">Federated Credential Management API: 3.1 The Well-Known File</see></param>
-[ECMAScript]
 [Description("@#IdentityProviderWellKnown")]
 public record IdentityProviderWellKnown(
     [property: Description("@#provider_urls")]string[]? ProviderUrls = default,
@@ -3031,7 +2866,6 @@ public record IdentityProviderWellKnown(
 /// <see href="https://w3c-fedid.github.io/FedCM/#dictdef-identityresolveoptions">Federated Credential Management API: 2.6 The IdentityProvider Interface</see>
 /// </remarks>
 /// <param name="AccountId">IdentityResolveOptions 字典中的 accountId 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityresolveoptions-accountid">Federated Credential Management API: 2.6 The IdentityProvider Interface</see></param>
-[ECMAScript]
 [Description("@#IdentityResolveOptions")]
 public record IdentityResolveOptions(
     [property: Description("@#accountId")]string? AccountId = default);
@@ -3046,7 +2880,6 @@ public record IdentityResolveOptions(
 /// <param name="Name">IdentityUserInfo 字典中的 name 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityuserinfo-name">Federated Credential Management API: 2.6 The IdentityProvider Interface</see></param>
 /// <param name="GivenName">IdentityUserInfo 字典中的 givenName 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityuserinfo-givenname">Federated Credential Management API: 2.6 The IdentityProvider Interface</see></param>
 /// <param name="Picture">IdentityUserInfo 字典中的 picture 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c-fedid.github.io/FedCM/#dom-identityuserinfo-picture">Federated Credential Management API: 2.6 The IdentityProvider Interface</see></param>
-[ECMAScript]
 [Description("@#IdentityUserInfo")]
 public record IdentityUserInfo(
     [property: Description("@#email")]string? Email = default,
@@ -3061,7 +2894,6 @@ public record IdentityUserInfo(
 /// <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialcreationoptions">Digital Credentials: 7.5 The DigitalCredentialCreationOptions dictionary</see>
 /// </remarks>
 /// <param name="Requests">The requests specify an digital credential/issuance protocol and digital credential/issuance request data, which the user agent MAY forward to a holder. <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialcreationoptions-requests">Digital Credentials: 7.5.1 The requests member</see></param>
-[ECMAScript]
 [Description("@#DigitalCredentialCreationOptions")]
 public record DigitalCredentialCreationOptions(
     [property: Description("@#requests")]DigitalCredentialCreateRequest[]? Requests = default);
@@ -3073,7 +2905,6 @@ public record DigitalCredentialCreationOptions(
 /// <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialrequestoptions">Digital Credentials: 7.2 The DigitalCredentialRequestOptions dictionary</see>
 /// </remarks>
 /// <param name="Requests">The requests specify an digital credential/presentation protocol and digital credential/presentation request data, which the user agent MAY match against a credential manager, such as a digital wallet. <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialrequestoptions-requests">Digital Credentials: 7.2.1 The requests member</see></param>
-[ECMAScript]
 [Description("@#DigitalCredentialRequestOptions")]
 public record DigitalCredentialRequestOptions(
     [property: Description("@#requests")]DigitalCredentialGetRequest[]? Requests = default);
@@ -3086,7 +2917,6 @@ public record DigitalCredentialRequestOptions(
 /// </remarks>
 /// <param name="Type">BlobPropertyBag 字典中的 type 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/FileAPI/#dfn-BPtype">File API: 3.1.1 Constructor Parameters</see></param>
 /// <param name="Endings">BlobPropertyBag 字典中的 endings 成员，WebIDL 类型为 EndingType。可省略。WebIDL 默认值：transparent。 <see href="https://w3c.github.io/FileAPI/#dom-blobpropertybag-endings">File API: 3.1.1 Constructor Parameters</see></param>
-[ECMAScript]
 [Description("@#BlobPropertyBag")]
 public record BlobPropertyBag(
     [property: Description("@#type")]string? Type = default,
@@ -3100,7 +2930,6 @@ public record BlobPropertyBag(
 /// </remarks>
 /// <param name="Name">IDBDatabaseInfo 字典中的 name 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/IndexedDB/#dom-idbdatabaseinfo-name">Indexed Database API 3.0: 4.3 The IDBFactory interface</see></param>
 /// <param name="Version">IDBDatabaseInfo 字典中的 version 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/IndexedDB/#dom-idbdatabaseinfo-version">Indexed Database API 3.0: 4.3 The IDBFactory interface</see></param>
-[ECMAScript]
 [Description("@#IDBDatabaseInfo")]
 public record IDBDatabaseInfo(
     [property: Description("@#name")]string? Name = default,
@@ -3115,7 +2944,6 @@ public record IDBDatabaseInfo(
 /// <param name="Query">IDBGetAllOptions 字典中的 query 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/IndexedDB/#dom-idbgetalloptions-query">Indexed Database API 3.0: 4.5 The IDBObjectStore interface</see></param>
 /// <param name="Count">IDBGetAllOptions 字典中的 count 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/IndexedDB/#dom-idbgetalloptions-count">Indexed Database API 3.0: 4.5 The IDBObjectStore interface</see></param>
 /// <param name="Direction">IDBGetAllOptions 字典中的 direction 成员，WebIDL 类型为 IDBCursorDirection。可省略。WebIDL 默认值：next。 <see href="https://w3c.github.io/IndexedDB/#dom-idbgetalloptions-direction">Indexed Database API 3.0: 4.5 The IDBObjectStore interface</see></param>
-[ECMAScript]
 [Description("@#IDBGetAllOptions")]
 public record IDBGetAllOptions(
     [property: Description("@#query")]object? Query = default,
@@ -3130,7 +2958,6 @@ public record IDBGetAllOptions(
 /// </remarks>
 /// <param name="Unique">IDBIndexParameters 字典中的 unique 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/IndexedDB/#dom-idbindexparameters-unique">Indexed Database API 3.0: 4.5 The IDBObjectStore interface</see></param>
 /// <param name="MultiEntry">IDBIndexParameters 字典中的 multiEntry 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/IndexedDB/#dom-idbindexparameters-multientry">Indexed Database API 3.0: 4.5 The IDBObjectStore interface</see></param>
-[ECMAScript]
 [Description("@#IDBIndexParameters")]
 public record IDBIndexParameters(
     [property: Description("@#unique")]bool Unique = false,
@@ -3144,7 +2971,6 @@ public record IDBIndexParameters(
 /// </remarks>
 /// <param name="KeyPath">IDBObjectStoreParameters 字典中的 keyPath 成员，WebIDL 类型为 DOMString, DOMString?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/IndexedDB/#dom-idbobjectstoreparameters-keypath">Indexed Database API 3.0: 4.4 The IDBDatabase interface</see></param>
 /// <param name="AutoIncrement">IDBObjectStoreParameters 字典中的 autoIncrement 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/IndexedDB/#dom-idbobjectstoreparameters-autoincrement">Indexed Database API 3.0: 4.4 The IDBDatabase interface</see></param>
-[ECMAScript]
 [Description("@#IDBObjectStoreParameters")]
 public record IDBObjectStoreParameters(
     [property: Description("@#keyPath")]IDBObjectStoreParametersKeyPath? KeyPath = default,
@@ -3157,7 +2983,6 @@ public record IDBObjectStoreParameters(
 /// <see href="https://w3c.github.io/IndexedDB/#dictdef-idbtransactionoptions">Indexed Database API 3.0: 4.4 The IDBDatabase interface</see>
 /// </remarks>
 /// <param name="Durability">IDBTransactionOptions 字典中的 durability 成员，WebIDL 类型为 IDBTransactionDurability。可省略。WebIDL 默认值：default。 <see href="https://w3c.github.io/IndexedDB/#dom-idbtransactionoptions-durability">Indexed Database API 3.0: 4.4 The IDBDatabase interface</see></param>
-[ECMAScript]
 [Description("@#IDBTransactionOptions")]
 public record IDBTransactionOptions(
     [property: Description("@#durability")]IDBTransactionDurability Durability = IDBTransactionDurability.Default);
@@ -3170,7 +2995,6 @@ public record IDBTransactionOptions(
 /// </remarks>
 /// <param name="OldVersion">IDBVersionChangeEventInit 字典中的 oldVersion 成员，WebIDL 类型为 unsigned long long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/IndexedDB/#dom-idbversionchangeeventinit-oldversion">Indexed Database API 3.0: 4.2 Event interfaces</see></param>
 /// <param name="NewVersion">IDBVersionChangeEventInit 字典中的 newVersion 成员，WebIDL 类型为 unsigned long long?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/IndexedDB/#dom-idbversionchangeeventinit-newversion">Indexed Database API 3.0: 4.2 Event interfaces</see></param>
-[ECMAScript]
 [Description("@#IDBVersionChangeEventInit")]
 public record IDBVersionChangeEventInit(
     [property: Description("@#oldVersion")]Number? OldVersion = default,
@@ -3190,7 +3014,6 @@ public record IDBVersionChangeEventInit(
 /// <param name="IsVisible">IntersectionObserverEntryInit 字典中的 isVisible 成员，WebIDL 类型为 boolean。必须提供该成员。 <see href="https://w3c.github.io/IntersectionObserver/#dom-intersectionobserverentryinit-isvisible">Intersection Observer: 2.3 The IntersectionObserverEntry interface</see></param>
 /// <param name="IntersectionRatio">IntersectionObserverEntryInit 字典中的 intersectionRatio 成员，WebIDL 类型为 double。必须提供该成员。 <see href="https://w3c.github.io/IntersectionObserver/#dom-intersectionobserverentryinit-intersectionratio">Intersection Observer: 2.3 The IntersectionObserverEntry interface</see></param>
 /// <param name="Target">IntersectionObserverEntryInit 字典中的 target 成员，WebIDL 类型为 Element。必须提供该成员。 <see href="https://w3c.github.io/IntersectionObserver/#dom-intersectionobserverentryinit-target">Intersection Observer: 2.3 The IntersectionObserverEntry interface</see></param>
-[ECMAScript]
 [Description("@#IntersectionObserverEntryInit")]
 public record IntersectionObserverEntryInit(
     [property: Description("@#time")]double Time = default,
@@ -3214,7 +3037,6 @@ public record IntersectionObserverEntryInit(
 /// <param name="Threshold">IntersectionObserverInit 字典中的 threshold 成员，WebIDL 类型为 double, double。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/IntersectionObserver/#dom-intersectionobserverinit-threshold">Intersection Observer: 2.4 The IntersectionObserverInit dictionary</see></param>
 /// <param name="Delay">IntersectionObserverInit 字典中的 delay 成员，WebIDL 类型为 long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/IntersectionObserver/#dom-intersectionobserverinit-delay">Intersection Observer: 2.4 The IntersectionObserverInit dictionary</see></param>
 /// <param name="TrackVisibility">IntersectionObserverInit 字典中的 trackVisibility 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/IntersectionObserver/#dom-intersectionobserverinit-trackvisibility">Intersection Observer: 2.4 The IntersectionObserverInit dictionary</see></param>
-[ECMAScript]
 [Description("@#IntersectionObserverInit")]
 public record IntersectionObserverInit(
     [property: Description("@#root")]IntersectionObserverInitRoot? Root = default,
@@ -3233,7 +3055,6 @@ public record IntersectionObserverInit(
 /// <param name="IgnoreSearch">CacheQueryOptions 字典中的 ignoreSearch 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-cachequeryoptions-ignoresearch">Service Workers Nightly: 5.4 Cache</see></param>
 /// <param name="IgnoreMethod">CacheQueryOptions 字典中的 ignoreMethod 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-cachequeryoptions-ignoremethod">Service Workers Nightly: 5.4 Cache</see></param>
 /// <param name="IgnoreVary">CacheQueryOptions 字典中的 ignoreVary 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-cachequeryoptions-ignorevary">Service Workers Nightly: 5.4 Cache</see></param>
-[ECMAScript]
 [Description("@#CacheQueryOptions")]
 public record CacheQueryOptions(
     [property: Description("@#ignoreSearch")]bool IgnoreSearch = false,
@@ -3248,7 +3069,6 @@ public record CacheQueryOptions(
 /// </remarks>
 /// <param name="IncludeUncontrolled">ClientQueryOptions 字典中的 includeUncontrolled 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-clientqueryoptions-includeuncontrolled">Service Workers Nightly: 4.3 Clients</see></param>
 /// <param name="Type">ClientQueryOptions 字典中的 type 成员，WebIDL 类型为 ClientType。可省略。WebIDL 默认值：window。 <see href="https://w3c.github.io/ServiceWorker/#dom-clientqueryoptions-type">Service Workers Nightly: 4.3 Clients</see></param>
-[ECMAScript]
 [Description("@#ClientQueryOptions")]
 public record ClientQueryOptions(
     [property: Description("@#includeUncontrolled")]bool IncludeUncontrolled = false,
@@ -3260,7 +3080,6 @@ public record ClientQueryOptions(
 /// <remarks>
 /// <see href="https://w3c.github.io/ServiceWorker/#dictdef-extendableeventinit">Service Workers Nightly: 4.4 ExtendableEvent</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#ExtendableEventInit")]
 public abstract record ExtendableEventInit();
 
@@ -3275,7 +3094,6 @@ public abstract record ExtendableEventInit();
 /// <param name="LastEventId">ExtendableMessageEventInit 字典中的 lastEventId 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/ServiceWorker/#dom-extendablemessageeventinit-lasteventid">Service Workers Nightly: 4.7 ExtendableMessageEvent</see></param>
 /// <param name="Source">ExtendableMessageEventInit 字典中的 source 成员，WebIDL 类型为 Client, ServiceWorker, MessagePort?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-extendablemessageeventinit-source">Service Workers Nightly: 4.7 ExtendableMessageEvent</see></param>
 /// <param name="Ports">ExtendableMessageEventInit 字典中的 ports 成员，WebIDL 类型为 sequence&lt;MessagePort&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-extendablemessageeventinit-ports">Service Workers Nightly: 4.7 ExtendableMessageEvent</see></param>
-[ECMAScript]
 [Description("@#ExtendableMessageEventInit")]
 public record ExtendableMessageEventInit(
     [property: Description("@#data")]object? Data = default,
@@ -3296,7 +3114,6 @@ public record ExtendableMessageEventInit(
 /// <param name="ResultingClientId">FetchEventInit 字典中的 resultingClientId 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/ServiceWorker/#dom-fetcheventinit-resultingclientid">Service Workers Nightly: 4.6 FetchEvent</see></param>
 /// <param name="ReplacesClientId">FetchEventInit 字典中的 replacesClientId 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/ServiceWorker/#dom-fetcheventinit-replacesclientid">Service Workers Nightly: 4.6 FetchEvent</see></param>
 /// <param name="Handled">FetchEventInit 字典中的 handled 成员，WebIDL 类型为 Promise&lt;undefined&gt;。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-fetcheventinit-handled">Service Workers Nightly: 4.6 FetchEvent</see></param>
-[ECMAScript]
 [Description("@#FetchEventInit")]
 public record FetchEventInit(
     [property: Description("@#request")]Request? Request = default,
@@ -3313,7 +3130,6 @@ public record FetchEventInit(
 /// <see href="https://w3c.github.io/ServiceWorker/#dictdef-multicachequeryoptions">Service Workers Nightly: 5.5 CacheStorage</see>
 /// </remarks>
 /// <param name="CacheName">MultiCacheQueryOptions 字典中的 cacheName 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-multicachequeryoptions-cachename">Service Workers Nightly: 5.5 CacheStorage</see></param>
-[ECMAScript]
 [Description("@#MultiCacheQueryOptions")]
 public record MultiCacheQueryOptions(
     [property: Description("@#cacheName")]string? CacheName = default) : CacheQueryOptions;
@@ -3326,7 +3142,6 @@ public record MultiCacheQueryOptions(
 /// </remarks>
 /// <param name="Enabled">NavigationPreloadState 字典中的 enabled 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/ServiceWorker/#dom-navigationpreloadstate-enabled">Service Workers Nightly: 3.6 NavigationPreloadManager</see></param>
 /// <param name="HeaderValue">NavigationPreloadState 字典中的 headerValue 成员，WebIDL 类型为 ByteString。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-navigationpreloadstate-headervalue">Service Workers Nightly: 3.6 NavigationPreloadManager</see></param>
-[ECMAScript]
 [Description("@#NavigationPreloadState")]
 public record NavigationPreloadState(
     [property: Description("@#enabled")]bool Enabled = false,
@@ -3341,7 +3156,6 @@ public record NavigationPreloadState(
 /// <param name="Scope">RegistrationOptions 字典中的 scope 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-registrationoptions-scope">Service Workers Nightly: 3.4 ServiceWorkerContainer</see></param>
 /// <param name="Type">RegistrationOptions 字典中的 type 成员，WebIDL 类型为 WorkerType。可省略。WebIDL 默认值：classic。 <see href="https://w3c.github.io/ServiceWorker/#dom-registrationoptions-type">Service Workers Nightly: 3.4 ServiceWorkerContainer</see></param>
 /// <param name="UpdateViaCache">RegistrationOptions 字典中的 updateViaCache 成员，WebIDL 类型为 ServiceWorkerUpdateViaCache。可省略。WebIDL 默认值：imports。 <see href="https://w3c.github.io/ServiceWorker/#dom-registrationoptions-updateviacache">Service Workers Nightly: 3.4 ServiceWorkerContainer</see></param>
-[ECMAScript]
 [Description("@#RegistrationOptions")]
 public record RegistrationOptions(
     [property: Description("@#scope")]string? Scope = default,
@@ -3361,7 +3175,6 @@ public record RegistrationOptions(
 /// <param name="RunningStatus">RouterCondition 字典中的 runningStatus 成员，WebIDL 类型为 RunningStatus。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-routercondition-runningstatus">Service Workers Nightly: 4.5 InstallEvent</see></param>
 /// <param name="Or">RouterCondition 字典中的 or 成员，WebIDL 类型为 sequence&lt;RouterCondition&gt;。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-routercondition-or">Service Workers Nightly: 4.5 InstallEvent</see></param>
 /// <param name="Not">RouterCondition 字典中的 not 成员，WebIDL 类型为 RouterCondition。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-routercondition-not">Service Workers Nightly: 4.5 InstallEvent</see></param>
-[ECMAScript]
 [Description("@#RouterCondition")]
 public record RouterCondition(
     [property: Description("@#urlPattern")]URLPatternCompatible? UrlPattern = default,
@@ -3380,7 +3193,6 @@ public record RouterCondition(
 /// </remarks>
 /// <param name="Condition">RouterRule 字典中的 condition 成员，WebIDL 类型为 RouterCondition。必须提供该成员。 <see href="https://w3c.github.io/ServiceWorker/#dom-routerrule-condition">Service Workers Nightly: 4.5 InstallEvent</see></param>
 /// <param name="Source">RouterRule 字典中的 source 成员，WebIDL 类型为 RouterSource。必须提供该成员。 <see href="https://w3c.github.io/ServiceWorker/#dom-routerrule-source">Service Workers Nightly: 4.5 InstallEvent</see></param>
-[ECMAScript]
 [Description("@#RouterRule")]
 public record RouterRule(
     [property: Description("@#condition")]RouterCondition? Condition = default,
@@ -3393,7 +3205,6 @@ public record RouterRule(
 /// <see href="https://w3c.github.io/ServiceWorker/#dictdef-routersourcedict">Service Workers Nightly: 4.5 InstallEvent</see>
 /// </remarks>
 /// <param name="CacheName">RouterSourceDict 字典中的 cacheName 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/ServiceWorker/#dom-routersourcedict-cachename">Service Workers Nightly: 4.5 InstallEvent</see></param>
-[ECMAScript]
 [Description("@#RouterSourceDict")]
 public record RouterSourceDict(
     [property: Description("@#cacheName")]string? CacheName = default);
@@ -3405,7 +3216,6 @@ public record RouterSourceDict(
 /// <see href="https://w3c.github.io/accelerometer/#dictdef-accelerometersensoroptions">Accelerometer: 7.1 The Accelerometer Interface</see>
 /// </remarks>
 /// <param name="ReferenceFrame">AccelerometerSensorOptions 字典中的 referenceFrame 成员，WebIDL 类型为 AccelerometerLocalCoordinateSystem。可省略。WebIDL 默认值：device。 <see href="https://w3c.github.io/accelerometer/#dom-accelerometersensoroptions-referenceframe">Accelerometer: 7.1 The Accelerometer Interface</see></param>
-[ECMAScript]
 [Description("@#AccelerometerSensorOptions")]
 public record AccelerometerSensorOptions(
     [property: Description("@#referenceFrame")]AccelerometerLocalCoordinateSystem ReferenceFrame = AccelerometerLocalCoordinateSystem.Device) : SensorOptions;
@@ -3417,7 +3227,6 @@ public record AccelerometerSensorOptions(
 /// <see href="https://w3c.github.io/aria/#dom-arianotificationoptions">Accessible Rich Internet Applications (WAI-ARIA) 1.3: 10.2 Interface Mixin ARIANotifyMixin</see>
 /// </remarks>
 /// <param name="Priority">Let priority be options[&quot;priority&quot;]. <see href="https://w3c.github.io/aria/#dom-arianotificationoptions-priority">Accessible Rich Internet Applications (WAI-ARIA) 1.3: 10.2 Interface Mixin ARIANotifyMixin</see></param>
-[ECMAScript]
 [Description("@#AriaNotificationOptions")]
 public record AriaNotificationOptions(
     [property: Description("@#priority")]AriaNotifyPriority Priority = AriaNotifyPriority.Normal);
@@ -3429,7 +3238,6 @@ public record AriaNotificationOptions(
 /// <see href="https://w3c.github.io/attribution/#dictdef-attributionaggregationservice">Attribution Level 1: 3.3 Finding a Supported Aggregation Service</see>
 /// </remarks>
 /// <param name="Protocol">AttributionAggregationService 字典中的 protocol 成员，WebIDL 类型为 AttributionAggregationProtocol。必须提供该成员。 <see href="https://w3c.github.io/attribution/#dom-attributionaggregationservice-protocol">Attribution Level 1: 3.3 Finding a Supported Aggregation Service</see></param>
-[ECMAScript]
 [Description("@#AttributionAggregationService")]
 public record AttributionAggregationService(
     [property: Description("@#protocol")]AttributionAggregationProtocol? Protocol = default);
@@ -3450,7 +3258,6 @@ public record AttributionAggregationService(
 /// <param name="Credit">Value of credit, an structured header/inner list containing positive structured header/decimal|decimals or positive structured header/integer|integers. This key is optional. <see href="https://w3c.github.io/attribution/#dom-attributionconversionoptions-credit">Attribution Level 1: 3.5 Requesting Attribution for a Conversion</see></param>
 /// <param name="Value">Value of aggregationService, a structured header/string. This key is required. <see href="https://w3c.github.io/attribution/#dom-attributionconversionoptions-value">Attribution Level 1: 3.5 Requesting Attribution for a Conversion</see></param>
 /// <param name="MaxValue">Value of maxValue, a positive structured header/integer. This key is optional. <see href="https://w3c.github.io/attribution/#dom-attributionconversionoptions-maxvalue">Attribution Level 1: 3.5 Requesting Attribution for a Conversion</see></param>
-[ECMAScript]
 [Description("@#AttributionConversionOptions")]
 public record AttributionConversionOptions(
     [property: Description("@#aggregationService")]string? AggregationService = default,
@@ -3471,7 +3278,6 @@ public record AttributionConversionOptions(
 /// <see href="https://w3c.github.io/attribution/#dictdef-attributionconversionresult">Attribution Level 1: 3.5 Requesting Attribution for a Conversion</see>
 /// </remarks>
 /// <param name="Report">AttributionConversionResult 字典中的 report 成员，WebIDL 类型为 Uint8Array。必须提供该成员。 <see href="https://w3c.github.io/attribution/#dom-attributionconversionresult-report">Attribution Level 1: 3.5 Requesting Attribution for a Conversion</see></param>
-[ECMAScript]
 [Description("@#AttributionConversionResult")]
 public record AttributionConversionResult(
     [property: Description("@#report")]Uint8Array? Report = default);
@@ -3488,7 +3294,6 @@ public record AttributionConversionResult(
 /// <param name="ConversionCallers">Value of conversionCallers, an structured header/inner list containing structured header/string|strings. Each string value includes a domain name using A-labels only; RFC5890Internationalized Domain Names therefore need to use RFC3492punycode. This key is optional. <see href="https://w3c.github.io/attribution/#dom-attributionimpressionoptions-conversioncallers">Attribution Level 1: 3.4 Saving Impressions</see></param>
 /// <param name="LifetimeDays">Value of lifetimeDays, a positive structured header/integer. This key is optional. <see href="https://w3c.github.io/attribution/#dom-attributionimpressionoptions-lifetimedays">Attribution Level 1: 3.4 Saving Impressions</see></param>
 /// <param name="Priority">Value of priority, an structured header/integer in the 32-bit signed integer range. This key is optional. <see href="https://w3c.github.io/attribution/#dom-attributionimpressionoptions-priority">Attribution Level 1: 3.4 Saving Impressions</see></param>
-[ECMAScript]
 [Description("@#AttributionImpressionOptions")]
 public record AttributionImpressionOptions(
     [property: Description("@#histogramIndex")]uint HistogramIndex = default,
@@ -3504,7 +3309,6 @@ public record AttributionImpressionOptions(
 /// <remarks>
 /// <see href="https://w3c.github.io/attribution/#dictdef-attributionimpressionresult">Attribution Level 1: 3.4 Saving Impressions</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#AttributionImpressionResult")]
 public abstract record AttributionImpressionResult();
 
@@ -3516,7 +3320,6 @@ public abstract record AttributionImpressionResult();
 /// </remarks>
 /// <param name="Types">ClipboardChangeEventInit 字典中的 types 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardchangeeventinit-types">Clipboard API and events: 5.2.1.2 Document focus steps</see></param>
 /// <param name="ChangeId">ClipboardChangeEventInit 字典中的 changeId 成员，WebIDL 类型为 bigint。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardchangeeventinit-changeid">Clipboard API and events: 5.2.1.2 Document focus steps</see></param>
-[ECMAScript]
 [Description("@#ClipboardChangeEventInit")]
 public record ClipboardChangeEventInit(
     [property: Description("@#types")]string[]? Types = default,
@@ -3529,7 +3332,6 @@ public record ClipboardChangeEventInit(
 /// <see href="https://w3c.github.io/clipboard-apis/#dictdef-clipboardeventinit">Clipboard API and events: 5.1 Clipboard event interfaces</see>
 /// </remarks>
 /// <param name="ClipboardData">ClipboardEventInit 字典中的 clipboardData 成员，WebIDL 类型为 DataTransfer?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardeventinit-clipboarddata">Clipboard API and events: 5.1 Clipboard event interfaces</see></param>
-[ECMAScript]
 [Description("@#ClipboardEventInit")]
 public record ClipboardEventInit(
     [property: Description("@#clipboardData")]DataTransfer? ClipboardData = null) : EventInit;
@@ -3541,7 +3343,6 @@ public record ClipboardEventInit(
 /// <see href="https://w3c.github.io/clipboard-apis/#dictdef-clipboardpermissiondescriptor">Clipboard API and events: 9 Permissions API Integration</see>
 /// </remarks>
 /// <param name="AllowWithoutGesture">ClipboardPermissionDescriptor 字典中的 allowWithoutGesture 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardpermissiondescriptor-allowwithoutgesture">Clipboard API and events: 9 Permissions API Integration</see></param>
-[ECMAScript]
 [Description("@#ClipboardPermissionDescriptor")]
 public record ClipboardPermissionDescriptor(
     [property: Description("@#allowWithoutGesture")]bool AllowWithoutGesture = false) : PermissionDescriptor;
@@ -3553,7 +3354,6 @@ public record ClipboardPermissionDescriptor(
 /// <see href="https://w3c.github.io/clipboard-apis/#dictdef-clipboardunsanitizedformats">Clipboard API and events: 7.3 Clipboard Interface</see>
 /// </remarks>
 /// <param name="Unsanitized">The unsanitized option MAY NOT be supported by the user agent. The web authors shouldn&apos;t assume that the content for the MIME types listed in unsanitized would be unsanitized as there could be privacy modes where this option may not be allowed. <see href="https://w3c.github.io/clipboard-apis/#dom-clipboardunsanitizedformats-unsanitized">Clipboard API and events: 7.3 Clipboard Interface</see></param>
-[ECMAScript]
 [Description("@#ClipboardUnsanitizedFormats")]
 public record ClipboardUnsanitizedFormats(
     [property: Description("@#unsanitized")]string[]? Unsanitized = default);
@@ -3569,7 +3369,6 @@ public record ClipboardUnsanitizedFormats(
 /// <param name="Icon">ContactInfo 字典中的 icon 成员，WebIDL 类型为 sequence&lt;Blob&gt;。可省略。 <see href="https://w3c.github.io/contact-picker/#dom-contactinfo-icon">Contact Picker API: Contact Picker API</see></param>
 /// <param name="Name">ContactInfo 字典中的 name 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c.github.io/contact-picker/#dom-contactinfo-name">Contact Picker API: Contact Picker API</see></param>
 /// <param name="Tel">ContactInfo 字典中的 tel 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c.github.io/contact-picker/#dom-contactinfo-tel">Contact Picker API: Contact Picker API</see></param>
-[ECMAScript]
 [Description("@#ContactInfo")]
 public record ContactInfo(
     [property: Description("@#address")]ContactAddress[]? Address = default,
@@ -3585,7 +3384,6 @@ public record ContactInfo(
 /// <see href="https://w3c.github.io/contact-picker/#dictdef-contactsselectoptions">Contact Picker API: Contact Picker API</see>
 /// </remarks>
 /// <param name="Multiple">ContactsSelectOptions 字典中的 multiple 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/contact-picker/#dom-contactsselectoptions-multiple">Contact Picker API: Contact Picker API</see></param>
-[ECMAScript]
 [Description("@#ContactsSelectOptions")]
 public record ContactsSelectOptions(
     [property: Description("@#multiple")]bool Multiple = false);
@@ -3599,7 +3397,6 @@ public record ContactsSelectOptions(
 /// <param name="X">DeviceMotionEventAccelerationInit 字典中的 x 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventaccelerationinit-x">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
 /// <param name="Y">DeviceMotionEventAccelerationInit 字典中的 y 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventaccelerationinit-y">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
 /// <param name="Z">DeviceMotionEventAccelerationInit 字典中的 z 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventaccelerationinit-z">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
-[ECMAScript]
 [Description("@#DeviceMotionEventAccelerationInit")]
 public record DeviceMotionEventAccelerationInit(
     [property: Description("@#x")]double? X = null,
@@ -3616,7 +3413,6 @@ public record DeviceMotionEventAccelerationInit(
 /// <param name="AccelerationIncludingGravity">DeviceMotionEventInit 字典中的 accelerationIncludingGravity 成员，WebIDL 类型为 DeviceMotionEventAccelerationInit。可省略。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventinit-accelerationincludinggravity">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
 /// <param name="RotationRate">DeviceMotionEventInit 字典中的 rotationRate 成员，WebIDL 类型为 DeviceMotionEventRotationRateInit。可省略。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventinit-rotationrate">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
 /// <param name="Interval">DeviceMotionEventInit 字典中的 interval 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventinit-interval">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
-[ECMAScript]
 [Description("@#DeviceMotionEventInit")]
 public record DeviceMotionEventInit(
     [property: Description("@#acceleration")]DeviceMotionEventAccelerationInit? Acceleration = default,
@@ -3633,7 +3429,6 @@ public record DeviceMotionEventInit(
 /// <param name="Alpha">DeviceMotionEventRotationRateInit 字典中的 alpha 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventrotationrateinit-alpha">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
 /// <param name="Beta">DeviceMotionEventRotationRateInit 字典中的 beta 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventrotationrateinit-beta">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
 /// <param name="Gamma">DeviceMotionEventRotationRateInit 字典中的 gamma 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-devicemotioneventrotationrateinit-gamma">Device Orientation and Motion: 6.3.3 The DeviceMotionEvent interface</see></param>
-[ECMAScript]
 [Description("@#DeviceMotionEventRotationRateInit")]
 public record DeviceMotionEventRotationRateInit(
     [property: Description("@#alpha")]double? Alpha = null,
@@ -3650,7 +3445,6 @@ public record DeviceMotionEventRotationRateInit(
 /// <param name="Beta">DeviceOrientationEventInit 字典中的 beta 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-deviceorientationeventinit-beta">Device Orientation and Motion: 6.1 deviceorientation Event</see></param>
 /// <param name="Gamma">DeviceOrientationEventInit 字典中的 gamma 成员，WebIDL 类型为 double?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-deviceorientationeventinit-gamma">Device Orientation and Motion: 6.1 deviceorientation Event</see></param>
 /// <param name="Absolute">DeviceOrientationEventInit 字典中的 absolute 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/deviceorientation/#dom-deviceorientationeventinit-absolute">Device Orientation and Motion: 6.1 deviceorientation Event</see></param>
-[ECMAScript]
 [Description("@#DeviceOrientationEventInit")]
 public record DeviceOrientationEventInit(
     [property: Description("@#alpha")]double? Alpha = null,
@@ -3666,7 +3460,6 @@ public record DeviceOrientationEventInit(
 /// </remarks>
 /// <param name="RangeStart">CharacterBoundsUpdateEventInit 字典中的 rangeStart 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-characterboundsupdateeventinit-rangestart">EditContext API: 4.3 CharacterBoundsUpdateEvent</see></param>
 /// <param name="RangeEnd">CharacterBoundsUpdateEventInit 字典中的 rangeEnd 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-characterboundsupdateeventinit-rangeend">EditContext API: 4.3 CharacterBoundsUpdateEvent</see></param>
-[ECMAScript]
 [Description("@#CharacterBoundsUpdateEventInit")]
 public record CharacterBoundsUpdateEventInit(
     [property: Description("@#rangeStart")]uint RangeStart = 0,
@@ -3681,7 +3474,6 @@ public record CharacterBoundsUpdateEventInit(
 /// <param name="Text">EditContextInit 字典中的 text 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/edit-context/#dom-editcontextinit-text">EditContext API: 3.2 EditContext Interface</see></param>
 /// <param name="SelectionStart">EditContextInit 字典中的 selectionStart 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-editcontextinit-selectionstart">EditContext API: 3.2 EditContext Interface</see></param>
 /// <param name="SelectionEnd">EditContextInit 字典中的 selectionEnd 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-editcontextinit-selectionend">EditContext API: 3.2 EditContext Interface</see></param>
-[ECMAScript]
 [Description("@#EditContextInit")]
 public record EditContextInit(
     [property: Description("@#text")]string? Text = default,
@@ -3698,7 +3490,6 @@ public record EditContextInit(
 /// <param name="RangeEnd">TextFormatInit 字典中的 rangeEnd 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-textformatinit-rangeend">EditContext API: 4.2 TextFormatUpdateEvent</see></param>
 /// <param name="UnderlineStyle">TextFormatInit 字典中的 underlineStyle 成员，WebIDL 类型为 UnderlineStyle。可省略。WebIDL 默认值：none。 <see href="https://w3c.github.io/edit-context/#dom-textformatinit-underlinestyle">EditContext API: 4.2 TextFormatUpdateEvent</see></param>
 /// <param name="UnderlineThickness">TextFormatInit 字典中的 underlineThickness 成员，WebIDL 类型为 UnderlineThickness。可省略。WebIDL 默认值：none。 <see href="https://w3c.github.io/edit-context/#dom-textformatinit-underlinethickness">EditContext API: 4.2 TextFormatUpdateEvent</see></param>
-[ECMAScript]
 [Description("@#TextFormatInit")]
 public record TextFormatInit(
     [property: Description("@#rangeStart")]uint RangeStart = 0,
@@ -3713,7 +3504,6 @@ public record TextFormatInit(
 /// <see href="https://w3c.github.io/edit-context/#dom-textformatupdateeventinit">EditContext API: 4.2 TextFormatUpdateEvent</see>
 /// </remarks>
 /// <param name="TextFormats">TextFormatUpdateEventInit 字典中的 textFormats 成员，WebIDL 类型为 sequence&lt;TextFormat&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/edit-context/#dom-textformatupdateeventinit-textformats">EditContext API: 4.2 TextFormatUpdateEvent</see></param>
-[ECMAScript]
 [Description("@#TextFormatUpdateEventInit")]
 public record TextFormatUpdateEventInit(
     [property: Description("@#textFormats")]TextFormat[]? TextFormats = default) : EventInit;
@@ -3729,7 +3519,6 @@ public record TextFormatUpdateEventInit(
 /// <param name="Text">TextUpdateEventInit 字典中的 text 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/edit-context/#dom-textupdateeventinit-text">EditContext API: 4.1 TextUpdateEvent</see></param>
 /// <param name="SelectionStart">TextUpdateEventInit 字典中的 selectionStart 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-textupdateeventinit-selectionstart">EditContext API: 4.1 TextUpdateEvent</see></param>
 /// <param name="SelectionEnd">TextUpdateEventInit 字典中的 selectionEnd 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/edit-context/#dom-textupdateeventinit-selectionend">EditContext API: 4.1 TextUpdateEvent</see></param>
-[ECMAScript]
 [Description("@#TextUpdateEventInit")]
 public record TextUpdateEventInit(
     [property: Description("@#updateRangeStart")]uint UpdateRangeStart = 0,
@@ -3746,7 +3535,6 @@ public record TextUpdateEventInit(
 /// </remarks>
 /// <param name="InitDataType">MediaEncryptedEventInit 字典中的 initDataType 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/encrypted-media/#dom-mediaencryptedeventinit-initdatatype">Encrypted Media Extensions: 7.3.2.1 Dictionary MediaEncryptedEventInit Members</see></param>
 /// <param name="InitData">When the user agent encounters Initialization Data in the HTMLMediaElement/media data, it provides that Initialization Data to the application in the initData attribute of the encrypted event. The user agent MUST NOT store the Initialization Data or use its content at the time it is encountered. The application provides Initialization Data to the CDM via generateRequest(). The user agent MUST NOT provide Initialization Data to the CDM by other means. <see href="https://w3c.github.io/encrypted-media/#dom-mediaencryptedeventinit-initdata">Encrypted Media Extensions: 7.3.2.1 Dictionary MediaEncryptedEventInit Members</see></param>
-[ECMAScript]
 [Description("@#MediaEncryptedEventInit")]
 public record MediaEncryptedEventInit(
     [property: Description("@#initDataType")]string? InitDataType = default,
@@ -3760,7 +3548,6 @@ public record MediaEncryptedEventInit(
 /// </remarks>
 /// <param name="MessageType">MediaKeyMessageEventInit 字典中的 messageType 成员，WebIDL 类型为 MediaKeyMessageType。必须提供该成员。 <see href="https://w3c.github.io/encrypted-media/#dom-mediakeymessageeventinit-messagetype">Encrypted Media Extensions: 6.4.2.1 Dictionary MediaKeyMessageEventInit Members</see></param>
 /// <param name="Message">MediaKeyMessageEventInit 字典中的 message 成员，WebIDL 类型为 ArrayBuffer。必须提供该成员。 <see href="https://w3c.github.io/encrypted-media/#dom-mediakeymessageeventinit-message">Encrypted Media Extensions: 6.4.2.1 Dictionary MediaKeyMessageEventInit Members</see></param>
-[ECMAScript]
 [Description("@#MediaKeyMessageEventInit")]
 public record MediaKeyMessageEventInit(
     [property: Description("@#messageType")]MediaKeyMessageType? MessageType = default,
@@ -3778,7 +3565,6 @@ public record MediaKeyMessageEventInit(
 /// <param name="WeakMagnitude">A &quot;dual-rumble&quot; effect is a fixed-duration, constant-intensity vibration effect intended for an actuator of this type. &quot;dual-rumble&quot; effects are defined by startDelay, duration, strongMagnitude, and weakMagnitude, none of which are required because they default to 0. <see href="https://w3c.github.io/gamepad/#dom-gamepadeffectparameters-weakmagnitude">Gamepad: 11. GamepadEffectParameters Dictionary</see></param>
 /// <param name="LeftTrigger">A &quot;trigger-rumble&quot; effect is a fixed-duration, constant-intensity vibration effect intended for an actuator of this type. &quot;trigger-rumble&quot; effects are defined by startDelay, duration, strongMagnitude, weakMagnitude, leftTrigger, and rightTrigger, none of which are required because they default to 0. <see href="https://w3c.github.io/gamepad/#dom-gamepadeffectparameters-lefttrigger">Gamepad: 11. GamepadEffectParameters Dictionary</see></param>
 /// <param name="RightTrigger">A &quot;trigger-rumble&quot; effect is a fixed-duration, constant-intensity vibration effect intended for an actuator of this type. &quot;trigger-rumble&quot; effects are defined by startDelay, duration, strongMagnitude, weakMagnitude, leftTrigger, and rightTrigger, none of which are required because they default to 0. <see href="https://w3c.github.io/gamepad/#dom-gamepadeffectparameters-righttrigger">Gamepad: 11. GamepadEffectParameters Dictionary</see></param>
-[ECMAScript]
 [Description("@#GamepadEffectParameters")]
 public record GamepadEffectParameters(
     [property: Description("@#duration")]Number? Duration = default,
@@ -3795,7 +3581,6 @@ public record GamepadEffectParameters(
 /// <see href="https://w3c.github.io/gamepad/#dom-gamepadeventinit">Gamepad: 13.1 GamepadEventInit dictionary</see>
 /// </remarks>
 /// <param name="Gamepad">GamepadEventInit 字典中的 gamepad 成员，WebIDL 类型为 Gamepad?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/gamepad/#dom-gamepadeventinit-gamepad">Gamepad: 13.1 GamepadEventInit dictionary</see></param>
-[ECMAScript]
 [Description("@#GamepadEventInit")]
 public record GamepadEventInit(
     [property: Description("@#gamepad")]Gamepad? Gamepad = null) : EventInit;
@@ -3807,7 +3592,6 @@ public record GamepadEventInit(
 /// <see href="https://w3c.github.io/gyroscope/#dictdef-gyroscopesensoroptions">Gyroscope: 7.1 The Gyroscope Interface</see>
 /// </remarks>
 /// <param name="ReferenceFrame">GyroscopeSensorOptions 字典中的 referenceFrame 成员，WebIDL 类型为 GyroscopeLocalCoordinateSystem。可省略。WebIDL 默认值：device。 <see href="https://w3c.github.io/gyroscope/#dom-gyroscopesensoroptions-referenceframe">Gyroscope: 7.1 The Gyroscope Interface</see></param>
-[ECMAScript]
 [Description("@#GyroscopeSensorOptions")]
 public record GyroscopeSensorOptions(
     [property: Description("@#referenceFrame")]GyroscopeLocalCoordinateSystem ReferenceFrame = GyroscopeLocalCoordinateSystem.Device) : SensorOptions;
@@ -3822,7 +3606,6 @@ public record GyroscopeSensorOptions(
 /// <param name="Sizes">ImageResource 字典中的 sizes 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/image-resource/#dom-imageresource-sizes">Image Resource: 4.2 sizes member</see></param>
 /// <param name="Type">ImageResource 字典中的 type 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/image-resource/#dom-imageresource-type">Image Resource: 4.3 type member</see></param>
 /// <param name="Label">ImageResource 字典中的 label 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/image-resource/#dom-imageresource-label">Image Resource: 4.4 label member</see></param>
-[ECMAScript]
 [Description("@#ImageResource")]
 public record ImageResource(
     [property: Description("@#src")]string? Src = default,
@@ -3837,7 +3620,6 @@ public record ImageResource(
 /// <see href="https://w3c.github.io/magnetometer/#dictdef-magnetometersensoroptions">Magnetometer: 6.1 The Magnetometer Interface</see>
 /// </remarks>
 /// <param name="ReferenceFrame">MagnetometerSensorOptions 字典中的 referenceFrame 成员，WebIDL 类型为 MagnetometerLocalCoordinateSystem。可省略。WebIDL 默认值：device。 <see href="https://w3c.github.io/magnetometer/#dom-magnetometersensoroptions-referenceframe">Magnetometer: 6.1 The Magnetometer Interface</see></param>
-[ECMAScript]
 [Description("@#MagnetometerSensorOptions")]
 public record MagnetometerSensorOptions(
     [property: Description("@#referenceFrame")]MagnetometerLocalCoordinateSystem ReferenceFrame = MagnetometerLocalCoordinateSystem.Device) : SensorOptions;
@@ -3853,7 +3635,6 @@ public record MagnetometerSensorOptions(
 /// <param name="Bitrate">The bitrate member represents the average bitrate of the audio track. The bitrate is the number of bits used to encode a second of the audio track. <see href="https://w3c.github.io/media-capabilities/#dom-audioconfiguration-bitrate">Media Capabilities: 2.1.8 AudioConfiguration</see></param>
 /// <param name="Samplerate">The samplerate member represents the sample rate of the audio track. The sample rate is the number of samples of audio carried per second. samplerate is only applicable to the decoding types media-source, file, and webrtc and the encoding type webrtc. <see href="https://w3c.github.io/media-capabilities/#dom-audioconfiguration-samplerate">Media Capabilities: 2.1.8 AudioConfiguration</see></param>
 /// <param name="SpatialRendering">The spatialRendering member indicates that the audio SHOULD be rendered spatially. The details of spatial rendering SHOULD be inferred from the contentType. If it does not map/exist, the UA MUST presume spatial rendering is not required. When true, the user agent SHOULD only report this configuration as supported if it can support spatial rendering for the current audio output device without failing back to a non-spatial mix of the stream. spatialRendering is only applicable to MediaDecodingConfiguration for types media-source and file. <see href="https://w3c.github.io/media-capabilities/#dom-audioconfiguration-spatialrendering">Media Capabilities: 2.1.8 AudioConfiguration</see></param>
-[ECMAScript]
 [Description("@#AudioConfiguration")]
 public record AudioConfiguration(
     [property: Description("@#contentType")]string? ContentType = default,
@@ -3875,7 +3656,6 @@ public record AudioConfiguration(
 /// <param name="SessionTypes">The sessionTypes member represents a sequence of required sessionTypes as described in !ENCRYPTED-MEDIA. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitieskeysystemconfiguration-sessiontypes">Media Capabilities: 2.1.9 MediaCapabilitiesKeySystemConfiguration</see></param>
 /// <param name="Audio">The audio member represents a KeySystemTrackConfiguration associated with the AudioConfiguration. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitieskeysystemconfiguration-audio">Media Capabilities: 2.1.9 MediaCapabilitiesKeySystemConfiguration</see></param>
 /// <param name="Video">The video member represents a KeySystemTrackConfiguration associated with the VideoConfiguration. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitieskeysystemconfiguration-video">Media Capabilities: 2.1.9 MediaCapabilitiesKeySystemConfiguration</see></param>
-[ECMAScript]
 [Description("@#MediaCapabilitiesKeySystemConfiguration")]
 public record MediaCapabilitiesKeySystemConfiguration(
     [property: Description("@#keySystem")]string? KeySystem = default,
@@ -3894,7 +3674,6 @@ public record MediaCapabilitiesKeySystemConfiguration(
 /// </remarks>
 /// <param name="Video">MediaConfiguration 字典中的 video 成员，WebIDL 类型为 VideoConfiguration。可省略。 <see href="https://w3c.github.io/media-capabilities/#dom-mediaconfiguration-video">Media Capabilities: 2.1.1 MediaConfiguration</see></param>
 /// <param name="Audio">MediaConfiguration 字典中的 audio 成员，WebIDL 类型为 AudioConfiguration。可省略。 <see href="https://w3c.github.io/media-capabilities/#dom-mediaconfiguration-audio">Media Capabilities: 2.1.1 MediaConfiguration</see></param>
-[ECMAScript]
 [Description("@#MediaConfiguration")]
 public record MediaConfiguration(
     [property: Description("@#video")]VideoConfiguration? Video = default,
@@ -3917,7 +3696,6 @@ public record MediaConfiguration(
 /// <param name="TransferFunction">If present, the transferFunction member represents that the video track requires the specified transfer function to be understood by the UA. Transfer function describes the electro-optical algorithm supported by the rendering capabilities of a user agent, independent of the display, to map the source colors in the decoded media into the colors to be displayed. Valid inputs are defined by TransferFunction. transferFunction is only applicable to MediaDecodingConfiguration for types media-source and file. <see href="https://w3c.github.io/media-capabilities/#dom-videoconfiguration-transferfunction">Media Capabilities: 2.1.4 VideoConfiguration</see></param>
 /// <param name="ScalabilityMode">If present, the scalabilityMode member represents the scalability mode as defined in webrtc-svc. If absent, the implementer defined default mode for this contentType is assumed (i.e., the mode you get if you don&apos;t specify one via setParameters()). scalabilityMode is only applicable to MediaEncodingConfiguration for type webrtc. <see href="https://w3c.github.io/media-capabilities/#dom-videoconfiguration-scalabilitymode">Media Capabilities: 2.1.4 VideoConfiguration</see></param>
 /// <param name="SpatialScalability">If present, the spatialScalability member represents the ability to do spatial prediction, that is, using frames of a resolution different than the current resolution as dependencies. If absent, spatialScalability defaults to false. If spatialScalability is set to true, the decoder can decode any scalabilityMode that the encoder can encode for the configured codec. If spatialScalability is set to false, the decoder cannot decode spatial scalability modes, but can decode all other scalabilityMode values that the encoder can encode for the configured codec.... <see href="https://w3c.github.io/media-capabilities/#dom-videoconfiguration-spatialscalability">Media Capabilities: 2.1.4 VideoConfiguration</see></param>
-[ECMAScript]
 [Description("@#VideoConfiguration")]
 public record VideoConfiguration(
     [property: Description("@#contentType")]string? ContentType = default,
@@ -3938,7 +3716,6 @@ public record VideoConfiguration(
 /// <remarks>
 /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-backgroundblur">Media Capture and Streams Extensions: 18.2 BackgroundBlur</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#BackgroundBlur")]
 public abstract record BackgroundBlur();
 
@@ -3949,7 +3726,6 @@ public abstract record BackgroundBlur();
 /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-mediaeffectinfo">Media Capture and Streams Extensions: 18.3 MediaEffectInfo</see>
 /// </remarks>
 /// <param name="Enabled">MediaEffectInfo 字典中的 enabled 成员，WebIDL 类型为 boolean。必须提供该成员。 <see href="https://w3c.github.io/mediacapture-extensions/#dom-mediaeffectinfo-enabled">Media Capture and Streams Extensions: Dictionary MediaEffectInfo Members</see></param>
-[ECMAScript]
 [Description("@#MediaEffectInfo")]
 public record MediaEffectInfo(
     [property: Description("@#enabled")]bool Enabled = default);
@@ -3961,7 +3737,6 @@ public record MediaEffectInfo(
 /// <see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureactioneventinit">The Capture-Handle Actions Mechanism: 3.1.2.2 CaptureActionEventInit</see>
 /// </remarks>
 /// <param name="Action">CaptureActionEventInit 字典中的 action 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureactioneventinit-action">The Capture-Handle Actions Mechanism: 3.1.2.2 CaptureActionEventInit</see></param>
-[ECMAScript]
 [Description("@#CaptureActionEventInit")]
 public record CaptureActionEventInit(
     [property: Description("@#action")]string? Action = default) : EventInit;
@@ -3974,7 +3749,6 @@ public record CaptureActionEventInit(
 /// </remarks>
 /// <param name="Origin">If true, the user agent MUST expose the captured application&apos;s origin through the origin field of CaptureHandle. If false, the user agent MUST NOT expose the captured application&apos;s origin. <see href="https://w3c.github.io/mediacapture-handle/identity/#dom-capturehandle-origin">Capture Handle - Bootstrapping Collaboration when Screensharing: 5.1 CaptureHandle</see></param>
 /// <param name="Handle">The capture-handle mechanism consists of two main parts - one on the captured side, one on the capturing side. <see href="https://w3c.github.io/mediacapture-handle/identity/#dom-capturehandle-handle">Capture Handle - Bootstrapping Collaboration when Screensharing: 5.1 CaptureHandle</see></param>
-[ECMAScript]
 [Description("@#CaptureHandle")]
 public record CaptureHandle(
     [property: Description("@#origin")]string? Origin = default,
@@ -3988,7 +3762,6 @@ public record CaptureHandle(
 /// </remarks>
 /// <param name="Exact">ConstrainPoint2DParameters 字典中的 exact 成员，WebIDL 类型为 sequence&lt;Point2D&gt;。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-constrainpoint2dparameters-exact">MediaStream Image Capture: 9.5.1 Members</see></param>
 /// <param name="Ideal">ConstrainPoint2DParameters 字典中的 ideal 成员，WebIDL 类型为 sequence&lt;Point2D&gt;。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-constrainpoint2dparameters-ideal">MediaStream Image Capture: 9.5.1 Members</see></param>
-[ECMAScript]
 [Description("@#ConstrainPoint2DParameters")]
 public record ConstrainPoint2DParameters(
     [property: Description("@#exact")]Point2D[]? Exact = default,
@@ -4003,7 +3776,6 @@ public record ConstrainPoint2DParameters(
 /// <param name="Max">MediaSettingsRange 字典中的 max 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-mediasettingsrange-max">MediaStream Image Capture: 6.1 Members</see></param>
 /// <param name="Min">MediaSettingsRange 字典中的 min 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-mediasettingsrange-min">MediaStream Image Capture: 6.1 Members</see></param>
 /// <param name="Step">MediaSettingsRange 字典中的 step 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-mediasettingsrange-step">MediaStream Image Capture: 6.1 Members</see></param>
-[ECMAScript]
 [Description("@#MediaSettingsRange")]
 public record MediaSettingsRange(
     [property: Description("@#max")]double Max = default,
@@ -4020,7 +3792,6 @@ public record MediaSettingsRange(
 /// <param name="ImageHeight">PhotoCapabilities 字典中的 imageHeight 成员，WebIDL 类型为 MediaSettingsRange。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-imageheight">MediaStream Image Capture: 4.1 Members</see></param>
 /// <param name="ImageWidth">PhotoCapabilities 字典中的 imageWidth 成员，WebIDL 类型为 MediaSettingsRange。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-imagewidth">MediaStream Image Capture: 4.1 Members</see></param>
 /// <param name="FillLightMode">PhotoCapabilities 字典中的 fillLightMode 成员，WebIDL 类型为 sequence&lt;FillLightMode&gt;。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-photocapabilities-filllightmode">MediaStream Image Capture: 4.1 Members</see></param>
-[ECMAScript]
 [Description("@#PhotoCapabilities")]
 public record PhotoCapabilities(
     [property: Description("@#redEyeReduction")]RedEyeReduction? RedEyeReduction = default,
@@ -4038,7 +3809,6 @@ public record PhotoCapabilities(
 /// <param name="ImageHeight">PhotoSettings 字典中的 imageHeight 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-imageheight">MediaStream Image Capture: 5.1 Members</see></param>
 /// <param name="ImageWidth">PhotoSettings 字典中的 imageWidth 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-imagewidth">MediaStream Image Capture: 5.1 Members</see></param>
 /// <param name="RedEyeReduction">PhotoSettings 字典中的 redEyeReduction 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/mediacapture-image/#dom-photosettings-redeyereduction">MediaStream Image Capture: 5.1 Members</see></param>
-[ECMAScript]
 [Description("@#PhotoSettings")]
 public record PhotoSettings(
     [property: Description("@#fillLightMode")]FillLightMode? FillLightMode = default,
@@ -4054,7 +3824,6 @@ public record PhotoSettings(
 /// </remarks>
 /// <param name="X">Point2D 字典中的 x 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.0。 <see href="https://w3c.github.io/mediacapture-image/#dom-point2d-x">MediaStream Image Capture: 12.1 Members</see></param>
 /// <param name="Y">Point2D 字典中的 y 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.0。 <see href="https://w3c.github.io/mediacapture-image/#dom-point2d-y">MediaStream Image Capture: 12.1 Members</see></param>
-[ECMAScript]
 [Description("@#Point2D")]
 public record Point2D(
     [property: Description("@#x")]double X = 0.0d,
@@ -4067,7 +3836,6 @@ public record Point2D(
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-cameradevicepermissiondescriptor">Media Capture and Streams: 13. Permissions Integration</see>
 /// </remarks>
 /// <param name="PanTiltZoom">CameraDevicePermissionDescriptor 字典中的 panTiltZoom 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/mediacapture-main/#dom-cameradevicepermissiondescriptor-pantiltzoom">Media Capture and Streams: 13. Permissions Integration</see></param>
-[ECMAScript]
 [Description("@#CameraDevicePermissionDescriptor")]
 public record CameraDevicePermissionDescriptor(
     [property: Description("@#panTiltZoom")]bool PanTiltZoom = false) : PermissionDescriptor;
@@ -4080,7 +3848,6 @@ public record CameraDevicePermissionDescriptor(
 /// </remarks>
 /// <param name="Exact">ConstrainBooleanOrDOMStringParameters 字典中的 exact 成员，WebIDL 类型为 boolean, DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constrainbooleanordomstringparameters-exact">Media Capture and Streams: Dictionary ConstrainBooleanOrDOMStringParameters Members</see></param>
 /// <param name="Ideal">ConstrainBooleanOrDOMStringParameters 字典中的 ideal 成员，WebIDL 类型为 boolean, DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constrainbooleanordomstringparameters-ideal">Media Capture and Streams: Dictionary ConstrainBooleanOrDOMStringParameters Members</see></param>
-[ECMAScript]
 [Description("@#ConstrainBooleanOrDOMStringParameters")]
 public record ConstrainBooleanOrDOMStringParameters(
     [property: Description("@#exact")]ConstrainBooleanOrDOMStringParametersExact? Exact = default,
@@ -4094,7 +3861,6 @@ public record ConstrainBooleanOrDOMStringParameters(
 /// </remarks>
 /// <param name="Exact">ConstrainBooleanParameters 字典中的 exact 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constrainbooleanparameters-exact">Media Capture and Streams: Dictionary ConstrainBooleanParameters Members</see></param>
 /// <param name="Ideal">ConstrainBooleanParameters 字典中的 ideal 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constrainbooleanparameters-ideal">Media Capture and Streams: Dictionary ConstrainBooleanParameters Members</see></param>
-[ECMAScript]
 [Description("@#ConstrainBooleanParameters")]
 public record ConstrainBooleanParameters(
     [property: Description("@#exact")]bool Exact = default,
@@ -4108,7 +3874,6 @@ public record ConstrainBooleanParameters(
 /// </remarks>
 /// <param name="Exact">ConstrainDOMStringParameters 字典中的 exact 成员，WebIDL 类型为 DOMString, DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constraindomstringparameters-exact">Media Capture and Streams: Dictionary ConstrainDOMStringParameters Members</see></param>
 /// <param name="Ideal">ConstrainDOMStringParameters 字典中的 ideal 成员，WebIDL 类型为 DOMString, DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constraindomstringparameters-ideal">Media Capture and Streams: Dictionary ConstrainDOMStringParameters Members</see></param>
-[ECMAScript]
 [Description("@#ConstrainDOMStringParameters")]
 public record ConstrainDOMStringParameters(
     [property: Description("@#exact")]ConstrainDOMStringParametersExact? Exact = default,
@@ -4122,7 +3887,6 @@ public record ConstrainDOMStringParameters(
 /// </remarks>
 /// <param name="Exact">ConstrainDoubleRange 字典中的 exact 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constraindoublerange-exact">Media Capture and Streams: Dictionary ConstrainDoubleRange Members</see></param>
 /// <param name="Ideal">ConstrainDoubleRange 字典中的 ideal 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constraindoublerange-ideal">Media Capture and Streams: Dictionary ConstrainDoubleRange Members</see></param>
-[ECMAScript]
 [Description("@#ConstrainDoubleRange")]
 public record ConstrainDoubleRange(
     [property: Description("@#exact")]double Exact = default,
@@ -4136,7 +3900,6 @@ public record ConstrainDoubleRange(
 /// </remarks>
 /// <param name="Exact">ConstrainULongRange 字典中的 exact 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constrainulongrange-exact">Media Capture and Streams: Dictionary ConstrainULongRange Members</see></param>
 /// <param name="Ideal">ConstrainULongRange 字典中的 ideal 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-constrainulongrange-ideal">Media Capture and Streams: Dictionary ConstrainULongRange Members</see></param>
-[ECMAScript]
 [Description("@#ConstrainULongRange")]
 public record ConstrainULongRange(
     [property: Description("@#exact")]uint Exact = default,
@@ -4149,7 +3912,6 @@ public record ConstrainULongRange(
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-devicechangeeventinit">Media Capture and Streams: Dictionary DeviceChangeEventInit Members</see>
 /// </remarks>
 /// <param name="Devices">Queue a task that fire an event | fires an event named devicechange, using the DeviceChangeEvent constructor with devices initialized to newExposedDevices, at mediaDevices. <see href="https://w3c.github.io/mediacapture-main/#dom-devicechangeeventinit-devices">Media Capture and Streams: Dictionary DeviceChangeEventInit Members</see></param>
-[ECMAScript]
 [Description("@#DeviceChangeEventInit")]
 public record DeviceChangeEventInit(
     [property: Description("@#devices")]MediaDeviceInfo[]? Devices = default) : EventInit;
@@ -4161,7 +3923,6 @@ public record DeviceChangeEventInit(
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamtrackeventinit">Media Capture and Streams: Dictionary MediaStreamTrackEventInit Members</see>
 /// </remarks>
 /// <param name="Track">MediaStreamTrackEventInit 字典中的 track 成员，WebIDL 类型为 MediaStreamTrack。必须提供该成员。 <see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamtrackeventinit-track">Media Capture and Streams: Dictionary MediaStreamTrackEventInit Members</see></param>
-[ECMAScript]
 [Description("@#MediaStreamTrackEventInit")]
 public record MediaStreamTrackEventInit(
     [property: Description("@#track")]MediaStreamTrack? Track = default) : EventInit;
@@ -4173,7 +3934,6 @@ public record MediaStreamTrackEventInit(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints">MDN Web Docs: MediaTrackConstraints</see>
 /// </remarks>
 /// <param name="Advanced">advanced of type sequence&lt;MediaTrackConstraintSet&gt; <see href="https://w3c.github.io/mediacapture-main/#dom-mediatrackconstraints-advanced">Media Capture and Streams: Dictionary MediaTrackConstraints Members</see></param>
-[ECMAScript]
 [Description("@#MediaTrackConstraints")]
 public record MediaTrackConstraints(
     [property: Description("@#advanced")]MediaTrackConstraintSet[]? Advanced = default) : MediaTrackConstraintSet;
@@ -4185,7 +3945,6 @@ public record MediaTrackConstraints(
 /// <see href="https://w3c.github.io/mediacapture-output/#dom-audiooutputoptions">Audio Output Devices API: Dictionary AudioOutputOptions Members</see>
 /// </remarks>
 /// <param name="DeviceId">AudioOutputOptions 字典中的 deviceId 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/mediacapture-output/#dom-audiooutputoptions-deviceid">Audio Output Devices API: Dictionary AudioOutputOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioOutputOptions")]
 public record AudioOutputOptions(
     [property: Description("@#deviceId")]string? DeviceId = default);
@@ -4198,7 +3957,6 @@ public record AudioOutputOptions(
 /// </remarks>
 /// <param name="Data">BlobEventInit 字典中的 data 成员，WebIDL 类型为 Blob。必须提供该成员。 <see href="https://w3c.github.io/mediacapture-record/#dom-blobeventinit-data">MediaStream Recording: 3.3.1 Members</see></param>
 /// <param name="Timecode">BlobEventInit 字典中的 timecode 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/mediacapture-record/#dom-blobeventinit-timecode">MediaStream Recording: 3.3.1 Members</see></param>
-[ECMAScript]
 [Description("@#BlobEventInit")]
 public record BlobEventInit(
     [property: Description("@#data")]Blob? Data = default,
@@ -4217,7 +3975,6 @@ public record BlobEventInit(
 /// <param name="AudioBitrateMode">If recorder supports the BitrateMode specified by the value of options&apos; audioBitrateMode member, then initialize recorder&apos;s audioBitrateMode attribute to the value of options&apos; audioBitrateMode member, else initialize recorder&apos;s audioBitrateMode attribute to the value &quot;variable&quot;. <see href="https://w3c.github.io/mediacapture-record/#dom-mediarecorderoptions-audiobitratemode">MediaStream Recording: 2.5.1 Members</see></param>
 /// <param name="VideoKeyFrameIntervalDuration">MediaRecorderOptions 字典中的 videoKeyFrameIntervalDuration 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/mediacapture-record/#dom-mediarecorderoptions-videokeyframeintervalduration">MediaStream Recording: 2.5.1 Members</see></param>
 /// <param name="VideoKeyFrameIntervalCount">MediaRecorderOptions 字典中的 videoKeyFrameIntervalCount 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/mediacapture-record/#dom-mediarecorderoptions-videokeyframeintervalcount">MediaStream Recording: 2.5.1 Members</see></param>
-[ECMAScript]
 [Description("@#MediaRecorderOptions")]
 public record MediaRecorderOptions(
     [property: Description("@#mimeType")]string? MimeType = default,
@@ -4236,7 +3993,6 @@ public record MediaRecorderOptions(
 /// </remarks>
 /// <param name="Track">MediaStreamTrackProcessorInit 字典中的 track 成员，WebIDL 类型为 MediaStreamTrackOrHandle。必须提供该成员。 <see href="https://w3c.github.io/mediacapture-transform/#dom-mediastreamtrackprocessorinit-track">MediaStreamTrack Insertable Media Processing using Streams: 2.1.1 Interface definition</see></param>
 /// <param name="MaxBufferSize">MediaStreamTrackProcessorInit 字典中的 maxBufferSize 成员，WebIDL 类型为 unsigned short。可省略。 <see href="https://w3c.github.io/mediacapture-transform/#dom-mediastreamtrackprocessorinit-maxbuffersize">MediaStreamTrack Insertable Media Processing using Streams: 2.1.1 Interface definition</see></param>
-[ECMAScript]
 [Description("@#MediaStreamTrackProcessorInit")]
 public record MediaStreamTrackProcessorInit(
     [property: Description("@#track")]MediaStreamTrackOrHandle? Track = default,
@@ -4251,7 +4007,6 @@ public record MediaStreamTrackProcessorInit(
 /// <param name="Title">Set chapterInfo&apos;s title to init&apos;s title. <see href="https://w3c.github.io/mediasession/#dom-chapterinformationinit-title">Media Session: 7 The ChapterInformation interface</see></param>
 /// <param name="StartTime">Set chapterInfo&apos;s startTime to init&apos;s startTime. If the startTime is negative or greater than duration, throw a TypeError. <see href="https://w3c.github.io/mediasession/#dom-chapterinformationinit-starttime">Media Session: 7 The ChapterInformation interface</see></param>
 /// <param name="Artwork">Let artwork be the result of running the convert artwork algorithm with init&apos;s artwork as input. <see href="https://w3c.github.io/mediasession/#dom-chapterinformationinit-artwork">Media Session: 7 The ChapterInformation interface</see></param>
-[ECMAScript]
 [Description("@#ChapterInformationInit")]
 public record ChapterInformationInit(
     [property: Description("@#title")]string? Title = default,
@@ -4269,7 +4024,6 @@ public record ChapterInformationInit(
 /// <param name="Album">Set metadata&apos;s album to init&apos;s album. <see href="https://w3c.github.io/mediasession/#dom-mediametadatainit-album">Media Session: 6 The MediaMetadata interface</see></param>
 /// <param name="Artwork">Run the convert artwork algorithm with init&apos;s artwork as input and set metadata&apos;s artwork images as the result if it succeeded. <see href="https://w3c.github.io/mediasession/#dom-mediametadatainit-artwork">Media Session: 6 The MediaMetadata interface</see></param>
 /// <param name="ChapterInfo">For each entry in init&apos;s chapterInfo, create a ChapterInformation from entry and append it to chapters. <see href="https://w3c.github.io/mediasession/#dom-mediametadatainit-chapterinfo">Media Session: 6 The MediaMetadata interface</see></param>
-[ECMAScript]
 [Description("@#MediaMetadataInit")]
 public record MediaMetadataInit(
     [property: Description("@#title")]string? Title = default,
@@ -4285,7 +4039,6 @@ public record MediaMetadataInit(
 /// <see href="https://w3c.github.io/orientation-sensor/#dictdef-orientationsensoroptions">Orientation Sensor: 6.1 The OrientationSensor Interface</see>
 /// </remarks>
 /// <param name="ReferenceFrame">OrientationSensorOptions 字典中的 referenceFrame 成员，WebIDL 类型为 OrientationSensorLocalCoordinateSystem。可省略。WebIDL 默认值：device。 <see href="https://w3c.github.io/orientation-sensor/#dom-orientationsensoroptions-referenceframe">Orientation Sensor: 6.1 The OrientationSensor Interface</see></param>
-[ECMAScript]
 [Description("@#OrientationSensorOptions")]
 public record OrientationSensorOptions(
     [property: Description("@#referenceFrame")]OrientationSensorLocalCoordinateSystem ReferenceFrame = OrientationSensorLocalCoordinateSystem.Device) : SensorOptions;
@@ -4299,7 +4052,6 @@ public record OrientationSensorOptions(
 /// <param name="DisplayItems">PaymentDetailsBase 字典中的 displayItems 成员，WebIDL 类型为 sequence&lt;PaymentItem&gt;。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsbase-displayitems">Payment Request API: 6.1 PaymentDetailsBase dictionary</see></param>
 /// <param name="ShippingOptions">PaymentDetailsBase 字典中的 shippingOptions 成员，WebIDL 类型为 sequence&lt;PaymentShippingOption&gt;。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsbase-shippingoptions">Payment Request API: 6.1 PaymentDetailsBase dictionary</see></param>
 /// <param name="Modifiers">PaymentDetailsBase 字典中的 modifiers 成员，WebIDL 类型为 sequence&lt;PaymentDetailsModifier&gt;。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsbase-modifiers">Payment Request API: 6.1 PaymentDetailsBase dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentDetailsBase")]
 public record PaymentDetailsBase(
     [property: Description("@#displayItems")]PaymentItem[]? DisplayItems = default,
@@ -4316,7 +4068,6 @@ public record PaymentDetailsBase(
 /// <param name="Total">PaymentDetailsModifier 字典中的 total 成员，WebIDL 类型为 PaymentItem。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsmodifier-total">Payment Request API: 7 PaymentDetailsModifier dictionary</see></param>
 /// <param name="AdditionalDisplayItems">PaymentDetailsModifier 字典中的 additionalDisplayItems 成员，WebIDL 类型为 sequence&lt;PaymentItem&gt;。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsmodifier-additionaldisplayitems">Payment Request API: 7 PaymentDetailsModifier dictionary</see></param>
 /// <param name="Data">If the data member of modifier is missing, let serializedData be null. Otherwise, let serializedData be the result of serialize a JavaScript value to a JSON string|serialize modifier.data into a JSON string. Rethrow any exceptions. <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsmodifier-data">Payment Request API: 7 PaymentDetailsModifier dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentDetailsModifier")]
 public record PaymentDetailsModifier(
     [property: Description("@#supportedMethods")]string? SupportedMethods = default,
@@ -4330,7 +4081,6 @@ public record PaymentDetailsModifier(
 /// <remarks>
 /// <see href="https://w3c.github.io/payment-request/#dom-paymentrequestupdateeventinit">Payment Request API: 17.3.4 PaymentRequestUpdateEventInit dictionary</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#PaymentRequestUpdateEventInit")]
 public abstract record PaymentRequestUpdateEventInit();
 
@@ -4341,7 +4091,6 @@ public abstract record PaymentRequestUpdateEventInit();
 /// <see href="https://w3c.github.io/picture-in-picture/#dictdef-pictureinpictureeventinit">Picture-in-Picture: 4.5 Event types</see>
 /// </remarks>
 /// <param name="PictureInPictureWindow">PictureInPictureEventInit 字典中的 pictureInPictureWindow 成员，WebIDL 类型为 PictureInPictureWindow。必须提供该成员。 <see href="https://w3c.github.io/picture-in-picture/#dom-pictureinpictureeventinit-pictureinpicturewindow">Picture-in-Picture: 4.5 Event types</see></param>
-[ECMAScript]
 [Description("@#PictureInPictureEventInit")]
 public record PictureInPictureEventInit(
     [property: Description("@#pictureInPictureWindow")]PictureInPictureWindow? PictureInPictureWindow = default) : EventInit;
@@ -4354,7 +4103,6 @@ public record PictureInPictureEventInit(
 /// </remarks>
 /// <param name="Data">PushEventInit 字典中的 data 成员，WebIDL 类型为 PushMessageDataInit?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/push-api/#dom-pusheventinit-data">Push API: 10.2 PushEvent Interface</see></param>
 /// <param name="Notification">PushEventInit 字典中的 notification 成员，WebIDL 类型为 Notification?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/push-api/#dom-pusheventinit-notification">Push API: 10.2 PushEvent Interface</see></param>
-[ECMAScript]
 [Description("@#PushEventInit")]
 public record PushEventInit(
     [property: Description("@#data")]PushMessageDataInit? Data = null,
@@ -4368,7 +4116,6 @@ public record PushEventInit(
 /// </remarks>
 /// <param name="NewSubscription">PushSubscriptionChangeEventInit 字典中的 newSubscription 成员，WebIDL 类型为 PushSubscription。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionchangeeventinit-newsubscription">Push API: 10.4.2 PushSubscriptionChangeEventInit Interface</see></param>
 /// <param name="OldSubscription">PushSubscriptionChangeEventInit 字典中的 oldSubscription 成员，WebIDL 类型为 PushSubscription。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionchangeeventinit-oldsubscription">Push API: 10.4.2 PushSubscriptionChangeEventInit Interface</see></param>
-[ECMAScript]
 [Description("@#PushSubscriptionChangeEventInit")]
 public record PushSubscriptionChangeEventInit(
     [property: Description("@#newSubscription")]PushSubscription? NewSubscription = default,
@@ -4382,7 +4129,6 @@ public record PushSubscriptionChangeEventInit(
 /// </remarks>
 /// <param name="UserVisibleOnly">The userVisibleOnly has the same semantics as userVisibleOnly. <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionoptionsinit-uservisibleonly">Push API: 7.3 PushSubscriptionOptionsInit dictionary</see></param>
 /// <param name="ApplicationServerKey">If options[&quot;applicationServerKey&quot;] is null and the push service requires it to be non-null, then queue a global task on the networking task source using global to reject promise with a &quot;NotSupportedError&quot; DOMException and terminate these steps. <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionoptionsinit-applicationserverkey">Push API: 7.3 PushSubscriptionOptionsInit dictionary</see></param>
-[ECMAScript]
 [Description("@#PushSubscriptionOptionsInit")]
 public record PushSubscriptionOptionsInit(
     [property: Description("@#userVisibleOnly")]bool UserVisibleOnly = false,
@@ -4396,7 +4142,6 @@ public record PushSubscriptionOptionsInit(
 /// </remarks>
 /// <param name="Message">GenerateTestReportParameters 字典中的 message 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/reporting/#dom-generatetestreportparameters-message">Reporting API: 7.1 Generate Test Report</see></param>
 /// <param name="Group">GenerateTestReportParameters 字典中的 group 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：default。 <see href="https://w3c.github.io/reporting/#dom-generatetestreportparameters-group">Reporting API: 7.1 Generate Test Report</see></param>
-[ECMAScript]
 [Description("@#GenerateTestReportParameters")]
 public record GenerateTestReportParameters(
     [property: Description("@#message")]string? Message = default,
@@ -4410,7 +4155,6 @@ public record GenerateTestReportParameters(
 /// </remarks>
 /// <param name="Types">ReportingObserverOptions 字典中的 types 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c.github.io/reporting/#dom-reportingobserveroptions-types">Reporting API: 4.1 Interface ReportingObserver</see></param>
 /// <param name="Buffered">ReportingObserverOptions 字典中的 buffered 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/reporting/#dom-reportingobserveroptions-buffered">Reporting API: 4.1 Interface ReportingObserver</see></param>
-[ECMAScript]
 [Description("@#ReportingObserverOptions")]
 public record ReportingObserverOptions(
     [property: Description("@#types")]string[]? Types = default,
@@ -4425,7 +4169,6 @@ public record ReportingObserverOptions(
 /// <param name="Type">Report 字典中的 type 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/reporting/#dom-report-type">Reporting API: 4.1 Interface ReportingObserver</see></param>
 /// <param name="Url">Report 字典中的 url 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/reporting/#dom-report-url">Reporting API: 4.1 Interface ReportingObserver</see></param>
 /// <param name="Body">Report 字典中的 body 成员，WebIDL 类型为 ReportBody?。可省略。 <see href="https://w3c.github.io/reporting/#dom-report-body">Reporting API: 4.1 Interface ReportingObserver</see></param>
-[ECMAScript]
 [Description("@#Report")]
 public record Report(
     [property: Description("@#type")]string? Type = default,
@@ -4438,7 +4181,6 @@ public record Report(
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ReportingObserver">MDN Web Docs: ReportBody</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#ReportBody")]
 public abstract record ReportBody();
 
@@ -4449,7 +4191,6 @@ public abstract record ReportBody();
 /// <see href="https://w3c.github.io/requestidlecallback/#dom-idlerequestoptions">requestIdleCallback(): 4.1 The requestIdleCallback() method</see>
 /// </remarks>
 /// <param name="Timeout">IdleRequestOptions 字典中的 timeout 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/requestidlecallback/#dom-idlerequestoptions-timeout">requestIdleCallback(): 4.1 The requestIdleCallback() method</see></param>
-[ECMAScript]
 [Description("@#IdleRequestOptions")]
 public record IdleRequestOptions(
     [property: Description("@#timeout")]uint Timeout = default);
@@ -4469,7 +4210,6 @@ public record IdleRequestOptions(
 /// <param name="PaymentEntitiesLogos">AuthenticationExtensionsPaymentInputs 字典中的 paymentEntitiesLogos 成员，WebIDL 类型为 sequence&lt;PaymentEntityLogo&gt;。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-authenticationextensionspaymentinputs-paymententitieslogos">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see></param>
 /// <param name="Total">AuthenticationExtensionsPaymentInputs 字典中的 total 成员，WebIDL 类型为 PaymentCurrencyAmount。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-authenticationextensionspaymentinputs-total">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see></param>
 /// <param name="Instrument">AuthenticationExtensionsPaymentInputs 字典中的 instrument 成员，WebIDL 类型为 PaymentCredentialInstrument。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-authenticationextensionspaymentinputs-instrument">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPaymentInputs")]
 public record AuthenticationExtensionsPaymentInputs(
     [property: Description("@#isPayment")]bool IsPayment = default,
@@ -4489,7 +4229,6 @@ public record AuthenticationExtensionsPaymentInputs(
 /// <see href="https://w3c.github.io/secure-payment-confirmation/#dictdef-authenticationextensionspaymentoutputs">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see>
 /// </remarks>
 /// <param name="BrowserBoundSignature">AuthenticationExtensionsPaymentOutputs 字典中的 browserBoundSignature 成员，WebIDL 类型为 BrowserBoundSignature。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-authenticationextensionspaymentoutputs-browserboundsignature">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPaymentOutputs")]
 public record AuthenticationExtensionsPaymentOutputs(
     [property: Description("@#browserBoundSignature")]BrowserBoundSignature? BrowserBoundSignature = default);
@@ -4501,7 +4240,6 @@ public record AuthenticationExtensionsPaymentOutputs(
 /// <see href="https://w3c.github.io/secure-payment-confirmation/#dictdef-browserboundsignature">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see>
 /// </remarks>
 /// <param name="Signature">BrowserBoundSignature 字典中的 signature 成员，WebIDL 类型为 ArrayBuffer。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-browserboundsignature-signature">Secure Payment Confirmation: 5 WebAuthn Extension - &quot;payment&quot;</see></param>
-[ECMAScript]
 [Description("@#BrowserBoundSignature")]
 public record BrowserBoundSignature(
     [property: Description("@#signature")]ArrayBuffer? Signature = default);
@@ -4520,7 +4258,6 @@ public record BrowserBoundSignature(
 /// <param name="Total">CollectedClientAdditionalPaymentData 字典中的 total 成员，WebIDL 类型为 PaymentCurrencyAmount。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-collectedclientadditionalpaymentdata-total">Secure Payment Confirmation: 5.2 CollectedClientAdditionalPaymentData Dictionary</see></param>
 /// <param name="Instrument">CollectedClientAdditionalPaymentData 字典中的 instrument 成员，WebIDL 类型为 PaymentCredentialInstrument。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-collectedclientadditionalpaymentdata-instrument">Secure Payment Confirmation: 5.2 CollectedClientAdditionalPaymentData Dictionary</see></param>
 /// <param name="BrowserBoundPublicKey">CollectedClientAdditionalPaymentData 字典中的 browserBoundPublicKey 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-collectedclientadditionalpaymentdata-browserboundpublickey">Secure Payment Confirmation: 5.2 CollectedClientAdditionalPaymentData Dictionary</see></param>
-[ECMAScript]
 [Description("@#CollectedClientAdditionalPaymentData")]
 public record CollectedClientAdditionalPaymentData(
     [property: Description("@#rpId")]string? RpId = default,
@@ -4539,7 +4276,6 @@ public record CollectedClientAdditionalPaymentData(
 /// <see href="https://w3c.github.io/secure-payment-confirmation/#dictdef-collectedclientadditionalpaymentregistrationdata">Secure Payment Confirmation: 5.3 CollectedClientAdditionalPaymentRegistrationData Dictionary</see>
 /// </remarks>
 /// <param name="BrowserBoundPublicKey">CollectedClientAdditionalPaymentRegistrationData 字典中的 browserBoundPublicKey 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-collectedclientadditionalpaymentregistrationdata-browserboundpublickey">Secure Payment Confirmation: 5.3 CollectedClientAdditionalPaymentRegistrationData Dictionary</see></param>
-[ECMAScript]
 [Description("@#CollectedClientAdditionalPaymentRegistrationData")]
 public record CollectedClientAdditionalPaymentRegistrationData(
     [property: Description("@#browserBoundPublicKey")]string? BrowserBoundPublicKey = default);
@@ -4551,7 +4287,6 @@ public record CollectedClientAdditionalPaymentRegistrationData(
 /// <see href="https://w3c.github.io/secure-payment-confirmation/#dictdef-collectedclientpaymentdata">Secure Payment Confirmation: 5.1 CollectedClientPaymentData Dictionary</see>
 /// </remarks>
 /// <param name="Payment">CollectedClientPaymentData 字典中的 payment 成员，WebIDL 类型为 CollectedClientAdditionalPaymentData, CollectedClientAdditionalPaymentRegistrationData。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-collectedclientpaymentdata-payment">Secure Payment Confirmation: 5.1 CollectedClientPaymentData Dictionary</see></param>
-[ECMAScript]
 [Description("@#CollectedClientPaymentData")]
 public record CollectedClientPaymentData(
     [property: Description("@#payment")]CollectedClientPaymentDataPayment? Payment = default) : CollectedClientData;
@@ -4566,7 +4301,6 @@ public record CollectedClientPaymentData(
 /// <param name="Icon">PaymentCredentialInstrument 字典中的 icon 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-paymentcredentialinstrument-icon">Secure Payment Confirmation: 7.1 PaymentCredentialInstrument Dictionary</see></param>
 /// <param name="IconMustBeShown">PaymentCredentialInstrument 字典中的 iconMustBeShown 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-paymentcredentialinstrument-iconmustbeshown">Secure Payment Confirmation: 7.1 PaymentCredentialInstrument Dictionary</see></param>
 /// <param name="Details">PaymentCredentialInstrument 字典中的 details 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-paymentcredentialinstrument-details">Secure Payment Confirmation: 7.1 PaymentCredentialInstrument Dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentCredentialInstrument")]
 public record PaymentCredentialInstrument(
     [property: Description("@#displayName")]string? DisplayName = default,
@@ -4582,7 +4316,6 @@ public record PaymentCredentialInstrument(
 /// </remarks>
 /// <param name="Url">PaymentEntityLogo 字典中的 url 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-paymententitylogo-url">Secure Payment Confirmation: 7.2 PaymentEntityLogo Dictionary</see></param>
 /// <param name="Label">PaymentEntityLogo 字典中的 label 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-paymententitylogo-label">Secure Payment Confirmation: 7.2 PaymentEntityLogo Dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentEntityLogo")]
 public record PaymentEntityLogo(
     [property: Description("@#url")]string? Url = default,
@@ -4606,7 +4339,6 @@ public record PaymentEntityLogo(
 /// <param name="BrowserBoundPubKeyCredParams">SecurePaymentConfirmationRequest 字典中的 browserBoundPubKeyCredParams 成员，WebIDL 类型为 sequence&lt;PublicKeyCredentialParameters&gt;。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-securepaymentconfirmationrequest-browserboundpubkeycredparams">Secure Payment Confirmation: 4.4 SecurePaymentConfirmationRequest Dictionary</see></param>
 /// <param name="Locale">SecurePaymentConfirmationRequest 字典中的 locale 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-securepaymentconfirmationrequest-locale">Secure Payment Confirmation: 4.4 SecurePaymentConfirmationRequest Dictionary</see></param>
 /// <param name="ShowOptOut">SecurePaymentConfirmationRequest 字典中的 showOptOut 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/secure-payment-confirmation/#dom-securepaymentconfirmationrequest-showoptout">Secure Payment Confirmation: 4.4 SecurePaymentConfirmationRequest Dictionary</see></param>
-[ECMAScript]
 [Description("@#SecurePaymentConfirmationRequest")]
 public record SecurePaymentConfirmationRequest(
     [property: Description("@#challenge")]IBufferSource? Challenge = default,
@@ -4629,7 +4361,6 @@ public record SecurePaymentConfirmationRequest(
 /// <see href="https://w3c.github.io/selection-api/#dom-getcomposedrangesoptions">Selection API: 3 Selection interface</see>
 /// </remarks>
 /// <param name="ShadowRoots">GetComposedRangesOptions 字典中的 shadowRoots 成员，WebIDL 类型为 sequence&lt;ShadowRoot&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/selection-api/#dom-getcomposedrangesoptions-shadowroots">Selection API: 3 Selection interface</see></param>
-[ECMAScript]
 [Description("@#GetComposedRangesOptions")]
 public record GetComposedRangesOptions(
     [property: Description("@#shadowRoots")]ShadowRoot[]? ShadowRoots = default);
@@ -4641,7 +4372,6 @@ public record GetComposedRangesOptions(
 /// <see href="https://w3c.github.io/sensors/#dictdef-sensorerroreventinit">Generic Sensor API: 7.2 The SensorErrorEvent Interface</see>
 /// </remarks>
 /// <param name="Error">SensorErrorEventInit 字典中的 error 成员，WebIDL 类型为 DOMException。必须提供该成员。 <see href="https://w3c.github.io/sensors/#dom-sensorerroreventinit-error">Generic Sensor API: 7.2 The SensorErrorEvent Interface</see></param>
-[ECMAScript]
 [Description("@#SensorErrorEventInit")]
 public record SensorErrorEventInit(
     [property: Description("@#error")]DOMException? Error = default) : EventInit;
@@ -4653,7 +4383,6 @@ public record SensorErrorEventInit(
 /// <see href="https://w3c.github.io/sensors/#dictdef-sensoroptions">Generic Sensor API: 7.1 The Sensor Interface</see>
 /// </remarks>
 /// <param name="Frequency">SensorOptions 字典中的 frequency 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/sensors/#dom-sensoroptions-frequency">Generic Sensor API: 7.1 The Sensor Interface</see></param>
-[ECMAScript]
 [Description("@#SensorOptions")]
 public record SensorOptions(
     [property: Description("@#frequency")]double Frequency = default);
@@ -4667,7 +4396,6 @@ public record SensorOptions(
 /// <param name="Touches">TouchEventInit 字典中的 touches 成员，WebIDL 类型为 sequence&lt;Touch&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/touch-events/#dom-toucheventinit-touches">Touch Events - Level 2: 5 TouchEvent Interface</see></param>
 /// <param name="TargetTouches">TouchEventInit 字典中的 targetTouches 成员，WebIDL 类型为 sequence&lt;Touch&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/touch-events/#dom-toucheventinit-targettouches">Touch Events - Level 2: 5 TouchEvent Interface</see></param>
 /// <param name="ChangedTouches">TouchEventInit 字典中的 changedTouches 成员，WebIDL 类型为 sequence&lt;Touch&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/touch-events/#dom-toucheventinit-changedtouches">Touch Events - Level 2: 5 TouchEvent Interface</see></param>
-[ECMAScript]
 [Description("@#TouchEventInit")]
 public record TouchEventInit(
     [property: Description("@#touches")]Touch[]? Touches = default,
@@ -4695,7 +4423,6 @@ public record TouchEventInit(
 /// <param name="AltitudeAngle">TouchInit 字典中的 altitudeAngle 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/touch-events/#dom-touchinit-altitudeangle">Touch Events - Level 2: 3 Touch Interface</see></param>
 /// <param name="AzimuthAngle">TouchInit 字典中的 azimuthAngle 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/touch-events/#dom-touchinit-azimuthangle">Touch Events - Level 2: 3 Touch Interface</see></param>
 /// <param name="TouchType">TouchInit 字典中的 touchType 成员，WebIDL 类型为 TouchType。可省略。WebIDL 默认值：direct。 <see href="https://w3c.github.io/touch-events/#dom-touchinit-touchtype">Touch Events - Level 2: 3 Touch Interface</see></param>
-[ECMAScript]
 [Description("@#TouchInit")]
 public record TouchInit(
     [property: Description("@#identifier")]int Identifier = default,
@@ -4723,7 +4450,6 @@ public record TouchInit(
 /// <param name="CreateHTML">TrustedTypePolicyOptions 字典中的 createHTML 成员，WebIDL 类型为 CreateHTMLCallback。可省略。 <see href="https://w3c.github.io/trusted-types/dist/spec/#dom-trustedtypepolicyoptions-createhtml">Trusted Types: 2.3.3 TrustedTypePolicyOptions</see></param>
 /// <param name="CreateScript">TrustedTypePolicyOptions 字典中的 createScript 成员，WebIDL 类型为 CreateScriptCallback。可省略。 <see href="https://w3c.github.io/trusted-types/dist/spec/#dom-trustedtypepolicyoptions-createscript">Trusted Types: 2.3.3 TrustedTypePolicyOptions</see></param>
 /// <param name="CreateScriptURL">TrustedTypePolicyOptions 字典中的 createScriptURL 成员，WebIDL 类型为 CreateScriptURLCallback。可省略。 <see href="https://w3c.github.io/trusted-types/dist/spec/#dom-trustedtypepolicyoptions-createscripturl">Trusted Types: 2.3.3 TrustedTypePolicyOptions</see></param>
-[ECMAScript]
 [Description("@#TrustedTypePolicyOptions")]
 public record TrustedTypePolicyOptions(
     [property: Description("@#createHTML")]CreateHTMLCallback? CreateHTML = default,
@@ -4737,7 +4463,6 @@ public record TrustedTypePolicyOptions(
 /// <see href="https://w3c.github.io/uievents/#dictdef-compositioneventinit">UI Events: 3.6.1.2 CompositionEventInit</see>
 /// </remarks>
 /// <param name="Data">CompositionEventInit 字典中的 data 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/uievents/#dom-compositioneventinit-data">UI Events: 3.6.1.2 CompositionEventInit</see></param>
-[ECMAScript]
 [Description("@#CompositionEventInit")]
 public record CompositionEventInit(
     [property: Description("@#data")]string? Data = default) : UIEventInit;
@@ -4762,7 +4487,6 @@ public record CompositionEventInit(
 /// <param name="ModifierSuper">EventModifierInit 字典中的 modifierSuper 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/uievents/#dom-eventmodifierinit-modifiersuper">UI Events: 3.5.3 Event Modifier Initializers</see></param>
 /// <param name="ModifierSymbol">EventModifierInit 字典中的 modifierSymbol 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/uievents/#dom-eventmodifierinit-modifiersymbol">UI Events: 3.5.3 Event Modifier Initializers</see></param>
 /// <param name="ModifierSymbolLock">EventModifierInit 字典中的 modifierSymbolLock 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/uievents/#dom-eventmodifierinit-modifiersymbollock">UI Events: 3.5.3 Event Modifier Initializers</see></param>
-[ECMAScript]
 [Description("@#EventModifierInit")]
 public record EventModifierInit(
     [property: Description("@#ctrlKey")]bool CtrlKey = false,
@@ -4787,7 +4511,6 @@ public record EventModifierInit(
 /// <see href="https://w3c.github.io/uievents/#dictdef-focuseventinit">UI Events: 3.3.1.2 FocusEventInit</see>
 /// </remarks>
 /// <param name="RelatedTarget">FocusEventInit 字典中的 relatedTarget 成员，WebIDL 类型为 EventTarget?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/uievents/#dom-focuseventinit-relatedtarget">UI Events: 3.3.1.2 FocusEventInit</see></param>
-[ECMAScript]
 [Description("@#FocusEventInit")]
 public record FocusEventInit(
     [property: Description("@#relatedTarget")]EventTarget? RelatedTarget = null) : UIEventInit;
@@ -4907,7 +4630,6 @@ public record UIEventInit(
 /// <param name="PayerPhone">Let payerPhoneRequired be the requestPayerPhone value of the associated PaymentRequest&apos;s paymentOptions. If payerPhoneRequired and handlerResponse.payerPhone is not present, run the payment app failure algorithm with an &quot;OperationError&quot; DOMException, and terminate these steps. <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymenthandlerresponse-payerphone">Web-based Payment Handler API: 8.1.5 payerPhone attribute</see></param>
 /// <param name="ShippingAddress">Let shippingRequired be the requestShipping value of the associated PaymentRequest&apos;s paymentOptions. If shippingRequired and handlerResponse.shippingAddress is not present, run the payment app failure algorithm with an &quot;OperationError&quot; DOMException, and terminate these steps. <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymenthandlerresponse-shippingaddress">Web-based Payment Handler API: 8.1.6 shippingAddress attribute</see></param>
 /// <param name="ShippingOption">If shippingRequired and handlerResponse.shippingOption is not present or not set to one of shipping options identifiers from event.shippingOptions, run the payment app failure algorithm with an &quot;OperationError&quot; DOMException, and terminate these steps. <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymenthandlerresponse-shippingoption">Web-based Payment Handler API: 8.1.7 shippingOption attribute</see></param>
-[ECMAScript]
 [Description("@#PaymentHandlerResponse")]
 public record PaymentHandlerResponse(
     [property: Description("@#methodName")]string? MethodName = default,
@@ -4932,7 +4654,6 @@ public record PaymentHandlerResponse(
 /// <param name="Modifiers">PaymentRequestEventInit 字典中的 modifiers 成员，WebIDL 类型为 sequence&lt;PaymentDetailsModifier&gt;。可省略。 <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentrequesteventinit-modifiers">Web-based Payment Handler API: 6.3.14 PaymentRequestEventInit dictionary</see></param>
 /// <param name="PaymentOptions">PaymentRequestEventInit 字典中的 paymentOptions 成员，WebIDL 类型为 PaymentOptions。可省略。 <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentrequesteventinit-paymentoptions">Web-based Payment Handler API: 6.3.14 PaymentRequestEventInit dictionary</see></param>
 /// <param name="ShippingOptions">PaymentRequestEventInit 字典中的 shippingOptions 成员，WebIDL 类型为 sequence&lt;PaymentShippingOption&gt;。可省略。 <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentrequesteventinit-shippingoptions">Web-based Payment Handler API: 6.3.14 PaymentRequestEventInit dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentRequestEventInit")]
 public record PaymentRequestEventInit(
     [property: Description("@#topOrigin")]string? TopOrigin = default,
@@ -4953,7 +4674,6 @@ public record PaymentRequestEventInit(
 /// <param name="Name">LockInfo 字典中的 name 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/web-locks/#dom-lockinfo-name">Web Locks API: 3.2 LockManager class</see></param>
 /// <param name="Mode">LockInfo 字典中的 mode 成员，WebIDL 类型为 LockMode。可省略。 <see href="https://w3c.github.io/web-locks/#dom-lockinfo-mode">Web Locks API: 3.2 LockManager class</see></param>
 /// <param name="ClientId">LockInfo 字典中的 clientId 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/web-locks/#dom-lockinfo-clientid">Web Locks API: 3.2 LockManager class</see></param>
-[ECMAScript]
 [Description("@#LockInfo")]
 public record LockInfo(
     [property: Description("@#name")]string? Name = default,
@@ -4968,7 +4688,6 @@ public record LockInfo(
 /// </remarks>
 /// <param name="Held">LockManagerSnapshot 字典中的 held 成员，WebIDL 类型为 sequence&lt;LockInfo&gt;。可省略。 <see href="https://w3c.github.io/web-locks/#dom-lockmanagersnapshot-held">Web Locks API: 3.2 LockManager class</see></param>
 /// <param name="Pending">LockManagerSnapshot 字典中的 pending 成员，WebIDL 类型为 sequence&lt;LockInfo&gt;。可省略。 <see href="https://w3c.github.io/web-locks/#dom-lockmanagersnapshot-pending">Web Locks API: 3.2 LockManager class</see></param>
-[ECMAScript]
 [Description("@#LockManagerSnapshot")]
 public record LockManagerSnapshot(
     [property: Description("@#held")]LockInfo[]? Held = default,
@@ -4984,7 +4703,6 @@ public record LockManagerSnapshot(
 /// <param name="IfAvailable">LockOptions 字典中的 ifAvailable 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/web-locks/#dom-lockoptions-ifavailable">Web Locks API: 3.2 LockManager class</see></param>
 /// <param name="Steal">LockOptions 字典中的 steal 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/web-locks/#dom-lockoptions-steal">Web Locks API: 3.2 LockManager class</see></param>
 /// <param name="Signal">LockOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://w3c.github.io/web-locks/#dom-lockoptions-signal">Web Locks API: 3.2 LockManager class</see></param>
-[ECMAScript]
 [Description("@#LockOptions")]
 public record LockOptions(
     [property: Description("@#mode")]LockMode Mode = LockMode.Exclusive,
@@ -5043,7 +4761,6 @@ public record CredentialCreationOptions(
 /// <see href="https://w3c.github.io/webappsec-credential-management/#dictdef-credentialdata">Credential Management Level 1: 2.3 navigator.credentials</see>
 /// </remarks>
 /// <param name="Id">CredentialData 字典中的 id 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-credentialdata-id">Credential Management Level 1: 2.3 navigator.credentials</see></param>
-[ECMAScript]
 [Description("@#CredentialData")]
 public record CredentialData(
     [property: Description("@#id")]string? Id = default);
@@ -5118,7 +4835,6 @@ public record CredentialRequestOptions(
 /// <param name="Origin">FederatedCredentialInit 字典中的 origin 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-federatedcredentialinit-origin">Credential Management Level 1: 4.1 The FederatedCredential Interface</see></param>
 /// <param name="Provider">FederatedCredentialInit 字典中的 provider 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-federatedcredentialinit-provider">Credential Management Level 1: 4.1 The FederatedCredential Interface</see></param>
 /// <param name="Protocol">FederatedCredentialInit 字典中的 protocol 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-federatedcredentialinit-protocol">Credential Management Level 1: 4.1 The FederatedCredential Interface</see></param>
-[ECMAScript]
 [Description("@#FederatedCredentialInit")]
 public record FederatedCredentialInit(
     [property: Description("@#name")]string? Name = default,
@@ -5135,7 +4851,6 @@ public record FederatedCredentialInit(
 /// </remarks>
 /// <param name="Providers">FederatedCredentialRequestOptions 字典中的 providers 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-federatedcredentialrequestoptions-providers">Credential Management Level 1: 4.1 The FederatedCredential Interface</see></param>
 /// <param name="Protocols">FederatedCredentialRequestOptions 字典中的 protocols 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-federatedcredentialrequestoptions-protocols">Credential Management Level 1: 4.1 The FederatedCredential Interface</see></param>
-[ECMAScript]
 [Description("@#FederatedCredentialRequestOptions")]
 public record FederatedCredentialRequestOptions(
     [property: Description("@#providers")]string[]? Providers = default,
@@ -5151,7 +4866,6 @@ public record FederatedCredentialRequestOptions(
 /// <param name="IconURL">PasswordCredentialData 字典中的 iconURL 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-passwordcredentialdata-iconurl">Credential Management Level 1: 3.2 The PasswordCredential Interface</see></param>
 /// <param name="Origin">PasswordCredentialData 字典中的 origin 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-passwordcredentialdata-origin">Credential Management Level 1: 3.2 The PasswordCredential Interface</see></param>
 /// <param name="Password">PasswordCredentialData 字典中的 password 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://w3c.github.io/webappsec-credential-management/#dom-passwordcredentialdata-password">Credential Management Level 1: 3.2 The PasswordCredential Interface</see></param>
-[ECMAScript]
 [Description("@#PasswordCredentialData")]
 public record PasswordCredentialData(
     [property: Description("@#name")]string? Name = default,
@@ -5176,7 +4890,6 @@ public record PasswordCredentialData(
 /// <param name="StatusCode">CSPViolationReportBody 字典中的 statusCode 成员，WebIDL 类型为 unsigned short。可省略。 <see href="https://w3c.github.io/webappsec-csp/#dom-cspviolationreportbody-statuscode">Content Security Policy Level 3: 5 Reporting</see></param>
 /// <param name="LineNumber">CSPViolationReportBody 字典中的 lineNumber 成员，WebIDL 类型为 unsigned long?。可省略。 <see href="https://w3c.github.io/webappsec-csp/#dom-cspviolationreportbody-linenumber">Content Security Policy Level 3: 5 Reporting</see></param>
 /// <param name="ColumnNumber">CSPViolationReportBody 字典中的 columnNumber 成员，WebIDL 类型为 unsigned long?。可省略。 <see href="https://w3c.github.io/webappsec-csp/#dom-cspviolationreportbody-columnnumber">Content Security Policy Level 3: 5 Reporting</see></param>
-[ECMAScript]
 [Description("@#CSPViolationReportBody")]
 public record CSPViolationReportBody(
     [property: Description("@#documentURL")]string? DocumentURL = default,
@@ -5209,7 +4922,6 @@ public record CSPViolationReportBody(
 /// <param name="StatusCode">SecurityPolicyViolationEventInit 字典中的 statusCode 成员，WebIDL 类型为 unsigned short。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webappsec-csp/#dom-securitypolicyviolationeventinit-statuscode">Content Security Policy Level 3: 5.1 Violation DOM Events</see></param>
 /// <param name="LineNumber">SecurityPolicyViolationEventInit 字典中的 lineNumber 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webappsec-csp/#dom-securitypolicyviolationeventinit-linenumber">Content Security Policy Level 3: 5.1 Violation DOM Events</see></param>
 /// <param name="ColumnNumber">SecurityPolicyViolationEventInit 字典中的 columnNumber 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webappsec-csp/#dom-securitypolicyviolationeventinit-columnnumber">Content Security Policy Level 3: 5.1 Violation DOM Events</see></param>
-[ECMAScript]
 [Description("@#SecurityPolicyViolationEventInit")]
 public record SecurityPolicyViolationEventInit(
     [property: Description("@#documentURI")]string? DocumentURI = default,
@@ -5235,7 +4947,6 @@ public record SecurityPolicyViolationEventInit(
 /// <param name="BlockedURL">IntegrityViolationReportBody 字典中的 blockedURL 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/webappsec-subresource-integrity/#dom-integrityviolationreportbody-blockedurl">Subresource Integrity: 3.8.3 Report violations</see></param>
 /// <param name="Destination">IntegrityViolationReportBody 字典中的 destination 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/webappsec-subresource-integrity/#dom-integrityviolationreportbody-destination">Subresource Integrity: 3.8.3 Report violations</see></param>
 /// <param name="ReportOnly">IntegrityViolationReportBody 字典中的 reportOnly 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webappsec-subresource-integrity/#dom-integrityviolationreportbody-reportonly">Subresource Integrity: 3.8.3 Report violations</see></param>
-[ECMAScript]
 [Description("@#IntegrityViolationReportBody")]
 public record IntegrityViolationReportBody(
     [property: Description("@#documentURL")]string? DocumentURL = default,
@@ -5252,7 +4963,6 @@ public record IntegrityViolationReportBody(
 /// <param name="RpId">AllAcceptedCredentialsOptions 字典中的 rpId 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-allacceptedcredentialsoptions-rpid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
 /// <param name="UserId">AllAcceptedCredentialsOptions 字典中的 userId 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-allacceptedcredentialsoptions-userid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
 /// <param name="AllAcceptedCredentialIds">AllAcceptedCredentialsOptions 字典中的 allAcceptedCredentialIds 成员，WebIDL 类型为 sequence&lt;Base64URLString&gt;。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-allacceptedcredentialsoptions-allacceptedcredentialids">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
-[ECMAScript]
 [Description("@#AllAcceptedCredentialsOptions")]
 public record AllAcceptedCredentialsOptions(
     [property: Description("@#rpId")]string? RpId = default,
@@ -5553,7 +5263,6 @@ public record AuthenticationExtensionsClientOutputsJSON(
 /// <param name="Support">AuthenticationExtensionsLargeBlobInputs 字典中的 support 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputs-support">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Read">AuthenticationExtensionsLargeBlobInputs 字典中的 read 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputs-read">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Write">AuthenticationExtensionsLargeBlobInputs 字典中的 write 成员，WebIDL 类型为 BufferSource。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputs-write">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsLargeBlobInputs")]
 public record AuthenticationExtensionsLargeBlobInputs(
     [property: Description("@#support")]string? Support = default,
@@ -5569,7 +5278,6 @@ public record AuthenticationExtensionsLargeBlobInputs(
 /// <param name="Support">AuthenticationExtensionsLargeBlobInputsJSON 字典中的 support 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputsjson-support">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Read">AuthenticationExtensionsLargeBlobInputsJSON 字典中的 read 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputsjson-read">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Write">AuthenticationExtensionsLargeBlobInputsJSON 字典中的 write 成员，WebIDL 类型为 Base64URLString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargeblobinputsjson-write">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsLargeBlobInputsJSON")]
 public record AuthenticationExtensionsLargeBlobInputsJSON(
     [property: Description("@#support")]string? Support = default,
@@ -5585,7 +5293,6 @@ public record AuthenticationExtensionsLargeBlobInputsJSON(
 /// <param name="Supported">AuthenticationExtensionsLargeBlobOutputs 字典中的 supported 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargebloboutputs-supported">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Blob">AuthenticationExtensionsLargeBlobOutputs 字典中的 blob 成员，WebIDL 类型为 ArrayBuffer。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargebloboutputs-blob">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Written">AuthenticationExtensionsLargeBlobOutputs 字典中的 written 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargebloboutputs-written">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsLargeBlobOutputs")]
 public record AuthenticationExtensionsLargeBlobOutputs(
     [property: Description("@#supported")]bool Supported = default,
@@ -5601,7 +5308,6 @@ public record AuthenticationExtensionsLargeBlobOutputs(
 /// <param name="Supported">AuthenticationExtensionsLargeBlobOutputsJSON 字典中的 supported 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargebloboutputsjson-supported">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Blob">AuthenticationExtensionsLargeBlobOutputsJSON 字典中的 blob 成员，WebIDL 类型为 Base64URLString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargebloboutputsjson-blob">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
 /// <param name="Written">AuthenticationExtensionsLargeBlobOutputsJSON 字典中的 written 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionslargebloboutputsjson-written">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsLargeBlobOutputsJSON")]
 public record AuthenticationExtensionsLargeBlobOutputsJSON(
     [property: Description("@#supported")]bool Supported = default,
@@ -5616,7 +5322,6 @@ public record AuthenticationExtensionsLargeBlobOutputsJSON(
 /// </remarks>
 /// <param name="Eval">AuthenticationExtensionsPRFInputs 字典中的 eval 成员，WebIDL 类型为 AuthenticationExtensionsPRFValues。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfinputs-eval">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
 /// <param name="EvalByCredential">AuthenticationExtensionsPRFInputs 字典中的 evalByCredential 成员，WebIDL 类型为 record&lt;DOMString, AuthenticationExtensionsPRFValues&gt;。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfinputs-evalbycredential">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPRFInputs")]
 public record AuthenticationExtensionsPRFInputs(
     [property: Description("@#eval")]AuthenticationExtensionsPRFValues? Eval = default,
@@ -5630,7 +5335,6 @@ public record AuthenticationExtensionsPRFInputs(
 /// </remarks>
 /// <param name="Eval">AuthenticationExtensionsPRFInputsJSON 字典中的 eval 成员，WebIDL 类型为 AuthenticationExtensionsPRFValuesJSON。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfinputsjson-eval">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
 /// <param name="EvalByCredential">AuthenticationExtensionsPRFInputsJSON 字典中的 evalByCredential 成员，WebIDL 类型为 record&lt;DOMString, AuthenticationExtensionsPRFValuesJSON&gt;。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfinputsjson-evalbycredential">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPRFInputsJSON")]
 public record AuthenticationExtensionsPRFInputsJSON(
     [property: Description("@#eval")]AuthenticationExtensionsPRFValuesJSON? Eval = default,
@@ -5644,7 +5348,6 @@ public record AuthenticationExtensionsPRFInputsJSON(
 /// </remarks>
 /// <param name="Enabled">AuthenticationExtensionsPRFOutputs 字典中的 enabled 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfoutputs-enabled">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
 /// <param name="Results">AuthenticationExtensionsPRFOutputs 字典中的 results 成员，WebIDL 类型为 AuthenticationExtensionsPRFValues。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfoutputs-results">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPRFOutputs")]
 public record AuthenticationExtensionsPRFOutputs(
     [property: Description("@#enabled")]bool Enabled = default,
@@ -5658,7 +5361,6 @@ public record AuthenticationExtensionsPRFOutputs(
 /// </remarks>
 /// <param name="Enabled">AuthenticationExtensionsPRFOutputsJSON 字典中的 enabled 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfoutputsjson-enabled">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
 /// <param name="Results">AuthenticationExtensionsPRFOutputsJSON 字典中的 results 成员，WebIDL 类型为 AuthenticationExtensionsPRFValuesJSON。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfoutputsjson-results">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPRFOutputsJSON")]
 public record AuthenticationExtensionsPRFOutputsJSON(
     [property: Description("@#enabled")]bool Enabled = default,
@@ -5672,7 +5374,6 @@ public record AuthenticationExtensionsPRFOutputsJSON(
 /// </remarks>
 /// <param name="First">AuthenticationExtensionsPRFValues 字典中的 first 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfvalues-first">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
 /// <param name="Second">AuthenticationExtensionsPRFValues 字典中的 second 成员，WebIDL 类型为 BufferSource。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfvalues-second">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPRFValues")]
 public record AuthenticationExtensionsPRFValues(
     [property: Description("@#first")]IBufferSource? First = default,
@@ -5686,7 +5387,6 @@ public record AuthenticationExtensionsPRFValues(
 /// </remarks>
 /// <param name="First">AuthenticationExtensionsPRFValuesJSON 字典中的 first 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfvaluesjson-first">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
 /// <param name="Second">AuthenticationExtensionsPRFValuesJSON 字典中的 second 成员，WebIDL 类型为 Base64URLString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationextensionsprfvaluesjson-second">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.4 Pseudo-random function extension (prf)</see></param>
-[ECMAScript]
 [Description("@#AuthenticationExtensionsPRFValuesJSON")]
 public record AuthenticationExtensionsPRFValuesJSON(
     [property: Description("@#first")]Base64URLString? First = default,
@@ -5704,7 +5404,6 @@ public record AuthenticationExtensionsPRFValuesJSON(
 /// <param name="AuthenticatorAttachment">AuthenticationResponseJSON 字典中的 authenticatorAttachment 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticationresponsejson-authenticatorattachment">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="ClientExtensionResults">AuthenticationResponseJSON 字典中的 clientExtensionResults 成员，WebIDL 类型为 AuthenticationExtensionsClientOutputsJSON。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticationresponsejson-clientextensionresults">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="Type">AuthenticationResponseJSON 字典中的 type 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticationresponsejson-type">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
-[ECMAScript]
 [Description("@#AuthenticationResponseJSON")]
 public record AuthenticationResponseJSON(
     [property: Description("@#id")]string? Id = default,
@@ -5724,7 +5423,6 @@ public record AuthenticationResponseJSON(
 /// <param name="AuthenticatorData">AuthenticatorAssertionResponseJSON 字典中的 authenticatorData 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorassertionresponsejson-authenticatordata">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="Signature">AuthenticatorAssertionResponseJSON 字典中的 signature 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorassertionresponsejson-signature">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="UserHandle">AuthenticatorAssertionResponseJSON 字典中的 userHandle 成员，WebIDL 类型为 Base64URLString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorassertionresponsejson-userhandle">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
-[ECMAScript]
 [Description("@#AuthenticatorAssertionResponseJSON")]
 public record AuthenticatorAssertionResponseJSON(
     [property: Description("@#clientDataJSON")]Base64URLString? ClientDataJSON = default,
@@ -5744,7 +5442,6 @@ public record AuthenticatorAssertionResponseJSON(
 /// <param name="PublicKey">AuthenticatorAttestationResponseJSON 字典中的 publicKey 成员，WebIDL 类型为 Base64URLString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorattestationresponsejson-publickey">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="PublicKeyAlgorithm">AuthenticatorAttestationResponseJSON 字典中的 publicKeyAlgorithm 成员，WebIDL 类型为 COSEAlgorithmIdentifier。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorattestationresponsejson-publickeyalgorithm">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="AttestationObject">AuthenticatorAttestationResponseJSON 字典中的 attestationObject 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorattestationresponsejson-attestationobject">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
-[ECMAScript]
 [Description("@#AuthenticatorAttestationResponseJSON")]
 public record AuthenticatorAttestationResponseJSON(
     [property: Description("@#clientDataJSON")]Base64URLString? ClientDataJSON = default,
@@ -5764,7 +5461,6 @@ public record AuthenticatorAttestationResponseJSON(
 /// <param name="ResidentKey">AuthenticatorSelectionCriteria 字典中的 residentKey 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorselectioncriteria-residentkey">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.4 Authenticator Selection Criteria (dictionary AuthenticatorSelectionCriteria)</see></param>
 /// <param name="RequireResidentKey">AuthenticatorSelectionCriteria 字典中的 requireResidentKey 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorselectioncriteria-requireresidentkey">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.4 Authenticator Selection Criteria (dictionary AuthenticatorSelectionCriteria)</see></param>
 /// <param name="UserVerification">AuthenticatorSelectionCriteria 字典中的 userVerification 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：preferred。 <see href="https://w3c.github.io/webauthn/#dom-authenticatorselectioncriteria-userverification">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.4 Authenticator Selection Criteria (dictionary AuthenticatorSelectionCriteria)</see></param>
-[ECMAScript]
 [Description("@#AuthenticatorSelectionCriteria")]
 public record AuthenticatorSelectionCriteria(
     [property: Description("@#authenticatorAttachment")]string? AuthenticatorAttachment = default,
@@ -5783,7 +5479,6 @@ public record AuthenticatorSelectionCriteria(
 /// <param name="Origin">CollectedClientData 字典中的 origin 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-collectedclientdata-origin">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.1 Client Data Used in WebAuthn Signatures (dictionary CollectedClientData)</see></param>
 /// <param name="CrossOrigin">CollectedClientData 字典中的 crossOrigin 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-collectedclientdata-crossorigin">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.1 Client Data Used in WebAuthn Signatures (dictionary CollectedClientData)</see></param>
 /// <param name="TopOrigin">CollectedClientData 字典中的 topOrigin 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-collectedclientdata-toporigin">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.1 Client Data Used in WebAuthn Signatures (dictionary CollectedClientData)</see></param>
-[ECMAScript]
 [Description("@#CollectedClientData")]
 public record CollectedClientData(
     [property: Description("@#type")]string? Type = default,
@@ -5799,7 +5494,6 @@ public record CollectedClientData(
 /// <see href="https://w3c.github.io/webauthn/#dictdef-credentialpropertiesoutput">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.3 Credential Properties Extension (credProps)</see>
 /// </remarks>
 /// <param name="Rk">CredentialPropertiesOutput 字典中的 rk 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webauthn/#dom-credentialpropertiesoutput-rk">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.3 Credential Properties Extension (credProps)</see></param>
-[ECMAScript]
 [Description("@#CredentialPropertiesOutput")]
 public record CredentialPropertiesOutput(
     [property: Description("@#rk")]bool Rk = default);
@@ -5814,7 +5508,6 @@ public record CredentialPropertiesOutput(
 /// <param name="UserId">CurrentUserDetailsOptions 字典中的 userId 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-currentuserdetailsoptions-userid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
 /// <param name="Name">CurrentUserDetailsOptions 字典中的 name 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-currentuserdetailsoptions-name">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
 /// <param name="DisplayName">CurrentUserDetailsOptions 字典中的 displayName 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-currentuserdetailsoptions-displayname">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
-[ECMAScript]
 [Description("@#CurrentUserDetailsOptions")]
 public record CurrentUserDetailsOptions(
     [property: Description("@#rpId")]string? RpId = default,
@@ -5839,7 +5532,6 @@ public record CurrentUserDetailsOptions(
 /// <param name="Attestation">PublicKeyCredentialCreationOptions 字典中的 attestation 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：none。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-attestation">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
 /// <param name="AttestationFormats">PublicKeyCredentialCreationOptions 字典中的 attestationFormats 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-attestationformats">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
 /// <param name="Extensions">If pkOptions.extensions is present, then map/for each extensionId → clientExtensionInput of pkOptions.extensions: 1. If extensionId is not supported by this client platform or is not a registration extension, then continue. <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-extensions">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4 Options for Credential Creation (dictionary PublicKeyCredentialCreationOptions)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialCreationOptions")]
 public record PublicKeyCredentialCreationOptions(
     [property: Description("@#rp")]PublicKeyCredentialRpEntity? Rp = default,
@@ -5871,7 +5563,6 @@ public record PublicKeyCredentialCreationOptions(
 /// <param name="Attestation">PublicKeyCredentialCreationOptionsJSON 字典中的 attestation 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：none。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptionsjson-attestation">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
 /// <param name="AttestationFormats">PublicKeyCredentialCreationOptionsJSON 字典中的 attestationFormats 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptionsjson-attestationformats">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
 /// <param name="Extensions">PublicKeyCredentialCreationOptionsJSON 字典中的 extensions 成员，WebIDL 类型为 AuthenticationExtensionsClientInputsJSON。可省略。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptionsjson-extensions">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialCreationOptionsJSON")]
 public record PublicKeyCredentialCreationOptionsJSON(
     [property: Description("@#rp")]PublicKeyCredentialRpEntity? Rp = default,
@@ -5895,7 +5586,6 @@ public record PublicKeyCredentialCreationOptionsJSON(
 /// <param name="Type">PublicKeyCredentialDescriptor 字典中的 type 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptor-type">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.3 Credential Descriptor (dictionary PublicKeyCredentialDescriptor)</see></param>
 /// <param name="Id">PublicKeyCredentialDescriptor 字典中的 id 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptor-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.3 Credential Descriptor (dictionary PublicKeyCredentialDescriptor)</see></param>
 /// <param name="Transports">PublicKeyCredentialDescriptor 字典中的 transports 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptor-transports">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.3 Credential Descriptor (dictionary PublicKeyCredentialDescriptor)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialDescriptor")]
 public record PublicKeyCredentialDescriptor(
     [property: Description("@#type")]string? Type = default,
@@ -5911,7 +5601,6 @@ public record PublicKeyCredentialDescriptor(
 /// <param name="Type">PublicKeyCredentialDescriptorJSON 字典中的 type 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptorjson-type">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
 /// <param name="Id">PublicKeyCredentialDescriptorJSON 字典中的 id 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptorjson-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
 /// <param name="Transports">PublicKeyCredentialDescriptorJSON 字典中的 transports 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptorjson-transports">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialDescriptorJSON")]
 public record PublicKeyCredentialDescriptorJSON(
     [property: Description("@#type")]string? Type = default,
@@ -5925,7 +5614,6 @@ public record PublicKeyCredentialDescriptorJSON(
 /// <see href="https://w3c.github.io/webauthn/#dictdef-publickeycredentialentity">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.1 Public Key Entity Description (dictionary PublicKeyCredentialEntity)</see>
 /// </remarks>
 /// <param name="Name">Collect an authorization gesture confirming user consent for creating a new credential. The prompt for the authorization gesture is shown by the authenticator if it has its own output capability, or by the user agent otherwise. The prompt SHOULD display rpEntity.id, rpEntity.name, userEntity.name and userEntity.displayName, if possible. <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialentity-name">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.1 Public Key Entity Description (dictionary PublicKeyCredentialEntity)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialEntity")]
 public record PublicKeyCredentialEntity(
     [property: Description("@#name")]string? Name = default);
@@ -5938,7 +5626,6 @@ public record PublicKeyCredentialEntity(
 /// </remarks>
 /// <param name="Type">PublicKeyCredentialParameters 字典中的 type 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialparameters-type">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.3 Parameters for Credential Generation (dictionary PublicKeyCredentialParameters)</see></param>
 /// <param name="Alg">PublicKeyCredentialParameters 字典中的 alg 成员，WebIDL 类型为 COSEAlgorithmIdentifier。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialparameters-alg">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.3 Parameters for Credential Generation (dictionary PublicKeyCredentialParameters)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialParameters")]
 public record PublicKeyCredentialParameters(
     [property: Description("@#type")]string? Type = default,
@@ -5957,7 +5644,6 @@ public record PublicKeyCredentialParameters(
 /// <param name="UserVerification">PublicKeyCredentialRequestOptions 字典中的 userVerification 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：preferred。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-userverification">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
 /// <param name="Hints">PublicKeyCredentialRequestOptions 字典中的 hints 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-hints">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
 /// <param name="Extensions">PublicKeyCredentialRequestOptions 字典中的 extensions 成员，WebIDL 类型为 AuthenticationExtensionsClientInputs。可省略。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptions-extensions">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.5 Options for Assertion Generation (dictionary PublicKeyCredentialRequestOptions)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialRequestOptions")]
 public record PublicKeyCredentialRequestOptions(
     [property: Description("@#challenge")]IBufferSource? Challenge = default,
@@ -5981,7 +5667,6 @@ public record PublicKeyCredentialRequestOptions(
 /// <param name="UserVerification">PublicKeyCredentialRequestOptionsJSON 字典中的 userVerification 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：preferred。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptionsjson-userverification">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.9 Deserialize Authentication ceremony options - PublicKeyCredential’s parseRequestOptionsFromJSON() Methods</see></param>
 /// <param name="Hints">PublicKeyCredentialRequestOptionsJSON 字典中的 hints 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptionsjson-hints">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.9 Deserialize Authentication ceremony options - PublicKeyCredential’s parseRequestOptionsFromJSON() Methods</see></param>
 /// <param name="Extensions">PublicKeyCredentialRequestOptionsJSON 字典中的 extensions 成员，WebIDL 类型为 AuthenticationExtensionsClientInputsJSON。可省略。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrequestoptionsjson-extensions">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.9 Deserialize Authentication ceremony options - PublicKeyCredential’s parseRequestOptionsFromJSON() Methods</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialRequestOptionsJSON")]
 public record PublicKeyCredentialRequestOptionsJSON(
     [property: Description("@#challenge")]Base64URLString? Challenge = default,
@@ -5999,7 +5684,6 @@ public record PublicKeyCredentialRequestOptionsJSON(
 /// <see href="https://w3c.github.io/webauthn/#dictdef-publickeycredentialrpentity">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.2 Relying Party Parameters for Credential Generation (dictionary PublicKeyCredentialRpEntity)</see>
 /// </remarks>
 /// <param name="Id">PublicKeyCredentialRpEntity 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialrpentity-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.2 Relying Party Parameters for Credential Generation (dictionary PublicKeyCredentialRpEntity)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialRpEntity")]
 public record PublicKeyCredentialRpEntity(
     [property: Description("@#id")]string? Id = default) : PublicKeyCredentialEntity;
@@ -6012,7 +5696,6 @@ public record PublicKeyCredentialRpEntity(
 /// </remarks>
 /// <param name="Id">PublicKeyCredentialUserEntity 字典中的 id 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.3 User Account Parameters for Credential Generation (dictionary PublicKeyCredentialUserEntity)</see></param>
 /// <param name="DisplayName">Collect an authorization gesture confirming user consent for creating a new credential. The prompt for the authorization gesture is shown by the authenticator if it has its own output capability, or by the user agent otherwise. The prompt SHOULD display rpEntity.id, rpEntity.name, userEntity.name and userEntity.displayName, if possible. <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-displayname">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.3 User Account Parameters for Credential Generation (dictionary PublicKeyCredentialUserEntity)</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialUserEntity")]
 public record PublicKeyCredentialUserEntity(
     [property: Description("@#id")]IBufferSource? Id = default,
@@ -6027,7 +5710,6 @@ public record PublicKeyCredentialUserEntity(
 /// <param name="Id">PublicKeyCredentialUserEntityJSON 字典中的 id 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentityjson-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
 /// <param name="Name">PublicKeyCredentialUserEntityJSON 字典中的 name 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentityjson-name">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
 /// <param name="DisplayName">PublicKeyCredentialUserEntityJSON 字典中的 displayName 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-publickeycredentialuserentityjson-displayname">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.8 Deserialize Registration ceremony options - PublicKeyCredential’s parseCreationOptionsFromJSON() Method</see></param>
-[ECMAScript]
 [Description("@#PublicKeyCredentialUserEntityJSON")]
 public record PublicKeyCredentialUserEntityJSON(
     [property: Description("@#id")]Base64URLString? Id = default,
@@ -6046,7 +5728,6 @@ public record PublicKeyCredentialUserEntityJSON(
 /// <param name="AuthenticatorAttachment">RegistrationResponseJSON 字典中的 authenticatorAttachment 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-registrationresponsejson-authenticatorattachment">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="ClientExtensionResults">RegistrationResponseJSON 字典中的 clientExtensionResults 成员，WebIDL 类型为 AuthenticationExtensionsClientOutputsJSON。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-registrationresponsejson-clientextensionresults">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
 /// <param name="Type">RegistrationResponseJSON 字典中的 type 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-registrationresponsejson-type">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1 PublicKeyCredential Interface</see></param>
-[ECMAScript]
 [Description("@#RegistrationResponseJSON")]
 public record RegistrationResponseJSON(
     [property: Description("@#id")]string? Id = default,
@@ -6064,7 +5745,6 @@ public record RegistrationResponseJSON(
 /// </remarks>
 /// <param name="Status">TokenBinding 字典中的 status 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-tokenbinding-status">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.1 Client Data Used in WebAuthn Signatures (dictionary CollectedClientData)</see></param>
 /// <param name="Id">TokenBinding 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webauthn/#dom-tokenbinding-id">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.1 Client Data Used in WebAuthn Signatures (dictionary CollectedClientData)</see></param>
-[ECMAScript]
 [Description("@#TokenBinding")]
 public record TokenBinding(
     [property: Description("@#status")]string? Status = default,
@@ -6078,7 +5758,6 @@ public record TokenBinding(
 /// </remarks>
 /// <param name="RpId">UnknownCredentialOptions 字典中的 rpId 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-unknowncredentialoptions-rpid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
 /// <param name="CredentialId">UnknownCredentialOptions 字典中的 credentialId 成员，WebIDL 类型为 Base64URLString。必须提供该成员。 <see href="https://w3c.github.io/webauthn/#dom-unknowncredentialoptions-credentialid">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.1.10 Signal Credential Changes to the Authenticator - PublicKeyCredential’s signal methods</see></param>
-[ECMAScript]
 [Description("@#UnknownCredentialOptions")]
 public record UnknownCredentialOptions(
     [property: Description("@#rpId")]string? RpId = default,
@@ -6094,7 +5773,6 @@ public record UnknownCredentialOptions(
 /// <param name="FrameOffset">AudioDataCopyToOptions 字典中的 frameOffset 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webcodecs/#dom-audiodatacopytooptions-frameoffset">WebCodecs: 9.2.7 AudioDataCopyToOptions</see></param>
 /// <param name="FrameCount">AudioDataCopyToOptions 字典中的 frameCount 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-audiodatacopytooptions-framecount">WebCodecs: 9.2.7 AudioDataCopyToOptions</see></param>
 /// <param name="Format">AudioDataCopyToOptions 字典中的 format 成员，WebIDL 类型为 AudioSampleFormat。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-audiodatacopytooptions-format">WebCodecs: 9.2.7 AudioDataCopyToOptions</see></param>
-[ECMAScript]
 [Description("@#AudioDataCopyToOptions")]
 public record AudioDataCopyToOptions(
     [property: Description("@#planeIndex")]uint PlaneIndex = default,
@@ -6115,7 +5793,6 @@ public record AudioDataCopyToOptions(
 /// <param name="Timestamp">AudioDataInit 字典中的 timestamp 成员，WebIDL 类型为 long long。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audiodatainit-timestamp">WebCodecs: 9.2 AudioData Interface</see></param>
 /// <param name="Data">AudioDataInit 字典中的 data 成员，WebIDL 类型为 AllowSharedBufferSource。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audiodatainit-data">WebCodecs: 9.2 AudioData Interface</see></param>
 /// <param name="Transfer">AudioDataInit 字典中的 transfer 成员，WebIDL 类型为 sequence&lt;ArrayBuffer&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-audiodatainit-transfer">WebCodecs: 9.2 AudioData Interface</see></param>
-[ECMAScript]
 [Description("@#AudioDataInit")]
 public record AudioDataInit(
     [property: Description("@#format")]AudioSampleFormat? Format = default,
@@ -6134,7 +5811,6 @@ public record AudioDataInit(
 /// </remarks>
 /// <param name="Output">AudioDecoderInit 字典中的 output 成员，WebIDL 类型为 AudioDataOutputCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audiodecoderinit-output">WebCodecs: 3 AudioDecoder Interface</see></param>
 /// <param name="Error">AudioDecoderInit 字典中的 error 成员，WebIDL 类型为 WebCodecsErrorCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audiodecoderinit-error">WebCodecs: 3 AudioDecoder Interface</see></param>
-[ECMAScript]
 [Description("@#AudioDecoderInit")]
 public record AudioDecoderInit(
     [property: Description("@#output")]AudioDataOutputCallback? Output = default,
@@ -6148,7 +5824,6 @@ public record AudioDecoderInit(
 /// </remarks>
 /// <param name="Supported">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-audiodecodersupport-supported">WebCodecs: 7.3.1 AudioDecoderSupport</see></param>
 /// <param name="Config">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-audiodecodersupport-config">WebCodecs: 7.3.1 AudioDecoderSupport</see></param>
-[ECMAScript]
 [Description("@#AudioDecoderSupport")]
 public record AudioDecoderSupport(
     [property: Description("@#supported")]bool Supported = default,
@@ -6162,7 +5837,6 @@ public record AudioDecoderSupport(
 /// </remarks>
 /// <param name="Output">AudioEncoderInit 字典中的 output 成员，WebIDL 类型为 EncodedAudioChunkOutputCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audioencoderinit-output">WebCodecs: 5 AudioEncoder Interface</see></param>
 /// <param name="Error">AudioEncoderInit 字典中的 error 成员，WebIDL 类型为 WebCodecsErrorCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audioencoderinit-error">WebCodecs: 5 AudioEncoder Interface</see></param>
-[ECMAScript]
 [Description("@#AudioEncoderInit")]
 public record AudioEncoderInit(
     [property: Description("@#output")]EncodedAudioChunkOutputCallback? Output = default,
@@ -6176,7 +5850,6 @@ public record AudioEncoderInit(
 /// </remarks>
 /// <param name="Supported">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-audioencodersupport-supported">WebCodecs: 7.3.3 AudioEncoderSupport</see></param>
 /// <param name="Config">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-audioencodersupport-config">WebCodecs: 7.3.3 AudioEncoderSupport</see></param>
-[ECMAScript]
 [Description("@#AudioEncoderSupport")]
 public record AudioEncoderSupport(
     [property: Description("@#supported")]bool Supported = default,
@@ -6190,7 +5863,6 @@ public record AudioEncoderSupport(
 /// </remarks>
 /// <param name="FrameIndex">ImageDecodeOptions 字典中的 frameIndex 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecodeoptions-frameindex">WebCodecs: 10.4 ImageDecodeOptions Interface</see></param>
 /// <param name="CompleteFramesOnly">ImageDecodeOptions 字典中的 completeFramesOnly 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecodeoptions-completeframesonly">WebCodecs: 10.4 ImageDecodeOptions Interface</see></param>
-[ECMAScript]
 [Description("@#ImageDecodeOptions")]
 public record ImageDecodeOptions(
     [property: Description("@#frameIndex")]uint FrameIndex = 0,
@@ -6204,7 +5876,6 @@ public record ImageDecodeOptions(
 /// </remarks>
 /// <param name="Image">ImageDecodeResult 字典中的 image 成员，WebIDL 类型为 VideoFrame。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecoderesult-image">WebCodecs: 10.5 ImageDecodeResult Interface</see></param>
 /// <param name="Complete">ImageDecodeResult 字典中的 complete 成员，WebIDL 类型为 boolean。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecoderesult-complete">WebCodecs: 10.5 ImageDecodeResult Interface</see></param>
-[ECMAScript]
 [Description("@#ImageDecodeResult")]
 public record ImageDecodeResult(
     [property: Description("@#image")]VideoFrame? Image = default,
@@ -6223,7 +5894,6 @@ public record ImageDecodeResult(
 /// <param name="DesiredHeight">ImageDecoderInit 字典中的 desiredHeight 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecoderinit-desiredheight">WebCodecs: 10.3 ImageDecoderInit Interface</see></param>
 /// <param name="PreferAnimation">ImageDecoderInit 字典中的 preferAnimation 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecoderinit-preferanimation">WebCodecs: 10.3 ImageDecoderInit Interface</see></param>
 /// <param name="Transfer">ImageDecoderInit 字典中的 transfer 成员，WebIDL 类型为 sequence&lt;ArrayBuffer&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-imagedecoderinit-transfer">WebCodecs: 10.3 ImageDecoderInit Interface</see></param>
-[ECMAScript]
 [Description("@#ImageDecoderInit")]
 public record ImageDecoderInit(
     [property: Description("@#type")]string? Type = default,
@@ -6242,7 +5912,6 @@ public record ImageDecoderInit(
 /// </remarks>
 /// <param name="Offset">PlaneLayout 字典中的 offset 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-planelayout-offset">WebCodecs: 9.7 Plane Layout</see></param>
 /// <param name="Stride">PlaneLayout 字典中的 stride 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-planelayout-stride">WebCodecs: 9.7 Plane Layout</see></param>
-[ECMAScript]
 [Description("@#PlaneLayout")]
 public record PlaneLayout(
     [property: Description("@#offset")]uint Offset = default,
@@ -6255,7 +5924,6 @@ public record PlaneLayout(
 /// <see href="https://w3c.github.io/webcodecs/#dictdef-svcoutputmetadata">WebCodecs: 6.7 EncodedVideoChunkMetadata</see>
 /// </remarks>
 /// <param name="TemporalLayerId">SvcOutputMetadata 字典中的 temporalLayerId 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-svcoutputmetadata-temporallayerid">WebCodecs: 6.7 EncodedVideoChunkMetadata</see></param>
-[ECMAScript]
 [Description("@#SvcOutputMetadata")]
 public record SvcOutputMetadata(
     [property: Description("@#temporalLayerId")]uint TemporalLayerId = default);
@@ -6270,7 +5938,6 @@ public record SvcOutputMetadata(
 /// <param name="Transfer">VideoColorSpaceInit 字典中的 transfer 成员，WebIDL 类型为 VideoTransferCharacteristics?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-videocolorspaceinit-transfer">WebCodecs: 9.9 Video Color Space Interface</see></param>
 /// <param name="Matrix">VideoColorSpaceInit 字典中的 matrix 成员，WebIDL 类型为 VideoMatrixCoefficients?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-videocolorspaceinit-matrix">WebCodecs: 9.9 Video Color Space Interface</see></param>
 /// <param name="FullRange">VideoColorSpaceInit 字典中的 fullRange 成员，WebIDL 类型为 boolean?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-videocolorspaceinit-fullrange">WebCodecs: 9.9 Video Color Space Interface</see></param>
-[ECMAScript]
 [Description("@#VideoColorSpaceInit")]
 public record VideoColorSpaceInit(
     [property: Description("@#primaries")]VideoColorPrimaries? Primaries = default,
@@ -6286,7 +5953,6 @@ public record VideoColorSpaceInit(
 /// </remarks>
 /// <param name="Output">VideoDecoderInit 字典中的 output 成员，WebIDL 类型为 VideoFrameOutputCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-videodecoderinit-output">WebCodecs: 4 VideoDecoder Interface</see></param>
 /// <param name="Error">VideoDecoderInit 字典中的 error 成员，WebIDL 类型为 WebCodecsErrorCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-videodecoderinit-error">WebCodecs: 4 VideoDecoder Interface</see></param>
-[ECMAScript]
 [Description("@#VideoDecoderInit")]
 public record VideoDecoderInit(
     [property: Description("@#output")]VideoFrameOutputCallback? Output = default,
@@ -6300,7 +5966,6 @@ public record VideoDecoderInit(
 /// </remarks>
 /// <param name="Supported">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-videodecodersupport-supported">WebCodecs: 7.3.2 VideoDecoderSupport</see></param>
 /// <param name="Config">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-videodecodersupport-config">WebCodecs: 7.3.2 VideoDecoderSupport</see></param>
-[ECMAScript]
 [Description("@#VideoDecoderSupport")]
 public record VideoDecoderSupport(
     [property: Description("@#supported")]bool Supported = default,
@@ -6314,7 +5979,6 @@ public record VideoDecoderSupport(
 /// </remarks>
 /// <param name="Output">VideoEncoderInit 字典中的 output 成员，WebIDL 类型为 EncodedVideoChunkOutputCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-videoencoderinit-output">WebCodecs: 6 VideoEncoder Interface</see></param>
 /// <param name="Error">VideoEncoderInit 字典中的 error 成员，WebIDL 类型为 WebCodecsErrorCallback。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-videoencoderinit-error">WebCodecs: 6 VideoEncoder Interface</see></param>
-[ECMAScript]
 [Description("@#VideoEncoderInit")]
 public record VideoEncoderInit(
     [property: Description("@#output")]EncodedVideoChunkOutputCallback? Output = default,
@@ -6328,7 +5992,6 @@ public record VideoEncoderInit(
 /// </remarks>
 /// <param name="Supported">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-videoencodersupport-supported">WebCodecs: 7.3.4 VideoEncoderSupport</see></param>
 /// <param name="Config">A boolean indicating the whether the corresponding config is supported by the User Agent. <see href="https://w3c.github.io/webcodecs/#dom-videoencodersupport-config">WebCodecs: 7.3.4 VideoEncoderSupport</see></param>
-[ECMAScript]
 [Description("@#VideoEncoderSupport")]
 public record VideoEncoderSupport(
     [property: Description("@#supported")]bool Supported = default,
@@ -6354,7 +6017,6 @@ public record VideoEncoderSupport(
 /// <param name="ColorSpace">VideoFrameBufferInit 字典中的 colorSpace 成员，WebIDL 类型为 VideoColorSpaceInit。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframebufferinit-colorspace">WebCodecs: 9.4 VideoFrame Interface</see></param>
 /// <param name="Transfer">VideoFrameBufferInit 字典中的 transfer 成员，WebIDL 类型为 sequence&lt;ArrayBuffer&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-videoframebufferinit-transfer">WebCodecs: 9.4 VideoFrame Interface</see></param>
 /// <param name="Metadata">VideoFrameBufferInit 字典中的 metadata 成员，WebIDL 类型为 VideoFrameMetadata。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframebufferinit-metadata">WebCodecs: 9.4 VideoFrame Interface</see></param>
-[ECMAScript]
 [Description("@#VideoFrameBufferInit")]
 public record VideoFrameBufferInit(
     [property: Description("@#format")]VideoPixelFormat? Format = default,
@@ -6382,7 +6044,6 @@ public record VideoFrameBufferInit(
 /// <param name="Layout">VideoFrameCopyToOptions 字典中的 layout 成员，WebIDL 类型为 sequence&lt;PlaneLayout&gt;。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframecopytooptions-layout">WebCodecs: 9.5 VideoFrame CopyTo() Options</see></param>
 /// <param name="Format">VideoFrameCopyToOptions 字典中的 format 成员，WebIDL 类型为 VideoPixelFormat。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframecopytooptions-format">WebCodecs: 9.5 VideoFrame CopyTo() Options</see></param>
 /// <param name="ColorSpace">VideoFrameCopyToOptions 字典中的 colorSpace 成员，WebIDL 类型为 PredefinedColorSpace。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframecopytooptions-colorspace">WebCodecs: 9.5 VideoFrame CopyTo() Options</see></param>
-[ECMAScript]
 [Description("@#VideoFrameCopyToOptions")]
 public record VideoFrameCopyToOptions(
     [property: Description("@#rect")]DOMRectInit? Rect = default,
@@ -6405,7 +6066,6 @@ public record VideoFrameCopyToOptions(
 /// <param name="DisplayWidth">VideoFrameInit 字典中的 displayWidth 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframeinit-displaywidth">WebCodecs: 9.4 VideoFrame Interface</see></param>
 /// <param name="DisplayHeight">VideoFrameInit 字典中的 displayHeight 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframeinit-displayheight">WebCodecs: 9.4 VideoFrame Interface</see></param>
 /// <param name="Metadata">VideoFrameInit 字典中的 metadata 成员，WebIDL 类型为 VideoFrameMetadata。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-videoframeinit-metadata">WebCodecs: 9.4 VideoFrame Interface</see></param>
-[ECMAScript]
 [Description("@#VideoFrameInit")]
 public record VideoFrameInit(
     [property: Description("@#duration")]Number? Duration = default,
@@ -6458,7 +6118,6 @@ public record VideoFrameMetadata(
 /// <see href="https://w3c.github.io/webcodecs/aac_codec_registration.html#dictdef-aacencoderconfig">AAC WebCodecs Registration: 5.1 AacEncoderConfig</see>
 /// </remarks>
 /// <param name="Format">AacEncoderConfig 字典中的 format 成员，WebIDL 类型为 AacBitstreamFormat。可省略。WebIDL 默认值：aac。 <see href="https://w3c.github.io/webcodecs/aac_codec_registration.html#dom-aacencoderconfig-format">AAC WebCodecs Registration: 5.1 AacEncoderConfig</see></param>
-[ECMAScript]
 [Description("@#AacEncoderConfig")]
 public record AacEncoderConfig(
     [property: Description("@#format")]AacBitstreamFormat Format = AacBitstreamFormat.Aac);
@@ -6470,7 +6129,6 @@ public record AacEncoderConfig(
 /// <see href="https://w3c.github.io/webcodecs/av1_codec_registration.html#dictdef-videoencoderencodeoptionsforav1">AV1 WebCodecs Registration: 5.1 VideoEncoderEncodeOptionsForAv1</see>
 /// </remarks>
 /// <param name="Quantizer">VideoEncoderEncodeOptionsForAv1 字典中的 quantizer 成员，WebIDL 类型为 unsigned short?。可省略。 <see href="https://w3c.github.io/webcodecs/av1_codec_registration.html#dom-videoencoderencodeoptionsforav1-quantizer">AV1 WebCodecs Registration: 5.1 VideoEncoderEncodeOptionsForAv1</see></param>
-[ECMAScript]
 [Description("@#VideoEncoderEncodeOptionsForAv1")]
 public record VideoEncoderEncodeOptionsForAv1(
     [property: Description("@#quantizer")]ushort Quantizer = default);
@@ -6482,7 +6140,6 @@ public record VideoEncoderEncodeOptionsForAv1(
 /// <see href="https://w3c.github.io/webcodecs/avc_codec_registration.html#dictdef-avcencoderconfig">AVC (H.264) WebCodecs Registration: 5.1 AvcEncoderConfig</see>
 /// </remarks>
 /// <param name="Format">AvcEncoderConfig 字典中的 format 成员，WebIDL 类型为 AvcBitstreamFormat。可省略。WebIDL 默认值：avc。 <see href="https://w3c.github.io/webcodecs/avc_codec_registration.html#dom-avcencoderconfig-format">AVC (H.264) WebCodecs Registration: 5.1 AvcEncoderConfig</see></param>
-[ECMAScript]
 [Description("@#AvcEncoderConfig")]
 public record AvcEncoderConfig(
     [property: Description("@#format")]AvcBitstreamFormat Format = AvcBitstreamFormat.Avc);
@@ -6494,7 +6151,6 @@ public record AvcEncoderConfig(
 /// <see href="https://w3c.github.io/webcodecs/avc_codec_registration.html#dictdef-videoencoderencodeoptionsforavc">AVC (H.264) WebCodecs Registration: 6.1 VideoEncoderEncodeOptionsForAvc</see>
 /// </remarks>
 /// <param name="Quantizer">VideoEncoderEncodeOptionsForAvc 字典中的 quantizer 成员，WebIDL 类型为 unsigned short?。可省略。 <see href="https://w3c.github.io/webcodecs/avc_codec_registration.html#dom-videoencoderencodeoptionsforavc-quantizer">AVC (H.264) WebCodecs Registration: 6.1 VideoEncoderEncodeOptionsForAvc</see></param>
-[ECMAScript]
 [Description("@#VideoEncoderEncodeOptionsForAvc")]
 public record VideoEncoderEncodeOptionsForAvc(
     [property: Description("@#quantizer")]ushort Quantizer = default);
@@ -6507,7 +6163,6 @@ public record VideoEncoderEncodeOptionsForAvc(
 /// </remarks>
 /// <param name="BlockSize">FlacEncoderConfig 字典中的 blockSize 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webcodecs/flac_codec_registration.html#dom-flacencoderconfig-blocksize">FLAC WebCodecs Registration: 5.1 FlacEncoderConfig</see></param>
 /// <param name="CompressLevel">compressLevel <see href="https://w3c.github.io/webcodecs/flac_codec_registration.html#dom-flacencoderconfig-compresslevel">FLAC WebCodecs Registration: 5.1 FlacEncoderConfig</see></param>
-[ECMAScript]
 [Description("@#FlacEncoderConfig")]
 public record FlacEncoderConfig(
     [property: Description("@#blockSize")]uint BlockSize = 0,
@@ -6520,7 +6175,6 @@ public record FlacEncoderConfig(
 /// <see href="https://w3c.github.io/webcodecs/hevc_codec_registration.html#dictdef-hevcencoderconfig">HEVC (H.265) WebCodecs Registration: 5.1 HevcEncoderConfig</see>
 /// </remarks>
 /// <param name="Format">HevcEncoderConfig 字典中的 format 成员，WebIDL 类型为 HevcBitstreamFormat。可省略。WebIDL 默认值：hevc。 <see href="https://w3c.github.io/webcodecs/hevc_codec_registration.html#dom-hevcencoderconfig-format">HEVC (H.265) WebCodecs Registration: 5.1 HevcEncoderConfig</see></param>
-[ECMAScript]
 [Description("@#HevcEncoderConfig")]
 public record HevcEncoderConfig(
     [property: Description("@#format")]HevcBitstreamFormat Format = HevcBitstreamFormat.Hevc);
@@ -6532,7 +6186,6 @@ public record HevcEncoderConfig(
 /// <see href="https://w3c.github.io/webcodecs/hevc_codec_registration.html#dictdef-videoencoderencodeoptionsforhevc">HEVC (H.265) WebCodecs Registration: 6.1 VideoEncoderEncodeOptionsForHevc</see>
 /// </remarks>
 /// <param name="Quantizer">VideoEncoderEncodeOptionsForHevc 字典中的 quantizer 成员，WebIDL 类型为 unsigned short?。可省略。 <see href="https://w3c.github.io/webcodecs/hevc_codec_registration.html#dom-videoencoderencodeoptionsforhevc-quantizer">HEVC (H.265) WebCodecs Registration: 6.1 VideoEncoderEncodeOptionsForHevc</see></param>
-[ECMAScript]
 [Description("@#VideoEncoderEncodeOptionsForHevc")]
 public record VideoEncoderEncodeOptionsForHevc(
     [property: Description("@#quantizer")]ushort Quantizer = default);
@@ -6551,7 +6204,6 @@ public record VideoEncoderEncodeOptionsForHevc(
 /// <param name="Packetlossperc">packetlossperc <see href="https://w3c.github.io/webcodecs/opus_codec_registration.html#dom-opusencoderconfig-packetlossperc">Opus WebCodecs Registration: 5.1 OpusEncoderConfig</see></param>
 /// <param name="Useinbandfec">useinbandfec <see href="https://w3c.github.io/webcodecs/opus_codec_registration.html#dom-opusencoderconfig-useinbandfec">Opus WebCodecs Registration: 5.1 OpusEncoderConfig</see></param>
 /// <param name="Usedtx">OpusEncoderConfig 字典中的 usedtx 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/webcodecs/opus_codec_registration.html#dom-opusencoderconfig-usedtx">Opus WebCodecs Registration: 5.1 OpusEncoderConfig</see></param>
-[ECMAScript]
 [Description("@#OpusEncoderConfig")]
 public record OpusEncoderConfig(
     [property: Description("@#format")]OpusBitstreamFormat Format = OpusBitstreamFormat.Opus,
@@ -6570,7 +6222,6 @@ public record OpusEncoderConfig(
 /// <see href="https://w3c.github.io/webcodecs/vp9_codec_registration.html#dictdef-videoencoderencodeoptionsforvp9">VP9 WebCodecs Registration: 5.1 VideoEncoderEncodeOptionsForVp9</see>
 /// </remarks>
 /// <param name="Quantizer">VideoEncoderEncodeOptionsForVp9 字典中的 quantizer 成员，WebIDL 类型为 unsigned short?。可省略。 <see href="https://w3c.github.io/webcodecs/vp9_codec_registration.html#dom-videoencoderencodeoptionsforvp9-quantizer">VP9 WebCodecs Registration: 5.1 VideoEncoderEncodeOptionsForVp9</see></param>
-[ECMAScript]
 [Description("@#VideoEncoderEncodeOptionsForVp9")]
 public record VideoEncoderEncodeOptionsForVp9(
     [property: Description("@#quantizer")]ushort Quantizer = default);
@@ -6582,7 +6233,6 @@ public record VideoEncoderEncodeOptionsForVp9(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AesCbcParams">MDN Web Docs: AesCbcParams</see>
 /// </remarks>
 /// <param name="Iv">AesCbcParams 字典中的 iv 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-AesCbcParams-iv">Web Cryptography API Level 2: 28.3 AesCbcParams dictionary</see></param>
-[ECMAScript]
 [Description("@#AesCbcParams")]
 public record AesCbcParams(
     [property: Description("@#iv")]IBufferSource? Iv = default) : Algorithm;
@@ -6595,7 +6245,6 @@ public record AesCbcParams(
 /// </remarks>
 /// <param name="Counter">The counter member contains the initial value of the counter block. counter MUST be 16 bytes (the AES block size). The counter bits are the rightmost length bits of the counter block. The rest of the counter block is for the nonce. The counter bits are incremented using the standard incrementing function specified in NIST SP 800-38A Appendix B.1: the counter bits are interpreted as a big-endian integer and incremented by one. <see href="https://w3c.github.io/webcrypto/#dfn-AesCtrParams-counter">Web Cryptography API Level 2: 27.3 AesCtrParams dictionary</see></param>
 /// <param name="Length">The length member contains the length, in bits, of the rightmost part of the counter block that is incremented. <see href="https://w3c.github.io/webcrypto/#dfn-AesCtrParams-length">Web Cryptography API Level 2: 27.3 AesCtrParams dictionary</see></param>
-[ECMAScript]
 [Description("@#AesCtrParams")]
 public record AesCtrParams(
     [property: Description("@#counter")]IBufferSource? Counter = default,
@@ -6608,7 +6257,6 @@ public record AesCtrParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AesDerivedKeyParams">MDN Web Docs: AesDerivedKeyParams</see>
 /// </remarks>
 /// <param name="Length">The length member represents the length, in bits, of the key. <see href="https://w3c.github.io/webcrypto/#dfn-AesDerivedKeyParams-length">Web Cryptography API Level 2: 27.6 AesDerivedKeyParams dictionary</see></param>
-[ECMAScript]
 [Description("@#AesDerivedKeyParams")]
 public record AesDerivedKeyParams(
     [property: Description("@#length")]ushort Length = default) : Algorithm;
@@ -6622,7 +6270,6 @@ public record AesDerivedKeyParams(
 /// <param name="Iv">AesGcmParams 字典中的 iv 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-AesGcmParams-iv">Web Cryptography API Level 2: 29.3 AesGcmParams dictionary</see></param>
 /// <param name="AdditionalData">The additionalData member represents the additional authentication data to include. <see href="https://w3c.github.io/webcrypto/#dfn-AesGcmParams-additionalData">Web Cryptography API Level 2: 29.3 AesGcmParams dictionary</see></param>
 /// <param name="TagLength">The tagLength member represents the desired length of the authentication tag. May be 0 - 128. <see href="https://w3c.github.io/webcrypto/#dfn-AesGcmParams-tagLength">Web Cryptography API Level 2: 29.3 AesGcmParams dictionary</see></param>
-[ECMAScript]
 [Description("@#AesGcmParams")]
 public record AesGcmParams(
     [property: Description("@#iv")]IBufferSource? Iv = default,
@@ -6636,7 +6283,6 @@ public record AesGcmParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AesKeyGenParams">MDN Web Docs: AesKeyGenParams</see>
 /// </remarks>
 /// <param name="Length">The length member represents the length, in bits, of the key. <see href="https://w3c.github.io/webcrypto/#dfn-AesKeyGenParams-length">Web Cryptography API Level 2: 27.5 AesKeyGenParams dictionary</see></param>
-[ECMAScript]
 [Description("@#AesKeyGenParams")]
 public record AesKeyGenParams(
     [property: Description("@#length")]ushort Length = default) : Algorithm;
@@ -6648,7 +6294,6 @@ public record AesKeyGenParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EcKeyImportParams">MDN Web Docs: EcKeyImportParams</see>
 /// </remarks>
 /// <param name="NamedCurve">The namedCurve member represents a named curve. <see href="https://w3c.github.io/webcrypto/#dfn-EcKeyImportParams-namedCurve">Web Cryptography API Level 2: 23.6 EcKeyImportParams dictionary</see></param>
-[ECMAScript]
 [Description("@#EcKeyImportParams")]
 public record EcKeyImportParams(
     [property: Description("@#namedCurve")]NamedCurve? NamedCurve = default) : Algorithm;
@@ -6660,7 +6305,6 @@ public record EcKeyImportParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EcdhKeyDeriveParams">MDN Web Docs: EcdhKeyDeriveParams</see>
 /// </remarks>
 /// <param name="Public">The public member represents the peer&apos;s EC public key. <see href="https://w3c.github.io/webcrypto/#dfn-EcdhKeyDeriveParams-public">Web Cryptography API Level 2: 24.3 EcdhKeyDeriveParams dictionary</see></param>
-[ECMAScript]
 [Description("@#EcdhKeyDeriveParams")]
 public record EcdhKeyDeriveParams(
     [property: Description("@#public")]CryptoKey? Public = default) : Algorithm;
@@ -6672,7 +6316,6 @@ public record EcdhKeyDeriveParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EcdsaParams">MDN Web Docs: EcdsaParams</see>
 /// </remarks>
 /// <param name="Hash">EcdsaParams 字典中的 hash 成员，WebIDL 类型为 HashAlgorithmIdentifier。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-EcdsaParams-hash">Web Cryptography API Level 2: 23.3 EcdsaParams dictionary</see></param>
-[ECMAScript]
 [Description("@#EcdsaParams")]
 public record EcdsaParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default) : Algorithm;
@@ -6686,7 +6329,6 @@ public record EcdsaParams(
 /// <param name="Hash">HkdfParams 字典中的 hash 成员，WebIDL 类型为 HashAlgorithmIdentifier。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-HkdfParams-hash">Web Cryptography API Level 2: 33.3 HkdfParams dictionary</see></param>
 /// <param name="Salt">The salt member represents the salt used in the extract step. <see href="https://w3c.github.io/webcrypto/#dfn-HkdfParams-salt">Web Cryptography API Level 2: 33.3 HkdfParams dictionary</see></param>
 /// <param name="Info">The info member represents application specific context for the derived keying material. <see href="https://w3c.github.io/webcrypto/#dfn-HkdfParams-info">Web Cryptography API Level 2: 33.3 HkdfParams dictionary</see></param>
-[ECMAScript]
 [Description("@#HkdfParams")]
 public record HkdfParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default,
@@ -6701,7 +6343,6 @@ public record HkdfParams(
 /// </remarks>
 /// <param name="Hash">The hash member represents the inner hash function to use. <see href="https://w3c.github.io/webcrypto/#dfn-HmacImportParams-hash">Web Cryptography API Level 2: 31.3 HmacImportParams dictionary</see></param>
 /// <param name="Length">The length member represent the length (in bits) of the key. <see href="https://w3c.github.io/webcrypto/#dfn-HmacImportParams-length">Web Cryptography API Level 2: 31.3 HmacImportParams dictionary</see></param>
-[ECMAScript]
 [Description("@#HmacImportParams")]
 public record HmacImportParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default,
@@ -6715,7 +6356,6 @@ public record HmacImportParams(
 /// </remarks>
 /// <param name="Hash">The hash member represents the inner hash function to use. <see href="https://w3c.github.io/webcrypto/#dfn-HmacKeyGenParams-hash">Web Cryptography API Level 2: 31.5 HmacKeyGenParams dictionary</see></param>
 /// <param name="Length">The length member represent the length (in bits) of the key to generate. If unspecified, the recommended length will be used, which is the size of the associated hash function&apos;s block size. <see href="https://w3c.github.io/webcrypto/#dfn-HmacKeyGenParams-length">Web Cryptography API Level 2: 31.5 HmacKeyGenParams dictionary</see></param>
-[ECMAScript]
 [Description("@#HmacKeyGenParams")]
 public record HmacKeyGenParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default,
@@ -6728,7 +6368,6 @@ public record HmacKeyGenParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedImportParams">MDN Web Docs: RsaHashedImportParams</see>
 /// </remarks>
 /// <param name="Hash">RsaHashedImportParams 字典中的 hash 成员，WebIDL 类型为 HashAlgorithmIdentifier。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedImportParams-hash">Web Cryptography API Level 2: 20.8 RsaHashedImportParams dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaHashedImportParams")]
 public record RsaHashedImportParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default) : Algorithm;
@@ -6740,7 +6379,6 @@ public record RsaHashedImportParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/RsaHashedKeyGenParams">MDN Web Docs: RsaHashedKeyGenParams</see>
 /// </remarks>
 /// <param name="Hash">RsaHashedKeyGenParams 字典中的 hash 成员，WebIDL 类型为 HashAlgorithmIdentifier。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyGenParams-hash">Web Cryptography API Level 2: 20.4 RsaHashedKeyGenParams dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaHashedKeyGenParams")]
 public record RsaHashedKeyGenParams(
     [property: Description("@#hash")]HashAlgorithmIdentifier? Hash = default) : RsaKeyGenParams;
@@ -6753,7 +6391,6 @@ public record RsaHashedKeyGenParams(
 /// </remarks>
 /// <param name="ModulusLength">The modulusLength member contains the length, in bits, of the RSA modulus. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm-modulusLength">Web Cryptography API Level 2: 20.6 RsaKeyAlgorithm dictionary</see></param>
 /// <param name="PublicExponent">The publicExponent member contains the RSA public exponent. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyAlgorithm-publicExponent">Web Cryptography API Level 2: 20.6 RsaKeyAlgorithm dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaKeyAlgorithm")]
 public record RsaKeyAlgorithm(
     [property: Description("@#modulusLength")]uint ModulusLength = default,
@@ -6767,7 +6404,6 @@ public record RsaKeyAlgorithm(
 /// </remarks>
 /// <param name="ModulusLength">The modulusLength member contains the length, in bits, of the RSA modulus. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyGenParams-modulusLength">Web Cryptography API Level 2: 20.3 RsaKeyGenParams dictionary</see></param>
 /// <param name="PublicExponent">The publicExponent member contains the RSA public exponent. <see href="https://w3c.github.io/webcrypto/#dfn-RsaKeyGenParams-publicExponent">Web Cryptography API Level 2: 20.3 RsaKeyGenParams dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaKeyGenParams")]
 public record RsaKeyGenParams(
     [property: Description("@#modulusLength")]uint ModulusLength = default,
@@ -6780,7 +6416,6 @@ public record RsaKeyGenParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/RsaOaepParams">MDN Web Docs: RsaOaepParams</see>
 /// </remarks>
 /// <param name="Label">The label member represents the optional label/application data to associate with the message. <see href="https://w3c.github.io/webcrypto/#dfn-RsaOaepParams-label">Web Cryptography API Level 2: 22.3 RsaOaepParams dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaOaepParams")]
 public record RsaOaepParams(
     [property: Description("@#label")]IBufferSource? Label = default) : Algorithm;
@@ -6792,7 +6427,6 @@ public record RsaOaepParams(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/RsaPssParams">MDN Web Docs: RsaPssParams</see>
 /// </remarks>
 /// <param name="SaltLength">The saltLength member represents the desired length of the random salt in bytes. <see href="https://w3c.github.io/webcrypto/#dfn-RsaPssParams-saltLength">Web Cryptography API Level 2: 21.3 RsaPssParams dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaPssParams")]
 public record RsaPssParams(
     [property: Description("@#saltLength")]uint SaltLength = default) : Algorithm;
@@ -6805,7 +6439,6 @@ public record RsaPssParams(
 /// </remarks>
 /// <param name="SequenceNumber">RTCEncodedAudioFrameMetadata 字典中的 sequenceNumber 成员，WebIDL 类型为 short。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedaudioframemetadata-sequencenumber">WebRTC Encoded Transform: 4.4.1 Members</see></param>
 /// <param name="AudioLevel">RTCEncodedAudioFrameMetadata 字典中的 audioLevel 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedaudioframemetadata-audiolevel">WebRTC Encoded Transform: 4.4.1 Members</see></param>
-[ECMAScript]
 [Description("@#RTCEncodedAudioFrameMetadata")]
 public record RTCEncodedAudioFrameMetadata(
     [property: Description("@#sequenceNumber")]short SequenceNumber = default,
@@ -6818,7 +6451,6 @@ public record RTCEncodedAudioFrameMetadata(
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dictdef-rtcencodedaudioframeoptions">WebRTC Encoded Transform: 4.5 RTCEncodedAudioFrame interface</see>
 /// </remarks>
 /// <param name="Metadata">RTCEncodedAudioFrameOptions 字典中的 metadata 成员，WebIDL 类型为 RTCEncodedAudioFrameMetadata。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedaudioframeoptions-metadata">WebRTC Encoded Transform: 4.5 RTCEncodedAudioFrame interface</see></param>
-[ECMAScript]
 [Description("@#RTCEncodedAudioFrameOptions")]
 public record RTCEncodedAudioFrameOptions(
     [property: Description("@#metadata")]RTCEncodedAudioFrameMetadata? Metadata = default);
@@ -6837,7 +6469,6 @@ public record RTCEncodedAudioFrameOptions(
 /// <param name="CaptureTime">RTCEncodedFrameMetadata 字典中的 captureTime 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedframemetadata-capturetime">WebRTC Encoded Transform: 4.1.1 Members</see></param>
 /// <param name="SenderCaptureTimeOffset">RTCEncodedFrameMetadata 字典中的 senderCaptureTimeOffset 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedframemetadata-sendercapturetimeoffset">WebRTC Encoded Transform: 4.1.1 Members</see></param>
 /// <param name="MimeType">RTCEncodedFrameMetadata 字典中的 mimeType 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedframemetadata-mimetype">WebRTC Encoded Transform: 4.1.1 Members</see></param>
-[ECMAScript]
 [Description("@#RTCEncodedFrameMetadata")]
 public record RTCEncodedFrameMetadata(
     [property: Description("@#synchronizationSource")]uint SynchronizationSource = default,
@@ -6862,7 +6493,6 @@ public record RTCEncodedFrameMetadata(
 /// <param name="SpatialIndex">RTCEncodedVideoFrameMetadata 字典中的 spatialIndex 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedvideoframemetadata-spatialindex">WebRTC Encoded Transform: 4.2 RTCEncodedVideoFrameMetadata dictionary</see></param>
 /// <param name="TemporalIndex">RTCEncodedVideoFrameMetadata 字典中的 temporalIndex 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedvideoframemetadata-temporalindex">WebRTC Encoded Transform: 4.2 RTCEncodedVideoFrameMetadata dictionary</see></param>
 /// <param name="Timestamp">RTCEncodedVideoFrameMetadata 字典中的 timestamp 成员，WebIDL 类型为 long long。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedvideoframemetadata-timestamp">WebRTC Encoded Transform: 4.2.1 Members</see></param>
-[ECMAScript]
 [Description("@#RTCEncodedVideoFrameMetadata")]
 public record RTCEncodedVideoFrameMetadata(
     [property: Description("@#frameId")]Number? FrameId = default,
@@ -6880,7 +6510,6 @@ public record RTCEncodedVideoFrameMetadata(
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dictdef-rtcencodedvideoframeoptions">WebRTC Encoded Transform: 4.3 RTCEncodedVideoFrame interface</see>
 /// </remarks>
 /// <param name="Metadata">RTCEncodedVideoFrameOptions 字典中的 metadata 成员，WebIDL 类型为 RTCEncodedVideoFrameMetadata。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcencodedvideoframeoptions-metadata">WebRTC Encoded Transform: 4.3 RTCEncodedVideoFrame interface</see></param>
-[ECMAScript]
 [Description("@#RTCEncodedVideoFrameOptions")]
 public record RTCEncodedVideoFrameOptions(
     [property: Description("@#metadata")]RTCEncodedVideoFrameMetadata? Metadata = default);
@@ -6892,7 +6521,6 @@ public record RTCEncodedVideoFrameOptions(
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dictdef-rtcrtpsframeencryptoroptions">WebRTC Encoded Transform: 3 SFrame transforms</see>
 /// </remarks>
 /// <param name="Type">RTCRtpSFrameEncryptorOptions 字典中的 type 成员，WebIDL 类型为 SFrameType。可省略。WebIDL 默认值：per-frame。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-rtcrtpsframeencryptoroptions-type">WebRTC Encoded Transform: 3 SFrame transforms</see></param>
-[ECMAScript]
 [Description("@#RTCRtpSFrameEncryptorOptions")]
 public record RTCRtpSFrameEncryptorOptions(
     [property: Description("@#type")]SFrameType Type = SFrameType.PerFrame) : SFrameTransformOptions;
@@ -6906,7 +6534,6 @@ public record RTCRtpSFrameEncryptorOptions(
 /// <param name="ErrorType">SFrameTransformErrorEventInit 字典中的 errorType 成员，WebIDL 类型为 SFrameTransformErrorEventType。必须提供该成员。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-sframetransformerroreventinit-errortype">WebRTC Encoded Transform: 3 SFrame transforms</see></param>
 /// <param name="Frame">SFrameTransformErrorEventInit 字典中的 frame 成员，WebIDL 类型为 RTCEncodedVideoFrame, RTCEncodedAudioFrame。必须提供该成员。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-sframetransformerroreventinit-frame">WebRTC Encoded Transform: 3 SFrame transforms</see></param>
 /// <param name="KeyID">SFrameTransformErrorEventInit 字典中的 keyID 成员，WebIDL 类型为 CryptoKeyID?。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-sframetransformerroreventinit-keyid">WebRTC Encoded Transform: 3 SFrame transforms</see></param>
-[ECMAScript]
 [Description("@#SFrameTransformErrorEventInit")]
 public record SFrameTransformErrorEventInit(
     [property: Description("@#errorType")]SFrameTransformErrorEventType? ErrorType = default,
@@ -6920,7 +6547,6 @@ public record SFrameTransformErrorEventInit(
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#dictdef-sframetransformoptions">WebRTC Encoded Transform: 3 SFrame transforms</see>
 /// </remarks>
 /// <param name="CipherSuite">SFrameTransformOptions 字典中的 cipherSuite 成员，WebIDL 类型为 SFrameCipherSuite。必须提供该成员。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-sframetransformoptions-ciphersuite">WebRTC Encoded Transform: 3 SFrame transforms</see></param>
-[ECMAScript]
 [Description("@#SFrameTransformOptions")]
 public record SFrameTransformOptions(
     [property: Description("@#cipherSuite")]SFrameCipherSuite? CipherSuite = default);
@@ -6933,7 +6559,6 @@ public record SFrameTransformOptions(
 /// </remarks>
 /// <param name="Worker">WorkerAndParameters 字典中的 worker 成员，WebIDL 类型为 Worker。必须提供该成员。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-workerandparameters-worker">WebRTC Encoded Transform: 5 RTCRtpScriptTransform interface</see></param>
 /// <param name="Type">WorkerAndParameters 字典中的 type 成员，WebIDL 类型为 RTCRtpScriptTransformType。可省略。 <see href="https://w3c.github.io/webrtc-encoded-transform/#dom-workerandparameters-type">WebRTC Encoded Transform: 5 RTCRtpScriptTransform interface</see></param>
-[ECMAScript]
 [Description("@#WorkerAndParameters")]
 public record WorkerAndParameters(
     [property: Description("@#worker")]Worker? Worker = default,
@@ -6947,7 +6572,6 @@ public record WorkerAndParameters(
 /// </remarks>
 /// <param name="GenerateAssertion">The RTCPeerConnection invokes the generateAssertion method on the RTCIdentityProvider methods registered by the IdP. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityprovider-generateassertion">Identity for WebRTC 1.0: Dictionary RTCIdentityProvider Members</see></param>
 /// <param name="ValidateAssertion">The RTCPeerConnection invokes the validateAssertion method registered by the IdP. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityprovider-validateassertion">Identity for WebRTC 1.0: Dictionary RTCIdentityProvider Members</see></param>
-[ECMAScript]
 [Description("@#RTCIdentityProvider")]
 public record RTCIdentityProvider(
     [property: Description("@#generateAssertion")]GenerateAssertionCallback? GenerateAssertion = default,
@@ -6960,7 +6584,6 @@ public record RTCIdentityProvider(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachanneleventinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelEventInit Members</see>
 /// </remarks>
 /// <param name="Channel">RTCDataChannelEventInit 字典中的 channel 成员，WebIDL 类型为 RTCDataChannel。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachanneleventinit-channel">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDataChannelEventInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCDataChannelEventInit")]
 public record RTCDataChannelEventInit(
     [property: Description("@#channel")]RTCDataChannel? Channel = default) : EventInit;
@@ -6972,7 +6595,6 @@ public record RTCDataChannelEventInit(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeeventinit">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDTMFToneChangeEventInit Members</see>
 /// </remarks>
 /// <param name="Tone">RTCDTMFToneChangeEventInit 字典中的 tone 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtmftonechangeeventinit-tone">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDTMFToneChangeEventInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCDTMFToneChangeEventInit")]
 public record RTCDTMFToneChangeEventInit(
     [property: Description("@#tone")]string? Tone = default) : EventInit;
@@ -6984,7 +6606,6 @@ public record RTCDTMFToneChangeEventInit(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerroreventinit">WebRTC: Real-Time Communication in Browsers: 11.4 RTCErrorEventInit Dictionary</see>
 /// </remarks>
 /// <param name="Error">RTCErrorEventInit 字典中的 error 成员，WebIDL 类型为 RTCError。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerroreventinit-error">WebRTC: Real-Time Communication in Browsers: 11.4.1 Dictionary RTCErrorEventInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCErrorEventInit")]
 public record RTCErrorEventInit(
     [property: Description("@#error")]RTCError? Error = default) : EventInit;
@@ -7023,7 +6644,6 @@ public record RTCIceParameters(
 /// </remarks>
 /// <param name="RelayProtocol">RTCLocalIceCandidateInit 字典中的 relayProtocol 成员，WebIDL 类型为 RTCIceServerTransportProtocol?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalicecandidateinit-relayprotocol">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalIceCandidateInit Members</see></param>
 /// <param name="Url">RTCLocalIceCandidateInit 字典中的 url 成员，WebIDL 类型为 USVString?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalicecandidateinit-url">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalIceCandidateInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCLocalIceCandidateInit")]
 public record RTCLocalIceCandidateInit(
     [property: Description("@#relayProtocol")]RTCIceServerTransportProtocol? RelayProtocol = default,
@@ -7035,7 +6655,6 @@ public record RTCLocalIceCandidateInit(
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/createAnswer">MDN Web Docs: RTCOfferAnswerOptions</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#RTCOfferAnswerOptions")]
 public abstract record RTCOfferAnswerOptions();
 
@@ -7076,7 +6695,6 @@ public record RTCOfferOptions(
 /// <param name="Url">RTCPeerConnectionIceErrorEventInit 字典中的 url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerroreventinit-url">WebRTC: Real-Time Communication in Browsers: Dictionary RTCPeerConnectionIceErrorEventInit Members</see></param>
 /// <param name="ErrorCode">RTCPeerConnectionIceErrorEventInit 字典中的 errorCode 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerroreventinit-errorcode">WebRTC: Real-Time Communication in Browsers: Dictionary RTCPeerConnectionIceErrorEventInit Members</see></param>
 /// <param name="ErrorText">RTCPeerConnectionIceErrorEventInit 字典中的 errorText 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceerroreventinit-errortext">WebRTC: Real-Time Communication in Browsers: Dictionary RTCPeerConnectionIceErrorEventInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCPeerConnectionIceErrorEventInit")]
 public record RTCPeerConnectionIceErrorEventInit(
     [property: Description("@#address")]string? Address = default,
@@ -7093,7 +6711,6 @@ public record RTCPeerConnectionIceErrorEventInit(
 /// </remarks>
 /// <param name="Candidate">RTCPeerConnectionIceEventInit 字典中的 candidate 成员，WebIDL 类型为 RTCIceCandidate?。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceeventinit-candidate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCPeerConnectionIceEventInit Members</see></param>
 /// <param name="Url">RTCPeerConnectionIceEventInit 字典中的 url 成员，WebIDL 类型为 USVString?。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectioniceeventinit-url">WebRTC: Real-Time Communication in Browsers: Dictionary RTCPeerConnectionIceEventInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCPeerConnectionIceEventInit")]
 public record RTCPeerConnectionIceEventInit(
     [property: Description("@#candidate")]RTCIceCandidate? Candidate = default,
@@ -7106,7 +6723,6 @@ public record RTCPeerConnectionIceEventInit(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodingparameters">WebRTC: Real-Time Communication in Browsers: 5.2.4 RTCRtpCodingParameters Dictionary</see>
 /// </remarks>
 /// <param name="Rid">RTCRtpCodingParameters 字典中的 rid 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodingparameters-rid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodingParameters Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpCodingParameters")]
 public record RTCRtpCodingParameters(
     [property: Description("@#rid")]string? Rid = default);
@@ -7120,7 +6736,6 @@ public record RTCRtpCodingParameters(
 /// <param name="Uri">RTCRtpHeaderExtensionParameters 字典中的 uri 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensionparameters-uri">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpHeaderExtensionParameters Members</see></param>
 /// <param name="Id">RTCRtpHeaderExtensionParameters 字典中的 id 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensionparameters-id">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpHeaderExtensionParameters Members</see></param>
 /// <param name="Encrypted">RTCRtpHeaderExtensionParameters 字典中的 encrypted 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensionparameters-encrypted">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpHeaderExtensionParameters Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpHeaderExtensionParameters")]
 public record RTCRtpHeaderExtensionParameters(
     [property: Description("@#uri")]string? Uri = default,
@@ -7136,7 +6751,6 @@ public record RTCRtpHeaderExtensionParameters(
 /// <param name="HeaderExtensions">The headerExtensions sequence is populated based on the header extensions that have been negotiated for sending. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-headerextensions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
 /// <param name="Rtcp">rtcp.cname is set to the CNAME of the associated RTCPeerConnection. rtcp.reducedSize is set to true if reduced-size RTCP has been negotiated for sending, and false otherwise. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-rtcp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
 /// <param name="Codecs">Let codecs be parameters.codecs. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpparameters-codecs">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpParameters Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpParameters")]
 public record RTCRtpParameters(
     [property: Description("@#headerExtensions")]RTCRtpHeaderExtensionParameters[]? HeaderExtensions = default,
@@ -7149,7 +6763,6 @@ public record RTCRtpParameters(
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpReceiver/getParameters">MDN Web Docs: RTCRtpReceiveParameters</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#RTCRtpReceiveParameters")]
 public abstract record RTCRtpReceiveParameters();
 
@@ -7162,7 +6775,6 @@ public abstract record RTCRtpReceiveParameters();
 /// <param name="Direction">Let direction be init.direction. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-direction">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
 /// <param name="Streams">Let streams be init.streams. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-streams">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
 /// <param name="SendEncodings">The sendEncodings argument can be used to specify the number of offered simulcast encodings, and optionally their RIDs and encoding parameters. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverinit-sendencodings">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpTransceiverInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpTransceiverInit")]
 public record RTCRtpTransceiverInit(
     [property: Description("@#direction")]RTCRtpTransceiverDirection Direction = RTCRtpTransceiverDirection.Sendrecv,
@@ -7177,7 +6789,6 @@ public record RTCRtpTransceiverInit(
 /// </remarks>
 /// <param name="CloseCode">WebTransportCloseInfo 字典中的 closeCode 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webtransport/#dom-webtransportcloseinfo-closecode">WebTransport: 6.10 WebTransportCloseInfo Dictionary</see></param>
 /// <param name="Reason">WebTransportCloseInfo 字典中的 reason 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/webtransport/#dom-webtransportcloseinfo-reason">WebTransport: 6.10 WebTransportCloseInfo Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportCloseInfo")]
 public record WebTransportCloseInfo(
     [property: Description("@#closeCode")]uint CloseCode = 0,
@@ -7203,7 +6814,6 @@ public record WebTransportCloseInfo(
 /// <param name="Datagrams">WebTransportConnectionStats 字典中的 datagrams 成员，WebIDL 类型为 WebTransportDatagramStats。必须提供该成员。 <see href="https://w3c.github.io/webtransport/#dom-webtransportconnectionstats-datagrams">WebTransport: 6.13 WebTransportConnectionStats Dictionary</see></param>
 /// <param name="EstimatedSendRate">WebTransportConnectionStats 字典中的 estimatedSendRate 成员，WebIDL 类型为 unsigned long long?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransportconnectionstats-estimatedsendrate">WebTransport: 6.13 WebTransportConnectionStats Dictionary</see></param>
 /// <param name="AtSendCapacity">WebTransportConnectionStats 字典中的 atSendCapacity 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransportconnectionstats-atsendcapacity">WebTransport: 6.13 WebTransportConnectionStats Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportConnectionStats")]
 public record WebTransportConnectionStats(
     [property: Description("@#bytesSent")]Number? BytesSent = default,
@@ -7231,7 +6841,6 @@ public record WebTransportConnectionStats(
 /// <param name="ExpiredIncoming">WebTransportDatagramStats 字典中的 expiredIncoming 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportdatagramstats-expiredincoming">WebTransport: 6.14 WebTransportDatagramStats Dictionary</see></param>
 /// <param name="ExpiredOutgoing">WebTransportDatagramStats 字典中的 expiredOutgoing 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportdatagramstats-expiredoutgoing">WebTransport: 6.14 WebTransportDatagramStats Dictionary</see></param>
 /// <param name="LostOutgoing">WebTransportDatagramStats 字典中的 lostOutgoing 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportdatagramstats-lostoutgoing">WebTransport: 6.14 WebTransportDatagramStats Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportDatagramStats")]
 public record WebTransportDatagramStats(
     [property: Description("@#droppedIncoming")]Number? DroppedIncoming = default,
@@ -7247,7 +6856,6 @@ public record WebTransportDatagramStats(
 /// </remarks>
 /// <param name="Source">WebTransportErrorOptions 字典中的 source 成员，WebIDL 类型为 WebTransportErrorSource。可省略。WebIDL 默认值：stream。 <see href="https://w3c.github.io/webtransport/#dom-webtransporterroroptions-source">WebTransport: 12. WebTransportError Interface</see></param>
 /// <param name="StreamErrorCode">WebTransportErrorOptions 字典中的 streamErrorCode 成员，WebIDL 类型为 unsigned long?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransporterroroptions-streamerrorcode">WebTransport: 12. WebTransportError Interface</see></param>
-[ECMAScript]
 [Description("@#WebTransportErrorOptions")]
 public record WebTransportErrorOptions(
     [property: Description("@#source")]WebTransportErrorSource Source = WebTransportErrorSource.Stream,
@@ -7261,7 +6869,6 @@ public record WebTransportErrorOptions(
 /// </remarks>
 /// <param name="Algorithm">WebTransportHash 字典中的 algorithm 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webtransport/#dom-webtransporthash-algorithm">WebTransport: 6.9 Configuration</see></param>
 /// <param name="Value">WebTransportHash 字典中的 value 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://w3c.github.io/webtransport/#dom-webtransporthash-value">WebTransport: 6.9 Configuration</see></param>
-[ECMAScript]
 [Description("@#WebTransportHash")]
 public record WebTransportHash(
     [property: Description("@#algorithm")]string? Algorithm = default,
@@ -7282,7 +6889,6 @@ public record WebTransportHash(
 /// <param name="AnticipatedConcurrentIncomingBidirectionalStreams">WebTransportOptions 字典中的 anticipatedConcurrentIncomingBidirectionalStreams 成员，WebIDL 类型为 unsigned short?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransportoptions-anticipatedconcurrentincomingbidirectionalstreams">WebTransport: 6.9 Configuration</see></param>
 /// <param name="Protocols">WebTransportOptions 字典中的 protocols 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransportoptions-protocols">WebTransport: 6.9 Configuration</see></param>
 /// <param name="DatagramsReadableType">WebTransportOptions 字典中的 datagramsReadableType 成员，WebIDL 类型为 ReadableStreamType。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportoptions-datagramsreadabletype">WebTransport: 6.9 Configuration</see></param>
-[ECMAScript]
 [Description("@#WebTransportOptions")]
 public record WebTransportOptions(
     [property: Description("@#allowPooling")]bool AllowPooling = false,
@@ -7303,7 +6909,6 @@ public record WebTransportOptions(
 /// </remarks>
 /// <param name="BytesReceived">WebTransportReceiveStreamStats 字典中的 bytesReceived 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportreceivestreamstats-bytesreceived">WebTransport: 9.5 WebTransportReceiveStreamStats Dictionary</see></param>
 /// <param name="BytesRead">WebTransportReceiveStreamStats 字典中的 bytesRead 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportreceivestreamstats-bytesread">WebTransport: 9.5 WebTransportReceiveStreamStats Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportReceiveStreamStats")]
 public record WebTransportReceiveStreamStats(
     [property: Description("@#bytesReceived")]Number? BytesReceived = default,
@@ -7317,7 +6922,6 @@ public record WebTransportReceiveStreamStats(
 /// </remarks>
 /// <param name="SendGroup">WebTransportSendOptions 字典中的 sendGroup 成员，WebIDL 类型为 WebTransportSendGroup?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransportsendoptions-sendgroup">WebTransport: 6.11 WebTransportSendOptions Dictionary</see></param>
 /// <param name="SendOrder">WebTransportSendOptions 字典中的 sendOrder 成员，WebIDL 类型为 long long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webtransport/#dom-webtransportsendoptions-sendorder">WebTransport: 6.11 WebTransportSendOptions Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportSendOptions")]
 public record WebTransportSendOptions(
     [property: Description("@#sendGroup")]WebTransportSendGroup? SendGroup = null,
@@ -7330,7 +6934,6 @@ public record WebTransportSendOptions(
 /// <see href="https://w3c.github.io/webtransport/#dictdef-webtransportsendstreamoptions">WebTransport: 6.12 WebTransportSendStreamOptions Dictionary</see>
 /// </remarks>
 /// <param name="WaitUntilAvailable">WebTransportSendStreamOptions 字典中的 waitUntilAvailable 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/webtransport/#dom-webtransportsendstreamoptions-waituntilavailable">WebTransport: 6.12 WebTransportSendStreamOptions Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportSendStreamOptions")]
 public record WebTransportSendStreamOptions(
     [property: Description("@#waitUntilAvailable")]bool WaitUntilAvailable = false) : WebTransportSendOptions;
@@ -7344,7 +6947,6 @@ public record WebTransportSendStreamOptions(
 /// <param name="BytesWritten">WebTransportSendStreamStats 字典中的 bytesWritten 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportsendstreamstats-byteswritten">WebTransport: 7.6 WebTransportSendStreamStats Dictionary</see></param>
 /// <param name="BytesSent">WebTransportSendStreamStats 字典中的 bytesSent 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportsendstreamstats-bytessent">WebTransport: 7.6 WebTransportSendStreamStats Dictionary</see></param>
 /// <param name="BytesAcknowledged">WebTransportSendStreamStats 字典中的 bytesAcknowledged 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webtransport/#dom-webtransportsendstreamstats-bytesacknowledged">WebTransport: 7.6 WebTransportSendStreamStats Dictionary</see></param>
-[ECMAScript]
 [Description("@#WebTransportSendStreamStats")]
 public record WebTransportSendStreamStats(
     [property: Description("@#bytesWritten")]Number? BytesWritten = default,
@@ -7361,7 +6963,6 @@ public record WebTransportSendStreamStats(
 /// <param name="MaxDecibels">AnalyserOptions 字典中的 maxDecibels 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：-30。 <see href="https://webaudio.github.io/web-audio-api/#dom-analyseroptions-maxdecibels">Web Audio API 1.1: 1.8.4.1 Dictionary AnalyserOptions Members</see></param>
 /// <param name="MinDecibels">AnalyserOptions 字典中的 minDecibels 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：-100。 <see href="https://webaudio.github.io/web-audio-api/#dom-analyseroptions-mindecibels">Web Audio API 1.1: 1.8.4.1 Dictionary AnalyserOptions Members</see></param>
 /// <param name="SmoothingTimeConstant">AnalyserOptions 字典中的 smoothingTimeConstant 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.8。 <see href="https://webaudio.github.io/web-audio-api/#dom-analyseroptions-smoothingtimeconstant">Web Audio API 1.1: 1.8.4.1 Dictionary AnalyserOptions Members</see></param>
-[ECMAScript]
 [Description("@#AnalyserOptions")]
 public record AnalyserOptions(
     [property: Description("@#fftSize")]uint FftSize = 2048,
@@ -7378,7 +6979,6 @@ public record AnalyserOptions(
 /// <param name="NumberOfChannels">AudioBufferOptions 字典中的 numberOfChannels 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：1。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiobufferoptions-numberofchannels">Web Audio API 1.1: 1.4.4.1 Dictionary AudioBufferOptions Members</see></param>
 /// <param name="Length">AudioBufferOptions 字典中的 length 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiobufferoptions-length">Web Audio API 1.1: 1.4.4.1 Dictionary AudioBufferOptions Members</see></param>
 /// <param name="SampleRate">AudioBufferOptions 字典中的 sampleRate 成员，WebIDL 类型为 float。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiobufferoptions-samplerate">Web Audio API 1.1: 1.4.4.1 Dictionary AudioBufferOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioBufferOptions")]
 public record AudioBufferOptions(
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = 1,
@@ -7397,7 +6997,6 @@ public record AudioBufferOptions(
 /// <param name="LoopEnd">AudioBufferSourceOptions 字典中的 loopEnd 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffersourceoptions-loopend">Web Audio API 1.1: 1.9.4.1 Dictionary AudioBufferSourceOptions Members</see></param>
 /// <param name="LoopStart">AudioBufferSourceOptions 字典中的 loopStart 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffersourceoptions-loopstart">Web Audio API 1.1: 1.9.4.1 Dictionary AudioBufferSourceOptions Members</see></param>
 /// <param name="PlaybackRate">AudioBufferSourceOptions 字典中的 playbackRate 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiobuffersourceoptions-playbackrate">Web Audio API 1.1: 1.9.4.1 Dictionary AudioBufferSourceOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioBufferSourceOptions")]
 public record AudioBufferSourceOptions(
     [property: Description("@#buffer")]AudioBuffer? Buffer = default,
@@ -7417,7 +7016,6 @@ public record AudioBufferSourceOptions(
 /// <param name="SampleRate">AudioContextOptions 字典中的 sampleRate 成员，WebIDL 类型为 float。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontextoptions-samplerate">Web Audio API 1.1: 1.2.5.1 Dictionary AudioContextOptions Members</see></param>
 /// <param name="SinkId">AudioContextOptions 字典中的 sinkId 成员，WebIDL 类型为 DOMString, AudioSinkOptions。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontextoptions-sinkid">Web Audio API 1.1: 1.2.5.1 Dictionary AudioContextOptions Members</see></param>
 /// <param name="RenderSizeHint">AudioContextOptions 字典中的 renderSizeHint 成员，WebIDL 类型为 AudioContextRenderSizeCategory, unsigned long。可省略。WebIDL 默认值：default。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiocontextoptions-rendersizehint">Web Audio API 1.1: 1.2.5.1 Dictionary AudioContextOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioContextOptions")]
 public record AudioContextOptions(
     [property: Description("@#latencyHint")]AudioContextOptionsLatencyHint? LatencyHint = default,
@@ -7434,7 +7032,6 @@ public record AudioContextOptions(
 /// <param name="ChannelCount">AudioNodeOptions 字典中的 channelCount 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audionodeoptions-channelcount">Web Audio API 1.1: 1.5.6.1 Dictionary AudioNodeOptions Members</see></param>
 /// <param name="ChannelCountMode">AudioNodeOptions 字典中的 channelCountMode 成员，WebIDL 类型为 ChannelCountMode。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audionodeoptions-channelcountmode">Web Audio API 1.1: 1.5.6.1 Dictionary AudioNodeOptions Members</see></param>
 /// <param name="ChannelInterpretation">AudioNodeOptions 字典中的 channelInterpretation 成员，WebIDL 类型为 ChannelInterpretation。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audionodeoptions-channelinterpretation">Web Audio API 1.1: 1.5.6.1 Dictionary AudioNodeOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioNodeOptions")]
 public record AudioNodeOptions(
     [property: Description("@#channelCount")]uint ChannelCount = default,
@@ -7452,7 +7049,6 @@ public record AudioNodeOptions(
 /// <param name="MinValue">AudioParamDescriptor 字典中的 minValue 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：-3.4028235e38。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioparamdescriptor-minvalue">Web Audio API 1.1: 1.32.5.4.1 Dictionary AudioParamDescriptor Members</see></param>
 /// <param name="MaxValue">AudioParamDescriptor 字典中的 maxValue 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：3.4028235e38。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioparamdescriptor-maxvalue">Web Audio API 1.1: 1.32.5.4.1 Dictionary AudioParamDescriptor Members</see></param>
 /// <param name="AutomationRate">AudioParamDescriptor 字典中的 automationRate 成员，WebIDL 类型为 AutomationRate。可省略。WebIDL 默认值：a-rate。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioparamdescriptor-automationrate">Web Audio API 1.1: 1.32.5.4.1 Dictionary AudioParamDescriptor Members</see></param>
-[ECMAScript]
 [Description("@#AudioParamDescriptor")]
 public record AudioParamDescriptor(
     [property: Description("@#name")]string? Name = default,
@@ -7470,7 +7066,6 @@ public record AudioParamDescriptor(
 /// <param name="PlaybackTime">AudioProcessingEventInit 字典中的 playbackTime 成员，WebIDL 类型为 double。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioprocessingeventinit-playbacktime">Web Audio API 1.1: 1.12.2.1 Dictionary AudioProcessingEventInit Members</see></param>
 /// <param name="InputBuffer">AudioProcessingEventInit 字典中的 inputBuffer 成员，WebIDL 类型为 AudioBuffer。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioprocessingeventinit-inputbuffer">Web Audio API 1.1: 1.12.2.1 Dictionary AudioProcessingEventInit Members</see></param>
 /// <param name="OutputBuffer">AudioProcessingEventInit 字典中的 outputBuffer 成员，WebIDL 类型为 AudioBuffer。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioprocessingeventinit-outputbuffer">Web Audio API 1.1: 1.12.2.1 Dictionary AudioProcessingEventInit Members</see></param>
-[ECMAScript]
 [Description("@#AudioProcessingEventInit")]
 public record AudioProcessingEventInit(
     [property: Description("@#playbackTime")]double PlaybackTime = default,
@@ -7484,7 +7079,6 @@ public record AudioProcessingEventInit(
 /// <see href="https://webaudio.github.io/web-audio-api/#AudioSinkOptions">Web Audio API 1.1: 1.2.6 AudioSinkOptions</see>
 /// </remarks>
 /// <param name="Type">AudioSinkOptions 字典中的 type 成员，WebIDL 类型为 AudioSinkType。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiosinkoptions-type">Web Audio API 1.1: 1.2.6.1 Dictionary AudioSinkOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioSinkOptions")]
 public record AudioSinkOptions(
     [property: Description("@#type")]AudioSinkType? Type = default);
@@ -7497,7 +7091,6 @@ public record AudioSinkOptions(
 /// </remarks>
 /// <param name="ContextTime">AudioTimestamp 字典中的 contextTime 成员，WebIDL 类型为 double。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiotimestamp-contexttime">Web Audio API 1.1: 1.2.8.1 Dictionary AudioTimestamp Members</see></param>
 /// <param name="PerformanceTime">AudioTimestamp 字典中的 performanceTime 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audiotimestamp-performancetime">Web Audio API 1.1: 1.2.8.1 Dictionary AudioTimestamp Members</see></param>
-[ECMAScript]
 [Description("@#AudioTimestamp")]
 public record AudioTimestamp(
     [property: Description("@#contextTime")]double ContextTime = default,
@@ -7514,7 +7107,6 @@ public record AudioTimestamp(
 /// <param name="OutputChannelCount">AudioWorkletNodeOptions 字典中的 outputChannelCount 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioworkletnodeoptions-outputchannelcount">Web Audio API 1.1: 1.32.4.3.1 Dictionary AudioWorkletNodeOptions Members</see></param>
 /// <param name="ParameterData">AudioWorkletNodeOptions 字典中的 parameterData 成员，WebIDL 类型为 record&lt;DOMString, double&gt;。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioworkletnodeoptions-parameterdata">Web Audio API 1.1: 1.32.4.3.1 Dictionary AudioWorkletNodeOptions Members</see></param>
 /// <param name="ProcessorOptions">AudioWorkletNodeOptions 字典中的 processorOptions 成员，WebIDL 类型为 object。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-audioworkletnodeoptions-processoroptions">Web Audio API 1.1: 1.32.4.3.1 Dictionary AudioWorkletNodeOptions Members</see></param>
-[ECMAScript]
 [Description("@#AudioWorkletNodeOptions")]
 public record AudioWorkletNodeOptions(
     [property: Description("@#numberOfInputs")]uint NumberOfInputs = 1,
@@ -7534,7 +7126,6 @@ public record AudioWorkletNodeOptions(
 /// <param name="Detune">BiquadFilterOptions 字典中的 detune 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-biquadfilteroptions-detune">Web Audio API 1.1: 1.13.4.1 Dictionary BiquadFilterOptions Members</see></param>
 /// <param name="Frequency">BiquadFilterOptions 字典中的 frequency 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：350。 <see href="https://webaudio.github.io/web-audio-api/#dom-biquadfilteroptions-frequency">Web Audio API 1.1: 1.13.4.1 Dictionary BiquadFilterOptions Members</see></param>
 /// <param name="Gain">BiquadFilterOptions 字典中的 gain 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-biquadfilteroptions-gain">Web Audio API 1.1: 1.13.4.1 Dictionary BiquadFilterOptions Members</see></param>
-[ECMAScript]
 [Description("@#BiquadFilterOptions")]
 public record BiquadFilterOptions(
     [property: Description("@#type")]BiquadFilterType Type = BiquadFilterType.Lowpass,
@@ -7550,7 +7141,6 @@ public record BiquadFilterOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#ChannelMergerOptions">Web Audio API 1.1: 1.14.2 ChannelMergerOptions</see>
 /// </remarks>
 /// <param name="NumberOfInputs">ChannelMergerOptions 字典中的 numberOfInputs 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：6。 <see href="https://webaudio.github.io/web-audio-api/#dom-channelmergeroptions-numberofinputs">Web Audio API 1.1: 1.14.2.1 Dictionary ChannelMergerOptions Members</see></param>
-[ECMAScript]
 [Description("@#ChannelMergerOptions")]
 public record ChannelMergerOptions(
     [property: Description("@#numberOfInputs")]uint NumberOfInputs = 6) : AudioNodeOptions;
@@ -7562,7 +7152,6 @@ public record ChannelMergerOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#ChannelSplitterOptions">Web Audio API 1.1: 1.15.2 ChannelSplitterOptions</see>
 /// </remarks>
 /// <param name="NumberOfOutputs">ChannelSplitterOptions 字典中的 numberOfOutputs 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：6。 <see href="https://webaudio.github.io/web-audio-api/#dom-channelsplitteroptions-numberofoutputs">Web Audio API 1.1: 1.15.2.1 Dictionary ChannelSplitterOptions Members</see></param>
-[ECMAScript]
 [Description("@#ChannelSplitterOptions")]
 public record ChannelSplitterOptions(
     [property: Description("@#numberOfOutputs")]uint NumberOfOutputs = 6) : AudioNodeOptions;
@@ -7574,7 +7163,6 @@ public record ChannelSplitterOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#ConstantSourceOptions">Web Audio API 1.1: 1.16.3 ConstantSourceOptions</see>
 /// </remarks>
 /// <param name="Offset">ConstantSourceOptions 字典中的 offset 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1。 <see href="https://webaudio.github.io/web-audio-api/#dom-constantsourceoptions-offset">Web Audio API 1.1: 1.16.3.1 Dictionary ConstantSourceOptions Members</see></param>
-[ECMAScript]
 [Description("@#ConstantSourceOptions")]
 public record ConstantSourceOptions(
     [property: Description("@#offset")]float Offset = 1f);
@@ -7587,7 +7175,6 @@ public record ConstantSourceOptions(
 /// </remarks>
 /// <param name="Buffer">ConvolverOptions 字典中的 buffer 成员，WebIDL 类型为 AudioBuffer?。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-convolveroptions-buffer">Web Audio API 1.1: 1.17.3.1 Dictionary ConvolverOptions Members</see></param>
 /// <param name="DisableNormalization">ConvolverOptions 字典中的 disableNormalization 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webaudio.github.io/web-audio-api/#dom-convolveroptions-disablenormalization">Web Audio API 1.1: 1.17.3.1 Dictionary ConvolverOptions Members</see></param>
-[ECMAScript]
 [Description("@#ConvolverOptions")]
 public record ConvolverOptions(
     [property: Description("@#buffer")]AudioBuffer? Buffer = default,
@@ -7601,7 +7188,6 @@ public record ConvolverOptions(
 /// </remarks>
 /// <param name="MaxDelayTime">DelayOptions 字典中的 maxDelayTime 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1。 <see href="https://webaudio.github.io/web-audio-api/#dom-delayoptions-maxdelaytime">Web Audio API 1.1: 1.18.3.1 Dictionary DelayOptions Members</see></param>
 /// <param name="DelayTime">DelayOptions 字典中的 delayTime 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-delayoptions-delaytime">Web Audio API 1.1: 1.18.3.1 Dictionary DelayOptions Members</see></param>
-[ECMAScript]
 [Description("@#DelayOptions")]
 public record DelayOptions(
     [property: Description("@#maxDelayTime")]double MaxDelayTime = 1d,
@@ -7618,7 +7204,6 @@ public record DelayOptions(
 /// <param name="Ratio">DynamicsCompressorOptions 字典中的 ratio 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：12。 <see href="https://webaudio.github.io/web-audio-api/#dom-dynamicscompressoroptions-ratio">Web Audio API 1.1: 1.19.3.1 Dictionary DynamicsCompressorOptions Members</see></param>
 /// <param name="Release">DynamicsCompressorOptions 字典中的 release 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0.25。 <see href="https://webaudio.github.io/web-audio-api/#dom-dynamicscompressoroptions-release">Web Audio API 1.1: 1.19.3.1 Dictionary DynamicsCompressorOptions Members</see></param>
 /// <param name="Threshold">DynamicsCompressorOptions 字典中的 threshold 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：-24。 <see href="https://webaudio.github.io/web-audio-api/#dom-dynamicscompressoroptions-threshold">Web Audio API 1.1: 1.19.3.1 Dictionary DynamicsCompressorOptions Members</see></param>
-[ECMAScript]
 [Description("@#DynamicsCompressorOptions")]
 public record DynamicsCompressorOptions(
     [property: Description("@#attack")]float Attack = 0.003f,
@@ -7634,7 +7219,6 @@ public record DynamicsCompressorOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#GainOptions">Web Audio API 1.1: 1.20.3 GainOptions</see>
 /// </remarks>
 /// <param name="Gain">GainOptions 字典中的 gain 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：1.0。 <see href="https://webaudio.github.io/web-audio-api/#dom-gainoptions-gain">Web Audio API 1.1: 1.20.3.1 Dictionary GainOptions Members</see></param>
-[ECMAScript]
 [Description("@#GainOptions")]
 public record GainOptions(
     [property: Description("@#gain")]float Gain = 1.0f) : AudioNodeOptions;
@@ -7647,7 +7231,6 @@ public record GainOptions(
 /// </remarks>
 /// <param name="Feedforward">IIRFilterOptions 字典中的 feedforward 成员，WebIDL 类型为 sequence&lt;double&gt;。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-iirfilteroptions-feedforward">Web Audio API 1.1: 1.21.3.1 Dictionary IIRFilterOptions Members</see></param>
 /// <param name="Feedback">IIRFilterOptions 字典中的 feedback 成员，WebIDL 类型为 sequence&lt;double&gt;。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-iirfilteroptions-feedback">Web Audio API 1.1: 1.21.3.1 Dictionary IIRFilterOptions Members</see></param>
-[ECMAScript]
 [Description("@#IIRFilterOptions")]
 public record IIRFilterOptions(
     [property: Description("@#feedforward")]double[]? Feedforward = default,
@@ -7660,7 +7243,6 @@ public record IIRFilterOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#MediaElementAudioSourceOptions">Web Audio API 1.1: 1.22.3 MediaElementAudioSourceOptions</see>
 /// </remarks>
 /// <param name="MediaElement">MediaElementAudioSourceOptions 字典中的 mediaElement 成员，WebIDL 类型为 HTMLMediaElement。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-mediaelementaudiosourceoptions-mediaelement">Web Audio API 1.1: 1.22.3.1 Dictionary MediaElementAudioSourceOptions Members</see></param>
-[ECMAScript]
 [Description("@#MediaElementAudioSourceOptions")]
 public record MediaElementAudioSourceOptions(
     [property: Description("@#mediaElement")]HTMLMediaElement? MediaElement = default);
@@ -7672,7 +7254,6 @@ public record MediaElementAudioSourceOptions(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamAudioSourceNode/MediaStreamAudioSourceNode">MDN Web Docs: MediaStreamAudioSourceOptions</see>
 /// </remarks>
 /// <param name="MediaStream">MediaStreamAudioSourceOptions 字典中的 mediaStream 成员，WebIDL 类型为 MediaStream。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-mediastreamaudiosourceoptions-mediastream">Web Audio API 1.1: 1.24.3.1 Dictionary MediaStreamAudioSourceOptions Members</see></param>
-[ECMAScript]
 [Description("@#MediaStreamAudioSourceOptions")]
 public record MediaStreamAudioSourceOptions(
     [property: Description("@#mediaStream")]MediaStream? MediaStream = default);
@@ -7684,7 +7265,6 @@ public record MediaStreamAudioSourceOptions(
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaStreamTrackAudioSourceNode">MDN Web Docs: MediaStreamTrackAudioSourceOptions</see>
 /// </remarks>
 /// <param name="MediaStreamTrack">MediaStreamTrackAudioSourceOptions 字典中的 mediaStreamTrack 成员，WebIDL 类型为 MediaStreamTrack。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-mediastreamtrackaudiosourceoptions-mediastreamtrack">Web Audio API 1.1: 1.25.2.1 Dictionary MediaStreamTrackAudioSourceOptions Members</see></param>
-[ECMAScript]
 [Description("@#MediaStreamTrackAudioSourceOptions")]
 public record MediaStreamTrackAudioSourceOptions(
     [property: Description("@#mediaStreamTrack")]MediaStreamTrack? MediaStreamTrack = default);
@@ -7696,7 +7276,6 @@ public record MediaStreamTrackAudioSourceOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#OfflineAudioCompletionEventInit">Web Audio API 1.1: 1.3.5.2 OfflineAudioCompletionEventInit</see>
 /// </remarks>
 /// <param name="RenderedBuffer">OfflineAudioCompletionEventInit 字典中的 renderedBuffer 成员，WebIDL 类型为 AudioBuffer。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocompletioneventinit-renderedbuffer">Web Audio API 1.1: 1.3.5.2.1 Dictionary OfflineAudioCompletionEventInit Members</see></param>
-[ECMAScript]
 [Description("@#OfflineAudioCompletionEventInit")]
 public record OfflineAudioCompletionEventInit(
     [property: Description("@#renderedBuffer")]AudioBuffer? RenderedBuffer = default) : EventInit;
@@ -7711,7 +7290,6 @@ public record OfflineAudioCompletionEventInit(
 /// <param name="Length">OfflineAudioContextOptions 字典中的 length 成员，WebIDL 类型为 unsigned long?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontextoptions-length">Web Audio API 1.1: 1.3.4.1 Dictionary OfflineAudioContextOptions Members</see></param>
 /// <param name="SampleRate">OfflineAudioContextOptions 字典中的 sampleRate 成员，WebIDL 类型为 float。必须提供该成员。 <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontextoptions-samplerate">Web Audio API 1.1: 1.3.4.1 Dictionary OfflineAudioContextOptions Members</see></param>
 /// <param name="RenderSizeHint">OfflineAudioContextOptions 字典中的 renderSizeHint 成员，WebIDL 类型为 AudioContextRenderSizeCategory, unsigned long。可省略。WebIDL 默认值：default。 <see href="https://webaudio.github.io/web-audio-api/#dom-offlineaudiocontextoptions-rendersizehint">Web Audio API 1.1: 1.3.4.1 Dictionary OfflineAudioContextOptions Members</see></param>
-[ECMAScript]
 [Description("@#OfflineAudioContextOptions")]
 public record OfflineAudioContextOptions(
     [property: Description("@#numberOfChannels")]uint NumberOfChannels = 1,
@@ -7729,7 +7307,6 @@ public record OfflineAudioContextOptions(
 /// <param name="Frequency">OscillatorOptions 字典中的 frequency 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：440。 <see href="https://webaudio.github.io/web-audio-api/#dom-oscillatoroptions-frequency">Web Audio API 1.1: 1.26.4.1 Dictionary OscillatorOptions Members</see></param>
 /// <param name="Detune">OscillatorOptions 字典中的 detune 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-oscillatoroptions-detune">Web Audio API 1.1: 1.26.4.1 Dictionary OscillatorOptions Members</see></param>
 /// <param name="PeriodicWave">OscillatorOptions 字典中的 periodicWave 成员，WebIDL 类型为 PeriodicWave。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-oscillatoroptions-periodicwave">Web Audio API 1.1: 1.26.4.1 Dictionary OscillatorOptions Members</see></param>
-[ECMAScript]
 [Description("@#OscillatorOptions")]
 public record OscillatorOptions(
     [property: Description("@#type")]OscillatorType Type = OscillatorType.Sine,
@@ -7757,7 +7334,6 @@ public record OscillatorOptions(
 /// <param name="ConeInnerAngle">PannerOptions 字典中的 coneInnerAngle 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：360。 <see href="https://webaudio.github.io/web-audio-api/#dom-panneroptions-coneinnerangle">Web Audio API 1.1: 1.27.4.1 Dictionary PannerOptions Members</see></param>
 /// <param name="ConeOuterAngle">PannerOptions 字典中的 coneOuterAngle 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：360。 <see href="https://webaudio.github.io/web-audio-api/#dom-panneroptions-coneouterangle">Web Audio API 1.1: 1.27.4.1 Dictionary PannerOptions Members</see></param>
 /// <param name="ConeOuterGain">PannerOptions 字典中的 coneOuterGain 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-panneroptions-coneoutergain">Web Audio API 1.1: 1.27.4.1 Dictionary PannerOptions Members</see></param>
-[ECMAScript]
 [Description("@#PannerOptions")]
 public record PannerOptions(
     [property: Description("@#panningModel")]PanningModelType PanningModel = PanningModelType.Equalpower,
@@ -7782,7 +7358,6 @@ public record PannerOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#PeriodicWaveConstraints">Web Audio API 1.1: 1.28.2 PeriodicWaveConstraints</see>
 /// </remarks>
 /// <param name="DisableNormalization">PeriodicWaveConstraints 字典中的 disableNormalization 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webaudio.github.io/web-audio-api/#dom-periodicwaveconstraints-disablenormalization">Web Audio API 1.1: 1.28.2.1 Dictionary PeriodicWaveConstraints Members</see></param>
-[ECMAScript]
 [Description("@#PeriodicWaveConstraints")]
 public record PeriodicWaveConstraints(
     [property: Description("@#disableNormalization")]bool DisableNormalization = false);
@@ -7795,7 +7370,6 @@ public record PeriodicWaveConstraints(
 /// </remarks>
 /// <param name="Real">PeriodicWaveOptions 字典中的 real 成员，WebIDL 类型为 sequence&lt;float&gt;。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-periodicwaveoptions-real">Web Audio API 1.1: 1.28.3.1 Dictionary PeriodicWaveOptions Members</see></param>
 /// <param name="Imag">PeriodicWaveOptions 字典中的 imag 成员，WebIDL 类型为 sequence&lt;float&gt;。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-periodicwaveoptions-imag">Web Audio API 1.1: 1.28.3.1 Dictionary PeriodicWaveOptions Members</see></param>
-[ECMAScript]
 [Description("@#PeriodicWaveOptions")]
 public record PeriodicWaveOptions(
     [property: Description("@#real")]float[]? Real = default,
@@ -7808,7 +7382,6 @@ public record PeriodicWaveOptions(
 /// <see href="https://webaudio.github.io/web-audio-api/#StereoPannerOptions">Web Audio API 1.1: 1.30.3 StereoPannerOptions</see>
 /// </remarks>
 /// <param name="Pan">StereoPannerOptions 字典中的 pan 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-audio-api/#dom-stereopanneroptions-pan">Web Audio API 1.1: 1.30.3.1 Dictionary StereoPannerOptions Members</see></param>
-[ECMAScript]
 [Description("@#StereoPannerOptions")]
 public record StereoPannerOptions(
     [property: Description("@#pan")]float Pan = 0f) : AudioNodeOptions;
@@ -7821,7 +7394,6 @@ public record StereoPannerOptions(
 /// </remarks>
 /// <param name="Curve">WaveShaperOptions 字典中的 curve 成员，WebIDL 类型为 sequence&lt;float&gt;。可省略。 <see href="https://webaudio.github.io/web-audio-api/#dom-waveshaperoptions-curve">Web Audio API 1.1: 1.31.3.1 Dictionary WaveShaperOptions Members</see></param>
 /// <param name="Oversample">WaveShaperOptions 字典中的 oversample 成员，WebIDL 类型为 OverSampleType。可省略。WebIDL 默认值：none。 <see href="https://webaudio.github.io/web-audio-api/#dom-waveshaperoptions-oversample">Web Audio API 1.1: 1.31.3.1 Dictionary WaveShaperOptions Members</see></param>
-[ECMAScript]
 [Description("@#WaveShaperOptions")]
 public record WaveShaperOptions(
     [property: Description("@#curve")]float[]? Curve = default,
@@ -7834,7 +7406,6 @@ public record WaveShaperOptions(
 /// <see href="https://webaudio.github.io/web-midi-api/#dom-midiconnectioneventinit">Web MIDI API: 5.6.1 MIDIConnectionEventInit Dictionary</see>
 /// </remarks>
 /// <param name="Port">MIDIConnectionEventInit 字典中的 port 成员，WebIDL 类型为 MIDIPort。可省略。 <see href="https://webaudio.github.io/web-midi-api/#dom-midiconnectioneventinit-port">Web MIDI API: 5.6.1 MIDIConnectionEventInit Dictionary</see></param>
-[ECMAScript]
 [Description("@#MIDIConnectionEventInit")]
 public record MIDIConnectionEventInit(
     [property: Description("@#port")]MIDIPort? Port = default) : EventInit;
@@ -7846,7 +7417,6 @@ public record MIDIConnectionEventInit(
 /// <see href="https://webaudio.github.io/web-midi-api/#dom-midimessageeventinit">Web MIDI API: 5.5.1 MIDIMessageEventInit Dictionary</see>
 /// </remarks>
 /// <param name="Data">MIDIMessageEventInit 字典中的 data 成员，WebIDL 类型为 Uint8Array。可省略。 <see href="https://webaudio.github.io/web-midi-api/#dom-midimessageeventinit-data">Web MIDI API: 5.5.1 MIDIMessageEventInit Dictionary</see></param>
-[ECMAScript]
 [Description("@#MIDIMessageEventInit")]
 public record MIDIMessageEventInit(
     [property: Description("@#data")]Uint8Array? Data = default) : EventInit;
@@ -7859,7 +7429,6 @@ public record MIDIMessageEventInit(
 /// </remarks>
 /// <param name="Sysex">MIDIOptions 字典中的 sysex 成员，WebIDL 类型为 boolean。可省略。 <see href="https://webaudio.github.io/web-midi-api/#dom-midioptions-sysex">Web MIDI API: 4.3.1 MIDIOptions Dictionary</see></param>
 /// <param name="Software">MIDIOptions 字典中的 software 成员，WebIDL 类型为 boolean。可省略。 <see href="https://webaudio.github.io/web-midi-api/#dom-midioptions-software">Web MIDI API: 4.3.1 MIDIOptions Dictionary</see></param>
-[ECMAScript]
 [Description("@#MIDIOptions")]
 public record MIDIOptions(
     [property: Description("@#sysex")]bool Sysex = default,
@@ -7872,7 +7441,6 @@ public record MIDIOptions(
 /// <see href="https://webaudio.github.io/web-midi-api/#dom-midipermissiondescriptor">Web MIDI API: 4.1 Permissions Integration</see>
 /// </remarks>
 /// <param name="Sysex">MidiPermissionDescriptor 字典中的 sysex 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webaudio.github.io/web-midi-api/#dom-midipermissiondescriptor-sysex">Web MIDI API: 4.1 Permissions Integration</see></param>
-[ECMAScript]
 [Description("@#MidiPermissionDescriptor")]
 public record MidiPermissionDescriptor(
     [property: Description("@#sysex")]bool Sysex = false) : PermissionDescriptor;
@@ -7885,7 +7453,6 @@ public record MidiPermissionDescriptor(
 /// </remarks>
 /// <param name="Error">SpeechRecognitionErrorEventInit 字典中的 error 成员，WebIDL 类型为 SpeechRecognitionErrorCode。必须提供该成员。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionerroreventinit-error">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
 /// <param name="Message">SpeechRecognitionErrorEventInit 字典中的 message 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionerroreventinit-message">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
-[ECMAScript]
 [Description("@#SpeechRecognitionErrorEventInit")]
 public record SpeechRecognitionErrorEventInit(
     [property: Description("@#error")]SpeechRecognitionErrorCode? Error = default,
@@ -7899,7 +7466,6 @@ public record SpeechRecognitionErrorEventInit(
 /// </remarks>
 /// <param name="ResultIndex">SpeechRecognitionEventInit 字典中的 resultIndex 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitioneventinit-resultindex">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
 /// <param name="Results">SpeechRecognitionEventInit 字典中的 results 成员，WebIDL 类型为 SpeechRecognitionResultList。必须提供该成员。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitioneventinit-results">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
-[ECMAScript]
 [Description("@#SpeechRecognitionEventInit")]
 public record SpeechRecognitionEventInit(
     [property: Description("@#resultIndex")]uint ResultIndex = 0,
@@ -7912,7 +7478,6 @@ public record SpeechRecognitionEventInit(
 /// <see href="https://webaudio.github.io/web-speech-api/#dictdef-speechsynthesiserroreventinit">Web Speech API: 4.2 The SpeechSynthesis Interface</see>
 /// </remarks>
 /// <param name="Error">SpeechSynthesisErrorEventInit 字典中的 error 成员，WebIDL 类型为 SpeechSynthesisErrorCode。必须提供该成员。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechsynthesiserroreventinit-error">Web Speech API: 4.2 The SpeechSynthesis Interface</see></param>
-[ECMAScript]
 [Description("@#SpeechSynthesisErrorEventInit")]
 public record SpeechSynthesisErrorEventInit(
     [property: Description("@#error")]SpeechSynthesisErrorCode? Error = default) : SpeechSynthesisEventInit;
@@ -7928,7 +7493,6 @@ public record SpeechSynthesisErrorEventInit(
 /// <param name="CharLength">SpeechSynthesisEventInit 字典中的 charLength 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechsynthesiseventinit-charlength">Web Speech API: 4.2 The SpeechSynthesis Interface</see></param>
 /// <param name="ElapsedTime">SpeechSynthesisEventInit 字典中的 elapsedTime 成员，WebIDL 类型为 float。可省略。WebIDL 默认值：0。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechsynthesiseventinit-elapsedtime">Web Speech API: 4.2 The SpeechSynthesis Interface</see></param>
 /// <param name="Name">SpeechSynthesisEventInit 字典中的 name 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechsynthesiseventinit-name">Web Speech API: 4.2 The SpeechSynthesis Interface</see></param>
-[ECMAScript]
 [Description("@#SpeechSynthesisEventInit")]
 public record SpeechSynthesisEventInit(
     [property: Description("@#utterance")]SpeechSynthesisUtterance? Utterance = default,
@@ -7947,7 +7511,6 @@ public record SpeechSynthesisEventInit(
 /// <param name="MayUseGATT">AllowedBluetoothDevice 字典中的 mayUseGATT 成员，WebIDL 类型为 boolean。必须提供该成员。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-allowedbluetoothdevice-mayusegatt">Web Bluetooth: 4.1 Permission API Integration</see></param>
 /// <param name="AllowedServices">AllowedBluetoothDevice 字典中的 allowedServices 成员，WebIDL 类型为 DOMString, UUID。必须提供该成员。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-allowedbluetoothdevice-allowedservices">Web Bluetooth: 4.1 Permission API Integration</see></param>
 /// <param name="AllowedManufacturerData">AllowedBluetoothDevice 字典中的 allowedManufacturerData 成员，WebIDL 类型为 sequence&lt;unsigned short&gt;。必须提供该成员。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-allowedbluetoothdevice-allowedmanufacturerdata">Web Bluetooth: 4.1 Permission API Integration</see></param>
-[ECMAScript]
 [Description("@#AllowedBluetoothDevice")]
 public record AllowedBluetoothDevice(
     [property: Description("@#deviceId")]string? DeviceId = default,
@@ -7969,7 +7532,6 @@ public record AllowedBluetoothDevice(
 /// <param name="Rssi">BluetoothAdvertisingEventInit 字典中的 rssi 成员，WebIDL 类型为 byte。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothadvertisingeventinit-rssi">Web Bluetooth: 5.2.3 Responding to Advertising Events</see></param>
 /// <param name="ManufacturerData">BluetoothAdvertisingEventInit 字典中的 manufacturerData 成员，WebIDL 类型为 BluetoothManufacturerDataMap。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothadvertisingeventinit-manufacturerdata">Web Bluetooth: 5.2.3 Responding to Advertising Events</see></param>
 /// <param name="ServiceData">BluetoothAdvertisingEventInit 字典中的 serviceData 成员，WebIDL 类型为 BluetoothServiceDataMap。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothadvertisingeventinit-servicedata">Web Bluetooth: 5.2.3 Responding to Advertising Events</see></param>
-[ECMAScript]
 [Description("@#BluetoothAdvertisingEventInit")]
 public record BluetoothAdvertisingEventInit(
     [property: Description("@#device")]BluetoothDevice? Device = default,
@@ -7992,7 +7554,6 @@ public record BluetoothAdvertisingEventInit(
 /// <param name="NamePrefix">BluetoothLEScanFilterInit 字典中的 namePrefix 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothlescanfilterinit-nameprefix">Web Bluetooth: 4 Device Discovery</see></param>
 /// <param name="ManufacturerData">BluetoothLEScanFilterInit 字典中的 manufacturerData 成员，WebIDL 类型为 sequence&lt;BluetoothManufacturerDataFilterInit&gt;。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothlescanfilterinit-manufacturerdata">Web Bluetooth: 4 Device Discovery</see></param>
 /// <param name="ServiceData">BluetoothLEScanFilterInit 字典中的 serviceData 成员，WebIDL 类型为 sequence&lt;BluetoothServiceDataFilterInit&gt;。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothlescanfilterinit-servicedata">Web Bluetooth: 4 Device Discovery</see></param>
-[ECMAScript]
 [Description("@#BluetoothLEScanFilterInit")]
 public record BluetoothLEScanFilterInit(
     [property: Description("@#services")]BluetoothServiceUUID[]? Services = default,
@@ -8008,7 +7569,6 @@ public record BluetoothLEScanFilterInit(
 /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dictdef-bluetoothmanufacturerdatafilterinit">Web Bluetooth: 4 Device Discovery</see>
 /// </remarks>
 /// <param name="CompanyIdentifier">BluetoothManufacturerDataFilterInit 字典中的 companyIdentifier 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothmanufacturerdatafilterinit-companyidentifier">Web Bluetooth: 4 Device Discovery</see></param>
-[ECMAScript]
 [Description("@#BluetoothManufacturerDataFilterInit")]
 public record BluetoothManufacturerDataFilterInit(
     [property: Description("@#companyIdentifier")]ushort CompanyIdentifier = default) : BluetoothDataFilterInit;
@@ -8024,7 +7584,6 @@ public record BluetoothManufacturerDataFilterInit(
 /// <param name="OptionalServices">BluetoothPermissionDescriptor 字典中的 optionalServices 成员，WebIDL 类型为 sequence&lt;BluetoothServiceUUID&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothpermissiondescriptor-optionalservices">Web Bluetooth: 4.1 Permission API Integration</see></param>
 /// <param name="OptionalManufacturerData">BluetoothPermissionDescriptor 字典中的 optionalManufacturerData 成员，WebIDL 类型为 sequence&lt;unsigned short&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothpermissiondescriptor-optionalmanufacturerdata">Web Bluetooth: 4.1 Permission API Integration</see></param>
 /// <param name="AcceptAllDevices">BluetoothPermissionDescriptor 字典中的 acceptAllDevices 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothpermissiondescriptor-acceptalldevices">Web Bluetooth: 4.1 Permission API Integration</see></param>
-[ECMAScript]
 [Description("@#BluetoothPermissionDescriptor")]
 public record BluetoothPermissionDescriptor(
     [property: Description("@#deviceId")]string? DeviceId = default,
@@ -8040,7 +7599,6 @@ public record BluetoothPermissionDescriptor(
 /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dictdef-bluetoothpermissionstorage">Web Bluetooth: 4.1 Permission API Integration</see>
 /// </remarks>
 /// <param name="AllowedDevices">Distinct elements of allowedDevices must have different devices and different deviceIds. <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothpermissionstorage-alloweddevices">Web Bluetooth: 4.1 Permission API Integration</see></param>
-[ECMAScript]
 [Description("@#BluetoothPermissionStorage")]
 public record BluetoothPermissionStorage(
     [property: Description("@#allowedDevices")]AllowedBluetoothDevice[]? AllowedDevices = default);
@@ -8052,7 +7610,6 @@ public record BluetoothPermissionStorage(
 /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dictdef-bluetoothservicedatafilterinit">Web Bluetooth: 4 Device Discovery</see>
 /// </remarks>
 /// <param name="Service">BluetoothServiceDataFilterInit 字典中的 service 成员，WebIDL 类型为 BluetoothServiceUUID。必须提供该成员。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothservicedatafilterinit-service">Web Bluetooth: 4 Device Discovery</see></param>
-[ECMAScript]
 [Description("@#BluetoothServiceDataFilterInit")]
 public record BluetoothServiceDataFilterInit(
     [property: Description("@#service")]BluetoothServiceUUID? Service = default) : BluetoothDataFilterInit;
@@ -8068,7 +7625,6 @@ public record BluetoothServiceDataFilterInit(
 /// <param name="OptionalServices">RequestDeviceOptions 字典中的 optionalServices 成员，WebIDL 类型为 sequence&lt;BluetoothServiceUUID&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-requestdeviceoptions-optionalservices">Web Bluetooth: 4 Device Discovery</see></param>
 /// <param name="OptionalManufacturerData">RequestDeviceOptions 字典中的 optionalManufacturerData 成员，WebIDL 类型为 sequence&lt;unsigned short&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-requestdeviceoptions-optionalmanufacturerdata">Web Bluetooth: 4 Device Discovery</see></param>
 /// <param name="AcceptAllDevices">RequestDeviceOptions 字典中的 acceptAllDevices 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-requestdeviceoptions-acceptalldevices">Web Bluetooth: 4 Device Discovery</see></param>
-[ECMAScript]
 [Description("@#RequestDeviceOptions")]
 public record RequestDeviceOptions(
     [property: Description("@#filters")]BluetoothLEScanFilterInit[]? Filters = default,
@@ -8084,7 +7640,6 @@ public record RequestDeviceOptions(
 /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dictdef-valueeventinit">Web Bluetooth: 4.2 Overall Bluetooth availability</see>
 /// </remarks>
 /// <param name="Value">ValueEventInit 字典中的 value 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-valueeventinit-value">Web Bluetooth: 4.2 Overall Bluetooth availability</see></param>
-[ECMAScript]
 [Description("@#ValueEventInit")]
 public record ValueEventInit(
     [property: Description("@#value")]object? Value = default) : EventInit;
@@ -8096,7 +7651,6 @@ public record ValueEventInit(
 /// <see href="https://webbluetoothcg.github.io/web-bluetooth/#dictdef-watchadvertisementsoptions">Web Bluetooth: 5.2 BluetoothDevice</see>
 /// </remarks>
 /// <param name="Signal">WatchAdvertisementsOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-watchadvertisementsoptions-signal">Web Bluetooth: 5.2 BluetoothDevice</see></param>
-[ECMAScript]
 [Description("@#WatchAdvertisementsOptions")]
 public record WatchAdvertisementsOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8110,7 +7664,6 @@ public record WatchAdvertisementsOptions(
 /// <param name="Filters">BluetoothLEScanOptions 字典中的 filters 成员，WebIDL 类型为 sequence&lt;BluetoothLEScanFilterInit&gt;。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetoothlescanoptions-filters">Web Bluetooth Scanning: 4 Scanning for BLE advertisements</see></param>
 /// <param name="KeepRepeatedDevices">BluetoothLEScanOptions 字典中的 keepRepeatedDevices 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetoothlescanoptions-keeprepeateddevices">Web Bluetooth Scanning: 4 Scanning for BLE advertisements</see></param>
 /// <param name="AcceptAllAdvertisements">In the rare case that you want to receive every advertisement without filtering them, use the acceptAllAdvertisements field. <see href="https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetoothlescanoptions-acceptalladvertisements">Web Bluetooth Scanning: 4 Scanning for BLE advertisements</see></param>
-[ECMAScript]
 [Description("@#BluetoothLEScanOptions")]
 public record BluetoothLEScanOptions(
     [property: Description("@#filters")]BluetoothLEScanFilterInit[]? Filters = default,
@@ -8126,7 +7679,6 @@ public record BluetoothLEScanOptions(
 /// <param name="Filters">BluetoothLEScanPermissionDescriptor 字典中的 filters 成员，WebIDL 类型为 sequence&lt;BluetoothLEScanFilterInit&gt;。可省略。 <see href="https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetoothlescanpermissiondescriptor-filters">Web Bluetooth Scanning: 4.3 Permission to scan</see></param>
 /// <param name="KeepRepeatedDevices">BluetoothLEScanPermissionDescriptor 字典中的 keepRepeatedDevices 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetoothlescanpermissiondescriptor-keeprepeateddevices">Web Bluetooth Scanning: 4.3 Permission to scan</see></param>
 /// <param name="AcceptAllAdvertisements">BluetoothLEScanPermissionDescriptor 字典中的 acceptAllAdvertisements 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webbluetoothcg.github.io/web-bluetooth/scanning.html#dom-bluetoothlescanpermissiondescriptor-acceptalladvertisements">Web Bluetooth Scanning: 4.3 Permission to scan</see></param>
-[ECMAScript]
 [Description("@#BluetoothLEScanPermissionDescriptor")]
 public record BluetoothLEScanPermissionDescriptor(
     [property: Description("@#filters")]BluetoothLEScanFilterInit[]? Filters = default,
@@ -8141,7 +7693,6 @@ public record BluetoothLEScanPermissionDescriptor(
 /// </remarks>
 /// <param name="Quota">QuotaExceededErrorOptions 字典中的 quota 成员，WebIDL 类型为 double。可省略。 <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederroroptions-quota">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see></param>
 /// <param name="Requested">QuotaExceededErrorOptions 字典中的 requested 成员，WebIDL 类型为 double。可省略。 <see href="https://webidl.spec.whatwg.org/#dom-quotaexceedederroroptions-requested">Web IDL Standard: 2.8.3 Predefined DOMException derived interfaces</see></param>
-[ECMAScript]
 [Description("@#QuotaExceededErrorOptions")]
 public record QuotaExceededErrorOptions(
     [property: Description("@#quota")]double Quota = default,
@@ -8154,7 +7705,6 @@ public record QuotaExceededErrorOptions(
 /// <see href="https://webmachinelearning.github.io/prompt-api/#dictdef-languagemodelappendoptions">Prompt API: 3 The API</see>
 /// </remarks>
 /// <param name="Signal">LanguageModelAppendOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelappendoptions-signal">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelAppendOptions")]
 public record LanguageModelAppendOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8166,7 +7716,6 @@ public record LanguageModelAppendOptions(
 /// <see href="https://webmachinelearning.github.io/prompt-api/#dictdef-languagemodelcloneoptions">Prompt API: 3 The API</see>
 /// </remarks>
 /// <param name="Signal">LanguageModelCloneOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcloneoptions-signal">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelCloneOptions")]
 public record LanguageModelCloneOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8183,7 +7732,6 @@ public record LanguageModelCloneOptions(
 /// <param name="ExpectedInputs">LanguageModelCreateCoreOptions 字典中的 expectedInputs 成员，WebIDL 类型为 sequence&lt;LanguageModelExpected&gt;。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcreatecoreoptions-expectedinputs">Prompt API: 3 The API</see></param>
 /// <param name="ExpectedOutputs">LanguageModelCreateCoreOptions 字典中的 expectedOutputs 成员，WebIDL 类型为 sequence&lt;LanguageModelExpected&gt;。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcreatecoreoptions-expectedoutputs">Prompt API: 3 The API</see></param>
 /// <param name="Tools">LanguageModelCreateCoreOptions 字典中的 tools 成员，WebIDL 类型为 sequence&lt;LanguageModelTool&gt;。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcreatecoreoptions-tools">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelCreateCoreOptions")]
 public record LanguageModelCreateCoreOptions(
     [property: Description("@#topK")]double TopK = default,
@@ -8202,7 +7750,6 @@ public record LanguageModelCreateCoreOptions(
 /// <param name="Signal">LanguageModelCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcreateoptions-signal">Prompt API: 3 The API</see></param>
 /// <param name="Monitor">LanguageModelCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcreateoptions-monitor">Prompt API: 3 The API</see></param>
 /// <param name="InitialPrompts">LanguageModelCreateOptions 字典中的 initialPrompts 成员，WebIDL 类型为 sequence&lt;LanguageModelMessage&gt;。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelcreateoptions-initialprompts">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelCreateOptions")]
 public record LanguageModelCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -8217,7 +7764,6 @@ public record LanguageModelCreateOptions(
 /// </remarks>
 /// <param name="Type">LanguageModelExpected 字典中的 type 成员，WebIDL 类型为 LanguageModelMessageType。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelexpected-type">Prompt API: 3 The API</see></param>
 /// <param name="Languages">LanguageModelExpected 字典中的 languages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelexpected-languages">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelExpected")]
 public record LanguageModelExpected(
     [property: Description("@#type")]LanguageModelMessageType? Type = default,
@@ -8232,7 +7778,6 @@ public record LanguageModelExpected(
 /// <param name="Role">LanguageModelMessage 字典中的 role 成员，WebIDL 类型为 LanguageModelMessageRole。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelmessage-role">Prompt API: 3 The API</see></param>
 /// <param name="Content">LanguageModelMessage 字典中的 content 成员，WebIDL 类型为 DOMString, LanguageModelMessageContent。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelmessage-content">Prompt API: 3 The API</see></param>
 /// <param name="Prefix">LanguageModelMessage 字典中的 prefix 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelmessage-prefix">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelMessage")]
 public record LanguageModelMessage(
     [property: Description("@#role")]LanguageModelMessageRole? Role = default,
@@ -8247,7 +7792,6 @@ public record LanguageModelMessage(
 /// </remarks>
 /// <param name="Type">LanguageModelMessageContent 字典中的 type 成员，WebIDL 类型为 LanguageModelMessageType。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelmessagecontent-type">Prompt API: 3 The API</see></param>
 /// <param name="Value">LanguageModelMessageContent 字典中的 value 成员，WebIDL 类型为 LanguageModelMessageValue。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelmessagecontent-value">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelMessageContent")]
 public record LanguageModelMessageContent(
     [property: Description("@#type")]LanguageModelMessageType? Type = default,
@@ -8262,7 +7806,6 @@ public record LanguageModelMessageContent(
 /// <param name="ResponseConstraint">LanguageModelPromptOptions 字典中的 responseConstraint 成员，WebIDL 类型为 object。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelpromptoptions-responseconstraint">Prompt API: 3 The API</see></param>
 /// <param name="OmitResponseConstraintInput">LanguageModelPromptOptions 字典中的 omitResponseConstraintInput 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelpromptoptions-omitresponseconstraintinput">Prompt API: 3 The API</see></param>
 /// <param name="Signal">LanguageModelPromptOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodelpromptoptions-signal">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelPromptOptions")]
 public record LanguageModelPromptOptions(
     [property: Description("@#responseConstraint")]object? ResponseConstraint = default,
@@ -8279,7 +7822,6 @@ public record LanguageModelPromptOptions(
 /// <param name="Description">LanguageModelTool 字典中的 description 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodeltool-description">Prompt API: 3 The API</see></param>
 /// <param name="InputSchema">LanguageModelTool 字典中的 inputSchema 成员，WebIDL 类型为 object。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodeltool-inputschema">Prompt API: 3 The API</see></param>
 /// <param name="Execute">LanguageModelTool 字典中的 execute 成员，WebIDL 类型为 LanguageModelToolFunction。必须提供该成员。 <see href="https://webmachinelearning.github.io/prompt-api/#dom-languagemodeltool-execute">Prompt API: 3 The API</see></param>
-[ECMAScript]
 [Description("@#LanguageModelTool")]
 public record LanguageModelTool(
     [property: Description("@#name")]string? Name = default,
@@ -8297,7 +7839,6 @@ public record LanguageModelTool(
 /// <param name="IncludeCorrectionExplanations">The includeCorrectionExplanations is set to true, the correctionExplanationLanguage option was not set, and the language of the input text could not be determined, so the user agent did not have a good correction explanation language default available. &quot;UnknownError&quot; <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadercreatecoreoptions-includecorrectionexplanations">Proofreader API: 3 The proofreader API</see></param>
 /// <param name="ExpectedInputLanguages">ProofreaderCreateCoreOptions 字典中的 expectedInputLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadercreatecoreoptions-expectedinputlanguages">Proofreader API: 3 The proofreader API</see></param>
 /// <param name="CorrectionExplanationLanguage">The includeCorrectionExplanations is set to true, the correctionExplanationLanguage option was not set, and the language of the input text could not be determined, so the user agent did not have a good correction explanation language default available. &quot;UnknownError&quot; <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadercreatecoreoptions-correctionexplanationlanguage">Proofreader API: 3 The proofreader API</see></param>
-[ECMAScript]
 [Description("@#ProofreaderCreateCoreOptions")]
 public record ProofreaderCreateCoreOptions(
     [property: Description("@#includeCorrectionTypes")]bool IncludeCorrectionTypes = false,
@@ -8313,7 +7854,6 @@ public record ProofreaderCreateCoreOptions(
 /// </remarks>
 /// <param name="Signal">ProofreaderCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadercreateoptions-signal">Proofreader API: 3 The proofreader API</see></param>
 /// <param name="Monitor">ProofreaderCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadercreateoptions-monitor">Proofreader API: 3 The proofreader API</see></param>
-[ECMAScript]
 [Description("@#ProofreaderCreateOptions")]
 public record ProofreaderCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -8326,7 +7866,6 @@ public record ProofreaderCreateOptions(
 /// <see href="https://webmachinelearning.github.io/proofreader-api/#dictdef-proofreaderproofreadoptions">Proofreader API: 3 The proofreader API</see>
 /// </remarks>
 /// <param name="Signal">ProofreaderProofreadOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreaderproofreadoptions-signal">Proofreader API: 3 The proofreader API</see></param>
-[ECMAScript]
 [Description("@#ProofreaderProofreadOptions")]
 public record ProofreaderProofreadOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8339,7 +7878,6 @@ public record ProofreaderProofreadOptions(
 /// </remarks>
 /// <param name="CorrectedInput">ProofreadResult 字典中的 correctedInput 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadresult-correctedinput">Proofreader API: 3 The proofreader API</see></param>
 /// <param name="Corrections">The proofread result should contain a list of corrections where each ProofreadCorrection, defined by its range from startIndex to endIndex, should describe the types of errors that are corrected according to the CorrectionType enumeration. &quot;false&quot; <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadresult-corrections">Proofreader API: 3 The proofreader API</see></param>
-[ECMAScript]
 [Description("@#ProofreadResult")]
 public record ProofreadResult(
     [property: Description("@#correctedInput")]string? CorrectedInput = default,
@@ -8353,7 +7891,6 @@ public record ProofreadResult(
 /// </remarks>
 /// <param name="DetectedLanguage">LanguageDetectionResult 字典中的 detectedLanguage 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-languagedetectionresult-detectedlanguage">Translator and Language Detector APIs: 4 The language detector API</see></param>
 /// <param name="Confidence">LanguageDetectionResult 字典中的 confidence 成员，WebIDL 类型为 double。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-languagedetectionresult-confidence">Translator and Language Detector APIs: 4 The language detector API</see></param>
-[ECMAScript]
 [Description("@#LanguageDetectionResult")]
 public record LanguageDetectionResult(
     [property: Description("@#detectedLanguage")]string? DetectedLanguage = default,
@@ -8366,7 +7903,6 @@ public record LanguageDetectionResult(
 /// <see href="https://webmachinelearning.github.io/translation-api/#dictdef-languagedetectorcreatecoreoptions">Translator and Language Detector APIs: 4 The language detector API</see>
 /// </remarks>
 /// <param name="ExpectedInputLanguages">LanguageDetectorCreateCoreOptions 字典中的 expectedInputLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-languagedetectorcreatecoreoptions-expectedinputlanguages">Translator and Language Detector APIs: 4 The language detector API</see></param>
-[ECMAScript]
 [Description("@#LanguageDetectorCreateCoreOptions")]
 public record LanguageDetectorCreateCoreOptions(
     [property: Description("@#expectedInputLanguages")]string[]? ExpectedInputLanguages = default);
@@ -8379,7 +7915,6 @@ public record LanguageDetectorCreateCoreOptions(
 /// </remarks>
 /// <param name="Signal">LanguageDetectorCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-languagedetectorcreateoptions-signal">Translator and Language Detector APIs: 4 The language detector API</see></param>
 /// <param name="Monitor">LanguageDetectorCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-languagedetectorcreateoptions-monitor">Translator and Language Detector APIs: 4 The language detector API</see></param>
-[ECMAScript]
 [Description("@#LanguageDetectorCreateOptions")]
 public record LanguageDetectorCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -8392,7 +7927,6 @@ public record LanguageDetectorCreateOptions(
 /// <see href="https://webmachinelearning.github.io/translation-api/#dictdef-languagedetectordetectoptions">Translator and Language Detector APIs: 4 The language detector API</see>
 /// </remarks>
 /// <param name="Signal">LanguageDetectorDetectOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-languagedetectordetectoptions-signal">Translator and Language Detector APIs: 4 The language detector API</see></param>
-[ECMAScript]
 [Description("@#LanguageDetectorDetectOptions")]
 public record LanguageDetectorDetectOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8405,7 +7939,6 @@ public record LanguageDetectorDetectOptions(
 /// </remarks>
 /// <param name="SourceLanguage">TranslatorCreateCoreOptions 字典中的 sourceLanguage 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://webmachinelearning.github.io/translation-api/#dom-translatorcreatecoreoptions-sourcelanguage">Translator and Language Detector APIs: 3 The translator API</see></param>
 /// <param name="TargetLanguage">TranslatorCreateCoreOptions 字典中的 targetLanguage 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://webmachinelearning.github.io/translation-api/#dom-translatorcreatecoreoptions-targetlanguage">Translator and Language Detector APIs: 3 The translator API</see></param>
-[ECMAScript]
 [Description("@#TranslatorCreateCoreOptions")]
 public record TranslatorCreateCoreOptions(
     [property: Description("@#sourceLanguage")]string? SourceLanguage = default,
@@ -8419,7 +7952,6 @@ public record TranslatorCreateCoreOptions(
 /// </remarks>
 /// <param name="Signal">TranslatorCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-translatorcreateoptions-signal">Translator and Language Detector APIs: 3 The translator API</see></param>
 /// <param name="Monitor">TranslatorCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-translatorcreateoptions-monitor">Translator and Language Detector APIs: 3 The translator API</see></param>
-[ECMAScript]
 [Description("@#TranslatorCreateOptions")]
 public record TranslatorCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -8432,7 +7964,6 @@ public record TranslatorCreateOptions(
 /// <see href="https://webmachinelearning.github.io/translation-api/#dictdef-translatortranslateoptions">Translator and Language Detector APIs: 3 The translator API</see>
 /// </remarks>
 /// <param name="Signal">TranslatorTranslateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/translation-api/#dom-translatortranslateoptions-signal">Translator and Language Detector APIs: 3 The translator API</see></param>
-[ECMAScript]
 [Description("@#TranslatorTranslateOptions")]
 public record TranslatorTranslateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8444,7 +7975,6 @@ public record TranslatorTranslateOptions(
 /// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontextexecutetooloptions">WebMCP: 4.2.5 ModelContextExecuteToolOptions Dictionary</see>
 /// </remarks>
 /// <param name="Signal">ModelContextExecuteToolOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextexecutetooloptions-signal">WebMCP: 4.2.5 ModelContextExecuteToolOptions Dictionary</see></param>
-[ECMAScript]
 [Description("@#ModelContextExecuteToolOptions")]
 public record ModelContextExecuteToolOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8456,7 +7986,6 @@ public record ModelContextExecuteToolOptions(
 /// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-modelcontextgettooloptions">WebMCP: 4.2.4 ModelContextGetToolOptions Dictionary</see>
 /// </remarks>
 /// <param name="FromOrigins">ModelContextGetToolOptions 字典中的 fromOrigins 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextgettooloptions-fromorigins">WebMCP: 4.2.4 ModelContextGetToolOptions Dictionary</see></param>
-[ECMAScript]
 [Description("@#ModelContextGetToolOptions")]
 public record ModelContextGetToolOptions(
     [property: Description("@#fromOrigins")]string[]? FromOrigins = default);
@@ -8469,7 +7998,6 @@ public record ModelContextGetToolOptions(
 /// </remarks>
 /// <param name="ExposedTo">ModelContextRegisterToolOptions 字典中的 exposedTo 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextregistertooloptions-exposedto">WebMCP: 4.2.3 ModelContextRegisterToolOptions Dictionary</see></param>
 /// <param name="Signal">ModelContextRegisterToolOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontextregistertooloptions-signal">WebMCP: 4.2.3 ModelContextRegisterToolOptions Dictionary</see></param>
-[ECMAScript]
 [Description("@#ModelContextRegisterToolOptions")]
 public record ModelContextRegisterToolOptions(
     [property: Description("@#exposedTo")]string[]? ExposedTo = default,
@@ -8487,7 +8015,6 @@ public record ModelContextRegisterToolOptions(
 /// <param name="InputSchema">Registers a tool that agents can invoke. Returns a rejected promise if a tool with the same name is already registered, if the given name or description are empty strings, or if the inputSchema is invalid. <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontexttool-inputschema">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
 /// <param name="Execute">ModelContextTool 字典中的 execute 成员，WebIDL 类型为 ToolExecuteCallback。必须提供该成员。 <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontexttool-execute">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
 /// <param name="Annotations">ModelContextTool 字典中的 annotations 成员，WebIDL 类型为 ToolAnnotations。可省略。 <see href="https://webmachinelearning.github.io/webmcp/#dom-modelcontexttool-annotations">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
-[ECMAScript]
 [Description("@#ModelContextTool")]
 public record ModelContextTool(
     [property: Description("@#name")]string? Name = default,
@@ -8510,7 +8037,6 @@ public record ModelContextTool(
 /// <param name="Window">RegisteredTool 字典中的 window 成员，WebIDL 类型为 Window。必须提供该成员。 <see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-window">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
 /// <param name="Origin">RegisteredTool 字典中的 origin 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-origin">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
 /// <param name="Annotations">RegisteredTool 字典中的 annotations 成员，WebIDL 类型为 ToolAnnotations。可省略。 <see href="https://webmachinelearning.github.io/webmcp/#dom-registeredtool-annotations">WebMCP: 4.2.6 RegisteredTool Dictionary</see></param>
-[ECMAScript]
 [Description("@#RegisteredTool")]
 public record RegisteredTool(
     [property: Description("@#name")]string? Name = default,
@@ -8530,7 +8056,6 @@ public record RegisteredTool(
 /// <param name="ReadOnlyHint">ToolAnnotations 字典中的 readOnlyHint 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webmcp/#dom-toolannotations-readonlyhint">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
 /// <param name="UntrustedContentHint">ToolAnnotations 字典中的 untrustedContentHint 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webmcp/#dom-toolannotations-untrustedcontenthint">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
 /// <param name="ConsequentialHint">ToolAnnotations 字典中的 consequentialHint 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webmcp/#dom-toolannotations-consequentialhint">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
-[ECMAScript]
 [Description("@#ToolAnnotations")]
 public record ToolAnnotations(
     [property: Description("@#readOnlyHint")]bool ReadOnlyHint = false,
@@ -8544,7 +8069,6 @@ public record ToolAnnotations(
 /// <see href="https://webmachinelearning.github.io/webmcp/#dictdef-toolexecutecallbackoptions">WebMCP: 4.2.1 ModelContextTool Dictionary</see>
 /// </remarks>
 /// <param name="Signal">ToolExecuteCallbackOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。必须提供该成员。 <see href="https://webmachinelearning.github.io/webmcp/#dom-toolexecutecallbackoptions-signal">WebMCP: 4.2.1 ModelContextTool Dictionary</see></param>
-[ECMAScript]
 [Description("@#ToolExecuteCallbackOptions")]
 public record ToolExecuteCallbackOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -8557,7 +8081,6 @@ public record ToolExecuteCallbackOptions(
 /// </remarks>
 /// <param name="KeepDimensions">MLArgMinMaxOptions 字典中的 keepDimensions 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlargminmaxoptions-keepdimensions">Web Neural Network API: 8.9.5 argMin/argMax operations</see></param>
 /// <param name="OutputDataType">MLArgMinMaxOptions 字典中的 outputDataType 成员，WebIDL 类型为 MLOperandDataType。可省略。WebIDL 默认值：int32。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlargminmaxoptions-outputdatatype">Web Neural Network API: 8.9.5 argMin/argMax operations</see></param>
-[ECMAScript]
 [Description("@#MLArgMinMaxOptions")]
 public record MLArgMinMaxOptions(
     [property: Description("@#keepDimensions")]bool KeepDimensions = false,
@@ -8573,7 +8096,6 @@ public record MLArgMinMaxOptions(
 /// <param name="Bias">MLBatchNormalizationOptions 字典中的 bias 成员，WebIDL 类型为 MLOperand。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbatchnormalizationoptions-bias">Web Neural Network API: 8.9.6 batchNormalization</see></param>
 /// <param name="Axis">MLBatchNormalizationOptions 字典中的 axis 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：1。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbatchnormalizationoptions-axis">Web Neural Network API: 8.9.6 batchNormalization</see></param>
 /// <param name="Epsilon">MLBatchNormalizationOptions 字典中的 epsilon 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1e-5。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbatchnormalizationoptions-epsilon">Web Neural Network API: 8.9.6 batchNormalization</see></param>
-[ECMAScript]
 [Description("@#MLBatchNormalizationOptions")]
 public record MLBatchNormalizationOptions(
     [property: Description("@#scale")]MLOperand? Scale = default,
@@ -8593,7 +8115,6 @@ public record MLBatchNormalizationOptions(
 /// <param name="Scale">MLBatchNormalizationSupportLimits 字典中的 scale 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbatchnormalizationsupportlimits-scale">Web Neural Network API: 8.9.6 batchNormalization</see></param>
 /// <param name="Bias">MLBatchNormalizationSupportLimits 字典中的 bias 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbatchnormalizationsupportlimits-bias">Web Neural Network API: 8.9.6 batchNormalization</see></param>
 /// <param name="Output">MLBatchNormalizationSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbatchnormalizationsupportlimits-output">Web Neural Network API: 8.9.6 batchNormalization</see></param>
-[ECMAScript]
 [Description("@#MLBatchNormalizationSupportLimits")]
 public record MLBatchNormalizationSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -8612,7 +8133,6 @@ public record MLBatchNormalizationSupportLimits(
 /// <param name="A">MLBinarySupportLimits 字典中的 a 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbinarysupportlimits-a">Web Neural Network API: 8.3.7.4 MLBinarySupportLimits dictionary</see></param>
 /// <param name="B">MLBinarySupportLimits 字典中的 b 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbinarysupportlimits-b">Web Neural Network API: 8.3.7.4 MLBinarySupportLimits dictionary</see></param>
 /// <param name="Output">MLBinarySupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlbinarysupportlimits-output">Web Neural Network API: 8.3.7.4 MLBinarySupportLimits dictionary</see></param>
-[ECMAScript]
 [Description("@#MLBinarySupportLimits")]
 public record MLBinarySupportLimits(
     [property: Description("@#a")]MLTensorLimits? A = default,
@@ -8627,7 +8147,6 @@ public record MLBinarySupportLimits(
 /// </remarks>
 /// <param name="MinValue">MLClampOptions 字典中的 minValue 成员，WebIDL 类型为 MLNumber。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlclampoptions-minvalue">Web Neural Network API: 8.9.8 clamp</see></param>
 /// <param name="MaxValue">MLClampOptions 字典中的 maxValue 成员，WebIDL 类型为 MLNumber。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlclampoptions-maxvalue">Web Neural Network API: 8.9.8 clamp</see></param>
-[ECMAScript]
 [Description("@#MLClampOptions")]
 public record MLClampOptions(
     [property: Description("@#minValue")]MLNumber? MinValue = default,
@@ -8641,7 +8160,6 @@ public record MLClampOptions(
 /// </remarks>
 /// <param name="Inputs">MLConcatSupportLimits 字典中的 inputs 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconcatsupportlimits-inputs">Web Neural Network API: 8.9.9 concat</see></param>
 /// <param name="Output">MLConcatSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconcatsupportlimits-output">Web Neural Network API: 8.9.9 concat</see></param>
-[ECMAScript]
 [Description("@#MLConcatSupportLimits")]
 public record MLConcatSupportLimits(
     [property: Description("@#inputs")]MLTensorLimits? Inputs = default,
@@ -8654,7 +8172,6 @@ public record MLConcatSupportLimits(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlcontextlostinfo">Web Neural Network API: 8.3 MLContext interface</see>
 /// </remarks>
 /// <param name="Message">MLContextLostInfo 字典中的 message 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlcontextlostinfo-message">Web Neural Network API: 8.3.9 Errors</see></param>
-[ECMAScript]
 [Description("@#MLContextLostInfo")]
 public record MLContextLostInfo(
     [property: Description("@#message")]string? Message = default);
@@ -8667,7 +8184,6 @@ public record MLContextLostInfo(
 /// </remarks>
 /// <param name="PowerPreference">MLContextOptions 字典中的 powerPreference 成员，WebIDL 类型为 MLPowerPreference。可省略。WebIDL 默认值：default。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlcontextoptions-powerpreference">Web Neural Network API: 8.2.1 MLContextOptions</see></param>
 /// <param name="Accelerated">MLContextOptions 字典中的 accelerated 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlcontextoptions-accelerated">Web Neural Network API: 8.2.1 MLContextOptions</see></param>
-[ECMAScript]
 [Description("@#MLContextOptions")]
 public record MLContextOptions(
     [property: Description("@#powerPreference")]MLPowerPreference PowerPreference = MLPowerPreference.Default,
@@ -8686,7 +8202,6 @@ public record MLContextOptions(
 /// <param name="InputLayout">MLConv2dOptions 字典中的 inputLayout 成员，WebIDL 类型为 MLInputOperandLayout。可省略。WebIDL 默认值：nchw。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconv2doptions-inputlayout">Web Neural Network API: 8.9.10 conv2d</see></param>
 /// <param name="FilterLayout">MLConv2dOptions 字典中的 filterLayout 成员，WebIDL 类型为 MLConv2dFilterOperandLayout。可省略。WebIDL 默认值：oihw。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconv2doptions-filterlayout">Web Neural Network API: 8.9.10 conv2d</see></param>
 /// <param name="Bias">MLConv2dOptions 字典中的 bias 成员，WebIDL 类型为 MLOperand。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconv2doptions-bias">Web Neural Network API: 8.9.10 conv2d</see></param>
-[ECMAScript]
 [Description("@#MLConv2dOptions")]
 public record MLConv2dOptions(
     [property: Description("@#padding")]uint[]? Padding = default,
@@ -8707,7 +8222,6 @@ public record MLConv2dOptions(
 /// <param name="Filter">MLConv2dSupportLimits 字典中的 filter 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconv2dsupportlimits-filter">Web Neural Network API: 8.9.10 conv2d</see></param>
 /// <param name="Bias">MLConv2dSupportLimits 字典中的 bias 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconv2dsupportlimits-bias">Web Neural Network API: 8.9.10 conv2d</see></param>
 /// <param name="Output">MLConv2dSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconv2dsupportlimits-output">Web Neural Network API: 8.9.10 conv2d</see></param>
-[ECMAScript]
 [Description("@#MLConv2dSupportLimits")]
 public record MLConv2dSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -8730,7 +8244,6 @@ public record MLConv2dSupportLimits(
 /// <param name="InputLayout">MLConvTranspose2dOptions 字典中的 inputLayout 成员，WebIDL 类型为 MLInputOperandLayout。可省略。WebIDL 默认值：nchw。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconvtranspose2doptions-inputlayout">Web Neural Network API: 8.9.11 convTranspose2d</see></param>
 /// <param name="FilterLayout">MLConvTranspose2dOptions 字典中的 filterLayout 成员，WebIDL 类型为 MLConvTranspose2dFilterOperandLayout。可省略。WebIDL 默认值：iohw。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconvtranspose2doptions-filterlayout">Web Neural Network API: 8.9.11 convTranspose2d</see></param>
 /// <param name="Bias">MLConvTranspose2dOptions 字典中的 bias 成员，WebIDL 类型为 MLOperand。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlconvtranspose2doptions-bias">Web Neural Network API: 8.9.11 convTranspose2d</see></param>
-[ECMAScript]
 [Description("@#MLConvTranspose2dOptions")]
 public record MLConvTranspose2dOptions(
     [property: Description("@#padding")]uint[]? Padding = default,
@@ -8751,7 +8264,6 @@ public record MLConvTranspose2dOptions(
 /// </remarks>
 /// <param name="Exclusive">MLCumulativeSumOptions 字典中的 exclusive 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlcumulativesumoptions-exclusive">Web Neural Network API: 8.9.12 cumulativeSum</see></param>
 /// <param name="Reversed">MLCumulativeSumOptions 字典中的 reversed 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlcumulativesumoptions-reversed">Web Neural Network API: 8.9.12 cumulativeSum</see></param>
-[ECMAScript]
 [Description("@#MLCumulativeSumOptions")]
 public record MLCumulativeSumOptions(
     [property: Description("@#exclusive")]bool Exclusive = false,
@@ -8764,7 +8276,6 @@ public record MLCumulativeSumOptions(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mleluoptions">Web Neural Network API: 8.9.18 elu</see>
 /// </remarks>
 /// <param name="Alpha">MLEluOptions 字典中的 alpha 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1。 <see href="https://webmachinelearning.github.io/webnn/#dom-mleluoptions-alpha">Web Neural Network API: 8.9.18 elu</see></param>
-[ECMAScript]
 [Description("@#MLEluOptions")]
 public record MLEluOptions(
     [property: Description("@#alpha")]double Alpha = 1d) : MLOperatorOptions;
@@ -8776,7 +8287,6 @@ public record MLEluOptions(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlgatheroptions">Web Neural Network API: 8.9.20 gather</see>
 /// </remarks>
 /// <param name="Axis">MLGatherOptions 字典中的 axis 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgatheroptions-axis">Web Neural Network API: 8.9.20 gather</see></param>
-[ECMAScript]
 [Description("@#MLGatherOptions")]
 public record MLGatherOptions(
     [property: Description("@#axis")]uint Axis = 0) : MLOperatorOptions;
@@ -8790,7 +8300,6 @@ public record MLGatherOptions(
 /// <param name="Input">MLGatherSupportLimits 字典中的 input 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgathersupportlimits-input">Web Neural Network API: 8.9.20 gather</see></param>
 /// <param name="Indices">MLGatherSupportLimits 字典中的 indices 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgathersupportlimits-indices">Web Neural Network API: 8.9.20 gather</see></param>
 /// <param name="Output">MLGatherSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgathersupportlimits-output">Web Neural Network API: 8.9.20 gather</see></param>
-[ECMAScript]
 [Description("@#MLGatherSupportLimits")]
 public record MLGatherSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -8808,7 +8317,6 @@ public record MLGatherSupportLimits(
 /// <param name="Beta">MLGemmOptions 字典中的 beta 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1.0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgemmoptions-beta">Web Neural Network API: 8.9.24 gemm</see></param>
 /// <param name="ATranspose">MLGemmOptions 字典中的 aTranspose 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgemmoptions-atranspose">Web Neural Network API: 8.9.24 gemm</see></param>
 /// <param name="BTranspose">MLGemmOptions 字典中的 bTranspose 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgemmoptions-btranspose">Web Neural Network API: 8.9.24 gemm</see></param>
-[ECMAScript]
 [Description("@#MLGemmOptions")]
 public record MLGemmOptions(
     [property: Description("@#c")]MLOperand? C = default,
@@ -8827,7 +8335,6 @@ public record MLGemmOptions(
 /// <param name="B">MLGemmSupportLimits 字典中的 b 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgemmsupportlimits-b">Web Neural Network API: 8.9.24 gemm</see></param>
 /// <param name="C">MLGemmSupportLimits 字典中的 c 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgemmsupportlimits-c">Web Neural Network API: 8.9.24 gemm</see></param>
 /// <param name="Output">MLGemmSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgemmsupportlimits-output">Web Neural Network API: 8.9.24 gemm</see></param>
-[ECMAScript]
 [Description("@#MLGemmSupportLimits")]
 public record MLGemmSupportLimits(
     [property: Description("@#a")]MLTensorLimits? A = default,
@@ -8846,7 +8353,6 @@ public record MLGemmSupportLimits(
 /// <param name="ResetAfter">MLGruCellOptions 字典中的 resetAfter 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrucelloptions-resetafter">Web Neural Network API: 8.9.26 gruCell</see></param>
 /// <param name="Layout">MLGruCellOptions 字典中的 layout 成员，WebIDL 类型为 MLGruWeightLayout。可省略。WebIDL 默认值：zrn。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrucelloptions-layout">Web Neural Network API: 8.9.26 gruCell</see></param>
 /// <param name="Activations">MLGruCellOptions 字典中的 activations 成员，WebIDL 类型为 sequence&lt;MLRecurrentNetworkActivation&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrucelloptions-activations">Web Neural Network API: 8.9.26 gruCell</see></param>
-[ECMAScript]
 [Description("@#MLGruCellOptions")]
 public record MLGruCellOptions(
     [property: Description("@#bias")]MLOperand? Bias = default,
@@ -8868,7 +8374,6 @@ public record MLGruCellOptions(
 /// <param name="Bias">MLGruCellSupportLimits 字典中的 bias 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrucellsupportlimits-bias">Web Neural Network API: 8.9.26 gruCell</see></param>
 /// <param name="RecurrentBias">MLGruCellSupportLimits 字典中的 recurrentBias 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrucellsupportlimits-recurrentbias">Web Neural Network API: 8.9.26 gruCell</see></param>
 /// <param name="Output">MLGruCellSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrucellsupportlimits-output">Web Neural Network API: 8.9.26 gruCell</see></param>
-[ECMAScript]
 [Description("@#MLGruCellSupportLimits")]
 public record MLGruCellSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -8893,7 +8398,6 @@ public record MLGruCellSupportLimits(
 /// <param name="Direction">MLGruOptions 字典中的 direction 成员，WebIDL 类型为 MLRecurrentNetworkDirection。可省略。WebIDL 默认值：forward。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgruoptions-direction">Web Neural Network API: 8.9.25 gru</see></param>
 /// <param name="Layout">MLGruOptions 字典中的 layout 成员，WebIDL 类型为 MLGruWeightLayout。可省略。WebIDL 默认值：zrn。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgruoptions-layout">Web Neural Network API: 8.9.25 gru</see></param>
 /// <param name="Activations">MLGruOptions 字典中的 activations 成员，WebIDL 类型为 sequence&lt;MLRecurrentNetworkActivation&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgruoptions-activations">Web Neural Network API: 8.9.25 gru</see></param>
-[ECMAScript]
 [Description("@#MLGruOptions")]
 public record MLGruOptions(
     [property: Description("@#bias")]MLOperand? Bias = default,
@@ -8919,7 +8423,6 @@ public record MLGruOptions(
 /// <param name="InitialHiddenState">MLGruSupportLimits 字典中的 initialHiddenState 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrusupportlimits-initialhiddenstate">Web Neural Network API: 8.9.25 gru</see></param>
 /// <param name="Output0">MLGruSupportLimits 字典中的 output0 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrusupportlimits-output0">Web Neural Network API: 8.9.25 gru</see></param>
 /// <param name="Output1">MLGruSupportLimits 字典中的 output1 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlgrusupportlimits-output1">Web Neural Network API: 8.9.25 gru</see></param>
-[ECMAScript]
 [Description("@#MLGruSupportLimits")]
 public record MLGruSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -8939,7 +8442,6 @@ public record MLGruSupportLimits(
 /// </remarks>
 /// <param name="Alpha">MLHardSigmoidOptions 字典中的 alpha 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.2。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlhardsigmoidoptions-alpha">Web Neural Network API: 8.9.27 hardSigmoid</see></param>
 /// <param name="Beta">MLHardSigmoidOptions 字典中的 beta 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.5。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlhardsigmoidoptions-beta">Web Neural Network API: 8.9.27 hardSigmoid</see></param>
-[ECMAScript]
 [Description("@#MLHardSigmoidOptions")]
 public record MLHardSigmoidOptions(
     [property: Description("@#alpha")]double Alpha = 0.2d,
@@ -8955,7 +8457,6 @@ public record MLHardSigmoidOptions(
 /// <param name="Bias">MLInstanceNormalizationOptions 字典中的 bias 成员，WebIDL 类型为 MLOperand。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlinstancenormalizationoptions-bias">Web Neural Network API: 8.9.29 instanceNormalization</see></param>
 /// <param name="Epsilon">MLInstanceNormalizationOptions 字典中的 epsilon 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1e-5。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlinstancenormalizationoptions-epsilon">Web Neural Network API: 8.9.29 instanceNormalization</see></param>
 /// <param name="Layout">MLInstanceNormalizationOptions 字典中的 layout 成员，WebIDL 类型为 MLInputOperandLayout。可省略。WebIDL 默认值：nchw。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlinstancenormalizationoptions-layout">Web Neural Network API: 8.9.29 instanceNormalization</see></param>
-[ECMAScript]
 [Description("@#MLInstanceNormalizationOptions")]
 public record MLInstanceNormalizationOptions(
     [property: Description("@#scale")]MLOperand? Scale = default,
@@ -8973,7 +8474,6 @@ public record MLInstanceNormalizationOptions(
 /// <param name="Bias">MLLayerNormalizationOptions 字典中的 bias 成员，WebIDL 类型为 MLOperand。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllayernormalizationoptions-bias">Web Neural Network API: 8.9.30 layerNormalization</see></param>
 /// <param name="Axes">MLLayerNormalizationOptions 字典中的 axes 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllayernormalizationoptions-axes">Web Neural Network API: 8.9.30 layerNormalization</see></param>
 /// <param name="Epsilon">MLLayerNormalizationOptions 字典中的 epsilon 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1e-5。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllayernormalizationoptions-epsilon">Web Neural Network API: 8.9.30 layerNormalization</see></param>
-[ECMAScript]
 [Description("@#MLLayerNormalizationOptions")]
 public record MLLayerNormalizationOptions(
     [property: Description("@#scale")]MLOperand? Scale = default,
@@ -8988,7 +8488,6 @@ public record MLLayerNormalizationOptions(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlleakyreluoptions">Web Neural Network API: 8.9.31 leakyRelu</see>
 /// </remarks>
 /// <param name="Alpha">MLLeakyReluOptions 字典中的 alpha 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.01。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlleakyreluoptions-alpha">Web Neural Network API: 8.9.31 leakyRelu</see></param>
-[ECMAScript]
 [Description("@#MLLeakyReluOptions")]
 public record MLLeakyReluOptions(
     [property: Description("@#alpha")]double Alpha = 0.01d) : MLOperatorOptions;
@@ -9001,7 +8500,6 @@ public record MLLeakyReluOptions(
 /// </remarks>
 /// <param name="Alpha">MLLinearOptions 字典中的 alpha 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：1。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllinearoptions-alpha">Web Neural Network API: 8.9.32 linear</see></param>
 /// <param name="Beta">MLLinearOptions 字典中的 beta 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllinearoptions-beta">Web Neural Network API: 8.9.32 linear</see></param>
-[ECMAScript]
 [Description("@#MLLinearOptions")]
 public record MLLinearOptions(
     [property: Description("@#alpha")]double Alpha = 1d,
@@ -9015,7 +8513,6 @@ public record MLLinearOptions(
 /// </remarks>
 /// <param name="A">MLLogicalNotSupportLimits 字典中的 a 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllogicalnotsupportlimits-a">Web Neural Network API: 8.9.14 Element-wise logical operations</see></param>
 /// <param name="Output">MLLogicalNotSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllogicalnotsupportlimits-output">Web Neural Network API: 8.9.14 Element-wise logical operations</see></param>
-[ECMAScript]
 [Description("@#MLLogicalNotSupportLimits")]
 public record MLLogicalNotSupportLimits(
     [property: Description("@#a")]MLTensorLimits? A = default,
@@ -9032,7 +8529,6 @@ public record MLLogicalNotSupportLimits(
 /// <param name="PeepholeWeight">MLLstmCellOptions 字典中的 peepholeWeight 成员，WebIDL 类型为 MLOperand。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmcelloptions-peepholeweight">Web Neural Network API: 8.9.34 lstmCell</see></param>
 /// <param name="Layout">MLLstmCellOptions 字典中的 layout 成员，WebIDL 类型为 MLLstmWeightLayout。可省略。WebIDL 默认值：iofg。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmcelloptions-layout">Web Neural Network API: 8.9.34 lstmCell</see></param>
 /// <param name="Activations">MLLstmCellOptions 字典中的 activations 成员，WebIDL 类型为 sequence&lt;MLRecurrentNetworkActivation&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmcelloptions-activations">Web Neural Network API: 8.9.34 lstmCell</see></param>
-[ECMAScript]
 [Description("@#MLLstmCellOptions")]
 public record MLLstmCellOptions(
     [property: Description("@#bias")]MLOperand? Bias = default,
@@ -9056,7 +8552,6 @@ public record MLLstmCellOptions(
 /// <param name="Direction">MLLstmOptions 字典中的 direction 成员，WebIDL 类型为 MLRecurrentNetworkDirection。可省略。WebIDL 默认值：forward。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmoptions-direction">Web Neural Network API: 8.9.33 lstm</see></param>
 /// <param name="Layout">MLLstmOptions 字典中的 layout 成员，WebIDL 类型为 MLLstmWeightLayout。可省略。WebIDL 默认值：iofg。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmoptions-layout">Web Neural Network API: 8.9.33 lstm</see></param>
 /// <param name="Activations">MLLstmOptions 字典中的 activations 成员，WebIDL 类型为 sequence&lt;MLRecurrentNetworkActivation&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmoptions-activations">Web Neural Network API: 8.9.33 lstm</see></param>
-[ECMAScript]
 [Description("@#MLLstmOptions")]
 public record MLLstmOptions(
     [property: Description("@#bias")]MLOperand? Bias = default,
@@ -9086,7 +8581,6 @@ public record MLLstmOptions(
 /// <param name="Output0">MLLstmSupportLimits 字典中的 output0 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmsupportlimits-output0">Web Neural Network API: 8.9.33 lstm</see></param>
 /// <param name="Output1">MLLstmSupportLimits 字典中的 output1 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmsupportlimits-output1">Web Neural Network API: 8.9.33 lstm</see></param>
 /// <param name="Output2">MLLstmSupportLimits 字典中的 output2 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmsupportlimits-output2">Web Neural Network API: 8.9.33 lstm</see></param>
-[ECMAScript]
 [Description("@#MLLstmSupportLimits")]
 public record MLLstmSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9111,7 +8605,6 @@ public record MLLstmSupportLimits(
 /// <param name="Scale">MLNormalizationSupportLimits 字典中的 scale 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlnormalizationsupportlimits-scale">Web Neural Network API: 8.9.29 instanceNormalization</see></param>
 /// <param name="Bias">MLNormalizationSupportLimits 字典中的 bias 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlnormalizationsupportlimits-bias">Web Neural Network API: 8.9.29 instanceNormalization</see></param>
 /// <param name="Output">MLNormalizationSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlnormalizationsupportlimits-output">Web Neural Network API: 8.9.29 instanceNormalization</see></param>
-[ECMAScript]
 [Description("@#MLNormalizationSupportLimits")]
 public record MLNormalizationSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9126,7 +8619,6 @@ public record MLNormalizationSupportLimits(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mloperatoroptions">Web Neural Network API: 8.6 MLOperand interface</see>
 /// </remarks>
 /// <param name="Label">MLOperatorOptions 字典中的 label 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://webmachinelearning.github.io/webnn/#dom-mloperatoroptions-label">Web Neural Network API: 8.6 MLOperand interface</see></param>
-[ECMAScript]
 [Description("@#MLOperatorOptions")]
 public record MLOperatorOptions(
     [property: Description("@#label")]string? Label = default);
@@ -9609,7 +9101,6 @@ public record MLOpSupportLimits(
 /// </remarks>
 /// <param name="Mode">MLPadOptions 字典中的 mode 成员，WebIDL 类型为 MLPaddingMode。可省略。WebIDL 默认值：constant。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlpadoptions-mode">Web Neural Network API: 8.9.36 pad</see></param>
 /// <param name="Value">MLPadOptions 字典中的 value 成员，WebIDL 类型为 MLNumber。可省略。WebIDL 默认值：0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlpadoptions-value">Web Neural Network API: 8.9.36 pad</see></param>
-[ECMAScript]
 [Description("@#MLPadOptions")]
 public record MLPadOptions(
     [property: Description("@#mode")]MLPaddingMode Mode = MLPaddingMode.Constant,
@@ -9628,7 +9119,6 @@ public record MLPadOptions(
 /// <param name="Layout">MLPool2dOptions 字典中的 layout 成员，WebIDL 类型为 MLInputOperandLayout。可省略。WebIDL 默认值：nchw。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlpool2doptions-layout">Web Neural Network API: 8.9.37 Pooling operations</see></param>
 /// <param name="OutputShapeRounding">MLPool2dOptions 字典中的 outputShapeRounding 成员，WebIDL 类型为 MLRoundingType。可省略。WebIDL 默认值：floor。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlpool2doptions-outputshaperounding">Web Neural Network API: 8.9.37 Pooling operations</see></param>
 /// <param name="OutputSizes">MLPool2dOptions 字典中的 outputSizes 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlpool2doptions-outputsizes">Web Neural Network API: 8.9.37 Pooling operations</see></param>
-[ECMAScript]
 [Description("@#MLPool2dOptions")]
 public record MLPool2dOptions(
     [property: Description("@#windowDimensions")]uint[]? WindowDimensions = default,
@@ -9648,7 +9138,6 @@ public record MLPool2dOptions(
 /// <param name="Input">MLPreluSupportLimits 字典中的 input 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlprelusupportlimits-input">Web Neural Network API: 8.9.38 prelu</see></param>
 /// <param name="Slope">MLPreluSupportLimits 字典中的 slope 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlprelusupportlimits-slope">Web Neural Network API: 8.9.38 prelu</see></param>
 /// <param name="Output">MLPreluSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlprelusupportlimits-output">Web Neural Network API: 8.9.38 prelu</see></param>
-[ECMAScript]
 [Description("@#MLPreluSupportLimits")]
 public record MLPreluSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9665,7 +9154,6 @@ public record MLPreluSupportLimits(
 /// <param name="Scale">MLQuantizeDequantizeLinearSupportLimits 字典中的 scale 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlquantizedequantizelinearsupportlimits-scale">Web Neural Network API: 8.9.16 dequantizeLinear</see></param>
 /// <param name="ZeroPoint">MLQuantizeDequantizeLinearSupportLimits 字典中的 zeroPoint 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlquantizedequantizelinearsupportlimits-zeropoint">Web Neural Network API: 8.9.16 dequantizeLinear</see></param>
 /// <param name="Output">MLQuantizeDequantizeLinearSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlquantizedequantizelinearsupportlimits-output">Web Neural Network API: 8.9.16 dequantizeLinear</see></param>
-[ECMAScript]
 [Description("@#MLQuantizeDequantizeLinearSupportLimits")]
 public record MLQuantizeDequantizeLinearSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9681,7 +9169,6 @@ public record MLQuantizeDequantizeLinearSupportLimits(
 /// </remarks>
 /// <param name="Min">MLRankRange 字典中的 min 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlrankrange-min">Web Neural Network API: 8.3.7.2 MLRankRange dictionary</see></param>
 /// <param name="Max">MLRankRange 字典中的 max 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlrankrange-max">Web Neural Network API: 8.3.7.2 MLRankRange dictionary</see></param>
-[ECMAScript]
 [Description("@#MLRankRange")]
 public record MLRankRange(
     [property: Description("@#min")]uint Min = default,
@@ -9695,7 +9182,6 @@ public record MLRankRange(
 /// </remarks>
 /// <param name="Axes">MLReduceOptions 字典中的 axes 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlreduceoptions-axes">Web Neural Network API: 8.9.39 Reduction operations</see></param>
 /// <param name="KeepDimensions">MLReduceOptions 字典中的 keepDimensions 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlreduceoptions-keepdimensions">Web Neural Network API: 8.9.39 Reduction operations</see></param>
-[ECMAScript]
 [Description("@#MLReduceOptions")]
 public record MLReduceOptions(
     [property: Description("@#axes")]uint[]? Axes = default,
@@ -9711,7 +9197,6 @@ public record MLReduceOptions(
 /// <param name="Scales">MLResample2dOptions 字典中的 scales 成员，WebIDL 类型为 sequence&lt;float&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlresample2doptions-scales">Web Neural Network API: 8.9.41 resample2d</see></param>
 /// <param name="Sizes">MLResample2dOptions 字典中的 sizes 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlresample2doptions-sizes">Web Neural Network API: 8.9.41 resample2d</see></param>
 /// <param name="Axes">MLResample2dOptions 字典中的 axes 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlresample2doptions-axes">Web Neural Network API: 8.9.41 resample2d</see></param>
-[ECMAScript]
 [Description("@#MLResample2dOptions")]
 public record MLResample2dOptions(
     [property: Description("@#mode")]MLInterpolationMode Mode = MLInterpolationMode.NearestNeighbor,
@@ -9726,7 +9211,6 @@ public record MLResample2dOptions(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlreverseoptions">Web Neural Network API: 8.9.43 reverse</see>
 /// </remarks>
 /// <param name="Axes">MLReverseOptions 字典中的 axes 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlreverseoptions-axes">Web Neural Network API: 8.9.43 reverse</see></param>
-[ECMAScript]
 [Description("@#MLReverseOptions")]
 public record MLReverseOptions(
     [property: Description("@#axes")]uint[]? Axes = default) : MLOperatorOptions;
@@ -9738,7 +9222,6 @@ public record MLReverseOptions(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlscatteroptions">Web Neural Network API: 8.9.44 scatterElements</see>
 /// </remarks>
 /// <param name="Axis">MLScatterOptions 字典中的 axis 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlscatteroptions-axis">Web Neural Network API: 8.9.44 scatterElements</see></param>
-[ECMAScript]
 [Description("@#MLScatterOptions")]
 public record MLScatterOptions(
     [property: Description("@#axis")]uint Axis = 0) : MLOperatorOptions;
@@ -9753,7 +9236,6 @@ public record MLScatterOptions(
 /// <param name="Indices">MLScatterSupportLimits 字典中的 indices 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlscattersupportlimits-indices">Web Neural Network API: 8.9.44 scatterElements</see></param>
 /// <param name="Updates">MLScatterSupportLimits 字典中的 updates 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlscattersupportlimits-updates">Web Neural Network API: 8.9.44 scatterElements</see></param>
 /// <param name="Output">MLScatterSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlscattersupportlimits-output">Web Neural Network API: 8.9.44 scatterElements</see></param>
-[ECMAScript]
 [Description("@#MLScatterSupportLimits")]
 public record MLScatterSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9769,7 +9251,6 @@ public record MLScatterSupportLimits(
 /// </remarks>
 /// <param name="Input">MLSingleInputSupportLimits 字典中的 input 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlsingleinputsupportlimits-input">Web Neural Network API: 8.3.7.5 MLSingleInputSupportLimits dictionary</see></param>
 /// <param name="Output">MLSingleInputSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlsingleinputsupportlimits-output">Web Neural Network API: 8.3.7.5 MLSingleInputSupportLimits dictionary</see></param>
-[ECMAScript]
 [Description("@#MLSingleInputSupportLimits")]
 public record MLSingleInputSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9782,7 +9263,6 @@ public record MLSingleInputSupportLimits(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlsliceoptions">Web Neural Network API: 8.9.47 slice</see>
 /// </remarks>
 /// <param name="Strides">MLSliceOptions 字典中的 strides 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlsliceoptions-strides">Web Neural Network API: 8.9.47 slice</see></param>
-[ECMAScript]
 [Description("@#MLSliceOptions")]
 public record MLSliceOptions(
     [property: Description("@#strides")]uint[]? Strides = default) : MLOperatorOptions;
@@ -9794,7 +9274,6 @@ public record MLSliceOptions(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mlsplitoptions">Web Neural Network API: 8.9.51 split</see>
 /// </remarks>
 /// <param name="Axis">MLSplitOptions 字典中的 axis 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlsplitoptions-axis">Web Neural Network API: 8.9.51 split</see></param>
-[ECMAScript]
 [Description("@#MLSplitOptions")]
 public record MLSplitOptions(
     [property: Description("@#axis")]uint Axis = 0) : MLOperatorOptions;
@@ -9807,7 +9286,6 @@ public record MLSplitOptions(
 /// </remarks>
 /// <param name="Input">MLSplitSupportLimits 字典中的 input 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlsplitsupportlimits-input">Web Neural Network API: 8.9.51 split</see></param>
 /// <param name="Outputs">MLSplitSupportLimits 字典中的 outputs 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlsplitsupportlimits-outputs">Web Neural Network API: 8.9.51 split</see></param>
-[ECMAScript]
 [Description("@#MLSplitSupportLimits")]
 public record MLSplitSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -9821,7 +9299,6 @@ public record MLSplitSupportLimits(
 /// </remarks>
 /// <param name="Readable">MLTensorDescriptor 字典中的 readable 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltensordescriptor-readable">Web Neural Network API: 8.7 MLTensorDescriptor dictionary</see></param>
 /// <param name="Writable">MLTensorDescriptor 字典中的 writable 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltensordescriptor-writable">Web Neural Network API: 8.7 MLTensorDescriptor dictionary</see></param>
-[ECMAScript]
 [Description("@#MLTensorDescriptor")]
 public record MLTensorDescriptor(
     [property: Description("@#readable")]bool Readable = false,
@@ -9835,7 +9312,6 @@ public record MLTensorDescriptor(
 /// </remarks>
 /// <param name="DataTypes">MLTensorLimits 字典中的 dataTypes 成员，WebIDL 类型为 MLDataTypeList。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltensorlimits-datatypes">Web Neural Network API: 8.3.7.3 MLTensorLimits dictionary</see></param>
 /// <param name="RankRange">MLTensorLimits 字典中的 rankRange 成员，WebIDL 类型为 MLRankRange。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltensorlimits-rankrange">Web Neural Network API: 8.3.7.3 MLTensorLimits dictionary</see></param>
-[ECMAScript]
 [Description("@#MLTensorLimits")]
 public record MLTensorLimits(
     [property: Description("@#dataTypes")]MLDataTypeList? DataTypes = default,
@@ -9848,7 +9324,6 @@ public record MLTensorLimits(
 /// <see href="https://webmachinelearning.github.io/webnn/#dictdef-mltransposeoptions">Web Neural Network API: 8.9.54 transpose</see>
 /// </remarks>
 /// <param name="Permutation">MLTransposeOptions 字典中的 permutation 成员，WebIDL 类型为 sequence&lt;unsigned long&gt;。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltransposeoptions-permutation">Web Neural Network API: 8.9.54 transpose</see></param>
-[ECMAScript]
 [Description("@#MLTransposeOptions")]
 public record MLTransposeOptions(
     [property: Description("@#permutation")]uint[]? Permutation = default) : MLOperatorOptions;
@@ -9861,7 +9336,6 @@ public record MLTransposeOptions(
 /// </remarks>
 /// <param name="Upper">MLTriangularOptions 字典中的 upper 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltriangularoptions-upper">Web Neural Network API: 8.9.55 triangular</see></param>
 /// <param name="Diagonal">MLTriangularOptions 字典中的 diagonal 成员，WebIDL 类型为 long。可省略。WebIDL 默认值：0。 <see href="https://webmachinelearning.github.io/webnn/#dom-mltriangularoptions-diagonal">Web Neural Network API: 8.9.55 triangular</see></param>
-[ECMAScript]
 [Description("@#MLTriangularOptions")]
 public record MLTriangularOptions(
     [property: Description("@#upper")]bool Upper = false,
@@ -9877,7 +9351,6 @@ public record MLTriangularOptions(
 /// <param name="TrueValue">MLWhereSupportLimits 字典中的 trueValue 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlwheresupportlimits-truevalue">Web Neural Network API: 8.9.56 where</see></param>
 /// <param name="FalseValue">MLWhereSupportLimits 字典中的 falseValue 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlwheresupportlimits-falsevalue">Web Neural Network API: 8.9.56 where</see></param>
 /// <param name="Output">MLWhereSupportLimits 字典中的 output 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mlwheresupportlimits-output">Web Neural Network API: 8.9.56 where</see></param>
-[ECMAScript]
 [Description("@#MLWhereSupportLimits")]
 public record MLWhereSupportLimits(
     [property: Description("@#condition")]MLTensorLimits? Condition = default,
@@ -9897,7 +9370,6 @@ public record MLWhereSupportLimits(
 /// <param name="ExpectedInputLanguages">RewriterCreateCoreOptions 字典中的 expectedInputLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewritercreatecoreoptions-expectedinputlanguages">Writing Assistance APIs: 4 The rewriter API</see></param>
 /// <param name="ExpectedContextLanguages">RewriterCreateCoreOptions 字典中的 expectedContextLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewritercreatecoreoptions-expectedcontextlanguages">Writing Assistance APIs: 4 The rewriter API</see></param>
 /// <param name="OutputLanguage">The outputLanguage option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available. &quot;UnknownError&quot; <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewritercreatecoreoptions-outputlanguage">Writing Assistance APIs: 4 The rewriter API</see></param>
-[ECMAScript]
 [Description("@#RewriterCreateCoreOptions")]
 public record RewriterCreateCoreOptions(
     [property: Description("@#tone")]RewriterTone Tone = RewriterTone.AsIs,
@@ -9916,7 +9388,6 @@ public record RewriterCreateCoreOptions(
 /// <param name="Signal">RewriterCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewritercreateoptions-signal">Writing Assistance APIs: 4 The rewriter API</see></param>
 /// <param name="Monitor">RewriterCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewritercreateoptions-monitor">Writing Assistance APIs: 4 The rewriter API</see></param>
 /// <param name="SharedContext">RewriterCreateOptions 字典中的 sharedContext 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewritercreateoptions-sharedcontext">Writing Assistance APIs: 4 The rewriter API</see></param>
-[ECMAScript]
 [Description("@#RewriterCreateOptions")]
 public record RewriterCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -9931,7 +9402,6 @@ public record RewriterCreateOptions(
 /// </remarks>
 /// <param name="Context">RewriterRewriteOptions 字典中的 context 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewriterrewriteoptions-context">Writing Assistance APIs: 4 The rewriter API</see></param>
 /// <param name="Signal">RewriterRewriteOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-rewriterrewriteoptions-signal">Writing Assistance APIs: 4 The rewriter API</see></param>
-[ECMAScript]
 [Description("@#RewriterRewriteOptions")]
 public record RewriterRewriteOptions(
     [property: Description("@#context")]string? Context = default,
@@ -9950,7 +9420,6 @@ public record RewriterRewriteOptions(
 /// <param name="ExpectedInputLanguages">SummarizerCreateCoreOptions 字典中的 expectedInputLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizercreatecoreoptions-expectedinputlanguages">Writing Assistance APIs: 2 The summarizer API</see></param>
 /// <param name="ExpectedContextLanguages">SummarizerCreateCoreOptions 字典中的 expectedContextLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizercreatecoreoptions-expectedcontextlanguages">Writing Assistance APIs: 2 The summarizer API</see></param>
 /// <param name="OutputLanguage">The outputLanguage option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available. &quot;UnknownError&quot; <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizercreatecoreoptions-outputlanguage">Writing Assistance APIs: 2 The summarizer API</see></param>
-[ECMAScript]
 [Description("@#SummarizerCreateCoreOptions")]
 public record SummarizerCreateCoreOptions(
     [property: Description("@#type")]SummarizerType Type = SummarizerType.KeyPoints,
@@ -9970,7 +9439,6 @@ public record SummarizerCreateCoreOptions(
 /// <param name="Signal">SummarizerCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizercreateoptions-signal">Writing Assistance APIs: 2 The summarizer API</see></param>
 /// <param name="Monitor">SummarizerCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizercreateoptions-monitor">Writing Assistance APIs: 2 The summarizer API</see></param>
 /// <param name="SharedContext">SummarizerCreateOptions 字典中的 sharedContext 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizercreateoptions-sharedcontext">Writing Assistance APIs: 2 The summarizer API</see></param>
-[ECMAScript]
 [Description("@#SummarizerCreateOptions")]
 public record SummarizerCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -9985,7 +9453,6 @@ public record SummarizerCreateOptions(
 /// </remarks>
 /// <param name="Signal">SummarizerSummarizeOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizersummarizeoptions-signal">Writing Assistance APIs: 2 The summarizer API</see></param>
 /// <param name="Context">SummarizerSummarizeOptions 字典中的 context 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-summarizersummarizeoptions-context">Writing Assistance APIs: 2 The summarizer API</see></param>
-[ECMAScript]
 [Description("@#SummarizerSummarizeOptions")]
 public record SummarizerSummarizeOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -10003,7 +9470,6 @@ public record SummarizerSummarizeOptions(
 /// <param name="ExpectedInputLanguages">WriterCreateCoreOptions 字典中的 expectedInputLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writercreatecoreoptions-expectedinputlanguages">Writing Assistance APIs: 3 The writer API</see></param>
 /// <param name="ExpectedContextLanguages">WriterCreateCoreOptions 字典中的 expectedContextLanguages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writercreatecoreoptions-expectedcontextlanguages">Writing Assistance APIs: 3 The writer API</see></param>
 /// <param name="OutputLanguage">The outputLanguage option was not set, and the language of the input text could not be determined, so the user agent did not have a good output language default available. &quot;UnknownError&quot; <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writercreatecoreoptions-outputlanguage">Writing Assistance APIs: 3 The writer API</see></param>
-[ECMAScript]
 [Description("@#WriterCreateCoreOptions")]
 public record WriterCreateCoreOptions(
     [property: Description("@#tone")]WriterTone Tone = WriterTone.Neutral,
@@ -10022,7 +9488,6 @@ public record WriterCreateCoreOptions(
 /// <param name="Signal">WriterCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writercreateoptions-signal">Writing Assistance APIs: 3 The writer API</see></param>
 /// <param name="Monitor">WriterCreateOptions 字典中的 monitor 成员，WebIDL 类型为 CreateMonitorCallback。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writercreateoptions-monitor">Writing Assistance APIs: 3 The writer API</see></param>
 /// <param name="SharedContext">WriterCreateOptions 字典中的 sharedContext 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writercreateoptions-sharedcontext">Writing Assistance APIs: 3 The writer API</see></param>
-[ECMAScript]
 [Description("@#WriterCreateOptions")]
 public record WriterCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -10037,7 +9502,6 @@ public record WriterCreateOptions(
 /// </remarks>
 /// <param name="Context">WriterWriteOptions 字典中的 context 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writerwriteoptions-context">Writing Assistance APIs: 3 The writer API</see></param>
 /// <param name="Signal">WriterWriteOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://webmachinelearning.github.io/writing-assistance-apis/#dom-writerwriteoptions-signal">Writing Assistance APIs: 3 The writer API</see></param>
-[ECMAScript]
 [Description("@#WriterWriteOptions")]
 public record WriterWriteOptions(
     [property: Description("@#context")]string? Context = default,
@@ -10052,7 +9516,6 @@ public record WriterWriteOptions(
 /// <param name="WasClean">CloseEventInit 字典中的 wasClean 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://websockets.spec.whatwg.org/#dom-closeeventinit-wasclean">WebSockets Standard: 6 The CloseEvent interface</see></param>
 /// <param name="Code">CloseEventInit 字典中的 code 成员，WebIDL 类型为 unsigned short。可省略。WebIDL 默认值：0。 <see href="https://websockets.spec.whatwg.org/#dom-closeeventinit-code">WebSockets Standard: 6 The CloseEvent interface</see></param>
 /// <param name="Reason">CloseEventInit 字典中的 reason 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://websockets.spec.whatwg.org/#dom-closeeventinit-reason">WebSockets Standard: 6 The CloseEvent interface</see></param>
-[ECMAScript]
 [Description("@#CloseEventInit")]
 public record CloseEventInit(
     [property: Description("@#wasClean")]bool WasClean = false,
@@ -10067,7 +9530,6 @@ public record CloseEventInit(
 /// </remarks>
 /// <param name="AutofillValues">AutofillEventInit 字典中的 autofillValues 成员，WebIDL 类型为 sequence&lt;AutofillValueEntry&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://wicg.github.io/autofill-event/#dom-autofilleventinit-autofillvalues">Autofill Event: 3 The AutofillEvent Interface</see></param>
 /// <param name="AllowRefill">AutofillEventInit 字典中的 allowRefill 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://wicg.github.io/autofill-event/#dom-autofilleventinit-allowrefill">Autofill Event: 3 The AutofillEvent Interface</see></param>
-[ECMAScript]
 [Description("@#AutofillEventInit")]
 public record AutofillEventInit(
     [property: Description("@#autofillValues")]AutofillValueEntry[]? AutofillValues = default,
@@ -10080,7 +9542,6 @@ public record AutofillEventInit(
 /// <see href="https://wicg.github.io/background-fetch/#dictdef-backgroundfetcheventinit">Background Fetch: 6.6 BackgroundFetchEvent</see>
 /// </remarks>
 /// <param name="Registration">BackgroundFetchEventInit 字典中的 registration 成员，WebIDL 类型为 BackgroundFetchRegistration。必须提供该成员。 <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetcheventinit-registration">Background Fetch: 6.6 BackgroundFetchEvent</see></param>
-[ECMAScript]
 [Description("@#BackgroundFetchEventInit")]
 public record BackgroundFetchEventInit(
     [property: Description("@#registration")]BackgroundFetchRegistration? Registration = default) : ExtendableEventInit;
@@ -10092,7 +9553,6 @@ public record BackgroundFetchEventInit(
 /// <see href="https://wicg.github.io/background-fetch/#dictdef-backgroundfetchoptions">Background Fetch: 6.3 BackgroundFetchManager</see>
 /// </remarks>
 /// <param name="DownloadTotal">BackgroundFetchOptions 字典中的 downloadTotal 成员，WebIDL 类型为 unsigned long long。可省略。WebIDL 默认值：0。 <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchoptions-downloadtotal">Background Fetch: 6.3 BackgroundFetchManager</see></param>
-[ECMAScript]
 [Description("@#BackgroundFetchOptions")]
 public record BackgroundFetchOptions(
     [property: Description("@#downloadTotal")]Number? DownloadTotal = default) : BackgroundFetchUIOptions;
@@ -10105,7 +9565,6 @@ public record BackgroundFetchOptions(
 /// </remarks>
 /// <param name="Icons">BackgroundFetchUIOptions 字典中的 icons 成员，WebIDL 类型为 sequence&lt;ImageResource&gt;。可省略。 <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchuioptions-icons">Background Fetch: 6.3 BackgroundFetchManager</see></param>
 /// <param name="Title">BackgroundFetchUIOptions 字典中的 title 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/background-fetch/#dom-backgroundfetchuioptions-title">Background Fetch: 6.3 BackgroundFetchManager</see></param>
-[ECMAScript]
 [Description("@#BackgroundFetchUIOptions")]
 public record BackgroundFetchUIOptions(
     [property: Description("@#icons")]ImageResource[]? Icons = default,
@@ -10119,7 +9578,6 @@ public record BackgroundFetchUIOptions(
 /// </remarks>
 /// <param name="Tag">SyncEventInit 字典中的 tag 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/background-sync/spec/#dom-synceventinit-tag">Web Background Synchronization: 6.3 The sync event</see></param>
 /// <param name="LastChance">SyncEventInit 字典中的 lastChance 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/background-sync/spec/#dom-synceventinit-lastchance">Web Background Synchronization: 6.3 The sync event</see></param>
-[ECMAScript]
 [Description("@#SyncEventInit")]
 public record SyncEventInit(
     [property: Description("@#tag")]string? Tag = default,
@@ -10135,7 +9593,6 @@ public record SyncEventInit(
 /// <param name="Connection">ConnectionAllowlistViolationReport 字典中的 connection 成员，WebIDL 类型为 USVString。可省略。 <see href="https://wicg.github.io/connection-allowlists/#dom-connectionallowlistviolationreport-connection">Connection Allowlists: 3.3 Reporting</see></param>
 /// <param name="Allowlist">ConnectionAllowlistViolationReport 字典中的 allowlist 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://wicg.github.io/connection-allowlists/#dom-connectionallowlistviolationreport-allowlist">Connection Allowlists: 3.3 Reporting</see></param>
 /// <param name="Disposition">ConnectionAllowlistViolationReport 字典中的 disposition 成员，WebIDL 类型为 ConnectionAllowlistDisposition。可省略。 <see href="https://wicg.github.io/connection-allowlists/#dom-connectionallowlistviolationreport-disposition">Connection Allowlists: 3.3 Reporting</see></param>
-[ECMAScript]
 [Description("@#ConnectionAllowlistViolationReport")]
 public record ConnectionAllowlistViolationReport(
     [property: Description("@#url")]string? Url = default,
@@ -10155,7 +9612,6 @@ public record ConnectionAllowlistViolationReport(
 /// <param name="Category">ContentDescription 字典中的 category 成员，WebIDL 类型为 ContentCategory。可省略。WebIDL 默认值：。 <see href="https://wicg.github.io/content-index/spec/#dom-contentdescription-category">Content Index: 5.3 ContentIndex</see></param>
 /// <param name="Icons">ContentDescription 字典中的 icons 成员，WebIDL 类型为 sequence&lt;ImageResource&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://wicg.github.io/content-index/spec/#dom-contentdescription-icons">Content Index: 5.3 ContentIndex</see></param>
 /// <param name="Url">ContentDescription 字典中的 url 成员，WebIDL 类型为 USVString。必须提供该成员。 <see href="https://wicg.github.io/content-index/spec/#dom-contentdescription-url">Content Index: 5.3 ContentIndex</see></param>
-[ECMAScript]
 [Description("@#ContentDescription")]
 public record ContentDescription(
     [property: Description("@#id")]string? Id = default,
@@ -10172,7 +9628,6 @@ public record ContentDescription(
 /// <see href="https://wicg.github.io/content-index/spec/#dictdef-contentindexeventinit">Content Index: 5.4 ContentIndexEvent</see>
 /// </remarks>
 /// <param name="Id">ContentIndexEventInit 字典中的 id 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/content-index/spec/#dom-contentindexeventinit-id">Content Index: 5.4 ContentIndexEvent</see></param>
-[ECMAScript]
 [Description("@#ContentIndexEventInit")]
 public record ContentIndexEventInit(
     [property: Description("@#id")]string? Id = default) : ExtendableEventInit;
@@ -10185,7 +9640,6 @@ public record ContentIndexEventInit(
 /// </remarks>
 /// <param name="Value">CrossOriginStorageRequestFileHandleHash 字典中的 value 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/cross-origin-storage/#dom-crossoriginstoragerequestfilehandlehash-value">Cross-Origin Storage: 3 The CrossOriginStorageManager interface</see></param>
 /// <param name="Algorithm">CrossOriginStorageRequestFileHandleHash 字典中的 algorithm 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/cross-origin-storage/#dom-crossoriginstoragerequestfilehandlehash-algorithm">Cross-Origin Storage: 3 The CrossOriginStorageManager interface</see></param>
-[ECMAScript]
 [Description("@#CrossOriginStorageRequestFileHandleHash")]
 public record CrossOriginStorageRequestFileHandleHash(
     [property: Description("@#value")]string? Value = default,
@@ -10199,7 +9653,6 @@ public record CrossOriginStorageRequestFileHandleHash(
 /// </remarks>
 /// <param name="Create">CrossOriginStorageRequestFileHandleOptions 字典中的 create 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/cross-origin-storage/#dom-crossoriginstoragerequestfilehandleoptions-create">Cross-Origin Storage: 3 The CrossOriginStorageManager interface</see></param>
 /// <param name="Origins">CrossOriginStorageRequestFileHandleOptions 字典中的 origins 成员，WebIDL 类型为 DOMString, DOMString。可省略。 <see href="https://wicg.github.io/cross-origin-storage/#dom-crossoriginstoragerequestfilehandleoptions-origins">Cross-Origin Storage: 3 The CrossOriginStorageManager interface</see></param>
-[ECMAScript]
 [Description("@#CrossOriginStorageRequestFileHandleOptions")]
 public record CrossOriginStorageRequestFileHandleOptions(
     [property: Description("@#create")]bool Create = false,
@@ -10222,7 +9675,6 @@ public record CrossOriginStorageRequestFileHandleOptions(
 /// <param name="IntroductoryPrice">ItemDetails 字典中的 introductoryPrice 成员，WebIDL 类型为 PaymentCurrencyAmount。可省略。 <see href="https://wicg.github.io/digital-goods/#dom-itemdetails-introductoryprice">Digital Goods API: 2.2 DigitalGoodsService interface</see></param>
 /// <param name="IntroductoryPricePeriod">ItemDetails 字典中的 introductoryPricePeriod 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/digital-goods/#dom-itemdetails-introductorypriceperiod">Digital Goods API: 2.2 DigitalGoodsService interface</see></param>
 /// <param name="IntroductoryPriceCycles">ItemDetails 字典中的 introductoryPriceCycles 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://wicg.github.io/digital-goods/#dom-itemdetails-introductorypricecycles">Digital Goods API: 2.2 DigitalGoodsService interface</see></param>
-[ECMAScript]
 [Description("@#ItemDetails")]
 public record ItemDetails(
     [property: Description("@#itemId")]string? ItemId = default,
@@ -10245,7 +9697,6 @@ public record ItemDetails(
 /// </remarks>
 /// <param name="ItemId">PurchaseDetails 字典中的 itemId 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/digital-goods/#dom-purchasedetails-itemid">Digital Goods API: 2.2 DigitalGoodsService interface</see></param>
 /// <param name="PurchaseToken">PurchaseDetails 字典中的 purchaseToken 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/digital-goods/#dom-purchasedetails-purchasetoken">Digital Goods API: 2.2 DigitalGoodsService interface</see></param>
-[ECMAScript]
 [Description("@#PurchaseDetails")]
 public record PurchaseDetails(
     [property: Description("@#itemId")]string? ItemId = default,
@@ -10258,7 +9709,6 @@ public record PurchaseDetails(
 /// <see href="https://wicg.github.io/document-picture-in-picture/#dictdef-documentpictureinpictureeventinit">Document Picture-in-Picture Specification: 5 API</see>
 /// </remarks>
 /// <param name="Window">DocumentPictureInPictureEventInit 字典中的 window 成员，WebIDL 类型为 Window。必须提供该成员。 <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureeventinit-window">Document Picture-in-Picture Specification: 5 API</see></param>
-[ECMAScript]
 [Description("@#DocumentPictureInPictureEventInit")]
 public record DocumentPictureInPictureEventInit(
     [property: Description("@#window")]WindowRef? Window = default) : EventInit;
@@ -10273,7 +9723,6 @@ public record DocumentPictureInPictureEventInit(
 /// <param name="Height">DocumentPictureInPictureOptions 字典中的 height 成员，WebIDL 类型为 unsigned long long。可省略。WebIDL 默认值：0。 <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureoptions-height">Document Picture-in-Picture Specification: 5 API</see></param>
 /// <param name="DisallowReturnToOpener">For both video and document picture-in-picture, user agents often display a button for the user to return to the original page and close the picture-in-picture window. While this action makes sense in most cases (especially for a video picture-in-picture window that returns the video to the main document), it does not always make sense for document picture-in-picture windows. disallowReturnToOpener is a hint to the user agent from the website as to whether that action makes sense for their particular document picture-in-picture experience. <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureoptions-disallowreturntoopener">Document Picture-in-Picture Specification: 5 API</see></param>
 /// <param name="PreferInitialWindowPlacement">DocumentPictureInPictureOptions 字典中的 preferInitialWindowPlacement 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/document-picture-in-picture/#dom-documentpictureinpictureoptions-preferinitialwindowplacement">Document Picture-in-Picture Specification: 5 API</see></param>
-[ECMAScript]
 [Description("@#DocumentPictureInPictureOptions")]
 public record DocumentPictureInPictureOptions(
     [property: Description("@#width")]Number? Width = default,
@@ -10289,7 +9738,6 @@ public record DocumentPictureInPictureOptions(
 /// </remarks>
 /// <param name="Create">FileSystemFlags 字典中的 create 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/entries-api/#dom-filesystemflags-create">File and Directory Entries API: 7.2 The FileSystemDirectoryEntry Interface</see></param>
 /// <param name="Exclusive">FileSystemFlags 字典中的 exclusive 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/entries-api/#dom-filesystemflags-exclusive">File and Directory Entries API: 7.2 The FileSystemDirectoryEntry Interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemFlags")]
 public record FileSystemFlags(
     [property: Description("@#create")]bool Create = false,
@@ -10302,7 +9750,6 @@ public record FileSystemFlags(
 /// <see href="https://wicg.github.io/eyedropper-api/#dom-colorselectionoptions">EyeDropper API: 3.2 ColorSelectionOptions dictionary</see>
 /// </remarks>
 /// <param name="Signal">ColorSelectionOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://wicg.github.io/eyedropper-api/#dom-colorselectionoptions-signal">EyeDropper API: 3.2 ColorSelectionOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#ColorSelectionOptions")]
 public record ColorSelectionOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -10314,7 +9761,6 @@ public record ColorSelectionOptions(
 /// <see href="https://wicg.github.io/eyedropper-api/#dom-colorselectionresult">EyeDropper API: 3.1 ColorSelectionResult dictionary</see>
 /// </remarks>
 /// <param name="SRGBHex">ColorSelectionResult 字典中的 sRGBHex 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/eyedropper-api/#dom-colorselectionresult-srgbhex">EyeDropper API: 3.1 ColorSelectionResult dictionary</see></param>
-[ECMAScript]
 [Description("@#ColorSelectionResult")]
 public record ColorSelectionResult(
     [property: Description("@#sRGBHex")]string? SRGBHex = default);
@@ -10331,7 +9777,6 @@ public record ColorSelectionResult(
 /// <param name="CrossOriginExposed">FenceEvent 字典中的 crossOriginExposed 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/fenced-frame/#dom-fenceevent-crossoriginexposed">Fenced Frame: 2.4 The Fence interface</see></param>
 /// <param name="Once">FenceEvent 字典中的 once 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/fenced-frame/#dom-fenceevent-once">Fenced Frame: 2.4 The Fence interface</see></param>
 /// <param name="DestinationURL">FenceEvent 字典中的 destinationURL 成员，WebIDL 类型为 USVString。可省略。 <see href="https://wicg.github.io/fenced-frame/#dom-fenceevent-destinationurl">Fenced Frame: 2.4 The Fence interface</see></param>
-[ECMAScript]
 [Description("@#FenceEvent")]
 public record FenceEvent(
     [property: Description("@#eventType")]string? EventType = default,
@@ -10350,7 +9795,6 @@ public record FenceEvent(
 /// <param name="Id">DirectoryPickerOptions 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/file-system-access/#dom-directorypickeroptions-id">File System Access: 3 Accessing Local File System</see></param>
 /// <param name="StartIn">DirectoryPickerOptions 字典中的 startIn 成员，WebIDL 类型为 StartInDirectory。可省略。 <see href="https://wicg.github.io/file-system-access/#dom-directorypickeroptions-startin">File System Access: 3 Accessing Local File System</see></param>
 /// <param name="Mode">DirectoryPickerOptions 字典中的 mode 成员，WebIDL 类型为 FileSystemPermissionMode。可省略。WebIDL 默认值：read。 <see href="https://wicg.github.io/file-system-access/#dom-directorypickeroptions-mode">File System Access: 3 Accessing Local File System</see></param>
-[ECMAScript]
 [Description("@#DirectoryPickerOptions")]
 public record DirectoryPickerOptions(
     [property: Description("@#id")]string? Id = default,
@@ -10365,7 +9809,6 @@ public record DirectoryPickerOptions(
 /// </remarks>
 /// <param name="Description">FilePickerAcceptType 字典中的 description 成员，WebIDL 类型为 USVString。可省略。WebIDL 默认值：。 <see href="https://wicg.github.io/file-system-access/#dom-filepickeraccepttype-description">File System Access: 3 Accessing Local File System</see></param>
 /// <param name="Accept">FilePickerAcceptType 字典中的 accept 成员，WebIDL 类型为 record&lt;USVString, USVString, USVString&gt;。可省略。 <see href="https://wicg.github.io/file-system-access/#dom-filepickeraccepttype-accept">File System Access: 3 Accessing Local File System</see></param>
-[ECMAScript]
 [Description("@#FilePickerAcceptType")]
 public record FilePickerAcceptType(
     [property: Description("@#description")]string? Description = default,
@@ -10381,7 +9824,6 @@ public record FilePickerAcceptType(
 /// <param name="ExcludeAcceptAllOption">FilePickerOptions 字典中的 excludeAcceptAllOption 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/file-system-access/#dom-filepickeroptions-excludeacceptalloption">File System Access: 3 Accessing Local File System</see></param>
 /// <param name="Id">FilePickerOptions 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/file-system-access/#dom-filepickeroptions-id">File System Access: 3 Accessing Local File System</see></param>
 /// <param name="StartIn">FilePickerOptions 字典中的 startIn 成员，WebIDL 类型为 StartInDirectory。可省略。 <see href="https://wicg.github.io/file-system-access/#dom-filepickeroptions-startin">File System Access: 3 Accessing Local File System</see></param>
-[ECMAScript]
 [Description("@#FilePickerOptions")]
 public record FilePickerOptions(
     [property: Description("@#types")]FilePickerAcceptType[]? Types = default,
@@ -10396,7 +9838,6 @@ public record FilePickerOptions(
 /// <see href="https://wicg.github.io/file-system-access/#dictdef-filesystemhandlepermissiondescriptor">File System Access: 2.3 The FileSystemHandle interface</see>
 /// </remarks>
 /// <param name="Mode">FileSystemHandlePermissionDescriptor 字典中的 mode 成员，WebIDL 类型为 FileSystemPermissionMode。可省略。WebIDL 默认值：read。 <see href="https://wicg.github.io/file-system-access/#dom-filesystemhandlepermissiondescriptor-mode">File System Access: 2.3 The FileSystemHandle interface</see></param>
-[ECMAScript]
 [Description("@#FileSystemHandlePermissionDescriptor")]
 public record FileSystemHandlePermissionDescriptor(
     [property: Description("@#mode")]FileSystemPermissionMode Mode = FileSystemPermissionMode.Read);
@@ -10409,7 +9850,6 @@ public record FileSystemHandlePermissionDescriptor(
 /// </remarks>
 /// <param name="Handle">FileSystemPermissionDescriptor 字典中的 handle 成员，WebIDL 类型为 FileSystemHandle。必须提供该成员。 <see href="https://wicg.github.io/file-system-access/#dom-filesystempermissiondescriptor-handle">File System Access: 2.2 Permissions</see></param>
 /// <param name="Mode">FileSystemPermissionDescriptor 字典中的 mode 成员，WebIDL 类型为 FileSystemPermissionMode。可省略。WebIDL 默认值：read。 <see href="https://wicg.github.io/file-system-access/#dom-filesystempermissiondescriptor-mode">File System Access: 2.2 Permissions</see></param>
-[ECMAScript]
 [Description("@#FileSystemPermissionDescriptor")]
 public record FileSystemPermissionDescriptor(
     [property: Description("@#handle")]FileSystemHandle? Handle = default,
@@ -10422,7 +9862,6 @@ public record FileSystemPermissionDescriptor(
 /// <see href="https://wicg.github.io/file-system-access/#dictdef-openfilepickeroptions">File System Access: 3 Accessing Local File System</see>
 /// </remarks>
 /// <param name="Multiple">OpenFilePickerOptions 字典中的 multiple 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/file-system-access/#dom-openfilepickeroptions-multiple">File System Access: 3 Accessing Local File System</see></param>
-[ECMAScript]
 [Description("@#OpenFilePickerOptions")]
 public record OpenFilePickerOptions(
     [property: Description("@#multiple")]bool Multiple = false) : FilePickerOptions;
@@ -10434,7 +9873,6 @@ public record OpenFilePickerOptions(
 /// <see href="https://wicg.github.io/file-system-access/#dictdef-savefilepickeroptions">File System Access: 3 Accessing Local File System</see>
 /// </remarks>
 /// <param name="SuggestedName">SaveFilePickerOptions 字典中的 suggestedName 成员，WebIDL 类型为 USVString?。可省略。 <see href="https://wicg.github.io/file-system-access/#dom-savefilepickeroptions-suggestedname">File System Access: 3 Accessing Local File System</see></param>
-[ECMAScript]
 [Description("@#SaveFilePickerOptions")]
 public record SaveFilePickerOptions(
     [property: Description("@#suggestedName")]string? SuggestedName = default) : FilePickerOptions;
@@ -10449,7 +9887,6 @@ public record SaveFilePickerOptions(
 /// <param name="Url">RelatedApplication 字典中的 url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://wicg.github.io/get-installed-related-apps/spec/#dom-relatedapplication-url">Get Installed Related Apps API: 5.1 RelatedApplication</see></param>
 /// <param name="Id">RelatedApplication 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/get-installed-related-apps/spec/#dom-relatedapplication-id">Get Installed Related Apps API: 5.1 RelatedApplication</see></param>
 /// <param name="Version">RelatedApplication 字典中的 version 成员，WebIDL 类型为 USVString。可省略。 <see href="https://wicg.github.io/get-installed-related-apps/spec/#dom-relatedapplication-version">Get Installed Related Apps API: 5.1 RelatedApplication</see></param>
-[ECMAScript]
 [Description("@#RelatedApplication")]
 public record RelatedApplication(
     [property: Description("@#platform")]string? Platform = default,
@@ -10467,7 +9904,6 @@ public record RelatedApplication(
 /// <param name="InputType">HandwritingHints 字典中的 inputType 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：mouse。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritinghints-inputtype">Handwriting Recognition API: 5.1 HandwritingRecognizer object</see></param>
 /// <param name="TextContext">HandwritingHints 字典中的 textContext 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritinghints-textcontext">Handwriting Recognition API: 5.1 HandwritingRecognizer object</see></param>
 /// <param name="Alternatives">HandwritingHints 字典中的 alternatives 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：3。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritinghints-alternatives">Handwriting Recognition API: 5.1 HandwritingRecognizer object</see></param>
-[ECMAScript]
 [Description("@#HandwritingHints")]
 public record HandwritingHints(
     [property: Description("@#recognitionType")]string? RecognitionType = default,
@@ -10482,7 +9918,6 @@ public record HandwritingHints(
 /// <see href="https://wicg.github.io/handwriting-recognition/#dictdef-handwritingmodelconstraint">Handwriting Recognition API: 3 Feature Query</see>
 /// </remarks>
 /// <param name="Languages">HandwritingModelConstraint 字典中的 languages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingmodelconstraint-languages">Handwriting Recognition API: 3 Feature Query</see></param>
-[ECMAScript]
 [Description("@#HandwritingModelConstraint")]
 public record HandwritingModelConstraint(
     [property: Description("@#languages")]string[]? Languages = default);
@@ -10496,7 +9931,6 @@ public record HandwritingModelConstraint(
 /// <param name="X">HandwritingPoint 字典中的 x 成员，WebIDL 类型为 double。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingpoint-x">Handwriting Recognition API: 6 Build a HandwritingDrawing</see></param>
 /// <param name="Y">HandwritingPoint 字典中的 y 成员，WebIDL 类型为 double。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingpoint-y">Handwriting Recognition API: 6 Build a HandwritingDrawing</see></param>
 /// <param name="T">HandwritingPoint 字典中的 t 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingpoint-t">Handwriting Recognition API: 6 Build a HandwritingDrawing</see></param>
-[ECMAScript]
 [Description("@#HandwritingPoint")]
 public record HandwritingPoint(
     [property: Description("@#x")]double X = default,
@@ -10511,7 +9945,6 @@ public record HandwritingPoint(
 /// </remarks>
 /// <param name="Text">The index where this grapheme begins in text. <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingprediction-text">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
 /// <param name="SegmentationResult">HandwritingPrediction 字典中的 segmentationResult 成员，WebIDL 类型为 sequence&lt;HandwritingSegment&gt;。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingprediction-segmentationresult">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
-[ECMAScript]
 [Description("@#HandwritingPrediction")]
 public record HandwritingPrediction(
     [property: Description("@#text")]string? Text = default,
@@ -10526,7 +9959,6 @@ public record HandwritingPrediction(
 /// <param name="TextAlternatives">HandwritingRecognizerQueryResult 字典中的 textAlternatives 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingrecognizerqueryresult-textalternatives">Handwriting Recognition API: 3 Feature Query</see></param>
 /// <param name="TextSegmentation">Web applications can use textSegmentation to check if this attribute will be null. <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingrecognizerqueryresult-textsegmentation">Handwriting Recognition API: 3 Feature Query</see></param>
 /// <param name="Hints">HandwritingRecognizerQueryResult 字典中的 hints 成员，WebIDL 类型为 HandwritingHintsQueryResult。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingrecognizerqueryresult-hints">Handwriting Recognition API: 3 Feature Query</see></param>
-[ECMAScript]
 [Description("@#HandwritingRecognizerQueryResult")]
 public record HandwritingRecognizerQueryResult(
     [property: Description("@#textAlternatives")]bool TextAlternatives = default,
@@ -10541,7 +9973,6 @@ public record HandwritingRecognizerQueryResult(
 /// </remarks>
 /// <param name="Threshold">IdleOptions 字典中的 threshold 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://wicg.github.io/idle-detection/#dom-idleoptions-threshold">Idle Detection API: 2.4 The IdleDetector interface</see></param>
 /// <param name="Signal">IdleOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://wicg.github.io/idle-detection/#dom-idleoptions-signal">Idle Detection API: 2.4 The IdleDetector interface</see></param>
-[ECMAScript]
 [Description("@#IdleOptions")]
 public record IdleOptions(
     [property: Description("@#threshold")]Number? Threshold = default,
@@ -10554,7 +9985,6 @@ public record IdleOptions(
 /// <see href="https://wicg.github.io/ink-enhancement/#dictdef-inkpresenterparam">Ink API: 3.3 InkPresenterParam dictionary</see>
 /// </remarks>
 /// <param name="PresentationArea">InkPresenterParam 字典中的 presentationArea 成员，WebIDL 类型为 Element?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://wicg.github.io/ink-enhancement/#dom-inkpresenterparam-presentationarea">Ink API: Ink API</see></param>
-[ECMAScript]
 [Description("@#InkPresenterParam")]
 public record InkPresenterParam(
     [property: Description("@#presentationArea")]Element? PresentationArea = null);
@@ -10567,7 +9997,6 @@ public record InkPresenterParam(
 /// </remarks>
 /// <param name="Color">InkTrailStyle 字典中的 color 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/ink-enhancement/#dom-inktrailstyle-color">Ink API: Ink API</see></param>
 /// <param name="Diameter">InkTrailStyle 字典中的 diameter 成员，WebIDL 类型为 unrestricted double。必须提供该成员。 <see href="https://wicg.github.io/ink-enhancement/#dom-inktrailstyle-diameter">Ink API: Ink API</see></param>
-[ECMAScript]
 [Description("@#InkTrailStyle")]
 public record InkTrailStyle(
     [property: Description("@#color")]string? Color = default,
@@ -10581,7 +10010,6 @@ public record InkTrailStyle(
 /// </remarks>
 /// <param name="FiresTouchEvents">InputDeviceCapabilitiesInit 字典中的 firesTouchEvents 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/input-device-capabilities/#dom-inputdevicecapabilitiesinit-firestouchevents">Input Device Capabilities: 3 The InputDeviceCapabilities interface</see></param>
 /// <param name="PointerMovementScrolls">InputDeviceCapabilitiesInit 字典中的 pointerMovementScrolls 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/input-device-capabilities/#dom-inputdevicecapabilitiesinit-pointermovementscrolls">Input Device Capabilities: 3 The InputDeviceCapabilities interface</see></param>
-[ECMAScript]
 [Description("@#InputDeviceCapabilitiesInit")]
 public record InputDeviceCapabilitiesInit(
     [property: Description("@#firesTouchEvents")]bool FiresTouchEvents = false,
@@ -10594,7 +10022,6 @@ public record InputDeviceCapabilitiesInit(
 /// <see href="https://wicg.github.io/local-font-access/#dictdef-queryoptions">Local Font Access API: 6.2 Font manager</see>
 /// </remarks>
 /// <param name="PostscriptNames">QueryOptions 字典中的 postscriptNames 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://wicg.github.io/local-font-access/#dom-queryoptions-postscriptnames">Local Font Access API: 6.2 Font manager</see></param>
-[ECMAScript]
 [Description("@#QueryOptions")]
 public record QueryOptions(
     [property: Description("@#postscriptNames")]string[]? PostscriptNames = default);
@@ -10607,7 +10034,6 @@ public record QueryOptions(
 /// </remarks>
 /// <param name="Capture">ObservableEventListenerOptions 字典中的 capture 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/observable/#dom-observableeventlisteneroptions-capture">Observable: 3 EventTarget integration</see></param>
 /// <param name="Passive">ObservableEventListenerOptions 字典中的 passive 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/observable/#dom-observableeventlisteneroptions-passive">Observable: 3 EventTarget integration</see></param>
-[ECMAScript]
 [Description("@#ObservableEventListenerOptions")]
 public record ObservableEventListenerOptions(
     [property: Description("@#capture")]bool Capture = false,
@@ -10620,7 +10046,6 @@ public record ObservableEventListenerOptions(
 /// <see href="https://wicg.github.io/observable/#dictdef-subscribeoptions">Observable: 2.2 The Observable interface</see>
 /// </remarks>
 /// <param name="Signal">SubscribeOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://wicg.github.io/observable/#dom-subscribeoptions-signal">Observable: 2.2 The Observable interface</see></param>
-[ECMAScript]
 [Description("@#SubscribeOptions")]
 public record SubscribeOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -10634,7 +10059,6 @@ public record SubscribeOptions(
 /// <param name="Url">MemoryAttribution 字典中的 url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memoryattribution-url">Measure Memory API: 2.1 Memory measurement result</see></param>
 /// <param name="Container">MemoryAttribution 字典中的 container 成员，WebIDL 类型为 MemoryAttributionContainer。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memoryattribution-container">Measure Memory API: 2.1 Memory measurement result</see></param>
 /// <param name="Scope">MemoryAttribution 字典中的 scope 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memoryattribution-scope">Measure Memory API: 2.1 Memory measurement result</see></param>
-[ECMAScript]
 [Description("@#MemoryAttribution")]
 public record MemoryAttribution(
     [property: Description("@#url")]string? Url = default,
@@ -10649,7 +10073,6 @@ public record MemoryAttribution(
 /// </remarks>
 /// <param name="Id">MemoryAttributionContainer 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memoryattributioncontainer-id">Measure Memory API: 2.1 Memory measurement result</see></param>
 /// <param name="Src">MemoryAttributionContainer 字典中的 src 成员，WebIDL 类型为 USVString。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memoryattributioncontainer-src">Measure Memory API: 2.1 Memory measurement result</see></param>
-[ECMAScript]
 [Description("@#MemoryAttributionContainer")]
 public record MemoryAttributionContainer(
     [property: Description("@#id")]string? Id = default,
@@ -10664,7 +10087,6 @@ public record MemoryAttributionContainer(
 /// <param name="Bytes">MemoryBreakdownEntry 字典中的 bytes 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memorybreakdownentry-bytes">Measure Memory API: 2.1 Memory measurement result</see></param>
 /// <param name="Attribution">MemoryBreakdownEntry 字典中的 attribution 成员，WebIDL 类型为 sequence&lt;MemoryAttribution&gt;。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memorybreakdownentry-attribution">Measure Memory API: 2.1 Memory measurement result</see></param>
 /// <param name="Types">MemoryBreakdownEntry 字典中的 types 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memorybreakdownentry-types">Measure Memory API: 2.1 Memory measurement result</see></param>
-[ECMAScript]
 [Description("@#MemoryBreakdownEntry")]
 public record MemoryBreakdownEntry(
     [property: Description("@#bytes")]Number? Bytes = default,
@@ -10679,7 +10101,6 @@ public record MemoryBreakdownEntry(
 /// </remarks>
 /// <param name="Bytes">MemoryMeasurement 字典中的 bytes 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memorymeasurement-bytes">Measure Memory API: 2.1 Memory measurement result</see></param>
 /// <param name="Breakdown">MemoryMeasurement 字典中的 breakdown 成员，WebIDL 类型为 sequence&lt;MemoryBreakdownEntry&gt;。可省略。 <see href="https://wicg.github.io/performance-measure-memory/#dom-memorymeasurement-breakdown">Measure Memory API: 2.1 Memory measurement result</see></param>
-[ECMAScript]
 [Description("@#MemoryMeasurement")]
 public record MemoryMeasurement(
     [property: Description("@#bytes")]Number? Bytes = default,
@@ -10692,7 +10113,6 @@ public record MemoryMeasurement(
 /// <see href="https://wicg.github.io/periodic-background-sync/#dictdef-backgroundsyncoptions">Web Periodic Background Synchronization: 8.3 PeriodicSyncManager interface</see>
 /// </remarks>
 /// <param name="MinInterval">BackgroundSyncOptions 字典中的 minInterval 成员，WebIDL 类型为 unsigned long long。可省略。WebIDL 默认值：0。 <see href="https://wicg.github.io/periodic-background-sync/#dom-backgroundsyncoptions-mininterval">Web Periodic Background Synchronization: 8.3 PeriodicSyncManager interface</see></param>
-[ECMAScript]
 [Description("@#BackgroundSyncOptions")]
 public record BackgroundSyncOptions(
     [property: Description("@#minInterval")]Number? MinInterval = default);
@@ -10704,7 +10124,6 @@ public record BackgroundSyncOptions(
 /// <see href="https://wicg.github.io/periodic-background-sync/#dictdef-periodicsynceventinit">Web Periodic Background Synchronization: 8.4 The periodicsync event</see>
 /// </remarks>
 /// <param name="Tag">PeriodicSyncEventInit 字典中的 tag 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/periodic-background-sync/#dom-periodicsynceventinit-tag">Web Periodic Background Synchronization: 8.4 The periodicsync event</see></param>
-[ECMAScript]
 [Description("@#PeriodicSyncEventInit")]
 public record PeriodicSyncEventInit(
     [property: Description("@#tag")]string? Tag = default) : ExtendableEventInit;
@@ -10716,7 +10135,6 @@ public record PeriodicSyncEventInit(
 /// <see href="https://wicg.github.io/portals/#dictdef-portalactivateeventinit">Portals: 3.2 The PortalActivateEvent interface</see>
 /// </remarks>
 /// <param name="Data">PortalActivateEventInit 字典中的 data 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://wicg.github.io/portals/#dom-portalactivateeventinit-data">Portals: 3.2 The PortalActivateEvent interface</see></param>
-[ECMAScript]
 [Description("@#PortalActivateEventInit")]
 public record PortalActivateEventInit(
     [property: Description("@#data")]object? Data = default) : EventInit;
@@ -10728,7 +10146,6 @@ public record PortalActivateEventInit(
 /// <see href="https://wicg.github.io/portals/#dictdef-portalactivateoptions">Portals: 3 The portal element</see>
 /// </remarks>
 /// <param name="Data">PortalActivateOptions 字典中的 data 成员，WebIDL 类型为 any。可省略。 <see href="https://wicg.github.io/portals/#dom-portalactivateoptions-data">Portals: 3 The portal element</see></param>
-[ECMAScript]
 [Description("@#PortalActivateOptions")]
 public record PortalActivateOptions(
     [property: Description("@#data")]object? Data = default) : StructuredSerializeOptions;
@@ -10742,7 +10159,6 @@ public record PortalActivateOptions(
 /// <param name="Signal">SchedulerPostTaskOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://wicg.github.io/scheduling-apis/#dom-schedulerposttaskoptions-signal">Prioritized Task Scheduling: 2.2 The Scheduler Interface</see></param>
 /// <param name="Priority">SchedulerPostTaskOptions 字典中的 priority 成员，WebIDL 类型为 TaskPriority。可省略。 <see href="https://wicg.github.io/scheduling-apis/#dom-schedulerposttaskoptions-priority">Prioritized Task Scheduling: 2.2 The Scheduler Interface</see></param>
 /// <param name="Delay">SchedulerPostTaskOptions 字典中的 delay 成员，WebIDL 类型为 unsigned long long。可省略。WebIDL 默认值：0。 <see href="https://wicg.github.io/scheduling-apis/#dom-schedulerposttaskoptions-delay">Prioritized Task Scheduling: 2.2 The Scheduler Interface</see></param>
-[ECMAScript]
 [Description("@#SchedulerPostTaskOptions")]
 public record SchedulerPostTaskOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -10756,7 +10172,6 @@ public record SchedulerPostTaskOptions(
 /// <see href="https://wicg.github.io/scheduling-apis/#dictdef-taskcontrollerinit">Prioritized Task Scheduling: 3.2 The TaskController Interface</see>
 /// </remarks>
 /// <param name="Priority">TaskControllerInit 字典中的 priority 成员，WebIDL 类型为 TaskPriority。可省略。WebIDL 默认值：user-visible。 <see href="https://wicg.github.io/scheduling-apis/#dom-taskcontrollerinit-priority">Prioritized Task Scheduling: 3.2 The TaskController Interface</see></param>
-[ECMAScript]
 [Description("@#TaskControllerInit")]
 public record TaskControllerInit(
     [property: Description("@#priority")]TaskPriority Priority = TaskPriority.UserVisible);
@@ -10768,7 +10183,6 @@ public record TaskControllerInit(
 /// <see href="https://wicg.github.io/scheduling-apis/#dictdef-taskprioritychangeeventinit">Prioritized Task Scheduling: 3.1 The TaskPriorityChangeEvent Interface</see>
 /// </remarks>
 /// <param name="PreviousPriority">TaskPriorityChangeEventInit 字典中的 previousPriority 成员，WebIDL 类型为 TaskPriority。必须提供该成员。 <see href="https://wicg.github.io/scheduling-apis/#dom-taskprioritychangeeventinit-previouspriority">Prioritized Task Scheduling: 3.1 The TaskPriorityChangeEvent Interface</see></param>
-[ECMAScript]
 [Description("@#TaskPriorityChangeEventInit")]
 public record TaskPriorityChangeEventInit(
     [property: Description("@#previousPriority")]TaskPriority? PreviousPriority = default) : EventInit;
@@ -10780,7 +10194,6 @@ public record TaskPriorityChangeEventInit(
 /// <see href="https://wicg.github.io/scheduling-apis/#dictdef-tasksignalanyinit">Prioritized Task Scheduling: 3.3 The TaskSignal Interface</see>
 /// </remarks>
 /// <param name="Priority">TaskSignalAnyInit 字典中的 priority 成员，WebIDL 类型为 TaskPriority, TaskSignal。可省略。WebIDL 默认值：user-visible。 <see href="https://wicg.github.io/scheduling-apis/#dom-tasksignalanyinit-priority">Prioritized Task Scheduling: 3.3 The TaskSignal Interface</see></param>
-[ECMAScript]
 [Description("@#TaskSignalAnyInit")]
 public record TaskSignalAnyInit(
     [property: Description("@#priority")]TaskSignalAnyInitPriority? Priority = default);
@@ -10795,7 +10208,6 @@ public record TaskSignalAnyInit(
 /// <param name="ClearToSend">Let signals be the ordered map «[ &quot;dataCarrierDetect&quot; → dataCarrierDetect, &quot;clearToSend&quot; → clearToSend, &quot;ringIndicator&quot; → ringIndicator, &quot;dataSetReady&quot; → dataSetReady ]». <see href="https://wicg.github.io/serial/#dom-serialinputsignals-cleartosend">Web Serial API: 4.9.1 SerialInputSignals dictionary</see></param>
 /// <param name="RingIndicator">Let signals be the ordered map «[ &quot;dataCarrierDetect&quot; → dataCarrierDetect, &quot;clearToSend&quot; → clearToSend, &quot;ringIndicator&quot; → ringIndicator, &quot;dataSetReady&quot; → dataSetReady ]». <see href="https://wicg.github.io/serial/#dom-serialinputsignals-ringindicator">Web Serial API: 4.9.1 SerialInputSignals dictionary</see></param>
 /// <param name="DataSetReady">Let signals be the ordered map «[ &quot;dataCarrierDetect&quot; → dataCarrierDetect, &quot;clearToSend&quot; → clearToSend, &quot;ringIndicator&quot; → ringIndicator, &quot;dataSetReady&quot; → dataSetReady ]». <see href="https://wicg.github.io/serial/#dom-serialinputsignals-datasetready">Web Serial API: 4.9.1 SerialInputSignals dictionary</see></param>
-[ECMAScript]
 [Description("@#SerialInputSignals")]
 public record SerialInputSignals(
     [property: Description("@#dataCarrierDetect")]bool DataCarrierDetect = default,
@@ -10815,7 +10227,6 @@ public record SerialInputSignals(
 /// <param name="Parity">SerialOptions 字典中的 parity 成员，WebIDL 类型为 ParityType。可省略。WebIDL 默认值：none。 <see href="https://wicg.github.io/serial/#dom-serialoptions-parity">Web Serial API: 4.4.1 SerialOptions dictionary</see></param>
 /// <param name="BufferSize">If options[&quot;bufferSize&quot;] is 0, reject promise with a TypeError and return promise. <see href="https://wicg.github.io/serial/#dom-serialoptions-buffersize">Web Serial API: 4.4.1 SerialOptions dictionary</see></param>
 /// <param name="FlowControl">SerialOptions 字典中的 flowControl 成员，WebIDL 类型为 FlowControlType。可省略。WebIDL 默认值：none。 <see href="https://wicg.github.io/serial/#dom-serialoptions-flowcontrol">Web Serial API: 4.4.1 SerialOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#SerialOptions")]
 public record SerialOptions(
     [property: Description("@#baudRate")]uint BaudRate = default,
@@ -10834,7 +10245,6 @@ public record SerialOptions(
 /// <param name="DataTerminalReady">SerialOutputSignals 字典中的 dataTerminalReady 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/serial/#dom-serialoutputsignals-dataterminalready">Web Serial API: 4.8.1 SerialOutputSignals dictionary</see></param>
 /// <param name="RequestToSend">SerialOutputSignals 字典中的 requestToSend 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/serial/#dom-serialoutputsignals-requesttosend">Web Serial API: 4.8.1 SerialOutputSignals dictionary</see></param>
 /// <param name="Break">SerialOutputSignals 字典中的 break 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/serial/#dom-serialoutputsignals-break">Web Serial API: 4.8.1 SerialOutputSignals dictionary</see></param>
-[ECMAScript]
 [Description("@#SerialOutputSignals")]
 public record SerialOutputSignals(
     [property: Description("@#dataTerminalReady")]bool DataTerminalReady = default,
@@ -10850,7 +10260,6 @@ public record SerialOutputSignals(
 /// <param name="UsbVendorId">If filter[&quot;usbVendorId&quot;] is present, reject promise with a TypeError and return promise. <see href="https://wicg.github.io/serial/#dom-serialportfilter-usbvendorid">Web Serial API: 3.1.2 SerialPortFilter dictionary</see></param>
 /// <param name="UsbProductId">If filter[&quot;usbProductId&quot;] is present, reject promise with a TypeError and return promise. <see href="https://wicg.github.io/serial/#dom-serialportfilter-usbproductid">Web Serial API: 3.1.2 SerialPortFilter dictionary</see></param>
 /// <param name="BluetoothServiceClassId">SerialPortFilter 字典中的 bluetoothServiceClassId 成员，WebIDL 类型为 BluetoothServiceUUID。可省略。 <see href="https://wicg.github.io/serial/#dom-serialportfilter-bluetoothserviceclassid">Web Serial API: 3.1.2 SerialPortFilter dictionary</see></param>
-[ECMAScript]
 [Description("@#SerialPortFilter")]
 public record SerialPortFilter(
     [property: Description("@#usbVendorId")]ushort UsbVendorId = default,
@@ -10865,7 +10274,6 @@ public record SerialPortFilter(
 /// </remarks>
 /// <param name="Filters">SerialPortRequestOptions 字典中的 filters 成员，WebIDL 类型为 sequence&lt;SerialPortFilter&gt;。可省略。 <see href="https://wicg.github.io/serial/#dom-serialportrequestoptions-filters">Web Serial API: 3.1.1 SerialPortRequestOptions dictionary</see></param>
 /// <param name="AllowedBluetoothServiceClassIds">SerialPortRequestOptions 字典中的 allowedBluetoothServiceClassIds 成员，WebIDL 类型为 sequence&lt;BluetoothServiceUUID&gt;。可省略。 <see href="https://wicg.github.io/serial/#dom-serialportrequestoptions-allowedbluetoothserviceclassids">Web Serial API: 3.1.1 SerialPortRequestOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#SerialPortRequestOptions")]
 public record SerialPortRequestOptions(
     [property: Description("@#filters")]SerialPortFilter[]? Filters = default,
@@ -10878,7 +10286,6 @@ public record SerialPortRequestOptions(
 /// <see href="https://wicg.github.io/shape-detection-api/#dictdef-barcodedetectoroptions">Accelerated Shape Detection in Images: 2.3.1 BarcodeDetectorOptions</see>
 /// </remarks>
 /// <param name="Formats">BarcodeDetectorOptions 字典中的 formats 成员，WebIDL 类型为 sequence&lt;BarcodeFormat&gt;。可省略。 <see href="https://wicg.github.io/shape-detection-api/#dom-barcodedetectoroptions-formats">Accelerated Shape Detection in Images: 2.3.1 BarcodeDetectorOptions</see></param>
-[ECMAScript]
 [Description("@#BarcodeDetectorOptions")]
 public record BarcodeDetectorOptions(
     [property: Description("@#formats")]BarcodeFormat[]? Formats = default);
@@ -10893,7 +10300,6 @@ public record BarcodeDetectorOptions(
 /// <param name="RawValue">DetectedBarcode 字典中的 rawValue 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/#dom-detectedbarcode-rawvalue">Accelerated Shape Detection in Images: 2.3.2 DetectedBarcode</see></param>
 /// <param name="Format">DetectedBarcode 字典中的 format 成员，WebIDL 类型为 BarcodeFormat。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/#dom-detectedbarcode-format">Accelerated Shape Detection in Images: 2.3.2 DetectedBarcode</see></param>
 /// <param name="CornerPoints">DetectedBarcode 字典中的 cornerPoints 成员，WebIDL 类型为 sequence&lt;Point2D&gt;。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/#dom-detectedbarcode-cornerpoints">Accelerated Shape Detection in Images: 2.3.2 DetectedBarcode</see></param>
-[ECMAScript]
 [Description("@#DetectedBarcode")]
 public record DetectedBarcode(
     [property: Description("@#boundingBox")]DOMRectReadOnly? BoundingBox = default,
@@ -10909,7 +10315,6 @@ public record DetectedBarcode(
 /// </remarks>
 /// <param name="BoundingBox">DetectedFace 字典中的 boundingBox 成员，WebIDL 类型为 DOMRectReadOnly。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/#dom-detectedface-boundingbox">Accelerated Shape Detection in Images: 2.2.2 DetectedFace</see></param>
 /// <param name="Landmarks">DetectedFace 字典中的 landmarks 成员，WebIDL 类型为 sequence&lt;Landmark&gt;?。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/#dom-detectedface-landmarks">Accelerated Shape Detection in Images: 2.2.2 DetectedFace</see></param>
-[ECMAScript]
 [Description("@#DetectedFace")]
 public record DetectedFace(
     [property: Description("@#boundingBox")]DOMRectReadOnly? BoundingBox = default,
@@ -10924,7 +10329,6 @@ public record DetectedFace(
 /// <param name="BoundingBox">DetectedText 字典中的 boundingBox 成员，WebIDL 类型为 DOMRectReadOnly。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/text.html#dom-detectedtext-boundingbox">Accelerated Text Detection in Images: 2.2.1 DetectedText</see></param>
 /// <param name="RawValue">DetectedText 字典中的 rawValue 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/text.html#dom-detectedtext-rawvalue">Accelerated Text Detection in Images: 2.2.1 DetectedText</see></param>
 /// <param name="CornerPoints">DetectedText 字典中的 cornerPoints 成员，WebIDL 类型为 sequence&lt;Point2D&gt;。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/text.html#dom-detectedtext-cornerpoints">Accelerated Text Detection in Images: 2.2.1 DetectedText</see></param>
-[ECMAScript]
 [Description("@#DetectedText")]
 public record DetectedText(
     [property: Description("@#boundingBox")]DOMRectReadOnly? BoundingBox = default,
@@ -10939,7 +10343,6 @@ public record DetectedText(
 /// </remarks>
 /// <param name="Signal">TextDetectorCreateOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal。可省略。 <see href="https://wicg.github.io/shape-detection-api/text.html#dom-textdetectorcreateoptions-signal">Accelerated Text Detection in Images: 2.2 Text Detection API</see></param>
 /// <param name="Languages">TextDetectorCreateOptions 字典中的 languages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。 <see href="https://wicg.github.io/shape-detection-api/text.html#dom-textdetectorcreateoptions-languages">Accelerated Text Detection in Images: 2.2 Text Detection API</see></param>
-[ECMAScript]
 [Description("@#TextDetectorCreateOptions")]
 public record TextDetectorCreateOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default,
@@ -10952,7 +10355,6 @@ public record TextDetectorCreateOptions(
 /// <see href="https://wicg.github.io/shape-detection-api/text.html#dictdef-textdetectoroptions">Accelerated Text Detection in Images: 2.2 Text Detection API</see>
 /// </remarks>
 /// <param name="Languages">TextDetectorOptions 字典中的 languages 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/text.html#dom-textdetectoroptions-languages">Accelerated Text Detection in Images: 2.2 Text Detection API</see></param>
-[ECMAScript]
 [Description("@#TextDetectorOptions")]
 public record TextDetectorOptions(
     [property: Description("@#languages")]string[]? Languages = default);
@@ -10966,7 +10368,6 @@ public record TextDetectorOptions(
 /// <param name="Persisted">StorageBucketOptions 字典中的 persisted 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/storage-buckets/#dom-storagebucketoptions-persisted">Storage Buckets API: Storage Buckets API</see></param>
 /// <param name="Quota">StorageBucketOptions 字典中的 quota 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://wicg.github.io/storage-buckets/#dom-storagebucketoptions-quota">Storage Buckets API: Storage Buckets API</see></param>
 /// <param name="Expires">StorageBucketOptions 字典中的 expires 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://wicg.github.io/storage-buckets/#dom-storagebucketoptions-expires">Storage Buckets API: Storage Buckets API</see></param>
-[ECMAScript]
 [Description("@#StorageBucketOptions")]
 public record StorageBucketOptions(
     [property: Description("@#persisted")]bool Persisted = false,
@@ -10981,7 +10382,6 @@ public record StorageBucketOptions(
 /// </remarks>
 /// <param name="Brand">NavigatorUABrandVersion 字典中的 brand 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-navigatoruabrandversion-brand">User-Agent Client Hints: 4 Interface</see></param>
 /// <param name="Version">NavigatorUABrandVersion 字典中的 version 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-navigatoruabrandversion-version">User-Agent Client Hints: 4 Interface</see></param>
-[ECMAScript]
 [Description("@#NavigatorUABrandVersion")]
 public record NavigatorUABrandVersion(
     [property: Description("@#brand")]string? Brand = default,
@@ -11004,7 +10404,6 @@ public record NavigatorUABrandVersion(
 /// <param name="PlatformVersion">UADataValues 字典中的 platformVersion 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-uadatavalues-platformversion">User-Agent Client Hints: 4 Interface</see></param>
 /// <param name="UaFullVersion">UADataValues 字典中的 uaFullVersion 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-uadatavalues-uafullversion">User-Agent Client Hints: 4 Interface</see></param>
 /// <param name="Wow64">UADataValues 字典中的 wow64 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-uadatavalues-wow64">User-Agent Client Hints: 4 Interface</see></param>
-[ECMAScript]
 [Description("@#UADataValues")]
 public record UADataValues(
     [property: Description("@#architecture")]string? Architecture = default,
@@ -11028,7 +10427,6 @@ public record UADataValues(
 /// <param name="Brands">UALowEntropyJSON 字典中的 brands 成员，WebIDL 类型为 sequence&lt;NavigatorUABrandVersion&gt;。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-ualowentropyjson-brands">User-Agent Client Hints: 4 Interface</see></param>
 /// <param name="Mobile">UALowEntropyJSON 字典中的 mobile 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-ualowentropyjson-mobile">User-Agent Client Hints: 4 Interface</see></param>
 /// <param name="Platform">UALowEntropyJSON 字典中的 platform 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/ua-client-hints/#dom-ualowentropyjson-platform">User-Agent Client Hints: 4 Interface</see></param>
-[ECMAScript]
 [Description("@#UALowEntropyJSON")]
 public record UALowEntropyJSON(
     [property: Description("@#brands")]NavigatorUABrandVersion[]? Brands = default,
@@ -11051,7 +10449,6 @@ public record UALowEntropyJSON(
 /// <param name="CaptureTime">VideoFrameCallbackMetadata 字典中的 captureTime 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://wicg.github.io/video-rvfc/#dom-videoframecallbackmetadata-capturetime">HTMLVideoElement.requestVideoFrameCallback(): 2.2 Attributes</see></param>
 /// <param name="ReceiveTime">VideoFrameCallbackMetadata 字典中的 receiveTime 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://wicg.github.io/video-rvfc/#dom-videoframecallbackmetadata-receivetime">HTMLVideoElement.requestVideoFrameCallback(): 2.2 Attributes</see></param>
 /// <param name="RtpTimestamp">VideoFrameCallbackMetadata 字典中的 rtpTimestamp 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://wicg.github.io/video-rvfc/#dom-videoframecallbackmetadata-rtptimestamp">HTMLVideoElement.requestVideoFrameCallback(): 2.2 Attributes</see></param>
-[ECMAScript]
 [Description("@#VideoFrameCallbackMetadata")]
 public record VideoFrameCallbackMetadata(
     [property: Description("@#presentationTime")]double PresentationTime = default,
@@ -11072,7 +10469,6 @@ public record VideoFrameCallbackMetadata(
 /// <see href="https://wicg.github.io/web-otp/#dictdef-otpcredentialrequestoptions">WebOTP API: 2.3 OTPCredentialRequestOptions</see>
 /// </remarks>
 /// <param name="Transport">OTPCredentialRequestOptions 字典中的 transport 成员，WebIDL 类型为 sequence&lt;OTPCredentialTransportType&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://wicg.github.io/web-otp/#dom-otpcredentialrequestoptions-transport">WebOTP API: 2.3 OTPCredentialRequestOptions</see></param>
-[ECMAScript]
 [Description("@#OTPCredentialRequestOptions")]
 public record OTPCredentialRequestOptions(
     [property: Description("@#transport")]OTPCredentialTransportType[]? Transport = default);
@@ -11090,7 +10486,6 @@ public record OTPCredentialRequestOptions(
 /// <param name="Version">The version member represents the version number. The default and currently only defined version is 19 (0x13). <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-version">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
 /// <param name="SecretValue">The secretValue member represents the optional secret value. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-secretValue">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
 /// <param name="AssociatedData">The associatedData member represents the optional associated data. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-Argon2Params-associatedData">Modern Algorithms in the Web Cryptography API: 17.3 Argon2Params dictionary</see></param>
-[ECMAScript]
 [Description("@#Argon2Params")]
 public record Argon2Params(
     [property: Description("@#nonce")]IBufferSource? Nonce = default,
@@ -11110,7 +10505,6 @@ public record Argon2Params(
 /// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-outputLength">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see></param>
 /// <param name="FunctionName">The functionName member represents the function name, used by NIST to define functions based on cSHAKE. When used, it should only be set to values defined by NIST. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-functionName">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see></param>
 /// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-CShakeParams-customization">Modern Algorithms in the Web Cryptography API: 13.3 CShakeParams dictionary</see></param>
-[ECMAScript]
 [Description("@#CShakeParams")]
 public record CShakeParams(
     [property: Description("@#outputLength")]uint OutputLength = default,
@@ -11125,7 +10519,6 @@ public record CShakeParams(
 /// </remarks>
 /// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams-outputLength">Modern Algorithms in the Web Cryptography API: 15.3 KangarooTwelveParams dictionary</see></param>
 /// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. If not specified, it defaults to the empty string. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KangarooTwelveParams-customization">Modern Algorithms in the Web Cryptography API: 15.3 KangarooTwelveParams dictionary</see></param>
-[ECMAScript]
 [Description("@#KangarooTwelveParams")]
 public record KangarooTwelveParams(
     [property: Description("@#outputLength")]uint OutputLength = default,
@@ -11138,7 +10531,6 @@ public record KangarooTwelveParams(
 /// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacImportParams">Modern Algorithms in the Web Cryptography API: 16.4 KmacImportParams dictionary</see>
 /// </remarks>
 /// <param name="Length">The length member represents the length (in bits) of the key. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacImportParams-length">Modern Algorithms in the Web Cryptography API: 16.4 KmacImportParams dictionary</see></param>
-[ECMAScript]
 [Description("@#KmacImportParams")]
 public record KmacImportParams(
     [property: Description("@#length")]uint Length = default) : Algorithm;
@@ -11150,7 +10542,6 @@ public record KmacImportParams(
 /// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyGenParams">Modern Algorithms in the Web Cryptography API: 16.3 KmacKeyGenParams dictionary</see>
 /// </remarks>
 /// <param name="Length">The length member represents the length (in bits) of the key to generate. If unspecified, the recommended length will be used, which is 128 for KMAC128 and 256 for KMAC256. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyGenParams-length">Modern Algorithms in the Web Cryptography API: 16.3 KmacKeyGenParams dictionary</see></param>
-[ECMAScript]
 [Description("@#KmacKeyGenParams")]
 public record KmacKeyGenParams(
     [property: Description("@#length")]uint Length = default) : Algorithm;
@@ -11163,7 +10554,6 @@ public record KmacKeyGenParams(
 /// </remarks>
 /// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams-outputLength">Modern Algorithms in the Web Cryptography API: 16.6 KmacParams dictionary</see></param>
 /// <param name="Customization">The customization member represents the customization string. The application selects this string to define a variant of the function. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacParams-customization">Modern Algorithms in the Web Cryptography API: 16.6 KmacParams dictionary</see></param>
-[ECMAScript]
 [Description("@#KmacParams")]
 public record KmacParams(
     [property: Description("@#outputLength")]uint OutputLength = default,
@@ -11177,7 +10567,6 @@ public record KmacParams(
 /// </remarks>
 /// <param name="OutputLength">The outputLength member represents the requested output length in bits. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams-outputLength">Modern Algorithms in the Web Cryptography API: 14.3 TurboShakeParams dictionary</see></param>
 /// <param name="DomainSeparation">The domainSeparation member represents the domain separation byte. If not specified, it defaults to 0x1F. Valid values are in the range 0x01 to 0x7F. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-TurboShakeParams-domainSeparation">Modern Algorithms in the Web Cryptography API: 14.3 TurboShakeParams dictionary</see></param>
-[ECMAScript]
 [Description("@#TurboShakeParams")]
 public record TurboShakeParams(
     [property: Description("@#outputLength")]uint OutputLength = default,
@@ -11190,7 +10579,6 @@ public record TurboShakeParams(
 /// <see href="https://wicg.github.io/webcrypto-secure-curves/#dfn-Ed448Params">Secure Curves in the Web Cryptography API: 6.3 Ed448Params dictionary</see>
 /// </remarks>
 /// <param name="Context">The context member represents the optional context data to associate with the message. <see href="https://wicg.github.io/webcrypto-secure-curves/#dfn-Ed448Params-context">Secure Curves in the Web Cryptography API: 6.3 Ed448Params dictionary</see></param>
-[ECMAScript]
 [Description("@#Ed448Params")]
 public record Ed448Params(
     [property: Description("@#context")]IBufferSource? Context = default) : Algorithm;
@@ -11202,7 +10590,6 @@ public record Ed448Params(
 /// <see href="https://wicg.github.io/webhid/#dom-hidconnectioneventinit">WebHID API: 8.1 HIDConnectionEventInit dictionary</see>
 /// </remarks>
 /// <param name="Device">HIDConnectionEventInit 字典中的 device 成员，WebIDL 类型为 HIDDevice。必须提供该成员。 <see href="https://wicg.github.io/webhid/#dom-hidconnectioneventinit-device">WebHID API: 8.1 HIDConnectionEventInit dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDConnectionEventInit")]
 public record HIDConnectionEventInit(
     [property: Description("@#device")]HIDDevice? Device = default) : EventInit;
@@ -11217,7 +10604,6 @@ public record HIDConnectionEventInit(
 /// <param name="ProductId">The product ID to match. If the vendorId member is not present, productId is ignored. <see href="https://wicg.github.io/webhid/#dom-hiddevicefilter-productid">WebHID API: 6.2.2 HIDDeviceFilter dictionary</see></param>
 /// <param name="UsagePage">The top-level collection usage ID to match. If the usagePage member is not present, usage is ignored. <see href="https://wicg.github.io/webhid/#dom-hiddevicefilter-usagepage">WebHID API: 6.2.2 HIDDeviceFilter dictionary</see></param>
 /// <param name="Usage">The top-level collection usage ID to match. If the usagePage member is not present, usage is ignored. <see href="https://wicg.github.io/webhid/#dom-hiddevicefilter-usage">WebHID API: 6.2.2 HIDDeviceFilter dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDDeviceFilter")]
 public record HIDDeviceFilter(
     [property: Description("@#vendorId")]uint VendorId = default,
@@ -11233,7 +10619,6 @@ public record HIDDeviceFilter(
 /// </remarks>
 /// <param name="Filters">HIDDeviceRequestOptions 字典中的 filters 成员，WebIDL 类型为 sequence&lt;HIDDeviceFilter&gt;。必须提供该成员。 <see href="https://wicg.github.io/webhid/#dom-hiddevicerequestoptions-filters">WebHID API: 6.2.1 HIDDeviceRequestOptions dictionary</see></param>
 /// <param name="ExclusionFilters">HIDDeviceRequestOptions 字典中的 exclusionFilters 成员，WebIDL 类型为 sequence&lt;HIDDeviceFilter&gt;。可省略。 <see href="https://wicg.github.io/webhid/#dom-hiddevicerequestoptions-exclusionfilters">WebHID API: 6.2.1 HIDDeviceRequestOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDDeviceRequestOptions")]
 public record HIDDeviceRequestOptions(
     [property: Description("@#filters")]HIDDeviceFilter[]? Filters = default,
@@ -11248,7 +10633,6 @@ public record HIDDeviceRequestOptions(
 /// <param name="Device">HIDInputReportEventInit 字典中的 device 成员，WebIDL 类型为 HIDDevice。必须提供该成员。 <see href="https://wicg.github.io/webhid/#dom-hidinputreporteventinit-device">WebHID API: 9.1 HIDInputReportEventInit dictionary</see></param>
 /// <param name="ReportId">HIDInputReportEventInit 字典中的 reportId 成员，WebIDL 类型为 octet。必须提供该成员。 <see href="https://wicg.github.io/webhid/#dom-hidinputreporteventinit-reportid">WebHID API: 9.1 HIDInputReportEventInit dictionary</see></param>
 /// <param name="Data">HIDInputReportEventInit 字典中的 data 成员，WebIDL 类型为 DataView。必须提供该成员。 <see href="https://wicg.github.io/webhid/#dom-hidinputreporteventinit-data">WebHID API: 9.1 HIDInputReportEventInit dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDInputReportEventInit")]
 public record HIDInputReportEventInit(
     [property: Description("@#device")]HIDDevice? Device = default,
@@ -11264,7 +10648,6 @@ public record HIDInputReportEventInit(
 /// <param name="VendorId">AllowedUSBDevice 字典中的 vendorId 成员，WebIDL 类型为 octet。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-allowedusbdevice-vendorid">WebUSB API: 8.2 Permission API</see></param>
 /// <param name="ProductId">AllowedUSBDevice 字典中的 productId 成员，WebIDL 类型为 octet。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-allowedusbdevice-productid">WebUSB API: 8.2 Permission API</see></param>
 /// <param name="SerialNumber">AllowedUSBDevice 字典中的 serialNumber 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/webusb/#dom-allowedusbdevice-serialnumber">WebUSB API: 8.2 Permission API</see></param>
-[ECMAScript]
 [Description("@#AllowedUSBDevice")]
 public record AllowedUSBDevice(
     [property: Description("@#vendorId")]byte VendorId = default,
@@ -11280,7 +10663,6 @@ public record AllowedUSBDevice(
 /// <param name="IdVendor">USBBlocklistEntry 字典中的 idVendor 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbblocklistentry-idvendor">WebUSB API: 7 The USB Blocklist</see></param>
 /// <param name="IdProduct">USBBlocklistEntry 字典中的 idProduct 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbblocklistentry-idproduct">WebUSB API: 7 The USB Blocklist</see></param>
 /// <param name="BcdDevice">USBBlocklistEntry 字典中的 bcdDevice 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbblocklistentry-bcddevice">WebUSB API: 7 The USB Blocklist</see></param>
-[ECMAScript]
 [Description("@#USBBlocklistEntry")]
 public record USBBlocklistEntry(
     [property: Description("@#idVendor")]ushort IdVendor = default,
@@ -11294,7 +10676,6 @@ public record USBBlocklistEntry(
 /// <see href="https://wicg.github.io/webusb/#dictdef-usbconnectioneventinit">WebUSB API: 5.1 Events</see>
 /// </remarks>
 /// <param name="Device">USBConnectionEventInit 字典中的 device 成员，WebIDL 类型为 USBDevice。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbconnectioneventinit-device">WebUSB API: 5.1 Events</see></param>
-[ECMAScript]
 [Description("@#USBConnectionEventInit")]
 public record USBConnectionEventInit(
     [property: Description("@#device")]USBDevice? Device = default) : EventInit;
@@ -11310,7 +10691,6 @@ public record USBConnectionEventInit(
 /// <param name="Request">USBControlTransferParameters 字典中的 request 成员，WebIDL 类型为 octet。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbcontroltransferparameters-request">WebUSB API: 6.2.1 Members</see></param>
 /// <param name="Value">USBControlTransferParameters 字典中的 value 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbcontroltransferparameters-value">WebUSB API: 6.2.1 Members</see></param>
 /// <param name="Index">USBControlTransferParameters 字典中的 index 成员，WebIDL 类型为 unsigned short。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbcontroltransferparameters-index">WebUSB API: 6.2 The USBControlTransferParameters Dictionary</see></param>
-[ECMAScript]
 [Description("@#USBControlTransferParameters")]
 public record USBControlTransferParameters(
     [property: Description("@#requestType")]USBRequestType? RequestType = default,
@@ -11331,7 +10711,6 @@ public record USBControlTransferParameters(
 /// <param name="SubclassCode">USBDeviceFilter 字典中的 subclassCode 成员，WebIDL 类型为 octet。可省略。 <see href="https://wicg.github.io/webusb/#dom-usbdevicefilter-subclasscode">WebUSB API: 5 Device Enumeration</see></param>
 /// <param name="ProtocolCode">USBDeviceFilter 字典中的 protocolCode 成员，WebIDL 类型为 octet。可省略。 <see href="https://wicg.github.io/webusb/#dom-usbdevicefilter-protocolcode">WebUSB API: 5 Device Enumeration</see></param>
 /// <param name="SerialNumber">USBDeviceFilter 字典中的 serialNumber 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://wicg.github.io/webusb/#dom-usbdevicefilter-serialnumber">WebUSB API: 5 Device Enumeration</see></param>
-[ECMAScript]
 [Description("@#USBDeviceFilter")]
 public record USBDeviceFilter(
     [property: Description("@#vendorId")]ushort VendorId = default,
@@ -11349,7 +10728,6 @@ public record USBDeviceFilter(
 /// </remarks>
 /// <param name="Filters">USBDeviceRequestOptions 字典中的 filters 成员，WebIDL 类型为 sequence&lt;USBDeviceFilter&gt;。必须提供该成员。 <see href="https://wicg.github.io/webusb/#dom-usbdevicerequestoptions-filters">WebUSB API: 5 Device Enumeration</see></param>
 /// <param name="ExclusionFilters">USBDeviceRequestOptions 字典中的 exclusionFilters 成员，WebIDL 类型为 sequence&lt;USBDeviceFilter&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://wicg.github.io/webusb/#dom-usbdevicerequestoptions-exclusionfilters">WebUSB API: 5 Device Enumeration</see></param>
-[ECMAScript]
 [Description("@#USBDeviceRequestOptions")]
 public record USBDeviceRequestOptions(
     [property: Description("@#filters")]USBDeviceFilter[]? Filters = default,
@@ -11363,7 +10741,6 @@ public record USBDeviceRequestOptions(
 /// </remarks>
 /// <param name="Filters">USBPermissionDescriptor 字典中的 filters 成员，WebIDL 类型为 sequence&lt;USBDeviceFilter&gt;。可省略。 <see href="https://wicg.github.io/webusb/#dom-usbpermissiondescriptor-filters">WebUSB API: 8.2 Permission API</see></param>
 /// <param name="ExclusionFilters">USBPermissionDescriptor 字典中的 exclusionFilters 成员，WebIDL 类型为 sequence&lt;USBDeviceFilter&gt;。可省略。 <see href="https://wicg.github.io/webusb/#dom-usbpermissiondescriptor-exclusionfilters">WebUSB API: 8.2 Permission API</see></param>
-[ECMAScript]
 [Description("@#USBPermissionDescriptor")]
 public record USBPermissionDescriptor(
     [property: Description("@#filters")]USBDeviceFilter[]? Filters = default,
@@ -11376,7 +10753,6 @@ public record USBPermissionDescriptor(
 /// <see href="https://wicg.github.io/webusb/#dictdef-usbpermissionstorage">WebUSB API: 8.2 Permission API</see>
 /// </remarks>
 /// <param name="AllowedDevices">USBPermissionStorage 字典中的 allowedDevices 成员，WebIDL 类型为 sequence&lt;AllowedUSBDevice&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://wicg.github.io/webusb/#dom-usbpermissionstorage-alloweddevices">WebUSB API: 8.2 Permission API</see></param>
-[ECMAScript]
 [Description("@#USBPermissionStorage")]
 public record USBPermissionStorage(
     [property: Description("@#allowedDevices")]AllowedUSBDevice[]? AllowedDevices = default);
@@ -11389,7 +10765,6 @@ public record USBPermissionStorage(
 /// </remarks>
 /// <param name="TitlebarAreaRect">WindowControlsOverlayGeometryChangeEventInit 字典中的 titlebarAreaRect 成员，WebIDL 类型为 DOMRect。必须提供该成员。 <see href="https://wicg.github.io/window-controls-overlay/#dom-windowcontrolsoverlaygeometrychangeeventinit-titlebararearect">Window Controls Overlay: 5 WindowControlsOverlay interface</see></param>
 /// <param name="Visible">WindowControlsOverlayGeometryChangeEventInit 字典中的 visible 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://wicg.github.io/window-controls-overlay/#dom-windowcontrolsoverlaygeometrychangeeventinit-visible">Window Controls Overlay: 5 WindowControlsOverlay interface</see></param>
-[ECMAScript]
 [Description("@#WindowControlsOverlayGeometryChangeEventInit")]
 public record WindowControlsOverlayGeometryChangeEventInit(
     [property: Description("@#titlebarAreaRect")]DOMRect? TitlebarAreaRect = default,
@@ -11404,7 +10779,6 @@ public record WindowControlsOverlayGeometryChangeEventInit(
 /// <param name="LengthComputable">ProgressEventInit 字典中的 lengthComputable 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://xhr.spec.whatwg.org/#dom-progresseventinit-lengthcomputable">XMLHttpRequest Standard: 5 Interface ProgressEvent</see></param>
 /// <param name="Loaded">ProgressEventInit 字典中的 loaded 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://xhr.spec.whatwg.org/#dom-progresseventinit-loaded">XMLHttpRequest Standard: 5 Interface ProgressEvent</see></param>
 /// <param name="Total">ProgressEventInit 字典中的 total 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://xhr.spec.whatwg.org/#dom-progresseventinit-total">XMLHttpRequest Standard: 5 Interface ProgressEvent</see></param>
-[ECMAScript]
 [Description("@#ProgressEventInit")]
 public record ProgressEventInit(
     [property: Description("@#lengthComputable")]bool LengthComputable = false,
@@ -11421,7 +10795,6 @@ public record ProgressEventInit(
 /// <param name="InputType">HandwritingHintsQueryResult 字典中的 inputType 成员，WebIDL 类型为 sequence&lt;HandwritingInputType&gt;。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritinghintsqueryresult-inputtype">Handwriting Recognition API: 3 Feature Query</see></param>
 /// <param name="TextContext">HandwritingHintsQueryResult 字典中的 textContext 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritinghintsqueryresult-textcontext">Handwriting Recognition API: 3 Feature Query</see></param>
 /// <param name="Alternatives">HandwritingHintsQueryResult 字典中的 alternatives 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritinghintsqueryresult-alternatives">Handwriting Recognition API: 3 Feature Query</see></param>
-[ECMAScript]
 [Description("@#HandwritingHintsQueryResult")]
 public record HandwritingHintsQueryResult(
     [property: Description("@#recognitionType")]HandwritingRecognitionType[]? RecognitionType = default,
@@ -11437,7 +10810,6 @@ public record HandwritingHintsQueryResult(
 /// </remarks>
 /// <param name="KeySystemAccess">A MediaCapabilitiesDecodingInfo has associated keySystemAccess which is a MediaKeySystemAccess or null as appropriate. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitiesdecodinginfo-keysystemaccess">Media Capabilities: 2.2 Media Capabilities Information</see></param>
 /// <param name="Configuration">A MediaCapabilitiesDecodingInfo has an associated configuration which is the decoding configuration properties used to generate the MediaCapabilitiesDecodingInfo. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitiesdecodinginfo-configuration">Media Capabilities: 2.2 Media Capabilities Information</see></param>
-[ECMAScript]
 [Description("@#MediaCapabilitiesDecodingInfo")]
 public record MediaCapabilitiesDecodingInfo(
     [property: Description("@#keySystemAccess")]MediaKeySystemAccess? KeySystemAccess = default,
@@ -11450,7 +10822,6 @@ public record MediaCapabilitiesDecodingInfo(
 /// <see href="https://w3c.github.io/media-capabilities/#dictdef-mediacapabilitiesencodinginfo">Media Capabilities: 2.2 Media Capabilities Information</see>
 /// </remarks>
 /// <param name="Configuration">A MediaCapabilitiesEncodingInfo has an associated configuration which is the encoding configuration properties used to generate the MediaCapabilitiesEncodingInfo. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitiesencodinginfo-configuration">Media Capabilities: 2.2 Media Capabilities Information</see></param>
-[ECMAScript]
 [Description("@#MediaCapabilitiesEncodingInfo")]
 public record MediaCapabilitiesEncodingInfo(
     [property: Description("@#configuration")]MediaEncodingConfiguration? Configuration = default) : MediaCapabilitiesInfo;
@@ -11464,7 +10835,6 @@ public record MediaCapabilitiesEncodingInfo(
 /// <param name="Supported">The spatialRendering member indicates that the audio SHOULD be rendered spatially. The details of spatial rendering SHOULD be inferred from the contentType. If it does not map/exist, the UA MUST presume spatial rendering is not required. When true, the user agent SHOULD only report this configuration as supported if it can support spatial rendering for the current audio output device without failing back to a non-spatial mix of the stream. spatialRendering is only applicable to MediaDecodingConfiguration for types media-source and file. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitiesinfo-supported">Media Capabilities: 2.2 Media Capabilities Information</see></param>
 /// <param name="Smooth">A MediaCapabilitiesInfo has associated supported, smooth, powerEfficient fields which are booleans. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitiesinfo-smooth">Media Capabilities: 2.2 Media Capabilities Information</see></param>
 /// <param name="PowerEfficient">A MediaCapabilitiesInfo has associated supported, smooth, powerEfficient fields which are booleans. <see href="https://w3c.github.io/media-capabilities/#dom-mediacapabilitiesinfo-powerefficient">Media Capabilities: 2.2 Media Capabilities Information</see></param>
-[ECMAScript]
 [Description("@#MediaCapabilitiesInfo")]
 public record MediaCapabilitiesInfo(
     [property: Description("@#supported")]bool Supported = default,
@@ -11479,7 +10849,6 @@ public record MediaCapabilitiesInfo(
 /// </remarks>
 /// <param name="Currency">PaymentCurrencyAmount 字典中的 currency 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/payment-request/#dom-paymentcurrencyamount-currency">Payment Request API: 5 PaymentCurrencyAmount dictionary</see></param>
 /// <param name="Value">If amount.value is not a valid decimal monetary value, throw a TypeError, optionally informing the developer that the currency is invalid. <see href="https://w3c.github.io/payment-request/#dom-paymentcurrencyamount-value">Payment Request API: 5 PaymentCurrencyAmount dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentCurrencyAmount")]
 public record PaymentCurrencyAmount(
     [property: Description("@#currency")]string? Currency = default,
@@ -11494,7 +10863,6 @@ public record PaymentCurrencyAmount(
 /// <param name="Label">The language and direction of the label may often be determined from information inherited from the document. However, this approach may not suffice for some use cases. The working group intends to fix this in a future version by aligning with general approaches for the Web that are in development. <see href="https://w3c.github.io/payment-request/#dom-paymentitem-label">Payment Request API: 10. PaymentItem dictionary</see></param>
 /// <param name="Amount">Check and canonicalize total amount details.total.amount. Rethrow any exceptions. <see href="https://w3c.github.io/payment-request/#dom-paymentitem-amount">Payment Request API: 10. PaymentItem dictionary</see></param>
 /// <param name="Pending">A boolean. When set to true it means that the amount member is not final. This is commonly used to show items such as shipping or tax amounts that depend upon selection of shipping address or shipping option. User agents MAY indicate pending fields in the user interface for the payment request. <see href="https://w3c.github.io/payment-request/#dom-paymentitem-pending">Payment Request API: 10. PaymentItem dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentItem")]
 public record PaymentItem(
     [property: Description("@#label")]string? Label = default,
@@ -11509,7 +10877,6 @@ public record PaymentItem(
 /// </remarks>
 /// <param name="SupportedMethods">PaymentMethodData 字典中的 supportedMethods 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/payment-request/#dom-paymentmethoddata-supportedmethods">Payment Request API: 4 PaymentMethodData dictionary</see></param>
 /// <param name="Data">Optionally, an IDL type that the payment method expects to receive as the PaymentMethodData&apos;s data member. If not specified for a given payment method, no conversion to IDL is done and the payment method will receive data as JSON. <see href="https://w3c.github.io/payment-request/#dom-paymentmethoddata-data">Payment Request API: 4 PaymentMethodData dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentMethodData")]
 public record PaymentMethodData(
     [property: Description("@#supportedMethods")]string? SupportedMethods = default,
@@ -11525,7 +10892,6 @@ public record PaymentMethodData(
 /// <param name="Frames">Return the result of running get an element ID on frame and ProfilerTrace.frames. <see href="https://wicg.github.io/js-self-profiling/#dom-profilertrace-frames">JS Self-Profiling API: 7 The ProfilerTrace Dictionary</see></param>
 /// <param name="Stacks">Return the result of running get an element ID on profilerStack and ProfilerTrace.stacks. <see href="https://wicg.github.io/js-self-profiling/#dom-profilertrace-stacks">JS Self-Profiling API: 7 The ProfilerTrace Dictionary</see></param>
 /// <param name="Samples">A ProfilerTrace storing captured samples. <see href="https://wicg.github.io/js-self-profiling/#dom-profilertrace-samples">JS Self-Profiling API: 7 The ProfilerTrace Dictionary</see></param>
-[ECMAScript]
 [Description("@#ProfilerTrace")]
 public record ProfilerTrace(
     [property: Description("@#resources")]ProfilerResource[]? Resources = default,
@@ -11614,7 +10980,6 @@ public record VideoEncoderConfig(
 /// <param name="Recipient">AddressErrors 字典中的 recipient 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/payment-request/#dom-addresserrors-recipient">Payment Request API: 15.1 AddressErrors dictionary</see></param>
 /// <param name="Region">AddressErrors 字典中的 region 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/payment-request/#dom-addresserrors-region">Payment Request API: 15.1 AddressErrors dictionary</see></param>
 /// <param name="SortingCode">AddressErrors 字典中的 sortingCode 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/payment-request/#dom-addresserrors-sortingcode">Payment Request API: 15.1 AddressErrors dictionary</see></param>
-[ECMAScript]
 [Description("@#AddressErrors")]
 public record AddressErrors(
     [property: Description("@#addressLine")]string? AddressLine = default,
@@ -11639,7 +11004,6 @@ public record AddressErrors(
 /// <param name="ShippingAddressErrors">A developer can use the shippingAddressErrors member of the PaymentDetailsUpdate dictionary to indicate that there are validation errors with specific attributes of a ContactAddress. The shippingAddressErrors member is a AddressErrors dictionary, whose members specifically demarcate the fields of a physical address that are erroneous while also providing helpful error messages to be displayed to the end user. <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsupdate-shippingaddresserrors">Payment Request API: 6.3 PaymentDetailsUpdate dictionary</see></param>
 /// <param name="PayerErrors">PaymentDetailsUpdate 字典中的 payerErrors 成员，WebIDL 类型为 PayerErrors。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsupdate-payererrors">Payment Request API: 6.3 PaymentDetailsUpdate dictionary</see></param>
 /// <param name="PaymentMethodErrors">PaymentDetailsUpdate 字典中的 paymentMethodErrors 成员，WebIDL 类型为 object。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsupdate-paymentmethoderrors">Payment Request API: 6.3 PaymentDetailsUpdate dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentDetailsUpdate")]
 public record PaymentDetailsUpdate(
     [property: Description("@#error")]string? Error = default,
@@ -11658,7 +11022,6 @@ public record PaymentDetailsUpdate(
 /// <param name="ShippingAddress">PaymentValidationErrors 字典中的 shippingAddress 成员，WebIDL 类型为 AddressErrors。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentvalidationerrors-shippingaddress">Payment Request API: 14.1.1 PaymentValidationErrors dictionary</see></param>
 /// <param name="Error">PaymentValidationErrors 字典中的 error 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentvalidationerrors-error">Payment Request API: 14.1.1 PaymentValidationErrors dictionary</see></param>
 /// <param name="PaymentMethod">PaymentValidationErrors 字典中的 paymentMethod 成员，WebIDL 类型为 object。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentvalidationerrors-paymentmethod">Payment Request API: 14.1.1 PaymentValidationErrors dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentValidationErrors")]
 public record PaymentValidationErrors(
     [property: Description("@#payer")]PayerErrors? Payer = default,
@@ -11675,7 +11038,6 @@ public record PaymentValidationErrors(
 /// <param name="StrokeIndex">HandwritingDrawingSegment 字典中的 strokeIndex 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingdrawingsegment-strokeindex">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
 /// <param name="BeginPointIndex">HandwritingDrawingSegment 字典中的 beginPointIndex 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingdrawingsegment-beginpointindex">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
 /// <param name="EndPointIndex">HandwritingDrawingSegment 字典中的 endPointIndex 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingdrawingsegment-endpointindex">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
-[ECMAScript]
 [Description("@#HandwritingDrawingSegment")]
 public record HandwritingDrawingSegment(
     [property: Description("@#strokeIndex")]uint StrokeIndex = default,
@@ -11692,7 +11054,6 @@ public record HandwritingDrawingSegment(
 /// <param name="BeginIndex">HandwritingSegment 字典中的 beginIndex 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingsegment-beginindex">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
 /// <param name="EndIndex">HandwritingSegment 字典中的 endIndex 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingsegment-endindex">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
 /// <param name="DrawingSegments">HandwritingSegment 字典中的 drawingSegments 成员，WebIDL 类型为 sequence&lt;HandwritingDrawingSegment&gt;。必须提供该成员。 <see href="https://wicg.github.io/handwriting-recognition/#dom-handwritingsegment-drawingsegments">Handwriting Recognition API: 7.2 HandwritingPrediction attributes</see></param>
-[ECMAScript]
 [Description("@#HandwritingSegment")]
 public record HandwritingSegment(
     [property: Description("@#grapheme")]string? Grapheme = default,
@@ -11708,7 +11069,6 @@ public record HandwritingSegment(
 /// </remarks>
 /// <param name="Locations">Landmark 字典中的 locations 成员，WebIDL 类型为 sequence&lt;Point2D&gt;。必须提供该成员。 <see href="https://wicg.github.io/shape-detection-api/#dom-landmark-locations">Accelerated Shape Detection in Images: 2.2.2 DetectedFace</see></param>
 /// <param name="Type">Type of the landmark, if known. <see href="https://wicg.github.io/shape-detection-api/#dom-landmark-type">Accelerated Shape Detection in Images: 2.2.2 DetectedFace</see></param>
-[ECMAScript]
 [Description("@#Landmark")]
 public record Landmark(
     [property: Description("@#locations")]Point2D[]? Locations = default,
@@ -11727,7 +11087,6 @@ public record Landmark(
 /// <param name="AttributeOldValue">Set to true if mutations to target&apos;s attributes are to be observed. Can be omitted if attributeOldValue or attributeFilter is specified. <see href="https://dom.spec.whatwg.org/#dom-mutationobserverinit-attributeoldvalue">DOM Standard: 4.3.1 Interface MutationObserver</see></param>
 /// <param name="CharacterDataOldValue">Set to true if mutations to target&apos;s data are to be observed. Can be omitted if characterDataOldValue is specified. <see href="https://dom.spec.whatwg.org/#dom-mutationobserverinit-characterdataoldvalue">DOM Standard: 4.3.1 Interface MutationObserver</see></param>
 /// <param name="AttributeFilter">Set to true if mutations to target&apos;s attributes are to be observed. Can be omitted if attributeOldValue or attributeFilter is specified. <see href="https://dom.spec.whatwg.org/#dom-mutationobserverinit-attributefilter">DOM Standard: 4.3.1 Interface MutationObserver</see></param>
-[ECMAScript]
 [Description("@#MutationObserverInit")]
 public record MutationObserverInit(
     [property: Description("@#childList")]bool ChildList = false,
@@ -11777,7 +11136,6 @@ public record PerformanceObserverInit(
 /// <param name="SurfaceId">Set touch.surfaceId to be surfaceId. <see href="https://w3c.github.io/gamepad/#dom-gamepadtouch-surfaceid">Gamepad: 6 GamepadTouch Interface</see></param>
 /// <param name="Position">Set touch.position to a new DOMPointReadOnly with x initialized to device X coordinate relative to the device touch surface and normalized to [-1 .. 1] where -1 is the leftmost coordinate and 1 is the rightmost coordinate and y initialized to the device touch surface and normalized to [-1 .. 1] where -1 is the topmost coordinate and 1 is the bottommost coordinate. <see href="https://w3c.github.io/gamepad/#dom-gamepadtouch-position">Gamepad: 6 GamepadTouch Interface</see></param>
 /// <param name="SurfaceDimensions">If the touch surface exposes maximum surface dimensions in device units, then set touch.surfaceDimensions to a DOMRectReadOnly with width and height initialized to the maximum X and Y dimensions on the touch surface in device units. <see href="https://w3c.github.io/gamepad/#dom-gamepadtouch-surfacedimensions">Gamepad: 6 GamepadTouch Interface</see></param>
-[ECMAScript]
 [Description("@#GamepadTouch")]
 public record GamepadTouch(
     [property: Description("@#touchId")]uint TouchId = default,
@@ -11840,7 +11198,6 @@ public record AudioEncoderConfig(
 /// </remarks>
 /// <param name="Committed">{ committed, finished } = navigation.navigate(url) <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationresult-committed">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
 /// <param name="Finished">{ committed, finished } = navigation.navigate(url) <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#dom-navigationresult-finished">HTML Standard: 7.2.6.2 The Navigation interface</see></param>
-[ECMAScript]
 [Description("@#NavigationResult")]
 public record NavigationResult(
     [property: Description("@#committed")]PromiseResult<NavigationHistoryEntry>? Committed = default,
@@ -11853,7 +11210,6 @@ public record NavigationResult(
 /// <see href="https://w3c.github.io/FileAPI/#dfn-FilePropertyBag">File API: 4 The File Interface</see>
 /// </remarks>
 /// <param name="LastModified">FilePropertyBag 字典中的 lastModified 成员，WebIDL 类型为 long long。可省略。 <see href="https://w3c.github.io/FileAPI/#dfn-FPdate">File API: 4.1.1 Constructor Parameters</see></param>
-[ECMAScript]
 [Description("@#FilePropertyBag")]
 public record FilePropertyBag(
     [property: Description("@#lastModified")]Number? LastModified = default) : BlobPropertyBag;
@@ -11866,7 +11222,6 @@ public record FilePropertyBag(
 /// </remarks>
 /// <param name="DataPrefix">Both Manufacturer Specific Data and Service Data map a key to an array of bytes. BluetoothDataFilterInit filters these arrays. An array matches if it has a prefix such that prefix &amp; mask is equal to dataPrefix &amp; mask. <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdatafilterinit-dataprefix">Web Bluetooth: 4 Device Discovery</see></param>
 /// <param name="Mask">Both Manufacturer Specific Data and Service Data map a key to an array of bytes. BluetoothDataFilterInit filters these arrays. An array matches if it has a prefix such that prefix &amp; mask is equal to dataPrefix &amp; mask. <see href="https://webbluetoothcg.github.io/web-bluetooth/#dom-bluetoothdatafilterinit-mask">Web Bluetooth: 4 Device Discovery</see></param>
-[ECMAScript]
 [Description("@#BluetoothDataFilterInit")]
 public record BluetoothDataFilterInit(
     [property: Description("@#dataPrefix")]IBufferSource? DataPrefix = default,
@@ -11882,7 +11237,6 @@ public record BluetoothDataFilterInit(
 /// <param name="Title">Share targets that fetch content for the purposes of offering a preview or for sharing content risk information leakage. Content that is previewed and authorized by a user might be safe to forward, however it is not always possible for a person to identify when information should be confidential, so forwarding any content presents a risk. In particular, the title might be used by an attacker to trick a user into misinterpreting the nature of the content (see also [#a11y]). <see href="https://w3c.github.io/web-share/#dom-sharedata-title">Web Share API: 2.2 ShareData dictionary</see></param>
 /// <param name="Text">If none of data&apos;s members title, text, url, or files are present, return false. <see href="https://w3c.github.io/web-share/#dom-sharedata-text">Web Share API: 2.2 ShareData dictionary</see></param>
 /// <param name="Url">ShareData 字典中的 url 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/web-share/#dom-sharedata-url">Web Share API: 2.2 ShareData dictionary</see></param>
-[ECMAScript]
 [Description("@#ShareData")]
 public record ShareData(
     [property: Description("@#files")]FileRef[]? Files = default,
@@ -11905,7 +11259,6 @@ public record ShareData(
 /// <param name="RemoveAttributes">If neither configuration[&quot;attributes&quot;] nor configuration[&quot;removeAttributes&quot;] exists, then set configuration[&quot;removeAttributes&quot;] to an empty list. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-removeattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
 /// <param name="Comments">If configuration[&quot;comments&quot;] does not exist, then set it to permissiveDefaults. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-comments">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
 /// <param name="DataAttributes">If configuration[&quot;attributes&quot;] exists and configuration[&quot;dataAttributes&quot;] does not exist, then set it to permissiveDefaults. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerconfig-dataattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
 [Description("@#SanitizerConfig")]
 public record SanitizerConfig(
     [property: Description("@#elements")]SanitizerElementWithAttributes[]? Elements = default,
@@ -11926,7 +11279,6 @@ public record SanitizerConfig(
 /// </remarks>
 /// <param name="MaxDetectedFaces">FaceDetectorOptions 字典中的 maxDetectedFaces 成员，WebIDL 类型为 unsigned short。可省略。 <see href="https://wicg.github.io/shape-detection-api/#dom-facedetectoroptions-maxdetectedfaces">Accelerated Shape Detection in Images: 2.2.1 FaceDetectorOptions</see></param>
 /// <param name="FastMode">FaceDetectorOptions 字典中的 fastMode 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/shape-detection-api/#dom-facedetectoroptions-fastmode">Accelerated Shape Detection in Images: 2.2.1 FaceDetectorOptions</see></param>
-[ECMAScript]
 [Description("@#FaceDetectorOptions")]
 public record FaceDetectorOptions(
     [property: Description("@#maxDetectedFaces")]ushort MaxDetectedFaces = default,
@@ -11939,7 +11291,6 @@ public record FaceDetectorOptions(
 /// <see href="https://urlpattern.spec.whatwg.org/#dictdef-urlpatternoptions">URL Pattern Standard: 1.2 The URLPattern class</see>
 /// </remarks>
 /// <param name="IgnoreCase">Constructs a new URLPattern object. The options is an object containing the additional configuration options that can affect how the components are matched. Currently it has only one property ignoreCase which can be set to true to enable case-insensitive matching. <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatternoptions-ignorecase">URL Pattern Standard: 1.2 The URLPattern class</see></param>
-[ECMAScript]
 [Description("@#URLPatternOptions")]
 public record URLPatternOptions(
     [property: Description("@#ignoreCase")]bool IgnoreCase = false);
@@ -11954,7 +11305,6 @@ public record URLPatternOptions(
 /// <param name="Track">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-track">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
 /// <param name="Streams">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-streams">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
 /// <param name="Transceiver">For each entry entry in trackEventInits, fire an event named track using the RTCTrackEvent interface with its receiver attribute initialized to entry.receiver, its track attribute initialized to entry.track, its streams attribute initialized to entry.streams and its transceiver attribute initialized to entry.transceiver at the connection object. <see href="https://w3c.github.io/webrtc-pc/#dom-rtctrackeventinit-transceiver">WebRTC: Real-Time Communication in Browsers: Dictionary RTCTrackEventInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCTrackEventInit")]
 public record RTCTrackEventInit(
     [property: Description("@#receiver")]RTCRtpReceiver? Receiver = default,
@@ -11969,7 +11319,6 @@ public record RTCTrackEventInit(
 /// <see href="https://w3c.github.io/clipboard-apis/#dictdef-clipboarditemoptions">Clipboard API and events: 7.2 ClipboardItem Interface</see>
 /// </remarks>
 /// <param name="PresentationStyle">ClipboardItemOptions 字典中的 presentationStyle 成员，WebIDL 类型为 PresentationStyle。可省略。WebIDL 默认值：unspecified。 <see href="https://w3c.github.io/clipboard-apis/#dom-clipboarditemoptions-presentationstyle">Clipboard API and events: 7.2 ClipboardItem Interface</see></param>
-[ECMAScript]
 [Description("@#ClipboardItemOptions")]
 public record ClipboardItemOptions(
     [property: Description("@#presentationStyle")]PresentationStyle PresentationStyle = PresentationStyle.Unspecified);
@@ -12019,7 +11368,6 @@ public record RTCDataChannelInit(
 /// <see href="https://w3c.github.io/permissions/#dom-permissiondescriptor">Permissions: 6.2 Permissions interface</see>
 /// </remarks>
 /// <param name="Name">PermissionDescriptor 字典中的 name 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/permissions/#dom-permissiondescriptor-name">Permissions: 6.2 Permissions interface</see></param>
-[ECMAScript]
 [Description("@#PermissionDescriptor")]
 public record PermissionDescriptor(
     [property: Description("@#name")]string? Name = default);
@@ -12080,7 +11428,6 @@ public record VideoEncoderEncodeOptions(
 /// <param name="Search">URLPatternInit 字典中的 search 成员，WebIDL 类型为 USVString。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatterninit-search">URL Pattern Standard: 1.2 The URLPattern class</see></param>
 /// <param name="Hash">URLPatternInit 字典中的 hash 成员，WebIDL 类型为 USVString。可省略。 <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatterninit-hash">URL Pattern Standard: 1.2 The URLPattern class</see></param>
 /// <param name="BaseURL">Constructs a new URLPattern object. The input is an object containing separate patterns for each URL component; e.g. hostname, pathname, etc. Missing components will default to a wildcard pattern. In addition, input can contain a baseURL property that provides static text patterns for any missing components. <see href="https://urlpattern.spec.whatwg.org/#dom-urlpatterninit-baseurl">URL Pattern Standard: 1.2 The URLPattern class</see></param>
-[ECMAScript]
 [Description("@#URLPatternInit")]
 public record URLPatternInit(
     [property: Description("@#protocol")]string? Protocol = default,
@@ -12103,7 +11450,6 @@ public record URLPatternInit(
 /// <param name="Kind">For all subclasses of RTCRtpStreamStats, it MUST include ssrc and kind. When stats exist for both sides of a connection, in the form of an &quot;inbound-rtp&quot; / &quot;remote-outbound-rtp&quot; pair or an &quot;outbound-rtp&quot; / &quot;remote-inbound-rtp&quot; pair, the members remoteId and localId MUST also be present. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcrtpstreamstats-kind">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRtpStreamStats Members</see></param>
 /// <param name="TransportId">Names ending in Id (such as transportId) are always a stats object reference ; names ending in Ids are always of type sequence&lt;DOMString&gt;, where each DOMString is a stats object reference . <see href="https://w3c.github.io/webrtc-stats/#dom-rtcrtpstreamstats-transportid">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRtpStreamStats Members</see></param>
 /// <param name="CodecId">The RTCCodecStats object is created when one or more codecId references the codec. When there no longer exists any reference to the RTCCodecStats, the stats object is deleted. If the same codec is used again in the future, the RTCCodecStats object is revived with the same id as before. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcrtpstreamstats-codecid">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpStreamStats")]
 public record RTCRtpStreamStats(
     [property: Description("@#ssrc")]uint Ssrc = default,
@@ -12118,7 +11464,6 @@ public record RTCRtpStreamStats(
 /// <see href="https://w3c.github.io/push-api/#dom-pushpermissiondescriptor">Push API: 3.6 Permission</see>
 /// </remarks>
 /// <param name="UserVisibleOnly">The userVisibleOnly has the same semantics as userVisibleOnly. <see href="https://w3c.github.io/push-api/#dom-pushpermissiondescriptor-uservisibleonly">Push API: 3.6 Permission</see></param>
-[ECMAScript]
 [Description("@#PushPermissionDescriptor")]
 public record PushPermissionDescriptor(
     [property: Description("@#userVisibleOnly")]bool UserVisibleOnly = false) : PermissionDescriptor;
@@ -12475,7 +11820,6 @@ public record MediaTrackConstraintSet(
 /// <param name="ContentType">Let content type be requested media capability&apos;s contentType member. <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysystemmediacapability-contenttype">Encrypted Media Extensions: 3.4.1 Dictionary MediaKeySystemMediaCapability Members</see></param>
 /// <param name="EncryptionScheme">Encryption scheme capability detection, through the encryptionScheme attribute. <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysystemmediacapability-encryptionscheme">Encrypted Media Extensions: 3.4.1 Dictionary MediaKeySystemMediaCapability Members</see></param>
 /// <param name="Robustness">Let robustness be requested media capability&apos;s robustness member. <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysystemmediacapability-robustness">Encrypted Media Extensions: 3.4.1 Dictionary MediaKeySystemMediaCapability Members</see></param>
-[ECMAScript]
 [Description("@#MediaKeySystemMediaCapability")]
 public record MediaKeySystemMediaCapability(
     [property: Description("@#contentType")]string? ContentType = default,
@@ -12510,7 +11854,6 @@ public record MediaKeySystemMediaCapability(
 /// <param name="ConsentRequestsSent">RTCIceCandidatePairStats 字典中的 consentRequestsSent 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatepairstats-consentrequestssent">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCIceCandidatePairStats Members</see></param>
 /// <param name="PacketsDiscardedOnSend">RTCIceCandidatePairStats 字典中的 packetsDiscardedOnSend 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatepairstats-packetsdiscardedonsend">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCIceCandidatePairStats Members</see></param>
 /// <param name="BytesDiscardedOnSend">RTCIceCandidatePairStats 字典中的 bytesDiscardedOnSend 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatepairstats-bytesdiscardedonsend">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCIceCandidatePairStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCIceCandidatePairStats")]
 public record RTCIceCandidatePairStats(
     [property: Description("@#transportId")]string? TransportId = default,
@@ -12544,7 +11887,6 @@ public record RTCIceCandidatePairStats(
 /// </remarks>
 /// <param name="SurfaceX">If any of CapturedMouseEventInit.surfaceX or CapturedMouseEventInit.surfaceY is negative, and they are not both equal to -1, then the constructor throws a RangeError exception. <see href="https://screen-share.github.io/captured-mouse-events/#dom-capturedmouseeventinit-surfacex">Captured Mouse Events: 5 CapturedMouseEventInit dictionary</see></param>
 /// <param name="SurfaceY">If any of CapturedMouseEventInit.surfaceX or CapturedMouseEventInit.surfaceY is negative, and they are not both equal to -1, then the constructor throws a RangeError exception. <see href="https://screen-share.github.io/captured-mouse-events/#dom-capturedmouseeventinit-surfacey">Captured Mouse Events: 5 CapturedMouseEventInit dictionary</see></param>
-[ECMAScript]
 [Description("@#CapturedMouseEventInit")]
 public record CapturedMouseEventInit(
     [property: Description("@#surfaceX")]int SurfaceX = -1,
@@ -12561,7 +11903,6 @@ public record CapturedMouseEventInit(
 /// <param name="Complete">ObservableInspector 字典中的 complete 成员，WebIDL 类型为 VoidFunction。可省略。 <see href="https://wicg.github.io/observable/#dom-observableinspector-complete">Observable: 2.2 The Observable interface</see></param>
 /// <param name="Subscribe">1. If subscribe map/exists in inspectorUnion, then set subscribe callback to it. <see href="https://wicg.github.io/observable/#dom-observableinspector-subscribe">Observable: 2.2 The Observable interface</see></param>
 /// <param name="Abort">ObservableInspector 字典中的 abort 成员，WebIDL 类型为 ObservableInspectorAbortHandler。可省略。 <see href="https://wicg.github.io/observable/#dom-observableinspector-abort">Observable: 2.2 The Observable interface</see></param>
-[ECMAScript]
 [Description("@#ObservableInspector")]
 public record ObservableInspector(
     [property: Description("@#next")]ObservableSubscriptionCallback? Next = default,
@@ -12579,7 +11920,6 @@ public record ObservableInspector(
 /// <param name="Next">SubscriptionObserver 字典中的 next 成员，WebIDL 类型为 ObservableSubscriptionCallback。可省略。 <see href="https://wicg.github.io/observable/#dom-subscriptionobserver-next">Observable: 2.2 The Observable interface</see></param>
 /// <param name="Error">SubscriptionObserver 字典中的 error 成员，WebIDL 类型为 ObservableSubscriptionCallback。可省略。 <see href="https://wicg.github.io/observable/#dom-subscriptionobserver-error">Observable: 2.2 The Observable interface</see></param>
 /// <param name="Complete">SubscriptionObserver 字典中的 complete 成员，WebIDL 类型为 VoidFunction。可省略。 <see href="https://wicg.github.io/observable/#dom-subscriptionobserver-complete">Observable: 2.2 The Observable interface</see></param>
-[ECMAScript]
 [Description("@#SubscriptionObserver")]
 public record SubscriptionObserver(
     [property: Description("@#next")]ObservableSubscriptionCallback? Next = default,
@@ -12640,7 +11980,6 @@ public record RTCRtpEncodingParameters(
 /// <param name="FingerprintAlgorithm">RTCCertificateStats 字典中的 fingerprintAlgorithm 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtccertificatestats-fingerprintalgorithm">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCCertificateStats Members</see></param>
 /// <param name="Base64Certificate">RTCCertificateStats 字典中的 base64Certificate 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtccertificatestats-base64certificate">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCCertificateStats Members</see></param>
 /// <param name="IssuerCertificateId">RTCCertificateStats 字典中的 issuerCertificateId 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtccertificatestats-issuercertificateid">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCCertificateStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCCertificateStats")]
 public record RTCCertificateStats(
     [property: Description("@#fingerprint")]string? Fingerprint = default,
@@ -12661,7 +12000,6 @@ public record RTCCertificateStats(
 /// <param name="DistinctiveIdentifier">distinctiveIdentifier controls whether Distinctive Permanent Identifiers may be used. Specifically, Distinctive Permanent Identifiers may only be used when the value of the distinctiveIdentifier member of the MediaKeySystemAccess used to create the MediaKeys object is &quot;required&quot;. <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysystemconfiguration-distinctiveidentifier">Encrypted Media Extensions: 3.3 MediaKeySystemConfiguration dictionary</see></param>
 /// <param name="PersistentState">Let persistent state requirement be equal to the value of candidate configuration&apos;s persistentState member. <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysystemconfiguration-persistentstate">Encrypted Media Extensions: 3.3 MediaKeySystemConfiguration dictionary</see></param>
 /// <param name="SessionTypes">If the sessionTypes member is map/exist|present Infra in candidate configuration <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysystemconfiguration-sessiontypes">Encrypted Media Extensions: 3.3 MediaKeySystemConfiguration dictionary</see></param>
-[ECMAScript]
 [Description("@#MediaKeySystemConfiguration")]
 public record MediaKeySystemConfiguration(
     [property: Description("@#label")]string? Label = default,
@@ -12679,7 +12017,6 @@ public record MediaKeySystemConfiguration(
 /// <see href="https://w3c.github.io/webcrypto/#dfn-AesKeyAlgorithm">Web Cryptography API Level 2: 27.4 AesKeyAlgorithm dictionary</see>
 /// </remarks>
 /// <param name="Length">The length member represents the length, in bits, of the key. <see href="https://w3c.github.io/webcrypto/#dfn-AesKeyAlgorithm-length">Web Cryptography API Level 2: 27.4 AesKeyAlgorithm dictionary</see></param>
-[ECMAScript]
 [Description("@#AesKeyAlgorithm")]
 public record AesKeyAlgorithm(
     [property: Description("@#length")]ushort Length = default) : KeyAlgorithm;
@@ -12691,7 +12028,6 @@ public record AesKeyAlgorithm(
 /// <see href="https://w3c.github.io/webcrypto/#dfn-EcKeyAlgorithm">Web Cryptography API Level 2: 23.5 EcKeyAlgorithm dictionary</see>
 /// </remarks>
 /// <param name="NamedCurve">The namedCurve member represents the named curve that the key uses. <see href="https://w3c.github.io/webcrypto/#dfn-EcKeyAlgorithm-namedCurve">Web Cryptography API Level 2: 23.5 EcKeyAlgorithm dictionary</see></param>
-[ECMAScript]
 [Description("@#EcKeyAlgorithm")]
 public record EcKeyAlgorithm(
     [property: Description("@#namedCurve")]NamedCurve? NamedCurve = default) : KeyAlgorithm;
@@ -12704,7 +12040,6 @@ public record EcKeyAlgorithm(
 /// </remarks>
 /// <param name="Hash">The hash member represents the inner hash function to use. <see href="https://w3c.github.io/webcrypto/#dfn-HmacKeyAlgorithm-hash">Web Cryptography API Level 2: 31.4 HmacKeyAlgorithm dictionary</see></param>
 /// <param name="Length">The length member represent the length (in bits) of the key. <see href="https://w3c.github.io/webcrypto/#dfn-HmacKeyAlgorithm-length">Web Cryptography API Level 2: 31.4 HmacKeyAlgorithm dictionary</see></param>
-[ECMAScript]
 [Description("@#HmacKeyAlgorithm")]
 public record HmacKeyAlgorithm(
     [property: Description("@#hash")]KeyAlgorithm? Hash = default,
@@ -12717,7 +12052,6 @@ public record HmacKeyAlgorithm(
 /// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyAlgorithm">Modern Algorithms in the Web Cryptography API: 16.5 KmacKeyAlgorithm dictionary</see>
 /// </remarks>
 /// <param name="Length">The length member represents the length (in bits) of the key. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-KmacKeyAlgorithm-length">Modern Algorithms in the Web Cryptography API: 16.5 KmacKeyAlgorithm dictionary</see></param>
-[ECMAScript]
 [Description("@#KmacKeyAlgorithm")]
 public record KmacKeyAlgorithm(
     [property: Description("@#length")]uint Length = default) : KeyAlgorithm;
@@ -12729,7 +12063,6 @@ public record KmacKeyAlgorithm(
 /// <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyAlgorithm">Web Cryptography API Level 2: 20.7 RsaHashedKeyAlgorithm dictionary</see>
 /// </remarks>
 /// <param name="Hash">RsaHashedKeyAlgorithm 字典中的 hash 成员，WebIDL 类型为 KeyAlgorithm。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dfn-RsaHashedKeyAlgorithm-hash">Web Cryptography API Level 2: 20.7 RsaHashedKeyAlgorithm dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaHashedKeyAlgorithm")]
 public record RsaHashedKeyAlgorithm(
     [property: Description("@#hash")]KeyAlgorithm? Hash = default) : RsaKeyAlgorithm;
@@ -12741,7 +12074,6 @@ public record RsaHashedKeyAlgorithm(
 /// <see href="https://w3c.github.io/performance-timeline/#dictdef-performanceobservercallbackoptions">Performance Timeline: 4.1 PerformanceObserverCallbackOptions dictionary</see>
 /// </remarks>
 /// <param name="DroppedEntriesCount">Let callbackOptions be a PerformanceObserverCallbackOptions with its droppedEntriesCount set to droppedEntriesCount if droppedEntriesCount is not null, otherwise unset. <see href="https://w3c.github.io/performance-timeline/#dom-performanceobservercallbackoptions-droppedentriescount">Performance Timeline: 4.1 PerformanceObserverCallbackOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#PerformanceObserverCallbackOptions")]
 public record PerformanceObserverCallbackOptions(
     [property: Description("@#droppedEntriesCount")]Number? DroppedEntriesCount = default);
@@ -12753,7 +12085,6 @@ public record PerformanceObserverCallbackOptions(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificateexpiration">WebRTC: Real-Time Communication in Browsers: 4.9.1 RTCCertificateExpiration Dictionary</see>
 /// </remarks>
 /// <param name="Expires">If certificateExpiration.expires is not undefined, set expires to certificateExpiration.expires. <see href="https://w3c.github.io/webrtc-pc/#dom-rtccertificateexpiration-expires">WebRTC: Real-Time Communication in Browsers: 4.9.1 RTCCertificateExpiration Dictionary</see></param>
-[ECMAScript]
 [Description("@#RTCCertificateExpiration")]
 public record RTCCertificateExpiration(
     [property: Description("@#expires")]Number? Expires = default);
@@ -12771,7 +12102,6 @@ public record RTCCertificateExpiration(
 /// <param name="InputReports">Set collection[&quot;inputReports&quot;] to an empty sequence of HIDReportInfo. <see href="https://wicg.github.io/webhid/#dom-hidcollectioninfo-inputreports">WebHID API: 10. HIDCollectionInfo dictionary</see></param>
 /// <param name="OutputReports">Set collection[&quot;outputReports&quot;] to an empty sequence of HIDReportInfo. <see href="https://wicg.github.io/webhid/#dom-hidcollectioninfo-outputreports">WebHID API: 10. HIDCollectionInfo dictionary</see></param>
 /// <param name="FeatureReports">collection[&quot;featureReports&quot;] if item has the Feature tag. <see href="https://wicg.github.io/webhid/#dom-hidcollectioninfo-featurereports">WebHID API: 10. HIDCollectionInfo dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDCollectionInfo")]
 public record HIDCollectionInfo(
     [property: Description("@#usagePage")]ushort UsagePage = default,
@@ -12790,7 +12120,6 @@ public record HIDCollectionInfo(
 /// </remarks>
 /// <param name="Usage">Let dictionary be a new StorageEstimate dictionary whose usage member is usage and quota member is quota. <see href="https://storage.spec.whatwg.org/#dom-storageestimate-usage">Storage Standard: 8 API</see></param>
 /// <param name="Quota">Let dictionary be a new StorageEstimate dictionary whose usage member is usage and quota member is quota. <see href="https://storage.spec.whatwg.org/#dom-storageestimate-quota">Storage Standard: 8 API</see></param>
-[ECMAScript]
 [Description("@#StorageEstimate")]
 public record StorageEstimate(
     [property: Description("@#usage")]Number? Usage = default,
@@ -12804,7 +12133,6 @@ public record StorageEstimate(
 /// </remarks>
 /// <param name="AddedRanges">Let eventInitDict be a new BufferedChangeEventInit dictionary initialized with added as its addedRanges and removed as its removedRanges <see href="https://w3c.github.io/media-source/#dom-bufferedchangeeventinit-addedranges">Media Source Extensions™: 8 BufferedChangeEvent interface</see></param>
 /// <param name="RemovedRanges">Let eventInitDict be a new BufferedChangeEventInit dictionary initialized with added as its addedRanges and removed as its removedRanges <see href="https://w3c.github.io/media-source/#dom-bufferedchangeeventinit-removedranges">Media Source Extensions™: 8 BufferedChangeEvent interface</see></param>
-[ECMAScript]
 [Description("@#BufferedChangeEventInit")]
 public record BufferedChangeEventInit(
     [property: Description("@#addedRanges")]TimeRanges? AddedRanges = default,
@@ -12820,7 +12148,6 @@ public record BufferedChangeEventInit(
 /// <param name="ResourceId">Set ProfilerFrame.resourceId to the result of running get an element ID on resourceString and ProfilerTrace.resources. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerframe-resourceid">JS Self-Profiling API: 7.3 The ProfilerFrame Dictionary</see></param>
 /// <param name="Line">Set ProfilerFrame.line of frame to the 1-based index of the line at which instance is defined in script. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerframe-line">JS Self-Profiling API: 7.3 The ProfilerFrame Dictionary</see></param>
 /// <param name="Column">Set ProfilerFrame.column of frame to the 1-based index of the column at which instance is defined in script. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerframe-column">JS Self-Profiling API: 7.3 The ProfilerFrame Dictionary</see></param>
-[ECMAScript]
 [Description("@#ProfilerFrame")]
 public record ProfilerFrame(
     [property: Description("@#name")]string? Name = default,
@@ -12837,7 +12164,6 @@ public record ProfilerFrame(
 /// <param name="UsbVendorId">SerialPortInfo 字典中的 usbVendorId 成员，WebIDL 类型为 unsigned short。可省略。 <see href="https://wicg.github.io/serial/#dom-serialportinfo-usbvendorid">Web Serial API: 4.3.1 SerialPortInfo dictionary</see></param>
 /// <param name="UsbProductId">SerialPortInfo 字典中的 usbProductId 成员，WebIDL 类型为 unsigned short。可省略。 <see href="https://wicg.github.io/serial/#dom-serialportinfo-usbproductid">Web Serial API: 4.3.1 SerialPortInfo dictionary</see></param>
 /// <param name="BluetoothServiceClassId">SerialPortInfo 字典中的 bluetoothServiceClassId 成员，WebIDL 类型为 BluetoothServiceUUID。可省略。 <see href="https://wicg.github.io/serial/#dom-serialportinfo-bluetoothserviceclassid">Web Serial API: 4.3.1 SerialPortInfo dictionary</see></param>
-[ECMAScript]
 [Description("@#SerialPortInfo")]
 public record SerialPortInfo(
     [property: Description("@#usbVendorId")]ushort UsbVendorId = default,
@@ -12854,7 +12180,6 @@ public record SerialPortInfo(
 /// <param name="SdpMid">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-sdpmid">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
 /// <param name="SdpMLineIndex">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-sdpmlineindex">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
 /// <param name="UsernameFragment">This interface describes an ICE candidate, described in RFC5245 Section 2. Other than candidate, sdpMid, sdpMLineIndex, usernameFragment, relayProtocol, and url, the remaining attributes are derived from parsing the candidate member in candidateInitDict, if it is well formed. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidateinit-usernamefragment">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceCandidateInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCIceCandidateInit")]
 public record RTCIceCandidateInit(
     [property: Description("@#candidate")]string? Candidate = default,
@@ -12871,7 +12196,6 @@ public record RTCIceCandidateInit(
 /// <param name="Endpoint">PushSubscriptionJSON 字典中的 endpoint 成员，WebIDL 类型为 USVString。可省略。 <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionjson-endpoint">Push API: 8 PushSubscription interface</see></param>
 /// <param name="ExpirationTime">PushSubscriptionJSON 字典中的 expirationTime 成员，WebIDL 类型为 EpochTimeStamp?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionjson-expirationtime">Push API: 8 PushSubscription interface</see></param>
 /// <param name="Keys">The keys record contains an entry for each of the supported PushEncryptionKeyName entries to the URL-safe base64 encoded representation RFC4648 of its value. <see href="https://w3c.github.io/push-api/#dom-pushsubscriptionjson-keys">Push API: 8 PushSubscription interface</see></param>
-[ECMAScript]
 [Description("@#PushSubscriptionJSON")]
 public record PushSubscriptionJSON(
     [property: Description("@#endpoint")]string? Endpoint = default,
@@ -12886,7 +12210,6 @@ public record PushSubscriptionJSON(
 /// </remarks>
 /// <param name="Type">If description.type is &quot;rollback&quot; and connection.SignalingState is either &quot;stable&quot;, &quot;have-local-pranswer&quot;, or &quot;have-remote-pranswer&quot;, then reject p with a newly exception/created InvalidStateError and abort these steps. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see></param>
 /// <param name="Sdp">Note that CurrentLocalDescription.sdp and PendingLocalDescription.sdp need not be string-wise identical to the sdp value passed to the corresponding setLocalDescription call (i.e. SDP may be parsed and reformatted, and ICE candidates may be added). <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioninit-sdp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCSessionDescriptionInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCSessionDescriptionInit")]
 public record RTCSessionDescriptionInit(
     [property: Description("@#type")]RTCSdpType? Type = default,
@@ -12899,7 +12222,6 @@ public record RTCSessionDescriptionInit(
 /// <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefmakereadonlyoptions">Web NFC: 9.9 The NDEFMakeReadOnlyOptions dictionary</see>
 /// </remarks>
 /// <param name="Signal">NDEFMakeReadOnlyOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal?。可省略。 <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefmakereadonlyoptions-signal">Web NFC: 9.9 The NDEFMakeReadOnlyOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#NDEFMakeReadOnlyOptions")]
 public record NDEFMakeReadOnlyOptions(
     [property: Description("@#signal")]AbortSignal? Signal = default);
@@ -12912,7 +12234,6 @@ public record NDEFMakeReadOnlyOptions(
 /// </remarks>
 /// <param name="Overwrite">NDEFWriteOptions 字典中的 overwrite 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefwriteoptions-overwrite">Web NFC: 9.8 The NDEFWriteOptions dictionary</see></param>
 /// <param name="Signal">NDEFWriteOptions 字典中的 signal 成员，WebIDL 类型为 AbortSignal?。可省略。 <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefwriteoptions-signal">Web NFC: 9.8 The NDEFWriteOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#NDEFWriteOptions")]
 public record NDEFWriteOptions(
     [property: Description("@#overwrite")]bool Overwrite = false,
@@ -12926,7 +12247,6 @@ public record NDEFWriteOptions(
 /// </remarks>
 /// <param name="Descriptor">Let rootDesc be parametersDict.descriptor. <see href="https://w3c.github.io/permissions/#dom-permissionsetparameters-descriptor">Permissions: B Automated testing</see></param>
 /// <param name="State">If parametersDict.state is an inappropriate permission state for any implementation-defined reason, return an invalid argument error. <see href="https://w3c.github.io/permissions/#dom-permissionsetparameters-state">Permissions: B Automated testing</see></param>
-[ECMAScript]
 [Description("@#PermissionSetParameters")]
 public record PermissionSetParameters(
     [property: Description("@#descriptor")]object? Descriptor = default,
@@ -12940,7 +12260,6 @@ public record PermissionSetParameters(
 /// </remarks>
 /// <param name="ParentId">Let profilerStack be a new ProfilerStack with ProfilerStack.frameId equal to frameId, and ProfilerStack.parentId equal to parentId. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerstack-parentid">JS Self-Profiling API: 7.2 The ProfilerStack Dictionary</see></param>
 /// <param name="FrameId">Let profilerStack be a new ProfilerStack with ProfilerStack.frameId equal to frameId, and ProfilerStack.parentId equal to parentId. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerstack-frameid">JS Self-Profiling API: 7.2 The ProfilerStack Dictionary</see></param>
-[ECMAScript]
 [Description("@#ProfilerStack")]
 public record ProfilerStack(
     [property: Description("@#parentId")]Number? ParentId = default,
@@ -12954,7 +12273,6 @@ public record ProfilerStack(
 /// </remarks>
 /// <param name="ReportId">Let reportId:octet be globalState[&quot;reportId&quot;]. <see href="https://wicg.github.io/webhid/#dom-hidreportinfo-reportid">WebHID API: 11. HIDReportInfo dictionary</see></param>
 /// <param name="Items">Set report[&quot;items&quot;] to an empty sequence of HIDReportItem. <see href="https://wicg.github.io/webhid/#dom-hidreportinfo-items">WebHID API: 11. HIDReportInfo dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDReportInfo")]
 public record HIDReportInfo(
     [property: Description("@#reportId")]byte ReportId = default,
@@ -12994,7 +12312,6 @@ public record HIDReportInfo(
 /// <param name="PhysicalMinimum">Set initialGlobalState[&quot;physicalMinimum&quot;] to 0. <see href="https://wicg.github.io/webhid/#dom-hidreportitem-physicalminimum">WebHID API: 12. HIDReportItem dictionary</see></param>
 /// <param name="PhysicalMaximum">Set initialGlobalState[&quot;physicalMaximum&quot;] to 0. <see href="https://wicg.github.io/webhid/#dom-hidreportitem-physicalmaximum">WebHID API: 12. HIDReportItem dictionary</see></param>
 /// <param name="Strings">Let reportItem:HIDReportItem be the result of creating a HID report item with item, localState, globalState, usages, and strings. <see href="https://wicg.github.io/webhid/#dom-hidreportitem-strings">WebHID API: 12. HIDReportItem dictionary</see></param>
-[ECMAScript]
 [Description("@#HIDReportItem")]
 public record HIDReportItem(
     [property: Description("@#isAbsolute")]bool IsAbsolute = default,
@@ -13034,7 +12351,6 @@ public record HIDReportItem(
 /// </remarks>
 /// <param name="Timestamp">Set the ProfilerSample.timestamp property of sample to the current high resolution time relative to the profiling session&apos;s time origin. <see href="https://wicg.github.io/js-self-profiling/#dom-profilersample-timestamp">JS Self-Profiling API: 7.1 The ProfilerSample Dictionary</see></param>
 /// <param name="StackId">Set the ProfilerSample.stackId property of sample to the result of the get a stack ID algorithm on stack. <see href="https://wicg.github.io/js-self-profiling/#dom-profilersample-stackid">JS Self-Profiling API: 7.1 The ProfilerSample Dictionary</see></param>
-[ECMAScript]
 [Description("@#ProfilerSample")]
 public record ProfilerSample(
     [property: Description("@#timestamp")]double Timestamp = default,
@@ -13233,7 +12549,6 @@ public record MediaTrackSettings(
 /// </remarks>
 /// <param name="ColorSpace">Let settings be the ImageDataSettings object «[ &quot;colorSpace&quot; → this&apos;s colorSpace, &quot;pixelFormat&quot; → this&apos;s pixelFormat ]». <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatasettings-colorspace">HTML Standard: 8.11.1 The ImageData interface</see></param>
 /// <param name="PixelFormat">Let settings be the ImageDataSettings object «[ &quot;colorSpace&quot; → this&apos;s colorSpace, &quot;pixelFormat&quot; → this&apos;s pixelFormat ]». <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#dom-imagedatasettings-pixelformat">HTML Standard: 8.11.1 The ImageData interface</see></param>
-[ECMAScript]
 [Description("@#ImageDataSettings")]
 public record ImageDataSettings(
     [property: Description("@#colorSpace")]PredefinedColorSpace? ColorSpace = default,
@@ -13250,7 +12565,6 @@ public record ImageDataSettings(
 /// <param name="ColorSpace">The colorSpace member specifies the color space of the rendering context. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-colorspace">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
 /// <param name="ColorType">The colorType member specifies the color type of the rendering context. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-colortype">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
 /// <param name="WillReadFrequently">If the willReadFrequently member is true, then the context is marked for readback optimization. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-canvasrenderingcontext2dsettings-willreadfrequently">HTML Standard: 4.12.5.1.2 The canvas settings</see></param>
-[ECMAScript]
 [Description("@#CanvasRenderingContext2DSettings")]
 public record CanvasRenderingContext2DSettings(
     [property: Description("@#alpha")]bool Alpha = false,
@@ -13266,7 +12580,6 @@ public record CanvasRenderingContext2DSettings(
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imagebitmaprenderingcontextsettings">HTML Standard: 4.12.5.2.2 The ImageBitmapRenderingContext interface</see>
 /// </remarks>
 /// <param name="Alpha">If the alpha setting is provided and set to false, then the canvas is forced to always be opaque. <see href="https://html.spec.whatwg.org/multipage/canvas.html#dom-imagebitmaprenderingcontextsettings-alpha">HTML Standard: 4.12.5.2.2 The ImageBitmapRenderingContext interface</see></param>
-[ECMAScript]
 [Description("@#ImageBitmapRenderingContextSettings")]
 public record ImageBitmapRenderingContextSettings(
     [property: Description("@#alpha")]bool Alpha = false);
@@ -13279,7 +12592,6 @@ public record ImageBitmapRenderingContextSettings(
 /// </remarks>
 /// <param name="DataType">MLOperandDescriptor 字典中的 dataType 成员，WebIDL 类型为 MLOperandDataType。必须提供该成员。 <see href="https://webmachinelearning.github.io/webnn/#dom-mloperanddescriptor-datatype">Web Neural Network API: 8.5 MLOperandDescriptor dictionary</see></param>
 /// <param name="Shape">Make MLOperandDescriptor.shape a required property (#764) <see href="https://webmachinelearning.github.io/webnn/#dom-mloperanddescriptor-shape">Web Neural Network API: 8.5 MLOperandDescriptor dictionary</see></param>
-[ECMAScript]
 [Description("@#MLOperandDescriptor")]
 public record MLOperandDescriptor(
     [property: Description("@#dataType")]MLOperandDataType? DataType = default,
@@ -13296,7 +12608,6 @@ public record MLOperandDescriptor(
 /// <param name="TotalSamplesDuration">RTCAudioSourceStats 字典中的 totalSamplesDuration 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcaudiosourcestats-totalsamplesduration">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCAudioSourceStats Members</see></param>
 /// <param name="EchoReturnLoss">RTCAudioSourceStats 字典中的 echoReturnLoss 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcaudiosourcestats-echoreturnloss">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCAudioSourceStats Members</see></param>
 /// <param name="EchoReturnLossEnhancement">RTCAudioSourceStats 字典中的 echoReturnLossEnhancement 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcaudiosourcestats-echoreturnlossenhancement">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCAudioSourceStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCAudioSourceStats")]
 public record RTCAudioSourceStats(
     [property: Description("@#audioLevel")]double AudioLevel = default,
@@ -13315,7 +12626,6 @@ public record RTCAudioSourceStats(
 /// <param name="Height">MUST NOT map/exist for audio. Represents the height of the last encoded frame. The resolution of the encoded frame may be lower than the media source (see RTCVideoSourceStats.height). Before the first frame is encoded this member MUST NOT map/exist . <see href="https://w3c.github.io/webrtc-stats/#dom-rtcvideosourcestats-height">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCVideoSourceStats Members</see></param>
 /// <param name="Frames">MUST NOT map/exist for audio. The number of encoded frames during the last second. This may be lower than the media source frame rate (see RTCVideoSourceStats.framesPerSecond). <see href="https://w3c.github.io/webrtc-stats/#dom-rtcvideosourcestats-frames">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCVideoSourceStats Members</see></param>
 /// <param name="FramesPerSecond">MUST NOT map/exist for audio. The number of encoded frames during the last second. This may be lower than the media source frame rate (see RTCVideoSourceStats.framesPerSecond). <see href="https://w3c.github.io/webrtc-stats/#dom-rtcvideosourcestats-framespersecond">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCVideoSourceStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCVideoSourceStats")]
 public record RTCVideoSourceStats(
     [property: Description("@#width")]uint Width = default,
@@ -13512,7 +12822,6 @@ public record MediaTrackSupportedConstraints(
 /// <see href="https://w3c.github.io/mediacapture-automation/#dom-mockmicrophoneconfiguration">Media Capture Automation: 4.3 Mock Microphone</see>
 /// </remarks>
 /// <param name="DefaultSampleRate">MockMicrophoneConfiguration 字典中的 defaultSampleRate 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：44100。 <see href="https://w3c.github.io/mediacapture-automation/#dom-mockmicrophoneconfiguration-defaultsamplerate">Media Capture Automation: 4.3.1 Dictionary MockMicrophoneConfiguration Members</see></param>
-[ECMAScript]
 [Description("@#MockMicrophoneConfiguration")]
 public record MockMicrophoneConfiguration(
     [property: Description("@#defaultSampleRate")]uint DefaultSampleRate = 44100) : MockCaptureDeviceConfiguration;
@@ -13525,7 +12834,6 @@ public record MockMicrophoneConfiguration(
 /// </remarks>
 /// <param name="SerialNumber">NDEFReadingEventInit is used to initialize a new event with a serial number and the NDEFMessageInit data via the message member. If serialNumber is not present or is null, empty string will be used to init the event. <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefreadingeventinit-serialnumber">Web NFC: 9 The NDEFReader object</see></param>
 /// <param name="Message">NDEFReadingEventInit is used to initialize a new event with a serial number and the NDEFMessageInit data via the message member. If serialNumber is not present or is null, empty string will be used to init the event. <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefreadingeventinit-message">Web NFC: 9 The NDEFReader object</see></param>
-[ECMAScript]
 [Description("@#NDEFReadingEventInit")]
 public record NDEFReadingEventInit(
     [property: Description("@#serialNumber")]string? SerialNumber = "",
@@ -13538,7 +12846,6 @@ public record NDEFReadingEventInit(
 /// <see href="https://w3c.github.io/pointerlock/#dom-pointerlockoptions">Pointer Lock 2.0: 2.2 PointerLockOptions dictionary</see>
 /// </remarks>
 /// <param name="UnadjustedMovement">PointerLockOptions 字典中的 unadjustedMovement 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/pointerlock/#dom-pointerlockoptions-unadjustedmovement">Pointer Lock 2.0: 2.2 PointerLockOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#PointerLockOptions")]
 public record PointerLockOptions(
     [property: Description("@#unadjustedMovement")]bool UnadjustedMovement = false);
@@ -13551,7 +12858,6 @@ public record PointerLockOptions(
 /// </remarks>
 /// <param name="GatherPolicy">RTCIceGatherOptions 字典中的 gatherPolicy 成员，WebIDL 类型为 RTCIceTransportPolicy。可省略。WebIDL 默认值：all。 <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicegatheroptions-gatherpolicy">IceTransport Extensions for WebRTC: Dictionary RTCIceGatherOptions Members</see></param>
 /// <param name="IceServers">Let servers be the value of options.iceServers. <see href="https://w3c.github.io/webrtc-ice/#dom-rtcicegatheroptions-iceservers">IceTransport Extensions for WebRTC: Dictionary RTCIceGatherOptions Members</see></param>
-[ECMAScript]
 [Description("@#RTCIceGatherOptions")]
 public record RTCIceGatherOptions(
     [property: Description("@#gatherPolicy")]RTCIceTransportPolicy GatherPolicy = RTCIceTransportPolicy.All,
@@ -13570,7 +12876,6 @@ public record RTCIceGatherOptions(
 /// <param name="PacketsReportedAsLostButRecovered">RTCReceivedRtpStreamStats 字典中的 packetsReportedAsLostButRecovered 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-packetsreportedaslostbutrecovered">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCReceivedRtpStreamStats Members</see></param>
 /// <param name="PacketsLost">An implementation MUST support generating statistics for the type RTCInboundRtpStreamStats, with members packetsReceived, bytesReceived, packetsLost, and jitter. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-packetslost">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCReceivedRtpStreamStats Members</see></param>
 /// <param name="Jitter">An implementation MUST support generating statistics for the type RTCInboundRtpStreamStats, with members packetsReceived, bytesReceived, packetsLost, and jitter. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcreceivedrtpstreamstats-jitter">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCReceivedRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCReceivedRtpStreamStats")]
 public record RTCReceivedRtpStreamStats(
     [property: Description("@#packetsReceived")]Number? PacketsReceived = default,
@@ -13589,7 +12894,6 @@ public record RTCReceivedRtpStreamStats(
 /// </remarks>
 /// <param name="PacketsSent">It MUST support generating statistics for the type RTCOutboundRtpStreamStats, with members packetsSent, bytesSent. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcsentrtpstreamstats-packetssent">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCSentRtpStreamStats Members</see></param>
 /// <param name="BytesSent">It MUST support generating statistics for the type RTCOutboundRtpStreamStats, with members packetsSent, bytesSent. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcsentrtpstreamstats-bytessent">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCSentRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCSentRtpStreamStats")]
 public record RTCSentRtpStreamStats(
     [property: Description("@#packetsSent")]Number? PacketsSent = default,
@@ -13601,7 +12905,6 @@ public record RTCSentRtpStreamStats(
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsetparameteroptions">WebRTC: Real-Time Communication in Browsers: 5.2.12 RTCSetParameterOptions Dictionary</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#RTCSetParameterOptions")]
 public abstract record RTCSetParameterOptions();
 
@@ -13621,7 +12924,6 @@ public abstract record RTCSetParameterOptions();
 /// <param name="PeepholeWeight">MLLstmCellSupportLimits 字典中的 peepholeWeight 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmcellsupportlimits-peepholeweight">Web Neural Network API: 8.9.34 lstmCell</see></param>
 /// <param name="Output0">MLLstmCellSupportLimits 字典中的 output0 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmcellsupportlimits-output0">Web Neural Network API: 8.9.34 lstmCell</see></param>
 /// <param name="Output1">MLLstmCellSupportLimits 字典中的 output1 成员，WebIDL 类型为 MLTensorLimits。可省略。 <see href="https://webmachinelearning.github.io/webnn/#dom-mllstmcellsupportlimits-output1">Web Neural Network API: 8.9.34 lstmCell</see></param>
-[ECMAScript]
 [Description("@#MLLstmCellSupportLimits")]
 public record MLLstmCellSupportLimits(
     [property: Description("@#input")]MLTensorLimits? Input = default,
@@ -13643,7 +12945,6 @@ public record MLLstmCellSupportLimits(
 /// </remarks>
 /// <param name="Codecs">Return a new RTCRtpCapabilities dictionary, with its codecs member initialized to the RTCRtpSender/list of implemented send codecs for kind, and its headerExtensions member initialized to the list of implemented header extensions for sending with kind. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities-codecs">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCapabilities Members</see></param>
 /// <param name="HeaderExtensions">Return a new RTCRtpCapabilities dictionary, with its codecs member initialized to the RTCRtpSender/list of implemented send codecs for kind, and its headerExtensions member initialized to the list of implemented header extensions for sending with kind. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcapabilities-headerextensions">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCapabilities Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpCapabilities")]
 public record RTCRtpCapabilities(
     [property: Description("@#codecs")]RTCRtpCodec[]? Codecs = default,
@@ -13659,7 +12960,6 @@ public record RTCRtpCapabilities(
 /// <param name="Source">RTCRtpContributingSource 字典中的 source 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-source">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
 /// <param name="AudioLevel">RTCRtpContributingSource 字典中的 audioLevel 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-audiolevel">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
 /// <param name="RtpTimestamp">RTCRtpContributingSource 字典中的 rtpTimestamp 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource-rtptimestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpContributingSource Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpContributingSource")]
 public record RTCRtpContributingSource(
     [property: Description("@#timestamp")]double Timestamp = default,
@@ -13679,7 +12979,6 @@ public record RTCRtpContributingSource(
 /// <param name="FastSeek">The fastSeek dictionary member MAY be provided and will be true if the media session action|action is being called multiple times as part of a sequence and this is not the last call in that sequence. <see href="https://w3c.github.io/mediasession/#dom-mediasessionactiondetails-fastseek">Media Session: 10. The MediaSessionActionDetails dictionary</see></param>
 /// <param name="IsActivating">MediaSessionActionDetails 字典中的 isActivating 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/mediasession/#dom-mediasessionactiondetails-isactivating">Media Session: 10. The MediaSessionActionDetails dictionary</see></param>
 /// <param name="EnterPictureInPictureReason">MediaSessionActionDetails 字典中的 enterPictureInPictureReason 成员，WebIDL 类型为 MediaSessionEnterPictureInPictureReason。可省略。 <see href="https://w3c.github.io/mediasession/#dom-mediasessionactiondetails-enterpictureinpicturereason">Media Session: 10. The MediaSessionActionDetails dictionary</see></param>
-[ECMAScript]
 [Description("@#MediaSessionActionDetails")]
 public record MediaSessionActionDetails(
     [property: Description("@#action")]MediaSessionAction? Action = default,
@@ -13699,7 +12998,6 @@ public record MediaSessionActionDetails(
 /// <param name="SampleRate">AudioDecoderConfig 字典中的 sampleRate 成员，WebIDL 类型为 unsigned long。必须提供该成员。 <see href="https://w3c.github.io/webcodecs/#dom-audiodecoderconfig-samplerate">WebCodecs: 7.5 AudioDecoderConfig</see></param>
 /// <param name="NumberOfChannels">numberOfChannels <see href="https://w3c.github.io/webcodecs/#dom-audiodecoderconfig-numberofchannels">WebCodecs: 7.5 AudioDecoderConfig</see></param>
 /// <param name="Description">AudioDecoderConfig 字典中的 description 成员，WebIDL 类型为 AllowSharedBufferSource。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-audiodecoderconfig-description">WebCodecs: 7.5 AudioDecoderConfig</see></param>
-[ECMAScript]
 [Description("@#AudioDecoderConfig")]
 public record AudioDecoderConfig(
     [property: Description("@#codec")]string? Codec = default,
@@ -13718,7 +13016,6 @@ public record AudioDecoderConfig(
 /// <param name="Duration">Run these steps: 1. For each output in outputs: 1. Let chunkInit be an EncodedAudioChunkInit with the following keys: 1. Let data contain the encoded audio data from output. 2. Let type be the EncodedAudioChunkType of output. 3. Let timestamp be the timestamp from the AudioData associated with output. 4. Let duration be the duration from the AudioData associated with output. 2. Let chunk be a new EncodedAudioChunk constructed with chunkInit. 3. Let chunkMetadata be a new EncodedAudioChunkMetadata. 4. Let encoderConfig be the active encoder config. 5. Let outputConfig be a new AudioDecoderConfig that describes output.... <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunkinit-duration">WebCodecs: 8.1 EncodedAudioChunk Interface</see></param>
 /// <param name="Data">Run these steps: 1. For each output in outputs: 1. Let chunkInit be an EncodedAudioChunkInit with the following keys: 1. Let data contain the encoded audio data from output. 2. Let type be the EncodedAudioChunkType of output. 3. Let timestamp be the timestamp from the AudioData associated with output. 4. Let duration be the duration from the AudioData associated with output. 2. Let chunk be a new EncodedAudioChunk constructed with chunkInit. 3. Let chunkMetadata be a new EncodedAudioChunkMetadata. 4. Let encoderConfig be the active encoder config. 5. Let outputConfig be a new AudioDecoderConfig that describes output.... <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunkinit-data">WebCodecs: 8.1 EncodedAudioChunk Interface</see></param>
 /// <param name="Transfer">EncodedAudioChunkInit 字典中的 transfer 成员，WebIDL 类型为 sequence&lt;ArrayBuffer&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunkinit-transfer">WebCodecs: 8.1 EncodedAudioChunk Interface</see></param>
-[ECMAScript]
 [Description("@#EncodedAudioChunkInit")]
 public record EncodedAudioChunkInit(
     [property: Description("@#type")]EncodedAudioChunkType? Type = default,
@@ -13734,7 +13031,6 @@ public record EncodedAudioChunkInit(
 /// <see href="https://w3c.github.io/webcodecs/#dictdef-encodedaudiochunkmetadata">WebCodecs: 5.7 EncodedAudioChunkMetadata</see>
 /// </remarks>
 /// <param name="DecoderConfig">EncodedAudioChunkMetadata 字典中的 decoderConfig 成员，WebIDL 类型为 AudioDecoderConfig。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-encodedaudiochunkmetadata-decoderconfig">WebCodecs: 5.7 EncodedAudioChunkMetadata</see></param>
-[ECMAScript]
 [Description("@#EncodedAudioChunkMetadata")]
 public record EncodedAudioChunkMetadata(
     [property: Description("@#decoderConfig")]AudioDecoderConfig? DecoderConfig = default);
@@ -13750,7 +13046,6 @@ public record EncodedAudioChunkMetadata(
 /// <param name="Duration">Run these steps: 1. For each output in outputs: 1. Let chunkInit be an EncodedVideoChunkInit with the following keys: 1. Let data contain the encoded video data from output. 2. Let type be the EncodedVideoChunkType of output. 3. Let timestamp be the timestamp from the VideoFrame associated with output. 4. Let duration be the duration from the VideoFrame associated with output. 2. Let chunk be a new EncodedVideoChunk constructed with chunkInit. 3. Let chunkMetadata be a new EncodedVideoChunkMetadata. 4. Let encoderConfig be the active encoder config. 5. Let outputConfig be a VideoDecoderConfig that describes output.... <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunkinit-duration">WebCodecs: 8.2 EncodedVideoChunk Interface</see></param>
 /// <param name="Data">Run these steps: 1. For each output in outputs: 1. Let chunkInit be an EncodedVideoChunkInit with the following keys: 1. Let data contain the encoded video data from output. 2. Let type be the EncodedVideoChunkType of output. 3. Let timestamp be the timestamp from the VideoFrame associated with output. 4. Let duration be the duration from the VideoFrame associated with output. 2. Let chunk be a new EncodedVideoChunk constructed with chunkInit. 3. Let chunkMetadata be a new EncodedVideoChunkMetadata. 4. Let encoderConfig be the active encoder config. 5. Let outputConfig be a VideoDecoderConfig that describes output.... <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunkinit-data">WebCodecs: 8.2 EncodedVideoChunk Interface</see></param>
 /// <param name="Transfer">EncodedVideoChunkInit 字典中的 transfer 成员，WebIDL 类型为 sequence&lt;ArrayBuffer&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunkinit-transfer">WebCodecs: 8.2 EncodedVideoChunk Interface</see></param>
-[ECMAScript]
 [Description("@#EncodedVideoChunkInit")]
 public record EncodedVideoChunkInit(
     [property: Description("@#type")]EncodedVideoChunkType? Type = default,
@@ -13768,7 +13063,6 @@ public record EncodedVideoChunkInit(
 /// <param name="DecoderConfig">EncodedVideoChunkMetadata 字典中的 decoderConfig 成员，WebIDL 类型为 VideoDecoderConfig。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunkmetadata-decoderconfig">WebCodecs: 6.7 EncodedVideoChunkMetadata</see></param>
 /// <param name="Svc">EncodedVideoChunkMetadata 字典中的 svc 成员，WebIDL 类型为 SvcOutputMetadata。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunkmetadata-svc">WebCodecs: 6.7 EncodedVideoChunkMetadata</see></param>
 /// <param name="AlphaSideData">EncodedVideoChunkMetadata 字典中的 alphaSideData 成员，WebIDL 类型为 BufferSource。可省略。 <see href="https://w3c.github.io/webcodecs/#dom-encodedvideochunkmetadata-alphasidedata">WebCodecs: 6.7 EncodedVideoChunkMetadata</see></param>
-[ECMAScript]
 [Description("@#EncodedVideoChunkMetadata")]
 public record EncodedVideoChunkMetadata(
     [property: Description("@#decoderConfig")]VideoDecoderConfig? DecoderConfig = default,
@@ -13792,7 +13086,6 @@ public record EncodedVideoChunkMetadata(
 /// <param name="OptimizeForLatency">optimizeForLatency <see href="https://w3c.github.io/webcodecs/#dom-videodecoderconfig-optimizeforlatency">WebCodecs: 7.6 VideoDecoderConfig</see></param>
 /// <param name="Rotation">VideoDecoderConfig 字典中的 rotation 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/webcodecs/#dom-videodecoderconfig-rotation">WebCodecs: 7.6 VideoDecoderConfig</see></param>
 /// <param name="Flip">VideoDecoderConfig 字典中的 flip 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/webcodecs/#dom-videodecoderconfig-flip">WebCodecs: 7.6 VideoDecoderConfig</see></param>
-[ECMAScript]
 [Description("@#VideoDecoderConfig")]
 public record VideoDecoderConfig(
     [property: Description("@#codec")]string? Codec = default,
@@ -13815,7 +13108,6 @@ public record VideoDecoderConfig(
 /// </remarks>
 /// <param name="Name">SanitizerAttributeNamespace 字典中的 name 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerattributenamespace-name">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
 /// <param name="Namespace">SanitizerAttributeNamespace 字典中的 namespace 成员，WebIDL 类型为 DOMString?。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: SanitizerAttributeNamespace.namespace</see></param>
-[ECMAScript]
 [Description("@#SanitizerAttributeNamespace")]
 public record SanitizerAttributeNamespace(
     [property: Description("@#name")]string? Name = default,
@@ -13829,7 +13121,6 @@ public record SanitizerAttributeNamespace(
 /// </remarks>
 /// <param name="Name">Let currentElement be the item in configuration[&quot;elements&quot;] whose name member is element&apos;s name member and whose namespace member is element&apos;s namespace member. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespace-name">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
 /// <param name="Namespace">SanitizerElementNamespace 字典中的 namespace 成员，WebIDL 类型为 DOMString?。可省略。WebIDL 默认值：http://www.w3.org/1999/xhtml。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: SanitizerElementNamespace.namespace</see></param>
-[ECMAScript]
 [Description("@#SanitizerElementNamespace")]
 public record SanitizerElementNamespace(
     [property: Description("@#name")]string? Name = default,
@@ -13843,7 +13134,6 @@ public record SanitizerElementNamespace(
 /// </remarks>
 /// <param name="Attributes">If element[&quot;attributes&quot;] exists, then set element[&quot;attributes&quot;] to the result of sorting element[&quot;attributes&quot;], with compare sanitizer items. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespacewithattributes-attributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
 /// <param name="RemoveAttributes">If element[&quot;removeAttributes&quot;] exists, then set element[&quot;removeAttributes&quot;] to the result of sorting element[&quot;removeAttributes&quot;], with compare sanitizer items. <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerelementnamespacewithattributes-removeattributes">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
 [Description("@#SanitizerElementNamespaceWithAttributes")]
 public record SanitizerElementNamespaceWithAttributes(
     [property: Description("@#attributes")]SanitizerAttribute[]? Attributes = default,
@@ -13856,7 +13146,6 @@ public record SanitizerElementNamespaceWithAttributes(
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerprocessinginstruction">HTML Standard: 8.6.3 Sanitizer configuration</see>
 /// </remarks>
 /// <param name="Target">If pi is a DOMString, then return «[ &quot;target&quot; → pi ]». <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#dom-sanitizerprocessinginstruction-target">HTML Standard: 8.6.3 Sanitizer configuration</see></param>
-[ECMAScript]
 [Description("@#SanitizerProcessingInstruction")]
 public record SanitizerProcessingInstruction(
     [property: Description("@#target")]string? Target = default);
@@ -13871,7 +13160,6 @@ public record SanitizerProcessingInstruction(
 /// <param name="Operation">PrivateToken 字典中的 operation 成员，WebIDL 类型为 OperationType。必须提供该成员。 <see href="https://wicg.github.io/trust-token-api/#dom-privatetoken-operation">Private State Token API: Private State Token API</see></param>
 /// <param name="RefreshPolicy">PrivateToken 字典中的 refreshPolicy 成员，WebIDL 类型为 RefreshPolicy。可省略。WebIDL 默认值：none。 <see href="https://wicg.github.io/trust-token-api/#dom-privatetoken-refreshpolicy">Private State Token API: Private State Token API</see></param>
 /// <param name="Issuers">PrivateToken 字典中的 issuers 成员，WebIDL 类型为 sequence&lt;USVString&gt;。可省略。 <see href="https://wicg.github.io/trust-token-api/#dom-privatetoken-issuers">Private State Token API: Private State Token API</see></param>
-[ECMAScript]
 [Description("@#PrivateToken")]
 public record PrivateToken(
     [property: Description("@#version")]TokenVersion? Version = default,
@@ -13886,7 +13174,6 @@ public record PrivateToken(
 /// <see href="https://w3c.github.io/compute-pressure/#dom-pressureobserveroptions">Compute Pressure Level 1: 10.4 The PressureObserverOptions dictionary</see>
 /// </remarks>
 /// <param name="SampleInterval">Set this.SampleIntervalMap[source] to options:PressureObserverOptions&apos;s sampleInterval. <see href="https://w3c.github.io/compute-pressure/#dom-pressureobserveroptions-sampleinterval">Compute Pressure Level 1: 10.4.1 The sampleInterval member</see></param>
-[ECMAScript]
 [Description("@#PressureObserverOptions")]
 public record PressureObserverOptions(
     [property: Description("@#sampleInterval")]uint SampleInterval = 0);
@@ -13903,7 +13190,6 @@ public record PressureObserverOptions(
 /// <param name="SlotAssignment">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-slotassignment">DOM Standard: 4.9 Interface Element</see></param>
 /// <param name="Clonable">Run attach a shadow root with this, init[&quot;mode&quot;], init[&quot;delegatesFocus&quot;], init[&quot;serializable&quot;], init[&quot;slotAssignment&quot;], init[&quot;clonable&quot;], and registry. <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-clonable">DOM Standard: 4.9 Interface Element</see></param>
 /// <param name="CustomElementRegistry">ShadowRootInit somewhat unusually allows both undefined and null to be passed to its customElementRegistry member to allow web developers to pass a ShadowRoot node instead of a dictionary to attachShadow(). <see href="https://dom.spec.whatwg.org/#dom-shadowrootinit-customelementregistry">DOM Standard: 4.9 Interface Element</see></param>
-[ECMAScript]
 [Description("@#ShadowRootInit")]
 public record ShadowRootInit(
     [property: Description("@#mode")]ShadowRootMode? Mode = default,
@@ -13925,7 +13211,6 @@ public record ShadowRootInit(
 /// <param name="ClockRate">RTCCodecStats 字典中的 clockRate 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtccodecstats-clockrate">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCCodecStats Members</see></param>
 /// <param name="Channels">RTCCodecStats 字典中的 channels 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtccodecstats-channels">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCCodecStats Members</see></param>
 /// <param name="SdpFmtpLine">User agents are expected to coalesce information into a single &quot;codec&quot; entry per payload type per transport, unless sdpFmtpLine differs per direction, in which case two entries (one for encode and one for decode) are needed. <see href="https://w3c.github.io/webrtc-stats/#dom-rtccodecstats-sdpfmtpline">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCCodecStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCCodecStats")]
 public record RTCCodecStats(
     [property: Description("@#payloadType")]uint PayloadType = default,
@@ -13949,7 +13234,6 @@ public record RTCCodecStats(
 /// <param name="BytesSent">RTCDataChannelStats 字典中的 bytesSent 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcdatachannelstats-bytessent">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCDataChannelStats Members</see></param>
 /// <param name="MessagesReceived">RTCDataChannelStats 字典中的 messagesReceived 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcdatachannelstats-messagesreceived">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCDataChannelStats Members</see></param>
 /// <param name="BytesReceived">RTCDataChannelStats 字典中的 bytesReceived 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcdatachannelstats-bytesreceived">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCDataChannelStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCDataChannelStats")]
 public record RTCDataChannelStats(
     [property: Description("@#label")]string? Label = default,
@@ -13969,7 +13253,6 @@ public record RTCDataChannelStats(
 /// </remarks>
 /// <param name="DataChannelsOpened">The total number of open data channels at any time can be calculated as dataChannelsOpened - dataChannelsClosed. This number is always positive. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcpeerconnectionstats-datachannelsopened">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCPeerConnectionStats Members</see></param>
 /// <param name="DataChannelsClosed">The total number of open data channels at any time can be calculated as dataChannelsOpened - dataChannelsClosed. This number is always positive. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcpeerconnectionstats-datachannelsclosed">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCPeerConnectionStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCPeerConnectionStats")]
 public record RTCPeerConnectionStats(
     [property: Description("@#dataChannelsOpened")]uint DataChannelsOpened = default,
@@ -13984,7 +13267,6 @@ public record RTCPeerConnectionStats(
 /// <param name="Iv">AeadParams 字典中的 iv 成员，WebIDL 类型为 BufferSource。必须提供该成员。 <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-iv">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see></param>
 /// <param name="AdditionalData">The additionalData member represents the additional authentication data to include. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-additionalData">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see></param>
 /// <param name="TagLength">The tagLength member represents the desired length of the authentication tag. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-AeadParams-tagLength">Modern Algorithms in the Web Cryptography API: 10.3 AeadParams dictionary</see></param>
-[ECMAScript]
 [Description("@#AeadParams")]
 public record AeadParams(
     [property: Description("@#iv")]IBufferSource? Iv = default,
@@ -13998,7 +13280,6 @@ public record AeadParams(
 /// <see href="https://w3c.github.io/webcrypto/#dfn-Algorithm">Web Cryptography API Level 2: 11. Algorithm dictionary</see>
 /// </remarks>
 /// <param name="Name">Algorithm 字典中的 name 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dom-algorithm-name">Web Cryptography API Level 2: 11.1 Algorithm Dictionary Members</see></param>
-[ECMAScript]
 [Description("@#Algorithm")]
 public record Algorithm(
     [property: Description("@#name")]string? Name = default);
@@ -14012,7 +13293,6 @@ public record Algorithm(
 /// <param name="ExposeOrigin">If the captured application opted-in to exposing its origin (by setting exposeOrigin to true), then the user agent MUST set origin to the origin of the captured application. Otherwise, origin is not set. <see href="https://w3c.github.io/mediacapture-handle/identity/#dom-capturehandleconfig-exposeorigin">Capture Handle - Bootstrapping Collaboration when Screensharing: 4.1 CaptureHandleConfig</see></param>
 /// <param name="Handle">CaptureHandleConfig 字典中的 handle 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/mediacapture-handle/identity/#dom-capturehandleconfig-handle">Capture Handle - Bootstrapping Collaboration when Screensharing: 4.1 CaptureHandleConfig</see></param>
 /// <param name="PermittedOrigins">CaptureHandleConfig 字典中的 permittedOrigins 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/mediacapture-handle/identity/#dom-capturehandleconfig-permittedorigins">Capture Handle - Bootstrapping Collaboration when Screensharing: 4.1 CaptureHandleConfig</see></param>
-[ECMAScript]
 [Description("@#CaptureHandleConfig")]
 public record CaptureHandleConfig(
     [property: Description("@#exposeOrigin")]bool ExposeOrigin = false,
@@ -14026,7 +13306,6 @@ public record CaptureHandleConfig(
 /// <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-ContextParams">Modern Algorithms in the Web Cryptography API: 8.3 ContextParams dictionary</see>
 /// </remarks>
 /// <param name="Context">The context member represents the optional context data to associate with the message. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-ContextParams-context">Modern Algorithms in the Web Cryptography API: 8.3 ContextParams dictionary</see></param>
-[ECMAScript]
 [Description("@#ContextParams")]
 public record ContextParams(
     [property: Description("@#context")]IBufferSource? Context = default) : Algorithm;
@@ -14039,7 +13318,6 @@ public record ContextParams(
 /// </remarks>
 /// <param name="PublicKey">The CryptoKeyPair dictionary represents an asymmetric key pair that is comprised of both public (publicKey) and private (privateKey) keys. <see href="https://w3c.github.io/webcrypto/#dfn-CryptoKeyPair-publicKey">Web Cryptography API Level 2: 17. CryptoKeyPair dictionary</see></param>
 /// <param name="PrivateKey">The CryptoKeyPair dictionary represents an asymmetric key pair that is comprised of both public (publicKey) and private (privateKey) keys. <see href="https://w3c.github.io/webcrypto/#dfn-CryptoKeyPair-privateKey">Web Cryptography API Level 2: 17. CryptoKeyPair dictionary</see></param>
-[ECMAScript]
 [Description("@#CryptoKeyPair")]
 public record CryptoKeyPair(
     [property: Description("@#publicKey")]CryptoKey? PublicKey = default,
@@ -14053,7 +13331,6 @@ public record CryptoKeyPair(
 /// </remarks>
 /// <param name="Protocol">DigitalCredentialCreateRequest 字典中的 protocol 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialcreaterequest-protocol">Digital Credentials: 7.6.1 The protocol member</see></param>
 /// <param name="Data">Let data be request&apos;s data, if request is a DigitalCredentialGetRequest, or request&apos;s data, if request is a DigitalCredentialCreateRequest. <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialcreaterequest-data">Digital Credentials: 7.6.2 The data member</see></param>
-[ECMAScript]
 [Description("@#DigitalCredentialCreateRequest")]
 public record DigitalCredentialCreateRequest(
     [property: Description("@#protocol")]string? Protocol = default,
@@ -14067,7 +13344,6 @@ public record DigitalCredentialCreateRequest(
 /// </remarks>
 /// <param name="Protocol">DigitalCredentialGetRequest 字典中的 protocol 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialgetrequest-protocol">Digital Credentials: 7.3.1 The protocol member</see></param>
 /// <param name="Data">Let data be request&apos;s data, if request is a DigitalCredentialGetRequest, or request&apos;s data, if request is a DigitalCredentialCreateRequest. <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialgetrequest-data">Digital Credentials: 7.3.2 The data member</see></param>
-[ECMAScript]
 [Description("@#DigitalCredentialGetRequest")]
 public record DigitalCredentialGetRequest(
     [property: Description("@#protocol")]string? Protocol = default,
@@ -14088,7 +13364,6 @@ public record DigitalCredentialGetRequest(
 /// <param name="SurfaceSwitching">DisplayMediaStreamOptions 字典中的 surfaceSwitching 成员，WebIDL 类型为 SurfaceSwitchingPreferenceEnum。可省略。 <see href="https://w3c.github.io/mediacapture-screen-share/#dom-displaymediastreamoptions-surfaceswitching">Screen Capture: Dictionary DisplayMediaStreamOptions Members</see></param>
 /// <param name="MonitorTypeSurfaces">DisplayMediaStreamOptions 字典中的 monitorTypeSurfaces 成员，WebIDL 类型为 MonitorTypeSurfacesEnum。可省略。 <see href="https://w3c.github.io/mediacapture-screen-share/#dom-displaymediastreamoptions-monitortypesurfaces">Screen Capture: Dictionary DisplayMediaStreamOptions Members</see></param>
 /// <param name="AudioSelection">DisplayMediaStreamOptions 字典中的 audioSelection 成员，WebIDL 类型为 AudioSelectionPreferenceEnum。可省略。 <see href="https://w3c.github.io/mediacapture-screen-share/#dom-displaymediastreamoptions-audioselection">Screen Capture: Dictionary DisplayMediaStreamOptions Members</see></param>
-[ECMAScript]
 [Description("@#DisplayMediaStreamOptions")]
 public record DisplayMediaStreamOptions(
     [property: Description("@#video")]DisplayMediaStreamOptionsVideo? Video = default,
@@ -14109,7 +13384,6 @@ public record DisplayMediaStreamOptions(
 /// </remarks>
 /// <param name="SharedKey">The EncapsulatedBits dictionary represents encapsulated key bits comprised of a sharedKey and a ciphertext. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-EncapsulatedBits-sharedKey">Modern Algorithms in the Web Cryptography API: 4 Encapsulation dictionaries</see></param>
 /// <param name="Ciphertext">The EncapsulatedBits dictionary represents encapsulated key bits comprised of a sharedKey and a ciphertext. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-EncapsulatedBits-ciphertext">Modern Algorithms in the Web Cryptography API: 4 Encapsulation dictionaries</see></param>
-[ECMAScript]
 [Description("@#EncapsulatedBits")]
 public record EncapsulatedBits(
     [property: Description("@#sharedKey")]ArrayBuffer? SharedKey = default,
@@ -14123,7 +13397,6 @@ public record EncapsulatedBits(
 /// </remarks>
 /// <param name="SharedKey">The EncapsulatedKey dictionary represents an encapsulated key comprised of a sharedKey and a ciphertext. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-EncapsulatedKey-sharedKey">Modern Algorithms in the Web Cryptography API: 4 Encapsulation dictionaries</see></param>
 /// <param name="Ciphertext">The EncapsulatedKey dictionary represents an encapsulated key comprised of a sharedKey and a ciphertext. <see href="https://wicg.github.io/webcrypto-modern-algos/#dfn-EncapsulatedKey-ciphertext">Modern Algorithms in the Web Cryptography API: 4 Encapsulation dictionaries</see></param>
-[ECMAScript]
 [Description("@#EncapsulatedKey")]
 public record EncapsulatedKey(
     [property: Description("@#sharedKey")]CryptoKey? SharedKey = default,
@@ -14137,7 +13410,6 @@ public record EncapsulatedKey(
 /// </remarks>
 /// <param name="Idp">The IdP provides a promise that resolves to an RTCIdentityAssertionResult to successfully generate an identity assertion. Any other value, or a reject | rejected promise, is treated as an error. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityassertionresult-idp">Identity for WebRTC 1.0: Dictionary RTCIdentityAssertionResult Members</see></param>
 /// <param name="Assertion">The IdP provides a promise that resolves to an RTCIdentityAssertionResult to successfully generate an identity assertion. Any other value, or a reject | rejected promise, is treated as an error. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityassertionresult-assertion">Identity for WebRTC 1.0: Dictionary RTCIdentityAssertionResult Members</see></param>
-[ECMAScript]
 [Description("@#RTCIdentityAssertionResult")]
 public record RTCIdentityAssertionResult(
     [property: Description("@#idp")]RTCIdentityProviderDetails? Idp = default,
@@ -14151,7 +13423,6 @@ public record RTCIdentityAssertionResult(
 /// </remarks>
 /// <param name="Identity">The IdP returns a Promise that resolves to an RTCIdentityValidationResult to successfully validate an identity assertion and to provide the actual identity. Any other value, or a reject | rejected promise, is treated as an error. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityvalidationresult-identity">Identity for WebRTC 1.0: Dictionary RTCIdentityValidationResult Members</see></param>
 /// <param name="Contents">Once the assertion is successfully verified, the IdP proxy resolves the promise with an RTCIdentityValidationResult containing the validated identity and the original contents that are the payload of the assertion. <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityvalidationresult-contents">Identity for WebRTC 1.0: Dictionary RTCIdentityValidationResult Members</see></param>
-[ECMAScript]
 [Description("@#RTCIdentityValidationResult")]
 public record RTCIdentityValidationResult(
     [property: Description("@#identity")]string? Identity = default,
@@ -14164,7 +13435,6 @@ public record RTCIdentityValidationResult(
 /// <see href="https://wicg.github.io/is-input-pending/#dom-isinputpendingoptions">Early detection of input events: 1.3.1 IsInputPendingOptions</see>
 /// </remarks>
 /// <param name="IncludeContinuous">If the user agent considers task to be a continuous event task and includeContinuous is false in isInputPendingOptions, continue. <see href="https://wicg.github.io/is-input-pending/#dom-isinputpendingoptions-includecontinuous">Early detection of input events: 1.3.1 IsInputPendingOptions</see></param>
-[ECMAScript]
 [Description("@#IsInputPendingOptions")]
 public record IsInputPendingOptions(
     [property: Description("@#includeContinuous")]bool IncludeContinuous = false);
@@ -14253,7 +13523,6 @@ public record JsonWebKey(
 /// <see href="https://w3c.github.io/webcrypto/#dfn-KeyAlgorithm">Web Cryptography API Level 2: 12. KeyAlgorithm dictionary</see>
 /// </remarks>
 /// <param name="Name">KeyAlgorithm 字典中的 name 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webcrypto/#dom-keyalgorithm-name">Web Cryptography API Level 2: 12.2 KeyAlgorithm dictionary members</see></param>
-[ECMAScript]
 [Description("@#KeyAlgorithm")]
 public record KeyAlgorithm(
     [property: Description("@#name")]string? Name = default);
@@ -14267,7 +13536,6 @@ public record KeyAlgorithm(
 /// <param name="Src">Let request be a new request whose request/URL is the preferred artwork image&apos;s src, request/destination is &quot;image&quot;, request/mode is &quot;no-cors&quot;, request/credentials mode is &quot;include&quot;, and whose request/use-URL-credentials flag is set. <see href="https://w3c.github.io/mediasession/#dom-mediaimage-src">Media Session: 8 The MediaImage dictionary</see></param>
 /// <param name="Sizes">Set image&apos;s sizes to entry&apos;s sizes. <see href="https://w3c.github.io/mediasession/#dom-mediaimage-sizes">Media Session: 8 The MediaImage dictionary</see></param>
 /// <param name="Type">A MediaMetadata has an associated sequence of artwork images, which is a sequence of type MediaImage. A MediaMetadata also has has an associated converted artwork images which is initially undefined. <see href="https://w3c.github.io/mediasession/#dom-mediaimage-type">Media Session: 8 The MediaImage dictionary</see></param>
-[ECMAScript]
 [Description("@#MediaImage")]
 public record MediaImage(
     [property: Description("@#src")]string? Src = default,
@@ -14281,7 +13549,6 @@ public record MediaImage(
 /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeyspolicy">Encrypted Media Extensions: 5.1 Methods</see>
 /// </remarks>
 /// <param name="MinHdcpVersion">The HDCP Policy is represented by minHdcpVersion. If the system can enable the HDCP version specified or higher, then the policy will result in a MediaKeyStatus of &quot;usable&quot;. The ?EME-HDCP-VERSION-REGISTRY provides the mapping from minHdcpVersion values to HDCP specifications. <see href="https://w3c.github.io/encrypted-media/#dom-mediakeyspolicy-minhdcpversion">Encrypted Media Extensions: 5.1 Methods</see></param>
-[ECMAScript]
 [Description("@#MediaKeysPolicy")]
 public record MediaKeysPolicy(
     [property: Description("@#minHdcpVersion")]string? MinHdcpVersion = default);
@@ -14294,7 +13561,6 @@ public record MediaKeysPolicy(
 /// </remarks>
 /// <param name="DefaultFrameRate">MockCameraConfiguration 字典中的 defaultFrameRate 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：30。 <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcameraconfiguration-defaultframerate">Media Capture Automation: 4.2.1 Dictionary MockCameraConfiguration Members</see></param>
 /// <param name="FacingMode">MockCameraConfiguration 字典中的 facingMode 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：user。 <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcameraconfiguration-facingmode">Media Capture Automation: 4.2.1 Dictionary MockCameraConfiguration Members</see></param>
-[ECMAScript]
 [Description("@#MockCameraConfiguration")]
 public record MockCameraConfiguration(
     [property: Description("@#defaultFrameRate")]double DefaultFrameRate = 30d,
@@ -14309,7 +13575,6 @@ public record MockCameraConfiguration(
 /// <param name="Label">MockCaptureDeviceConfiguration 字典中的 label 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcapturedeviceconfiguration-label">Media Capture Automation: 4.1.1 Dictionary MockCaptureDeviceConfiguration Members</see></param>
 /// <param name="DeviceId">Let mockCamera be the mock camera in the list of mock cameras whose deviceId is equal to the url variable deviceId parameter, or undefined otherwise. <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcapturedeviceconfiguration-deviceid">Media Capture Automation: 4.1.1 Dictionary MockCaptureDeviceConfiguration Members</see></param>
 /// <param name="GroupId">MockCaptureDeviceConfiguration 字典中的 groupId 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcapturedeviceconfiguration-groupid">Media Capture Automation: 4.1.1 Dictionary MockCaptureDeviceConfiguration Members</see></param>
-[ECMAScript]
 [Description("@#MockCaptureDeviceConfiguration")]
 public record MockCaptureDeviceConfiguration(
     [property: Description("@#label")]string? Label = default,
@@ -14324,7 +13589,6 @@ public record MockCaptureDeviceConfiguration(
 /// </remarks>
 /// <param name="GetUserMedia">The MockCapturePromptResultConfiguration dictionary is used to get and set the getUserMedia prompt result and getDisplayMedia prompt result values. <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcapturepromptresultconfiguration-getusermedia">Media Capture Automation: 3.1.1 Set capture prompt result</see></param>
 /// <param name="GetDisplayMedia">The MockCapturePromptResultConfiguration dictionary is used to get and set the getUserMedia prompt result and getDisplayMedia prompt result values. <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcapturepromptresultconfiguration-getdisplaymedia">Media Capture Automation: 3.1.1 Set capture prompt result</see></param>
-[ECMAScript]
 [Description("@#MockCapturePromptResultConfiguration")]
 public record MockCapturePromptResultConfiguration(
     [property: Description("@#getUserMedia")]MockCapturePromptResult? GetUserMedia = default,
@@ -14337,7 +13601,6 @@ public record MockCapturePromptResultConfiguration(
 /// <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefmessageinit">Web NFC: 8.1 The NDEFMessage interface</see>
 /// </remarks>
 /// <param name="Records">NDEFMessageInit 字典中的 records 成员，WebIDL 类型为 sequence&lt;NDEFRecordInit&gt;。必须提供该成员。 <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefmessageinit-records">Web NFC: 8.1 The NDEFMessage interface</see></param>
-[ECMAScript]
 [Description("@#NDEFMessageInit")]
 public record NDEFMessageInit(
     [property: Description("@#records")]NDEFRecordInit[]? Records = default);
@@ -14354,7 +13617,6 @@ public record NDEFMessageInit(
 /// <param name="Encoding">&quot;text&quot;: Optional encoding/label|encoding label encoding and language tag lang. <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefrecordinit-encoding">Web NFC: 8.2 The NDEFRecord interface</see></param>
 /// <param name="Lang">&quot;text&quot;: Optional encoding/label|encoding label encoding and language tag lang. <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefrecordinit-lang">Web NFC: 8.2 The NDEFRecord interface</see></param>
 /// <param name="Data">The NDEFRecordInit dictionary is used to initialize an NDEF record with its record type recordType, and optional record identifier id and payload data data. <see href="https://w3c-cg.github.io/web-nfc/#dom-ndefrecordinit-data">Web NFC: 8.2 The NDEFRecord interface</see></param>
-[ECMAScript]
 [Description("@#NDEFRecordInit")]
 public record NDEFRecordInit(
     [property: Description("@#recordType")]string? RecordType = default,
@@ -14371,7 +13633,6 @@ public record NDEFRecordInit(
 /// <see href="https://w3c.github.io/payment-request/#dom-paymentcompletedetails">Payment Request API: 11. PaymentCompleteDetails dictionary</see>
 /// </remarks>
 /// <param name="Data">Let serializedData be the result of serialize a JavaScript value to a JSON string|serialize details.data into a JSON string. <see href="https://w3c.github.io/payment-request/#dom-paymentcompletedetails-data">Payment Request API: 11. PaymentCompleteDetails dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentCompleteDetails")]
 public record PaymentCompleteDetails(
     [property: Description("@#data")]object? Data = null);
@@ -14388,7 +13649,6 @@ public record PaymentCompleteDetails(
 /// <param name="RequestPayerPhone">request.options.requestPayerPhone is false, and errorFields.payer.phone is present. <see href="https://w3c.github.io/payment-request/#dom-paymentoptions-requestpayerphone">Payment Request API: 9 PaymentOptions dictionary</see></param>
 /// <param name="RequestShipping">The shippingAddress, shippingOption, and shippingType attributes are populated during processing if the requestShipping member is set. <see href="https://w3c.github.io/payment-request/#dom-paymentoptions-requestshipping">Payment Request API: 9 PaymentOptions dictionary</see></param>
 /// <param name="ShippingType">The shippingAddress, shippingOption, and shippingType attributes are populated during processing if the requestShipping member is set. <see href="https://w3c.github.io/payment-request/#dom-paymentoptions-shippingtype">Payment Request API: 9 PaymentOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentOptions")]
 public record PaymentOptions(
     [property: Description("@#requestPayerName")]bool RequestPayerName = false,
@@ -14410,7 +13670,6 @@ public record PaymentOptions(
 /// <param name="ShippingOptions">PaymentRequestDetailsUpdate 字典中的 shippingOptions 成员，WebIDL 类型为 sequence&lt;PaymentShippingOption&gt;。可省略。 <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentrequestdetailsupdate-shippingoptions">Web-based Payment Handler API: 6.2.4 shippingOptions member</see></param>
 /// <param name="PaymentMethodErrors">PaymentRequestDetailsUpdate 字典中的 paymentMethodErrors 成员，WebIDL 类型为 object。可省略。 <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentrequestdetailsupdate-paymentmethoderrors">Web-based Payment Handler API: 6.2.5 paymentMethodErrors member</see></param>
 /// <param name="ShippingAddressErrors">PaymentRequestDetailsUpdate 字典中的 shippingAddressErrors 成员，WebIDL 类型为 AddressErrors。可省略。 <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentrequestdetailsupdate-shippingaddresserrors">Web-based Payment Handler API: 6.2.6 shippingAddressErrors member</see></param>
-[ECMAScript]
 [Description("@#PaymentRequestDetailsUpdate")]
 public record PaymentRequestDetailsUpdate(
     [property: Description("@#error")]string? Error = default,
@@ -14430,7 +13689,6 @@ public record PaymentRequestDetailsUpdate(
 /// <param name="Label">PaymentShippingOption 字典中的 label 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/payment-request/#dom-paymentshippingoption-label">Payment Request API: 13. PaymentShippingOption dictionary</see></param>
 /// <param name="Amount">Check and canonicalize amount option.amount. If an exception is thrown, then abort the update with request and that exception. <see href="https://w3c.github.io/payment-request/#dom-paymentshippingoption-amount">Payment Request API: 13. PaymentShippingOption dictionary</see></param>
 /// <param name="Selected">If option.selected is true, then set selectedShippingOption to option.id. <see href="https://w3c.github.io/payment-request/#dom-paymentshippingoption-selected">Payment Request API: 13. PaymentShippingOption dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentShippingOption")]
 public record PaymentShippingOption(
     [property: Description("@#id")]string? Id = default,
@@ -14447,7 +13705,6 @@ public record PaymentShippingOption(
 /// <param name="Salt">The Pbkdf2Params dictionary has a salt member, a iterations member, and a hash member. <see href="https://w3c.github.io/webcrypto/#dfn-Pbkdf2Params-salt">Web Cryptography API Level 2: 34.3 Pbkdf2Params dictionary</see></param>
 /// <param name="Iterations">The Pbkdf2Params dictionary has a salt member, a iterations member, and a hash member. <see href="https://w3c.github.io/webcrypto/#dfn-Pbkdf2Params-iterations">Web Cryptography API Level 2: 34.3 Pbkdf2Params dictionary</see></param>
 /// <param name="Hash">The Pbkdf2Params dictionary has a salt member, a iterations member, and a hash member. <see href="https://w3c.github.io/webcrypto/#dfn-Pbkdf2Params-hash">Web Cryptography API Level 2: 34.3 Pbkdf2Params dictionary</see></param>
-[ECMAScript]
 [Description("@#Pbkdf2Params")]
 public record Pbkdf2Params(
     [property: Description("@#salt")]IBufferSource? Salt = default,
@@ -14519,7 +13776,6 @@ public record MouseEventInit(
 /// <param name="PersistentDeviceId">PointerEventInit 字典中的 persistentDeviceId 成员，WebIDL 类型为 long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-persistentdeviceid">Pointer Events: 3.1 PointerEvent interface</see></param>
 /// <param name="CoalescedEvents">PointerEventInit 字典中的 coalescedEvents 成员，WebIDL 类型为 sequence&lt;PointerEvent&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-coalescedevents">Pointer Events: 3.1 PointerEvent interface</see></param>
 /// <param name="PredictedEvents">PointerEventInit 字典中的 predictedEvents 成员，WebIDL 类型为 sequence&lt;PointerEvent&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://w3c.github.io/pointerevents/#dom-pointereventinit-predictedevents">Pointer Events: 3.1 PointerEvent interface</see></param>
-[ECMAScript]
 [Description("@#PointerEventInit")]
 public record PointerEventInit(
     [property: Description("@#pointerId")]int PointerId = 0,
@@ -14545,7 +13801,6 @@ public record PointerEventInit(
 /// <see href="https://wicg.github.io/manifest-incubations/#dom-promptresponseobject">Manifest Incubations: 16.1 BeforeInstallPromptEvent Interface</see>
 /// </remarks>
 /// <param name="UserChoice">The PromptResponseObject contains the result of calling prompt(). It contains one member, userChoice, which states the user&apos;s chosen outcome. <see href="https://wicg.github.io/manifest-incubations/#dom-promptresponseobject-userchoice">Manifest Incubations: 16.1 BeforeInstallPromptEvent Interface</see></param>
-[ECMAScript]
 [Description("@#PromptResponseObject")]
 public record PromptResponseObject(
     [property: Description("@#userChoice")]AppBannerPromptOutcome? UserChoice = default);
@@ -14556,7 +13811,6 @@ public record PromptResponseObject(
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcansweroptions">WebRTC: Real-Time Communication in Browsers: 4.2.6 Offer/Answer Options</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#RTCAnswerOptions")]
 public abstract record RTCAnswerOptions();
 
@@ -14572,7 +13826,6 @@ public abstract record RTCAnswerOptions();
 /// <param name="TotalSamplesDuration">RTCAudioPlayoutStats 字典中的 totalSamplesDuration 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcaudioplayoutstats-totalsamplesduration">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCAudioPlayoutStats Members</see></param>
 /// <param name="TotalPlayoutDelay">RTCAudioPlayoutStats 字典中的 totalPlayoutDelay 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcaudioplayoutstats-totalplayoutdelay">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCAudioPlayoutStats Members</see></param>
 /// <param name="TotalSamplesCount">RTCAudioPlayoutStats 字典中的 totalSamplesCount 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcaudioplayoutstats-totalsamplescount">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCAudioPlayoutStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCAudioPlayoutStats")]
 public record RTCAudioPlayoutStats(
     [property: Description("@#kind")]string? Kind = default,
@@ -14628,7 +13881,6 @@ public record RTCConfiguration(
 /// </remarks>
 /// <param name="Algorithm">The RTCDtlsFingerprint dictionary includes the hash function algorithm and certificate fingerprint as described in !RFC4572. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint-algorithm">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDtlsFingerprint Members</see></param>
 /// <param name="Value">RTCDtlsFingerprint 字典中的 value 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlsfingerprint-value">WebRTC: Real-Time Communication in Browsers: Dictionary RTCDtlsFingerprint Members</see></param>
-[ECMAScript]
 [Description("@#RTCDtlsFingerprint")]
 public record RTCDtlsFingerprint(
     [property: Description("@#algorithm")]string? Algorithm = default,
@@ -14643,7 +13895,6 @@ public record RTCDtlsFingerprint(
 /// <param name="Urls">Let urls be server.urls. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-urls">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
 /// <param name="Username">If this RTCIceServer object represents a TURN server, then this attribute specifies the username to use with that TURN server. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-username">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
 /// <param name="Credential">If this RTCIceServer object represents a TURN server, then this attribute specifies the credential to use with that TURN server. <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceserver-credential">WebRTC: Real-Time Communication in Browsers: Dictionary RTCIceServer Members</see></param>
-[ECMAScript]
 [Description("@#RTCIceServer")]
 public record RTCIceServer(
     [property: Description("@#urls")]RTCIceServerUrls? Urls = default,
@@ -14712,7 +13963,6 @@ public record RTCIceServer(
 /// <param name="TotalCorruptionProbability">RTCInboundRtpStreamStats 字典中的 totalCorruptionProbability 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totalcorruptionprobability">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCInboundRtpStreamStats Members</see></param>
 /// <param name="TotalSquaredCorruptionProbability">RTCInboundRtpStreamStats 字典中的 totalSquaredCorruptionProbability 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totalsquaredcorruptionprobability">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCInboundRtpStreamStats Members</see></param>
 /// <param name="CorruptionMeasurements">RTCInboundRtpStreamStats 字典中的 corruptionMeasurements 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-corruptionmeasurements">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCInboundRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCInboundRtpStreamStats")]
 public record RTCInboundRtpStreamStats(
     [property: Description("@#trackIdentifier")]string? TrackIdentifier = default,
@@ -14780,7 +14030,6 @@ public record RTCInboundRtpStreamStats(
 /// </remarks>
 /// <param name="TrackIdentifier">RTCMediaSourceStats 字典中的 trackIdentifier 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcmediasourcestats-trackidentifier">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCMediaSourceStats Members</see></param>
 /// <param name="Kind">Media source objects are of either subdictionary RTCAudioSourceStats or RTCVideoSourceStats. The type is the same (&quot;media-source&quot;) but kind is different (&quot;audio&quot; or &quot;video&quot;) depending on the kind of track. <see href="https://w3c.github.io/webrtc-stats/#dom-rtcmediasourcestats-kind">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCMediaSourceStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCMediaSourceStats")]
 public record RTCMediaSourceStats(
     [property: Description("@#trackIdentifier")]string? TrackIdentifier = default,
@@ -14826,7 +14075,6 @@ public record RTCMediaSourceStats(
 /// <param name="Active">RTCOutboundRtpStreamStats 字典中的 active 成员，WebIDL 类型为 boolean。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-active">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCOutboundRtpStreamStats Members</see></param>
 /// <param name="ScalabilityMode">RTCOutboundRtpStreamStats 字典中的 scalabilityMode 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-scalabilitymode">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCOutboundRtpStreamStats Members</see></param>
 /// <param name="PacketsSentWithEct1">RTCOutboundRtpStreamStats 字典中的 packetsSentWithEct1 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-packetssentwithect1">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCOutboundRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCOutboundRtpStreamStats")]
 public record RTCOutboundRtpStreamStats(
     [property: Description("@#mid")]string? Mid = default,
@@ -14876,7 +14124,6 @@ public record RTCOutboundRtpStreamStats(
 /// <param name="FractionLost">RTCRemoteInboundRtpStreamStats 字典中的 fractionLost 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcremoteinboundrtpstreamstats-fractionlost">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRemoteInboundRtpStreamStats Members</see></param>
 /// <param name="RoundTripTimeMeasurements">RTCRemoteInboundRtpStreamStats 字典中的 roundTripTimeMeasurements 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcremoteinboundrtpstreamstats-roundtriptimemeasurements">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRemoteInboundRtpStreamStats Members</see></param>
 /// <param name="PacketsWithBleachedEct1Marking">RTCRemoteInboundRtpStreamStats 字典中的 packetsWithBleachedEct1Marking 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcremoteinboundrtpstreamstats-packetswithbleachedect1marking">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRemoteInboundRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCRemoteInboundRtpStreamStats")]
 public record RTCRemoteInboundRtpStreamStats(
     [property: Description("@#localId")]string? LocalId = default,
@@ -14898,7 +14145,6 @@ public record RTCRemoteInboundRtpStreamStats(
 /// <param name="RoundTripTime">RTCRemoteOutboundRtpStreamStats 字典中的 roundTripTime 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcremoteoutboundrtpstreamstats-roundtriptime">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRemoteOutboundRtpStreamStats Members</see></param>
 /// <param name="TotalRoundTripTime">RTCRemoteOutboundRtpStreamStats 字典中的 totalRoundTripTime 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcremoteoutboundrtpstreamstats-totalroundtriptime">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRemoteOutboundRtpStreamStats Members</see></param>
 /// <param name="RoundTripTimeMeasurements">RTCRemoteOutboundRtpStreamStats 字典中的 roundTripTimeMeasurements 成员，WebIDL 类型为 unsigned long long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcremoteoutboundrtpstreamstats-roundtriptimemeasurements">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCRemoteOutboundRtpStreamStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCRemoteOutboundRtpStreamStats")]
 public record RTCRemoteOutboundRtpStreamStats(
     [property: Description("@#localId")]string? LocalId = default,
@@ -14918,7 +14164,6 @@ public record RTCRemoteOutboundRtpStreamStats(
 /// <param name="ClockRate">If first.clockRate is different from second.clockRate, return false. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-clockrate">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
 /// <param name="Channels">If either (but not both) of first.channels and second.channels are map/exist | missing , or if they both map/exist and first.channels is different from second.channels, return false. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-channels">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
 /// <param name="SdpFmtpLine">A sequence containing the media codecs that an RTCRtpSender will choose from, as well as entries for RTX, RED and FEC mechanisms. Corresponding to each media codec where retransmission via RTX is enabled, there will be an entry in codecs with a mimeType attribute indicating retransmission via audio/rtx or video/rtx, and an sdpFmtpLine attribute (providing the &quot;apt&quot; and &quot;rtx-time&quot; parameters). Read-only parameter. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodec-sdpfmtpline">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodec Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpCodec")]
 public record RTCRtpCodec(
     [property: Description("@#mimeType")]string? MimeType = default,
@@ -14933,7 +14178,6 @@ public record RTCRtpCodec(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodecparameters">WebRTC: Real-Time Communication in Browsers: 5.2.9 RTCRtpCodecParameters Dictionary</see>
 /// </remarks>
 /// <param name="PayloadType">RTCRtpCodecParameters 字典中的 payloadType 成员，WebIDL 类型为 octet。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpcodecparameters-payloadtype">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpCodecParameters Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpCodecParameters")]
 public record RTCRtpCodecParameters(
     [property: Description("@#payloadType")]byte PayloadType = default) : RTCRtpCodec;
@@ -14944,7 +14188,6 @@ public record RTCRtpCodecParameters(
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpsynchronizationsource">WebRTC: Real-Time Communication in Browsers: 5.3 RTCRtpReceiver Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#RTCRtpSynchronizationSource")]
 public abstract record RTCRtpSynchronizationSource();
 
@@ -15003,7 +14246,6 @@ public record WebGLContextAttributes(
 /// </remarks>
 /// <param name="SampleInterval">If options&apos; sampleInterval is less than 0, throw a RangeError. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerinitoptions-sampleinterval">JS Self-Profiling API: 8 The ProfilerInitOptions dictionary</see></param>
 /// <param name="MaxBufferSize">The associated sample buffer size limit is set to maxBufferSize. <see href="https://wicg.github.io/js-self-profiling/#dom-profilerinitoptions-maxbuffersize">JS Self-Profiling API: 8 The ProfilerInitOptions dictionary</see></param>
-[ECMAScript]
 [Description("@#ProfilerInitOptions")]
 public record ProfilerInitOptions(
     [property: Description("@#sampleInterval")]double SampleInterval = default,
@@ -15017,7 +14259,6 @@ public record ProfilerInitOptions(
 /// </remarks>
 /// <param name="Robustness">The robustness member represents a robustness level as described in !ENCRYPTED-MEDIA. <see href="https://w3c.github.io/media-capabilities/#dom-keysystemtrackconfiguration-robustness">Media Capabilities: 2.1.10 KeySystemTrackConfiguration</see></param>
 /// <param name="EncryptionScheme">The encryptionScheme member represents an encryptionScheme as described in !ENCRYPTED-MEDIA-DRAFT. <see href="https://w3c.github.io/media-capabilities/#dom-keysystemtrackconfiguration-encryptionscheme">Media Capabilities: 2.1.10 KeySystemTrackConfiguration</see></param>
-[ECMAScript]
 [Description("@#KeySystemTrackConfiguration")]
 public record KeySystemTrackConfiguration(
     [property: Description("@#robustness")]string? Robustness = default,
@@ -15032,7 +14273,6 @@ public record KeySystemTrackConfiguration(
 /// <param name="Langs">SpeechRecognitionOptions 字典中的 langs 成员，WebIDL 类型为 sequence&lt;DOMString&gt;。必须提供该成员。 <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionoptions-langs">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
 /// <param name="ProcessLocally">processLocally of options is not used in this algorithm. <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionoptions-processlocally">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
 /// <param name="Quality">The available method returns a Promise that resolves to a AvailabilityStatus indicating the recognition availability matching the SpeechRecognitionOptions argument, including the requested quality level. Access to this method is gated behind the policy-controlled feature &quot;on-device-speech-recognition&quot;, which has a policy-controlled feature/default allowlist of default allowlist/&apos;self&apos;. <see href="https://webaudio.github.io/web-speech-api/#dom-speechrecognitionoptions-quality">Web Speech API: 4.1 The SpeechRecognition Interface</see></param>
-[ECMAScript]
 [Description("@#SpeechRecognitionOptions")]
 public record SpeechRecognitionOptions(
     [property: Description("@#langs")]string[]? Langs = default,
@@ -15085,7 +14325,6 @@ public record MediaStreamConstraints(
 /// </remarks>
 /// <param name="Detail">The detail attribute must return the value it is set to (it&apos;s copied from the PerformanceMarkOptions dictionary). <see href="https://w3c.github.io/user-timing/#dom-performancemarkoptions-detail">User Timing: 2.1 Extensions to the Performance interface</see></param>
 /// <param name="StartTime">PerformanceMarkOptions 字典中的 startTime 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/user-timing/#dom-performancemarkoptions-starttime">User Timing: 2.1 Extensions to the Performance interface</see></param>
-[ECMAScript]
 [Description("@#PerformanceMarkOptions")]
 public record PerformanceMarkOptions(
     [property: Description("@#detail")]object? Detail = default,
@@ -15101,7 +14340,6 @@ public record PerformanceMarkOptions(
 /// <param name="Start">PerformanceMeasureOptions 字典中的 start 成员，WebIDL 类型为 DOMString, DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/user-timing/#dom-performancemeasureoptions-start">User Timing: 2.1 Extensions to the Performance interface</see></param>
 /// <param name="Duration">PerformanceMeasureOptions 字典中的 duration 成员，WebIDL 类型为 DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/user-timing/#dom-performancemeasureoptions-duration">User Timing: 2.1 Extensions to the Performance interface</see></param>
 /// <param name="End">PerformanceMeasureOptions 字典中的 end 成员，WebIDL 类型为 DOMString, DOMHighResTimeStamp。可省略。 <see href="https://w3c.github.io/user-timing/#dom-performancemeasureoptions-end">User Timing: 2.1 Extensions to the Performance interface</see></param>
-[ECMAScript]
 [Description("@#PerformanceMeasureOptions")]
 public record PerformanceMeasureOptions(
     [property: Description("@#detail")]object? Detail = default,
@@ -15117,7 +14355,6 @@ public record PerformanceMeasureOptions(
 /// </remarks>
 /// <param name="Id">PaymentDetailsInit 字典中的 id 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsinit-id">Payment Request API: 6.2 PaymentDetailsInit dictionary</see></param>
 /// <param name="Total">The details: The details of the transaction, as a PaymentDetailsInit dictionary. This includes total cost, and optionally a list of goods or services being purchased, for physical goods, and shipping options. Additionally, it can optionally include &quot;modifiers&quot; to how payments are made. For example, &quot;if you pay with a card belonging to network X, it incurs a US$3.00 processing fee&quot;. <see href="https://w3c.github.io/payment-request/#dom-paymentdetailsinit-total">Payment Request API: 6.2 PaymentDetailsInit dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentDetailsInit")]
 public record PaymentDetailsInit(
     [property: Description("@#id")]string? Id = default,
@@ -15166,7 +14403,6 @@ public record RTCErrorInit(
 /// </remarks>
 /// <param name="Type">MediaDecodingConfiguration 字典中的 type 成员，WebIDL 类型为 MediaDecodingType。必须提供该成员。 <see href="https://w3c.github.io/media-capabilities/#dom-mediadecodingconfiguration-type">Media Capabilities: 2.1.1 MediaConfiguration</see></param>
 /// <param name="KeySystemConfiguration">For a MediaDecodingConfiguration to describe !ENCRYPTED-MEDIA, a keySystemConfiguration MUST map/exist. <see href="https://w3c.github.io/media-capabilities/#dom-mediadecodingconfiguration-keysystemconfiguration">Media Capabilities: 2.1.1 MediaConfiguration</see></param>
-[ECMAScript]
 [Description("@#MediaDecodingConfiguration")]
 public record MediaDecodingConfiguration(
     [property: Description("@#type")]MediaDecodingType? Type = default,
@@ -15179,7 +14415,6 @@ public record MediaDecodingConfiguration(
 /// <see href="https://w3c.github.io/media-capabilities/#dictdef-mediaencodingconfiguration">Media Capabilities: 2.1.1 MediaConfiguration</see>
 /// </remarks>
 /// <param name="Type">MediaEncodingConfiguration 字典中的 type 成员，WebIDL 类型为 MediaEncodingType。必须提供该成员。 <see href="https://w3c.github.io/media-capabilities/#dom-mediaencodingconfiguration-type">Media Capabilities: 2.1.1 MediaConfiguration</see></param>
-[ECMAScript]
 [Description("@#MediaEncodingConfiguration")]
 public record MediaEncodingConfiguration(
     [property: Description("@#type")]MediaEncodingType? Type = default) : MediaConfiguration;
@@ -15191,7 +14426,6 @@ public record MediaEncodingConfiguration(
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensioncapability">WebRTC: Real-Time Communication in Browsers: 5.2.11 RTCRtpHeaderExtensionCapability Dictionary</see>
 /// </remarks>
 /// <param name="Uri">RTCRtpHeaderExtensionCapability 字典中的 uri 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtpheaderextensioncapability-uri">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtpHeaderExtensionCapability Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtpHeaderExtensionCapability")]
 public record RTCRtpHeaderExtensionCapability(
     [property: Description("@#uri")]string? Uri = default);
@@ -15205,7 +14439,6 @@ public record RTCRtpHeaderExtensionCapability(
 /// <param name="R">RsaOtherPrimesInfo 字典中的 r 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webcrypto/#dom-rsaotherprimesinfo-r">Web Cryptography API Level 2: 15. JsonWebKey dictionary</see></param>
 /// <param name="D">RsaOtherPrimesInfo 字典中的 d 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webcrypto/#dom-rsaotherprimesinfo-d">Web Cryptography API Level 2: 15. JsonWebKey dictionary</see></param>
 /// <param name="T">RsaOtherPrimesInfo 字典中的 t 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webcrypto/#dom-rsaotherprimesinfo-t">Web Cryptography API Level 2: 15. JsonWebKey dictionary</see></param>
-[ECMAScript]
 [Description("@#RsaOtherPrimesInfo")]
 public record RsaOtherPrimesInfo(
     [property: Description("@#r")]string? R = default,
@@ -15219,7 +14452,6 @@ public record RsaOtherPrimesInfo(
 /// <see href="https://w3c.github.io/webcrypto/#dfn-EcKeyGenParams">Web Cryptography API Level 2: 23.4 EcKeyGenParams dictionary</see>
 /// </remarks>
 /// <param name="NamedCurve">The namedCurve member of the EcKeyGenParams dictionary represents a named curve. <see href="https://w3c.github.io/webcrypto/#dfn-EcKeyGenParams-namedCurve">Web Cryptography API Level 2: 23.4 EcKeyGenParams dictionary</see></param>
-[ECMAScript]
 [Description("@#EcKeyGenParams")]
 public record EcKeyGenParams(
     [property: Description("@#namedCurve")]NamedCurve? NamedCurve = default) : Algorithm;
@@ -15233,7 +14465,6 @@ public record EcKeyGenParams(
 /// <param name="Duration">If state&apos;s duration is not present, throw a TypeError. <see href="https://w3c.github.io/mediasession/#dom-mediapositionstate-duration">Media Session: 9 The MediaPositionState dictionary</see></param>
 /// <param name="PlaybackRate">If state&apos;s playbackRate is not present, set it to 1.0. <see href="https://w3c.github.io/mediasession/#dom-mediapositionstate-playbackrate">Media Session: 9 The MediaPositionState dictionary</see></param>
 /// <param name="Position">The position state is represented by a MediaPositionState which MUST always be stored with the last position updated time. This is the time the position state was last updated in seconds. <see href="https://w3c.github.io/mediasession/#dom-mediapositionstate-position">Media Session: 9 The MediaPositionState dictionary</see></param>
-[ECMAScript]
 [Description("@#MediaPositionState")]
 public record MediaPositionState(
     [property: Description("@#duration")]double Duration = default,
@@ -15252,7 +14483,6 @@ public record MediaPositionState(
 /// <param name="Cancel">Transformer 字典中的 cancel 成员，WebIDL 类型为 TransformerCancelCallback。可省略。 <see href="https://streams.spec.whatwg.org/#dom-transformer-cancel">Streams Standard: 6.2.3 The transformer API</see></param>
 /// <param name="ReadableType">readableType <see href="https://streams.spec.whatwg.org/#dom-transformer-readabletype">Streams Standard: 6.2.3 The transformer API</see></param>
 /// <param name="WritableType">writableType <see href="https://streams.spec.whatwg.org/#dom-transformer-writabletype">Streams Standard: 6.2.3 The transformer API</see></param>
-[ECMAScript]
 [Description("@#Transformer")]
 public record Transformer(
     [property: Description("@#start")]TransformerStartCallback? Start = default,
@@ -15273,7 +14503,6 @@ public record Transformer(
 /// <param name="Correction">ProofreadCorrection 字典中的 correction 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadcorrection-correction">Proofreader API: 3 The proofreader API</see></param>
 /// <param name="Types">The proofread result should contain a list of corrections where each ProofreadCorrection, defined by its range from startIndex to endIndex, should describe the types of errors that are corrected according to the CorrectionType enumeration. &quot;false&quot; <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadcorrection-types">Proofreader API: 3 The proofreader API</see></param>
 /// <param name="Explanation">The proofread result should contain a list of corrections where each ProofreadCorrection, defined by its range from startIndex to endIndex, should provide a text explanation for the errors corrected. &quot;false&quot; <see href="https://webmachinelearning.github.io/proofreader-api/#dom-proofreadcorrection-explanation">Proofreader API: 3 The proofreader API</see></param>
-[ECMAScript]
 [Description("@#ProofreadCorrection")]
 public record ProofreadCorrection(
     [property: Description("@#startIndex")]Number? StartIndex = default,
@@ -15290,7 +14519,6 @@ public record ProofreadCorrection(
 /// </remarks>
 /// <param name="Type">The RTCSdpType enum describes the type of an RTCSessionDescriptionInit, RTCLocalSessionDescriptionInit, or RTCSessionDescription instance. <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see></param>
 /// <param name="Sdp">RTCLocalSessionDescriptionInit 字典中的 sdp 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtclocalsessiondescriptioninit-sdp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCLocalSessionDescriptionInit Members</see></param>
-[ECMAScript]
 [Description("@#RTCLocalSessionDescriptionInit")]
 public record RTCLocalSessionDescriptionInit(
     [property: Description("@#type")]RTCSdpType? Type = default,
@@ -15305,7 +14533,6 @@ public record RTCLocalSessionDescriptionInit(
 /// <param name="Timestamp">An RTCStats dictionary represents the stats object constructed by inspecting a specific monitored object . The RTCStats dictionary is a base type that specifies as set of default attributes, such as timestamp and type. Specific stats are added by extending the RTCStats dictionary. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-timestamp">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
 /// <param name="Type">An RTCStatsReport may be composed of several RTCStats-derived dictionaries, each reporting stats for one underlying object that the implementation thinks is relevant for the selector . One achieves the total for the selector by summing over all the stats of a certain type; for instance, if an RTCRtpSender uses multiple SSRCs to carry its track over the network, the RTCStatsReport may contain one RTCStats-derived dictionary per SSRC (which can be distinguished by the value of the ssrc stats attribute). <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-type">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
 /// <param name="Id">RTCStats 字典中的 id 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-pc/#dom-rtcstats-id">WebRTC: Real-Time Communication in Browsers: Dictionary RTCStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCStats")]
 public record RTCStats(
     [property: Description("@#timestamp")]double Timestamp = default,
@@ -15331,7 +14558,6 @@ public record RTCStats(
 /// <param name="RelatedPort">RTCIceCandidateStats 字典中的 relatedPort 成员，WebIDL 类型为 long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatestats-relatedport">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCIceCandidateStats Members</see></param>
 /// <param name="UsernameFragment">RTCIceCandidateStats 字典中的 usernameFragment 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatestats-usernamefragment">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCIceCandidateStats Members</see></param>
 /// <param name="TcpType">RTCIceCandidateStats 字典中的 tcpType 成员，WebIDL 类型为 RTCIceTcpCandidateType。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtcicecandidatestats-tcptype">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCIceCandidateStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCIceCandidateStats")]
 public record RTCIceCandidateStats(
     [property: Description("@#transportId")]string? TransportId = default,
@@ -15357,7 +14583,6 @@ public record RTCIceCandidateStats(
 /// <param name="Protocol">RTCIdentityProviderOptions 字典中的 protocol 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：default。 <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityprovideroptions-protocol">Identity for WebRTC 1.0: RTCIdentityProviderOptions Members</see></param>
 /// <param name="UsernameHint">RTCIdentityProviderOptions 字典中的 usernameHint 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityprovideroptions-usernamehint">Identity for WebRTC 1.0: RTCIdentityProviderOptions Members</see></param>
 /// <param name="PeerIdentity">RTCIdentityProviderOptions 字典中的 peerIdentity 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityprovideroptions-peeridentity">Identity for WebRTC 1.0: RTCIdentityProviderOptions Members</see></param>
-[ECMAScript]
 [Description("@#RTCIdentityProviderOptions")]
 public record RTCIdentityProviderOptions(
     [property: Description("@#protocol")]string? Protocol = default,
@@ -15375,7 +14600,6 @@ public record RTCIdentityProviderOptions(
 /// <param name="DeltaZ">WheelEventInit 字典中的 deltaZ 成员，WebIDL 类型为 double。可省略。WebIDL 默认值：0.0。 <see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltaz">Pointer Events: 12.1 WheelEvent interface</see></param>
 /// <param name="DeltaMode">WheelEventInit 字典中的 deltaMode 成员，WebIDL 类型为 unsigned long。可省略。WebIDL 默认值：0。 <see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-deltamode">Pointer Events: 12.1 WheelEvent interface</see></param>
 /// <param name="Momentum">WheelEventInit 字典中的 momentum 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/pointerevents/#dom-wheeleventinit-momentum">Pointer Events: 12.1 WheelEvent interface</see></param>
-[ECMAScript]
 [Description("@#WheelEventInit")]
 public record WheelEventInit(
     [property: Description("@#deltaX")]double DeltaX = 0.0d,
@@ -15408,7 +14632,6 @@ public record WheelEventInit(
 /// <param name="SelectedCandidatePairChanges">RTCTransportStats 字典中的 selectedCandidatePairChanges 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtctransportstats-selectedcandidatepairchanges">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCTransportStats Members</see></param>
 /// <param name="CcfbMessagesSent">RTCTransportStats 字典中的 ccfbMessagesSent 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtctransportstats-ccfbmessagessent">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCTransportStats Members</see></param>
 /// <param name="CcfbMessagesReceived">RTCTransportStats 字典中的 ccfbMessagesReceived 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/webrtc-stats/#dom-rtctransportstats-ccfbmessagesreceived">Identifiers for WebRTC&apos;s Statistics API: Dictionary RTCTransportStats Members</see></param>
-[ECMAScript]
 [Description("@#RTCTransportStats")]
 public record RTCTransportStats(
     [property: Description("@#packetsSent")]Number? PacketsSent = default,
@@ -15439,7 +14662,6 @@ public record RTCTransportStats(
 /// <param name="EnableHighAccuracy">And through enableHighAccuracy, supports requesting &quot;high accuracy&quot; position data, though the request can be ignored by the user agent. <see href="https://w3c.github.io/geolocation/#dom-positionoptions-enablehighaccuracy">Geolocation: 7.1 enableHighAccuracy member</see></param>
 /// <param name="Timeout">If you require location information in a time sensitive manner, you can use the PositionOptions timeout member to limit the amount of time you are willing to wait to acquire a position. <see href="https://w3c.github.io/geolocation/#dom-positionoptions-timeout">Geolocation: 7.2 timeout member</see></param>
 /// <param name="MaximumAge">Using the PositionOptions&apos;s maximumAge, allows an application to request a cached position whose age is no greater than a specified value (only the last position is cached). <see href="https://w3c.github.io/geolocation/#dom-positionoptions-maximumage">Geolocation: 7.3 maximumAge member</see></param>
-[ECMAScript]
 [Description("@#PositionOptions")]
 public record PositionOptions(
     [property: Description("@#enableHighAccuracy")]bool EnableHighAccuracy = false,
@@ -15454,7 +14676,6 @@ public record PositionOptions(
 /// </remarks>
 /// <param name="MethodName">When getting, returns the value it was initialized with. See methodName member of PaymentMethodChangeEventInit for more information. <see href="https://w3c.github.io/payment-request/#dom-paymentmethodchangeeventinit-methodname">Payment Request API: 17.2.3 PaymentMethodChangeEventInit dictionary</see></param>
 /// <param name="MethodDetails">When getting, returns the value it was initialized with. See methodDetails member of PaymentMethodChangeEventInit for more information. <see href="https://w3c.github.io/payment-request/#dom-paymentmethodchangeeventinit-methoddetails">Payment Request API: 17.2.3 PaymentMethodChangeEventInit dictionary</see></param>
-[ECMAScript]
 [Description("@#PaymentMethodChangeEventInit")]
 public record PaymentMethodChangeEventInit(
     [property: Description("@#methodName")]string? MethodName = default,
@@ -15467,7 +14688,6 @@ public record PaymentMethodChangeEventInit(
 /// <see href="https://w3c.github.io/presentation-api/#dom-presentationconnectionavailableeventinit">Presentation API: 6.4.5 Interface PresentationConnectionAvailableEvent</see>
 /// </remarks>
 /// <param name="Connection">When the PresentationConnectionAvailableEvent constructor is called, the user agent MUST construct a new PresentationConnectionAvailableEvent object with its connection attribute set to the connection member of the PresentationConnectionAvailableEventInit object passed to the constructor. <see href="https://w3c.github.io/presentation-api/#dom-presentationconnectionavailableeventinit-connection">Presentation API: 6.4.5 Interface PresentationConnectionAvailableEvent</see></param>
-[ECMAScript]
 [Description("@#PresentationConnectionAvailableEventInit")]
 public record PresentationConnectionAvailableEventInit(
     [property: Description("@#connection")]PresentationConnection? Connection = default) : EventInit;
@@ -15480,7 +14700,6 @@ public record PresentationConnectionAvailableEventInit(
 /// </remarks>
 /// <param name="Reason">When the PresentationConnectionCloseEvent constructor is called, the user agent MUST construct a new PresentationConnectionCloseEvent object, with its reason attribute set to the reason member of the PresentationConnectionCloseEventInit object passed to the constructor, and its message attribute set to the message member of this PresentationConnectionCloseEventInit object if set, to an empty string otherwise. <see href="https://w3c.github.io/presentation-api/#dom-presentationconnectioncloseeventinit-reason">Presentation API: 6.5.4 Interface PresentationConnectionCloseEvent</see></param>
 /// <param name="Message">When the PresentationConnectionCloseEvent constructor is called, the user agent MUST construct a new PresentationConnectionCloseEvent object, with its reason attribute set to the reason member of the PresentationConnectionCloseEventInit object passed to the constructor, and its message attribute set to the message member of this PresentationConnectionCloseEventInit object if set, to an empty string otherwise. <see href="https://w3c.github.io/presentation-api/#dom-presentationconnectioncloseeventinit-message">Presentation API: 6.5.4 Interface PresentationConnectionCloseEvent</see></param>
-[ECMAScript]
 [Description("@#PresentationConnectionCloseEventInit")]
 public record PresentationConnectionCloseEventInit(
     [property: Description("@#reason")]PresentationConnectionCloseReason? Reason = default,
@@ -15494,7 +14713,6 @@ public record PresentationConnectionCloseEventInit(
 /// </remarks>
 /// <param name="Video">HTMLMediaStreamConstraints 字典中的 video 成员，WebIDL 类型为 MediaTrackConstraintSet。可省略。 <see href="https://w3c.github.io/mediacapture-extensions/#dom-htmlmediastreamconstraints-video">Media Capture and Streams Extensions: 21.3 The usermedia HTML element</see></param>
 /// <param name="Audio">HTMLMediaStreamConstraints 字典中的 audio 成员，WebIDL 类型为 MediaTrackConstraintSet。可省略。 <see href="https://w3c.github.io/mediacapture-extensions/#dom-htmlmediastreamconstraints-audio">Media Capture and Streams Extensions: 21.3 The usermedia HTML element</see></param>
-[ECMAScript]
 [Description("@#HTMLMediaStreamConstraints")]
 public record HTMLMediaStreamConstraints(
     [property: Description("@#video")]MediaTrackConstraintSet? Video = default,
@@ -15508,7 +14726,6 @@ public record HTMLMediaStreamConstraints(
 /// </remarks>
 /// <param name="Max">DoubleRange 字典中的 max 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-doublerange-max">Media Capture and Streams: Dictionary DoubleRange Members</see></param>
 /// <param name="Min">DoubleRange 字典中的 min 成员，WebIDL 类型为 double。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-doublerange-min">Media Capture and Streams: Dictionary DoubleRange Members</see></param>
-[ECMAScript]
 [Description("@#DoubleRange")]
 public record DoubleRange(
     [property: Description("@#max")]double Max = default,
@@ -15522,7 +14739,6 @@ public record DoubleRange(
 /// </remarks>
 /// <param name="Name">CSSContainerCondition 字典中的 name 成员，WebIDL 类型为 CSSOMString。必须提供该成员。 <see href="https://drafts.csswg.org/css-conditional-5/#dom-csscontainercondition-name">CSS Conditional Rules Module Level 5: 9.1 The CSSContainerRule interface</see></param>
 /// <param name="Query">CSSContainerCondition 字典中的 query 成员，WebIDL 类型为 CSSOMString。必须提供该成员。 <see href="https://drafts.csswg.org/css-conditional-5/#dom-csscontainercondition-query">CSS Conditional Rules Module Level 5: 9.1 The CSSContainerRule interface</see></param>
-[ECMAScript]
 [Description("@#CSSContainerCondition")]
 public record CSSContainerCondition(
     [property: Description("@#name")]string? Name = default,
@@ -15536,7 +14752,6 @@ public record CSSContainerCondition(
 /// </remarks>
 /// <param name="Domain">RTCIdentityProviderDetails 字典中的 domain 成员，WebIDL 类型为 DOMString。必须提供该成员。 <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityproviderdetails-domain">Identity for WebRTC 1.0: Dictionary RTCIdentityProviderDetails Members</see></param>
 /// <param name="Protocol">RTCIdentityProviderDetails 字典中的 protocol 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：default。 <see href="https://w3c.github.io/webrtc-identity/#dom-rtcidentityproviderdetails-protocol">Identity for WebRTC 1.0: Dictionary RTCIdentityProviderDetails Members</see></param>
-[ECMAScript]
 [Description("@#RTCIdentityProviderDetails")]
 public record RTCIdentityProviderDetails(
     [property: Description("@#domain")]string? Domain = default,
@@ -15551,7 +14766,6 @@ public record RTCIdentityProviderDetails(
 /// <param name="Email">request.options.requestPayerEmail is false, and errorFields.payer.email is present. <see href="https://w3c.github.io/payment-request/#dom-payererrors-email">Payment Request API: 14.1.2 PayerErrors dictionary</see></param>
 /// <param name="Name">request.options.requestPayerName is false, and errorFields.payer.name is present. <see href="https://w3c.github.io/payment-request/#dom-payererrors-name">Payment Request API: 14.1.2 PayerErrors dictionary</see></param>
 /// <param name="Phone">request.options.requestPayerPhone is false, and errorFields.payer.phone is present. <see href="https://w3c.github.io/payment-request/#dom-payererrors-phone">Payment Request API: 14.1.2 PayerErrors dictionary</see></param>
-[ECMAScript]
 [Description("@#PayerErrors")]
 public record PayerErrors(
     [property: Description("@#email")]string? Email = default,
@@ -15566,7 +14780,6 @@ public record PayerErrors(
 /// </remarks>
 /// <param name="Cname">setParameters does not cause SDP renegotiation and can only be used to change what the media stack is sending or receiving within the envelope negotiated by Offer/Answer. The attributes in the RTCRtpSendParameters dictionary are designed to not enable this, so attributes like cname that cannot be changed are read-only. Other things, like bitrate, are controlled using limits such as maxBitrate, where the user agent needs to ensure it does not exceed the maximum bitrate specified by maxBitrate, while at the same time making sure it satisfies constraints on bitrate specified in other places such as the SDP. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters-cname">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtcpParameters Members</see></param>
 /// <param name="ReducedSize">rtcp.cname is set to the CNAME of the associated RTCPeerConnection. rtcp.reducedSize is set to true if reduced-size RTCP has been negotiated for sending, and false otherwise. <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpparameters-reducedsize">WebRTC: Real-Time Communication in Browsers: Dictionary RTCRtcpParameters Members</see></param>
-[ECMAScript]
 [Description("@#RTCRtcpParameters")]
 public record RTCRtcpParameters(
     [property: Description("@#cname")]string? Cname = default,
@@ -15584,7 +14797,6 @@ public record RTCRtcpParameters(
 /// <param name="Probability">If nonzero, this is the estimate of the conditional probability that the segmented object actually is of the type indicated by the type member on the condition that the detection has been made. The value of this member must be always zero or above with a maximum of one. The special value of zero indicates that the probability estimate is not available. <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-probability">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
 /// <param name="CenterPoint">See the member centerPoint for the definition of the coordinate system. <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-centerpoint">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
 /// <param name="BoundingBox">Segment 字典中的 boundingBox 成员，WebIDL 类型为 DOMRectInit。可省略。 <see href="https://w3c.github.io/mediacapture-extensions/#dom-segment-boundingbox">Media Capture and Streams Extensions: Dictionary Segment Members</see></param>
-[ECMAScript]
 [Description("@#Segment")]
 public record Segment(
     [property: Description("@#type")]SegmentType? Type = default,
@@ -15628,7 +14840,6 @@ public record RTCRtpSendParameters(
 /// </remarks>
 /// <param name="Max">ULongRange 字典中的 max 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-ulongrange-max">Media Capture and Streams: Dictionary ULongRange Members</see></param>
 /// <param name="Min">ULongRange 字典中的 min 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://w3c.github.io/mediacapture-main/#dom-ulongrange-min">Media Capture and Streams: Dictionary ULongRange Members</see></param>
-[ECMAScript]
 [Description("@#ULongRange")]
 public record ULongRange(
     [property: Description("@#max")]uint Max = default,
@@ -15650,7 +14861,6 @@ public record ULongRange(
 /// <param name="Organization">AddressInit 字典中的 organization 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/web-based-payment-handler/">Web-based Payment Handler API: AddressInit.organization</see></param>
 /// <param name="Recipient">AddressInit 字典中的 recipient 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/web-based-payment-handler/">Web-based Payment Handler API: AddressInit.recipient</see></param>
 /// <param name="Phone">AddressInit 字典中的 phone 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://w3c.github.io/web-based-payment-handler/">Web-based Payment Handler API: AddressInit.phone</see></param>
-[ECMAScript]
 [Description("@#AddressInit")]
 public record AddressInit(
     [property: Description("@#country")]string? Country = default,
@@ -15676,7 +14886,6 @@ public record AddressInit(
 /// <param name="RangeEnd">AnimationTriggerOptions 字典中的 rangeEnd 成员，WebIDL 类型为 TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, DOMString。可省略。WebIDL 默认值：normal。 <see href="https://drafts.csswg.org/web-animations-2/">Web Animations Module Level 2: AnimationTriggerOptions.rangeEnd</see></param>
 /// <param name="ExitRangeStart">AnimationTriggerOptions 字典中的 exitRangeStart 成员，WebIDL 类型为 TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, DOMString。可省略。WebIDL 默认值：auto。 <see href="https://drafts.csswg.org/web-animations-2/">Web Animations Module Level 2: AnimationTriggerOptions.exitRangeStart</see></param>
 /// <param name="ExitRangeEnd">AnimationTriggerOptions 字典中的 exitRangeEnd 成员，WebIDL 类型为 TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, DOMString。可省略。WebIDL 默认值：auto。 <see href="https://drafts.csswg.org/web-animations-2/">Web Animations Module Level 2: AnimationTriggerOptions.exitRangeEnd</see></param>
-[ECMAScript]
 [Description("@#AnimationTriggerOptions")]
 public record AnimationTriggerOptions(
     [property: Description("@#timeline")]AnimationTimeline? Timeline = default,
@@ -15697,7 +14906,6 @@ public record AnimationTriggerOptions(
 /// <param name="IsTopLevel">CrashReportBody 字典中的 is_top_level 成员，WebIDL 类型为 boolean。可省略。 <see href="https://wicg.github.io/crash-reporting/">Crash Reporting: CrashReportBody.is_top_level</see></param>
 /// <param name="VisibilityState">CrashReportBody 字典中的 visibility_state 成员，WebIDL 类型为 DocumentVisibilityState。可省略。 <see href="https://wicg.github.io/crash-reporting/">Crash Reporting: CrashReportBody.visibility_state</see></param>
 /// <param name="CrashReportApi">CrashReportBody 字典中的 crash_report_api 成员，WebIDL 类型为 object。可省略。 <see href="https://wicg.github.io/crash-reporting/">Crash Reporting: CrashReportBody.crash_report_api</see></param>
-[ECMAScript]
 [Description("@#CrashReportBody")]
 public record CrashReportBody(
     [property: Description("@#reason")]string? Reason = default,
@@ -15718,7 +14926,6 @@ public record CrashReportBody(
 /// <param name="SourceFile">DeprecationReportBody 字典中的 sourceFile 成员，WebIDL 类型为 DOMString?。可省略。 <see href="https://wicg.github.io/deprecation-reporting/">Deprecation Reporting: DeprecationReportBody.sourceFile</see></param>
 /// <param name="LineNumber">DeprecationReportBody 字典中的 lineNumber 成员，WebIDL 类型为 unsigned long?。可省略。 <see href="https://wicg.github.io/deprecation-reporting/">Deprecation Reporting: DeprecationReportBody.lineNumber</see></param>
 /// <param name="ColumnNumber">DeprecationReportBody 字典中的 columnNumber 成员，WebIDL 类型为 unsigned long?。可省略。 <see href="https://wicg.github.io/deprecation-reporting/">Deprecation Reporting: DeprecationReportBody.columnNumber</see></param>
-[ECMAScript]
 [Description("@#DeprecationReportBody")]
 public record DeprecationReportBody(
     [property: Description("@#id")]string? Id = default,
@@ -15739,7 +14946,6 @@ public record DeprecationReportBody(
 /// <param name="SourceFile">InterventionReportBody 字典中的 sourceFile 成员，WebIDL 类型为 DOMString?。可省略。 <see href="https://wicg.github.io/intervention-reporting/">Intervention Reporting: InterventionReportBody.sourceFile</see></param>
 /// <param name="LineNumber">InterventionReportBody 字典中的 lineNumber 成员，WebIDL 类型为 unsigned long?。可省略。 <see href="https://wicg.github.io/intervention-reporting/">Intervention Reporting: InterventionReportBody.lineNumber</see></param>
 /// <param name="ColumnNumber">InterventionReportBody 字典中的 columnNumber 成员，WebIDL 类型为 unsigned long?。可省略。 <see href="https://wicg.github.io/intervention-reporting/">Intervention Reporting: InterventionReportBody.columnNumber</see></param>
-[ECMAScript]
 [Description("@#InterventionReportBody")]
 public record InterventionReportBody(
     [property: Description("@#id")]string? Id = default,
@@ -15761,7 +14967,6 @@ public record InterventionReportBody(
 /// <param name="Disposition">PermissionsPolicyViolationReportBody 字典中的 disposition 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://w3c.github.io/webappsec-permissions-policy/">Permissions Policy: PermissionsPolicyViolationReportBody.disposition</see></param>
 /// <param name="AllowAttribute">PermissionsPolicyViolationReportBody 字典中的 allowAttribute 成员，WebIDL 类型为 DOMString?。可省略。 <see href="https://w3c.github.io/webappsec-permissions-policy/">Permissions Policy: PermissionsPolicyViolationReportBody.allowAttribute</see></param>
 /// <param name="SrcAttribute">PermissionsPolicyViolationReportBody 字典中的 srcAttribute 成员，WebIDL 类型为 DOMString?。可省略。 <see href="https://w3c.github.io/webappsec-permissions-policy/">Permissions Policy: PermissionsPolicyViolationReportBody.srcAttribute</see></param>
-[ECMAScript]
 [Description("@#PermissionsPolicyViolationReportBody")]
 public record PermissionsPolicyViolationReportBody(
     [property: Description("@#featureId")]string? FeatureId = default,
@@ -15782,7 +14987,6 @@ public record PermissionsPolicyViolationReportBody(
 /// <param name="Stroke">SVGBoundingBoxOptions 字典中的 stroke 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/svgwg/svg2-draft/">Scalable Vector Graphics (SVG) 2: SVGBoundingBoxOptions.stroke</see></param>
 /// <param name="Markers">SVGBoundingBoxOptions 字典中的 markers 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/svgwg/svg2-draft/">Scalable Vector Graphics (SVG) 2: SVGBoundingBoxOptions.markers</see></param>
 /// <param name="Clipped">SVGBoundingBoxOptions 字典中的 clipped 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://w3c.github.io/svgwg/svg2-draft/">Scalable Vector Graphics (SVG) 2: SVGBoundingBoxOptions.clipped</see></param>
-[ECMAScript]
 [Description("@#SVGBoundingBoxOptions")]
 public record SVGBoundingBoxOptions(
     [property: Description("@#fill")]bool Fill = false,
@@ -15797,7 +15001,6 @@ public record SVGBoundingBoxOptions(
 /// <see href="https://svgwg.org/specs/paths/">SVG Paths: SVGPathDataSettings</see>
 /// </remarks>
 /// <param name="Normalize">SVGPathDataSettings 字典中的 normalize 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: false&#10;                }。 <see href="https://svgwg.org/specs/paths/">SVG Paths: SVGPathDataSettings.normalize</see></param>
-[ECMAScript]
 [Description("@#SVGPathDataSettings")]
 public record SVGPathDataSettings(
     [property: Description("@#normalize")]bool Normalize = false);
@@ -15813,7 +15016,6 @@ public record SVGPathDataSettings(
 /// <param name="ViolationSample">ScriptingPolicyReportBody 字典中的 violationSample 成员，WebIDL 类型为 USVString?。可省略。 <see href="https://wicg.github.io/csp-next/scripting-policy.html">Scripting Policy: ScriptingPolicyReportBody.violationSample</see></param>
 /// <param name="Lineno">ScriptingPolicyReportBody 字典中的 lineno 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://wicg.github.io/csp-next/scripting-policy.html">Scripting Policy: ScriptingPolicyReportBody.lineno</see></param>
 /// <param name="Colno">ScriptingPolicyReportBody 字典中的 colno 成员，WebIDL 类型为 unsigned long。可省略。 <see href="https://wicg.github.io/csp-next/scripting-policy.html">Scripting Policy: ScriptingPolicyReportBody.colno</see></param>
-[ECMAScript]
 [Description("@#ScriptingPolicyReportBody")]
 public record ScriptingPolicyReportBody(
     [property: Description("@#violationType")]string? ViolationType = default,
@@ -15829,7 +15031,6 @@ public record ScriptingPolicyReportBody(
 /// <see href="https://registry.khronos.org/webgl/specs/latest/1.0/">WebGL Specification: WebGLContextEventInit</see>
 /// </remarks>
 /// <param name="StatusMessage">WebGLContextEventInit 字典中的 statusMessage 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：。 <see href="https://registry.khronos.org/webgl/specs/latest/1.0/">WebGL Specification: WebGLContextEventInit.statusMessage</see></param>
-[ECMAScript]
 [Description("@#WebGLContextEventInit")]
 public record WebGLContextEventInit(
     [property: Description("@#statusMessage")]string? StatusMessage = default) : EventInit;

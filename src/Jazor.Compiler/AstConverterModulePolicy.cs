@@ -27,6 +27,13 @@ public abstract class AstConverterModulePolicy
     }
 
     /// <summary>
+    /// Selects ordinary source types whose runtime implementation is owned by the compiler.
+    /// A product may consume protocol types itself, without copying their CLR implementation.
+    /// </summary>
+    public virtual bool ShouldIncludeSourceDependency(INamedTypeSymbol type)
+        => true;
+
+    /// <summary>
     /// Returns whether a nested runtime class is emitted separately at module scope by the host.
     /// </summary>
     public virtual bool ShouldFlattenNestedRuntimeClass(

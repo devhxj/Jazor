@@ -121,7 +121,6 @@ internal static class AdminNavItemRenderHelper
             : effectiveItems.ToArray();
     }
 
-    [ECMAScript]
     internal sealed class EffectiveNavItem
     {
         public EffectiveNavItem(

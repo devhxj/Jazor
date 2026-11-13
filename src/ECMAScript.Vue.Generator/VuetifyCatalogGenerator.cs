@@ -562,7 +562,6 @@ internal static class VuetifyCatalogGenerator
         builder.AppendLine("/// <summary>");
         builder.AppendLine($"/// Registry of {description}.");
         builder.AppendLine("/// </summary>");
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"[Description(\"@#{catalogName}\")]");
         builder.AppendLine($"public sealed record {catalogName} : VueComponentRegistry");
         builder.AppendLine("{");

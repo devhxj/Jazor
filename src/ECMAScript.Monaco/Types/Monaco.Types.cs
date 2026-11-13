@@ -27,7 +27,6 @@ public enum MonacoMarkerSeverity
 /// 标记（marker）数据；对应 Monaco <c>IMarkerData</c>。
 /// Marker data; mirrors Monaco's <c>IMarkerData</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoMarker
 {
@@ -60,7 +59,6 @@ public record MonacoMarker
 /// 位置（行列坐标，均从 1 开始）；对应 Monaco <c>Position</c>。
 /// A position (line and column, both 1-based); mirrors Monaco's <c>Position</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoPosition
 {
@@ -77,7 +75,6 @@ public record MonacoPosition
 /// 选区（起点与终点）；对应 Monaco <c>Selection</c> 的行列投影。
 /// A selection (anchor and position); the line/column projection of Monaco's <c>Selection</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoSelection
 {
@@ -102,7 +99,6 @@ public record MonacoSelection
 /// 模型的语言与内容更新选项；对应 <c>ITextModelUpdateOptions</c> 的常用项。
 /// Language and content update options for a model; the frequently used <c>ITextModelUpdateOptions</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoModelUpdateOptions
 {
@@ -119,7 +115,6 @@ public record MonacoModelUpdateOptions
 /// 编辑器构造选项；覆盖 Monaco <c>IStandaloneEditorConstructionOptions</c> 的常用项。
 /// Editor construction options; the frequently used subset of Monaco's <c>IStandaloneEditorConstructionOptions</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoEditorConstructionOptions
 {
@@ -180,7 +175,6 @@ public record MonacoEditorConstructionOptions
 /// 小地图选项。
 /// Minimap options.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoMinimapOptions
 {
@@ -293,7 +287,6 @@ public sealed class MonacoUri
 /// 模型内容变化事件。
 /// The model content-change event.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoContentChangeEvent
 {
@@ -314,7 +307,6 @@ public record MonacoContentChangeEvent
 /// 模型语言变化事件。
 /// The model language-change event.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoLanguageChangeEvent
 {
@@ -331,7 +323,6 @@ public record MonacoLanguageChangeEvent
 /// 编辑器布局信息；对应 <c>EditorLayoutInfo</c> 的常用项。
 /// Editor layout information; the frequently used <c>EditorLayoutInfo</c> fields.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoLayoutInfo
 {
@@ -348,7 +339,6 @@ public record MonacoLayoutInfo
 /// 主题定义的颜色表与规则。
 /// The color table and rules of a theme definition.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoThemeData
 {
@@ -463,7 +453,6 @@ public abstract class MonacoEditor
 /// 光标位置变化事件。
 /// The cursor position-change event.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoCursorPositionEvent
 {
@@ -476,7 +465,6 @@ public record MonacoCursorPositionEvent
 /// 选区变化事件。
 /// The selection-change event.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoSelectionEvent
 {
@@ -493,7 +481,6 @@ public record MonacoSelectionEvent
 /// web worker 创建选项；对应 Monaco <c>IInternalWebWorkerOptions</c> 的公开子集。
 /// Web-worker creation options; the public subset of Monaco's <c>IInternalWebWorkerOptions</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MonacoWebWorkerOptions
 {

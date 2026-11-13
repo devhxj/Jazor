@@ -2839,7 +2839,6 @@ public readonly union VuetifyCounterValueSource(Number, VuetifyCounterValueResol
 /// 文本输入的模型修饰符。
 /// Model modifiers for text input.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTextModelModifiers : VueProps
 {

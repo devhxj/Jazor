@@ -68,7 +68,6 @@ public static class VuetifyDirectives
 /// Vuetify 指令的基类型。
 /// Base type for Vuetify directives.
 /// </summary>
-[ECMAScript]
 public abstract record VuetifyDirective : VueDirective
 {
 }

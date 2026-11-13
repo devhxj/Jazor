@@ -34,7 +34,6 @@ public partial record CssDeclarations
 /// 表示可包含嵌套选择器和受支持分组 at-rule 的 CSS 声明块。运行时先输出规则自身声明，
 /// 再按作者提供的顺序序列化 <see cref="children"/>。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record CssRule : CssDeclarations
 {
@@ -175,7 +174,6 @@ public enum ChildKind
 /// 表示 <see cref="CssRule.children"/> 中的一条嵌套规则。对于 <see cref="ChildKind.Selector"/>，
 /// <see cref="Prelude"/> 是非空嵌套选择器；对于分组类型，它是 at-rule 的 prelude。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record CssChild(
     [property: Description("@#kind")] ChildKind Kind,
@@ -188,7 +186,6 @@ public sealed record CssChild(
 /// 表示一个关键帧选择器及其声明块。可使用 <c>from</c>、<c>to</c> 或百分比选择器；
 /// <c>keyframes(...)</c> 至少需要一个帧。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record CssFrame(
     [property: Description("@#selector")] string Selector,
@@ -200,7 +197,6 @@ public sealed record CssFrame(
 /// 表示带声明和递归嵌套 at-rule 的自由形式 CSS at-rule。与 <see cref="CssChild"/> 不同，
 /// 该模型用于通过 <c>at_rule(...)</c> 注册顶层规则。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record CssAtRule(
     [property: Description("@#name")] string Name,
@@ -214,7 +210,6 @@ public sealed record CssAtRule(
 /// 配置隔离 CSS registry，或在首次注册前配置进程级默认 registry。分离上下文不能指定
 /// <see cref="Target"/>，因为它刻意不拥有 DOM。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record CssOptions
 {
@@ -254,7 +249,6 @@ public sealed record CssOptions
 /// 捕获一个上下文的确定性 CSS 与 hydration 载荷，供 SSR 或稍后的客户端接管使用。
 /// <see cref="HydrationText"/> 保留条目边界和 id，<see cref="CssText"/> 则是普通拼接后的样式表。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record CssSnapshot(
     [property: Description("@#styleId")] string StyleId,

@@ -4,7 +4,6 @@ using static ECMAScript.VueDevtools;
 
 namespace Devtools.Plugin.Host;
 
-[ECMAScript]
 [Description("@#")]
 public sealed record DiagnosticsSettings : Vue.VueProps
 {
@@ -13,14 +12,12 @@ public sealed record DiagnosticsSettings : Vue.VueProps
     public string Theme { get; init; } = "system";
 }
 
-[ECMAScript]
 [Description("@#")]
 public sealed record DiagnosticsTimelineData : Vue.VueProps
 {
     public string Message { get; init; } = "";
 }
 
-[ECMAScript]
 [Description("@#")]
 public sealed record DiagnosticsTimelineMeta : Vue.VueProps
 {

@@ -43,7 +43,7 @@ dotnet run --project src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator
 dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs
 ```
 
-脚本默认比较迁移前 Deno 对照采集的固定 inventory 指纹与 22 个生成文件的 SHA-256，忽略 `generatedAt`；指纹位于 GeneratorTest 的 `Fixtures/nodeapi-collector-baseline.json`。如需对照另一份已保存的 inventory，将其路径作为唯一参数，脚本会分别生成 C# 并逐文件比较字节。报告写入 `artifacts/webidl-nodeapi/`；正式采集不使用基线，也不保留旧运行时 fallback。
+脚本默认比较迁移前对照采集的固定 inventory 指纹与 22 个生成文件的 SHA-256，忽略 `generatedAt`；指纹位于 GeneratorTest 的 `Fixtures/nodeapi-collector-baseline.json`。有意调整生成语义时，从同一固定 inventory 再生并更新 `generatedFiles`，以 `emissionRevision` 记录原因，inventory 指纹保持不变。当前模板为普通 dictionary、enum 和 callback 移除许可标注，callback literal 使用 record；具有 extern Optional 构造协议的 dictionary 仍保留宿主标注。如需对照另一份已保存的 inventory，将其路径作为唯一参数，脚本会分别生成 C# 并逐文件比较字节。报告写入 `artifacts/webidl-nodeapi/`；正式采集不使用基线，也不保留旧运行时 fallback。
 
 `--worker <collect.ts>` 可选择 collector；`--node-project <package.json>` 可指定其项目配置，同目录需有 `host.cjs`。旧 `--deno-config` 已移除并给出迁移诊断。
 

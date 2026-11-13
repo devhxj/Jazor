@@ -37,7 +37,6 @@ public enum VueDraggableDirection
 /// 跨列表拖拽时的 group 配置；<c>pull</c>/<c>put</c> 使用 SortableJS 的字符串或布尔值域。
 /// Group configuration for cross-list dragging; <c>pull</c>/<c>put</c> use the SortableJS string or boolean domain.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueDraggableGroupOptions
 {
@@ -66,7 +65,6 @@ public readonly union VueDraggablePullValue(bool, string);
 /// 拖拽排序选项；对应 SortableJS <c>Options</c> 与 vue-draggable-plus 的扩展字段。
 /// Drag-sort options; mirrors the SortableJS <c>Options</c> plus the vue-draggable-plus extensions.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueDraggableOptions
 {
@@ -247,7 +245,6 @@ public record VueDraggableOptions
 /// 二维偏移量。
 /// A two-dimensional offset.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueDraggableOffset
 {

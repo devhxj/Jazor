@@ -143,8 +143,8 @@ public sealed class ErasedUnionProjectionTests
         var tree = CSharpSyntaxTree.ParseText($$"""
             using ECMAScript;
             using System.ComponentModel;
-            [ECMAScript, Description("@#")] public sealed class First { public string Name { get; set; } = ""; }
-            [ECMAScript, Description("@#")] public sealed class Second { public string Name { get; set; } = ""; }
+            public sealed record First { public string Name { get; set; } = ""; }
+            public sealed record Second { public string Name { get; set; } = ""; }
             [ECMAScript] public readonly union Ambiguous(First, {{otherType}})
             {
                 public First? AsFirst => Value as First;

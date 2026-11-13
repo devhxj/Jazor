@@ -76,6 +76,10 @@ preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审�
 
 以上记录 1.0.0 的冻结表面。1.1.0 直接调用 Vite 与 SSR API，移除 Vite/SSR 的 `TaskName`；维护者指定该底层重构使用 MINOR，迁移步骤见 CHANGELOG。已审阅签名由 `public-api-reviewed-removals.snapshot.md` 显式列出，既有稳定 tag 和冻结快照保持不变。
 
+当前未发布的类型语义调整将 `ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 从 class 迁移为 record，并清理许可用途的标注；这是需要 MAJOR 通道评审的公共契约变化。冻结快照继续用于报告差异，不以覆盖旧基线或沿用 1.1.0 的工具链例外放行。迁移路径见[类型语义调整计划](../04-roadmap/ecmascript-type-semantics-plan.md)与 CHANGELOG。
+
+当前候选的机器签名比较沿用既有已审阅删除记录后通过；该检查没有完整表达 class→record 的继承和对象模型变化，因此仍按上述破坏性迁移处理。
+
 集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`entry.js`、`dist/bundle.js`、`http://127.0.0.1:5173`、`/@jazor/client`、`/@jazor/reload`、安全头、探针文件和缓存策略。
 
 ## SSR 数据模型

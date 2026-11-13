@@ -1,5 +1,7 @@
 # Jazor.CompilerTest
 
+`SourceTypeCompilationTests` 覆盖未标注顶层辅助类、静态 helper、源码继承、class 空名称、依赖实现和 CLR 使用点拒绝，并通过 NodeApi 执行生成模块。对象字面量与 union 回归使用 record 表达结构分支，宿主 class 仍按运行时身份处理。
+
 > 定位：`Jazor.Compiler` 的主回归测试项目。
 
 测试关注 C# 使用点的可观察行为、模块输出契约和 source map 相关确定性，而不是以测试数量证明“支持全部 C# 语法”。

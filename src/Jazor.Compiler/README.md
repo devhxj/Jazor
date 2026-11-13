@@ -13,6 +13,8 @@
 
 ## 稳定边界
 
+- 普通源码类型无需 `[ECMAScript]` 许可；`SourceTypeClosure` 收集入口可达的普通辅助类型，`AstConverter` 发射实现并提供共享的 `DeclaredNames`。宿主表达式通过 `SourceDependencyFilter` 声明依赖范围，可与普通成员发射范围分开。
+- class 保留类的默认构造与实例语义，record / record struct 创建生成结构化对象。命名配置不会把 class 转换成对象字面量；配置对象应声明为 record。
 - 目标是保持使用点可观察行为和确定性输出，不是复刻完整 CLR runtime identity。
 - 支持范围由已绑定的 Roslyn 语义、白名单映射和测试共同定义；不支持的运行时敏感类型或成员必须显式失败。
 - `Jazor.Analyzer` 可以在 erased positions 提前诊断，`SemanticWalker` 仍在真正 lowering 处做最终裁定。

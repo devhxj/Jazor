@@ -1,7 +1,6 @@
 namespace ECMAScript.VueDataUi;
 
 /// <summary>Radar category authoring item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRadarDatasetCategoryItem : Vue.VueProps
 {
@@ -31,7 +30,6 @@ public record VdRadarDatasetCategoryItem : Vue.VueProps
 }
 
 /// <summary>Radar series authoring item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRadarDatasetSerieItem : Vue.VueProps
 {
@@ -61,7 +59,6 @@ public record VdRadarDatasetSerieItem : Vue.VueProps
 }
 
 /// <summary>VdRadar 的 dataset。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRadarDataset : Vue.VueProps
 {
@@ -79,12 +76,10 @@ public record VdRadarDataset : Vue.VueProps
 }
 
 /// <summary>Radar 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRadarConfig : VdConfig;
 
 /// <summary>Waffle 的 dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWaffleDatasetItem : VdDatasetItem
 {
@@ -108,12 +103,10 @@ public record VdWaffleDatasetItem : VdDatasetItem
 }
 
 /// <summary>Waffle 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWaffleConfig : VdConfig;
 
 /// <summary>Treemap 的递归 dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTreemapDatasetItem : VdDatasetItem
 {
@@ -149,12 +142,10 @@ public record VdTreemapDatasetItem : VdDatasetItem
 }
 
 /// <summary>Treemap 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTreemapConfig : VdConfig;
 
 /// <summary>Heatmap 的一行 input。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHeatmapDatasetItem : Vue.VueProps
 {
@@ -172,12 +163,10 @@ public record VdHeatmapDatasetItem : Vue.VueProps
 }
 
 /// <summary>Heatmap 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHeatmapConfig : VdConfig;
 
 /// <summary>Scatter point。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdScatterDatasetValueItem : VdDatasetItem
 {
@@ -207,7 +196,6 @@ public record VdScatterDatasetValueItem : VdDatasetItem
 }
 
 /// <summary>Scatter series。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdScatterDatasetItem : VdDatasetItem
 {
@@ -231,7 +219,6 @@ public record VdScatterDatasetItem : VdDatasetItem
 }
 
 /// <summary>Scatter 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdScatterConfig : VdConfig
 {
@@ -249,7 +236,6 @@ public record VdScatterConfig : VdConfig
 }
 
 /// <summary>Funnel 的 dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdFunnelDatasetItem : VdDatasetItem
 {
@@ -273,12 +259,10 @@ public record VdFunnelDatasetItem : VdDatasetItem
 }
 
 /// <summary>Funnel 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdFunnelConfig : VdConfig;
 
 /// <summary>Word cloud 的 dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWordCloudDatasetItem : VdDatasetItem
 {
@@ -318,12 +302,10 @@ public readonly union VdWordCloudDataset(VdWordCloudDatasetItem[], string)
 }
 
 /// <summary>Word cloud 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWordCloudConfig : VdConfig;
 
 /// <summary>KPI 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdKpiConfig : VdConfig
 {
@@ -359,7 +341,6 @@ public record VdKpiConfig : VdConfig
 }
 
 /// <summary>VdTable header column。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableDatasetHeaderItem : Vue.VueProps
 {
@@ -424,7 +405,6 @@ public enum VdTableColumnType
 }
 
 /// <summary>VdTable 的一行 body cells。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableDatasetBodyItem : Vue.VueProps
 {
@@ -436,7 +416,6 @@ public record VdTableDatasetBodyItem : Vue.VueProps
 }
 
 /// <summary>VdTable 的 dataset。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableDataset : Vue.VueProps
 {
@@ -454,7 +433,6 @@ public record VdTableDataset : Vue.VueProps
 }
 
 /// <summary>Table 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableConfig : VdConfig
 {
@@ -472,7 +450,6 @@ public record VdTableConfig : VdConfig
 }
 
 /// <summary>QuickChart 的 object-form dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdQuickChartDatasetItem : VdDatasetItem;
 
@@ -498,7 +475,6 @@ public readonly union VdQuickChartDataset(double?[], VdQuickChartDatasetItem, Vd
 }
 
 /// <summary>QuickChart 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdQuickChartConfig : VdConfig
 {
@@ -522,7 +498,6 @@ public record VdQuickChartConfig : VdConfig
 }
 
 /// <summary>Stackbar 的 authoring dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStackbarDatasetItem : VdDatasetItem
 {
@@ -546,12 +521,10 @@ public record VdStackbarDatasetItem : VdDatasetItem
 }
 
 /// <summary>Stackbar 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStackbarConfig : VdConfig;
 
 /// <summary>Stackline 在 stackbar series 上增加 standalone flag。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStacklineDatasetItem : VdStackbarDatasetItem
 {
@@ -563,12 +536,10 @@ public record VdStacklineDatasetItem : VdStackbarDatasetItem
 }
 
 /// <summary>Stackline 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStacklineConfig : VdConfig;
 
 /// <summary>Dumbbell 的 start/end dataset row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDumbbellDataset : VdDatasetItem
 {
@@ -592,12 +563,10 @@ public record VdDumbbellDataset : VdDatasetItem
 }
 
 /// <summary>Dumbbell 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDumbbellConfig : VdConfig;
 
 /// <summary>Bullet chart range segment。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdBulletSegment : Vue.VueProps
 {
@@ -627,7 +596,6 @@ public record VdBulletSegment : Vue.VueProps
 }
 
 /// <summary>VdBullet 的 dataset。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdBulletDataset : Vue.VueProps
 {
@@ -651,12 +619,10 @@ public record VdBulletDataset : Vue.VueProps
 }
 
 /// <summary>Bullet 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdBulletConfig : VdConfig;
 
 /// <summary>Candlestick config。Dataset rows should be created through <see cref="VdCandlestickData.Ohlc"/>.</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdCandlestickConfig : VdConfig
 {
@@ -704,7 +670,6 @@ public static class VdCandlestickData
 }
 
 /// <summary>Table heatmap 的一行。<c>Values</c> 保留 upstream 允许的 number/string/null cell domain。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableHeatmapDatasetItem : VdDatasetItem
 {
@@ -781,12 +746,10 @@ public enum VdTableHeatmapShape
 }
 
 /// <summary>Table heatmap 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableHeatmapConfig : VdConfig;
 
 /// <summary>Table sparkline 的一行。每个 row 自带 name、value series 与可选 color。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableSparklineDatasetItem : VdDatasetItem
 {
@@ -810,6 +773,5 @@ public record VdTableSparklineDatasetItem : VdDatasetItem
 }
 
 /// <summary>Table sparkline 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTableSparklineConfig : VdConfig;

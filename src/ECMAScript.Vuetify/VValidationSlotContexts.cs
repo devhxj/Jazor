@@ -17,7 +17,6 @@ public delegate IPromise<string[]> VuetifyValidationValidateCallback(bool silent
 /// Vuetify VValidation 暴露的默认插槽上下文。
 /// Default slot context exposed by Vuetify VValidation.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VValidationSlotContext
 {
@@ -92,7 +91,6 @@ public sealed record VValidationSlotContext
 /// Vuetify 验证状态的 CSS 类名映射。
 /// CSS class map for Vuetify validation states.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyValidationClasses : VueDictionary<bool>
 {

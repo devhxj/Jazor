@@ -23,7 +23,6 @@ public delegate IPromise<VuetifyFormValidationResult> VuetifyFormValidateCallbac
 /// Vuetify VForm 验证 API 返回的验证错误项。
 /// Validation error item returned by Vuetify VForm validation APIs.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyFormFieldValidationResult
 {
@@ -44,7 +43,6 @@ public sealed record VuetifyFormFieldValidationResult
 /// Vuetify VForm validate 和 submit promise 返回的验证结果。
 /// Validation result returned by Vuetify VForm validate and submit promise payloads.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyFormValidationResult
 {
@@ -65,7 +63,6 @@ public sealed record VuetifyFormValidationResult
 /// 通过 Vuetify VForm 默认插槽上下文暴露的已注册字段项。
 /// Registered field item exposed through Vuetify VForm default slot context.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyFormField
 {
@@ -371,7 +368,6 @@ public sealed class VFormSubmitEvent(string type, EventInit eventInitDict) :
 /// Vuetify VForm 默认插槽上下文。
 /// Default slot context exposed by Vuetify VForm.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFormDefaultSlotContext
 {

@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify VChip 公开的作用域默认插槽上下文。
 /// Scoped default slot context exposed by Vuetify VChip.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VChipDefaultSlotContext
 {

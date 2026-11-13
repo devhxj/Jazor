@@ -8,7 +8,6 @@ namespace ECMAScript;
 /// 表单校验结果：整体是否有效、按字段路径索引的错误与校验来源。
 /// The validation result: overall validity, per-path errors, and the validation source.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateValidationResult
 {
@@ -29,7 +28,6 @@ public record VeeValidateValidationResult
 /// 字段元数据；与 <c>useField</c> 返回的 <c>meta</c> 一致。
 /// Field metadata; mirrors the <c>meta</c> returned by <c>useField</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateFieldMeta
 {
@@ -58,7 +56,6 @@ public record VeeValidateFieldMeta
 /// 表单元数据；与 <c>useForm</c> 返回的 <c>meta</c> 一致。
 /// Form metadata; mirrors the <c>meta</c> returned by <c>useForm</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateFormMeta
 {
@@ -87,7 +84,6 @@ public record VeeValidateFormMeta
 /// 校验失败时提交回调收到的上下文。
 /// The context passed to the invalid-submit callback.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateInvalidSubmitContext
 {
@@ -109,7 +105,6 @@ public record VeeValidateInvalidSubmitContext
 /// Options for <c>useForm()</c>.
 /// </summary>
 /// <typeparam name="TValues">表单值契约。The form value contract.</typeparam>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateFormOptions<TValues>
 {
@@ -139,7 +134,6 @@ public record VeeValidateFormOptions<TValues>
 /// Options for <c>useField()</c>.
 /// </summary>
 /// <typeparam name="TValue">字段值类型。The field value type.</typeparam>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateFieldOptions<TValue>
 {
@@ -172,7 +166,6 @@ public record VeeValidateFieldOptions<TValue>
 /// <c>configure()</c> 的全局配置；影响所有字段的默认校验触发方式。
 /// Global configuration for <c>configure()</c>; it changes the default validation triggers for every field.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateConfig
 {
@@ -377,7 +370,6 @@ public abstract class VeeValidateFormReturn<TValues>
 /// <c>resetForm()</c> 的重置目标状态。
 /// The reset target state used by <c>resetForm()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateFormResetState
 {
@@ -395,7 +387,6 @@ public record VeeValidateFormResetState
 /// The reset target state used by <c>resetForm()</c>, with typed form values.
 /// </summary>
 /// <typeparam name="TValues">表单值契约。The form value contract.</typeparam>
-[ECMAScript]
 [Description("@#")]
 public record VeeValidateFormResetState<TValues> : VeeValidateFormResetState
 {

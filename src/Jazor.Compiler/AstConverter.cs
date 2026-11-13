@@ -105,9 +105,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly HashSet<string> _projectSourceImportKeys = new(StringComparer.Ordinal);
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
+        classModel.Compilation,
         options?.MemberFilter,
         options?.ModulePolicy ?? AstConverterModulePolicy.Default,
-        options?.Profile ?? AstConverterProfile.Standard);
+        options?.Profile ?? AstConverterProfile.Standard,
+        options?.SourceDependencyFilter,
+        options?.DeclaredNames);
     private readonly IReadOnlyDictionary<ISymbol, string>? _declaredNameOverrides = options?.DeclaredNames;
     private readonly SemanticWalkerHost? _semanticWalkerHost = options?.Host;
     private readonly string? _currentModuleImportPath = Util.GetECMAScriptModuleImportPath(classSymbol);
@@ -123,7 +126,30 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private HashSet<string> ModuleLocalNames => _moduleNamePlan.LocalNames;
 
-    private IReadOnlyDictionary<ISymbol, string> ModuleDeclaredNames => _declaredNameOverrides ?? _moduleNamePlan.DeclaredNames;
+    private IReadOnlyDictionary<ISymbol, string> ModuleDeclaredNames => _effectiveDeclaredNames ??= BuildEffectiveDeclaredNames();
+    private IReadOnlyDictionary<ISymbol, string>? _effectiveDeclaredNames;
+
+    /// <summary>
+    /// The compiler's effective local bindings, including source helper classes. Hosts reuse
+    /// this plan for expressions translated outside the ordinary module-member pass.
+    /// </summary>
+    public IReadOnlyDictionary<ISymbol, string> DeclaredNames => ModuleDeclaredNames;
+
+    private IReadOnlyDictionary<ISymbol, string> BuildEffectiveDeclaredNames()
+    {
+        if (_declaredNameOverrides is null)
+            return _moduleNamePlan.DeclaredNames;
+        var names = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
+        foreach (var pair in _declaredNameOverrides)
+            names.Add(pair.Key, pair.Value);
+        // Host overrides can deliberately omit instance fields projected to state/DI. Only
+        // merge newly owned source types; merging ordinary root fields changes that protocol.
+        foreach (var pair in _moduleNamePlan.DeclaredNames)
+            if (pair.Key is INamedTypeSymbol type &&
+                _moduleNamePlan.SourceTypes.Contains(type, SymbolEqualityComparer.Default))
+                names[pair.Key] = pair.Value;
+        return names;
+    }
 
     private HashSet<string> ReservedImportNames => _moduleNamePlan.ReservedImportNames;
 
@@ -177,6 +203,22 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var members = new List<Statement>();
         var emittedMemberClasses = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        // Source helpers are local implementations, not additional public module exports.
+        // Emit their classes before module initializers can instantiate them.
+        foreach (var helper in _moduleNamePlan.SourceTypes.Where(IsRuntimeMemberClass))
+            AppendSourceClass(helper);
+
+        void AppendSourceClass(INamedTypeSymbol type)
+        {
+            if (!emittedMemberClasses.Add(type))
+                return;
+            var baseType = GetSupportedRuntimeClassBaseType(type);
+            if (baseType is not null && _moduleNamePlan.SourceTypes.Contains(baseType, SymbolEqualityComparer.Default))
+                AppendSourceClass(baseType);
+            else if (baseType is not null)
+                AppendModuleClass(members, baseType, emittedMemberClasses, cancellationToken);
+            members.Add(ConvertMemberClass(type, baseType, cancellationToken));
+        }
         foreach (var member in EnumerateModuleMembersForConversion())
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -2052,7 +2094,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             baseType.SpecialType == SpecialType.System_Object)
             return null;
 
-        if (!SymbolEqualityComparer.Default.Equals(baseType.ContainingType?.OriginalDefinition, _classSymbol.OriginalDefinition))
+        if (!ModuleDeclaredNames.ContainsKey(baseType.OriginalDefinition))
             throw new NotSupportedException($"Jazor member class does not support inheritance {symbol.Name} : {baseType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)}.");
 
         return baseType;
@@ -2319,7 +2361,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private sealed record ModuleNamePlan(
         HashSet<string> LocalNames,
         Dictionary<ISymbol, string> DeclaredNames,
-        HashSet<string> ReservedImportNames);
+        HashSet<string> ReservedImportNames,
+        ImmutableArray<INamedTypeSymbol> SourceTypes);
 
     private IEnumerable<ISymbol> EnumerateModuleMembersForConversion()
         => EnumerateModuleMembers(_classSymbol, _modulePolicy);
@@ -2333,14 +2376,44 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static ModuleNamePlan BuildModuleNamePlan(
         INamedTypeSymbol classSymbol,
+        Compilation compilation,
         Func<ISymbol, bool>? includeMember,
         AstConverterModulePolicy modulePolicy,
-        AstConverterProfile profile)
+        AstConverterProfile profile,
+        Func<ISymbol, bool>? sourceDependencyFilter,
+        IReadOnlyDictionary<ISymbol, string>? declaredNameOverrides)
     {
         var localNames = BuildModuleLocalNames(classSymbol, modulePolicy);
         var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, modulePolicy, profile);
         var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember, modulePolicy);
-        return new ModuleNamePlan(localNames, declaredNames, reservedImportNames);
+        var moduleTypes = modulePolicy.EnumerateModuleTypes(classSymbol).ToArray();
+        var sourceTypes = SourceTypeClosure.Collect(compilation, moduleTypes, sourceDependencyFilter ?? includeMember,
+                includeDependency: modulePolicy.ShouldIncludeSourceDependency)
+            .Where(type => !moduleTypes.Any(root => IsWithin(type, root)))
+            .ToImmutableArray();
+        SourceTypeClosure.ValidateModuleOwnership(compilation, classSymbol, sourceTypes);
+        var usedNames = new HashSet<string>(declaredNames.Values, StringComparer.Ordinal);
+        if (declaredNameOverrides is not null)
+            usedNames.UnionWith(declaredNameOverrides.Values);
+        foreach (var type in sourceTypes.Where(IsRuntimeMemberClass))
+        {
+            var name = ChooseModuleDeclaredName(type, usedNames, localNames, modulePolicy, profile);
+            declaredNames[type] = name;
+            reservedImportNames.Add(name);
+        }
+        // Erased source contracts own no JavaScript declaration, but member dispatch still
+        // needs their source ownership instead of requiring an ambient host marker.
+        foreach (var type in sourceTypes.Where(static type => type.TypeKind is TypeKind.Interface or TypeKind.Delegate or TypeKind.Enum))
+            declaredNames[type] = Util.GetConfigOrSymbolName(type);
+        return new ModuleNamePlan(localNames, declaredNames, reservedImportNames, sourceTypes);
+
+        static bool IsWithin(INamedTypeSymbol type, INamedTypeSymbol root)
+        {
+            for (var current = type; current is not null; current = current.ContainingType)
+                if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, root.OriginalDefinition))
+                    return true;
+            return false;
+        }
     }
 
     private string GetModuleDeclaredName(ISymbol symbol)
@@ -2598,7 +2671,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private bool ShouldIncludeMemberClassMember(ISymbol member)
-        => _options.MemberFilter?.Invoke(member) ?? true;
+        => member.ContainingType is { } containingType &&
+           _moduleNamePlan.SourceTypes.Contains(containingType.OriginalDefinition, SymbolEqualityComparer.Default) ||
+           (_options.MemberFilter?.Invoke(member) ?? true);
 
     private static string GetPreferredModuleFieldDeclaredName(IFieldSymbol symbol)
     {

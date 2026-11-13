@@ -566,7 +566,6 @@ public static partial class Pinia
 	/// members matching the subset they intend to patch.
 	/// </summary>
 	/// <typeparam name="TState">被 patch 的 state record。The state record being patched.</typeparam>
-	[ECMAScript]
 	[Description("@#")]
 	public abstract record PiniaStatePatch<TState> : Vue.VueProps
 		where TState : PiniaStateTree;

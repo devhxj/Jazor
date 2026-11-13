@@ -239,6 +239,19 @@ public sealed class SdkIntegrationTests
             Directory.Exists(coreOutput) &&
             Directory.EnumerateFiles(coreOutput, "ECMAScript.Blazor.dll", SearchOption.AllDirectories).Any(),
             "The core Jazor package consumer must not copy ECMAScript.Blazor.");
+        var assemblyPath = Path.Combine(coreOutput, "ReleaseCorePackageConsumer.dll");
+        var loadContext = new EmitLoadContext(assemblyPath);
+        try
+        {
+            var consumerAssembly = loadContext.LoadFromAssemblyPath(assemblyPath);
+            var sourceModule = CatalogReader.TryRead(consumerAssembly)!.Single();
+            StringAssert.Contains(sourceModule.Content, "class Counter", StringComparison.Ordinal);
+            StringAssert.Contains(sourceModule.Content, "new Counter(1)", StringComparison.Ordinal);
+        }
+        finally
+        {
+            loadContext.Unload();
+        }
     }
 
     [TestMethod]
@@ -3550,6 +3563,17 @@ public sealed class SdkIntegrationTests
         using var workspace = new TestWorkspace(package.RepoRoot);
         var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgBrowserCounterConsumer");
         var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
+        var counterSourcePath = Path.Combine(projectRoot, "Counter.razor.cs");
+        var counterSource = (await File.ReadAllTextAsync(counterSourcePath))
+            .Replace("count++;", "count = CounterMath.Increment(count);", StringComparison.Ordinal);
+        WriteFile(counterSourcePath, counterSource + """
+
+            internal static class CounterMath
+            {
+                public static int Increment(int value) => value + new CounterStep(1).Value;
+            }
+            internal sealed record CounterStep(int Value);
+            """);
         var restorePackagesPath = workspace.RestorePackagesPath;
         var build = await RunIsolatedConsumerBuildAsync(
             package.RepoRoot,
@@ -3572,6 +3596,8 @@ public sealed class SdkIntegrationTests
         var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
         Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
         Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
+
+        StringAssert.Contains(await File.ReadAllTextAsync(componentModulePath), "class CounterMath", StringComparison.Ordinal);
 
         var harnessRoot = Path.Combine(workspace.RootPath, "browser-harness");
         var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
@@ -8478,7 +8504,13 @@ public sealed class SdkIntegrationTests
             [ECMAScriptModule("./core")]
             public static class CoreModule
             {
-                public static int Value() => 1;
+                public static int Value() => new Counter(1).Value;
+            }
+
+            internal sealed class Counter
+            {
+                public Counter(int value) { Value = value; }
+                public int Value { get; }
             }
 
             internal static class Program

@@ -299,7 +299,7 @@ public sealed class SemanticWalkerCreationTest
     }
 
     [TestMethod]
-    public void VisitObjectCreation_ObjectLiteralHostWithConstructorArgument_Throws()
+    public void VisitObjectCreation_HostClassWithoutConstructorName_Throws()
     {
         var block = GetBlockOperation(@"
             [ECMAScript]
@@ -326,7 +326,7 @@ public sealed class SemanticWalkerCreationTest
             _ = walker.VisitObjectCreation(operation, new());
         });
 
-        StringAssert.Contains(exception.Message, "does not support constructor arguments");
+        StringAssert.Contains(exception.Message, "has no runtime constructor name");
         StringAssert.Contains(exception.Message, "ObjectLiteralHost");
     }
 
@@ -336,7 +336,7 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             [ECMAScript]
             [System.ComponentModel.Description(""@#"")]
-            sealed class ObjectLiteralBag : System.Collections.IEnumerable
+            sealed record ObjectLiteralBag : System.Collections.IEnumerable
             {
                 public void Add(int value) { }
                 public System.Collections.IEnumerator GetEnumerator() => throw new System.NotImplementedException();
@@ -365,7 +365,7 @@ public sealed class SemanticWalkerCreationTest
         var block = GetBlockOperation(@"
             [ECMAScript]
             [System.ComponentModel.Description(""@#"")]
-            sealed class ObjectLiteralBag : System.Collections.IEnumerable
+            sealed record ObjectLiteralBag : System.Collections.IEnumerable
             {
                 public void Add(System.DateTime key, int value) { }
                 public System.Collections.IEnumerator GetEnumerator() => throw new System.NotImplementedException();

@@ -111,7 +111,6 @@ public delegate PromiseResult<TData> VueQueryMutationFunction<TData, TVariables>
 /// <c>VueQueryPlugin</c> 的安装选项：指定已有 client 或让插件按配置创建。
 /// Install options for <c>VueQueryPlugin</c>: supply an existing client or let the plugin create one from the config.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryPluginOptions : Vue.VuePluginOptions
 {
@@ -128,7 +127,6 @@ public record VueQueryPluginOptions : Vue.VuePluginOptions
 /// query client 配置：缓存实例与默认选项。
 /// The query client configuration: cache instances and default options.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryClientConfig
 {
@@ -149,7 +147,6 @@ public record VueQueryClientConfig
 /// query client 的默认选项集合。
 /// The default option set of a query client.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryDefaultOptions
 {
@@ -166,7 +163,6 @@ public record VueQueryDefaultOptions
 /// 查询默认选项；只收录首期需要的确定行为。
 /// Default query options; only the deterministic behaviors required by the first slice.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryQueryDefaults
 {
@@ -195,7 +191,6 @@ public record VueQueryQueryDefaults
 /// mutation 默认选项。
 /// Default mutation options.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryMutationDefaults
 {
@@ -235,7 +230,6 @@ public sealed class VueQueryMutationCache
 /// Options shared by <c>useQuery()</c> and <c>fetchQuery()</c>.
 /// </summary>
 /// <typeparam name="TData">查询结果类型。The query result type.</typeparam>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryQueryOptions<TData>
 {
@@ -292,7 +286,6 @@ public record VueQueryQueryOptions<TData>
 /// 失效、重取、移除等批量操作的过滤条件。
 /// Filter criteria for bulk operations such as invalidation, refetching, and removal.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryFilterOptions
 {
@@ -388,7 +381,6 @@ public abstract class VueQueryQueryReturn<TData>
 /// </summary>
 /// <typeparam name="TData">提交结果类型。The submission result type.</typeparam>
 /// <typeparam name="TVariables">变量类型。The variables type.</typeparam>
-[ECMAScript]
 [Description("@#")]
 public record VueQueryMutationOptions<TData, TVariables>
 {

@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify VFileUpload 浏览插槽属性。
 /// Browse slot props exposed by Vuetify VFileUpload.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFileUploadBrowseProps
 {
@@ -19,7 +18,6 @@ public sealed record VFileUploadBrowseProps
 /// Vuetify VFileUpload 浏览插槽上下文。
 /// Browse slot context exposed by Vuetify VFileUpload.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFileUploadBrowseSlotContext
 {
@@ -34,7 +32,6 @@ public sealed record VFileUploadBrowseSlotContext
 /// Vuetify VFileUpload 输入插槽上下文。
 /// Input slot context exposed by Vuetify VFileUpload.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFileUploadInputSlotContext
 {
@@ -49,7 +46,6 @@ public sealed record VFileUploadInputSlotContext
 /// Vuetify VFileUpload 项目插槽属性。
 /// Item slot props exposed by Vuetify VFileUpload.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFileUploadItemSlotProps
 {
@@ -64,7 +60,6 @@ public sealed record VFileUploadItemSlotProps
 /// Vuetify VFileUpload 项目插槽上下文。
 /// Item slot context exposed by Vuetify VFileUpload.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFileUploadItemSlotContext
 {

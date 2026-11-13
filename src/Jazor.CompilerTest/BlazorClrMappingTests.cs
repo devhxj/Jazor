@@ -540,7 +540,7 @@ public sealed class BlazorClrMappingTests
             }
             """);
         var body = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToJavaScript();
-        var root = Path.Combine(Path.GetTempPath(), "jazor-inline-getter-" + Guid.NewGuid().ToString("N"));
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-inline-getter-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {

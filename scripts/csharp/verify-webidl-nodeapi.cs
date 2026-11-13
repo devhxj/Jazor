@@ -50,9 +50,9 @@ var inventory = JsonSerializer.Deserialize<WebIdlInventory>(
 var parity = "";
 if (args.Length == 0)
 {
-    // Fixed fingerprints come from the pre-migration Deno collector with the
-    // same pinned inputs and skip-spec-prose setting. Do not self-baseline a
-    // fresh NodeApi run: CI must detect collector or generated-output drift.
+    // The collector fingerprint stays fixed to the pre-migration input. Intentional emitter
+    // changes update generatedFiles from that same inventory and record emissionRevision;
+    // a fresh collection must never silently reset the inventory fingerprint.
     using var baseline = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(layout.RepositoryRoot,
         "src", "ECMAScript.WebIDL.GeneratorTest", "Fixtures", "nodeapi-collector-baseline.json")));
     var fingerprint = Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(
@@ -65,8 +65,8 @@ if (args.Length == 0)
     var expected = baseline.RootElement.GetProperty("generatedFiles");
     if (actualFiles.Count != expected.EnumerateObject().Count() || expected.EnumerateObject().Any(file =>
         !actualFiles.TryGetValue(file.Name, out var hash) || hash != file.Value.GetString()))
-        throw new InvalidOperationException("Generated C# differs from the fixed Deno collector baseline.");
-    parity = $"Fixed Deno inventory fingerprint matches; {actualFiles.Count} generated C# files are byte-identical.";
+        throw new InvalidOperationException("Generated C# differs from the reviewed emitter baseline.");
+    parity = $"Fixed collector inventory fingerprint matches; {actualFiles.Count} generated C# files match the reviewed emitter baseline.";
 }
 if (args.Length > 0)
 {

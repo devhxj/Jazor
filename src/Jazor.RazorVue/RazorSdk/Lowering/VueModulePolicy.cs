@@ -36,6 +36,18 @@ internal sealed class VueModulePolicy : AstConverterModulePolicy
         INamedTypeSymbol nestedRuntimeClass)
         => true;
 
+    public override bool ShouldIncludeSourceDependency(INamedTypeSymbol type)
+    {
+        // Component declarations and SG builder helpers are consumed by direct render lowering.
+        // They describe Vue artifacts, not ordinary runtime classes to copy into the module.
+        for (var current = type; current is not null; current = current.BaseType)
+            if (current.ToDisplayString() == ComponentSymbolPolicy.ComponentBaseMetadataName)
+                return false;
+        return !type.IsStatic || !type.GetMembers().OfType<IMethodSymbol>().Any(static method =>
+            method.Parameters.Any(static parameter => parameter.Type.ToDisplayString() ==
+                "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder"));
+    }
+
     public override string? GetPreferredModuleDeclaredName(ISymbol symbol)
     {
         if (symbol is not IMethodSymbol { MethodKind: MethodKind.PropertyGet } getter)

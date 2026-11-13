@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify VDialog 激活器插槽上下文。
 /// Activator slot context exposed by Vuetify VDialog.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VDialogActivatorContext
 {

@@ -50,7 +50,6 @@ public sealed class WangEditorToolbarInstance
 /// 编辑器配置（slate 内容与菜单/上传等）；对应 <c>IEditorConfig</c> 的常用子集。
 /// Editor configuration (slate content plus menus and upload); the frequently used subset of <c>IEditorConfig</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record WangEditorConfig
 {
@@ -83,7 +82,6 @@ public record WangEditorConfig
 /// 工具栏配置；对应 <c>IToolbarConfig</c> 的常用子集。
 /// Toolbar configuration; the frequently used subset of <c>IToolbarConfig</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record WangEditorToolbarConfig
 {

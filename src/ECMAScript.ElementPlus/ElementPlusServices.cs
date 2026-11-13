@@ -67,7 +67,6 @@ public enum ElFeedbackType
 }
 
 /// <summary>Typed options for toast messages.</summary>
-[ECMAScript]
 public sealed record ElMessageOptions : VueProps
 {
     /// <summary>The text displayed in the toast.</summary>
@@ -133,7 +132,6 @@ public enum ElMessageBoxAction
 }
 
 /// <summary>Successful prompt result, containing the authored text.</summary>
-[ECMAScript]
 public sealed record ElMessageBoxPromptResult : VueProps
 {
     /// <summary>The user's input.</summary>
@@ -145,7 +143,6 @@ public sealed record ElMessageBoxPromptResult : VueProps
 }
 
 /// <summary>Typed confirmation, alert and prompt options.</summary>
-[ECMAScript]
 public sealed record ElMessageBoxOptions : VueProps
 {
     /// <summary>The visual intent.</summary>
@@ -202,7 +199,6 @@ public sealed record ElMessageBoxService
 }
 
 /// <summary>Typed notification options.</summary>
-[ECMAScript]
 public sealed record ElNotificationOptions : VueProps
 {
     /// <summary>The notification title.</summary>

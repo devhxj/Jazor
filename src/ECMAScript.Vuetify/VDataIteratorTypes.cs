@@ -160,7 +160,6 @@ public delegate Number? VuetifyDataIteratorCompareFunction(VueValue? first, VueV
 /// VDataIterator 的 customKeySort 属性接受的按键排序回调集合。
 /// Per-key sort callbacks accepted by VDataIterator's customKeySort prop.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyDataIteratorSortFunctions : VueDictionary<VuetifyDataIteratorCompareFunction>;
 
@@ -168,7 +167,6 @@ public sealed record VuetifyDataIteratorSortFunctions : VueDictionary<VuetifyDat
 /// 通过 VDataIterator 作用域插槽公开的内部项结构。
 /// Internal item shape exposed through VDataIterator scoped slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyDataIteratorInternalItem
 {
@@ -201,7 +199,6 @@ public sealed record VuetifyDataIteratorInternalItem
 /// 通过 VDataIterator 的 groupedItems 插槽字段公开的分组节点结构。
 /// Group node shape exposed through VDataIterator's groupedItems slot field.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyDataIteratorGroup
 {
@@ -283,7 +280,6 @@ public readonly union VuetifyDataIteratorGroupedItem(
 /// Vuetify VDataIterator 公开的默认/页眉/页脚插槽上下文。
 /// Default/header/footer slot context exposed by Vuetify VDataIterator.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VDataIteratorSlotContext
 {

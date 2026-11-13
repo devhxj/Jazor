@@ -437,7 +437,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
 
             [ECMAScript]
             [Description("@#")]
-            sealed class RuntimeAttributes
+            sealed record RuntimeAttributes
             {
                 public string? Title { get; set; }
             }
@@ -823,14 +823,14 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
 
             [ECMAScript]
             [Description("@#")]
-            sealed class ReleaseMetadata
+            sealed record ReleaseMetadata
             {
                 public string? Channel { get; set; }
             }
 
             [ECMAScript]
             [Description("@#")]
-            sealed class ReleaseRequest
+            sealed record ReleaseRequest
             {
                 public ReleaseMetadata Metadata { get; } = null!;
             }

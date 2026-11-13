@@ -52,7 +52,6 @@ public readonly union VuetifyWindowShowArrowsValue(bool, VuetifyWindowShowArrows
 /// <summary>
 /// Vuetify touch directive payload used by VWindow.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VuetifyTouchData
 {
@@ -108,7 +107,6 @@ public record VuetifyTouchData
 /// <summary>
 /// Vuetify touch event wrapper carrying the original DOM touch event.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTouchEventData : VuetifyTouchData
 {
@@ -139,7 +137,6 @@ public delegate void VuetifyTouchDirectionHandler(VuetifyTouchData touchData);
 /// <summary>
 /// Strongly typed Vuetify touch handler bag.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTouchHandlers : VueProps
 {
@@ -223,7 +220,6 @@ public readonly union VuetifyTouchValue(bool, VuetifyTouchHandlers)
 /// <summary>
 /// Vuetify group item exposed through VWindow group slot context.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyWindowGroupItem
 {
@@ -249,7 +245,6 @@ public sealed record VuetifyWindowGroupItem
 /// <summary>
 /// Vuetify group contract exposed by VWindow default/additional slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyWindowGroupProvide
 {
@@ -332,7 +327,6 @@ public delegate Number VuetifyWindowGroupItemIndexCallback(VueValue? value);
 /// <summary>
 /// Default and additional slot context exposed by Vuetify VWindow.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VWindowSlotContext
 {
@@ -346,7 +340,6 @@ public sealed record VWindowSlotContext
 /// <summary>
 /// Props object for VWindow prev/next arrow slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VWindowControlProps
 {
@@ -378,7 +371,6 @@ public sealed record VWindowControlProps
 /// <summary>
 /// Prev/next slot context exposed by Vuetify VWindow.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VWindowControlSlotContext
 {
@@ -392,7 +384,6 @@ public sealed record VWindowControlSlotContext
 /// <summary>
 /// Payload emitted by Vuetify window item group:selected.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyGroupSelectedEvent
 {

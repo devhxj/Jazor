@@ -67,6 +67,8 @@ Blazor JS interop 使用独立的运行时模型。`IJSRuntime` 的 identifier s
 
 RazorVue 组件按独立入口契约判断：类型可赋值给 `ComponentBase`、实现 `IVueComponent`（包括泛型或派生 marker），并声明 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]`（导出名由 `[ECMAScriptName]` 给出）。导入描述与 `IVueComponent` marker 共同构成当前组件类型契约。
 
+普通业务类、record、辅助接口和委托无需 `[ECMAScript]` 许可。组件调用的同项目普通 helper 通过 compiler 的源码依赖进入产物，direct render 与普通方法共享符号绑定。配置对象使用 record，class 保留构造与实例行为；多个模块共享一个普通 class 的实现时，通过已有模块导出表达唯一归属。
+
 这些规则检查作者的 `.razor`、`.razor.cs` 和普通 C# component source；final Compilation 使用 `JAZORVGA020`-`026` 系列诊断。其他服务在具备可静态证明的 browser contract 后进入 authoring 诊断；最终 lowering 由 final diagnostic 报告。
 
 <a id="cascading-parameters"></a>

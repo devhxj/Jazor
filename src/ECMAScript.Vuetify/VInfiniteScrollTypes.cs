@@ -88,7 +88,6 @@ public delegate void VInfiniteScrollDoneCallback(VuetifyInfiniteScrollStatus sta
 /// Vuetify VInfiniteScroll 加载事件发出的载荷。
 /// Payload emitted by Vuetify VInfiniteScroll load events.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VInfiniteScrollLoadOptions
 {
@@ -109,7 +108,6 @@ public sealed record VInfiniteScrollLoadOptions
 /// VInfiniteScroll 状态插槽使用的作用域插槽上下文。
 /// Scoped slot context used by VInfiniteScroll status slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VInfiniteScrollSlotContext
 {

@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 加载器插槽暴露的上下文。
 /// Context exposed by Vuetify loader slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyLoaderSlotContext
 {

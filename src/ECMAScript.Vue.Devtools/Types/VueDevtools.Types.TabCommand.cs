@@ -37,7 +37,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>iframe custom tab view 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record IframeViewOptions : Vue.VueProps
     {
@@ -65,7 +64,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>VNode custom tab view 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record VNodeViewOptions : Vue.VueProps
     {
@@ -89,7 +87,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>SFC custom tab view 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record SfcViewOptions : Vue.VueProps
     {
@@ -113,7 +110,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>使用 <see cref="AddCustomTab"/> 注册的 custom tab。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record CustomTab : Vue.VueProps
     {
@@ -139,7 +135,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>URL custom command action 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record CustomCommandUrlActionOptions : Vue.VueProps
     {
@@ -166,7 +161,6 @@ public static partial class VueDevtools
     /// custom command 的一级子项。官方 API 明确排除嵌套 <c>children</c>，
     /// 所以它不是 <see cref="CustomCommand"/> 的递归别名。
     /// </summary>
-    [ECMAScript]
     [Description("@#")]
     public record CustomCommandChild : Vue.VueProps
     {
@@ -199,7 +193,6 @@ public static partial class VueDevtools
     /// Devtools command palette 中的 command。<see cref="Children"/> 非空时，
     /// 上游会忽略 <see cref="Action"/>，因此二者不应同时用于同一业务命令。
     /// </summary>
-    [ECMAScript]
     [Description("@#")]
     public record CustomCommand : Vue.VueProps
     {

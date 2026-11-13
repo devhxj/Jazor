@@ -351,7 +351,6 @@ public readonly union VuetifyCalendarAllowedDatesValue(
 /// 日历事件项，包含标题、起止时间和颜色等属性。
 /// Calendar event item with title, start/end time, and color properties.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyCalendarEventItem : VueProps
 {
@@ -433,7 +432,6 @@ public static class VuetifyCalendarEventsCollectionBuilder
 /// 日历日对象，包含日期、格式化文本和状态标志。
 /// Calendar day object with date, formatted text, and status flags.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyCalendarDay : VueProps
 {
@@ -502,7 +500,6 @@ public sealed record VuetifyCalendarDay : VueProps
 /// 日历时间间隔，包含标签、起止时间和关联事件。
 /// Calendar time interval with label, start/end time, and associated events.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyCalendarInterval : VueProps
 {
@@ -576,7 +573,6 @@ public readonly union VuetifyCalendarIntervalFormatValue(string, VuetifyCalendar
 /// 日历头部插槽上下文，提供标题数据。
 /// Calendar header slot context providing title data.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VCalendarHeaderSlotContext
 {
@@ -591,7 +587,6 @@ public sealed record VCalendarHeaderSlotContext
 /// 日历事件插槽上下文，提供日、全天标志和事件数据。
 /// Calendar event slot context providing day, all-day flag, and event data.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VCalendarEventSlotContext
 {

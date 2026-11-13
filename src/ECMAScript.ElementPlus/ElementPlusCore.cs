@@ -47,7 +47,6 @@ public interface IElementPlusComponent : IVueComponent
 /// <summary>
 /// Marker base type for Element Plus directives.
 /// </summary>
-[ECMAScript]
 public abstract record ElDirective : VueDirective
 {
 }
@@ -66,7 +65,6 @@ public sealed record ElPlugin : VuePlugin
 /// <summary>
 /// Element Plus install options.
 /// </summary>
-[ECMAScript]
 [Description("@#ConfigProviderContext")]
 public sealed record ElInstallOptions : VuePluginOptions
 {

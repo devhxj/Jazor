@@ -263,7 +263,7 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         HandleTransformationFailure<Node>(
             operation,
-            $"External type '{unsupportedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot be used for {usage}. Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported.");
+            $"External type '{unsupportedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot be used for {usage}. A generated source implementation, module artifact or explicit host mapping is required.");
     }
 
     private void RejectAmbiguousRuntimeTypeFilter(IOperation operation, ITypeSymbol typeSymbol, string usage)
@@ -319,12 +319,12 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         {
             HandleTransformationFailure<Node>(
                 operation,
-                $"External type '{unsupportedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot be used for {usage}. Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported.");
+                $"External type '{unsupportedType.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot be used for {usage}. A generated source implementation, module artifact or explicit host mapping is required.");
         }
 
         HandleTransformationFailure<Node>(
             operation,
-            $"External member '{symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot fall back to raw JavaScript {usage}. Only whitelist members or members declared on [ECMAScript]/[ECMAScriptModule] types are supported.");
+            $"External member '{symbol.OriginalDefinition.ToDisplayString(Format.NameFormat)}' is not supported and cannot fall back to raw JavaScript {usage}. A generated source implementation, module artifact or explicit host mapping is required.");
     }
 
     private bool IsSupportedExternalType(IOperation operation, ITypeSymbol typeSymbol)
@@ -516,6 +516,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             foreach (var candidate in EnumerateSupportMarkerCandidates(typeSymbol))
             {
                 if (_moduleDeclaredNames.ContainsKey(candidate.OriginalDefinition))
+                    return true;
+                if (candidate.ContainingType is { } containingType &&
+                    _moduleDeclaredNames.ContainsKey(containingType.OriginalDefinition))
                     return true;
             }
         }
@@ -752,6 +755,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
             foreach (var candidate in EnumerateSupportMarkerCandidates(symbol))
             {
                 if (_moduleDeclaredNames.ContainsKey(candidate.OriginalDefinition))
+                    return true;
+                if (candidate.ContainingType is { } containingType &&
+                    _moduleDeclaredNames.ContainsKey(containingType.OriginalDefinition))
                     return true;
             }
         }

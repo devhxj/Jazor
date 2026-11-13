@@ -65,20 +65,6 @@ public partial class SemanticWalker
 			.Select(static item => item.WriteBackTarget)
 			.ToList();
 
-		if (IsObjectLiteralHostType(type))
-		{
-			if (arguments.Count != 0)
-			{
-				return HandleTransformationFailure<Expression>(
-					operation,
-					$"Object-literal host type '{type.ToDisplayString(Format.NameFormat)}' does not support constructor arguments.");
-			}
-
-			return operation.Initializer?.Initializers.Length > 0
-				? RecursiveObjectOrCollectionInitializer(operation.Initializer, argument)
-				: new ObjectExpression(NodeList.Empty<Node>());
-		}
-
 		var mappedConstructor = GetWhiteListExpression(constructor, argument, arguments, null, out _, operation);
 		if (mappedConstructor is null &&
 			!IsIntrinsicObjectCreationFallbackAllowed(constructor, type))
@@ -96,25 +82,32 @@ public partial class SemanticWalker
 		}
 
 		// 普通对象创建
-		var (mapper, typeName) = GetMapperType(type);
+		var (mapper, _) = GetMapperType(type);
 		// 类型引用统一走 BuildFullTypeName：
 		// 用户代码中的成员类型会按声明侧规则折叠成运行时扁平名，
 		// ECMAScript 宿主绑定则保留必要的层级/导入语义。
-		var callee = BuildFullTypeName(type, argument) ?? new Identifier(typeName);
-		if (ShouldEmitMemberConstructorSelector(constructor))
-		{
-			var helperName = Util.GetMemberConstructorHelperName(constructor);
-			arguments.Insert(0, CreateStringLiteral(helperName));
-		}
-
-		Expression expr = usesMemberConstructorRefOutSink
-			? BuildMemberConstructorRefOutCreation(operation, callee, arguments, refParameters, argument)
-			: new NewExpression(callee, NodeList.From(arguments));
-		if (mapper == TypeMapper.BigInt)
-			expr = new CallExpression(callee, NodeList.From(arguments), false);
-
+		Expression expr;
 		if (mappedConstructor is not null)
 			expr = mappedConstructor;
+		else
+		{
+			// Explicit mappings own construction and need no runtime class name. Only normal
+			// class allocation requires a constructor; an empty name must never imply {}.
+			var callee = BuildFullTypeName(type, argument);
+			if (callee is null)
+				return HandleTransformationFailure<Expression>(operation,
+					$"Class '{type.ToDisplayString(Format.NameFormat)}' has no runtime constructor name. Use a record for a plain JavaScript object, or declare the host constructor mapping.");
+			if (ShouldEmitMemberConstructorSelector(constructor))
+			{
+				var helperName = Util.GetMemberConstructorHelperName(constructor);
+				arguments.Insert(0, CreateStringLiteral(helperName));
+			}
+			expr = usesMemberConstructorRefOutSink
+				? BuildMemberConstructorRefOutCreation(operation, callee, arguments, refParameters, argument)
+				: new NewExpression(callee, NodeList.From(arguments));
+			if (mapper == TypeMapper.BigInt)
+				expr = new CallExpression(callee, NodeList.From(arguments), false);
+		}
 		
 		// 如果有初始化器，则需要用IIFE处理
 		if (operation.Initializer?.Initializers.Length > 0)

@@ -5,7 +5,6 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Registry of generated Element Plus components.
 /// </summary>
-[ECMAScript]
 [Description("@#ElComponentRegistry")]
 public sealed record ElComponentRegistry : VueComponentRegistry
 {

@@ -142,7 +142,6 @@ public sealed class FloatingMiddleware
 /// 浮层的二维坐标。
 /// The two-dimensional coordinates of the floating element.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingCoords
 {
@@ -159,7 +158,6 @@ public record FloatingCoords
 /// 元素尺寸。
 /// The element dimensions.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingDimensions
 {
@@ -176,7 +174,6 @@ public record FloatingDimensions
 /// 元素矩形：坐标与尺寸的组合。
 /// An element rectangle combining coordinates and dimensions.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingRect
 {
@@ -201,7 +198,6 @@ public record FloatingRect
 /// 四边溢出量；键为 top/right/bottom/left。
 /// The overflow amounts for each side; keys are top/right/bottom/left.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingSideObject
 {
@@ -226,7 +222,6 @@ public record FloatingSideObject
 /// 参考元素与浮层元素的矩形对。
 /// The rectangle pair for the reference and floating elements.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingElementRects
 {
@@ -243,7 +238,6 @@ public record FloatingElementRects
 /// 参与定位的元素对。
 /// The element pair used for positioning.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingElements
 {
@@ -260,7 +254,6 @@ public record FloatingElements
 /// 中间件返回的数据；按中间件名索引，未使用的键为 undefined。
 /// Data returned by middleware, indexed by middleware name; unused keys are undefined.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingMiddlewareData
 {
@@ -285,7 +278,6 @@ public record FloatingMiddlewareData
 /// arrow 中间件的定位数据。
 /// Positioning data produced by the <c>arrow</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingArrowData
 {
@@ -310,7 +302,6 @@ public record FloatingArrowData
 /// 摆放修正中间件（flip、shift）的索引数据。
 /// Index data produced by placement-modifying middleware such as <c>flip</c> and <c>shift</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingPlacementData
 {
@@ -323,7 +314,6 @@ public record FloatingPlacementData
 /// hide 中间件的裁剪数据。
 /// Clipping data produced by the <c>hide</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingHideData
 {
@@ -340,7 +330,6 @@ public record FloatingHideData
 /// 应用于浮层元素的定位样式。
 /// The positioning styles to apply to the floating element.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingStyles
 {
@@ -369,7 +358,6 @@ public record FloatingStyles
 /// <c>computePosition()</c> 的返回结果。
 /// The result returned by <c>computePosition()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingComputePositionReturn
 {
@@ -398,7 +386,6 @@ public record FloatingComputePositionReturn
 /// <c>computePosition()</c> 的选项对象。
 /// Options for <c>computePosition()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingComputePositionConfig
 {
@@ -419,7 +406,6 @@ public record FloatingComputePositionConfig
 /// <c>offset()</c> 中间件的选项：数值或按主轴/交叉轴/对准轴给出的偏移。
 /// Options for the <c>offset()</c> middleware: a number or per-axis offsets.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingOffsetValue
 {
@@ -440,7 +426,6 @@ public record FloatingOffsetValue
 /// detectOverflow 的溢出检测选项，被 shift/flip/size 等中间件共享。
 /// Overflow-detection options shared by middleware such as shift, flip, and size.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingDetectOverflowOptions
 {
@@ -509,7 +494,6 @@ public enum FloatingElementContext
 /// <c>shift()</c> 中间件的选项。
 /// Options for the <c>shift()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingShiftOptions
 {
@@ -559,7 +543,6 @@ public sealed class FloatingLimiter
 /// <c>flip()</c> 中间件的选项。
 /// Options for the <c>flip()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingFlipOptions
 {
@@ -620,7 +603,6 @@ public enum FloatingFallbackStrategy
 /// <c>size()</c> 中间件的选项。
 /// Options for the <c>size()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingSizeOptions
 {
@@ -645,7 +627,6 @@ public record FloatingSizeOptions
 /// <c>autoPlacement()</c> 中间件的选项。
 /// Options for the <c>autoPlacement()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingAutoPlacementOptions
 {
@@ -682,7 +663,6 @@ public record FloatingAutoPlacementOptions
 /// <c>hide()</c> 中间件的选项。
 /// Options for the <c>hide()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingHideOptions
 {
@@ -707,7 +687,6 @@ public record FloatingHideOptions
 /// <c>arrow()</c> 中间件的选项。
 /// Options for the <c>arrow()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingArrowOptions
 {
@@ -724,7 +703,6 @@ public record FloatingArrowOptions
 /// <c>inline()</c> 中间件的选项。
 /// Options for the <c>inline()</c> middleware.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingInlineOptions
 {
@@ -757,7 +735,6 @@ public record FloatingInlineOptions
 /// <c>autoUpdate()</c> 的选项。
 /// Options for <c>autoUpdate()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingAutoUpdateOptions
 {
@@ -796,7 +773,6 @@ public delegate Action FloatingWhileElementsMounted(Element reference, Element f
 /// <c>useFloating()</c> 的选项对象。
 /// Options for <c>useFloating()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FloatingUseOptions
 {

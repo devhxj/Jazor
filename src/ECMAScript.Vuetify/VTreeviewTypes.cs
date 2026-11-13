@@ -590,7 +590,6 @@ public readonly union VuetifyTreeviewSelectStrategyValue(
 /// <summary>
 /// 自定义树节点激活策略的模型转换与激活操作。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTreeviewActiveStrategyDefinition : VueProps
 {
@@ -616,7 +615,6 @@ public sealed record VuetifyTreeviewActiveStrategyDefinition : VueProps
 /// <summary>
 /// 自定义树节点选择策略的输入、输出转换和状态更新操作。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTreeviewSelectStrategyDefinition : VueProps
 {
@@ -703,7 +701,6 @@ public delegate VuetifyTreeviewValues VuetifyTreeviewSelectStrategyTransformOutC
 /// <summary>
 /// 树形激活策略接收的目标节点、新状态及父子关系映射。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTreeviewActiveStrategyActivateContext : VueProps
 {
@@ -747,7 +744,6 @@ public sealed record VuetifyTreeviewActiveStrategyActivateContext : VueProps
 /// <summary>
 /// 树形选择策略接收的节点、新状态、当前选择映射及父子关系。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTreeviewSelectStrategySelectContext : VueProps
 {
@@ -795,7 +791,6 @@ public sealed record VuetifyTreeviewSelectStrategySelectContext : VueProps
 /// 选中点击事件。
 /// Select click event.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTreeviewClickPayload : VueProps
 {
@@ -823,7 +818,6 @@ public sealed record VuetifyTreeviewClickPayload : VueProps
 /// 当前条目的直接子项，形成嵌套分组或树形结构。
 /// Vuetify 转换后的内部数据项；包含原始数据及用于渲染、选择的附加信息。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyTreeviewInternalItem : VueProps
 {
@@ -871,7 +865,6 @@ public sealed record VuetifyTreeviewInternalItem : VueProps
 /// 后置插槽。
 /// Append slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VTreeviewNodeSlotContext
 {
@@ -923,7 +916,6 @@ public sealed record VTreeviewNodeSlotContext
 /// 标题内容插槽。
 /// Title content slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VTreeviewTitleSlotContext
 {
@@ -951,7 +943,6 @@ public sealed record VTreeviewTitleSlotContext
 /// 副标题内容插槽。
 /// Subtitle content slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VTreeviewSubtitleSlotContext
 {
@@ -979,7 +970,6 @@ public sealed record VTreeviewSubtitleSlotContext
 /// 项内容插槽。
 /// Item content slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VTreeviewItemSlotContext : VueProps
 {
@@ -1011,7 +1001,6 @@ public sealed record VTreeviewItemSlotContext : VueProps
 /// 子标题插槽。
 /// Subheader slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VTreeviewStructuralItemSlotContext : VueProps
 {

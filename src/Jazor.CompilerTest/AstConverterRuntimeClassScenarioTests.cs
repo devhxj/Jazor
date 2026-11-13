@@ -2729,6 +2729,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         const string scenarioId = "ast-converter-runtime-class.external-base-rejected";
         var fixture = CompileModule(
             """
+            [ECMAScript.ECMAScript]
             public class ExternalBase
             {
             }
@@ -3452,7 +3453,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
                 Id: "ast-converter-runtime-class.event-external-instance-method-group-rejected",
                 Source: """
                     using System;
-                    public sealed class ExternalHandler { public void Record(int value) { } }
+                    [ECMAScript.ECMAScript] public sealed class ExternalHandler { public void Record(int value) { } }
                     public static class TestModule { public sealed class Widget { public event Action<int>? Changed; public void Subscribe(ExternalHandler handler) => Changed += handler.Record; } }
                     """,
                 Fragment: "Instance method-group handler"),

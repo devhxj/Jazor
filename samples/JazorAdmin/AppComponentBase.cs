@@ -1,6 +1,5 @@
 namespace JazorAdmin;
 
-[ECMAScript]
 public abstract class AppComponentBase : ComponentBase, IVueComponent
 {
     [Parameter]

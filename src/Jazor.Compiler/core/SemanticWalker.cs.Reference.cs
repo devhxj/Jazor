@@ -2830,7 +2830,9 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		{
 			if (targetMethod.IsStatic)
 			{
-				if (hostType is INamedTypeSymbol namedRuntimeHost &&
+				if (TryGetCurrentModuleDeclaredName(targetMethod, out var localMethodName))
+					callee = new Identifier(localMethodName);
+				else if (hostType is INamedTypeSymbol namedRuntimeHost &&
 					TryBuildImportedModuleMember(namedRuntimeHost, methodName!, argument, out var importedMethod, targetMethod) &&
 					importedMethod is not null)
 					callee = importedMethod;

@@ -722,7 +722,6 @@ public readonly union VuetifyDatePickerActiveValue(string, string[])
 /// Vuetify VDatePicker 标题插槽上下文。
 /// Vuetify VDatePicker header slot context.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VDatePickerHeaderSlotContext
 {

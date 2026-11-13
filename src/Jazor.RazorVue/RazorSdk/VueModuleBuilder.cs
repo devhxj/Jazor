@@ -122,6 +122,7 @@ internal static class VueModuleBuilder
             declaredNames,
             injectRegistry,
             cancellationToken).ConfigureAwait(false);
+        declaredNames = compilerOutput.DeclaredNames;
         var directRender = BuildOperationDirectRender(
             binding,
             component,
@@ -151,6 +152,7 @@ internal static class VueModuleBuilder
                 declaredNames,
                 injectRegistry,
                 cancellationToken).ConfigureAwait(false);
+            declaredNames = compilerOutput.DeclaredNames;
             directRender = BuildOperationDirectRender(
                 binding,
                 component,
@@ -231,6 +233,7 @@ internal static class VueModuleBuilder
                 currentModuleOutputPath: relativePath));
         var module = await converter.Convert(cancellationToken).ConfigureAwait(false);
         module = AppendFlattenedRuntimeClasses(module, converter, component, closure, cancellationToken);
+        declaredNames = converter.DeclaredNames;
         var initialization = ComponentInitializationLowerer.Build(
             binding.Compilation,
             closure,
@@ -256,7 +259,8 @@ internal static class VueModuleBuilder
             layout,
             initialization,
             ordinaryRenderFeatures,
-            projectSourceImportKeys);
+            projectSourceImportKeys,
+            converter.DeclaredNames);
     }
 
     private static Module? AppendFlattenedRuntimeClasses(
@@ -5075,7 +5079,8 @@ internal static class VueModuleBuilder
         GeneratedJavaScriptLayout? Layout,
         ComponentInitializationBuildResult Initialization,
         VueRenderRuntimeFeatures OrdinaryRenderFeatures,
-        ImmutableArray<string> ProjectSourceImportKeys);
+        ImmutableArray<string> ProjectSourceImportKeys,
+        IReadOnlyDictionary<ISymbol, string> DeclaredNames);
 
     /// <summary>Separates imports, declarations, and executable statements for deterministic framing.</summary>
     private sealed record CompilerModuleParts(

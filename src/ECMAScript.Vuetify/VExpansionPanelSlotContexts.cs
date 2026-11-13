@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify VExpansionPanel 标题插槽上下文。
 /// Context exposed by Vuetify VExpansionPanel title slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VExpansionPanelTitleSlotContext
 {

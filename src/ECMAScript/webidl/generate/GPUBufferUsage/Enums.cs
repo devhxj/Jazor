@@ -7,7 +7,6 @@ namespace ECMAScript.GPUBufferUsage;
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuaddressmode">WebGPU: 7.1.1 GPUSamplerDescriptor</see>
 /// </remarks>
 [Description("@#GPUAddressMode")]
-[ECMAScript]
 [String]
 public enum GPUAddressMode
 {
@@ -46,7 +45,6 @@ public enum GPUAddressMode
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuautolayoutmode">WebGPU: 10.1 Base pipelines</see>
 /// </remarks>
 [Description("@#GPUAutoLayoutMode")]
-[ECMAScript]
 [String]
 public enum GPUAutoLayoutMode
 {
@@ -67,7 +65,6 @@ public enum GPUAutoLayoutMode
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpublendfactor">WebGPU: 10.3.5.1 Blend State</see>
 /// </remarks>
 [Description("@#GPUBlendFactor")]
-[ECMAScript]
 [String]
 public enum GPUBlendFactor
 {
@@ -232,7 +229,6 @@ public enum GPUBlendFactor
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpublendoperation">WebGPU: 10.3.5.1 Blend State</see>
 /// </remarks>
 [Description("@#GPUBlendOperation")]
-[ECMAScript]
 [String]
 public enum GPUBlendOperation
 {
@@ -289,7 +285,6 @@ public enum GPUBlendOperation
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpubufferbindingtype">WebGPU: 8.1.1 Bind Group Layout Creation</see>
 /// </remarks>
 [Description("@#GPUBufferBindingType")]
-[ECMAScript]
 [String]
 public enum GPUBufferBindingType
 {
@@ -328,7 +323,6 @@ public enum GPUBufferBindingType
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpubuffermapstate">WebGPU: 5.1 GPUBuffer</see>
 /// </remarks>
 [Description("@#GPUBufferMapState")]
-[ECMAScript]
 [String]
 public enum GPUBufferMapState
 {
@@ -367,7 +361,6 @@ public enum GPUBufferMapState
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpucomparefunction">WebGPU: 7.1.1 GPUSamplerDescriptor</see>
 /// </remarks>
 [Description("@#GPUCompareFunction")]
-[ECMAScript]
 [String]
 public enum GPUCompareFunction
 {
@@ -451,7 +444,6 @@ public enum GPUCompareFunction
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpucompilationmessagetype">WebGPU: 9.1.2 Shader Module Compilation Information</see>
 /// </remarks>
 [Description("@#GPUCompilationMessageType")]
-[ECMAScript]
 [String]
 public enum GPUCompilationMessageType
 {
@@ -490,7 +482,6 @@ public enum GPUCompilationMessageType
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpucullmode">WebGPU: 10.3.2 Primitive State</see>
 /// </remarks>
 [Description("@#GPUCullMode")]
-[ECMAScript]
 [String]
 public enum GPUCullMode
 {
@@ -529,7 +520,6 @@ public enum GPUCullMode
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpudevicelostreason">WebGPU: 22.1 Fatal Errors</see>
 /// </remarks>
 [Description("@#GPUDeviceLostReason")]
-[ECMAScript]
 [String]
 public enum GPUDeviceLostReason
 {
@@ -559,7 +549,6 @@ public enum GPUDeviceLostReason
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuerrorfilter">WebGPU: 22.3 Error Scopes</see>
 /// </remarks>
 [Description("@#GPUErrorFilter")]
-[ECMAScript]
 [String]
 public enum GPUErrorFilter
 {
@@ -598,7 +587,6 @@ public enum GPUErrorFilter
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpufiltermode">WebGPU: 7.1.1 GPUSamplerDescriptor</see>
 /// </remarks>
 [Description("@#GPUFilterMode")]
-[ECMAScript]
 [String]
 public enum GPUFilterMode
 {
@@ -628,7 +616,6 @@ public enum GPUFilterMode
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpufrontface">WebGPU: 10.3.2 Primitive State</see>
 /// </remarks>
 [Description("@#GPUFrontFace")]
-[ECMAScript]
 [String]
 public enum GPUFrontFace
 {
@@ -658,7 +645,6 @@ public enum GPUFrontFace
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuindexformat">WebGPU: 10.3.7 Vertex State</see>
 /// </remarks>
 [Description("@#GPUIndexFormat")]
-[ECMAScript]
 [String]
 public enum GPUIndexFormat
 {
@@ -688,7 +674,6 @@ public enum GPUIndexFormat
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuloadop">WebGPU: 17.1.1.3 Load &amp; Store Operations</see>
 /// </remarks>
 [Description("@#GPULoadOp")]
-[ECMAScript]
 [String]
 public enum GPULoadOp
 {
@@ -718,7 +703,6 @@ public enum GPULoadOp
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpumipmapfiltermode">WebGPU: 7.1.1 GPUSamplerDescriptor</see>
 /// </remarks>
 [Description("@#GPUMipmapFilterMode")]
-[ECMAScript]
 [String]
 public enum GPUMipmapFilterMode
 {
@@ -748,7 +732,6 @@ public enum GPUMipmapFilterMode
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpupipelineerrorreason">WebGPU: 10. Pipelines</see>
 /// </remarks>
 [Description("@#GPUPipelineErrorReason")]
-[ECMAScript]
 [String]
 public enum GPUPipelineErrorReason
 {
@@ -778,7 +761,6 @@ public enum GPUPipelineErrorReason
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpupowerpreference">WebGPU: 4.2.2 Adapter Selection</see>
 /// </remarks>
 [Description("@#GPUPowerPreference")]
-[ECMAScript]
 [String]
 public enum GPUPowerPreference
 {
@@ -808,7 +790,6 @@ public enum GPUPowerPreference
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuprimitivetopology">WebGPU: 10.3.2 Primitive State</see>
 /// </remarks>
 [Description("@#GPUPrimitiveTopology")]
-[ECMAScript]
 [String]
 public enum GPUPrimitiveTopology
 {
@@ -865,7 +846,6 @@ public enum GPUPrimitiveTopology
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuquerytype">WebGPU: 20.2 QueryType</see>
 /// </remarks>
 [Description("@#GPUQueryType")]
-[ECMAScript]
 [String]
 public enum GPUQueryType
 {
@@ -895,7 +875,6 @@ public enum GPUQueryType
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpusamplerbindingtype">WebGPU: 8.1.1 Bind Group Layout Creation</see>
 /// </remarks>
 [Description("@#GPUSamplerBindingType")]
-[ECMAScript]
 [String]
 public enum GPUSamplerBindingType
 {
@@ -934,7 +913,6 @@ public enum GPUSamplerBindingType
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpustenciloperation">WebGPU: 10.3.6 Depth/Stencil State</see>
 /// </remarks>
 [Description("@#GPUStencilOperation")]
-[ECMAScript]
 [String]
 public enum GPUStencilOperation
 {
@@ -1018,7 +996,6 @@ public enum GPUStencilOperation
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpustoragetextureaccess">WebGPU: 8.1.1 Bind Group Layout Creation</see>
 /// </remarks>
 [Description("@#GPUStorageTextureAccess")]
-[ECMAScript]
 [String]
 public enum GPUStorageTextureAccess
 {
@@ -1057,7 +1034,6 @@ public enum GPUStorageTextureAccess
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpustoreop">WebGPU: 17.1.1.3 Load &amp; Store Operations</see>
 /// </remarks>
 [Description("@#GPUStoreOp")]
-[ECMAScript]
 [String]
 public enum GPUStoreOp
 {
@@ -1087,7 +1063,6 @@ public enum GPUStoreOp
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gputextureaspect">WebGPU: 6.2.1 Texture View Creation</see>
 /// </remarks>
 [Description("@#GPUTextureAspect")]
-[ECMAScript]
 [String]
 public enum GPUTextureAspect
 {
@@ -1126,7 +1101,6 @@ public enum GPUTextureAspect
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gputexturedimension">WebGPU: 6.1.1 GPUTextureDescriptor</see>
 /// </remarks>
 [Description("@#GPUTextureDimension")]
-[ECMAScript]
 [String]
 public enum GPUTextureDimension
 {
@@ -1165,7 +1139,6 @@ public enum GPUTextureDimension
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gputextureformat">WebGPU: 6.3 Texture Formats</see>
 /// </remarks>
 [Description("@#GPUTextureFormat")]
-[ECMAScript]
 [String]
 public enum GPUTextureFormat
 {
@@ -2086,7 +2059,6 @@ public enum GPUTextureFormat
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gputexturesampletype">WebGPU: 8.1.1 Bind Group Layout Creation</see>
 /// </remarks>
 [Description("@#GPUTextureSampleType")]
-[ECMAScript]
 [String]
 public enum GPUTextureSampleType
 {
@@ -2143,7 +2115,6 @@ public enum GPUTextureSampleType
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gputextureviewdimension">WebGPU: 6.2.1 Texture View Creation</see>
 /// </remarks>
 [Description("@#GPUTextureViewDimension")]
-[ECMAScript]
 [String]
 public enum GPUTextureViewDimension
 {
@@ -2209,7 +2180,6 @@ public enum GPUTextureViewDimension
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuvertexformat">WebGPU: 10.3.7.1 Vertex Formats</see>
 /// </remarks>
 [Description("@#GPUVertexFormat")]
-[ECMAScript]
 [String]
 public enum GPUVertexFormat
 {
@@ -2599,7 +2569,6 @@ public enum GPUVertexFormat
 /// <see href="https://gpuweb.github.io/gpuweb/#enumdef-gpuvertexstepmode">WebGPU: 10.3.7.1 Vertex Formats</see>
 /// </remarks>
 [Description("@#GPUVertexStepMode")]
-[ECMAScript]
 [String]
 public enum GPUVertexStepMode
 {
@@ -2629,7 +2598,6 @@ public enum GPUVertexStepMode
 /// <see href="https://gpuweb.github.io/gpuweb/#gpucanvasalphamode">WebGPU: 21.6 GPUCanvasAlphaMode</see>
 /// </remarks>
 [Description("@#GPUCanvasAlphaMode")]
-[ECMAScript]
 [String]
 public enum GPUCanvasAlphaMode
 {
@@ -2659,7 +2627,6 @@ public enum GPUCanvasAlphaMode
 /// <see href="https://gpuweb.github.io/gpuweb/#gpucanvastonemappingmode">WebGPU: 21.5 GPUCanvasToneMappingMode</see>
 /// </remarks>
 [Description("@#GPUCanvasToneMappingMode")]
-[ECMAScript]
 [String]
 public enum GPUCanvasToneMappingMode
 {
@@ -2689,7 +2656,6 @@ public enum GPUCanvasToneMappingMode
 /// <see href="https://gpuweb.github.io/gpuweb/#gpufeaturename">WebGPU: 3.6.1.1 GPUFeatureName</see>
 /// </remarks>
 [Description("@#GPUFeatureName")]
-[ECMAScript]
 [String]
 public enum GPUFeatureName
 {

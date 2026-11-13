@@ -7,7 +7,6 @@ namespace ECMAScript;
 /// <see href="https://fetch.spec.whatwg.org/#requestdestination">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestDestination")]
-[ECMAScript]
 [String]
 public enum RequestDestination
 {
@@ -217,7 +216,6 @@ public enum RequestDestination
 /// <see href="https://fetch.spec.whatwg.org/#requestmode">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestMode")]
-[ECMAScript]
 [String]
 public enum RequestMode
 {
@@ -265,7 +263,6 @@ public enum RequestMode
 /// <see href="https://compression.spec.whatwg.org/#enumdef-compressionformat">Compression Standard: 4 Interface CompressionStream</see>
 /// </remarks>
 [Description("@#CompressionFormat")]
-[ECMAScript]
 [String]
 public enum CompressionFormat
 {
@@ -313,7 +310,6 @@ public enum CompressionFormat
 /// <see href="https://cookiestore.spec.whatwg.org/#enumdef-cookiesamesite">Cookie Store API Standard: 3 The CookieStore interface</see>
 /// </remarks>
 [Description("@#CookieSameSite")]
-[ECMAScript]
 [String]
 public enum CookieSameSite
 {
@@ -352,7 +348,6 @@ public enum CookieSameSite
 /// <see href="https://dom.spec.whatwg.org/#enumdef-shadowrootmode">DOM Standard: 4.8 Interface ShadowRoot</see>
 /// </remarks>
 [Description("@#ShadowRootMode")]
-[ECMAScript]
 [String]
 public enum ShadowRootMode
 {
@@ -382,7 +377,6 @@ public enum ShadowRootMode
 /// <see href="https://dom.spec.whatwg.org/#enumdef-slotassignmentmode">DOM Standard: 4.8 Interface ShadowRoot</see>
 /// </remarks>
 [Description("@#SlotAssignmentMode")]
-[ECMAScript]
 [String]
 public enum SlotAssignmentMode
 {
@@ -412,7 +406,6 @@ public enum SlotAssignmentMode
 /// <see href="https://drafts.csswg.org/css-font-loading-3/#enumdef-fontfaceloadstatus">CSS Font Loading Module Level 3: 2 The FontFace Interface</see>
 /// </remarks>
 [Description("@#FontFaceLoadStatus")]
-[ECMAScript]
 [String]
 public enum FontFaceLoadStatus
 {
@@ -460,7 +453,6 @@ public enum FontFaceLoadStatus
 /// <see href="https://drafts.csswg.org/css-font-loading-3/#enumdef-fontfacesetloadstatus">CSS Font Loading Module Level 3: 3 The FontFaceSet Interface</see>
 /// </remarks>
 [Description("@#FontFaceSetLoadStatus")]
-[ECMAScript]
 [String]
 public enum FontFaceSetLoadStatus
 {
@@ -490,7 +482,6 @@ public enum FontFaceSetLoadStatus
 /// <see href="https://drafts.csswg.org/css-spatial-nav-1/#enumdef-focusableareasearchmode">CSS Spatial Navigation Module Level 1: 5.2 Low level APIs</see>
 /// </remarks>
 [Description("@#FocusableAreaSearchMode")]
-[ECMAScript]
 [String]
 public enum FocusableAreaSearchMode
 {
@@ -520,7 +511,6 @@ public enum FocusableAreaSearchMode
 /// <see href="https://drafts.csswg.org/css-spatial-nav-1/#enumdef-spatialnavigationdirection">CSS Spatial Navigation Module Level 1: 5.1 Triggering Navigation Programmatically</see>
 /// </remarks>
 [Description("@#SpatialNavigationDirection")]
-[ECMAScript]
 [String]
 public enum SpatialNavigationDirection
 {
@@ -568,7 +558,6 @@ public enum SpatialNavigationDirection
 /// <see href="https://drafts.csswg.org/cssom-view-1/#enumdef-cssboxtype">CSSOM View Module Level 1: 11.1 The GeometryUtils Interface</see>
 /// </remarks>
 [Description("@#CSSBoxType")]
-[ECMAScript]
 [String]
 public enum CSSBoxType
 {
@@ -616,7 +605,6 @@ public enum CSSBoxType
 /// <see href="https://drafts.csswg.org/cssom-view-1/#enumdef-scrollbehavior">CSSOM View Module Level 1: 4 Extensions to the Window Interface</see>
 /// </remarks>
 [Description("@#ScrollBehavior")]
-[ECMAScript]
 [String]
 public enum ScrollBehavior
 {
@@ -655,7 +643,6 @@ public enum ScrollBehavior
 /// <see href="https://drafts.csswg.org/cssom-view-1/#enumdef-scrollintoviewcontainer">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see>
 /// </remarks>
 [Description("@#ScrollIntoViewContainer")]
-[ECMAScript]
 [String]
 public enum ScrollIntoViewContainer
 {
@@ -685,7 +672,6 @@ public enum ScrollIntoViewContainer
 /// <see href="https://drafts.csswg.org/cssom-view-1/#enumdef-scrolllogicalposition">CSSOM View Module Level 1: 6 Extensions to the Element Interface</see>
 /// </remarks>
 [Description("@#ScrollLogicalPosition")]
-[ECMAScript]
 [String]
 public enum ScrollLogicalPosition
 {
@@ -733,7 +719,6 @@ public enum ScrollLogicalPosition
 /// <see href="https://drafts.csswg.org/pointer-animations-1/#enumdef-pointeraxis">Pointer-driven Animations Module Level 1: 2.3.2 The PointerTimeline Interface</see>
 /// </remarks>
 [Description("@#PointerAxis")]
-[ECMAScript]
 [String]
 public enum PointerAxis
 {
@@ -781,7 +766,6 @@ public enum PointerAxis
 /// <see href="https://drafts.csswg.org/resize-observer-1/#enumdef-resizeobserverboxoptions">Resize Observer Module Level 1: 2.1 ResizeObserver interface</see>
 /// </remarks>
 [Description("@#ResizeObserverBoxOptions")]
-[ECMAScript]
 [String]
 public enum ResizeObserverBoxOptions
 {
@@ -820,7 +804,6 @@ public enum ResizeObserverBoxOptions
 /// <see href="https://drafts.csswg.org/scroll-animations-1/#enumdef-scrollaxis">Scroll-driven Animations Module Level 1: 2.2.2 The ScrollTimeline Interface</see>
 /// </remarks>
 [Description("@#ScrollAxis")]
-[ECMAScript]
 [String]
 public enum ScrollAxis
 {
@@ -868,7 +851,6 @@ public enum ScrollAxis
 /// <see href="https://drafts.csswg.org/web-animations-1/#enumdef-animationplaystate">Web Animations Module Level 1: 6.4.1 The AnimationPlayState enumeration</see>
 /// </remarks>
 [Description("@#AnimationPlayState")]
-[ECMAScript]
 [String]
 public enum AnimationPlayState
 {
@@ -916,7 +898,6 @@ public enum AnimationPlayState
 /// <see href="https://drafts.csswg.org/web-animations-1/#enumdef-animationreplacestate">Web Animations Module Level 1: 6.4.2 The AnimationReplaceState enumeration</see>
 /// </remarks>
 [Description("@#AnimationReplaceState")]
-[ECMAScript]
 [String]
 public enum AnimationReplaceState
 {
@@ -955,7 +936,6 @@ public enum AnimationReplaceState
 /// <see href="https://drafts.csswg.org/web-animations-1/#enumdef-compositeoperation">Web Animations Module Level 1: 6.7 The CompositeOperation and CompositeOperationOrAuto enumerations</see>
 /// </remarks>
 [Description("@#CompositeOperation")]
-[ECMAScript]
 [String]
 public enum CompositeOperation
 {
@@ -994,7 +974,6 @@ public enum CompositeOperation
 /// <see href="https://drafts.csswg.org/web-animations-1/#enumdef-compositeoperationorauto">Web Animations Module Level 1: 6.7 The CompositeOperation and CompositeOperationOrAuto enumerations</see>
 /// </remarks>
 [Description("@#CompositeOperationOrAuto")]
-[ECMAScript]
 [String]
 public enum CompositeOperationOrAuto
 {
@@ -1042,7 +1021,6 @@ public enum CompositeOperationOrAuto
 /// <see href="https://drafts.csswg.org/web-animations-1/#enumdef-fillmode">Web Animations Module Level 1: 6.5.2 The FillMode enumeration</see>
 /// </remarks>
 [Description("@#FillMode")]
-[ECMAScript]
 [String]
 public enum FillMode
 {
@@ -1099,7 +1077,6 @@ public enum FillMode
 /// <see href="https://drafts.csswg.org/web-animations-1/#enumdef-playbackdirection">Web Animations Module Level 1: 6.5.3 The PlaybackDirection enumeration</see>
 /// </remarks>
 [Description("@#PlaybackDirection")]
-[ECMAScript]
 [String]
 public enum PlaybackDirection
 {
@@ -1147,7 +1124,6 @@ public enum PlaybackDirection
 /// <see href="https://drafts.csswg.org/web-animations-2/#enumdef-iterationcompositeoperation">Web Animations Module Level 2: 4.11 The IterationCompositeOperation enumeration</see>
 /// </remarks>
 [Description("@#IterationCompositeOperation")]
-[ECMAScript]
 [String]
 public enum IterationCompositeOperation
 {
@@ -1177,7 +1153,6 @@ public enum IterationCompositeOperation
 /// <see href="https://fetch.spec.whatwg.org/#enumdef-requestduplex">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestDuplex")]
-[ECMAScript]
 [String]
 public enum RequestDuplex
 {
@@ -1198,7 +1173,6 @@ public enum RequestDuplex
 /// <see href="https://fetch.spec.whatwg.org/#enumdef-requestpriority">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestPriority")]
-[ECMAScript]
 [String]
 public enum RequestPriority
 {
@@ -1237,7 +1211,6 @@ public enum RequestPriority
 /// <see href="https://fetch.spec.whatwg.org/#requestcache">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestCache")]
-[ECMAScript]
 [String]
 public enum RequestCache
 {
@@ -1303,7 +1276,6 @@ public enum RequestCache
 /// <see href="https://fetch.spec.whatwg.org/#requestcredentials">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestCredentials")]
-[ECMAScript]
 [String]
 public enum RequestCredentials
 {
@@ -1342,7 +1314,6 @@ public enum RequestCredentials
 /// <see href="https://fetch.spec.whatwg.org/#requestredirect">Fetch Standard: 5.4 Request class</see>
 /// </remarks>
 [Description("@#RequestRedirect")]
-[ECMAScript]
 [String]
 public enum RequestRedirect
 {
@@ -1381,7 +1352,6 @@ public enum RequestRedirect
 /// <see href="https://fetch.spec.whatwg.org/#responsetype">Fetch Standard: 5.5 Response class</see>
 /// </remarks>
 [Description("@#ResponseType")]
-[ECMAScript]
 [String]
 public enum ResponseType
 {
@@ -1447,7 +1417,6 @@ public enum ResponseType
 /// <see href="https://fs.spec.whatwg.org/#enumdef-filesystemhandlekind">File System Standard: 2.2 The FileSystemHandle interface</see>
 /// </remarks>
 [Description("@#FileSystemHandleKind")]
-[ECMAScript]
 [String]
 public enum FileSystemHandleKind
 {
@@ -1477,7 +1446,6 @@ public enum FileSystemHandleKind
 /// <see href="https://fs.spec.whatwg.org/#enumdef-writecommandtype">File System Standard: 2.5 The FileSystemWritableFileStream interface</see>
 /// </remarks>
 [Description("@#WriteCommandType")]
-[ECMAScript]
 [String]
 public enum WriteCommandType
 {
@@ -1525,7 +1493,6 @@ public enum WriteCommandType
 /// <see href="https://fullscreen.spec.whatwg.org/#enumdef-fullscreenkeyboardlock">Fullscreen API Standard: 3 API</see>
 /// </remarks>
 [Description("@#FullscreenKeyboardLock")]
-[ECMAScript]
 [String]
 public enum FullscreenKeyboardLock
 {
@@ -1555,7 +1522,6 @@ public enum FullscreenKeyboardLock
 /// <see href="https://fullscreen.spec.whatwg.org/#enumdef-fullscreennavigationui">Fullscreen API Standard: 3 API</see>
 /// </remarks>
 [Description("@#FullscreenNavigationUI")]
-[ECMAScript]
 [String]
 public enum FullscreenNavigationUI
 {
@@ -1594,7 +1560,6 @@ public enum FullscreenNavigationUI
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasdirection">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasDirection")]
-[ECMAScript]
 [String]
 public enum CanvasDirection
 {
@@ -1633,7 +1598,6 @@ public enum CanvasDirection
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasfontkerning">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasFontKerning")]
-[ECMAScript]
 [String]
 public enum CanvasFontKerning
 {
@@ -1672,7 +1636,6 @@ public enum CanvasFontKerning
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasfontstretch">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasFontStretch")]
-[ECMAScript]
 [String]
 public enum CanvasFontStretch
 {
@@ -1765,7 +1728,6 @@ public enum CanvasFontStretch
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasfontvariantcaps">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasFontVariantCaps")]
-[ECMAScript]
 [String]
 public enum CanvasFontVariantCaps
 {
@@ -1840,7 +1802,6 @@ public enum CanvasFontVariantCaps
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvaslinecap">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasLineCap")]
-[ECMAScript]
 [String]
 public enum CanvasLineCap
 {
@@ -1879,7 +1840,6 @@ public enum CanvasLineCap
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvaslinejoin">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasLineJoin")]
-[ECMAScript]
 [String]
 public enum CanvasLineJoin
 {
@@ -1918,7 +1878,6 @@ public enum CanvasLineJoin
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvastextalign">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasTextAlign")]
-[ECMAScript]
 [String]
 public enum CanvasTextAlign
 {
@@ -1975,7 +1934,6 @@ public enum CanvasTextAlign
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvastextbaseline">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasTextBaseline")]
-[ECMAScript]
 [String]
 public enum CanvasTextBaseline
 {
@@ -2041,7 +1999,6 @@ public enum CanvasTextBaseline
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvastextrendering">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasTextRendering")]
-[ECMAScript]
 [String]
 public enum CanvasTextRendering
 {
@@ -2089,7 +2046,6 @@ public enum CanvasTextRendering
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#offscreenrenderingcontextid">HTML Standard: 4.12.5.3 The OffscreenCanvas interface</see>
 /// </remarks>
 [Description("@#OffscreenRenderingContextId")]
-[ECMAScript]
 [String]
 public enum OffscreenRenderingContextId
 {
@@ -2146,7 +2102,6 @@ public enum OffscreenRenderingContextId
 /// <see href="https://html.spec.whatwg.org/multipage/dom.html#documentreadystate">HTML Standard: 3.1.1 The Document object</see>
 /// </remarks>
 [Description("@#DocumentReadyState")]
-[ECMAScript]
 [String]
 public enum DocumentReadyState
 {
@@ -2185,7 +2140,6 @@ public enum DocumentReadyState
 /// <see href="https://html.spec.whatwg.org/multipage/dom.html#documentvisibilitystate">HTML Standard: 3.1.1 The Document object</see>
 /// </remarks>
 [Description("@#DocumentVisibilityState")]
-[ECMAScript]
 [String]
 public enum DocumentVisibilityState
 {
@@ -2215,7 +2169,6 @@ public enum DocumentVisibilityState
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#domparsersupportedtype">HTML Standard: 8.5.1 The DOMParser interface</see>
 /// </remarks>
 [Description("@#DOMParserSupportedType")]
-[ECMAScript]
 [String]
 public enum DOMParserSupportedType
 {
@@ -2272,7 +2225,6 @@ public enum DOMParserSupportedType
 /// <see href="https://html.spec.whatwg.org/multipage/dynamic-markup-insertion.html#sanitizerpresets">HTML Standard: 8.5 DOM parsing and serialization APIs</see>
 /// </remarks>
 [Description("@#SanitizerPresets")]
-[ECMAScript]
 [String]
 public enum SanitizerPresets
 {
@@ -2293,7 +2245,6 @@ public enum SanitizerPresets
 /// <see href="https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#selectionmode">HTML Standard: 4.10.20 APIs for the text control selections</see>
 /// </remarks>
 [Description("@#SelectionMode")]
-[ECMAScript]
 [String]
 public enum SelectionMode
 {
@@ -2341,7 +2292,6 @@ public enum SelectionMode
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#colorspaceconversion">HTML Standard: 8.11.2 The ImageBitmap interface</see>
 /// </remarks>
 [Description("@#ColorSpaceConversion")]
-[ECMAScript]
 [String]
 public enum ColorSpaceConversion
 {
@@ -2371,7 +2321,6 @@ public enum ColorSpaceConversion
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imageorientation">HTML Standard: 8.11.2 The ImageBitmap interface</see>
 /// </remarks>
 [Description("@#ImageOrientation")]
-[ECMAScript]
 [String]
 public enum ImageOrientation
 {
@@ -2401,7 +2350,6 @@ public enum ImageOrientation
 /// <see href="https://html.spec.whatwg.org/multipage/media.html#canplaytyperesult">HTML Standard: 4.8.11 Media elements</see>
 /// </remarks>
 [Description("@#CanPlayTypeResult")]
-[ECMAScript]
 [String]
 public enum CanPlayTypeResult
 {
@@ -2440,7 +2388,6 @@ public enum CanPlayTypeResult
 /// <see href="https://html.spec.whatwg.org/multipage/media.html#texttrackkind">HTML Standard: 4.8.11.11.5 Text track API</see>
 /// </remarks>
 [Description("@#TextTrackKind")]
-[ECMAScript]
 [String]
 public enum TextTrackKind
 {
@@ -2497,7 +2444,6 @@ public enum TextTrackKind
 /// <see href="https://html.spec.whatwg.org/multipage/media.html#texttrackmode">HTML Standard: 4.8.11.11.5 Text track API</see>
 /// </remarks>
 [Description("@#TextTrackMode")]
-[ECMAScript]
 [String]
 public enum TextTrackMode
 {
@@ -2536,7 +2482,6 @@ public enum TextTrackMode
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationhistorybehavior">HTML Standard: 7.2.6.2 The Navigation interface</see>
 /// </remarks>
 [Description("@#NavigationHistoryBehavior")]
-[ECMAScript]
 [String]
 public enum NavigationHistoryBehavior
 {
@@ -2575,7 +2520,6 @@ public enum NavigationHistoryBehavior
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationtype">HTML Standard: 7.2.6.3 Core infrastructure</see>
 /// </remarks>
 [Description("@#NavigationType")]
-[ECMAScript]
 [String]
 public enum NavigationType
 {
@@ -2623,7 +2567,6 @@ public enum NavigationType
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#scrollrestoration">HTML Standard: 7.2.5 The History interface</see>
 /// </remarks>
 [Description("@#ScrollRestoration")]
-[ECMAScript]
 [String]
 public enum ScrollRestoration
 {
@@ -2653,7 +2596,6 @@ public enum ScrollRestoration
 /// <see href="https://immersive-web.github.io/body-tracking/#enumdef-xrbodyjoint">WebXR Body Tracking Module - Level 1: 2.3 XRBody</see>
 /// </remarks>
 [Description("@#XRBodyJoint")]
-[ECMAScript]
 [String]
 public enum XRBodyJoint
 {
@@ -3412,7 +3354,6 @@ public enum XRBodyJoint
 /// <see href="https://immersive-web.github.io/depth-sensing/#enumdef-xrdepthdataformat">WebXR Depth Sensing Module: 2.2 Intended depth type, data usage, and data formats</see>
 /// </remarks>
 [Description("@#XRDepthDataFormat")]
-[ECMAScript]
 [String]
 public enum XRDepthDataFormat
 {
@@ -3451,7 +3392,6 @@ public enum XRDepthDataFormat
 /// <see href="https://immersive-web.github.io/depth-sensing/#enumdef-xrdepthtype">WebXR Depth Sensing Module: 2.2 Intended depth type, data usage, and data formats</see>
 /// </remarks>
 [Description("@#XRDepthType")]
-[ECMAScript]
 [String]
 public enum XRDepthType
 {
@@ -3481,7 +3421,6 @@ public enum XRDepthType
 /// <see href="https://immersive-web.github.io/depth-sensing/#enumdef-xrdepthusage">WebXR Depth Sensing Module: 2.2 Intended depth type, data usage, and data formats</see>
 /// </remarks>
 [Description("@#XRDepthUsage")]
-[ECMAScript]
 [String]
 public enum XRDepthUsage
 {
@@ -3511,7 +3450,6 @@ public enum XRDepthUsage
 /// <see href="https://immersive-web.github.io/dom-overlays/#enumdef-xrdomoverlaytype">WebXR DOM Overlays Module: WebXR DOM Overlays Module</see>
 /// </remarks>
 [Description("@#XRDOMOverlayType")]
-[ECMAScript]
 [String]
 public enum XRDOMOverlayType
 {
@@ -3550,7 +3488,6 @@ public enum XRDOMOverlayType
 /// <see href="https://immersive-web.github.io/hit-test/#enumdef-xrhittesttrackabletype">WebXR Hit Test Module: WebXR Hit Test Module</see>
 /// </remarks>
 [Description("@#XRHitTestTrackableType")]
-[ECMAScript]
 [String]
 public enum XRHitTestTrackableType
 {
@@ -3589,7 +3526,6 @@ public enum XRHitTestTrackableType
 /// <see href="https://immersive-web.github.io/layers/#enumdef-xrlayerlayout">WebXR Layers API Level 1: 3.2 XRLayerLayout</see>
 /// </remarks>
 [Description("@#XRLayerLayout")]
-[ECMAScript]
 [String]
 public enum XRLayerLayout
 {
@@ -3646,7 +3582,6 @@ public enum XRLayerLayout
 /// <see href="https://immersive-web.github.io/layers/#enumdef-xrlayerquality">WebXR Layers API Level 1: 3.3 XRLayerQuality</see>
 /// </remarks>
 [Description("@#XRLayerQuality")]
-[ECMAScript]
 [String]
 public enum XRLayerQuality
 {
@@ -3685,7 +3620,6 @@ public enum XRLayerQuality
 /// <see href="https://immersive-web.github.io/layers/#enumdef-xrtexturetype">WebXR Layers API Level 1: 5.3 XRTextureType</see>
 /// </remarks>
 [Description("@#XRTextureType")]
-[ECMAScript]
 [String]
 public enum XRTextureType
 {
@@ -3715,7 +3649,6 @@ public enum XRTextureType
 /// <see href="https://immersive-web.github.io/lighting-estimation/#enumdef-xrreflectionformat">WebXR Lighting Estimation API Level 1: 2.2 XRReflectionFormat</see>
 /// </remarks>
 [Description("@#XRReflectionFormat")]
-[ECMAScript]
 [String]
 public enum XRReflectionFormat
 {
@@ -3745,7 +3678,6 @@ public enum XRReflectionFormat
 /// <see href="https://immersive-web.github.io/plane-detection/#enumdef-xrplaneorientation">WebXR Plane Detection Module: 3.1 XRPlaneOrientation</see>
 /// </remarks>
 [Description("@#XRPlaneOrientation")]
-[ECMAScript]
 [String]
 public enum XRPlaneOrientation
 {
@@ -3775,7 +3707,6 @@ public enum XRPlaneOrientation
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRSession/environmentBlendMode">MDN Web Docs: XREnvironmentBlendMode</see>
 /// </remarks>
 [Description("@#XREnvironmentBlendMode")]
-[ECMAScript]
 [String]
 public enum XREnvironmentBlendMode
 {
@@ -3814,7 +3745,6 @@ public enum XREnvironmentBlendMode
 /// <see href="https://immersive-web.github.io/webxr-ar-module/#enumdef-xrinteractionmode">WebXR Augmented Reality Module - Level 1: 2.3 XRInteractionMode</see>
 /// </remarks>
 [Description("@#XRInteractionMode")]
-[ECMAScript]
 [String]
 public enum XRInteractionMode
 {
@@ -3844,7 +3774,6 @@ public enum XRInteractionMode
 /// <see href="https://immersive-web.github.io/webxr-hand-input/#enumdef-xrhandjoint">WebXR Hand Input Module - Level 1: 3.3 XRHand</see>
 /// </remarks>
 [Description("@#XRHandJoint")]
-[ECMAScript]
 [String]
 public enum XRHandJoint
 {
@@ -4081,7 +4010,6 @@ public enum XRHandJoint
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRView/eye">MDN Web Docs: XREye</see>
 /// </remarks>
 [Description("@#XREye")]
-[ECMAScript]
 [String]
 public enum XREye
 {
@@ -4120,7 +4048,6 @@ public enum XREye
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/handedness">MDN Web Docs: XRHandedness</see>
 /// </remarks>
 [Description("@#XRHandedness")]
-[ECMAScript]
 [String]
 public enum XRHandedness
 {
@@ -4159,7 +4086,6 @@ public enum XRHandedness
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRSession/requestReferenceSpace">MDN Web Docs: XRReferenceSpaceType</see>
 /// </remarks>
 [Description("@#XRReferenceSpaceType")]
-[ECMAScript]
 [String]
 public enum XRReferenceSpaceType
 {
@@ -4216,7 +4142,6 @@ public enum XRReferenceSpaceType
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRSystem/requestSession">MDN Web Docs: XRSessionMode</see>
 /// </remarks>
 [Description("@#XRSessionMode")]
-[ECMAScript]
 [String]
 public enum XRSessionMode
 {
@@ -4255,7 +4180,6 @@ public enum XRSessionMode
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRInputSource/targetRayMode">MDN Web Docs: XRTargetRayMode</see>
 /// </remarks>
 [Description("@#XRTargetRayMode")]
-[ECMAScript]
 [String]
 public enum XRTargetRayMode
 {
@@ -4303,7 +4227,6 @@ public enum XRTargetRayMode
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRSession/visibilityState">MDN Web Docs: XRVisibilityState</see>
 /// </remarks>
 [Description("@#XRVisibilityState")]
-[ECMAScript]
 [String]
 public enum XRVisibilityState
 {
@@ -4342,7 +4265,6 @@ public enum XRVisibilityState
 /// <see href="https://notifications.spec.whatwg.org/#enumdef-notificationdirection">Notifications API Standard: 3 API</see>
 /// </remarks>
 [Description("@#NotificationDirection")]
-[ECMAScript]
 [String]
 public enum NotificationDirection
 {
@@ -4381,7 +4303,6 @@ public enum NotificationDirection
 /// <see href="https://notifications.spec.whatwg.org/#enumdef-notificationpermission">Notifications API Standard: 3 API</see>
 /// </remarks>
 [Description("@#NotificationPermission")]
-[ECMAScript]
 [String]
 public enum NotificationPermission
 {
@@ -4420,7 +4341,6 @@ public enum NotificationPermission
 /// <see href="https://privacycg.github.io/saa-non-cookie-storage/#enumdef-samesitecookiestype">Extending Storage Access API (SAA) to non-cookie storage: 2.3.9 Shared Workers</see>
 /// </remarks>
 [Description("@#SameSiteCookiesType")]
-[ECMAScript]
 [String]
 public enum SameSiteCookiesType
 {
@@ -4450,7 +4370,6 @@ public enum SameSiteCookiesType
 /// <see href="https://streams.spec.whatwg.org/#enumdef-readablestreamreadermode">Streams Standard: 4.2.1 Interface definition</see>
 /// </remarks>
 [Description("@#ReadableStreamReaderMode")]
-[ECMAScript]
 [String]
 public enum ReadableStreamReaderMode
 {
@@ -4474,7 +4393,6 @@ public enum ReadableStreamReaderMode
 /// <see href="https://streams.spec.whatwg.org/#enumdef-readablestreamtype">Streams Standard: 4.2.3 The underlying source API</see>
 /// </remarks>
 [Description("@#ReadableStreamType")]
-[ECMAScript]
 [String]
 public enum ReadableStreamType
 {
@@ -4495,7 +4413,6 @@ public enum ReadableStreamType
 /// <see href="https://w3c-fedid.github.io/FedCM/#enumdef-identitycredentialrequestoptionscontext">Federated Credential Management API: 2.4 The CredentialRequestOptions</see>
 /// </remarks>
 [Description("@#IdentityCredentialRequestOptionsContext")]
-[ECMAScript]
 [String]
 public enum IdentityCredentialRequestOptionsContext
 {
@@ -4543,7 +4460,6 @@ public enum IdentityCredentialRequestOptionsContext
 /// <see href="https://w3c-fedid.github.io/FedCM/#enumdef-identitycredentialrequestoptionsmode">Federated Credential Management API: 2.4 The CredentialRequestOptions</see>
 /// </remarks>
 [Description("@#IdentityCredentialRequestOptionsMode")]
-[ECMAScript]
 [String]
 public enum IdentityCredentialRequestOptionsMode
 {
@@ -4573,7 +4489,6 @@ public enum IdentityCredentialRequestOptionsMode
 /// <see href="https://w3c-fedid.github.io/login-status/#enumdef-loginstatus">Login Status API: 5 JavaScript API</see>
 /// </remarks>
 [Description("@#LoginStatus")]
-[ECMAScript]
 [String]
 public enum LoginStatus
 {
@@ -4603,7 +4518,6 @@ public enum LoginStatus
 /// <see href="https://w3c.github.io/FileAPI/#enumdef-endingtype">File API: 3 The Blob Interface and Binary Data</see>
 /// </remarks>
 [Description("@#EndingType")]
-[ECMAScript]
 [String]
 public enum EndingType
 {
@@ -4633,7 +4547,6 @@ public enum EndingType
 /// <see href="https://w3c.github.io/IndexedDB/#enumdef-idbcursordirection">Indexed Database API 3.0: 4.9 The IDBCursor interface</see>
 /// </remarks>
 [Description("@#IDBCursorDirection")]
-[ECMAScript]
 [String]
 public enum IDBCursorDirection
 {
@@ -4681,7 +4594,6 @@ public enum IDBCursorDirection
 /// <see href="https://w3c.github.io/IndexedDB/#enumdef-idbrequestreadystate">Indexed Database API 3.0: 4.1 The IDBRequest interface</see>
 /// </remarks>
 [Description("@#IDBRequestReadyState")]
-[ECMAScript]
 [String]
 public enum IDBRequestReadyState
 {
@@ -4711,7 +4623,6 @@ public enum IDBRequestReadyState
 /// <see href="https://w3c.github.io/IndexedDB/#enumdef-idbtransactiondurability">Indexed Database API 3.0: 4.4 The IDBDatabase interface</see>
 /// </remarks>
 [Description("@#IDBTransactionDurability")]
-[ECMAScript]
 [String]
 public enum IDBTransactionDurability
 {
@@ -4750,7 +4661,6 @@ public enum IDBTransactionDurability
 /// <see href="https://w3c.github.io/IndexedDB/#enumdef-idbtransactionmode">Indexed Database API 3.0: 4.10 The IDBTransaction interface</see>
 /// </remarks>
 [Description("@#IDBTransactionMode")]
-[ECMAScript]
 [String]
 public enum IDBTransactionMode
 {
@@ -4789,7 +4699,6 @@ public enum IDBTransactionMode
 /// <see href="https://w3c.github.io/ServiceWorker/#enumdef-clienttype">Service Workers Nightly: 4.3 Clients</see>
 /// </remarks>
 [Description("@#ClientType")]
-[ECMAScript]
 [String]
 public enum ClientType
 {
@@ -4837,7 +4746,6 @@ public enum ClientType
 /// <see href="https://w3c.github.io/ServiceWorker/#enumdef-frametype">Service Workers Nightly: 4.2 Client</see>
 /// </remarks>
 [Description("@#FrameType")]
-[ECMAScript]
 [String]
 public enum FrameType
 {
@@ -4885,7 +4793,6 @@ public enum FrameType
 /// <see href="https://w3c.github.io/ServiceWorker/#enumdef-routersourceenum">Service Workers Nightly: 4.5 InstallEvent</see>
 /// </remarks>
 [Description("@#RouterSourceEnum")]
-[ECMAScript]
 [String]
 public enum RouterSourceEnum
 {
@@ -4933,7 +4840,6 @@ public enum RouterSourceEnum
 /// <see href="https://w3c.github.io/ServiceWorker/#enumdef-runningstatus">Service Workers Nightly: 4.5 InstallEvent</see>
 /// </remarks>
 [Description("@#RunningStatus")]
-[ECMAScript]
 [String]
 public enum RunningStatus
 {
@@ -4963,7 +4869,6 @@ public enum RunningStatus
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorker/state">MDN Web Docs: ServiceWorkerState</see>
 /// </remarks>
 [Description("@#ServiceWorkerState")]
-[ECMAScript]
 [String]
 public enum ServiceWorkerState
 {
@@ -5029,7 +4934,6 @@ public enum ServiceWorkerState
 /// <see href="https://w3c.github.io/ServiceWorker/#enumdef-serviceworkerupdateviacache">Service Workers Nightly: 3.2 ServiceWorkerRegistration</see>
 /// </remarks>
 [Description("@#ServiceWorkerUpdateViaCache")]
-[ECMAScript]
 [String]
 public enum ServiceWorkerUpdateViaCache
 {
@@ -5068,7 +4972,6 @@ public enum ServiceWorkerUpdateViaCache
 /// <see href="https://w3c.github.io/accelerometer/#enumdef-accelerometerlocalcoordinatesystem">Accelerometer: 7.1 The Accelerometer Interface</see>
 /// </remarks>
 [Description("@#AccelerometerLocalCoordinateSystem")]
-[ECMAScript]
 [String]
 public enum AccelerometerLocalCoordinateSystem
 {
@@ -5098,7 +5001,6 @@ public enum AccelerometerLocalCoordinateSystem
 /// <see href="https://w3c.github.io/aria/#dom-arianotifypriority">Accessible Rich Internet Applications (WAI-ARIA) 1.3: 10.2 Interface Mixin ARIANotifyMixin</see>
 /// </remarks>
 [Description("@#AriaNotifyPriority")]
-[ECMAScript]
 [String]
 public enum AriaNotifyPriority
 {
@@ -5128,7 +5030,6 @@ public enum AriaNotifyPriority
 /// <see href="https://w3c.github.io/attribution/#enumdef-attributionaggregationprotocol">Attribution Level 1: 3.3 Finding a Supported Aggregation Service</see>
 /// </remarks>
 [Description("@#AttributionAggregationProtocol")]
-[ECMAScript]
 [String]
 public enum AttributionAggregationProtocol
 {
@@ -5149,7 +5050,6 @@ public enum AttributionAggregationProtocol
 /// <see href="https://w3c.github.io/audio-session/#enumdef-audiosessionstate">Audio Session: 3.2 Audio session states</see>
 /// </remarks>
 [Description("@#AudioSessionState")]
-[ECMAScript]
 [String]
 public enum AudioSessionState
 {
@@ -5188,7 +5088,6 @@ public enum AudioSessionState
 /// <see href="https://w3c.github.io/audio-session/#enumdef-audiosessiontype">Audio Session: 3.1 Audio session types</see>
 /// </remarks>
 [Description("@#AudioSessionType")]
-[ECMAScript]
 [String]
 public enum AudioSessionType
 {
@@ -5254,7 +5153,6 @@ public enum AudioSessionType
 /// <see href="https://w3c.github.io/autoplay/#enumdef-autoplaypolicy">Autoplay Policy Detection: 2.1 Autoplay Policy Enum</see>
 /// </remarks>
 [Description("@#AutoplayPolicy")]
-[ECMAScript]
 [String]
 public enum AutoplayPolicy
 {
@@ -5293,7 +5191,6 @@ public enum AutoplayPolicy
 /// <see href="https://w3c.github.io/autoplay/#enumdef-autoplaypolicymediatype">Autoplay Policy Detection: 2.2 The Autoplay Detection Methods</see>
 /// </remarks>
 [Description("@#AutoplayPolicyMediaType")]
-[ECMAScript]
 [String]
 public enum AutoplayPolicyMediaType
 {
@@ -5323,7 +5220,6 @@ public enum AutoplayPolicyMediaType
 /// <see href="https://w3c.github.io/clipboard-apis/#enumdef-presentationstyle">Clipboard API and events: 7.2 ClipboardItem Interface</see>
 /// </remarks>
 [Description("@#PresentationStyle")]
-[ECMAScript]
 [String]
 public enum PresentationStyle
 {
@@ -5362,7 +5258,6 @@ public enum PresentationStyle
 /// <see href="https://w3c.github.io/compute-pressure/#dom-pressuresource">Compute Pressure Level 1: 3.2 Pressure sources</see>
 /// </remarks>
 [Description("@#PressureSource")]
-[ECMAScript]
 [String]
 public enum PressureSource
 {
@@ -5383,7 +5278,6 @@ public enum PressureSource
 /// <see href="https://w3c.github.io/compute-pressure/#dom-pressurestate">Compute Pressure Level 1: 8 Pressure States</see>
 /// </remarks>
 [Description("@#PressureState")]
-[ECMAScript]
 [String]
 public enum PressureState
 {
@@ -5431,7 +5325,6 @@ public enum PressureState
 /// <see href="https://w3c.github.io/contact-picker/#enumdef-contactproperty">Contact Picker API: 6.2 ContactProperty</see>
 /// </remarks>
 [Description("@#ContactProperty")]
-[ECMAScript]
 [String]
 public enum ContactProperty
 {
@@ -5488,7 +5381,6 @@ public enum ContactProperty
 /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysessionclosedreason">Encrypted Media Extensions: 6 MediaKeySession Interface</see>
 /// </remarks>
 [Description("@#MediaKeySessionClosedReason")]
-[ECMAScript]
 [String]
 public enum MediaKeySessionClosedReason
 {
@@ -5545,7 +5437,6 @@ public enum MediaKeySessionClosedReason
 /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysessiontype">Encrypted Media Extensions: 5 MediaKeys Interface</see>
 /// </remarks>
 [Description("@#MediaKeySessionType")]
-[ECMAScript]
 [String]
 public enum MediaKeySessionType
 {
@@ -5575,7 +5466,6 @@ public enum MediaKeySessionType
 /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeysrequirement">Encrypted Media Extensions: 3.3 MediaKeySystemConfiguration dictionary</see>
 /// </remarks>
 [Description("@#MediaKeysRequirement")]
-[ECMAScript]
 [String]
 public enum MediaKeysRequirement
 {
@@ -5614,7 +5504,6 @@ public enum MediaKeysRequirement
 /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeystatus">Encrypted Media Extensions: 6.3 MediaKeyStatusMap Interface</see>
 /// </remarks>
 [Description("@#MediaKeyStatus")]
-[ECMAScript]
 [String]
 public enum MediaKeyStatus
 {
@@ -5698,7 +5587,6 @@ public enum MediaKeyStatus
 /// <see href="https://w3c.github.io/gamepad/#dom-gamepadhapticeffecttype">Gamepad: 10. GamepadHapticEffectType Enum</see>
 /// </remarks>
 [Description("@#GamepadHapticEffectType")]
-[ECMAScript]
 [String]
 public enum GamepadHapticEffectType
 {
@@ -5728,7 +5616,6 @@ public enum GamepadHapticEffectType
 /// <see href="https://w3c.github.io/gamepad/#dom-gamepadhapticsresult">Gamepad: 9 GamepadHapticsResult Enum</see>
 /// </remarks>
 [Description("@#GamepadHapticsResult")]
-[ECMAScript]
 [String]
 public enum GamepadHapticsResult
 {
@@ -5758,7 +5645,6 @@ public enum GamepadHapticsResult
 /// <see href="https://w3c.github.io/gyroscope/#enumdef-gyroscopelocalcoordinatesystem">Gyroscope: 7.1 The Gyroscope Interface</see>
 /// </remarks>
 [Description("@#GyroscopeLocalCoordinateSystem")]
-[ECMAScript]
 [String]
 public enum GyroscopeLocalCoordinateSystem
 {
@@ -5788,7 +5674,6 @@ public enum GyroscopeLocalCoordinateSystem
 /// <see href="https://w3c.github.io/long-animation-frames/#enumdef-scriptinvokertype">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
 /// </remarks>
 [Description("@#ScriptInvokerType")]
-[ECMAScript]
 [String]
 public enum ScriptInvokerType
 {
@@ -5854,7 +5739,6 @@ public enum ScriptInvokerType
 /// <see href="https://w3c.github.io/long-animation-frames/#enumdef-scriptwindowattribution">Long Animation Frames API: 2.2 PerformanceScriptTiming interface</see>
 /// </remarks>
 [Description("@#ScriptWindowAttribution")]
-[ECMAScript]
 [String]
 public enum ScriptWindowAttribution
 {
@@ -5911,7 +5795,6 @@ public enum ScriptWindowAttribution
 /// <see href="https://w3c.github.io/magnetometer/#enumdef-magnetometerlocalcoordinatesystem">Magnetometer: 6.1 The Magnetometer Interface</see>
 /// </remarks>
 [Description("@#MagnetometerLocalCoordinateSystem")]
-[ECMAScript]
 [String]
 public enum MagnetometerLocalCoordinateSystem
 {
@@ -5941,7 +5824,6 @@ public enum MagnetometerLocalCoordinateSystem
 /// <see href="https://w3c.github.io/media-capabilities/#enumdef-colorgamut">Media Capabilities: 2.1.6 ColorGamut</see>
 /// </remarks>
 [Description("@#ColorGamut")]
-[ECMAScript]
 [String]
 public enum ColorGamut
 {
@@ -5980,7 +5862,6 @@ public enum ColorGamut
 /// <see href="https://w3c.github.io/mediacapture-automation/#dom-mockcapturepromptresult">Media Capture Automation: 3.1.1 Set capture prompt result</see>
 /// </remarks>
 [Description("@#MockCapturePromptResult")]
-[ECMAScript]
 [String]
 public enum MockCapturePromptResult
 {
@@ -6010,7 +5891,6 @@ public enum MockCapturePromptResult
 /// <see href="https://w3c.github.io/mediacapture-handle/actions/#dom-captureaction">The Capture-Handle Actions Mechanism: 3.1.1 Registering and responding to capture actions</see>
 /// </remarks>
 [Description("@#CaptureAction")]
-[ECMAScript]
 [String]
 public enum CaptureAction
 {
@@ -6058,7 +5938,6 @@ public enum CaptureAction
 /// <see href="https://w3c.github.io/mediacapture-image/#enumdef-filllightmode">MediaStream Image Capture: 8 FillLightMode</see>
 /// </remarks>
 [Description("@#FillLightMode")]
-[ECMAScript]
 [String]
 public enum FillLightMode
 {
@@ -6097,7 +5976,6 @@ public enum FillLightMode
 /// <see href="https://w3c.github.io/mediacapture-image/#enumdef-meteringmode">MediaStream Image Capture: 11. MeteringMode</see>
 /// </remarks>
 [Description("@#MeteringMode")]
-[ECMAScript]
 [String]
 public enum MeteringMode
 {
@@ -6145,7 +6023,6 @@ public enum MeteringMode
 /// <see href="https://w3c.github.io/mediacapture-image/#enumdef-redeyereduction">MediaStream Image Capture: 7 RedEyeReduction</see>
 /// </remarks>
 [Description("@#RedEyeReduction")]
-[ECMAScript]
 [String]
 public enum RedEyeReduction
 {
@@ -6184,7 +6061,6 @@ public enum RedEyeReduction
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediadevicekind">Media Capture and Streams: 9.3 Device Info</see>
 /// </remarks>
 [Description("@#MediaDeviceKind")]
-[ECMAScript]
 [String]
 public enum MediaDeviceKind
 {
@@ -6223,7 +6099,6 @@ public enum MediaDeviceKind
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-videofacingmodeenum">Media Capture and Streams: 4.3.8 Constrainable Properties</see>
 /// </remarks>
 [Description("@#VideoFacingModeEnum")]
-[ECMAScript]
 [String]
 public enum VideoFacingModeEnum
 {
@@ -6271,7 +6146,6 @@ public enum VideoFacingModeEnum
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-videoresizemodeenum">Media Capture and Streams: 4.3.8 Constrainable Properties</see>
 /// </remarks>
 [Description("@#VideoResizeModeEnum")]
-[ECMAScript]
 [String]
 public enum VideoResizeModeEnum
 {
@@ -6301,7 +6175,6 @@ public enum VideoResizeModeEnum
 /// <see href="https://w3c.github.io/mediacapture-record/#enumdef-recordingstate">MediaStream Recording: 2.7 RecordingState</see>
 /// </remarks>
 [Description("@#RecordingState")]
-[ECMAScript]
 [String]
 public enum RecordingState
 {
@@ -6340,7 +6213,6 @@ public enum RecordingState
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-capturestartfocusbehavior">Screen Capture: 5.4.2 CaptureStartFocusBehavior</see>
 /// </remarks>
 [Description("@#CaptureStartFocusBehavior")]
-[ECMAScript]
 [String]
 public enum CaptureStartFocusBehavior
 {
@@ -6379,7 +6251,6 @@ public enum CaptureStartFocusBehavior
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/MediaSession/setActionHandler">MDN Web Docs: MediaSessionAction</see>
 /// </remarks>
 [Description("@#MediaSessionAction")]
-[ECMAScript]
 [String]
 public enum MediaSessionAction
 {
@@ -6544,7 +6415,6 @@ public enum MediaSessionAction
 /// <see href="https://w3c.github.io/mediasession/#enumdef-mediasessionenterpictureinpicturereason">Media Session: 5 The MediaSession interface</see>
 /// </remarks>
 [Description("@#MediaSessionEnterPictureInPictureReason")]
-[ECMAScript]
 [String]
 public enum MediaSessionEnterPictureInPictureReason
 {
@@ -6583,7 +6453,6 @@ public enum MediaSessionEnterPictureInPictureReason
 /// <see href="https://w3c.github.io/mediasession/#enumdef-mediasessionplaybackstate">Media Session: 5 The MediaSession interface</see>
 /// </remarks>
 [Description("@#MediaSessionPlaybackState")]
-[ECMAScript]
 [String]
 public enum MediaSessionPlaybackState
 {
@@ -6622,7 +6491,6 @@ public enum MediaSessionPlaybackState
 /// <see href="https://w3c.github.io/navigation-timing/#enumdef-navigationtimingtype">Navigation Timing Level 2: 3.3.1 The NavigationTimingType enum</see>
 /// </remarks>
 [Description("@#NavigationTimingType")]
-[ECMAScript]
 [String]
 public enum NavigationTimingType
 {
@@ -6661,7 +6529,6 @@ public enum NavigationTimingType
 /// <see href="https://w3c.github.io/orientation-sensor/#enumdef-orientationsensorlocalcoordinatesystem">Orientation Sensor: 6.1 The OrientationSensor Interface</see>
 /// </remarks>
 [Description("@#OrientationSensorLocalCoordinateSystem")]
-[ECMAScript]
 [String]
 public enum OrientationSensorLocalCoordinateSystem
 {
@@ -6691,7 +6558,6 @@ public enum OrientationSensorLocalCoordinateSystem
 /// <see href="https://w3c.github.io/payment-request/#dom-paymentcomplete">Payment Request API: 12. PaymentComplete enum</see>
 /// </remarks>
 [Description("@#PaymentComplete")]
-[ECMAScript]
 [String]
 public enum PaymentComplete
 {
@@ -6730,7 +6596,6 @@ public enum PaymentComplete
 /// <see href="https://w3c.github.io/presentation-api/#dom-presentationconnectionclosereason">Presentation API: 6.5.4 Interface PresentationConnectionCloseEvent</see>
 /// </remarks>
 [Description("@#PresentationConnectionCloseReason")]
-[ECMAScript]
 [String]
 public enum PresentationConnectionCloseReason
 {
@@ -6769,7 +6634,6 @@ public enum PresentationConnectionCloseReason
 /// <see href="https://w3c.github.io/presentation-api/#dom-presentationconnectionstate">Presentation API: 6.5 Interface PresentationConnection</see>
 /// </remarks>
 [Description("@#PresentationConnectionState")]
-[ECMAScript]
 [String]
 public enum PresentationConnectionState
 {
@@ -6817,7 +6681,6 @@ public enum PresentationConnectionState
 /// <see href="https://w3c.github.io/secure-payment-confirmation/#enumdef-securepaymentconfirmationavailability">Secure Payment Confirmation: 4.6 Checking if Secure Payment Confirmation is available</see>
 /// </remarks>
 [Description("@#SecurePaymentConfirmationAvailability")]
-[ECMAScript]
 [String]
 public enum SecurePaymentConfirmationAvailability
 {
@@ -6874,7 +6737,6 @@ public enum SecurePaymentConfirmationAvailability
 /// <see href="https://w3c.github.io/secure-payment-confirmation/#enumdef-securepaymentconfirmationcapability">Secure Payment Confirmation: 4.7.1 SecurePaymentConfirmationCapability Enumeration</see>
 /// </remarks>
 [Description("@#SecurePaymentConfirmationCapability")]
-[ECMAScript]
 [String]
 public enum SecurePaymentConfirmationCapability
 {
@@ -6895,7 +6757,6 @@ public enum SecurePaymentConfirmationCapability
 /// <see href="https://w3c.github.io/web-locks/#enumdef-lockmode">Web Locks API: 3.2 LockManager class</see>
 /// </remarks>
 [Description("@#LockMode")]
-[ECMAScript]
 [String]
 public enum LockMode
 {
@@ -6925,7 +6786,6 @@ public enum LockMode
 /// <see href="https://w3c.github.io/webappsec-credential-management/#enumdef-credentialmediationrequirement">Credential Management Level 1: 2.3.2 Mediation Requirements</see>
 /// </remarks>
 [Description("@#CredentialMediationRequirement")]
-[ECMAScript]
 [String]
 public enum CredentialMediationRequirement
 {
@@ -6973,7 +6833,6 @@ public enum CredentialMediationRequirement
 /// <see href="https://w3c.github.io/webappsec-credential-management/#enumdef-credentialuimode">Credential Management Level 1: 2.3.3 UI Mode</see>
 /// </remarks>
 [Description("@#CredentialUiMode")]
-[ECMAScript]
 [String]
 public enum CredentialUiMode
 {
@@ -6994,7 +6853,6 @@ public enum CredentialUiMode
 /// <see href="https://w3c.github.io/webappsec-csp/#enumdef-securitypolicyviolationeventdisposition">Content Security Policy Level 3: 5.1 Violation DOM Events</see>
 /// </remarks>
 [Description("@#SecurityPolicyViolationEventDisposition")]
-[ECMAScript]
 [String]
 public enum SecurityPolicyViolationEventDisposition
 {
@@ -7024,7 +6882,6 @@ public enum SecurityPolicyViolationEventDisposition
 /// <see href="https://w3c.github.io/webappsec-referrer-policy/#enumdef-referrerpolicy">Referrer Policy: 3 Referrer Policies</see>
 /// </remarks>
 [Description("@#ReferrerPolicy")]
-[ECMAScript]
 [String]
 public enum ReferrerPolicy
 {
@@ -7117,7 +6974,6 @@ public enum ReferrerPolicy
 /// <see href="https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.7 Attestation Conveyance Preference Enumeration (enum AttestationConveyancePreference)</see>
 /// </remarks>
 [Description("@#AttestationConveyancePreference")]
-[ECMAScript]
 [String]
 public enum AttestationConveyancePreference
 {
@@ -7165,7 +7021,6 @@ public enum AttestationConveyancePreference
 /// <see href="https://w3c.github.io/webauthn/#enumdef-authenticatorattachment">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.5 Authenticator Attachment Enumeration (enum AuthenticatorAttachment)</see>
 /// </remarks>
 [Description("@#AuthenticatorAttachment")]
-[ECMAScript]
 [String]
 public enum AuthenticatorAttachment
 {
@@ -7195,7 +7050,6 @@ public enum AuthenticatorAttachment
 /// <see href="https://w3c.github.io/webauthn/#enumdef-authenticatortransport">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.4 Authenticator Transport Enumeration (enum AuthenticatorTransport)</see>
 /// </remarks>
 [Description("@#AuthenticatorTransport")]
-[ECMAScript]
 [String]
 public enum AuthenticatorTransport
 {
@@ -7261,7 +7115,6 @@ public enum AuthenticatorTransport
 /// <see href="https://w3c.github.io/webauthn/#enumdef-clientcapability">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.7 Client Capability Enumeration (enum ClientCapability)</see>
 /// </remarks>
 [Description("@#ClientCapability")]
-[ECMAScript]
 [String]
 public enum ClientCapability
 {
@@ -7354,7 +7207,6 @@ public enum ClientCapability
 /// <see href="https://w3c.github.io/webauthn/#enumdef-largeblobsupport">Web Authentication: An API for accessing Public Key Credentials - Level 3: 10.1.5 Large blob storage extension (largeBlob)</see>
 /// </remarks>
 [Description("@#LargeBlobSupport")]
-[ECMAScript]
 [String]
 public enum LargeBlobSupport
 {
@@ -7384,7 +7236,6 @@ public enum LargeBlobSupport
 /// <see href="https://w3c.github.io/webauthn/#enumdef-publickeycredentialhint">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.8 User-agent Hints Enumeration (enum PublicKeyCredentialHint)</see>
 /// </remarks>
 [Description("@#PublicKeyCredentialHint")]
-[ECMAScript]
 [String]
 public enum PublicKeyCredentialHint
 {
@@ -7423,7 +7274,6 @@ public enum PublicKeyCredentialHint
 /// <see href="https://w3c.github.io/webauthn/#enumdef-publickeycredentialtype">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.2 Credential Type Enumeration (enum PublicKeyCredentialType)</see>
 /// </remarks>
 [Description("@#PublicKeyCredentialType")]
-[ECMAScript]
 [String]
 public enum PublicKeyCredentialType
 {
@@ -7444,7 +7294,6 @@ public enum PublicKeyCredentialType
 /// <see href="https://w3c.github.io/webauthn/#enumdef-residentkeyrequirement">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.4.6 Resident Key Requirement Enumeration (enum ResidentKeyRequirement)</see>
 /// </remarks>
 [Description("@#ResidentKeyRequirement")]
-[ECMAScript]
 [String]
 public enum ResidentKeyRequirement
 {
@@ -7483,7 +7332,6 @@ public enum ResidentKeyRequirement
 /// <see href="https://w3c.github.io/webauthn/#enumdef-tokenbindingstatus">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.1 Client Data Used in WebAuthn Signatures (dictionary CollectedClientData)</see>
 /// </remarks>
 [Description("@#TokenBindingStatus")]
-[ECMAScript]
 [String]
 public enum TokenBindingStatus
 {
@@ -7513,7 +7361,6 @@ public enum TokenBindingStatus
 /// <see href="https://w3c.github.io/webauthn/#enumdef-userverificationrequirement">Web Authentication: An API for accessing Public Key Credentials - Level 3: 5.8.6 User Verification Requirement Enumeration (enum UserVerificationRequirement)</see>
 /// </remarks>
 [Description("@#UserVerificationRequirement")]
-[ECMAScript]
 [String]
 public enum UserVerificationRequirement
 {
@@ -7552,7 +7399,6 @@ public enum UserVerificationRequirement
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-alphaoption">WebCodecs: 7.10 Alpha Option</see>
 /// </remarks>
 [Description("@#AlphaOption")]
-[ECMAScript]
 [String]
 public enum AlphaOption
 {
@@ -7582,7 +7428,6 @@ public enum AlphaOption
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-audiosampleformat">WebCodecs: 9.3 Audio Sample Format</see>
 /// </remarks>
 [Description("@#AudioSampleFormat")]
-[ECMAScript]
 [String]
 public enum AudioSampleFormat
 {
@@ -7666,7 +7511,6 @@ public enum AudioSampleFormat
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-codecstate">WebCodecs: 7.15 CodecState</see>
 /// </remarks>
 [Description("@#CodecState")]
-[ECMAScript]
 [String]
 public enum CodecState
 {
@@ -7705,7 +7549,6 @@ public enum CodecState
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-videocolorprimaries">WebCodecs: 9.10 Video Color Primaries</see>
 /// </remarks>
 [Description("@#VideoColorPrimaries")]
-[ECMAScript]
 [String]
 public enum VideoColorPrimaries
 {
@@ -7762,7 +7605,6 @@ public enum VideoColorPrimaries
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-videomatrixcoefficients">WebCodecs: 9.12 Video Matrix Coefficients</see>
 /// </remarks>
 [Description("@#VideoMatrixCoefficients")]
-[ECMAScript]
 [String]
 public enum VideoMatrixCoefficients
 {
@@ -7819,7 +7661,6 @@ public enum VideoMatrixCoefficients
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-videopixelformat">WebCodecs: 9.8 Pixel Format</see>
 /// </remarks>
 [Description("@#VideoPixelFormat")]
-[ECMAScript]
 [String]
 public enum VideoPixelFormat
 {
@@ -8038,7 +7879,6 @@ public enum VideoPixelFormat
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-videotransfercharacteristics">WebCodecs: 9.11 Video Transfer Characteristics</see>
 /// </remarks>
 [Description("@#VideoTransferCharacteristics")]
-[ECMAScript]
 [String]
 public enum VideoTransferCharacteristics
 {
@@ -8104,7 +7944,6 @@ public enum VideoTransferCharacteristics
 /// <see href="https://w3c.github.io/webcrypto/#dom-keytype">Web Cryptography API Level 2: 13.2 Key interface data types</see>
 /// </remarks>
 [Description("@#KeyType")]
-[ECMAScript]
 [String]
 public enum KeyType
 {
@@ -8143,7 +7982,6 @@ public enum KeyType
 /// <see href="https://w3c.github.io/webextensions/specification/#enumdef-executionworld">Web Extensions: 13.2.13 ExecutionWorld enum</see>
 /// </remarks>
 [Description("@#ExecutionWorld")]
-[ECMAScript]
 [String]
 public enum ExecutionWorld
 {
@@ -8173,7 +8011,6 @@ public enum ExecutionWorld
 /// <see href="https://w3c.github.io/webextensions/specification/#enumdef-runat">Web Extensions: 13.2.12 RunAt enum</see>
 /// </remarks>
 [Description("@#RunAt")]
-[ECMAScript]
 [String]
 public enum RunAt
 {
@@ -8212,7 +8049,6 @@ public enum RunAt
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#enumdef-rtcrtpscripttransformtype">WebRTC Encoded Transform: 5 RTCRtpScriptTransform interface</see>
 /// </remarks>
 [Description("@#RTCRtpScriptTransformType")]
-[ECMAScript]
 [String]
 public enum RTCRtpScriptTransformType
 {
@@ -8233,7 +8069,6 @@ public enum RTCRtpScriptTransformType
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#enumdef-sframeciphersuite">WebRTC Encoded Transform: 3 SFrame transforms</see>
 /// </remarks>
 [Description("@#SFrameCipherSuite")]
-[ECMAScript]
 [String]
 public enum SFrameCipherSuite
 {
@@ -8317,7 +8152,6 @@ public enum SFrameCipherSuite
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#enumdef-sframetransformerroreventtype">WebRTC Encoded Transform: 3 SFrame transforms</see>
 /// </remarks>
 [Description("@#SFrameTransformErrorEventType")]
-[ECMAScript]
 [String]
 public enum SFrameTransformErrorEventType
 {
@@ -8356,7 +8190,6 @@ public enum SFrameTransformErrorEventType
 /// <see href="https://w3c.github.io/webrtc-encoded-transform/#enumdef-sframetype">WebRTC Encoded Transform: 3 SFrame transforms</see>
 /// </remarks>
 [Description("@#SFrameType")]
-[ECMAScript]
 [String]
 public enum SFrameType
 {
@@ -8386,7 +8219,6 @@ public enum SFrameType
 /// <see href="https://w3c.github.io/webrtc-identity/#dom-rtcerrordetailtypeidp">Identity for WebRTC 1.0: 10.3 RTCErrorDetailTypeIdp Enum</see>
 /// </remarks>
 [Description("@#RTCErrorDetailTypeIdp")]
-[ECMAScript]
 [String]
 public enum RTCErrorDetailTypeIdp
 {
@@ -8470,7 +8302,6 @@ public enum RTCErrorDetailTypeIdp
 /// <see href="https://w3c.github.io/webrtc-priority/#enumdef-rtcprioritytype">WebRTC Priority Control API: 3.1 RTCPriorityType Enum</see>
 /// </remarks>
 [Description("@#RTCPriorityType")]
-[ECMAScript]
 [String]
 public enum RTCPriorityType
 {
@@ -8518,7 +8349,6 @@ public enum RTCPriorityType
 /// <see href="https://w3c.github.io/webtransport/#enumdef-webtransportcongestioncontrol">WebTransport: 6.9 Configuration</see>
 /// </remarks>
 [Description("@#WebTransportCongestionControl")]
-[ECMAScript]
 [String]
 public enum WebTransportCongestionControl
 {
@@ -8557,7 +8387,6 @@ public enum WebTransportCongestionControl
 /// <see href="https://w3c.github.io/webtransport/#enumdef-webtransporterrorsource">WebTransport: 12. WebTransportError Interface</see>
 /// </remarks>
 [Description("@#WebTransportErrorSource")]
-[ECMAScript]
 [String]
 public enum WebTransportErrorSource
 {
@@ -8587,7 +8416,6 @@ public enum WebTransportErrorSource
 /// <see href="https://w3c.github.io/webtransport/#enumdef-webtransportreliabilitymode">WebTransport: 6 WebTransport Interface</see>
 /// </remarks>
 [Description("@#WebTransportReliabilityMode")]
-[ECMAScript]
 [String]
 public enum WebTransportReliabilityMode
 {
@@ -8626,7 +8454,6 @@ public enum WebTransportReliabilityMode
 /// <see href="https://w3c.github.io/webvtt/#enumdef-alignsetting">WebVTT: The Web Video Text Tracks Format: 9.1 The VTTCue interface</see>
 /// </remarks>
 [Description("@#AlignSetting")]
-[ECMAScript]
 [String]
 public enum AlignSetting
 {
@@ -8683,7 +8510,6 @@ public enum AlignSetting
 /// <see href="https://w3c.github.io/webvtt/#enumdef-autokeyword">WebVTT: The Web Video Text Tracks Format: 9.1 The VTTCue interface</see>
 /// </remarks>
 [Description("@#AutoKeyword")]
-[ECMAScript]
 [String]
 public enum AutoKeyword
 {
@@ -8704,7 +8530,6 @@ public enum AutoKeyword
 /// <see href="https://w3c.github.io/webvtt/#enumdef-directionsetting">WebVTT: The Web Video Text Tracks Format: 9.1 The VTTCue interface</see>
 /// </remarks>
 [Description("@#DirectionSetting")]
-[ECMAScript]
 [String]
 public enum DirectionSetting
 {
@@ -8743,7 +8568,6 @@ public enum DirectionSetting
 /// <see href="https://w3c.github.io/webvtt/#enumdef-linealignsetting">WebVTT: The Web Video Text Tracks Format: 9.1 The VTTCue interface</see>
 /// </remarks>
 [Description("@#LineAlignSetting")]
-[ECMAScript]
 [String]
 public enum LineAlignSetting
 {
@@ -8782,7 +8606,6 @@ public enum LineAlignSetting
 /// <see href="https://w3c.github.io/webvtt/#enumdef-positionalignsetting">WebVTT: The Web Video Text Tracks Format: 9.1 The VTTCue interface</see>
 /// </remarks>
 [Description("@#PositionAlignSetting")]
-[ECMAScript]
 [String]
 public enum PositionAlignSetting
 {
@@ -8830,7 +8653,6 @@ public enum PositionAlignSetting
 /// <see href="https://w3c.github.io/webvtt/#enumdef-scrollsetting">WebVTT: The Web Video Text Tracks Format: 9.2 The VTTRegion interface</see>
 /// </remarks>
 [Description("@#ScrollSetting")]
-[ECMAScript]
 [String]
 public enum ScrollSetting
 {
@@ -8860,7 +8682,6 @@ public enum ScrollSetting
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/AudioContext">MDN Web Docs: AudioContextLatencyCategory</see>
 /// </remarks>
 [Description("@#AudioContextLatencyCategory")]
-[ECMAScript]
 [String]
 public enum AudioContextLatencyCategory
 {
@@ -8899,7 +8720,6 @@ public enum AudioContextLatencyCategory
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-audiocontextrendersizecategory">Web Audio API 1.1: 1.1 The BaseAudioContext Interface</see>
 /// </remarks>
 [Description("@#AudioContextRenderSizeCategory")]
-[ECMAScript]
 [String]
 public enum AudioContextRenderSizeCategory
 {
@@ -8929,7 +8749,6 @@ public enum AudioContextRenderSizeCategory
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-audiocontextstate">Web Audio API 1.1: 1.1 The BaseAudioContext Interface</see>
 /// </remarks>
 [Description("@#AudioContextState")]
-[ECMAScript]
 [String]
 public enum AudioContextState
 {
@@ -8977,7 +8796,6 @@ public enum AudioContextState
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-audiosinktype">Web Audio API 1.1: 1.2 The AudioContext Interface</see>
 /// </remarks>
 [Description("@#AudioSinkType")]
-[ECMAScript]
 [String]
 public enum AudioSinkType
 {
@@ -8998,7 +8816,6 @@ public enum AudioSinkType
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-automationrate">Web Audio API 1.1: 1.6 The AudioParam Interface</see>
 /// </remarks>
 [Description("@#AutomationRate")]
-[ECMAScript]
 [String]
 public enum AutomationRate
 {
@@ -9028,7 +8845,6 @@ public enum AutomationRate
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-biquadfiltertype">Web Audio API 1.1: 1.13 The BiquadFilterNode Interface</see>
 /// </remarks>
 [Description("@#BiquadFilterType")]
-[ECMAScript]
 [String]
 public enum BiquadFilterType
 {
@@ -9112,7 +8928,6 @@ public enum BiquadFilterType
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-channelcountmode">Web Audio API 1.1: 1.5.1 AudioNode Creation</see>
 /// </remarks>
 [Description("@#ChannelCountMode")]
-[ECMAScript]
 [String]
 public enum ChannelCountMode
 {
@@ -9151,7 +8966,6 @@ public enum ChannelCountMode
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-channelinterpretation">Web Audio API 1.1: 1.5.1 AudioNode Creation</see>
 /// </remarks>
 [Description("@#ChannelInterpretation")]
-[ECMAScript]
 [String]
 public enum ChannelInterpretation
 {
@@ -9181,7 +8995,6 @@ public enum ChannelInterpretation
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-distancemodeltype">Web Audio API 1.1: 1.27 The PannerNode Interface</see>
 /// </remarks>
 [Description("@#DistanceModelType")]
-[ECMAScript]
 [String]
 public enum DistanceModelType
 {
@@ -9220,7 +9033,6 @@ public enum DistanceModelType
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-oscillatortype">Web Audio API 1.1: 1.26 The OscillatorNode Interface</see>
 /// </remarks>
 [Description("@#OscillatorType")]
-[ECMAScript]
 [String]
 public enum OscillatorType
 {
@@ -9277,7 +9089,6 @@ public enum OscillatorType
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-oversampletype">Web Audio API 1.1: 1.31 The WaveShaperNode Interface</see>
 /// </remarks>
 [Description("@#OverSampleType")]
-[ECMAScript]
 [String]
 public enum OverSampleType
 {
@@ -9316,7 +9127,6 @@ public enum OverSampleType
 /// <see href="https://webaudio.github.io/web-audio-api/#enumdef-panningmodeltype">Web Audio API 1.1: 1.27 The PannerNode Interface</see>
 /// </remarks>
 [Description("@#PanningModelType")]
-[ECMAScript]
 [String]
 public enum PanningModelType
 {
@@ -9346,7 +9156,6 @@ public enum PanningModelType
 /// <see href="https://webaudio.github.io/web-midi-api/#dom-midiportconnectionstate">Web MIDI API: 5.4.5 MIDIPortConnectionState Enum</see>
 /// </remarks>
 [Description("@#MIDIPortConnectionState")]
-[ECMAScript]
 [String]
 public enum MIDIPortConnectionState
 {
@@ -9385,7 +9194,6 @@ public enum MIDIPortConnectionState
 /// <see href="https://webaudio.github.io/web-midi-api/#dom-midiportdevicestate">Web MIDI API: 5.4.4 MIDIPortDeviceState Enum</see>
 /// </remarks>
 [Description("@#MIDIPortDeviceState")]
-[ECMAScript]
 [String]
 public enum MIDIPortDeviceState
 {
@@ -9415,7 +9223,6 @@ public enum MIDIPortDeviceState
 /// <see href="https://webaudio.github.io/web-midi-api/#dom-midiporttype">Web MIDI API: 5.4.3 MIDIPortType Enum</see>
 /// </remarks>
 [Description("@#MIDIPortType")]
-[ECMAScript]
 [String]
 public enum MIDIPortType
 {
@@ -9445,7 +9252,6 @@ public enum MIDIPortType
 /// <see href="https://webaudio.github.io/web-speech-api/#enumdef-availabilitystatus">Web Speech API: 4.1 The SpeechRecognition Interface</see>
 /// </remarks>
 [Description("@#AvailabilityStatus")]
-[ECMAScript]
 [String]
 public enum AvailabilityStatus
 {
@@ -9493,7 +9299,6 @@ public enum AvailabilityStatus
 /// <see href="https://webaudio.github.io/web-speech-api/#enumdef-speechrecognitionerrorcode">Web Speech API: 4.1 The SpeechRecognition Interface</see>
 /// </remarks>
 [Description("@#SpeechRecognitionErrorCode")]
-[ECMAScript]
 [String]
 public enum SpeechRecognitionErrorCode
 {
@@ -9577,7 +9382,6 @@ public enum SpeechRecognitionErrorCode
 /// <see href="https://webaudio.github.io/web-speech-api/#enumdef-speechrecognitionquality">Web Speech API: 4.1 The SpeechRecognition Interface</see>
 /// </remarks>
 [Description("@#SpeechRecognitionQuality")]
-[ECMAScript]
 [String]
 public enum SpeechRecognitionQuality
 {
@@ -9616,7 +9420,6 @@ public enum SpeechRecognitionQuality
 /// <see href="https://webaudio.github.io/web-speech-api/#enumdef-speechsynthesiserrorcode">Web Speech API: 4.2 The SpeechSynthesis Interface</see>
 /// </remarks>
 [Description("@#SpeechSynthesisErrorCode")]
-[ECMAScript]
 [String]
 public enum SpeechSynthesisErrorCode
 {
@@ -9736,7 +9539,6 @@ public enum SpeechSynthesisErrorCode
 /// <see href="https://webmachinelearning.github.io/prompt-api/#enumdef-languagemodelmessagerole">Prompt API: 3 The API</see>
 /// </remarks>
 [Description("@#LanguageModelMessageRole")]
-[ECMAScript]
 [String]
 public enum LanguageModelMessageRole
 {
@@ -9775,7 +9577,6 @@ public enum LanguageModelMessageRole
 /// <see href="https://webmachinelearning.github.io/prompt-api/#enumdef-languagemodelmessagetype">Prompt API: 3 The API</see>
 /// </remarks>
 [Description("@#LanguageModelMessageType")]
-[ECMAScript]
 [String]
 public enum LanguageModelMessageType
 {
@@ -9832,7 +9633,6 @@ public enum LanguageModelMessageType
 /// <see href="https://webmachinelearning.github.io/prompt-api/#enumdef-languagemodelsamplingmode">Prompt API: 3 The API</see>
 /// </remarks>
 [Description("@#LanguageModelSamplingMode")]
-[ECMAScript]
 [String]
 public enum LanguageModelSamplingMode
 {
@@ -9907,7 +9707,6 @@ public enum LanguageModelSamplingMode
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlconv2dfilteroperandlayout">Web Neural Network API: 8.9.10 conv2d</see>
 /// </remarks>
 [Description("@#MLConv2dFilterOperandLayout")]
-[ECMAScript]
 [String]
 public enum MLConv2dFilterOperandLayout
 {
@@ -9955,7 +9754,6 @@ public enum MLConv2dFilterOperandLayout
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlconvtranspose2dfilteroperandlayout">Web Neural Network API: 8.9.11 convTranspose2d</see>
 /// </remarks>
 [Description("@#MLConvTranspose2dFilterOperandLayout")]
-[ECMAScript]
 [String]
 public enum MLConvTranspose2dFilterOperandLayout
 {
@@ -9994,7 +9792,6 @@ public enum MLConvTranspose2dFilterOperandLayout
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlgruweightlayout">Web Neural Network API: 8.9.25 gru</see>
 /// </remarks>
 [Description("@#MLGruWeightLayout")]
-[ECMAScript]
 [String]
 public enum MLGruWeightLayout
 {
@@ -10024,7 +9821,6 @@ public enum MLGruWeightLayout
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlinputoperandlayout">Web Neural Network API: 8.5 MLOperandDescriptor dictionary</see>
 /// </remarks>
 [Description("@#MLInputOperandLayout")]
-[ECMAScript]
 [String]
 public enum MLInputOperandLayout
 {
@@ -10054,7 +9850,6 @@ public enum MLInputOperandLayout
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlinterpolationmode">Web Neural Network API: 8.9.41 resample2d</see>
 /// </remarks>
 [Description("@#MLInterpolationMode")]
-[ECMAScript]
 [String]
 public enum MLInterpolationMode
 {
@@ -10084,7 +9879,6 @@ public enum MLInterpolationMode
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mllstmweightlayout">Web Neural Network API: 8.9.33 lstm</see>
 /// </remarks>
 [Description("@#MLLstmWeightLayout")]
-[ECMAScript]
 [String]
 public enum MLLstmWeightLayout
 {
@@ -10114,7 +9908,6 @@ public enum MLLstmWeightLayout
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mloperanddatatype">Web Neural Network API: 8.5 MLOperandDescriptor dictionary</see>
 /// </remarks>
 [Description("@#MLOperandDataType")]
-[ECMAScript]
 [String]
 public enum MLOperandDataType
 {
@@ -10198,7 +9991,6 @@ public enum MLOperandDataType
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlpaddingmode">Web Neural Network API: 8.9.36 pad</see>
 /// </remarks>
 [Description("@#MLPaddingMode")]
-[ECMAScript]
 [String]
 public enum MLPaddingMode
 {
@@ -10237,7 +10029,6 @@ public enum MLPaddingMode
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlpowerpreference">Web Neural Network API: 8.2.1 MLContextOptions</see>
 /// </remarks>
 [Description("@#MLPowerPreference")]
-[ECMAScript]
 [String]
 public enum MLPowerPreference
 {
@@ -10276,7 +10067,6 @@ public enum MLPowerPreference
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlrecurrentnetworkdirection">Web Neural Network API: 8.9.25 gru</see>
 /// </remarks>
 [Description("@#MLRecurrentNetworkDirection")]
-[ECMAScript]
 [String]
 public enum MLRecurrentNetworkDirection
 {
@@ -10315,7 +10105,6 @@ public enum MLRecurrentNetworkDirection
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-performancepreference">Writing Assistance APIs: 2 The summarizer API</see>
 /// </remarks>
 [Description("@#PerformancePreference")]
-[ECMAScript]
 [String]
 public enum PerformancePreference
 {
@@ -10354,7 +10143,6 @@ public enum PerformancePreference
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-rewriterformat">Writing Assistance APIs: 4 The rewriter API</see>
 /// </remarks>
 [Description("@#RewriterFormat")]
-[ECMAScript]
 [String]
 public enum RewriterFormat
 {
@@ -10393,7 +10181,6 @@ public enum RewriterFormat
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-rewriterlength">Writing Assistance APIs: 4 The rewriter API</see>
 /// </remarks>
 [Description("@#RewriterLength")]
-[ECMAScript]
 [String]
 public enum RewriterLength
 {
@@ -10432,7 +10219,6 @@ public enum RewriterLength
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-rewritertone">Writing Assistance APIs: 4 The rewriter API</see>
 /// </remarks>
 [Description("@#RewriterTone")]
-[ECMAScript]
 [String]
 public enum RewriterTone
 {
@@ -10471,7 +10257,6 @@ public enum RewriterTone
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-summarizerformat">Writing Assistance APIs: 2 The summarizer API</see>
 /// </remarks>
 [Description("@#SummarizerFormat")]
-[ECMAScript]
 [String]
 public enum SummarizerFormat
 {
@@ -10501,7 +10286,6 @@ public enum SummarizerFormat
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-summarizerlength">Writing Assistance APIs: 2 The summarizer API</see>
 /// </remarks>
 [Description("@#SummarizerLength")]
-[ECMAScript]
 [String]
 public enum SummarizerLength
 {
@@ -10540,7 +10324,6 @@ public enum SummarizerLength
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-summarizertype">Writing Assistance APIs: 2 The summarizer API</see>
 /// </remarks>
 [Description("@#SummarizerType")]
-[ECMAScript]
 [String]
 public enum SummarizerType
 {
@@ -10588,7 +10371,6 @@ public enum SummarizerType
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-writerformat">Writing Assistance APIs: 3 The writer API</see>
 /// </remarks>
 [Description("@#WriterFormat")]
-[ECMAScript]
 [String]
 public enum WriterFormat
 {
@@ -10618,7 +10400,6 @@ public enum WriterFormat
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-writerlength">Writing Assistance APIs: 3 The writer API</see>
 /// </remarks>
 [Description("@#WriterLength")]
-[ECMAScript]
 [String]
 public enum WriterLength
 {
@@ -10657,7 +10438,6 @@ public enum WriterLength
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-writertone">Writing Assistance APIs: 3 The writer API</see>
 /// </remarks>
 [Description("@#WriterTone")]
-[ECMAScript]
 [String]
 public enum WriterTone
 {
@@ -10696,7 +10476,6 @@ public enum WriterTone
 /// <see href="https://websockets.spec.whatwg.org/#enumdef-binarytype">WebSockets Standard: 3.1 Interface definition</see>
 /// </remarks>
 [Description("@#BinaryType")]
-[ECMAScript]
 [String]
 public enum BinaryType
 {
@@ -10732,7 +10511,6 @@ public enum BinaryType
 /// <see href="https://wicg.github.io/PEPC/geolocation-element.html#enumdef-activationblockersmixinblockerreason">The HTML Geolocation Element: 3.1.2 Action Blockers, Blocker Reasons, and Blocker Lifetimes</see>
 /// </remarks>
 [Description("@#ActivationBlockersMixinBlockerReason")]
-[ECMAScript]
 [String]
 public enum ActivationBlockersMixinBlockerReason
 {
@@ -10825,7 +10603,6 @@ public enum ActivationBlockersMixinBlockerReason
 /// <see href="https://wicg.github.io/background-fetch/#enumdef-backgroundfetchfailurereason">Background Fetch: 6.4 BackgroundFetchRegistration</see>
 /// </remarks>
 [Description("@#BackgroundFetchFailureReason")]
-[ECMAScript]
 [String]
 public enum BackgroundFetchFailureReason
 {
@@ -10891,7 +10668,6 @@ public enum BackgroundFetchFailureReason
 /// <see href="https://wicg.github.io/background-fetch/#enumdef-backgroundfetchresult">Background Fetch: 6.4 BackgroundFetchRegistration</see>
 /// </remarks>
 [Description("@#BackgroundFetchResult")]
-[ECMAScript]
 [String]
 public enum BackgroundFetchResult
 {
@@ -10930,7 +10706,6 @@ public enum BackgroundFetchResult
 /// <see href="https://wicg.github.io/connection-allowlists/#enumdef-connectionallowlistdisposition">Connection Allowlists: 3.3 Reporting</see>
 /// </remarks>
 [Description("@#ConnectionAllowlistDisposition")]
-[ECMAScript]
 [String]
 public enum ConnectionAllowlistDisposition
 {
@@ -10960,7 +10735,6 @@ public enum ConnectionAllowlistDisposition
 /// <see href="https://wicg.github.io/content-index/spec/#enumdef-contentcategory">Content Index: 5.3 ContentIndex</see>
 /// </remarks>
 [Description("@#ContentCategory")]
-[ECMAScript]
 [String]
 public enum ContentCategory
 {
@@ -11017,7 +10791,6 @@ public enum ContentCategory
 /// <see href="https://wicg.github.io/csp-next/scripting-policy.html#enumdef-scriptingpolicyviolationtype">Scripting Policy: 2.7 Reporting Violations</see>
 /// </remarks>
 [Description("@#ScriptingPolicyViolationType")]
-[ECMAScript]
 [String]
 public enum ScriptingPolicyViolationType
 {
@@ -11065,7 +10838,6 @@ public enum ScriptingPolicyViolationType
 /// <see href="https://wicg.github.io/digital-goods/#enumdef-itemtype">Digital Goods API: 2.2 DigitalGoodsService interface</see>
 /// </remarks>
 [Description("@#ItemType")]
-[ECMAScript]
 [String]
 public enum ItemType
 {
@@ -11095,7 +10867,6 @@ public enum ItemType
 /// <see href="https://wicg.github.io/fenced-frame/#enumdef-fencereportingdestination">Fenced Frame: 2.4 The Fence interface</see>
 /// </remarks>
 [Description("@#FenceReportingDestination")]
-[ECMAScript]
 [String]
 public enum FenceReportingDestination
 {
@@ -11152,7 +10923,6 @@ public enum FenceReportingDestination
 /// <see href="https://wicg.github.io/fenced-frame/#enumdef-opaqueproperty">Fenced Frame: 2.3.5 The FencedFrameConfig interface</see>
 /// </remarks>
 [Description("@#OpaqueProperty")]
-[ECMAScript]
 [String]
 public enum OpaqueProperty
 {
@@ -11173,7 +10943,6 @@ public enum OpaqueProperty
 /// <see href="https://wicg.github.io/file-system-access/#enumdef-filesystempermissionmode">File System Access: 2.2 Permissions</see>
 /// </remarks>
 [Description("@#FileSystemPermissionMode")]
-[ECMAScript]
 [String]
 public enum FileSystemPermissionMode
 {
@@ -11209,7 +10978,6 @@ public enum FileSystemPermissionMode
 /// <see href="https://wicg.github.io/file-system-access/#enumdef-wellknowndirectory">File System Access: 3.2.2 Starting Directory</see>
 /// </remarks>
 [Description("@#WellKnownDirectory")]
-[ECMAScript]
 [String]
 public enum WellKnownDirectory
 {
@@ -11275,7 +11043,6 @@ public enum WellKnownDirectory
 /// <see href="https://wicg.github.io/idle-detection/#enumdef-screenidlestate">Idle Detection API: 2.1.2 The ScreenIdleState enum</see>
 /// </remarks>
 [Description("@#ScreenIdleState")]
-[ECMAScript]
 [String]
 public enum ScreenIdleState
 {
@@ -11305,7 +11072,6 @@ public enum ScreenIdleState
 /// <see href="https://wicg.github.io/idle-detection/#enumdef-useridlestate">Idle Detection API: 2.1.1 The UserIdleState enum</see>
 /// </remarks>
 [Description("@#UserIdleState")]
-[ECMAScript]
 [String]
 public enum UserIdleState
 {
@@ -11335,7 +11101,6 @@ public enum UserIdleState
 /// <see href="https://wicg.github.io/local-network-access/#enumdef-ipaddressspace">Local Network Access: 2.1 IP Address Space</see>
 /// </remarks>
 [Description("@#IPAddressSpace")]
-[ECMAScript]
 [String]
 public enum IPAddressSpace
 {
@@ -11374,7 +11139,6 @@ public enum IPAddressSpace
 /// <see href="https://wicg.github.io/netinfo/#dom-connectiontype">Network Information API: 4.2 ConnectionType enum</see>
 /// </remarks>
 [Description("@#ConnectionType")]
-[ECMAScript]
 [String]
 public enum ConnectionType
 {
@@ -11467,7 +11231,6 @@ public enum ConnectionType
 /// <see href="https://wicg.github.io/netinfo/#dom-effectiveconnectiontype">Network Information API: 4.4 EffectiveConnectionType enum</see>
 /// </remarks>
 [Description("@#EffectiveConnectionType")]
-[ECMAScript]
 [String]
 public enum EffectiveConnectionType
 {
@@ -11515,7 +11278,6 @@ public enum EffectiveConnectionType
 /// <see href="https://wicg.github.io/page-lifecycle/#enumdef-clientlifecyclestate">Page Lifecycle: 5.3.1 Client</see>
 /// </remarks>
 [Description("@#ClientLifecycleState")]
-[ECMAScript]
 [String]
 public enum ClientLifecycleState
 {
@@ -11545,7 +11307,6 @@ public enum ClientLifecycleState
 /// <see href="https://wicg.github.io/scheduling-apis/#enumdef-taskpriority">Prioritized Task Scheduling: 2.1 Task and Continuation Priorities</see>
 /// </remarks>
 [Description("@#TaskPriority")]
-[ECMAScript]
 [String]
 public enum TaskPriority
 {
@@ -11584,7 +11345,6 @@ public enum TaskPriority
 /// <see href="https://wicg.github.io/serial/#dom-flowcontroltype">Web Serial API: 4.4.1.2 FlowControlType enum</see>
 /// </remarks>
 [Description("@#FlowControlType")]
-[ECMAScript]
 [String]
 public enum FlowControlType
 {
@@ -11614,7 +11374,6 @@ public enum FlowControlType
 /// <see href="https://wicg.github.io/serial/#dom-paritytype">Web Serial API: 4.4.1.1 ParityType enum</see>
 /// </remarks>
 [Description("@#ParityType")]
-[ECMAScript]
 [String]
 public enum ParityType
 {
@@ -11653,7 +11412,6 @@ public enum ParityType
 /// <see href="https://wicg.github.io/shape-detection-api/#enumdef-barcodeformat">Accelerated Shape Detection in Images: 2.3.3 BarcodeFormat</see>
 /// </remarks>
 [Description("@#BarcodeFormat")]
-[ECMAScript]
 [String]
 public enum BarcodeFormat
 {
@@ -11791,7 +11549,6 @@ public enum BarcodeFormat
 /// <see href="https://wicg.github.io/shape-detection-api/#enumdef-landmarktype">Accelerated Shape Detection in Images: 2.2.2 DetectedFace</see>
 /// </remarks>
 [Description("@#LandmarkType")]
-[ECMAScript]
 [String]
 public enum LandmarkType
 {
@@ -11830,7 +11587,6 @@ public enum LandmarkType
 /// <see href="https://wicg.github.io/trust-token-api/#enumdef-operationtype">Private State Token API: Private State Token API</see>
 /// </remarks>
 [Description("@#OperationType")]
-[ECMAScript]
 [String]
 public enum OperationType
 {
@@ -11869,7 +11625,6 @@ public enum OperationType
 /// <see href="https://wicg.github.io/trust-token-api/#enumdef-refreshpolicy">Private State Token API: 6.1 Definitions</see>
 /// </remarks>
 [Description("@#RefreshPolicy")]
-[ECMAScript]
 [String]
 public enum RefreshPolicy
 {
@@ -11899,7 +11654,6 @@ public enum RefreshPolicy
 /// <see href="https://wicg.github.io/trust-token-api/#enumdef-tokenversion">Private State Token API: Private State Token API</see>
 /// </remarks>
 [Description("@#TokenVersion")]
-[ECMAScript]
 [String]
 public enum TokenVersion
 {
@@ -11920,7 +11674,6 @@ public enum TokenVersion
 /// <see href="https://wicg.github.io/web-otp/#enumdef-otpcredentialtransporttype">WebOTP API: 2.4 OTPCredentialTransportType</see>
 /// </remarks>
 [Description("@#OTPCredentialTransportType")]
-[ECMAScript]
 [String]
 public enum OTPCredentialTransportType
 {
@@ -11941,7 +11694,6 @@ public enum OTPCredentialTransportType
 /// <see href="https://wicg.github.io/webcrypto-modern-algos/#dom-keyformat">Modern Algorithms in the Web Cryptography API: 3.1.1 Key Formats</see>
 /// </remarks>
 [Description("@#KeyFormat")]
-[ECMAScript]
 [String]
 public enum KeyFormat
 {
@@ -12025,7 +11777,6 @@ public enum KeyFormat
 /// <see href="https://wicg.github.io/webcrypto-modern-algos/#dom-keyusage">Modern Algorithms in the Web Cryptography API: 3.1.2 Key Usages</see>
 /// </remarks>
 [Description("@#KeyUsage")]
-[ECMAScript]
 [String]
 public enum KeyUsage
 {
@@ -12145,7 +11896,6 @@ public enum KeyUsage
 /// <see href="https://wicg.github.io/webusb/#enumdef-usbdirection">WebUSB API: 6.6 The USBEndpoint Interface</see>
 /// </remarks>
 [Description("@#USBDirection")]
-[ECMAScript]
 [String]
 public enum USBDirection
 {
@@ -12175,7 +11925,6 @@ public enum USBDirection
 /// <see href="https://wicg.github.io/webusb/#enumdef-usbendpointtype">WebUSB API: 6.6 The USBEndpoint Interface</see>
 /// </remarks>
 [Description("@#USBEndpointType")]
-[ECMAScript]
 [String]
 public enum USBEndpointType
 {
@@ -12214,7 +11963,6 @@ public enum USBEndpointType
 /// <see href="https://wicg.github.io/webusb/#enumdef-usbrecipient">WebUSB API: 6.2 The USBControlTransferParameters Dictionary</see>
 /// </remarks>
 [Description("@#USBRecipient")]
-[ECMAScript]
 [String]
 public enum USBRecipient
 {
@@ -12262,7 +12010,6 @@ public enum USBRecipient
 /// <see href="https://wicg.github.io/webusb/#enumdef-usbrequesttype">WebUSB API: 6.2 The USBControlTransferParameters Dictionary</see>
 /// </remarks>
 [Description("@#USBRequestType")]
-[ECMAScript]
 [String]
 public enum USBRequestType
 {
@@ -12301,7 +12048,6 @@ public enum USBRequestType
 /// <see href="https://wicg.github.io/webusb/#enumdef-usbtransferstatus">WebUSB API: 6.1 The USBDevice Interface</see>
 /// </remarks>
 [Description("@#USBTransferStatus")]
-[ECMAScript]
 [String]
 public enum USBTransferStatus
 {
@@ -12340,7 +12086,6 @@ public enum USBTransferStatus
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType">MDN Web Docs: XMLHttpRequestResponseType</see>
 /// </remarks>
 [Description("@#XMLHttpRequestResponseType")]
-[ECMAScript]
 [String]
 public enum XMLHttpRequestResponseType
 {
@@ -12406,7 +12151,6 @@ public enum XMLHttpRequestResponseType
 /// <see href="https://wicg.github.io/webhid/#dom-hidunitsystem">WebHID API: 13. HIDUnitSystem enum</see>
 /// </remarks>
 [Description("@#HIDUnitSystem")]
-[ECMAScript]
 [String]
 public enum HIDUnitSystem
 {
@@ -12481,7 +12225,6 @@ public enum HIDUnitSystem
 /// <see href="https://w3c.github.io/payment-request/#dom-paymentshippingtype">Payment Request API: 8 PaymentShippingType enum</see>
 /// </remarks>
 [Description("@#PaymentShippingType")]
-[ECMAScript]
 [String]
 public enum PaymentShippingType
 {
@@ -12520,7 +12263,6 @@ public enum PaymentShippingType
 /// <see href="https://w3c.github.io/resource-timing/#enumdef-renderblockingstatustype">Resource Timing: 3.3.1 RenderBlockingStatusType enum</see>
 /// </remarks>
 [Description("@#RenderBlockingStatusType")]
-[ECMAScript]
 [String]
 public enum RenderBlockingStatusType
 {
@@ -12550,7 +12292,6 @@ public enum RenderBlockingStatusType
 /// <see href="https://wicg.github.io/handwriting-recognition/#enumdef-handwritinginputtype">Handwriting Recognition API: 3 Feature Query</see>
 /// </remarks>
 [Description("@#HandwritingInputType")]
-[ECMAScript]
 [String]
 public enum HandwritingInputType
 {
@@ -12589,7 +12330,6 @@ public enum HandwritingInputType
 /// <see href="https://wicg.github.io/handwriting-recognition/#enumdef-handwritingrecognitiontype">Handwriting Recognition API: 3 Feature Query</see>
 /// </remarks>
 [Description("@#HandwritingRecognitionType")]
-[ECMAScript]
 [String]
 public enum HandwritingRecognitionType
 {
@@ -12619,7 +12359,6 @@ public enum HandwritingRecognitionType
 /// <see href="https://w3c.github.io/touch-events/#dom-touchtype">Touch Events - Level 2: 3 Touch Interface</see>
 /// </remarks>
 [Description("@#TouchType")]
-[ECMAScript]
 [String]
 public enum TouchType
 {
@@ -12649,7 +12388,6 @@ public enum TouchType
 /// <see href="https://w3c.github.io/gamepad/extensions.html#dom-gamepadhand">Gamepad Extensions: 3 GamepadHand Enum</see>
 /// </remarks>
 [Description("@#GamepadHand")]
-[ECMAScript]
 [String]
 public enum GamepadHand
 {
@@ -12688,7 +12426,6 @@ public enum GamepadHand
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-cursorcaptureconstraint">Screen Capture: 5.4.16 CursorCaptureConstraint</see>
 /// </remarks>
 [Description("@#CursorCaptureConstraint")]
-[ECMAScript]
 [String]
 public enum CursorCaptureConstraint
 {
@@ -12727,7 +12464,6 @@ public enum CursorCaptureConstraint
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-videoencoderbitratemode">WebCodecs: 7.14 VideoEncoderBitrateMode</see>
 /// </remarks>
 [Description("@#VideoEncoderBitrateMode")]
-[ECMAScript]
 [String]
 public enum VideoEncoderBitrateMode
 {
@@ -12766,7 +12502,6 @@ public enum VideoEncoderBitrateMode
 /// <see href="https://w3c.github.io/webcodecs/aac_codec_registration.html#enumdef-aacbitstreamformat">AAC WebCodecs Registration: 5.2 AacBitstreamFormat</see>
 /// </remarks>
 [Description("@#AacBitstreamFormat")]
-[ECMAScript]
 [String]
 public enum AacBitstreamFormat
 {
@@ -12796,7 +12531,6 @@ public enum AacBitstreamFormat
 /// <see href="https://w3c.github.io/webcodecs/opus_codec_registration.html#enumdef-opusbitstreamformat">Opus WebCodecs Registration: 5.2 OpusBitstreamFormat</see>
 /// </remarks>
 [Description("@#OpusBitstreamFormat")]
-[ECMAScript]
 [String]
 public enum OpusBitstreamFormat
 {
@@ -12826,7 +12560,6 @@ public enum OpusBitstreamFormat
 /// <see href="https://w3c.github.io/webcodecs/avc_codec_registration.html#enumdef-avcbitstreamformat">AVC (H.264) WebCodecs Registration: 5.2 AvcBitstreamFormat</see>
 /// </remarks>
 [Description("@#AvcBitstreamFormat")]
-[ECMAScript]
 [String]
 public enum AvcBitstreamFormat
 {
@@ -12856,7 +12589,6 @@ public enum AvcBitstreamFormat
 /// <see href="https://w3c.github.io/webcodecs/hevc_codec_registration.html#enumdef-hevcbitstreamformat">HEVC (H.265) WebCodecs Registration: 5.2 HevcBitstreamFormat</see>
 /// </remarks>
 [Description("@#HevcBitstreamFormat")]
-[ECMAScript]
 [String]
 public enum HevcBitstreamFormat
 {
@@ -12886,7 +12618,6 @@ public enum HevcBitstreamFormat
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationfocusreset">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
 /// </remarks>
 [Description("@#NavigationFocusReset")]
-[ECMAScript]
 [String]
 public enum NavigationFocusReset
 {
@@ -12916,7 +12647,6 @@ public enum NavigationFocusReset
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationscrollbehavior">HTML Standard: 7.2.6.10.1 The NavigateEvent interface</see>
 /// </remarks>
 [Description("@#NavigationScrollBehavior")]
-[ECMAScript]
 [String]
 public enum NavigationScrollBehavior
 {
@@ -12946,7 +12676,6 @@ public enum NavigationScrollBehavior
 /// <see href="https://w3c.github.io/push-api/#dom-pushencryptionkeyname">Push API: 8.1 PushEncryptionKeyName enumeration</see>
 /// </remarks>
 [Description("@#PushEncryptionKeyName")]
-[ECMAScript]
 [String]
 public enum PushEncryptionKeyName
 {
@@ -12976,7 +12705,6 @@ public enum PushEncryptionKeyName
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcerrordetailtype">WebRTC: Real-Time Communication in Browsers: 11.2 RTCErrorDetailType Enum</see>
 /// </remarks>
 [Description("@#RTCErrorDetailType")]
-[ECMAScript]
 [String]
 public enum RTCErrorDetailType
 {
@@ -13051,7 +12779,6 @@ public enum RTCErrorDetailType
 /// <see href="https://w3c.github.io/media-capabilities/#enumdef-mediadecodingtype">Media Capabilities: 2.1.2 MediaDecodingType</see>
 /// </remarks>
 [Description("@#MediaDecodingType")]
-[ECMAScript]
 [String]
 public enum MediaDecodingType
 {
@@ -13090,7 +12817,6 @@ public enum MediaDecodingType
 /// <see href="https://w3c.github.io/media-capabilities/#enumdef-mediaencodingtype">Media Capabilities: 2.1.3 MediaEncodingType</see>
 /// </remarks>
 [Description("@#MediaEncodingType")]
-[ECMAScript]
 [String]
 public enum MediaEncodingType
 {
@@ -13120,7 +12846,6 @@ public enum MediaEncodingType
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#premultiplyalpha">HTML Standard: 8.11.2 The ImageBitmap interface</see>
 /// </remarks>
 [Description("@#PremultiplyAlpha")]
-[ECMAScript]
 [String]
 public enum PremultiplyAlpha
 {
@@ -13159,7 +12884,6 @@ public enum PremultiplyAlpha
 /// <see href="https://w3c.github.io/media-capabilities/#enumdef-hdrmetadatatype">Media Capabilities: 2.1.5 HdrMetadataType</see>
 /// </remarks>
 [Description("@#HdrMetadataType")]
-[ECMAScript]
 [String]
 public enum HdrMetadataType
 {
@@ -13198,7 +12922,6 @@ public enum HdrMetadataType
 /// <see href="https://w3c.github.io/media-capabilities/#enumdef-transferfunction">Media Capabilities: 2.1.7 TransferFunction</see>
 /// </remarks>
 [Description("@#TransferFunction")]
-[ECMAScript]
 [String]
 public enum TransferFunction
 {
@@ -13237,7 +12960,6 @@ public enum TransferFunction
 /// <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialissuanceprotocol">Digital Credentials: 7.8.3 The DigitalCredentialIssuanceProtocol enumeration</see>
 /// </remarks>
 [Description("@#DigitalCredentialIssuanceProtocol")]
-[ECMAScript]
 [String]
 public enum DigitalCredentialIssuanceProtocol
 {
@@ -13258,7 +12980,6 @@ public enum DigitalCredentialIssuanceProtocol
 /// <see href="https://w3c-fedid.github.io/digital-credentials/#dom-digitalcredentialpresentationprotocol">Digital Credentials: 7.8.2 The DigitalCredentialPresentationProtocol enumeration</see>
 /// </remarks>
 [Description("@#DigitalCredentialPresentationProtocol")]
-[ECMAScript]
 [String]
 public enum DigitalCredentialPresentationProtocol
 {
@@ -13306,7 +13027,6 @@ public enum DigitalCredentialPresentationProtocol
 /// <see href="https://w3c.github.io/mediacapture-record/#enumdef-bitratemode">MediaStream Recording: 2.6 BitrateMode</see>
 /// </remarks>
 [Description("@#BitrateMode")]
-[ECMAScript]
 [String]
 public enum BitrateMode
 {
@@ -13336,7 +13056,6 @@ public enum BitrateMode
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#enumdef-availability">Writing Assistance APIs: 5.1 Common APIs</see>
 /// </remarks>
 [Description("@#Availability")]
-[ECMAScript]
 [String]
 public enum Availability
 {
@@ -13384,7 +13103,6 @@ public enum Availability
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-echocancellationmodeenum">Media Capture and Streams: 4.3.8 Constrainable Properties</see>
 /// </remarks>
 [Description("@#EchoCancellationModeEnum")]
-[ECMAScript]
 [String]
 public enum EchoCancellationModeEnum
 {
@@ -13414,7 +13132,6 @@ public enum EchoCancellationModeEnum
 /// <see href="https://w3c.github.io/device-posture/#dom-deviceposturetype">Device Posture API: 4 The DevicePosture interface</see>
 /// </remarks>
 [Description("@#DevicePostureType")]
-[ECMAScript]
 [String]
 public enum DevicePostureType
 {
@@ -13444,7 +13161,6 @@ public enum DevicePostureType
 /// <see href="https://w3c.github.io/screen-wake-lock/#dom-wakelocktype">Screen Wake Lock API: 10. The WakeLockType enum</see>
 /// </remarks>
 [Description("@#WakeLockType")]
-[ECMAScript]
 [String]
 public enum WakeLockType
 {
@@ -13465,7 +13181,6 @@ public enum WakeLockType
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtptransceiverdirection">WebRTC: Real-Time Communication in Browsers: 5.1 RTCPeerConnection Interface Extensions</see>
 /// </remarks>
 [Description("@#RTCRtpTransceiverDirection")]
-[ECMAScript]
 [String]
 public enum RTCRtpTransceiverDirection
 {
@@ -13522,7 +13237,6 @@ public enum RTCRtpTransceiverDirection
 /// <see href="https://w3c.github.io/encrypted-media/#dom-mediakeymessagetype">Encrypted Media Extensions: 6.4 MediaKeyMessageEvent</see>
 /// </remarks>
 [Description("@#MediaKeyMessageType")]
-[ECMAScript]
 [String]
 public enum MediaKeyMessageType
 {
@@ -13570,7 +13284,6 @@ public enum MediaKeyMessageType
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionstate">WebRTC: Real-Time Communication in Browsers: 4.3.3 RTCPeerConnectionState Enum</see>
 /// </remarks>
 [Description("@#RTCPeerConnectionState")]
-[ECMAScript]
 [String]
 public enum RTCPeerConnectionState
 {
@@ -13636,7 +13349,6 @@ public enum RTCPeerConnectionState
 /// <see href="https://w3c.github.io/navigation-timing/#enumdef-performancetimingconfidencevalue">Navigation Timing Level 2: 3.3.3 The PerformanceTimingConfidenceValue enum</see>
 /// </remarks>
 [Description("@#PerformanceTimingConfidenceValue")]
-[ECMAScript]
 [String]
 public enum PerformanceTimingConfidenceValue
 {
@@ -13666,7 +13378,6 @@ public enum PerformanceTimingConfidenceValue
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlrecurrentnetworkactivation">Web Neural Network API: 8.9.25 gru</see>
 /// </remarks>
 [Description("@#MLRecurrentNetworkActivation")]
-[ECMAScript]
 [String]
 public enum MLRecurrentNetworkActivation
 {
@@ -13705,7 +13416,6 @@ public enum MLRecurrentNetworkActivation
 /// <see href="https://w3c.github.io/media-source/#dom-endofstreamerror">Media Source Extensions™: 3 MediaSource interface</see>
 /// </remarks>
 [Description("@#EndOfStreamError")]
-[ECMAScript]
 [String]
 public enum EndOfStreamError
 {
@@ -13735,7 +13445,6 @@ public enum EndOfStreamError
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-encodedaudiochunktype">WebCodecs: 8.1 EncodedAudioChunk Interface</see>
 /// </remarks>
 [Description("@#EncodedAudioChunkType")]
-[ECMAScript]
 [String]
 public enum EncodedAudioChunkType
 {
@@ -13765,7 +13474,6 @@ public enum EncodedAudioChunkType
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-encodedvideochunktype">WebCodecs: 8.2 EncodedVideoChunk Interface</see>
 /// </remarks>
 [Description("@#EncodedVideoChunkType")]
-[ECMAScript]
 [String]
 public enum EncodedVideoChunkType
 {
@@ -13795,7 +13503,6 @@ public enum EncodedVideoChunkType
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceconnectionstate">WebRTC: Real-Time Communication in Browsers: 4.3.4 RTCIceConnectionState Enum</see>
 /// </remarks>
 [Description("@#RTCIceConnectionState")]
-[ECMAScript]
 [String]
 public enum RTCIceConnectionState
 {
@@ -13870,7 +13577,6 @@ public enum RTCIceConnectionState
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegatheringstate">WebRTC: Real-Time Communication in Browsers: 4.3.2 RTCIceGatheringState Enum</see>
 /// </remarks>
 [Description("@#RTCIceGatheringState")]
-[ECMAScript]
 [String]
 public enum RTCIceGatheringState
 {
@@ -13909,7 +13615,6 @@ public enum RTCIceGatheringState
 /// <see href="https://webmachinelearning.github.io/webnn/#enumdef-mlroundingtype">Web Neural Network API: 8.9.37 Pooling operations</see>
 /// </remarks>
 [Description("@#MLRoundingType")]
-[ECMAScript]
 [String]
 public enum MLRoundingType
 {
@@ -13939,7 +13644,6 @@ public enum MLRoundingType
 /// <see href="https://w3c.github.io/webcodecs/opus_codec_registration.html#enumdef-opusapplication">Opus WebCodecs Registration: 5.4 OpusApplication</see>
 /// </remarks>
 [Description("@#OpusApplication")]
-[ECMAScript]
 [String]
 public enum OpusApplication
 {
@@ -13978,7 +13682,6 @@ public enum OpusApplication
 /// <see href="https://w3c.github.io/webcodecs/opus_codec_registration.html#enumdef-opussignal">Opus WebCodecs Registration: 5.3 OpusSignal</see>
 /// </remarks>
 [Description("@#OpusSignal")]
-[ECMAScript]
 [String]
 public enum OpusSignal
 {
@@ -14017,7 +13720,6 @@ public enum OpusSignal
 /// <see href="https://wicg.github.io/manifest-incubations/#dom-appbannerpromptoutcome">Manifest Incubations: 16.1.3 AppBannerPromptOutcome enum</see>
 /// </remarks>
 [Description("@#AppBannerPromptOutcome")]
-[ECMAScript]
 [String]
 public enum AppBannerPromptOutcome
 {
@@ -14047,7 +13749,6 @@ public enum AppBannerPromptOutcome
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvascolortype">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasColorType")]
-[ECMAScript]
 [String]
 public enum CanvasColorType
 {
@@ -14077,7 +13778,6 @@ public enum CanvasColorType
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#canvasfillrule">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#CanvasFillRule")]
-[ECMAScript]
 [String]
 public enum CanvasFillRule
 {
@@ -14107,7 +13807,6 @@ public enum CanvasFillRule
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#imagedatapixelformat">HTML Standard: 8.11.1 The ImageData interface</see>
 /// </remarks>
 [Description("@#ImageDataPixelFormat")]
-[ECMAScript]
 [String]
 public enum ImageDataPixelFormat
 {
@@ -14137,7 +13836,6 @@ public enum ImageDataPixelFormat
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#imagesmoothingquality">HTML Standard: 4.12.5.1 The 2D rendering context</see>
 /// </remarks>
 [Description("@#ImageSmoothingQuality")]
-[ECMAScript]
 [String]
 public enum ImageSmoothingQuality
 {
@@ -14176,7 +13874,6 @@ public enum ImageSmoothingQuality
 /// <see href="https://w3c.github.io/media-source/#dom-readystate">Media Source Extensions™: 3 MediaSource interface</see>
 /// </remarks>
 [Description("@#ReadyState")]
-[ECMAScript]
 [String]
 public enum ReadyState
 {
@@ -14215,7 +13912,6 @@ public enum ReadyState
 /// <see href="https://w3c.github.io/screen-orientation/#dom-orientationlocktype">Screen Orientation: 6 OrientationLockType enum</see>
 /// </remarks>
 [Description("@#OrientationLockType")]
-[ECMAScript]
 [String]
 public enum OrientationLockType
 {
@@ -14299,7 +13995,6 @@ public enum OrientationLockType
 /// <see href="https://w3c.github.io/screen-orientation/#dom-orientationtype">Screen Orientation: 7 OrientationType enum</see>
 /// </remarks>
 [Description("@#OrientationType")]
-[ECMAScript]
 [String]
 public enum OrientationType
 {
@@ -14347,7 +14042,6 @@ public enum OrientationType
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#predefinedcolorspace">HTML Standard: 4.12.5.4 Color spaces and color space conversion</see>
 /// </remarks>
 [Description("@#PredefinedColorSpace")]
-[ECMAScript]
 [String]
 public enum PredefinedColorSpace
 {
@@ -14395,7 +14089,6 @@ public enum PredefinedColorSpace
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportstate">WebRTC: Real-Time Communication in Browsers: 5.6.4 RTCIceTransportState Enum</see>
 /// </remarks>
 [Description("@#RTCIceTransportState")]
-[ECMAScript]
 [String]
 public enum RTCIceTransportState
 {
@@ -14470,7 +14163,6 @@ public enum RTCIceTransportState
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsdptype">WebRTC: Real-Time Communication in Browsers: 4.6.1 RTCSdpType</see>
 /// </remarks>
 [Description("@#RTCSdpType")]
-[ECMAScript]
 [String]
 public enum RTCSdpType
 {
@@ -14518,7 +14210,6 @@ public enum RTCSdpType
 /// <see href="https://w3c.github.io/remote-playback/#dom-remoteplaybackstate">Remote Playback API: 5.2 RemotePlayback interface</see>
 /// </remarks>
 [Description("@#RemotePlaybackState")]
-[ECMAScript]
 [String]
 public enum RemotePlaybackState
 {
@@ -14557,7 +14248,6 @@ public enum RemotePlaybackState
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#resizequality">HTML Standard: 8.11.2 The ImageBitmap interface</see>
 /// </remarks>
 [Description("@#ResizeQuality")]
-[ECMAScript]
 [String]
 public enum ResizeQuality
 {
@@ -14605,7 +14295,6 @@ public enum ResizeQuality
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-latencymode">WebCodecs: 7.11 Latency Mode</see>
 /// </remarks>
 [Description("@#LatencyMode")]
-[ECMAScript]
 [String]
 public enum LatencyMode
 {
@@ -14635,7 +14324,6 @@ public enum LatencyMode
 /// <see href="https://w3c.github.io/gamepad/#dom-gamepadmappingtype">Gamepad: 7 GamepadMappingType Enum</see>
 /// </remarks>
 [Description("@#GamepadMappingType")]
-[ECMAScript]
 [String]
 public enum GamepadMappingType
 {
@@ -14674,7 +14362,6 @@ public enum GamepadMappingType
 /// <see href="https://w3c.github.io/webrtc-stats/#dom-rtcstatstype">Identifiers for WebRTC&apos;s Statistics API: 7.1 RTCStatsType enum</see>
 /// </remarks>
 [Description("@#RTCStatsType")]
-[ECMAScript]
 [String]
 public enum RTCStatsType
 {
@@ -14812,7 +14499,6 @@ public enum RTCStatsType
 /// <see href="https://webmachinelearning.github.io/proofreader-api/#enumdef-correctiontype">Proofreader API: 3 The proofreader API</see>
 /// </remarks>
 [Description("@#CorrectionType")]
-[ECMAScript]
 [String]
 public enum CorrectionType
 {
@@ -14860,7 +14546,6 @@ public enum CorrectionType
 /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-humanfacedetectionmodeenum">Media Capture and Streams Extensions: 17.7 HumanFaceDetectionModeEnum</see>
 /// </remarks>
 [Description("@#HumanFaceDetectionModeEnum")]
-[ECMAScript]
 [String]
 public enum HumanFaceDetectionModeEnum
 {
@@ -14899,7 +14584,6 @@ public enum HumanFaceDetectionModeEnum
 /// <see href="https://html.spec.whatwg.org/multipage/workers.html#workertype">HTML Standard: 10.2.6.3 Dedicated workers and the Worker interface</see>
 /// </remarks>
 [Description("@#WorkerType")]
-[ECMAScript]
 [String]
 public enum WorkerType
 {
@@ -14929,7 +14613,6 @@ public enum WorkerType
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-displaycapturesurfacetype">Screen Capture: 5.4.15 DisplayCaptureSurfaceType</see>
 /// </remarks>
 [Description("@#DisplayCaptureSurfaceType")]
-[ECMAScript]
 [String]
 public enum DisplayCaptureSurfaceType
 {
@@ -14968,7 +14651,6 @@ public enum DisplayCaptureSurfaceType
 /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-segmenttype">Media Capture and Streams Extensions: 17.2 Segment</see>
 /// </remarks>
 [Description("@#SegmentType")]
-[ECMAScript]
 [String]
 public enum SegmentType
 {
@@ -15025,7 +14707,6 @@ public enum SegmentType
 /// <see href="https://w3c.github.io/web-based-payment-handler/#dom-paymentdelegation">Web-based Payment Handler API: 4.3 PaymentDelegation enum</see>
 /// </remarks>
 [Description("@#PaymentDelegation")]
-[ECMAScript]
 [String]
 public enum PaymentDelegation
 {
@@ -15073,7 +14754,6 @@ public enum PaymentDelegation
 /// <see href="https://w3c.github.io/permissions/#dom-permissionstate">Permissions: 6.3 PermissionStatus interface</see>
 /// </remarks>
 [Description("@#PermissionState")]
-[ECMAScript]
 [String]
 public enum PermissionState
 {
@@ -15112,7 +14792,6 @@ public enum PermissionState
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-audioselectionpreferenceenum">Screen Capture: 5.4.9 AudioSelectionPreferenceEnum</see>
 /// </remarks>
 [Description("@#AudioSelectionPreferenceEnum")]
-[ECMAScript]
 [String]
 public enum AudioSelectionPreferenceEnum
 {
@@ -15133,7 +14812,6 @@ public enum AudioSelectionPreferenceEnum
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcbundlepolicy">WebRTC: Real-Time Communication in Browsers: 4.2.4 RTCBundlePolicy Enum</see>
 /// </remarks>
 [Description("@#RTCBundlePolicy")]
-[ECMAScript]
 [String]
 public enum RTCBundlePolicy
 {
@@ -15172,7 +14850,6 @@ public enum RTCBundlePolicy
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent">WebRTC: Real-Time Communication in Browsers: 5.6.6 RTCIceComponent Enum</see>
 /// </remarks>
 [Description("@#RTCIceComponent")]
-[ECMAScript]
 [String]
 public enum RTCIceComponent
 {
@@ -15202,7 +14879,6 @@ public enum RTCIceComponent
 /// <see href="https://w3c.github.io/mediacapture-extensions/#dom-getusermediasemantics">Media Capture and Streams Extensions: 4.5 GetUserMediaSemantics enum</see>
 /// </remarks>
 [Description("@#GetUserMediaSemantics")]
-[ECMAScript]
 [String]
 public enum GetUserMediaSemantics
 {
@@ -15232,7 +14908,6 @@ public enum GetUserMediaSemantics
 /// <see href="https://w3c.github.io/mst-content-hint/#dom-rtcdegradationpreference">MediaStreamTrack Content Hints: 4.2 Degradation preference when encoding</see>
 /// </remarks>
 [Description("@#RTCDegradationPreference")]
-[ECMAScript]
 [String]
 public enum RTCDegradationPreference
 {
@@ -15280,7 +14955,6 @@ public enum RTCDegradationPreference
 /// <see href="https://w3c.github.io/webrtc-stats/#dom-rtcdtlsrole">Identifiers for WebRTC&apos;s Statistics API: RTCDtlsRole enum</see>
 /// </remarks>
 [Description("@#RTCDtlsRole")]
-[ECMAScript]
 [String]
 public enum RTCDtlsRole
 {
@@ -15319,7 +14993,6 @@ public enum RTCDtlsRole
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicegathererstate">WebRTC: Real-Time Communication in Browsers: 5.6.3 RTCIceGathererState Enum</see>
 /// </remarks>
 [Description("@#RTCIceGathererState")]
-[ECMAScript]
 [String]
 public enum RTCIceGathererState
 {
@@ -15358,7 +15031,6 @@ public enum RTCIceGathererState
 /// <see href="https://w3c.github.io/webcodecs/#enumdef-hardwareacceleration">WebCodecs: 7.9 Hardware Acceleration</see>
 /// </remarks>
 [Description("@#HardwareAcceleration")]
-[ECMAScript]
 [String]
 public enum HardwareAcceleration
 {
@@ -15397,7 +15069,6 @@ public enum HardwareAcceleration
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetransportpolicy">WebRTC: Real-Time Communication in Browsers: 4.2.3 RTCIceTransportPolicy Enum</see>
 /// </remarks>
 [Description("@#RTCIceTransportPolicy")]
-[ECMAScript]
 [String]
 public enum RTCIceTransportPolicy
 {
@@ -15427,7 +15098,6 @@ public enum RTCIceTransportPolicy
 /// <see href="https://w3c.github.io/media-source/#dom-appendmode">Media Source Extensions™: 5 SourceBuffer interface</see>
 /// </remarks>
 [Description("@#AppendMode")]
-[ECMAScript]
 [String]
 public enum AppendMode
 {
@@ -15457,7 +15127,6 @@ public enum AppendMode
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-monitortypesurfacesenum">Screen Capture: 5.4.8 MonitorTypeSurfacesEnum</see>
 /// </remarks>
 [Description("@#MonitorTypeSurfacesEnum")]
-[ECMAScript]
 [String]
 public enum MonitorTypeSurfacesEnum
 {
@@ -15487,7 +15156,6 @@ public enum MonitorTypeSurfacesEnum
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceprotocol">WebRTC: Real-Time Communication in Browsers: 4.8.1.2 RTCIceProtocol Enum</see>
 /// </remarks>
 [Description("@#RTCIceProtocol")]
-[ECMAScript]
 [String]
 public enum RTCIceProtocol
 {
@@ -15517,7 +15185,6 @@ public enum RTCIceProtocol
 /// <see href="https://w3c.github.io/webrtc-stats/#dom-rtcqualitylimitationreason">Identifiers for WebRTC&apos;s Statistics API: 8.9 RTCQualityLimitationReason enum</see>
 /// </remarks>
 [Description("@#RTCQualityLimitationReason")]
-[ECMAScript]
 [String]
 public enum RTCQualityLimitationReason
 {
@@ -15565,7 +15232,6 @@ public enum RTCQualityLimitationReason
 /// <see href="https://w3c.github.io/mediacapture-main/#dom-mediastreamtrackstate">Media Capture and Streams: 4.3.3 Interface Definition</see>
 /// </remarks>
 [Description("@#MediaStreamTrackState")]
-[ECMAScript]
 [String]
 public enum MediaStreamTrackState
 {
@@ -15595,7 +15261,6 @@ public enum MediaStreamTrackState
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdatachannelstate">WebRTC: Real-Time Communication in Browsers: 6.2 RTCDataChannel</see>
 /// </remarks>
 [Description("@#RTCDataChannelState")]
-[ECMAScript]
 [String]
 public enum RTCDataChannelState
 {
@@ -15643,7 +15308,6 @@ public enum RTCDataChannelState
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtciceservertransportprotocol">WebRTC: Real-Time Communication in Browsers: 4.8.1.5 RTCIceServerTransportProtocol Enum</see>
 /// </remarks>
 [Description("@#RTCIceServerTransportProtocol")]
-[ECMAScript]
 [String]
 public enum RTCIceServerTransportProtocol
 {
@@ -15682,7 +15346,6 @@ public enum RTCIceServerTransportProtocol
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicerole">WebRTC: Real-Time Communication in Browsers: 5.6.5 RTCIceRole Enum</see>
 /// </remarks>
 [Description("@#RTCIceRole")]
-[ECMAScript]
 [String]
 public enum RTCIceRole
 {
@@ -15721,7 +15384,6 @@ public enum RTCIceRole
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcrtcpmuxpolicy">WebRTC: Real-Time Communication in Browsers: 4.2.5 RTCRtcpMuxPolicy Enum</see>
 /// </remarks>
 [Description("@#RTCRtcpMuxPolicy")]
-[ECMAScript]
 [String]
 public enum RTCRtcpMuxPolicy
 {
@@ -15742,7 +15404,6 @@ public enum RTCRtcpMuxPolicy
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-selfcapturepreferenceenum">Screen Capture: 5.4.4 SelfCapturePreferenceEnum</see>
 /// </remarks>
 [Description("@#SelfCapturePreferenceEnum")]
-[ECMAScript]
 [String]
 public enum SelfCapturePreferenceEnum
 {
@@ -15772,7 +15433,6 @@ public enum SelfCapturePreferenceEnum
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsignalingstate">WebRTC: Real-Time Communication in Browsers: 4.3.1 RTCSignalingState Enum</see>
 /// </remarks>
 [Description("@#RTCSignalingState")]
-[ECMAScript]
 [String]
 public enum RTCSignalingState
 {
@@ -15838,7 +15498,6 @@ public enum RTCSignalingState
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcdtlstransportstate">WebRTC: Real-Time Communication in Browsers: 5.5.1 RTCDtlsTransportState Enum</see>
 /// </remarks>
 [Description("@#RTCDtlsTransportState")]
-[ECMAScript]
 [String]
 public enum RTCDtlsTransportState
 {
@@ -15895,7 +15554,6 @@ public enum RTCDtlsTransportState
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsctptransportstate">WebRTC: Real-Time Communication in Browsers: 6.1.2 RTCSctpTransportState Enum</see>
 /// </remarks>
 [Description("@#RTCSctpTransportState")]
-[ECMAScript]
 [String]
 public enum RTCSctpTransportState
 {
@@ -15934,7 +15592,6 @@ public enum RTCSctpTransportState
 /// <see href="https://w3c.github.io/webrtc-stats/#dom-rtcstatsicecandidatepairstate">Identifiers for WebRTC&apos;s Statistics API: 8.19.1 RTCStatsIceCandidatePairState enum</see>
 /// </remarks>
 [Description("@#RTCStatsIceCandidatePairState")]
-[ECMAScript]
 [String]
 public enum RTCStatsIceCandidatePairState
 {
@@ -15991,7 +15648,6 @@ public enum RTCStatsIceCandidatePairState
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-surfaceswitchingpreferenceenum">Screen Capture: 5.4.7 SurfaceSwitchingPreferenceEnum</see>
 /// </remarks>
 [Description("@#SurfaceSwitchingPreferenceEnum")]
-[ECMAScript]
 [String]
 public enum SurfaceSwitchingPreferenceEnum
 {
@@ -16021,7 +15677,6 @@ public enum SurfaceSwitchingPreferenceEnum
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-systemaudiopreferenceenum">Screen Capture: 5.4.5 SystemAudioPreferenceEnum</see>
 /// </remarks>
 [Description("@#SystemAudioPreferenceEnum")]
-[ECMAScript]
 [String]
 public enum SystemAudioPreferenceEnum
 {
@@ -16051,7 +15706,6 @@ public enum SystemAudioPreferenceEnum
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicetcpcandidatetype">WebRTC: Real-Time Communication in Browsers: 4.8.1.3 RTCIceTcpCandidateType Enum</see>
 /// </remarks>
 [Description("@#RTCIceTcpCandidateType")]
-[ECMAScript]
 [String]
 public enum RTCIceTcpCandidateType
 {
@@ -16090,7 +15744,6 @@ public enum RTCIceTcpCandidateType
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcicecandidatetype">WebRTC: Real-Time Communication in Browsers: 4.8.1.4 RTCIceCandidateType Enum</see>
 /// </remarks>
 [Description("@#RTCIceCandidateType")]
-[ECMAScript]
 [String]
 public enum RTCIceCandidateType
 {
@@ -16138,7 +15791,6 @@ public enum RTCIceCandidateType
 /// <see href="https://w3c.github.io/edit-context/#dom-underlinestyle">EditContext API: 4.2 TextFormatUpdateEvent</see>
 /// </remarks>
 [Description("@#UnderlineStyle")]
-[ECMAScript]
 [String]
 public enum UnderlineStyle
 {
@@ -16195,7 +15847,6 @@ public enum UnderlineStyle
 /// <see href="https://w3c.github.io/edit-context/#dom-underlinethickness">EditContext API: 4.2 TextFormatUpdateEvent</see>
 /// </remarks>
 [Description("@#UnderlineThickness")]
-[ECMAScript]
 [String]
 public enum UnderlineThickness
 {
@@ -16234,7 +15885,6 @@ public enum UnderlineThickness
 /// <see href="https://w3c.github.io/mediacapture-screen-share/#dom-windowaudiopreferenceenum">Screen Capture: 5.4.6 WindowAudioPreferenceEnum</see>
 /// </remarks>
 [Description("@#WindowAudioPreferenceEnum")]
-[ECMAScript]
 [String]
 public enum WindowAudioPreferenceEnum
 {
@@ -16273,7 +15923,6 @@ public enum WindowAudioPreferenceEnum
 /// <see href="https://drafts.csswg.org/web-animations-2/">Web Animations Module Level 2: AnimationTriggerBehavior</see>
 /// </remarks>
 [Description("@#AnimationTriggerBehavior")]
-[ECMAScript]
 [String]
 public enum AnimationTriggerBehavior
 {
@@ -16321,7 +15970,6 @@ public enum AnimationTriggerBehavior
 /// <see href="https://registry.khronos.org/webgl/specs/latest/1.0/">WebGL Specification: WebGLPowerPreference</see>
 /// </remarks>
 [Description("@#WebGLPowerPreference")]
-[ECMAScript]
 [String]
 public enum WebGLPowerPreference
 {

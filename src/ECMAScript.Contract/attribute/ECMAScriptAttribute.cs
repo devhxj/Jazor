@@ -11,6 +11,8 @@ namespace ECMAScript;
 ///
 /// 该特性最多一个参数：生成 JavaScript 中必须出现的精确外部 ESM import specifier。
 /// 无参形式是环境宿主契约，不绑定外部模块。
+/// 普通源码类型不需要此标注来获得编译许可；纯数据对象应使用 record。
+/// Ordinary source types need no host marker to compile; record declarations describe plain objects.
 ///
 /// 组件身份不由该特性表达。派生自 <c>Microsoft.AspNetCore.Components.ComponentBase</c>
 /// 且实现 Vue marker 的类型即组件，声明面与普通绑定相同。

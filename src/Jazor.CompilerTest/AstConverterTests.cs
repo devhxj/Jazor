@@ -1819,6 +1819,7 @@ export class NestedClass extends BaseClass {
     public async Task Convert_ClassWithExternalBaseType_ThrowsNotSupportedException()
     {
         var code = """
+            [ECMAScript.ECMAScript]
             public class ExternalBase
             {
             }
@@ -14398,7 +14399,7 @@ export function Write() {
     }
 
     [TestMethod]
-    public async Task Convert_ClassWithTopLevelSiblingSourceHelper_Throws()
+    public async Task Convert_ClassWithTopLevelSiblingSourceHelper_EmitsImplementation()
     {
         // Arrange
         var code = """
@@ -14431,8 +14432,10 @@ export function Write() {
         var (consumer, semanticModel) = CompileAndGetSymbol(code, "ConsumerModule");
         var converter = new AstConverter(consumer, semanticModel);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<OperationTransformationException>(converter.Convert);
+        var script = (await converter.Convert())!.ToKnRECMAScript();
+        StringAssert.Contains(script, "class Helper", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return 42;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Helper.Make()", StringComparison.Ordinal);
     }
 
     [TestMethod]

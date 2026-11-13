@@ -7,7 +7,6 @@ namespace ECMAScript.CSS;
 /// <see href="https://drafts.css-houdini.org/css-layout-api-1/#enumdef-blockfragmentationtype">CSS Layout API Level 1: 4.4 Layout Constraints</see>
 /// </remarks>
 [Description("@#BlockFragmentationType")]
-[ECMAScript]
 [String]
 public enum BlockFragmentationType
 {
@@ -55,7 +54,6 @@ public enum BlockFragmentationType
 /// <see href="https://drafts.css-houdini.org/css-layout-api-1/#enumdef-breaktype">CSS Layout API Level 1: 4.5 Breaking and Fragmentation</see>
 /// </remarks>
 [Description("@#BreakType")]
-[ECMAScript]
 [String]
 public enum BreakType
 {
@@ -112,7 +110,6 @@ public enum BreakType
 /// <see href="https://drafts.css-houdini.org/css-layout-api-1/#enumdef-childdisplaytype">CSS Layout API Level 1: 3.2 Registering A Layout</see>
 /// </remarks>
 [Description("@#ChildDisplayType")]
-[ECMAScript]
 [String]
 public enum ChildDisplayType
 {
@@ -142,7 +139,6 @@ public enum ChildDisplayType
 /// <see href="https://drafts.css-houdini.org/css-layout-api-1/#enumdef-layoutsizingmode">CSS Layout API Level 1: 3.2 Registering A Layout</see>
 /// </remarks>
 [Description("@#LayoutSizingMode")]
-[ECMAScript]
 [String]
 public enum LayoutSizingMode
 {
@@ -172,7 +168,6 @@ public enum LayoutSizingMode
 /// <see href="https://drafts.css-houdini.org/css-typed-om-1/#enumdef-cssmathoperator">CSS Typed OM Level 1: 4.3.4 Complex Numeric Values: CSSMathValue objects</see>
 /// </remarks>
 [Description("@#CSSMathOperator")]
-[ECMAScript]
 [String]
 public enum CSSMathOperator
 {
@@ -247,7 +242,6 @@ public enum CSSMathOperator
 /// <see href="https://drafts.css-houdini.org/css-typed-om-1/#enumdef-cssnumericbasetype">CSS Typed OM Level 1: 4.3.1 Common Numeric Operations, and the CSSNumericValue Superclass</see>
 /// </remarks>
 [Description("@#CSSNumericBaseType")]
-[ECMAScript]
 [String]
 public enum CSSNumericBaseType
 {
@@ -322,7 +316,6 @@ public enum CSSNumericBaseType
 /// <see href="https://drafts.csswg.org/css-highlight-api-1/#enumdef-highlighttype">CSS Custom Highlight API Module Level 1: 3.1 Creating Custom Highlights</see>
 /// </remarks>
 [Description("@#HighlightType")]
-[ECMAScript]
 [String]
 public enum HighlightType
 {

@@ -44,7 +44,6 @@ public sealed record VuetifyPlugin : VuePlugin
 /// Vuetify 插件配置选项。
 /// Vuetify plugin configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyOptions")]
 public sealed record VuetifyOptions : VuePluginOptions
 {
@@ -101,7 +100,6 @@ public sealed record VuetifyOptions : VuePluginOptions
 /// Vuetify 主题配置选项。
 /// Vuetify theme configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyThemeOptions")]
 public sealed record VuetifyThemeOptions
 {
@@ -122,7 +120,6 @@ public sealed record VuetifyThemeOptions
 /// Vuetify 主题变体配置选项。
 /// Vuetify theme variation options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyThemeVariationOptions")]
 public sealed record VuetifyThemeVariationOptions
 {
@@ -149,7 +146,6 @@ public sealed record VuetifyThemeVariationOptions
 /// Vuetify 显示配置选项。
 /// Vuetify display configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyDisplayOptions")]
 public sealed record VuetifyDisplayOptions
 {
@@ -170,7 +166,6 @@ public sealed record VuetifyDisplayOptions
 /// Vuetify 显示断点阈值配置。
 /// Vuetify display breakpoint thresholds.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyDisplayThresholds")]
 public sealed record VuetifyDisplayThresholds
 {
@@ -215,7 +210,6 @@ public sealed record VuetifyDisplayThresholds
 /// Vuetify 图标配置选项。
 /// Vuetify icon configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyIconOptions")]
 public sealed record VuetifyIconOptions
 {
@@ -230,7 +224,6 @@ public sealed record VuetifyIconOptions
 /// Vuetify 区域设置配置选项。
 /// Vuetify locale configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyLocaleOptions")]
 public sealed record VuetifyLocaleOptions
 {
@@ -251,7 +244,6 @@ public sealed record VuetifyLocaleOptions
 /// Vuetify 日期配置选项。
 /// Vuetify date configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyDateOptions")]
 public sealed record VuetifyDateOptions
 {

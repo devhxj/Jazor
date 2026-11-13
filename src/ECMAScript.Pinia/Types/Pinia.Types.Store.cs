@@ -13,6 +13,7 @@ public static partial class Pinia
 	/// Pinia root instance created by <c>createPinia()</c>. The same object is both a
 	/// Pinia runtime root and a Vue plugin install target.
 	/// </summary>
+	[ECMAScript]
 	public abstract record PiniaInstance : Vue.VuePlugin
 	{
 		/// <summary>

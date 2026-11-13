@@ -262,7 +262,6 @@ public readonly union VuetifySparklineItem(string, Number, VuetifySparklineValue
 /// 带有显式值的迷你图表数据项记录。
 /// Sparkline data item record with an explicit value.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifySparklineValueItem : VueProps
 {
@@ -397,7 +396,6 @@ public readonly union VuetifySparklineSmoothValue(bool, Number, string)
 /// Vuetify VSparkline 标签插槽所暴露的插槽上下文。
 /// Label slot context exposed by Vuetify VSparkline.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VSparklineLabelSlotContext
 {

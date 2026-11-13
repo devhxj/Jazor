@@ -50,7 +50,6 @@ public readonly union FilePondServer(string, FilePondServerOptions);
 /// FilePond 的详细服务端端点配置。
 /// The detailed FilePond server endpoint configuration.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FilePondServerOptions
 {
@@ -87,7 +86,6 @@ public record FilePondServerOptions
 /// FilePond 选项；对应核心 <c>FilePondOptions</c> 的常用子集（含服务端、多文件与回调）。
 /// FilePond options; the frequently used subset of the core <c>FilePondOptions</c> (server, multiple files, and callbacks).
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record FilePondOptions
 {

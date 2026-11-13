@@ -303,7 +303,7 @@ internal static class StaticPropertyWriteTargetScenarioCatalog
             """,
             [
                 "External type 'SourceState' is not supported and cannot be used for property assignment.",
-                "Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported."
+                "A generated source implementation, module artifact or explicit host mapping is required."
             ],
             new(10, 9, 10, 26))
     ];

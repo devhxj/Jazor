@@ -78,7 +78,7 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void Vuetify_RuntimeShapes_UseEcmaScriptSupportMarkers_WithoutModuleGeneration()
+    public void Vuetify_RuntimeShapes_UseHostOrStructuralContracts_WithoutModuleGeneration()
     {
         var runtimeShapes = new[]
         {
@@ -112,7 +112,7 @@ public sealed class EcmaScriptVueProxyTests
     }
 
     [TestMethod]
-    public void TDesign_RuntimeShapes_UseEcmaScriptSupportMarkers_WithoutModuleGeneration()
+    public void TDesign_RuntimeShapes_UseHostOrStructuralContracts_WithoutModuleGeneration()
     {
         var runtimeShapes = new[]
         {
@@ -4478,9 +4478,12 @@ public sealed class EcmaScriptVueProxyTests
         var runtime = type.GetCustomAttribute<ECMAScriptAttribute>();
         var module = type.GetCustomAttribute<ECMAScriptModuleAttribute>();
 
-        Assert.IsNotNull(runtime, type.FullName);
         Assert.IsNull(module, type.FullName);
-        Assert.IsNull(runtime!.Import, type.FullName);
+        if (runtime is not null)
+            Assert.IsNull(runtime.Import, type.FullName);
+        else
+            Assert.IsTrue(type.IsEnum || type.GetMethods().Any(static method => method.Name == "<Clone>$"),
+                $"{type.FullName} must declare a host contract or be a structural record/enum.");
     }
 
     private static bool HasAttribute(MemberInfo member, string attributeTypeName)

@@ -104,7 +104,6 @@ public readonly union VuetifySnackbarQueueMessage(string, VuetifySnackbarQueueMe
 /// 消息条队列消息的选项配置记录。
 /// Options record for a snackbar-queue message.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifySnackbarQueueMessageOptions : VueProps
 {
@@ -179,7 +178,6 @@ public sealed record VuetifySnackbarQueueMessageOptions : VueProps
 /// Vuetify VSnackbarQueue 默认和文本插槽所暴露的作用域插槽上下文。
 /// Scoped slot context exposed by Vuetify VSnackbarQueue default and text slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VSnackbarQueueSlotContext
 {
@@ -194,7 +192,6 @@ public sealed record VSnackbarQueueSlotContext
 /// Vuetify VSnackbarQueue 操作插槽所暴露的作用域插槽上下文。
 /// Scoped slot context exposed by Vuetify VSnackbarQueue actions slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VSnackbarQueueActionsSlotContext
 {
@@ -215,7 +212,6 @@ public sealed record VSnackbarQueueActionsSlotContext
 /// 消息条队列操作按钮的属性对象。
 /// Props object for snackbar-queue action buttons.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VSnackbarQueueActionProps : VueProps
 {

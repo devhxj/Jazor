@@ -1575,9 +1575,12 @@ public sealed class EcmaScriptVueRouteProxyTests
         var runtime = type.GetCustomAttribute<ECMAScriptAttribute>();
         var module = type.GetCustomAttribute<ECMAScriptModuleAttribute>();
 
-        Assert.IsNotNull(runtime, type.FullName);
         Assert.IsNull(module, type.FullName);
-        Assert.IsNull(runtime!.Import, type.FullName);
+        if (runtime is not null)
+            Assert.IsNull(runtime.Import, type.FullName);
+        else
+            Assert.IsTrue(type.IsEnum || typeof(MulticastDelegate).IsAssignableFrom(type) ||
+                type.GetMethods().Any(static method => method.Name == "<Clone>$"), type.FullName);
     }
 
 	private static void AssertNet11UnionContract(Type unionType, params Type[] constructorBranchTypes)

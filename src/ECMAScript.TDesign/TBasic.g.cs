@@ -9,13 +9,11 @@ namespace ECMAScript.TDesign;
 /// TDesign 的 TPresetRange 类型；用于对应上游类型的数据传递。
 /// </summary>
 /// <returns>回调结果，类型为 (TDateValue Item1, TDateValue Item2)。</returns>
-[ECMAScript]
 public delegate (TDateValue Item1, TDateValue Item2) TPresetRangeIndexOption2();
 
 /// <summary>
 /// TDesign 的 TActiveChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TActiveChangeContext<T> : VueProps
 {
     /// <summary>
@@ -41,7 +39,6 @@ public record TActiveChangeContext<T> : VueProps
 /// <summary>
 /// 当前处于高亮状态的行列表，每项包含行数据和行索引。
 /// </summary>
-[ECMAScript]
 public record TActiveChangeContextActiveRowListItem<T> : VueProps
 {
     /// <summary>
@@ -60,7 +57,6 @@ public record TActiveChangeContextActiveRowListItem<T> : VueProps
 /// <summary>
 /// 表格行高亮的变化方向：激活或取消激活。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TActiveChangeContextType
 {
@@ -79,7 +75,6 @@ public enum TActiveChangeContextType
 /// <summary>
 /// TDesign 的 TActiveRowActionContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TActiveRowActionContext<T> : VueProps
 {
     /// <summary>
@@ -99,7 +94,6 @@ public record TActiveRowActionContext<T> : VueProps
 /// <summary>
 /// 当前处于高亮状态的行列表，每项包含行数据和行索引。
 /// </summary>
-[ECMAScript]
 public record TActiveRowActionContextActiveRowListItem<T> : VueProps
 {
     /// <summary>
@@ -118,7 +112,6 @@ public record TActiveRowActionContextActiveRowListItem<T> : VueProps
 /// <summary>
 /// 触发表格行高亮变化的键盘或批量选择操作。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TActiveRowActionType
 {
@@ -147,7 +140,6 @@ public enum TActiveRowActionType
 /// <summary>
 /// 固定状态发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TAffixFixedChangeEventContext : VueProps
 {
     /// <summary>
@@ -169,7 +161,6 @@ public readonly union TAlertCloseBtnValue(string, bool)
 /// <summary>
 /// 关闭按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TAlertCloseEventContext : VueProps
 {
     /// <summary>
@@ -192,7 +183,6 @@ public readonly union TAlertCloseValue(string, bool)
 /// <summary>
 /// 告警提示框关闭动画结束后触发
 /// </summary>
-[ECMAScript]
 public record TAlertClosedEventContext : VueProps
 {
     /// <summary>
@@ -206,7 +196,6 @@ public record TAlertClosedEventContext : VueProps
 /// <summary>
 /// TDesign 的 TAlertConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TAlertConfig : VueProps
 {
     /// <summary>
@@ -228,7 +217,6 @@ public record TAlertConfig : VueProps
 /// 组件风格
 /// 默认值：info
 /// </summary>
-[ECMAScript]
 [String]
 public enum TAlertThemeValue
 {
@@ -265,7 +253,6 @@ public readonly union TAllValidateResult(TCustomValidateObj, TValidateResultType
 /// <summary>
 /// 锚点被点击时触发
 /// </summary>
-[ECMAScript]
 public record TAnchorClickEventLink : VueProps
 {
     /// <summary>
@@ -293,7 +280,6 @@ public record TAnchorClickEventLink : VueProps
 /// <summary>
 /// TDesign 的 TAnchorConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TAnchorConfig : VueProps
 {
     /// <summary>
@@ -318,14 +304,12 @@ public record TAnchorConfig : VueProps
 /// </summary>
 /// <param name="activeLink">当前激活的锚点链接。</param>
 /// <returns>回调结果，类型为 string。</returns>
-[ECMAScript]
 public delegate string TAnchorGetCurrentAnchorValue(string activeLink);
 
 /// <summary>
 /// 锚点文本
 /// 默认值：_self
 /// </summary>
-[ECMAScript]
 [String]
 public enum TAnchorItemTargetValue
 {
@@ -355,7 +339,6 @@ public enum TAnchorItemTargetValue
 /// 组件尺寸，small(120px)，medium(200px)，large(320px)
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TAnchorSizeValue
 {
@@ -379,7 +362,6 @@ public enum TAnchorSizeValue
 /// <summary>
 /// 全局动画效果：涟漪、展开或淡入淡出。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TAnimationType
 {
@@ -413,7 +395,6 @@ public readonly union TAttachNode(string, TAttachNodeOption2)
 /// </summary>
 /// <param name="triggerNode">触发浮层的 DOM 元素。</param>
 /// <returns>回调结果，类型为 TAttachNodeReturnValue。</returns>
-[ECMAScript]
 public delegate TAttachNodeReturnValue TAttachNodeOption2(HTMLElement? triggerNode = default);
 
 /// <summary>
@@ -519,7 +500,6 @@ public readonly struct TAttachNodeReturnValue : IUnion
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteBlurEventContext<T> : VueProps
 {
     /// <summary>
@@ -540,7 +520,6 @@ public record TAutoCompleteBlurEventContext<T> : VueProps
 /// <summary>
 /// 输入框值发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -561,7 +540,6 @@ public readonly union TAutoCompleteChangeEventContextE<T>(InputEvent, MouseEvent
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteClearEventContext<T> : VueProps
 {
     /// <summary>
@@ -575,7 +553,6 @@ public record TAutoCompleteClearEventContext<T> : VueProps
 /// <summary>
 /// 中文输入结束时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteCompositionendEventContext<T> : VueProps
 {
     /// <summary>
@@ -596,7 +573,6 @@ public record TAutoCompleteCompositionendEventContext<T> : VueProps
 /// <summary>
 /// 中文输入开始时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteCompositionstartEventContext<T> : VueProps
 {
     /// <summary>
@@ -617,7 +593,6 @@ public record TAutoCompleteCompositionstartEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TAutoCompleteConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteConfig : VueProps
 {
     /// <summary>
@@ -631,7 +606,6 @@ public record TAutoCompleteConfig : VueProps
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteEnterEventContext<T> : VueProps
 {
     /// <summary>
@@ -655,7 +629,6 @@ public record TAutoCompleteEnterEventContext<T> : VueProps
 /// <param name="filterWords">用于过滤候选项的输入文本。</param>
 /// <param name="option">当前候选项。</param>
 /// <returns>回调结果，类型为 TAutoCompleteFilterValueResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TAutoCompleteFilterValueResult<T> TAutoCompleteFilterValue<T>(string filterWords, T option);
 
 /// <summary>
@@ -669,7 +642,6 @@ public readonly union TAutoCompleteFilterValueResult<T>(bool, IPromise<bool>)
 /// <summary>
 /// 获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteFocusEventContext<T> : VueProps
 {
     /// <summary>
@@ -698,7 +670,6 @@ public readonly union TAutoCompleteOption(string, TAutoCompleteOptionObj)
 /// <summary>
 /// TDesign 的 TAutoCompleteOptionObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteOptionObj : VueProps
 {
     /// <summary>
@@ -725,7 +696,6 @@ public readonly union TAutoCompleteOptionObjLabel(string, RenderFragment)
 /// <summary>
 /// 选中联想词时触发
 /// </summary>
-[ECMAScript]
 public record TAutoCompleteSelectEventContext<T> : VueProps
 {
     /// <summary>
@@ -747,7 +717,6 @@ public readonly union TAutoCompleteSelectEventContextE<T>(MouseEvent, KeyboardEv
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TAutoCompleteStatusValue
 {
@@ -776,7 +745,6 @@ public enum TAutoCompleteStatusValue
 /// <summary>
 /// 图片加载失败时触发
 /// </summary>
-[ECMAScript]
 public record TAvatarErrorEventContext : VueProps
 {
     /// <summary>
@@ -790,7 +758,6 @@ public record TAvatarErrorEventContext : VueProps
 /// <summary>
 /// 点击回到顶部时触发
 /// </summary>
-[ECMAScript]
 public record TBackTopClickEventContext : VueProps
 {
     /// <summary>
@@ -833,7 +800,6 @@ public readonly union TBackTopOffsetValueItem(string, Number)
 /// <summary>
 /// 返回顶部按钮的形状。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBackTopShapeEnum
 {
@@ -853,7 +819,6 @@ public enum TBackTopShapeEnum
 /// 组件尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBackTopSizeValue
 {
@@ -873,7 +838,6 @@ public enum TBackTopSizeValue
 /// 组件主题风格，浅色、主色、深色
 /// 默认值：light
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBackTopThemeValue
 {
@@ -984,7 +948,6 @@ public readonly union TBadgeOffsetValueItem(string, Number)
 /// 形状
 /// 默认值：circle
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBadgeShapeValue
 {
@@ -1004,7 +967,6 @@ public enum TBadgeShapeValue
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBadgeSizeValue
 {
@@ -1023,7 +985,6 @@ public enum TBadgeSizeValue
 /// <summary>
 /// TDesign 的 TBaseColProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBaseColProps : VueProps
 {
     /// <summary>
@@ -1118,7 +1079,6 @@ public readonly union TBaseTableActiveRowKeysValueItem(string, Number)
 /// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
 /// 默认值：''
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBaseTableActiveRowTypeValue
 {
@@ -1137,7 +1097,6 @@ public enum TBaseTableActiveRowTypeValue
 /// <summary>
 /// TDesign 的 TBaseTableCellEventContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBaseTableCellEventContext<T> : VueProps
 {
     /// <summary>
@@ -1176,7 +1135,6 @@ public record TBaseTableCellEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TBaseTableCellParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBaseTableCellParams<T> : VueProps
 {
     /// <summary>
@@ -1208,7 +1166,6 @@ public record TBaseTableCellParams<T> : VueProps
 /// <summary>
 /// TDesign 的 TBaseTableCol 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBaseTableCol<T> : VueProps
 {
     /// <summary>
@@ -1345,7 +1302,6 @@ public record TBaseTableCol<T> : VueProps
 /// 列横向对齐方式
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBaseTableColAlign
 {
@@ -1406,7 +1362,6 @@ public readonly union TBaseTableColEllipsis<T>(bool, RenderFragment<TBaseTableCe
 /// 请注意单元格超出省略的两个基本点：1. 内容元素是内联元素或样式（自定义单元格内容时需特别注意）；2. 内容超出父元素
 /// 默认值：false
 /// </summary>
-[ECMAScript]
 public record TBaseTableColEllipsisOption4<T> : VueProps
 {
     /// <summary>
@@ -1443,7 +1398,6 @@ public readonly union TBaseTableColEllipsisTitle<T>(bool, RenderFragment<TBaseTa
 /// 值类型为 `Object`，则自动透传属性到 Tooltip 组件，则自动透传属性到 Tooltip 组件，可用于调整浮层背景色和方向等特性。
 /// 同时透传 Tooltip 属性和自定义浮层内容，请使用 `{ props: { theme: 'light' }, content: () =&gt; 'something' }`
 /// </summary>
-[ECMAScript]
 public record TBaseTableColEllipsisTitleOption4<T> : VueProps
 {
     /// <summary>
@@ -1465,7 +1419,6 @@ public record TBaseTableColEllipsisTitleOption4<T> : VueProps
 /// 固定列显示位置
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBaseTableColFixed
 {
@@ -1492,7 +1445,6 @@ public readonly union TBaseTableColFoot<T>(string, RenderFragment<TBaseTableColF
 /// <summary>
 /// 自定义表尾表尾。值类型为 Function 表示以函数形式渲染表尾内容。值类型为 string 表示使用插槽渲染，插槽名称为 `foot` 值
 /// </summary>
-[ECMAScript]
 public record TBaseTableColFootOption2Context<T> : VueProps
 {
     /// <summary>
@@ -1540,7 +1492,6 @@ public readonly union TBaseTableColMinWidth<T>(string, Number)
 /// <summary>
 /// TDesign 的 TBaseTableColParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBaseTableColParams<T> : VueProps
 {
     /// <summary>
@@ -1576,7 +1527,6 @@ public readonly union TBaseTableColTitle<T>(string, RenderFragment<TBaseTableCol
 /// <summary>
 /// 自定义表头渲染。值类型为 Function 表示以函数形式渲染表头。值类型为 string 表示使用插槽渲染，插槽名称为 title 的值。优先级高于 render
 /// </summary>
-[ECMAScript]
 public record TBaseTableColTitleOption2Context<T> : VueProps
 {
     /// <summary>
@@ -1634,13 +1584,11 @@ public readonly union TBaseTableColumnAttributes<T>(TJsonObject, TBaseTableColum
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TJsonObject。</returns>
-[ECMAScript]
 public delegate TJsonObject TBaseTableColumnAttributesOption2<T>(TCellData<T> context);
 
 /// <summary>
 /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
 /// </summary>
-[ECMAScript]
 public record TBaseTableColumnResizeChangeEventContext : VueProps
 {
     /// <summary>
@@ -1654,7 +1602,6 @@ public record TBaseTableColumnResizeChangeEventContext : VueProps
 /// <summary>
 /// 对应上游 columnsWidth 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TBaseTableColumnResizeChangeEventContextColumnsWidth : VueDictionary<Number>
 {
 }
@@ -1752,7 +1699,6 @@ public readonly union TBaseTablePaginationAffixedBottomValue(bool, TdAffixProps)
 /// <summary>
 /// TDesign 的 TBaseTableRenderParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBaseTableRenderParams<T> : VueProps
 {
     /// <summary>
@@ -1800,13 +1746,11 @@ public readonly union TBaseTableRowClassNameValue(TClassName, TBaseTableRowClass
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TClassName。</returns>
-[ECMAScript]
 public delegate TClassName TBaseTableRowClassNameValueOption2(TRowClassNameParams<TTableRowData> @params);
 
 /// <summary>
 /// 表格内容滚动时触发
 /// </summary>
-[ECMAScript]
 public record TBaseTableScrollEventParams : VueProps
 {
     /// <summary>
@@ -1821,7 +1765,6 @@ public record TBaseTableScrollEventParams : VueProps
 /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TBaseTableScrollXEventParams : VueProps
 {
     /// <summary>
@@ -1836,7 +1779,6 @@ public record TBaseTableScrollXEventParams : VueProps
 /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TBaseTableScrollYEventParams : VueProps
 {
     /// <summary>
@@ -1851,7 +1793,6 @@ public record TBaseTableScrollYEventParams : VueProps
 /// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
 /// 默认值：fixed
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBaseTableTableLayoutValue
 {
@@ -1871,7 +1812,6 @@ public enum TBaseTableTableLayoutValue
 /// 行内容上下方向对齐
 /// 默认值：middle
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBaseTableVerticalAlignValue
 {
@@ -1895,7 +1835,6 @@ public enum TBaseTableVerticalAlignValue
 /// <summary>
 /// TDesign 的 TBreadcrumbEllipsisSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TBreadcrumbEllipsisSlotContext : VueProps
 {
     /// <summary>
@@ -1924,7 +1863,6 @@ public readonly union TBreadcrumbEllipsisSlotContextSeparator(string, RenderFrag
 /// 链接或路由跳转方式
 /// 默认值：_self
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBreadcrumbItemTargetValue
 {
@@ -1962,7 +1900,6 @@ public readonly union TBreadcrumbItemToValue(string, TRoute)
 /// 组件风格
 /// 默认值：light
 /// </summary>
-[ECMAScript]
 [String]
 public enum TBreadcrumbThemeValue
 {
@@ -1977,7 +1914,6 @@ public enum TBreadcrumbThemeValue
 /// 按钮形状，有 4 种：长方形、正方形、圆角长方形、圆形
 /// 默认值：rectangle
 /// </summary>
-[ECMAScript]
 [String]
 public enum TButtonShapeValue
 {
@@ -2006,7 +1942,6 @@ public enum TButtonShapeValue
 /// <summary>
 /// 渲染按钮的 HTML 标签，默认使用标签 `&lt;button&gt;` 渲染，可以自定义为 `&lt;a&gt;` `&lt;div&gt;` 等。透传全部 HTML 属性，如：`href/target/data-*` 等。⚠️ 禁用按钮 `&lt;button disabled&gt;`无法显示 Popup 浮层信息，可通过修改 `tag=div` 解决这个问题
 /// </summary>
-[ECMAScript]
 [String]
 public enum TButtonTagValue
 {
@@ -2030,7 +1965,6 @@ public enum TButtonTagValue
 /// <summary>
 /// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
 /// </summary>
-[ECMAScript]
 [String]
 public enum TButtonThemeValue
 {
@@ -2065,7 +1999,6 @@ public enum TButtonThemeValue
 /// 按钮类型
 /// 默认值：button
 /// </summary>
-[ECMAScript]
 [String]
 public enum TButtonTypeValue
 {
@@ -2090,7 +2023,6 @@ public enum TButtonTypeValue
 /// 按钮形式，基础、线框、虚线、文字
 /// 默认值：base
 /// </summary>
-[ECMAScript]
 [String]
 public enum TButtonVariantValue
 {
@@ -2119,7 +2051,6 @@ public enum TButtonVariantValue
 /// <summary>
 /// TDesign 的 TCalendarCell 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCalendarCell : VueProps
 {
     /// <summary>
@@ -2190,7 +2121,6 @@ public record TCalendarCell : VueProps
 /// <summary>
 /// 日历单元格点击时触发
 /// </summary>
-[ECMAScript]
 public record TCalendarCellClickEventOptions : VueProps
 {
     /// <summary>
@@ -2211,7 +2141,6 @@ public record TCalendarCellClickEventOptions : VueProps
 /// <summary>
 /// 日历单元格双击时触发
 /// </summary>
-[ECMAScript]
 public record TCalendarCellDoubleClickEventOptions : VueProps
 {
     /// <summary>
@@ -2232,7 +2161,6 @@ public record TCalendarCellDoubleClickEventOptions : VueProps
 /// <summary>
 /// 日历单元格右击时触发
 /// </summary>
-[ECMAScript]
 public record TCalendarCellRightClickEventOptions : VueProps
 {
     /// <summary>
@@ -2253,7 +2181,6 @@ public record TCalendarCellRightClickEventOptions : VueProps
 /// <summary>
 /// TDesign 的 TCalendarConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCalendarConfig : VueProps
 {
     /// <summary>
@@ -2359,13 +2286,11 @@ public readonly union TCalendarConfigMonthSelection(string, TCalendarConfigMonth
 /// </summary>
 /// <param name="data">本次操作使用的数据。</param>
 /// <returns>回调结果，类型为 string。</returns>
-[ECMAScript]
 public delegate string TCalendarConfigMonthSelectionOption2(TCalendarConfigMonthSelectionOption2Data data);
 
 /// <summary>
 /// 语言配置，“月”选择描述文本。示例：`'{month} 月'`
 /// </summary>
-[ECMAScript]
 public record TCalendarConfigMonthSelectionOption2Data : VueProps
 {
     /// <summary>
@@ -2378,7 +2303,6 @@ public record TCalendarConfigMonthSelectionOption2Data : VueProps
 /// <summary>
 /// TDesign 的 TCalendarController 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCalendarController : VueProps
 {
     /// <summary>
@@ -2430,7 +2354,6 @@ public readonly union TCalendarControllerConfigValue(bool, TCalendarController)
 /// <summary>
 /// “今天(本月)”按钮控制器
 /// </summary>
-[ECMAScript]
 public record TCalendarControllerCurrent : VueProps
 {
     /// <summary>
@@ -2455,7 +2378,6 @@ public record TCalendarControllerCurrent : VueProps
 /// <summary>
 /// 日历展示维度控制器
 /// </summary>
-[ECMAScript]
 public record TCalendarControllerMode : VueProps
 {
     /// <summary>
@@ -2474,7 +2396,6 @@ public record TCalendarControllerMode : VueProps
 /// <summary>
 /// 日历月份控制器
 /// </summary>
-[ECMAScript]
 public record TCalendarControllerMonth : VueProps
 {
     /// <summary>
@@ -2493,7 +2414,6 @@ public record TCalendarControllerMonth : VueProps
 /// <summary>
 /// 隐藏/显示周末控制器
 /// </summary>
-[ECMAScript]
 public record TCalendarControllerWeekend : VueProps
 {
     /// <summary>
@@ -2518,7 +2438,6 @@ public record TCalendarControllerWeekend : VueProps
 /// <summary>
 /// 日历年份控制器
 /// </summary>
-[ECMAScript]
 public record TCalendarControllerYear : VueProps
 {
     /// <summary>
@@ -2538,7 +2457,6 @@ public record TCalendarControllerYear : VueProps
 /// 日历展示维度
 /// 默认值：month
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCalendarModeValue
 {
@@ -2557,7 +2475,6 @@ public enum TCalendarModeValue
 /// <summary>
 /// 月份切换时触发
 /// </summary>
-[ECMAScript]
 public record TCalendarMonthChangeEventOptions : VueProps
 {
     /// <summary>
@@ -2607,7 +2524,6 @@ public readonly union TCalendarMonthValue(string, Number)
 /// 日历风格
 /// 默认值：full
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCalendarThemeValue
 {
@@ -2642,7 +2558,6 @@ public readonly union TCalendarValueValue(TCalendarValue, TCalendarValue[])
 /// <summary>
 /// TDesign 的 TCalendarWeek 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCalendarWeek : VueProps
 {
     /// <summary>
@@ -2683,14 +2598,12 @@ public readonly union TCalendarYearValue(string, Number)
 /// <summary>
 /// 不接收参数且不返回结果的回调。
 /// </summary>
-[ECMAScript]
 public delegate void TCallback();
 
 /// <summary>
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCardSizeValue
 {
@@ -2710,7 +2623,6 @@ public enum TCardSizeValue
 /// 卡片风格：普通风格、海报风格1（操作区域在顶部）、海报风格2（操作区域在底部）
 /// 默认值：normal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCardThemeValue
 {
@@ -2734,7 +2646,6 @@ public enum TCardThemeValue
 /// <summary>
 /// 当输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TCascaderBlurEventContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -2800,7 +2711,6 @@ public readonly union TCascaderCascaderOptionDefaultTDefault(string, Number)
 /// <summary>
 /// TDesign 的 TCascaderChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCascaderChangeContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -2819,7 +2729,6 @@ public record TCascaderChangeContext<CascaderOption> : VueProps
 /// <summary>
 /// TDesign 的 TCascaderChangeSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCascaderChangeSource
 {
@@ -2848,7 +2757,6 @@ public enum TCascaderChangeSource
 /// <summary>
 /// TDesign 的 TCascaderCollapsedItemsSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCascaderCollapsedItemsSlotContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -2883,13 +2791,11 @@ public record TCascaderCollapsedItemsSlotContext<CascaderOption> : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TCascaderCollapsedItemsSlotContextOnClose<CascaderOption>(TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -2908,7 +2814,6 @@ public record TCascaderCollapsedItemsSlotContextOnCloseContext<CascaderOption> :
 /// <summary>
 /// TDesign 的 TCascaderConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCascaderConfig : VueProps
 {
     /// <summary>
@@ -2939,7 +2844,6 @@ public record TCascaderConfig : VueProps
 /// <param name="filterWords">用于过滤候选项的输入文本。</param>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 TCascaderFilterValueResult&lt;CascaderOption&gt;。</returns>
-[ECMAScript]
 public delegate TCascaderFilterValueResult<CascaderOption> TCascaderFilterValue<CascaderOption>(string filterWords, TTreeNodeModel<TTreeOptionData<TCascaderFilterValueNodeTDefaultTDefault>> node);
 
 /// <summary>
@@ -2981,7 +2885,6 @@ public readonly union TCascaderFilterValueResult<CascaderOption>(bool, IPromise<
 /// <summary>
 /// 获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TCascaderFocusEventContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -3003,13 +2906,11 @@ public record TCascaderFocusEventContext<CascaderOption> : VueProps
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 IPromise&lt;CascaderOption[]&gt;。</returns>
-[ECMAScript]
 public delegate IPromise<CascaderOption[]> TCascaderLoadValue<CascaderOption>(TTreeNodeModel<CascaderOption> node);
 
 /// <summary>
 /// TDesign 的 TCascaderOptionSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCascaderOptionSlotContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -3042,20 +2943,17 @@ public record TCascaderOptionSlotContext<CascaderOption> : VueProps
 /// <summary>
 /// Change 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public delegate void TCascaderOptionSlotContextOnChange<CascaderOption>();
 
 /// <summary>
 /// Expand 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public delegate void TCascaderOptionSlotContextOnExpand<CascaderOption>();
 
 /// <summary>
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCascaderStatusValue
 {
@@ -3085,7 +2983,6 @@ public enum TCascaderStatusValue
 /// 展开下一层级的方式
 /// 默认值：click
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCascaderTriggerValue
 {
@@ -3132,7 +3029,6 @@ public readonly union TCascaderValue<T>(string, Number, T, TCascaderValue<T>[])
 /// <summary>
 /// TDesign 的 TCascaderValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCascaderValueDisplaySlotContext<CascaderOption> : VueProps
 {
     /// <summary>
@@ -3166,14 +3062,12 @@ public record TCascaderValueDisplaySlotContext<CascaderOption> : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
-[ECMAScript]
 public delegate void TCascaderValueDisplaySlotContextOnClose<CascaderOption>(Number index);
 
 /// <summary>
 /// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
 /// 默认值：onlyLeaf
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCascaderValueModeValue
 {
@@ -3198,7 +3092,6 @@ public enum TCascaderValueModeValue
 /// 用于控制选中值的类型。single 表示输入输出值为 叶子结点值， full 表示输入输出值为全路径
 /// 默认值：single
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCascaderValueTypeValue
 {
@@ -3217,7 +3110,6 @@ public enum TCascaderValueTypeValue
 /// <summary>
 /// TDesign 的 TCascadingValue 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCascadingValue
 {
@@ -3236,7 +3128,6 @@ public enum TCascadingValue
 /// <summary>
 /// TDesign 的 TCellData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCellData<T> : VueProps
 {
     /// <summary>
@@ -3274,7 +3165,6 @@ public record TCellData<T> : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCellDataType
 {
@@ -3293,7 +3183,6 @@ public enum TCellDataType
 /// <summary>
 /// TDesign 的 TChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TChangeContext : VueProps
 {
     /// <summary>
@@ -3320,7 +3209,6 @@ public readonly union TChangeContextE(InputEvent, MouseEvent, FocusEvent, Keyboa
 /// <summary>
 /// TDesign 的 TChangeSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TChangeSource
 {
@@ -3364,7 +3252,6 @@ public enum TChangeSource
 /// <summary>
 /// TDesign 的 TChatConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TChatConfig : VueProps
 {
     /// <summary>
@@ -3500,13 +3387,11 @@ public readonly union TCheckProps<T>(TdCheckboxProps, TdRadioProps<TRadioValue>,
 /// </summary>
 /// <param name="options">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TCheckPropsOption3Result&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TCheckPropsOption3Result<T> TCheckPropsOption3<T>(TCheckPropsOption3Options<T> options);
 
 /// <summary>
 /// TDesign 的 TCheckProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckPropsOption3Options<T> : VueProps
 {
     /// <summary>
@@ -3533,7 +3418,6 @@ public readonly union TCheckPropsOption3Result<T>(TdCheckboxProps, TdRadioProps<
 /// <summary>
 /// TDesign 的 TCheckTagChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckTagChangeContext : VueProps
 {
     /// <summary>
@@ -3588,7 +3472,6 @@ public readonly union TCheckTagChangeContextValue(string, Number)
 /// <summary>
 /// 点击标签时触发
 /// </summary>
-[ECMAScript]
 public record TCheckTagClickEventContext : VueProps
 {
     /// <summary>
@@ -3630,7 +3513,6 @@ public readonly union TCheckTagContentValue(string, Number, string[])
 /// <summary>
 /// TDesign 的 TCheckTagGroupChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckTagGroupChangeContext : VueProps
 {
     /// <summary>
@@ -3663,7 +3545,6 @@ public readonly union TCheckTagGroupChangeContextE(MouseEvent, KeyboardEvent)
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCheckTagGroupChangeContextType
 {
@@ -3710,7 +3591,6 @@ public readonly union TCheckTagGroupChangeContextValue(string, Number)
 /// <summary>
 /// TDesign 的 TCheckTagGroupOption 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckTagGroupOption : VueProps
 {
     /// <summary>
@@ -3843,20 +3723,17 @@ public readonly union TCheckTagGroupOptionLabel(string, RenderFragment)
 /// </summary>
 /// <param name="checked">是否选中。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TCheckTagGroupOptionOnChange(bool @checked, TCheckTagChangeContext context);
 
 /// <summary>
 /// 点击标签时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TCheckTagGroupOptionOnClick(TCheckTagGroupOptionOnClickContext context);
 
 /// <summary>
 /// 点击标签时触发
 /// </summary>
-[ECMAScript]
 public record TCheckTagGroupOptionOnClickContext : VueProps
 {
     /// <summary>
@@ -3954,7 +3831,6 @@ public readonly union TCheckTagValueValue(string, Number)
 /// <summary>
 /// 值变化时触发
 /// </summary>
-[ECMAScript]
 public record TCheckboxChangeEventContext : VueProps
 {
     /// <summary>
@@ -3968,7 +3844,6 @@ public record TCheckboxChangeEventContext : VueProps
 /// <summary>
 /// TDesign 的 TCheckboxGroupChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckboxGroupChangeContext : VueProps
 {
     /// <summary>
@@ -4036,7 +3911,6 @@ public readonly union TCheckboxGroupChangeContextOption(TCheckboxOption, TdCheck
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCheckboxGroupChangeContextType
 {
@@ -4111,7 +3985,6 @@ public readonly union TCheckboxOption(string, Number, TCheckboxOptionObj)
 /// <summary>
 /// TDesign 的 TCheckboxOptionObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckboxOptionObj : VueProps
 {
     /// <summary>
@@ -4234,13 +4107,11 @@ public readonly union TCheckboxOptionObjLabel(string, RenderFragment)
 /// </summary>
 /// <param name="checked">是否选中。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TCheckboxOptionObjOnChange(bool @checked, TCheckboxOptionObjOnChangeContext context);
 
 /// <summary>
 /// 值变化时触发
 /// </summary>
-[ECMAScript]
 public record TCheckboxOptionObjOnChangeContext : VueProps
 {
     /// <summary>
@@ -4310,7 +4181,6 @@ public readonly union TCheckboxValueValue(string, Number, bool)
 /// <summary>
 /// TDesign 的 TCheckedOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCheckedOptions : VueProps
 {
     /// <summary>
@@ -4352,7 +4222,6 @@ public readonly union TClassName(TClassNameDictionary, TClassName[], string)
 /// <summary>
 /// CSS 类名开关映射；键为类名，值为 true 时启用该类名。
 /// </summary>
-[ECMAScript]
 public sealed record TClassNameDictionary : VueDictionary<bool>
 {
 }
@@ -4557,7 +4426,6 @@ public readonly union TColXxlValue(Number, TBaseColProps)
 /// 展开图标的位置，左侧或右侧
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCollapseExpandIconPlacementValue
 {
@@ -4632,7 +4500,6 @@ public readonly union TCollapseValueItem(string, Number)
 /// <summary>
 /// TDesign 的 TColorObject 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TColorObject : VueProps
 {
     /// <summary>
@@ -4732,7 +4599,6 @@ public record TColorObject : VueProps
 /// <summary>
 /// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
 /// </summary>
-[ECMAScript]
 public record TColorPickerChangeEventContext : VueProps
 {
     /// <summary>
@@ -4752,7 +4618,6 @@ public record TColorPickerChangeEventContext : VueProps
 /// <summary>
 /// TDesign 的 TColorPickerChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TColorPickerChangeTrigger
 {
@@ -4801,7 +4666,6 @@ public enum TColorPickerChangeTrigger
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TColorPickerClearEventContext : VueProps
 {
     /// <summary>
@@ -4816,7 +4680,6 @@ public record TColorPickerClearEventContext : VueProps
 /// 颜色模式选择。同时支持单色和渐变两种模式，可仅使用单色或者渐变其中一种模式，也可以同时使用。`monochrome` 表示单色，`linear-gradient` 表示渐变色
 /// 默认值：[&quot;monochrome&quot;, &quot;linear-gradient&quot;]
 /// </summary>
-[ECMAScript]
 [String]
 public enum TColorPickerColorModesValueItem
 {
@@ -4835,7 +4698,6 @@ public enum TColorPickerColorModesValueItem
 /// <summary>
 /// TDesign 的 TColorPickerConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TColorPickerConfig : VueProps
 {
     /// <summary>
@@ -4864,7 +4726,6 @@ public record TColorPickerConfig : VueProps
 /// 格式化色值。`enableAlpha` 为真时，`HEX8/RGBA/HSLA/HSVA` 有效
 /// 默认值：RGB
 /// </summary>
-[ECMAScript]
 [String]
 public enum TColorPickerFormatValue
 {
@@ -4923,7 +4784,6 @@ public enum TColorPickerFormatValue
 /// <summary>
 /// 调色板控制器的值变化时触发，`context.color` 指调色板控制器的值
 /// </summary>
-[ECMAScript]
 public record TColorPickerPaletteBarChangeEventContext : VueProps
 {
     /// <summary>
@@ -4937,7 +4797,6 @@ public record TColorPickerPaletteBarChangeEventContext : VueProps
 /// <summary>
 /// 选中的色值发生变化时触发，第一个参数 `value` 表示新色值，`context.color` 表示当前调色板控制器的色值，`context.trigger` 表示触发颜色变化的来源
 /// </summary>
-[ECMAScript]
 public record TColorPickerPanelChangeEventContext : VueProps
 {
     /// <summary>
@@ -4957,7 +4816,6 @@ public record TColorPickerPanelChangeEventContext : VueProps
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TColorPickerPanelClearEventContext : VueProps
 {
     /// <summary>
@@ -4972,7 +4830,6 @@ public record TColorPickerPanelClearEventContext : VueProps
 /// 颜色模式选择。同时支持单色和渐变两种模式，可仅使用单色或者渐变其中一种模式，也可以同时使用。`monochrome` 表示单色，`linear-gradient` 表示渐变色
 /// 默认值：[&quot;monochrome&quot;, &quot;linear-gradient&quot;]
 /// </summary>
-[ECMAScript]
 [String]
 public enum TColorPickerPanelColorModesValueItem
 {
@@ -4992,7 +4849,6 @@ public enum TColorPickerPanelColorModesValueItem
 /// 格式化色值。`enableAlpha` 为真时，`HEX8/RGBA/HSLA/HSVA` 有效
 /// 默认值：RGB
 /// </summary>
-[ECMAScript]
 [String]
 public enum TColorPickerPanelFormatValue
 {
@@ -5051,7 +4907,6 @@ public enum TColorPickerPanelFormatValue
 /// <summary>
 /// 调色板控制器的值变化时触发，`context.color` 指调色板控制器的值
 /// </summary>
-[ECMAScript]
 public record TColorPickerPanelPaletteBarChangeEventContext : VueProps
 {
     /// <summary>
@@ -5091,7 +4946,6 @@ public readonly union TCommentAvatarValue(string, TdAvatarProps)
 /// <summary>
 /// TDesign 的 TConfigPresetDate 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TConfigPresetDate : VueDictionary<TConfigPresetDateIndex>
 {
 }
@@ -5108,13 +4962,11 @@ public readonly union TConfigPresetDateIndex(TDateConfigValue, TConfigPresetDate
 /// TDesign 的 TConfigPresetDate 类型；用于对应上游类型的数据传递。
 /// </summary>
 /// <returns>回调结果，类型为 TDateConfigValue。</returns>
-[ECMAScript]
 public delegate TDateConfigValue TConfigPresetDateIndexOption2();
 
 /// <summary>
 /// TDesign 的 TControllerOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TControllerOptions : VueProps
 {
     /// <summary>
@@ -5148,7 +5000,6 @@ public record TControllerOptions : VueProps
 /// <summary>
 /// TDesign 的 TCustomValidateObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCustomValidateObj : VueProps
 {
     /// <summary>
@@ -5174,7 +5025,6 @@ public record TCustomValidateObj : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TCustomValidateObjType
 {
@@ -5209,13 +5059,11 @@ public readonly union TCustomValidateResolveType(bool, TCustomValidateObj)
 /// <param name="val">对应上游 val 字段或参数；数据形状见声明类型。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TCustomValidatorResult。</returns>
-[ECMAScript]
 public delegate TCustomValidatorResult TCustomValidator(TJsonValue val, TCustomValidatorContext? context = default);
 
 /// <summary>
 /// TDesign 的 TCustomValidator 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TCustomValidatorContext : VueProps
 {
     /// <summary>
@@ -5244,7 +5092,6 @@ public readonly union TCustomValidatorResult(TCustomValidateResolveType, IPromis
 /// <summary>
 /// TDesign 的 TDOMRect 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDOMRect : VueProps
 {
     /// <summary>
@@ -5299,7 +5146,6 @@ public record TDOMRect : VueProps
 /// <summary>
 /// TDesign 的 TDataOption 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDataOption : VueProps
 {
     /// <summary>
@@ -5332,7 +5178,6 @@ public readonly union TDateConfigValue(string, Date, TDateConfigValue[])
 /// <summary>
 /// 当输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerBlurEventContext : VueProps
 {
     /// <summary>
@@ -5360,7 +5205,6 @@ public readonly union TDatePickerBlurEventContextValue(TDateValue, TDateValue[])
 /// <summary>
 /// 选中值发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerChangeEventContext : VueProps
 {
     /// <summary>
@@ -5387,7 +5231,6 @@ public readonly union TDatePickerChangeEventValue(TDateValue, TDateValue[])
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerClearEventContext : VueProps
 {
     /// <summary>
@@ -5401,7 +5244,6 @@ public record TDatePickerClearEventContext : VueProps
 /// <summary>
 /// TDesign 的 TDatePickerConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDatePickerConfig : VueProps
 {
     /// <summary>
@@ -5571,7 +5413,6 @@ public record TDatePickerConfig : VueProps
 /// <summary>
 /// 占位符文本提示，默认值：`{ date: '请选择日期',  month: '请选择月份',  year: '请选择年份' }`
 /// </summary>
-[ECMAScript]
 public record TDatePickerConfigPlaceholder : VueProps
 {
     /// <summary>
@@ -5596,7 +5437,6 @@ public record TDatePickerConfigPlaceholder : VueProps
 /// <summary>
 /// 如果存在“确定”按钮，则点击“确定”按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerConfirmEventContext : VueProps
 {
     /// <summary>
@@ -5619,13 +5459,11 @@ public record TDatePickerConfirmEventContext : VueProps
 /// </summary>
 /// <param name="time">对应上游 time 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TDatePickerDisableTimeValueResultPartial。</returns>
-[ECMAScript]
 public delegate TDatePickerDisableTimeValueResultPartial TDatePickerDisableTimeValue(Date time);
 
 /// <summary>
 /// 禁用时间项的配置函数，仅在日期时间选择器中可用
 /// </summary>
-[ECMAScript]
 public record TDatePickerDisableTimeValueResultPartial : VueProps
 {
     /// <summary>
@@ -5660,7 +5498,6 @@ public record TDatePickerDisableTimeValueResultPartial : VueProps
 /// <summary>
 /// 输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerFocusEventContext : VueProps
 {
     /// <summary>
@@ -5689,7 +5526,6 @@ public readonly union TDatePickerFocusEventContextValue(TDateValue, TDateValue[]
 /// 选择器模式
 /// 默认值：date
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerModeValue
 {
@@ -5723,7 +5559,6 @@ public enum TDatePickerModeValue
 /// <summary>
 /// 月份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerMonthChangeEventContext : VueProps
 {
     /// <summary>
@@ -5755,7 +5590,6 @@ public record TDatePickerMonthChangeEventContext : VueProps
 /// <summary>
 /// TDesign 的 TDatePickerMonthChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerMonthChangeTrigger
 {
@@ -5784,7 +5618,6 @@ public enum TDatePickerMonthChangeTrigger
 /// <summary>
 /// 点击日期单元格时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelCellClickEventContext : VueProps
 {
     /// <summary>
@@ -5805,7 +5638,6 @@ public record TDatePickerPanelCellClickEventContext : VueProps
 /// <summary>
 /// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelChangeEventContext : VueProps
 {
     /// <summary>
@@ -5830,7 +5662,6 @@ public record TDatePickerPanelChangeEventContext : VueProps
 /// <summary>
 /// 如果存在“确定”按钮，则点击“确定”按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelConfirmEventContext : VueProps
 {
     /// <summary>
@@ -5853,13 +5684,11 @@ public record TDatePickerPanelConfirmEventContext : VueProps
 /// </summary>
 /// <param name="time">对应上游 time 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TDatePickerPanelDisableTimeValueResultPartial。</returns>
-[ECMAScript]
 public delegate TDatePickerPanelDisableTimeValueResultPartial TDatePickerPanelDisableTimeValue(Date time);
 
 /// <summary>
 /// 禁用时间项的配置函数，仅在日期时间选择器中可用
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelDisableTimeValueResultPartial : VueProps
 {
     /// <summary>
@@ -5895,7 +5724,6 @@ public record TDatePickerPanelDisableTimeValueResultPartial : VueProps
 /// 选择器模式
 /// 默认值：date
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerPanelModeValue
 {
@@ -5929,7 +5757,6 @@ public enum TDatePickerPanelModeValue
 /// <summary>
 /// 月份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelMonthChangeEventContext : VueProps
 {
     /// <summary>
@@ -5961,7 +5788,6 @@ public record TDatePickerPanelMonthChangeEventContext : VueProps
 /// <summary>
 /// 点击面板时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelPanelClickEventContext : VueProps
 {
     /// <summary>
@@ -5975,7 +5801,6 @@ public record TDatePickerPanelPanelClickEventContext : VueProps
 /// <summary>
 /// 点击预设按钮后触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelPresetClickEventContext : VueProps
 {
     /// <summary>
@@ -5997,7 +5822,6 @@ public record TDatePickerPanelPresetClickEventContext : VueProps
 /// 预设面板展示区域（包含确定按钮）
 /// 默认值：bottom
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerPanelPresetsPlacementValue
 {
@@ -6026,7 +5850,6 @@ public enum TDatePickerPanelPresetsPlacementValue
 /// <summary>
 /// 时间切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelTimeChangeEventContext : VueProps
 {
     /// <summary>
@@ -6068,7 +5891,6 @@ public readonly union TDatePickerPanelValueValue(TDateValue, TDateValue[])
 /// <summary>
 /// 年份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPanelYearChangeEventContext : VueProps
 {
     /// <summary>
@@ -6100,7 +5922,6 @@ public record TDatePickerPanelYearChangeEventContext : VueProps
 /// <summary>
 /// 点击预设按钮后触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerPresetClickEventContext : VueProps
 {
     /// <summary>
@@ -6122,7 +5943,6 @@ public record TDatePickerPresetClickEventContext : VueProps
 /// 预设面板展示区域（包含确定按钮）
 /// 默认值：bottom
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerPresetsPlacementValue
 {
@@ -6152,7 +5972,6 @@ public enum TDatePickerPresetsPlacementValue
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerStatusValue
 {
@@ -6181,7 +6000,6 @@ public enum TDatePickerStatusValue
 /// <summary>
 /// TDesign 的 TDatePickerTimeChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerTimeChangeTrigger
 {
@@ -6205,7 +6023,6 @@ public enum TDatePickerTimeChangeTrigger
 /// <summary>
 /// 日期值变化的触发来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerTriggerSource
 {
@@ -6244,7 +6061,6 @@ public enum TDatePickerTriggerSource
 /// <summary>
 /// TDesign 的 TDatePickerValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDatePickerValueDisplaySlotContext : VueProps
 {
     /// <summary>
@@ -6263,7 +6079,6 @@ public record TDatePickerValueDisplaySlotContext : VueProps
 /// <summary>
 /// 日期值的表示格式，可选毫秒时间戳、Date 对象或指定格式的字符串。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerValueType
 {
@@ -6326,7 +6141,6 @@ public readonly union TDatePickerValueValue(TDateValue, TDateValue[])
 /// <summary>
 /// 年份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDatePickerYearChangeEventContext : VueProps
 {
     /// <summary>
@@ -6358,7 +6172,6 @@ public record TDatePickerYearChangeEventContext : VueProps
 /// <summary>
 /// TDesign 的 TDatePickerYearChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDatePickerYearChangeTrigger
 {
@@ -6387,7 +6200,6 @@ public enum TDatePickerYearChangeTrigger
 /// <summary>
 /// 当输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerBlurEventContext : VueProps
 {
     /// <summary>
@@ -6414,7 +6226,6 @@ public record TDateRangePickerBlurEventContext : VueProps
 /// <summary>
 /// 选中值发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerChangeEventContext : VueProps
 {
     /// <summary>
@@ -6433,7 +6244,6 @@ public record TDateRangePickerChangeEventContext : VueProps
 /// <summary>
 /// 如果存在“确定”按钮，则点击“确定”按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerConfirmEventContext : VueProps
 {
     /// <summary>
@@ -6463,13 +6273,11 @@ public record TDateRangePickerConfirmEventContext : VueProps
 /// <param name="times">对应上游 times 字段或参数；数据形状见声明类型。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TDateRangePickerDisableTimeValueResultPartial。</returns>
-[ECMAScript]
 public delegate TDateRangePickerDisableTimeValueResultPartial TDateRangePickerDisableTimeValue(Date[]? times, TDateRangePickerDisableTimeValueContext context);
 
 /// <summary>
 /// 禁用时间项的配置函数，仅在日期区间选择器中开启时间展示时可用
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerDisableTimeValueContext : VueProps
 {
     /// <summary>
@@ -6482,7 +6290,6 @@ public record TDateRangePickerDisableTimeValueContext : VueProps
 /// <summary>
 /// 禁用时间项的配置函数，仅在日期区间选择器中开启时间展示时可用
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerDisableTimeValueResultPartial : VueProps
 {
     /// <summary>
@@ -6518,7 +6325,6 @@ public readonly union TDateRangePickerDisabledValue(bool, bool[])
 /// <summary>
 /// 输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerFocusEventContext : VueProps
 {
     /// <summary>
@@ -6545,7 +6351,6 @@ public record TDateRangePickerFocusEventContext : VueProps
 /// <summary>
 /// 输入框数据发生变化时触发，参数 input 表示输入内容，value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerInputEventContext : VueProps
 {
     /// <summary>
@@ -6580,7 +6385,6 @@ public record TDateRangePickerInputEventContext : VueProps
 /// 选择器模式
 /// 默认值：date
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerModeValue
 {
@@ -6614,7 +6418,6 @@ public enum TDateRangePickerModeValue
 /// <summary>
 /// 月份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerMonthChangeEventContext : VueProps
 {
     /// <summary>
@@ -6652,7 +6455,6 @@ public record TDateRangePickerMonthChangeEventContext : VueProps
 /// <summary>
 /// 点击日期单元格时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelCellClickEventContext : VueProps
 {
     /// <summary>
@@ -6679,7 +6481,6 @@ public record TDateRangePickerPanelCellClickEventContext : VueProps
 /// <summary>
 /// 选中值发生变化时触发。参数 `context.trigger` 表示触发当前事件的来源，不同的模式触发来源也会不同
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelChangeEventContext : VueProps
 {
     /// <summary>
@@ -6710,7 +6511,6 @@ public record TDateRangePickerPanelChangeEventContext : VueProps
 /// <summary>
 /// 如果存在“确定”按钮，则点击“确定”按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelConfirmEventContext : VueProps
 {
     /// <summary>
@@ -6732,7 +6532,6 @@ public record TDateRangePickerPanelConfirmEventContext : VueProps
 /// 选择器模式
 /// 默认值：date
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerPanelModeValue
 {
@@ -6766,7 +6565,6 @@ public enum TDateRangePickerPanelModeValue
 /// <summary>
 /// 月份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelMonthChangeEventContext : VueProps
 {
     /// <summary>
@@ -6804,7 +6602,6 @@ public record TDateRangePickerPanelMonthChangeEventContext : VueProps
 /// <summary>
 /// 点击面板时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelPanelClickEventContext : VueProps
 {
     /// <summary>
@@ -6818,7 +6615,6 @@ public record TDateRangePickerPanelPanelClickEventContext : VueProps
 /// <summary>
 /// 点击预设按钮后触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelPresetClickEventContext : VueProps
 {
     /// <summary>
@@ -6840,7 +6636,6 @@ public record TDateRangePickerPanelPresetClickEventContext : VueProps
 /// 预设面板展示区域（包含确定按钮）
 /// 默认值：bottom
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerPanelPresetsPlacementValue
 {
@@ -6869,7 +6664,6 @@ public enum TDateRangePickerPanelPresetsPlacementValue
 /// <summary>
 /// 时间切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelTimeChangeEventContext : VueProps
 {
     /// <summary>
@@ -6908,7 +6702,6 @@ public record TDateRangePickerPanelTimeChangeEventContext : VueProps
 /// <summary>
 /// 年份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPanelYearChangeEventContext : VueProps
 {
     /// <summary>
@@ -6946,7 +6739,6 @@ public record TDateRangePickerPanelYearChangeEventContext : VueProps
 /// <summary>
 /// 范围选择器当前操作的是开始端还是结束端。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerPartial
 {
@@ -6973,7 +6765,6 @@ public readonly union TDateRangePickerPlaceholderValue(string, string[])
 /// <summary>
 /// 点击预设按钮后触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerPresetClickEventContext : VueProps
 {
     /// <summary>
@@ -6995,7 +6786,6 @@ public record TDateRangePickerPresetClickEventContext : VueProps
 /// 预设面板展示区域（包含确定按钮）
 /// 默认值：bottom
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerPresetsPlacementValue
 {
@@ -7025,7 +6815,6 @@ public enum TDateRangePickerPresetsPlacementValue
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerStatusValue
 {
@@ -7054,7 +6843,6 @@ public enum TDateRangePickerStatusValue
 /// <summary>
 /// 用于格式化日期的值，仅支持部分格式，时间戳、日期等。⚠️ `YYYYMMDD` 这种格式不支持，请勿使用，如果希望支持可以给 `dayjs` 提个 PR。注意和 `format` 的区别，`format` 仅用于处理日期在页面中呈现的格式
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDateRangePickerValueTypeValue
 {
@@ -7108,7 +6896,6 @@ public enum TDateRangePickerValueTypeValue
 /// <summary>
 /// 年份切换发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TDateRangePickerYearChangeEventContext : VueProps
 {
     /// <summary>
@@ -7174,7 +6961,6 @@ public readonly union TDateValue(string, Number, Date)
 /// <summary>
 /// 日期回调中的 Day.js 日期实例句柄。
 /// </summary>
-[ECMAScript]
 public sealed record TDayjs : VueProps
 {
 }
@@ -7182,7 +6968,6 @@ public sealed record TDayjs : VueProps
 /// <summary>
 /// TDesign 的 TDescriptionsConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDescriptionsConfig : VueProps
 {
     /// <summary>
@@ -7197,7 +6982,6 @@ public record TDescriptionsConfig : VueProps
 /// 描述项的排列方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDescriptionsItemLayoutValue
 {
@@ -7217,7 +7001,6 @@ public enum TDescriptionsItemLayoutValue
 /// 排列方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDescriptionsLayoutValue
 {
@@ -7237,7 +7020,6 @@ public enum TDescriptionsLayoutValue
 /// 用于设置底层 `table` 单元格、行和列的布局算法，与原生 table-layout css 属性完全一致。`fixed`：采用固定布局算法；`auto`：采用自动布局算法。详情可参考 [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)
 /// 默认值：fixed
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDescriptionsTableLayoutValue
 {
@@ -7264,7 +7046,6 @@ public readonly union TDialogCancelBtnValue(string, TdButtonProps)
 /// <summary>
 /// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
 /// </summary>
-[ECMAScript]
 public record TDialogCancelEventContext : VueProps
 {
     /// <summary>
@@ -7286,7 +7067,6 @@ public readonly union TDialogCardCancelBtnValue(string, TdButtonProps)
 /// <summary>
 /// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
 /// </summary>
-[ECMAScript]
 public record TDialogCardCancelEventContext : VueProps
 {
     /// <summary>
@@ -7300,7 +7080,6 @@ public record TDialogCardCancelEventContext : VueProps
 /// <summary>
 /// 点击右上角关闭按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDialogCardCloseBtnClickEventContext : VueProps
 {
     /// <summary>
@@ -7331,7 +7110,6 @@ public readonly union TDialogCardConfirmBtnValue(string, TdButtonProps)
 /// <summary>
 /// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
 /// </summary>
-[ECMAScript]
 public record TDialogCardConfirmEventContext : VueProps
 {
     /// <summary>
@@ -7362,7 +7140,6 @@ public readonly union TDialogCardHeaderValue(string, bool)
 /// 对话框风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDialogCardThemeValue
 {
@@ -7396,7 +7173,6 @@ public enum TDialogCardThemeValue
 /// <summary>
 /// 点击右上角关闭按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDialogCloseBtnClickEventContext : VueProps
 {
     /// <summary>
@@ -7419,7 +7195,6 @@ public readonly union TDialogCloseBtnValue(string, bool)
 /// <summary>
 /// TDesign 的 TDialogCloseContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDialogCloseContext : VueProps
 {
     /// <summary>
@@ -7446,7 +7221,6 @@ public readonly union TDialogCloseContextE(MouseEvent, KeyboardEvent)
 /// <summary>
 /// TDesign 的 TDialogConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDialogConfig : VueProps
 {
     /// <summary>
@@ -7514,7 +7288,6 @@ public readonly union TDialogConfigConfirm(string, TdButtonProps)
 /// <summary>
 /// 确认按钮主题色，即 Dialog 的 `theme` 和 确认按钮的 `theme` 映射关系。示例：{ danger: 'danger' }
 /// </summary>
-[ECMAScript]
 public record TDialogConfigConfirmBtnTheme : VueProps
 {
     /// <summary>
@@ -7557,7 +7330,6 @@ public record TDialogConfigConfirmBtnTheme : VueProps
 /// 全局配置的对话框位置，垂直水平居中显示 和 靠近顶部（top:20%）显示
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDialogConfigPlacement
 {
@@ -7584,7 +7356,6 @@ public readonly union TDialogConfirmBtnValue(string, TdButtonProps)
 /// <summary>
 /// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
 /// </summary>
-[ECMAScript]
 public record TDialogConfirmEventContext : VueProps
 {
     /// <summary>
@@ -7605,7 +7376,6 @@ public readonly union TDialogConfirmEventContextE(MouseEvent, KeyboardEvent)
 /// <summary>
 /// 按下 ESC 时触发事件
 /// </summary>
-[ECMAScript]
 public record TDialogEscKeydownEventContext : VueProps
 {
     /// <summary>
@@ -7619,7 +7389,6 @@ public record TDialogEscKeydownEventContext : VueProps
 /// <summary>
 /// TDesign 的 TDialogEventSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDialogEventSource
 {
@@ -7658,7 +7427,6 @@ public readonly union TDialogHeaderValue(string, bool)
 /// 对话框类型，有 4 种：模态对话框、非模态对话框、普通对话框、全屏对话框。弹出「模态对话框」时，只能操作对话框里面的内容，不能操作其他内容。弹出「非模态对话框」时，则可以操作页面内所有内容。「普通对话框」是指没有脱离文档流的对话框，可以在这个基础上开发更多的插件
 /// 默认值：modal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDialogModeValue
 {
@@ -7687,7 +7455,6 @@ public enum TDialogModeValue
 /// <summary>
 /// 如果蒙层存在，点击蒙层时触发
 /// </summary>
-[ECMAScript]
 public record TDialogOverlayClickEventContext : VueProps
 {
     /// <summary>
@@ -7702,7 +7469,6 @@ public record TDialogOverlayClickEventContext : VueProps
 /// 对话框位置，内置两种：垂直水平居中显示 和 靠近顶部（top:20%）显示。默认情况，为避免贴顶或贴底，顶部和底部距离最小为 `48px`，可通过调整 `top` 覆盖默认大小
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDialogPlacementValue
 {
@@ -7722,7 +7488,6 @@ public enum TDialogPlacementValue
 /// 对话框风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDialogThemeValue
 {
@@ -7812,7 +7577,6 @@ public readonly union TDialogWidthValue(string, Number)
 /// <summary>
 /// 内容排列方向。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDirection
 {
@@ -7839,7 +7603,6 @@ public readonly union TDisableDate(TDateValue[], TDisableDateObj, TDisableDateOp
 /// <summary>
 /// TDesign 的 TDisableDateObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDisableDateObj : VueProps
 {
     /// <summary>
@@ -7872,7 +7635,6 @@ public record TDisableDateObj : VueProps
 /// </summary>
 /// <param name="date">对应上游 date 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TDisableDateOption3(TDateValue date);
 
 /// <summary>
@@ -7888,13 +7650,11 @@ public readonly union TDisableRangeDate(TDateValue[], TDisableDateObj, TDisableR
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TDisableRangeDateOption3(TDisableRangeDateOption3Context context);
 
 /// <summary>
 /// TDesign 的 TDisableRangeDate 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDisableRangeDateOption3Context : VueProps
 {
     /// <summary>
@@ -7915,7 +7675,6 @@ public record TDisableRangeDateOption3Context : VueProps
 /// 文本位置（仅在水平分割线有效）
 /// 默认值：center
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDividerAlignValue
 {
@@ -7940,7 +7699,6 @@ public enum TDividerAlignValue
 /// 分隔线类型有两种：水平和垂直
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDividerLayoutValue
 {
@@ -7959,7 +7717,6 @@ public enum TDividerLayoutValue
 /// <summary>
 /// 请更为使用 `layout`。分隔线类型有两种：水平和垂直
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDividerThemeValue
 {
@@ -7978,7 +7735,6 @@ public enum TDividerThemeValue
 /// <summary>
 /// TDesign 的 TDragSortContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDragSortContext<T> : VueProps
 {
     /// <summary>
@@ -8042,7 +7798,6 @@ public record TDragSortContext<T> : VueProps
 /// <summary>
 /// 对应上游 sort 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDragSortContextSort
 {
@@ -8061,7 +7816,6 @@ public enum TDragSortContextSort
 /// <summary>
 /// 如果“取消”按钮存在，点击“取消”按钮时触发，同时触发关闭事件
 /// </summary>
-[ECMAScript]
 public record TDrawerCancelEventContext : VueProps
 {
     /// <summary>
@@ -8075,7 +7829,6 @@ public record TDrawerCancelEventContext : VueProps
 /// <summary>
 /// 如果关闭按钮存在，点击关闭按钮时触发该事件，同时触发关闭事件
 /// </summary>
-[ECMAScript]
 public record TDrawerCloseBtnClickEventContext : VueProps
 {
     /// <summary>
@@ -8097,7 +7850,6 @@ public readonly union TDrawerCloseBtnValue(string, bool)
 /// <summary>
 /// TDesign 的 TDrawerCloseContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDrawerCloseContext : VueProps
 {
     /// <summary>
@@ -8124,7 +7876,6 @@ public readonly union TDrawerCloseContextE(MouseEvent, KeyboardEvent)
 /// <summary>
 /// TDesign 的 TDrawerConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDrawerConfig : VueProps
 {
     /// <summary>
@@ -8184,7 +7935,6 @@ public readonly union TDrawerConfigConfirm(string, TdButtonProps)
 /// <summary>
 /// 如果“确认”按钮存在，则点击“确认”按钮时触发
 /// </summary>
-[ECMAScript]
 public record TDrawerConfirmEventContext : VueProps
 {
     /// <summary>
@@ -8198,7 +7948,6 @@ public record TDrawerConfirmEventContext : VueProps
 /// <summary>
 /// 按下 ESC 键时触发
 /// </summary>
-[ECMAScript]
 public record TDrawerEscKeydownEventContext : VueProps
 {
     /// <summary>
@@ -8212,7 +7961,6 @@ public record TDrawerEscKeydownEventContext : VueProps
 /// <summary>
 /// TDesign 的 TDrawerEventSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDrawerEventSource
 {
@@ -8251,7 +7999,6 @@ public readonly union TDrawerHeaderValue(string, bool)
 /// 展开方式，有两种：直接展示在内容上方 和 推开内容区域
 /// 默认值：overlay
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDrawerModeValue
 {
@@ -8270,7 +8017,6 @@ public enum TDrawerModeValue
 /// <summary>
 /// 如果蒙层存在，点击蒙层时触发
 /// </summary>
-[ECMAScript]
 public record TDrawerOverlayClickEventContext : VueProps
 {
     /// <summary>
@@ -8285,7 +8031,6 @@ public record TDrawerOverlayClickEventContext : VueProps
 /// 抽屉方向
 /// 默认值：right
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDrawerPlacementValue
 {
@@ -8314,7 +8059,6 @@ public enum TDrawerPlacementValue
 /// <summary>
 /// 抽屉大小拖拽结束时触发，事件参数 `size` 在横向抽屉中表示宽度，在纵向抽屉中表示高度
 /// </summary>
-[ECMAScript]
 public record TDrawerSizeDragEndEventContext : VueProps
 {
     /// <summary>
@@ -8343,7 +8087,6 @@ public readonly union TDrawerSizeDraggableValue(bool, TSizeDragLimit)
 /// <summary>
 /// 下拉操作项点击时触发
 /// </summary>
-[ECMAScript]
 public record TDropdownClickEventContext : VueProps
 {
     /// <summary>
@@ -8386,7 +8129,6 @@ public readonly union TDropdownClickEventDropdownItem(string, Number, TJsonObjec
 /// 多层级操作时，子层级展开方向
 /// 默认值：right
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDropdownDirectionValue
 {
@@ -8405,7 +8147,6 @@ public enum TDropdownDirectionValue
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TDropdownItemClickEventContext : VueProps
 {
     /// <summary>
@@ -8447,7 +8188,6 @@ public readonly union TDropdownItemClickEventDropdownItem(string, Number, TJsonO
 /// <summary>
 /// TDesign 的 TDropdownItemTheme 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDropdownItemTheme
 {
@@ -8562,7 +8302,6 @@ public readonly union TDropdownMinColumnWidthValue(string, Number)
 /// <summary>
 /// TDesign 的 TDropdownOption 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TDropdownOption : VueProps
 {
     /// <summary>
@@ -8629,7 +8368,6 @@ public record TDropdownOption : VueProps
 /// 弹窗定位方式，可选值同 Popup 组件
 /// 默认值：bottom-left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDropdownPlacementValue
 {
@@ -8699,7 +8437,6 @@ public enum TDropdownPlacementValue
 /// 触发下拉显示的方式
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TDropdownTriggerValue
 {
@@ -8730,13 +8467,11 @@ public enum TDropdownTriggerValue
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TEditableCellType<T>(TPrimaryTableCellParams<T> @params);
 
 /// <summary>
 /// TDesign 的 TEmptyConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TEmptyConfig : VueProps
 {
     /// <summary>
@@ -8755,7 +8490,6 @@ public record TEmptyConfig : VueProps
 /// <summary>
 /// 空状态组件各类型的图片配置
 /// </summary>
-[ECMAScript]
 public record TEmptyConfigImage : VueProps
 {
     /// <summary>
@@ -8797,7 +8531,6 @@ public record TEmptyConfigImage : VueProps
 /// <summary>
 /// 空状态组件各类型的标题文本配置
 /// </summary>
-[ECMAScript]
 public record TEmptyConfigTitleText : VueProps
 {
     /// <summary>
@@ -8856,7 +8589,6 @@ public readonly union TEmptyType(string, RenderFragment)
 /// 组件类型，如：空数据/成功/失败/网络错误/建设中
 /// 默认值：empty
 /// </summary>
-[ECMAScript]
 [String]
 public enum TEmptyTypeValue
 {
@@ -8918,7 +8650,6 @@ public readonly union TEnhancedTableActiveChangeEventActiveRowKeysItem<T>(string
 /// <summary>
 /// 异步加载区域被点击时触发
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableAsyncLoadingClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -8931,7 +8662,6 @@ public record TEnhancedTableAsyncLoadingClickEventContext<T> : VueProps
 /// <summary>
 /// 当前状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TEnhancedTableAsyncLoadingClickEventContextStatus
 {
@@ -8952,13 +8682,11 @@ public enum TEnhancedTableAsyncLoadingClickEventContextStatus
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TEnhancedTableBeforeDragSortValue<T>(TDragSortContext<T> context);
 
 /// <summary>
 /// 列配置弹窗显示或隐藏变化时触发
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -8971,7 +8699,6 @@ public record TEnhancedTableColumnControllerVisibleChangeEventContext<T> : VuePr
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TEnhancedTableColumnControllerVisibleChangeEventContextTrigger
 {
@@ -8995,7 +8722,6 @@ public enum TEnhancedTableColumnControllerVisibleChangeEventContextTrigger
 /// <summary>
 /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableColumnResizeChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -9009,7 +8735,6 @@ public record TEnhancedTableColumnResizeChangeEventContext<T> : VueProps
 /// <summary>
 /// 对应上游 columnsWidth 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionary<Number>
 {
 }
@@ -9102,7 +8827,6 @@ public readonly union TEnhancedTableExpandedTreeNodesValueItem<T>(string, Number
 /// <summary>
 /// 表格内容滚动时触发
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableScrollEventParams<T> : VueProps
 {
     /// <summary>
@@ -9117,7 +8841,6 @@ public record TEnhancedTableScrollEventParams<T> : VueProps
 /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableScrollXEventParams<T> : VueProps
 {
     /// <summary>
@@ -9132,7 +8855,6 @@ public record TEnhancedTableScrollXEventParams<T> : VueProps
 /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableScrollYEventParams<T> : VueProps
 {
     /// <summary>
@@ -9174,7 +8896,6 @@ public readonly union TEnhancedTableSelectChangeEventSelectedRowKeysItem<T>(stri
 /// <summary>
 /// TDesign 的 TEnhancedTableTreeExpandAndFoldIconSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TEnhancedTableTreeExpandAndFoldIconSlotContext<T> : VueProps
 {
     /// <summary>
@@ -9193,7 +8914,6 @@ public record TEnhancedTableTreeExpandAndFoldIconSlotContext<T> : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TEnhancedTableTreeExpandAndFoldIconSlotContextType
 {
@@ -9212,7 +8932,6 @@ public enum TEnhancedTableTreeExpandAndFoldIconSlotContextType
 /// <summary>
 /// TDesign 的 TExpandArrowRenderParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TExpandArrowRenderParams<T> : VueProps
 {
     /// <summary>
@@ -9231,7 +8950,6 @@ public record TExpandArrowRenderParams<T> : VueProps
 /// <summary>
 /// TDesign 的 TExpandOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TExpandOptions<T> : VueProps
 {
     /// <summary>
@@ -9259,7 +8977,6 @@ public readonly union TFilterProps(TdRadioProps<TRadioValue>, TdCheckboxProps, T
 /// <summary>
 /// 表格筛选器的输入、单选或多选形式。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFilterType
 {
@@ -9291,7 +9008,6 @@ public readonly union TFooterButton(string, TdButtonProps, RenderFragment)
 /// <summary>
 /// TDesign 的 TFormConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TFormConfig : VueProps
 {
     /// <summary>
@@ -9326,7 +9042,6 @@ public record TFormConfig : VueProps
 /// 表单必填符号（*）显示位置
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormConfigRequiredMarkPosition
 {
@@ -9345,7 +9060,6 @@ public enum TFormConfigRequiredMarkPosition
 /// <summary>
 /// TDesign 的 TFormErrorMessage 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TFormErrorMessage : VueProps
 {
     /// <summary>
@@ -9450,7 +9164,6 @@ public record TFormErrorMessage : VueProps
 /// <summary>
 /// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐。默认使用 Form 的对齐方式，优先级高于 Form.labelAlign
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormItemLabelAlignValue
 {
@@ -9503,7 +9216,6 @@ public readonly union TFormItemLabelWidthValue(string, Number)
 /// 校验状态，可在需要完全自主控制校验状态时使用
 /// 默认值：''
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormItemStatusValue
 {
@@ -9528,7 +9240,6 @@ public enum TFormItemStatusValue
 /// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐
 /// 默认值：right
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormLabelAlignValue
 {
@@ -9582,7 +9293,6 @@ public readonly union TFormLabelWidthValue<FormData>(string, Number)
 /// 表单布局，有两种方式：纵向布局 和 行内布局
 /// 默认值：vertical
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormLayoutValue
 {
@@ -9601,7 +9311,6 @@ public enum TFormLayoutValue
 /// <summary>
 /// 表单必填符号（*）显示位置
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormRequiredMarkPositionValue
 {
@@ -9620,7 +9329,6 @@ public enum TFormRequiredMarkPositionValue
 /// <summary>
 /// 表单重置时触发
 /// </summary>
-[ECMAScript]
 public record TFormResetEventContext<FormData> : VueProps
 {
     /// <summary>
@@ -9634,7 +9342,6 @@ public record TFormResetEventContext<FormData> : VueProps
 /// 重置表单的方式，值为 empty 表示重置表单为空，值为 initial 表示重置表单数据为初始值
 /// 默认值：empty
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormResetTypeValue
 {
@@ -9653,7 +9360,6 @@ public enum TFormResetTypeValue
 /// <summary>
 /// TDesign 的 TFormRule 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TFormRule : VueProps
 {
     /// <summary>
@@ -9890,7 +9596,6 @@ public readonly union TFormRulePattern(RegExp, string)
 /// 校验未通过时呈现的错误信息类型，有 告警信息提示 和 错误信息提示 等两种
 /// 默认值：error
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormRuleType
 {
@@ -9917,7 +9622,6 @@ public readonly union TFormRuleUrl(bool, TIsURLOptions)
 /// <summary>
 /// TDesign 的 TFormRules 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TFormRules<T> : VueDictionary<TFormRule[]>
 {
 }
@@ -9925,7 +9629,6 @@ public record TFormRules<T> : VueDictionary<TFormRule[]>
 /// <summary>
 /// 表单校验不通过时，是否自动滚动到第一个校验不通过的字段，平滑滚动或是瞬间直达。值为空则表示不滚动
 /// </summary>
-[ECMAScript]
 [String]
 public enum TFormScrollToFirstErrorValue
 {
@@ -9957,7 +9660,6 @@ public readonly union TFormValidateResult<T>(bool, TValidateResultObj<T>)
 /// <summary>
 /// TDesign 的 TFormatResponseContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TFormatResponseContext : VueProps
 {
     /// <summary>
@@ -9977,7 +9679,6 @@ public record TFormatResponseContext : VueProps
 /// <summary>
 /// TDesign 的 TGlobalConfigProvider 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGlobalConfigProvider : VueProps
 {
     /// <summary>
@@ -10208,7 +9909,6 @@ public record TGlobalConfigProvider : VueProps
 /// <summary>
 /// TDesign 的 TGlobalIconConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGlobalIconConfig : VueProps
 {
     /// <summary>
@@ -21996,13 +21696,11 @@ public record TGlobalIconConfig : VueProps
 /// TDesign 的 TGlobalIconType 类型；用于对应上游类型的数据传递。
 /// </summary>
 /// <returns>回调结果，类型为 RenderFragment。</returns>
-[ECMAScript]
 public delegate RenderFragment TGlobalIconType();
 
 /// <summary>
 /// TDesign 的 TGroupOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGroupOptions : VueProps
 {
     /// <summary>
@@ -22051,7 +21749,6 @@ public record TGroupOptions : VueProps
 /// <param name="dragEl">对应上游 dragEl 字段或参数；数据形状见声明类型。</param>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
 /// <returns>回调结果，类型为 TGroupOptionsCheckPullOption1Result。</returns>
-[ECMAScript]
 public delegate TGroupOptionsCheckPullOption1Result TGroupOptionsCheckPullOption1(TSortable sortable, TSortable activeSortable, HTMLElement dragEl, TSortableEvent @event);
 
 /// <summary>
@@ -22070,7 +21767,6 @@ public readonly union TGroupOptionsCheckPullOption1Result(bool, string, string[]
 /// <param name="dragEl">对应上游 dragEl 字段或参数；数据形状见声明类型。</param>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
 /// <returns>回调结果，类型为 TGroupOptionsCheckPutOption1Result。</returns>
-[ECMAScript]
 public delegate TGroupOptionsCheckPutOption1Result TGroupOptionsCheckPutOption1(TSortable sortable, TSortable activeSortable, HTMLElement dragEl, TSortableEvent @event);
 
 /// <summary>
@@ -22084,7 +21780,6 @@ public readonly union TGroupOptionsCheckPutOption1Result(bool, string, TGroupOpt
 /// <summary>
 /// a canonical version of put, created by Sortable
 /// </summary>
-[ECMAScript]
 [String]
 public enum TGroupOptionsCheckPutOption1ResultOption3
 {
@@ -22111,7 +21806,6 @@ public readonly union TGroupOptionsPull(TPullResult, TGroupOptionsPullOption2)
 /// <param name="dragEl">对应上游 dragEl 字段或参数；数据形状见声明类型。</param>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
 /// <returns>回调结果，类型为 TPullResult。</returns>
-[ECMAScript]
 public delegate TPullResult TGroupOptionsPullOption2(TSortable to, TSortable @from, HTMLElement dragEl, TSortableEvent @event);
 
 /// <summary>
@@ -22130,13 +21824,11 @@ public readonly union TGroupOptionsPut(TPutResult, TGroupOptionsPutOption2)
 /// <param name="dragEl">对应上游 dragEl 字段或参数；数据形状见声明类型。</param>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
 /// <returns>回调结果，类型为 TPutResult。</returns>
-[ECMAScript]
 public delegate TPutResult TGroupOptionsPutOption2(TSortable to, TSortable @from, HTMLElement dragEl, TSortableEvent @event);
 
 /// <summary>
 /// 当前步骤发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TGuideChangeEventContext : VueProps
 {
     /// <summary>
@@ -22156,7 +21848,6 @@ public record TGuideChangeEventContext : VueProps
 /// <summary>
 /// TDesign 的 TGuideConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGuideConfig : VueProps
 {
     /// <summary>
@@ -22187,7 +21878,6 @@ public record TGuideConfig : VueProps
 /// <summary>
 /// TDesign 的 TGuideCounterSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGuideCounterSlotContext : VueProps
 {
     /// <summary>
@@ -22206,7 +21896,6 @@ public record TGuideCounterSlotContext : VueProps
 /// <summary>
 /// 点击完成按钮时触发
 /// </summary>
-[ECMAScript]
 public record TGuideFinishEventContext : VueProps
 {
     /// <summary>
@@ -22233,7 +21922,6 @@ public record TGuideFinishEventContext : VueProps
 /// 引导框的类型
 /// 默认值：popup
 /// </summary>
-[ECMAScript]
 [String]
 public enum TGuideModeValue
 {
@@ -22252,7 +21940,6 @@ public enum TGuideModeValue
 /// <summary>
 /// 点击下一步时触发
 /// </summary>
-[ECMAScript]
 public record TGuideNextStepClickEventContext : VueProps
 {
     /// <summary>
@@ -22284,7 +21971,6 @@ public record TGuideNextStepClickEventContext : VueProps
 /// <summary>
 /// 点击上一步时触发
 /// </summary>
-[ECMAScript]
 public record TGuidePrevStepClickEventContext : VueProps
 {
     /// <summary>
@@ -22316,7 +22002,6 @@ public record TGuidePrevStepClickEventContext : VueProps
 /// <summary>
 /// 点击跳过按钮时触发
 /// </summary>
-[ECMAScript]
 public record TGuideSkipEventContext : VueProps
 {
     /// <summary>
@@ -22342,7 +22027,6 @@ public record TGuideSkipEventContext : VueProps
 /// <summary>
 /// TDesign 的 TGuideStep 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGuideStep : VueProps
 {
     /// <summary>
@@ -22451,7 +22135,6 @@ public readonly union TGuideStepBody(string, RenderFragment)
 /// <summary>
 /// 引导框的类型
 /// </summary>
-[ECMAScript]
 [String]
 public enum TGuideStepMode
 {
@@ -22507,7 +22190,6 @@ public readonly union TGuideStepPlacement(TStepPopupPlacement, TStepDialogPlacem
 /// <summary>
 /// TDesign 的 TGutterObject 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TGutterObject : VueProps
 {
     /// <summary>
@@ -22550,7 +22232,6 @@ public record TGutterObject : VueProps
 /// <summary>
 /// TDesign 的 THTMLElementAttributes 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record THTMLElementAttributes : VueDictionary<string>
 {
 }
@@ -22559,7 +22240,6 @@ public record THTMLElementAttributes : VueDictionary<string>
 /// 二级菜单展开方式，平铺展开和浮层展开
 /// 默认值：normal
 /// </summary>
-[ECMAScript]
 [String]
 public enum THeadMenuExpandTypeValue
 {
@@ -22579,7 +22259,6 @@ public enum THeadMenuExpandTypeValue
 /// 组件的视觉主题。
 /// 默认值：light
 /// </summary>
-[ECMAScript]
 [String]
 public enum THeadMenuThemeValue
 {
@@ -22598,7 +22277,6 @@ public enum THeadMenuThemeValue
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TIconClickEventContext : VueProps
 {
     /// <summary>
@@ -22620,7 +22298,6 @@ public readonly union TIconUrlValue(string, string[])
 /// <summary>
 /// TDesign 的 TImageConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TImageConfig : VueProps
 {
     /// <summary>
@@ -22649,13 +22326,11 @@ public record TImageConfig : VueProps
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 string。</returns>
-[ECMAScript]
 public delegate string TImageConfigReplaceImageSrc(TdImageProps @params);
 
 /// <summary>
 /// 图片加载失败时触发
 /// </summary>
-[ECMAScript]
 public record TImageErrorEventContext : VueProps
 {
     /// <summary>
@@ -22670,7 +22345,6 @@ public record TImageErrorEventContext : VueProps
 /// 图片填充模式
 /// 默认值：fill
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageFitValue
 {
@@ -22704,7 +22378,6 @@ public enum TImageFitValue
 /// <summary>
 /// TDesign 的 TImageInfo 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TImageInfo : VueProps
 {
     /// <summary>
@@ -22751,7 +22424,6 @@ public readonly union TImageInfoThumbnail(string, FileRef)
 /// <summary>
 /// 图片加载完成时触发
 /// </summary>
-[ECMAScript]
 public record TImageLoadEventContext : VueProps
 {
     /// <summary>
@@ -22766,7 +22438,6 @@ public record TImageLoadEventContext : VueProps
 /// 浮层 `overlayContent` 出现的时机
 /// 默认值：always
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageOverlayTriggerValue
 {
@@ -22786,7 +22457,6 @@ public enum TImageOverlayTriggerValue
 /// `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
 /// 默认值：strict-origin-when-cross-origin
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageReferrerpolicyValue
 {
@@ -22835,7 +22505,6 @@ public enum TImageReferrerpolicyValue
 /// <summary>
 /// TDesign 的 TImageScale 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TImageScale : VueProps
 {
     /// <summary>
@@ -22867,7 +22536,6 @@ public record TImageScale : VueProps
 /// 图片圆角类型
 /// 默认值：square
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageShapeValue
 {
@@ -22899,7 +22567,6 @@ public readonly union TImageSrcValue(string, FileRef)
 /// <summary>
 /// TDesign 的 TImageSrcset 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TImageSrcset : VueProps
 {
     /// <summary>
@@ -22920,7 +22587,6 @@ public record TImageSrcset : VueProps
 /// <summary>
 /// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
 /// </summary>
-[ECMAScript]
 public record TImageViewerCloseEventContext : VueProps
 {
     /// <summary>
@@ -22947,7 +22613,6 @@ public readonly union TImageViewerCloseEventContextE(MouseEvent, KeyboardEvent)
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageViewerCloseEventContextTrigger
 {
@@ -22971,7 +22636,6 @@ public enum TImageViewerCloseEventContextTrigger
 /// <summary>
 /// TDesign 的 TImageViewerConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TImageViewerConfig : VueProps
 {
     /// <summary>
@@ -23021,7 +22685,6 @@ public readonly union TImageViewerDownloadEventUrl(string, FileRef)
 /// <summary>
 /// 图片预览中的 `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageViewerImageReferrerpolicyValue
 {
@@ -23079,7 +22742,6 @@ public readonly union TImageViewerImagesValueItem(string, FileRef, TImageInfo)
 /// <summary>
 /// 预览图片切换时触发，`context.prev` 切换到上一张图片，`context.next` 切换到下一张图片
 /// </summary>
-[ECMAScript]
 public record TImageViewerIndexChangeEventContext : VueProps
 {
     /// <summary>
@@ -23092,7 +22754,6 @@ public record TImageViewerIndexChangeEventContext : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageViewerIndexChangeEventContextTrigger
 {
@@ -23117,7 +22778,6 @@ public enum TImageViewerIndexChangeEventContextTrigger
 /// 模态预览（modal）和非模态预览（modeless)
 /// 默认值：modal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TImageViewerModeValue
 {
@@ -23136,7 +22796,6 @@ public enum TImageViewerModeValue
 /// <summary>
 /// TDesign 的 TImageViewerScale 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TImageViewerScale : VueProps
 {
     /// <summary>
@@ -23156,7 +22815,6 @@ public record TImageViewerScale : VueProps
 /// 文本内容位置，居左/居中/居右
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputAlignValue
 {
@@ -23180,7 +22838,6 @@ public enum TInputAlignValue
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TInputBlurEventContext<T> : VueProps
 {
     /// <summary>
@@ -23194,7 +22851,6 @@ public record TInputBlurEventContext<T> : VueProps
 /// <summary>
 /// 输入框值发生变化时触发。参数 `trigger=initial` 表示传入的数据不符合预期，组件自动处理后触发 change 告知父组件。如：初始值长度超过 `maxlength` 限制
 /// </summary>
-[ECMAScript]
 public record TInputChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -23221,7 +22877,6 @@ public readonly union TInputChangeEventContextE<T>(InputEvent, MouseEvent, Compo
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputChangeEventContextTrigger
 {
@@ -23245,7 +22900,6 @@ public enum TInputChangeEventContextTrigger
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TInputClearEventContext<T> : VueProps
 {
     /// <summary>
@@ -23259,7 +22913,6 @@ public record TInputClearEventContext<T> : VueProps
 /// <summary>
 /// 点击组件时触发
 /// </summary>
-[ECMAScript]
 public record TInputClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -23273,7 +22926,6 @@ public record TInputClickEventContext<T> : VueProps
 /// <summary>
 /// 中文输入结束时触发
 /// </summary>
-[ECMAScript]
 public record TInputCompositionendEventContext<T> : VueProps
 {
     /// <summary>
@@ -23287,7 +22939,6 @@ public record TInputCompositionendEventContext<T> : VueProps
 /// <summary>
 /// 中文输入开始时触发
 /// </summary>
-[ECMAScript]
 public record TInputCompositionstartEventContext<T> : VueProps
 {
     /// <summary>
@@ -23301,7 +22952,6 @@ public record TInputCompositionstartEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TInputConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TInputConfig : VueProps
 {
     /// <summary>
@@ -23322,7 +22972,6 @@ public record TInputConfig : VueProps
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TInputEnterEventContext<T> : VueProps
 {
     /// <summary>
@@ -23336,7 +22985,6 @@ public record TInputEnterEventContext<T> : VueProps
 /// <summary>
 /// 获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TInputFocusEventContext<T> : VueProps
 {
     /// <summary>
@@ -23352,13 +23000,11 @@ public record TInputFocusEventContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <returns>回调结果，类型为 string。</returns>
-[ECMAScript]
 public delegate string TInputFormatType(string @value);
 
 /// <summary>
 /// 键盘按下时触发
 /// </summary>
-[ECMAScript]
 public record TInputKeydownEventContext<T> : VueProps
 {
     /// <summary>
@@ -23372,7 +23018,6 @@ public record TInputKeydownEventContext<T> : VueProps
 /// <summary>
 /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
 /// </summary>
-[ECMAScript]
 public record TInputKeypressEventContext<T> : VueProps
 {
     /// <summary>
@@ -23386,7 +23031,6 @@ public record TInputKeypressEventContext<T> : VueProps
 /// <summary>
 /// 释放键盘时触发
 /// </summary>
-[ECMAScript]
 public record TInputKeyupEventContext<T> : VueProps
 {
     /// <summary>
@@ -23428,7 +23072,6 @@ public readonly union TInputMaxlengthValue<T>(string, Number)
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TInputMouseenterEventContext<T> : VueProps
 {
     /// <summary>
@@ -23442,7 +23085,6 @@ public record TInputMouseenterEventContext<T> : VueProps
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TInputMouseleaveEventContext<T> : VueProps
 {
     /// <summary>
@@ -23456,7 +23098,6 @@ public record TInputMouseleaveEventContext<T> : VueProps
 /// <summary>
 /// 文本内容位置，居左/居中/居右
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputNumberAlignValue
 {
@@ -23480,7 +23121,6 @@ public enum TInputNumberAlignValue
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TInputNumberBlurEventContext<T> : VueProps
 {
     /// <summary>
@@ -23522,7 +23162,6 @@ public readonly union TInputNumberDecimalPlaces(Number, TInputNumberDecimalPlace
 /// <summary>
 /// TDesign 的 TInputNumberDecimalPlaces 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TInputNumberDecimalPlacesOption2 : VueProps
 {
     /// <summary>
@@ -23541,7 +23180,6 @@ public record TInputNumberDecimalPlacesOption2 : VueProps
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TInputNumberEnterEventContext<T> : VueProps
 {
     /// <summary>
@@ -23555,7 +23193,6 @@ public record TInputNumberEnterEventContext<T> : VueProps
 /// <summary>
 /// 获取焦点时触发
 /// </summary>
-[ECMAScript]
 public record TInputNumberFocusEventContext<T> : VueProps
 {
     /// <summary>
@@ -23572,13 +23209,11 @@ public record TInputNumberFocusEventContext<T> : VueProps
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TInputNumberValue。</returns>
-[ECMAScript]
 public delegate TInputNumberValue TInputNumberFormatValue<T>(TInputNumberValue @value, TInputNumberFormatValueContext<T>? context = default);
 
 /// <summary>
 /// 格式化输入框展示值。第二个事件参数 `context.fixedNumber` 表示处理过小数位数 `decimalPlaces` 的数字
 /// </summary>
-[ECMAScript]
 public record TInputNumberFormatValueContext<T> : VueProps
 {
     /// <summary>
@@ -23591,7 +23226,6 @@ public record TInputNumberFormatValueContext<T> : VueProps
 /// <summary>
 /// 键盘按下时触发
 /// </summary>
-[ECMAScript]
 public record TInputNumberKeydownEventContext<T> : VueProps
 {
     /// <summary>
@@ -23605,7 +23239,6 @@ public record TInputNumberKeydownEventContext<T> : VueProps
 /// <summary>
 /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
 /// </summary>
-[ECMAScript]
 public record TInputNumberKeypressEventContext<T> : VueProps
 {
     /// <summary>
@@ -23619,7 +23252,6 @@ public record TInputNumberKeypressEventContext<T> : VueProps
 /// <summary>
 /// 释放键盘时触发
 /// </summary>
-[ECMAScript]
 public record TInputNumberKeyupEventContext<T> : VueProps
 {
     /// <summary>
@@ -23634,7 +23266,6 @@ public record TInputNumberKeyupEventContext<T> : VueProps
 /// 组件尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputNumberSizeValue
 {
@@ -23659,7 +23290,6 @@ public enum TInputNumberSizeValue
 /// 文本框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputNumberStatusValue
 {
@@ -23689,7 +23319,6 @@ public enum TInputNumberStatusValue
 /// 按钮布局
 /// 默认值：row
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputNumberThemeValue
 {
@@ -23713,7 +23342,6 @@ public enum TInputNumberThemeValue
 /// <summary>
 /// 最大值或最小值校验结束后触发，`exceed-maximum` 表示超出最大值，`below-minimum` 表示小于最小值
 /// </summary>
-[ECMAScript]
 public record TInputNumberValidateEventContext<T> : VueProps
 {
     /// <summary>
@@ -23726,7 +23354,6 @@ public record TInputNumberValidateEventContext<T> : VueProps
 /// <summary>
 /// 对应上游 error 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputNumberValidateEventContextError
 {
@@ -23773,7 +23400,6 @@ public readonly union TInputNumberValue(Number, string)
 /// <summary>
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
-[ECMAScript]
 public record TInputPasteEventContext<T> : VueProps
 {
     /// <summary>
@@ -23795,7 +23421,6 @@ public record TInputPasteEventContext<T> : VueProps
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputStatusValue
 {
@@ -23825,7 +23450,6 @@ public enum TInputStatusValue
 /// 输入框类型。`type=number` 仅支持最基础的数字输入功能，更多功能建议使用 `InputNumber` 组件
 /// 默认值：text
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputTypeValue
 {
@@ -23874,7 +23498,6 @@ public enum TInputTypeValue
 /// <summary>
 /// 字数超出限制时触发
 /// </summary>
-[ECMAScript]
 public record TInputValidateEventContext<T> : VueProps
 {
     /// <summary>
@@ -23887,7 +23510,6 @@ public record TInputValidateEventContext<T> : VueProps
 /// <summary>
 /// 对应上游 error 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputValidateEventContextError
 {
@@ -23934,7 +23556,6 @@ public readonly union TInputValue(string, Number)
 /// <summary>
 /// TDesign 的 TInputValueChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TInputValueChangeContext : VueProps
 {
     /// <summary>
@@ -23961,7 +23582,6 @@ public readonly union TInputValueChangeContextE(InputEvent, MouseEvent, Composit
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TInputValueChangeContextTrigger
 {
@@ -23990,7 +23610,6 @@ public enum TInputValueChangeContextTrigger
 /// <summary>
 /// 输入框中滚动鼠标时触发
 /// </summary>
-[ECMAScript]
 public record TInputWheelEventContext<T> : VueProps
 {
     /// <summary>
@@ -24004,7 +23623,6 @@ public record TInputWheelEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TIsDateOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TIsDateOptions : VueProps
 {
     /// <summary>
@@ -24031,7 +23649,6 @@ public record TIsDateOptions : VueProps
 /// <summary>
 /// TDesign 的 TIsEmailOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TIsEmailOptions : VueProps
 {
     /// <summary>
@@ -24146,7 +23763,6 @@ public readonly union TIsEmailOptionsHostWhitelistOption1Item(string, RegExp)
 /// <summary>
 /// TDesign 的 TIsURLOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TIsURLOptions : VueProps
 {
     /// <summary>
@@ -24294,7 +23910,6 @@ public readonly union TIsURLOptionsMaxAllowedLength(Number, bool)
 /// <summary>
 /// JSON 对象；通过字符串键访问 JSON 数据值。
 /// </summary>
-[ECMAScript]
 public sealed record TJsonObject : VueDictionary<TJsonValue>
 {
 }
@@ -24330,7 +23945,6 @@ public readonly union TJsonValue(bool, Number, string, TJsonValue[], TJsonObject
 /// <summary>
 /// TDesign 的 TJumperDisabledConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TJumperDisabledConfig : VueProps
 {
     /// <summary>
@@ -24355,7 +23969,6 @@ public record TJumperDisabledConfig : VueProps
 /// <summary>
 /// TDesign 的 TJumperTipsConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TJumperTipsConfig : VueProps
 {
     /// <summary>
@@ -24380,7 +23993,6 @@ public record TJumperTipsConfig : VueProps
 /// <summary>
 /// TDesign 的 TJumperTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TJumperTrigger
 {
@@ -24404,7 +24016,6 @@ public enum TJumperTrigger
 /// <summary>
 /// TDesign 的 TKeysType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TKeysType : VueProps
 {
     /// <summary>
@@ -24429,7 +24040,6 @@ public record TKeysType : VueProps
 /// <summary>
 /// 【开发中】布局方向
 /// </summary>
-[ECMAScript]
 [String]
 public enum TLayoutDirectionValue
 {
@@ -24457,7 +24067,6 @@ public readonly union TLinkDownloadValue(string, bool)
 /// 链接悬浮态样式，有 文本颜色变化、添加下划线等 2 种方法
 /// 默认值：underline
 /// </summary>
-[ECMAScript]
 [String]
 public enum TLinkHoverValue
 {
@@ -24477,7 +24086,6 @@ public enum TLinkHoverValue
 /// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TLinkThemeValue
 {
@@ -24511,7 +24119,6 @@ public enum TLinkThemeValue
 /// <summary>
 /// TDesign 的 TListConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TListConfig : VueProps
 {
     /// <summary>
@@ -24533,7 +24140,6 @@ public record TListConfig : VueProps
 /// 排列方式（待设计稿输出）
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TListLayoutValue
 {
@@ -24552,7 +24158,6 @@ public enum TListLayoutValue
 /// <summary>
 /// 点击加载更多时触发
 /// </summary>
-[ECMAScript]
 public record TListLoadMoreEventOptions : VueProps
 {
     /// <summary>
@@ -24566,7 +24171,6 @@ public record TListLoadMoreEventOptions : VueProps
 /// <summary>
 /// 列表滚动时触发，scrollTop 表示顶部滚动距离，scrollBottom 表示底部滚动距离
 /// </summary>
-[ECMAScript]
 public record TListScrollEventOptions : VueProps
 {
     /// <summary>
@@ -24664,7 +24268,6 @@ public readonly struct TListScrollEventOptionsE : IUnion
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TListSizeValue
 {
@@ -24688,7 +24291,6 @@ public enum TListSizeValue
 /// <summary>
 /// TDesign 的 TLoadingConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TLoadingConfig : VueProps
 {
     /// <summary>
@@ -24783,7 +24385,6 @@ public record TLoadingConfig : VueProps
 /// 二级菜单展开方式，平铺展开和浮层展开
 /// 默认值：normal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMenuExpandTypeValue
 {
@@ -24802,7 +24403,6 @@ public enum TMenuExpandTypeValue
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TMenuItemClickEventContext : VueProps
 {
     /// <summary>
@@ -24822,7 +24422,6 @@ public record TMenuItemClickEventContext : VueProps
 /// <summary>
 /// 链接或路由跳转方式
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMenuItemTargetValue
 {
@@ -24859,7 +24458,6 @@ public readonly union TMenuItemToValue(string, TMenuRoute)
 /// <summary>
 /// TDesign 的 TMenuQueryData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TMenuQueryData : VueDictionary<TMenuQueryDataIndex>
 {
 }
@@ -24875,7 +24473,6 @@ public readonly union TMenuQueryDataIndex(string, string[])
 /// <summary>
 /// TDesign 的 TMenuRoute 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TMenuRoute : VueProps
 {
     /// <summary>
@@ -24913,7 +24510,6 @@ public record TMenuRoute : VueProps
 /// 菜单风格
 /// 默认值：light
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMenuThemeValue
 {
@@ -25018,7 +24614,6 @@ public readonly union TMenuWidthValueOption3Item(string, Number)
 /// <summary>
 /// 当关闭按钮存在时，用户点击关闭按钮触发
 /// </summary>
-[ECMAScript]
 public record TMessageCloseBtnClickEventContext : VueProps
 {
     /// <summary>
@@ -25040,7 +24635,6 @@ public readonly union TMessageCloseBtnValue(string, bool)
 /// <summary>
 /// 关闭消息时触发
 /// </summary>
-[ECMAScript]
 public record TMessageCloseEventContext : VueProps
 {
     /// <summary>
@@ -25059,7 +24653,6 @@ public record TMessageCloseEventContext : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMessageCloseEventContextTrigger
 {
@@ -25078,7 +24671,6 @@ public enum TMessageCloseEventContextTrigger
 /// <summary>
 /// TDesign 的 TMessageConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TMessageConfig : VueProps
 {
     /// <summary>
@@ -25230,20 +24822,17 @@ public readonly union TMessageConfigOffsetItem(string, Number)
 /// 关闭消息时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TMessageConfigOnClose(TMessageConfigOnCloseContext context);
 
 /// <summary>
 /// 当关闭按钮存在时，用户点击关闭按钮触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TMessageConfigOnCloseBtnClick(TMessageConfigOnCloseBtnClickContext context);
 
 /// <summary>
 /// 当关闭按钮存在时，用户点击关闭按钮触发
 /// </summary>
-[ECMAScript]
 public record TMessageConfigOnCloseBtnClickContext : VueProps
 {
     /// <summary>
@@ -25257,7 +24846,6 @@ public record TMessageConfigOnCloseBtnClickContext : VueProps
 /// <summary>
 /// 关闭消息时触发
 /// </summary>
-[ECMAScript]
 public record TMessageConfigOnCloseContext : VueProps
 {
     /// <summary>
@@ -25276,7 +24864,6 @@ public record TMessageConfigOnCloseContext : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMessageConfigOnCloseContextTrigger
 {
@@ -25295,13 +24882,11 @@ public enum TMessageConfigOnCloseContextTrigger
 /// <summary>
 /// 计时结束后触发
 /// </summary>
-[ECMAScript]
 public delegate void TMessageConfigOnDurationEnd();
 
 /// <summary>
 /// TDesign 的 TMessagePlacementList 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMessagePlacementList
 {
@@ -25355,7 +24940,6 @@ public enum TMessagePlacementList
 /// <summary>
 /// TDesign 的 TMessageThemeList 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TMessageThemeList
 {
@@ -25394,7 +24978,6 @@ public enum TMessageThemeList
 /// <summary>
 /// TDesign 的 TMoveEvent 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TMoveEvent : VueProps
 {
     /// <summary>
@@ -25449,7 +25032,6 @@ public record TMoveEvent : VueProps
 /// <summary>
 /// 点击关闭按钮时触发
 /// </summary>
-[ECMAScript]
 public record TNotificationCloseBtnClickEventContext : VueProps
 {
     /// <summary>
@@ -25471,7 +25053,6 @@ public readonly union TNotificationCloseBtnValue(string, bool)
 /// <summary>
 /// TDesign 的 TNotificationThemeList 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TNotificationThemeList
 {
@@ -25500,7 +25081,6 @@ public enum TNotificationThemeList
 /// <summary>
 /// TDesign 的 TOptionData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TOptionData : VueProps
 {
     /// <summary>
@@ -25575,7 +25155,6 @@ public readonly union TOptionValueValue(string, Number, bool, BigInt)
 /// <summary>
 /// TDesign 的 TPageInfo 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPageInfo : VueProps
 {
     /// <summary>
@@ -25600,7 +25179,6 @@ public record TPageInfo : VueProps
 /// <summary>
 /// TDesign 的 TPaginationConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPaginationConfig : VueProps
 {
     /// <summary>
@@ -25635,7 +25213,6 @@ public record TPaginationConfig : VueProps
 /// <summary>
 /// 按钮点击事件回调
 /// </summary>
-[ECMAScript]
 public record TPaginationMiniChangeEventContext : VueProps
 {
     /// <summary>
@@ -25664,7 +25241,6 @@ public readonly union TPaginationMiniDisabledValue(bool, TJumperDisabledConfig)
 /// 按钮方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPaginationMiniLayoutValue
 {
@@ -25692,7 +25268,6 @@ public readonly union TPaginationMiniTipsValue(bool, TJumperTipsConfig)
 /// 按钮形式
 /// 默认值：text
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPaginationMiniVariantValue
 {
@@ -25712,7 +25287,6 @@ public enum TPaginationMiniVariantValue
 /// 页码数量超出时，前后省略模式, `mid`表示中间省略, `both-ends` 表示两端省略
 /// 默认值：mid
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPaginationPageEllipsisModeValue
 {
@@ -25761,7 +25335,6 @@ public readonly union TPaginationPageSizeOptionsValueItem(Number, TPaginationPag
 /// 分页大小控制器，值为 [] 则不显示
 /// 默认值：[5, 10, 20, 50]
 /// </summary>
-[ECMAScript]
 public record TPaginationPageSizeOptionsValueItemOption2 : VueProps
 {
     /// <summary>
@@ -25782,7 +25355,6 @@ public record TPaginationPageSizeOptionsValueItemOption2 : VueProps
 /// 分页组件尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPaginationSizeValue
 {
@@ -25802,7 +25374,6 @@ public enum TPaginationSizeValue
 /// 分页组件风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPaginationThemeValue
 {
@@ -25830,7 +25401,6 @@ public readonly union TParagraphEllipsisValue(bool, TTypographyEllipsis)
 /// <summary>
 /// TDesign 的 TPickContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPickContext : VueProps
 {
     /// <summary>
@@ -25859,7 +25429,6 @@ public readonly union TPopconfirmCancelBtnValue(string, TdButtonProps)
 /// <summary>
 /// 点击取消按钮时触发
 /// </summary>
-[ECMAScript]
 public record TPopconfirmCancelEventOptions : VueProps
 {
     /// <summary>
@@ -25873,7 +25442,6 @@ public record TPopconfirmCancelEventOptions : VueProps
 /// <summary>
 /// TDesign 的 TPopconfirmConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPopconfirmConfig : VueProps
 {
     /// <summary>
@@ -25914,7 +25482,6 @@ public readonly union TPopconfirmConfigConfirm(string, TdButtonProps)
 /// <summary>
 /// 确认按钮主题色，即 Popconfirm 的 `theme` 和 确认按钮的 `theme` 映射关系。示例：{ danger: 'danger' }
 /// </summary>
-[ECMAScript]
 public record TPopconfirmConfigConfirmBtnTheme : VueProps
 {
     /// <summary>
@@ -25951,7 +25518,6 @@ public readonly union TPopconfirmConfirmBtnValue(string, TdButtonProps)
 /// <summary>
 /// 点击确认按钮时触发
 /// </summary>
-[ECMAScript]
 public record TPopconfirmConfirmEventOptions : VueProps
 {
     /// <summary>
@@ -25966,7 +25532,6 @@ public record TPopconfirmConfirmEventOptions : VueProps
 /// 浮层出现位置
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPopconfirmPlacementValue
 {
@@ -26036,7 +25601,6 @@ public enum TPopconfirmPlacementValue
 /// 文字提示风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPopconfirmThemeValue
 {
@@ -26060,7 +25624,6 @@ public enum TPopconfirmThemeValue
 /// <summary>
 /// TDesign 的 TPopconfirmVisibleChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPopconfirmVisibleChangeContext : VueProps
 {
     /// <summary>
@@ -26107,7 +25670,6 @@ public readonly union TPopupDelayValue(Number, Number[])
 /// <summary>
 /// 内容面板点击时触发
 /// </summary>
-[ECMAScript]
 public record TPopupOverlayClickEventContext : VueProps
 {
     /// <summary>
@@ -26132,7 +25694,6 @@ public readonly union TPopupOverlayInnerStyleValue(TStyles, TPopupOverlayInnerSt
 /// <param name="triggerElement">对应上游 triggerElement 字段或参数；数据形状见声明类型。</param>
 /// <param name="popupElement">对应上游 popupElement 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TStyles。</returns>
-[ECMAScript]
 public delegate TStyles TPopupOverlayInnerStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 /// <summary>
@@ -26149,13 +25710,11 @@ public readonly union TPopupOverlayStyleValue(TStyles, TPopupOverlayStyleValueOp
 /// <param name="triggerElement">对应上游 triggerElement 字段或参数；数据形状见声明类型。</param>
 /// <param name="popupElement">对应上游 popupElement 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TStyles。</returns>
-[ECMAScript]
 public delegate TStyles TPopupOverlayStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 /// <summary>
 /// 浮层相对触发元素的位置；复合值的第一段表示方向，第二段表示边缘对齐方式。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPopupPlacement
 {
@@ -26224,7 +25783,6 @@ public enum TPopupPlacement
 /// <summary>
 /// 下拉选项滚动事件
 /// </summary>
-[ECMAScript]
 public record TPopupScrollEventContext : VueProps
 {
     /// <summary>
@@ -26238,7 +25796,6 @@ public record TPopupScrollEventContext : VueProps
 /// <summary>
 /// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
 /// </summary>
-[ECMAScript]
 public record TPopupScrollToBottomEventContext : VueProps
 {
     /// <summary>
@@ -26260,7 +25817,6 @@ public readonly union TPopupTriggerEvent(MouseEvent, FocusEvent, KeyboardEvent)
 /// <summary>
 /// 浮层显隐变化的触发来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPopupTriggerSource
 {
@@ -26315,7 +25871,6 @@ public enum TPopupTriggerSource
 /// 触发浮层出现的方式
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPopupTriggerValue
 {
@@ -26349,7 +25904,6 @@ public enum TPopupTriggerValue
 /// <summary>
 /// TDesign 的 TPopupVisibleChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPopupVisibleChangeContext : VueProps
 {
     /// <summary>
@@ -26368,7 +25922,6 @@ public record TPopupVisibleChangeContext : VueProps
 /// <summary>
 /// TDesign 的 TPresetDate 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPresetDate : VueDictionary<TPresetDateIndex>
 {
 }
@@ -26385,13 +25938,11 @@ public readonly union TPresetDateIndex(TDateValue, TPresetDateIndexOption2)
 /// TDesign 的 TPresetDate 类型；用于对应上游类型的数据传递。
 /// </summary>
 /// <returns>回调结果，类型为 TDateValue。</returns>
-[ECMAScript]
 public delegate TDateValue TPresetDateIndexOption2();
 
 /// <summary>
 /// TDesign 的 TPresetRange 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPresetRange : VueDictionary<TPresetRangeIndex>
 {
 }
@@ -26407,7 +25958,6 @@ public readonly union TPresetRangeIndex((TDateValue Item1, TDateValue Item2), TP
 /// <summary>
 /// TDesign 的 TPresetTime 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPresetTime : VueDictionary<TPresetTimeIndex>
 {
 }
@@ -26424,13 +25974,11 @@ public readonly union TPresetTimeIndex(string, TPresetTimeIndexOption2)
 /// TDesign 的 TPresetTime 类型；用于对应上游类型的数据传递。
 /// </summary>
 /// <returns>回调结果，类型为 string。</returns>
-[ECMAScript]
 public delegate string TPresetTimeIndexOption2();
 
 /// <summary>
 /// TDesign 的 TPresetTimeRange 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPresetTimeRange : VueDictionary<TPresetTimeRangeIndex>
 {
 }
@@ -26447,7 +25995,6 @@ public readonly union TPresetTimeRangeIndex(string[], TPresetTimeRangeIndexOptio
 /// TDesign 的 TPresetTimeRange 类型；用于对应上游类型的数据传递。
 /// </summary>
 /// <returns>回调结果，类型为 string[]。</returns>
-[ECMAScript]
 public delegate string[] TPresetTimeRangeIndexOption2();
 
 /// <summary>
@@ -26511,7 +26058,6 @@ public readonly union TPrimaryTableActiveRowKeysValueItem<T>(string, Number)
 /// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
 /// 默认值：''
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableActiveRowTypeValue
 {
@@ -26530,7 +26076,6 @@ public enum TPrimaryTableActiveRowTypeValue
 /// <summary>
 /// 异步加载区域被点击时触发
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableAsyncLoadingClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -26543,7 +26088,6 @@ public record TPrimaryTableAsyncLoadingClickEventContext<T> : VueProps
 /// <summary>
 /// 当前状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableAsyncLoadingClickEventContextStatus
 {
@@ -26562,7 +26106,6 @@ public enum TPrimaryTableAsyncLoadingClickEventContextStatus
 /// <summary>
 /// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableAsyncLoadingValue
 {
@@ -26581,7 +26124,6 @@ public enum TPrimaryTableAsyncLoadingValue
 /// <summary>
 /// TDesign 的 TPrimaryTableCellEventContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableCellEventContext<T> : VueProps
 {
     /// <summary>
@@ -26620,7 +26162,6 @@ public record TPrimaryTableCellEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TPrimaryTableCellParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableCellParams<T> : VueProps
 {
     /// <summary>
@@ -26652,7 +26193,6 @@ public record TPrimaryTableCellParams<T> : VueProps
 /// <summary>
 /// TDesign 的 TPrimaryTableCol 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableCol<T> : VueProps
 {
     /// <summary>
@@ -26832,7 +26372,6 @@ public record TPrimaryTableCol<T> : VueProps
 /// <summary>
 /// TDesign 的 TPrimaryTableCol 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public sealed record TPrimaryTableColBase1<T> : VueProps
 {
     /// <summary>
@@ -26953,13 +26492,11 @@ public readonly union TPrimaryTableColCell<T>(string, RenderFragment<TPrimaryTab
 /// </summary>
 /// <param name="options">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TPrimaryTableColDisabled<T>(TPrimaryTableColDisabledOptions<T> options);
 
 /// <summary>
 /// 是否禁用行选中，`colKey` 值为 `row-select` 时，配置有效
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableColDisabledOptions<T> : VueProps
 {
     /// <summary>
@@ -26995,7 +26532,6 @@ public readonly union TPrimaryTableColTitle<T>(string, RenderFragment<TPrimaryTa
 /// <summary>
 /// 自定义表头渲染。值类型为 Function 表示以函数形式渲染表头。值类型为 string 表示使用插槽渲染，插槽名称为 title 的值。优先级高于 render
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableColTitleOption2Context<T> : VueProps
 {
     /// <summary>
@@ -27016,7 +26552,6 @@ public record TPrimaryTableColTitleOption2Context<T> : VueProps
 /// `colKey` 值为 `row-select` 时表示行选中列，有两种模式：单选和多选。 `type=single` 表示单选，`type=multiple` 表示多选
 /// 默认值：single
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableColType
 {
@@ -27035,7 +26570,6 @@ public enum TPrimaryTableColType
 /// <summary>
 /// TDesign 的 TPrimaryTableColumnChange 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableColumnChange<T> : VueProps
 {
     /// <summary>
@@ -27066,7 +26600,6 @@ public record TPrimaryTableColumnChange<T> : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableColumnChangeType
 {
@@ -27085,7 +26618,6 @@ public enum TPrimaryTableColumnChangeType
 /// <summary>
 /// 列配置弹窗显示或隐藏变化时触发
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -27098,7 +26630,6 @@ public record TPrimaryTableColumnControllerVisibleChangeEventContext<T> : VuePro
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableColumnControllerVisibleChangeEventContextTrigger
 {
@@ -27122,7 +26653,6 @@ public enum TPrimaryTableColumnControllerVisibleChangeEventContextTrigger
 /// <summary>
 /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableColumnResizeChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -27136,7 +26666,6 @@ public record TPrimaryTableColumnResizeChangeEventContext<T> : VueProps
 /// <summary>
 /// 对应上游 columnsWidth 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionary<Number>
 {
 }
@@ -27144,7 +26673,6 @@ public record TPrimaryTableColumnResizeChangeEventContextColumnsWidth<T> : VueDi
 /// <summary>
 /// 拖拽排序方式，值为 `row` 表示行拖拽排序，这种方式无法进行文本复制，慎用。值为`row-handler` 表示通过拖拽手柄进行行拖拽排序。值为 `col` 表示列顺序拖拽。值为 `row-handler-col` 表示同时支持行拖拽和列拖拽。⚠️`drag-col` 已废弃，请勿使用。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableDragSortValue
 {
@@ -27263,7 +26791,6 @@ public readonly union TPrimaryTableExpandedRowKeysValueItem<T>(string, Number)
 /// <summary>
 /// TDesign 的 TPrimaryTableFilterIconSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableFilterIconSlotContext<T> : VueProps
 {
     /// <summary>
@@ -27393,7 +26920,6 @@ public readonly union TPrimaryTableMaxHeightValue<T>(string, Number)
 /// <summary>
 /// TDesign 的 TPrimaryTableOnEditedContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableOnEditedContext<T> : VueProps
 {
     /// <summary>
@@ -27446,7 +26972,6 @@ public readonly union TPrimaryTablePaginationAffixedBottomValue<T>(bool, TdAffix
 /// <summary>
 /// TDesign 的 TPrimaryTableRenderParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableRenderParams<T> : VueProps
 {
     /// <summary>
@@ -27494,13 +27019,11 @@ public readonly union TPrimaryTableRowClassNameValue<T>(TClassName, TPrimaryTabl
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TClassName。</returns>
-[ECMAScript]
 public delegate TClassName TPrimaryTableRowClassNameValueOption2<T>(TRowClassNameParams<T> @params);
 
 /// <summary>
 /// TDesign 的 TPrimaryTableRowEditContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableRowEditContext<T> : VueProps
 {
     /// <summary>
@@ -27544,7 +27067,6 @@ public record TPrimaryTableRowEditContext<T> : VueProps
 /// <summary>
 /// 行选中类型，单选或多选。效果和 `columns` 中配置的 `{ colKey: 'row-select', type: 'single' }` 一样
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableRowSelectionTypeValue
 {
@@ -27563,7 +27085,6 @@ public enum TPrimaryTableRowSelectionTypeValue
 /// <summary>
 /// TDesign 的 TPrimaryTableRowValidateContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableRowValidateContext<T> : VueProps
 {
     /// <summary>
@@ -27583,7 +27104,6 @@ public record TPrimaryTableRowValidateContext<T> : VueProps
 /// <summary>
 /// 表格内容滚动时触发
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableScrollEventParams<T> : VueProps
 {
     /// <summary>
@@ -27598,7 +27118,6 @@ public record TPrimaryTableScrollEventParams<T> : VueProps
 /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableScrollXEventParams<T> : VueProps
 {
     /// <summary>
@@ -27613,7 +27132,6 @@ public record TPrimaryTableScrollXEventParams<T> : VueProps
 /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableScrollYEventParams<T> : VueProps
 {
     /// <summary>
@@ -27685,7 +27203,6 @@ public readonly union TPrimaryTableSelectedRowKeysValueItem<T>(string, Number)
 /// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
 /// 默认值：fixed
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableTableLayoutValue
 {
@@ -27704,7 +27221,6 @@ public enum TPrimaryTableTableLayoutValue
 /// <summary>
 /// TDesign 的 TPrimaryTableValidateContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TPrimaryTableValidateContext : VueProps
 {
     /// <summary>
@@ -27719,7 +27235,6 @@ public record TPrimaryTableValidateContext : VueProps
 /// 行内容上下方向对齐
 /// 默认值：middle
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPrimaryTableVerticalAlignValue
 {
@@ -27752,7 +27267,6 @@ public readonly union TProgressColorValue(string, string[], VueDictionary<string
 /// <summary>
 /// TDesign 的 TProgressContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TProgressContext : VueProps
 {
     /// <summary>
@@ -27833,7 +27347,6 @@ public readonly union TProgressSizeValue(string, Number)
 /// <summary>
 /// 进度条的状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TProgressStatus
 {
@@ -27890,7 +27403,6 @@ public readonly union TProgressStrokeWidthValue(string, Number)
 /// <summary>
 /// 进度条的展示形式。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TProgressTheme
 {
@@ -27922,7 +27434,6 @@ public readonly union TPullResult(string[], bool, TPullResultOption3)
 /// <summary>
 /// TDesign 的 TPullResult 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TPullResultOption3
 {
@@ -27944,7 +27455,6 @@ public readonly union TPutResult(string[], bool)
 /// <summary>
 /// TDesign 的 TQRCodeConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TQRCodeConfig : VueProps
 {
     /// <summary>
@@ -28002,7 +27512,6 @@ public readonly union TQRCodeIconSizeValue(Number, TQRCodeIconSizeValueOption2)
 /// 二维码中图片的大小
 /// 默认值：40
 /// </summary>
-[ECMAScript]
 public record TQRCodeIconSizeValueOption2 : VueProps
 {
     /// <summary>
@@ -28022,7 +27531,6 @@ public record TQRCodeIconSizeValueOption2 : VueProps
 /// 二维码纠错等级
 /// 默认值：M
 /// </summary>
-[ECMAScript]
 [String]
 public enum TQRCodeLevelValue
 {
@@ -28052,7 +27560,6 @@ public enum TQRCodeLevelValue
 /// 渲染类型
 /// 默认值：canvas
 /// </summary>
-[ECMAScript]
 [String]
 public enum TQRCodeTypeValue
 {
@@ -28071,7 +27578,6 @@ public enum TQRCodeTypeValue
 /// <summary>
 /// 二维码的有效、过期、加载或已扫描状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TQRStatus
 {
@@ -28100,7 +27606,6 @@ public enum TQRStatus
 /// <summary>
 /// 选中状态变化时触发
 /// </summary>
-[ECMAScript]
 public record TRadioButtonChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -28114,7 +27619,6 @@ public record TRadioButtonChangeEventContext<T> : VueProps
 /// <summary>
 /// 点击时触发，一般用于外层阻止冒泡场景
 /// </summary>
-[ECMAScript]
 public record TRadioButtonClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -28128,7 +27632,6 @@ public record TRadioButtonClickEventContext<T> : VueProps
 /// <summary>
 /// 选中状态变化时触发
 /// </summary>
-[ECMAScript]
 public record TRadioChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -28142,7 +27645,6 @@ public record TRadioChangeEventContext<T> : VueProps
 /// <summary>
 /// 点击时触发，一般用于外层阻止冒泡场景
 /// </summary>
-[ECMAScript]
 public record TRadioClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -28156,7 +27658,6 @@ public record TRadioClickEventContext<T> : VueProps
 /// <summary>
 /// 选中值发生变化时触发, `context.name` 指 RadioGroup 的 name 属性
 /// </summary>
-[ECMAScript]
 public record TRadioGroupChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -28177,7 +27678,6 @@ public record TRadioGroupChangeEventContext<T> : VueProps
 /// 用于在使用 options 方式渲染时决定组件的风格
 /// 默认值：radio
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRadioGroupThemeValue
 {
@@ -28197,7 +27697,6 @@ public enum TRadioGroupThemeValue
 /// 单选组件按钮形式
 /// 默认值：outline
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRadioGroupVariantValue
 {
@@ -28249,7 +27748,6 @@ public readonly union TRadioOption(string, Number, TRadioOptionObj)
 /// <summary>
 /// TDesign 的 TRadioOptionObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRadioOptionObj : VueProps
 {
     /// <summary>
@@ -28338,7 +27836,6 @@ public readonly union TRadioValue(string, Number, bool)
 /// <summary>
 /// 范围输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputBlurEventContext : VueProps
 {
     /// <summary>
@@ -28357,7 +27854,6 @@ public record TRangeInputBlurEventContext : VueProps
 /// <summary>
 /// 范围输入框值发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputChangeEventContext : VueProps
 {
     /// <summary>
@@ -28390,7 +27886,6 @@ public readonly union TRangeInputChangeEventContextE(InputEvent, MouseEvent, Com
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRangeInputChangeEventContextTrigger
 {
@@ -28414,7 +27909,6 @@ public enum TRangeInputChangeEventContextTrigger
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputClearEventContext : VueProps
 {
     /// <summary>
@@ -28428,7 +27922,6 @@ public record TRangeInputClearEventContext : VueProps
 /// <summary>
 /// 范围输入框点击时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputClickEventContext : VueProps
 {
     /// <summary>
@@ -28455,7 +27948,6 @@ public readonly union TRangeInputDisabledValue(bool, bool[])
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputEnterEventContext : VueProps
 {
     /// <summary>
@@ -28482,7 +27974,6 @@ public readonly union TRangeInputEnterEventContextE(InputEvent, MouseEvent)
 /// <summary>
 /// 范围输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputFocusEventContext : VueProps
 {
     /// <summary>
@@ -28517,7 +28008,6 @@ public readonly union TRangeInputInputPropsValue(TdInputProps<TInputValue>, TdIn
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputMouseenterEventContext : VueProps
 {
     /// <summary>
@@ -28531,7 +28021,6 @@ public record TRangeInputMouseenterEventContext : VueProps
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TRangeInputMouseleaveEventContext : VueProps
 {
     /// <summary>
@@ -28562,7 +28051,6 @@ public readonly union TRangeInputPopupDisabledValue(bool, bool[])
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRangeInputPopupStatusValue
 {
@@ -28591,7 +28079,6 @@ public enum TRangeInputPopupStatusValue
 /// <summary>
 /// 范围输入框中触发操作的位置。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRangeInputPosition
 {
@@ -28616,7 +28103,6 @@ public enum TRangeInputPosition
 /// 输入框尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRangeInputSizeValue
 {
@@ -28641,7 +28127,6 @@ public enum TRangeInputSizeValue
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRangeInputStatusValue
 {
@@ -28670,7 +28155,6 @@ public enum TRangeInputStatusValue
 /// <summary>
 /// TDesign 的 TRangeInputValueChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRangeInputValueChangeContext : VueProps
 {
     /// <summary>
@@ -28703,7 +28187,6 @@ public readonly union TRangeInputValueChangeContextE(InputEvent, MouseEvent)
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRangeInputValueChangeContextTrigger
 {
@@ -28731,7 +28214,6 @@ public readonly union TRateColorValue(string, string[])
 /// <summary>
 /// TDesign 的 TRateConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRateConfig : VueProps
 {
     /// <summary>
@@ -28744,7 +28226,6 @@ public record TRateConfig : VueProps
 /// <summary>
 /// TDesign 的 TRemoveContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRemoveContext<T> : VueProps
 {
     /// <summary>
@@ -28764,7 +28245,6 @@ public record TRemoveContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TRemoveOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRemoveOptions<T> : VueProps
 {
     /// <summary>
@@ -28817,7 +28297,6 @@ public readonly union TRemoveOptionsValue<T>(string, Number, TJsonObject)
 /// <summary>
 /// TDesign 的 TRenderType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRenderType
 {
@@ -28836,7 +28315,6 @@ public enum TRenderType
 /// <summary>
 /// TDesign 的 TRequestMethodResponse 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRequestMethodResponse : VueProps
 {
     /// <summary>
@@ -28862,7 +28340,6 @@ public record TRequestMethodResponse : VueProps
 /// <summary>
 /// 对应上游 response 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TRequestMethodResponseResponse : VueProps
 {
     /// <summary>
@@ -28881,7 +28358,6 @@ public record TRequestMethodResponseResponse : VueProps
 /// <summary>
 /// 当前状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRequestMethodResponseStatus
 {
@@ -28900,7 +28376,6 @@ public enum TRequestMethodResponseStatus
 /// <summary>
 /// TDesign 的 TResponseType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TResponseType : VueProps
 {
     /// <summary>
@@ -28931,7 +28406,6 @@ public record TResponseType : VueProps
 /// <summary>
 /// 当前状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TResponseTypeStatus
 {
@@ -28950,7 +28424,6 @@ public enum TResponseTypeStatus
 /// <summary>
 /// TDesign 的 TRoute 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRoute : VueProps
 {
     /// <summary>
@@ -28987,7 +28460,6 @@ public record TRoute : VueProps
 /// <summary>
 /// TDesign 的 TRouteData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRouteData : VueDictionary<TRouteDataIndex>
 {
 }
@@ -29004,7 +28476,6 @@ public readonly union TRouteDataIndex(string, string[])
 /// 纵向对齐方式，CSS 属性 `align-items` 值。其中 `top` 和 `start` 等效；`middle` 和 `center` 等效；`bottom` 和 `end` 等效
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRowAlignValue
 {
@@ -29053,7 +28524,6 @@ public enum TRowAlignValue
 /// <summary>
 /// TDesign 的 TRowClassNameParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRowClassNameParams<T> : VueProps
 {
     /// <summary>
@@ -29084,7 +28554,6 @@ public record TRowClassNameParams<T> : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRowClassNameParamsType
 {
@@ -29103,7 +28572,6 @@ public enum TRowClassNameParamsType
 /// <summary>
 /// TDesign 的 TRowEventContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRowEventContext<T> : VueProps
 {
     /// <summary>
@@ -29195,7 +28663,6 @@ public readonly union TRowGutterValueOption3Item(TGutterObject, Number)
 /// flex 布局下的水平排列方式
 /// 默认值：start
 /// </summary>
-[ECMAScript]
 [String]
 public enum TRowJustifyValue
 {
@@ -29229,7 +28696,6 @@ public enum TRowJustifyValue
 /// <summary>
 /// TDesign 的 TRowspanColspan 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TRowspanColspan : VueProps
 {
     /// <summary>
@@ -29248,7 +28714,6 @@ public record TRowspanColspan : VueProps
 /// <summary>
 /// 懒加载或虚拟滚动配置，包括行高、预渲染缓冲和启用阈值。
 /// </summary>
-[ECMAScript]
 public record TScroll : VueProps
 {
     /// <summary>
@@ -29307,7 +28772,6 @@ public readonly union TScrollContainerElement(WindowRef, HTMLElement)
 /// 滚动容器；支持 CSS 选择器或返回滚动容器的回调。
 /// </summary>
 /// <returns>回调结果，类型为 TScrollContainerElement。</returns>
-[ECMAScript]
 public delegate TScrollContainerElement TScrollContainerOption1();
 
 /// <summary>
@@ -29315,7 +28779,6 @@ public delegate TScrollContainerElement TScrollContainerOption1();
 /// 值为 `lazy` ，表示滚动时会进行懒加载，非可视区域内的内容将不会默认渲染，直到该内容可见时，才会进行渲染，并且已渲染的内容滚动到不可见时，不会被销毁；
 /// 值为`virtual`时，表示会进行虚拟滚动，无论滚动条滚动到哪个位置，同一时刻，仅渲染该可视区域内的内容，当需要展示的数据量较大时，建议开启该特性
 /// </summary>
-[ECMAScript]
 [String]
 public enum TScrollType
 {
@@ -29334,7 +28797,6 @@ public enum TScrollType
 /// <summary>
 /// TDesign 的 TSearchContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSearchContext : VueProps
 {
     /// <summary>
@@ -29374,7 +28836,6 @@ public readonly union TSearchContextE(InputEvent, KeyboardEvent)
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSearchContextTrigger
 {
@@ -29401,7 +28862,6 @@ public readonly union TSearchOption(bool, TdInputProps<TInputValue>)
 /// <summary>
 /// 输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TSelectBlurEventContext<T> : VueProps
 {
     /// <summary>
@@ -29428,7 +28888,6 @@ public readonly union TSelectBlurEventContextE<T>(FocusEvent, KeyboardEvent)
 /// <summary>
 /// 选中值变化时触发。`context.trigger` 表示触发变化的来源；`context.selectedOptions` 表示选中值的完整对象，数组长度一定和 `value` 相同；`context.option` 表示当前操作的选项，不一定存在
 /// </summary>
-[ECMAScript]
 public record TSelectChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -29468,7 +28927,6 @@ public readonly union TSelectChangeEventContextE<T>(MouseEvent, KeyboardEvent)
 /// <summary>
 /// 点击清除按钮时触发
 /// </summary>
-[ECMAScript]
 public record TSelectClearEventContext<T> : VueProps
 {
     /// <summary>
@@ -29482,7 +28940,6 @@ public record TSelectClearEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TSelectCollapsedItemsSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectCollapsedItemsSlotContext<T> : VueProps
 {
     /// <summary>
@@ -29517,13 +28974,11 @@ public record TSelectCollapsedItemsSlotContext<T> : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TSelectCollapsedItemsSlotContextOnClose<T>(TSelectCollapsedItemsSlotContextOnCloseContext<T> context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TSelectCollapsedItemsSlotContextOnCloseContext<T> : VueProps
 {
     /// <summary>
@@ -29542,7 +28997,6 @@ public record TSelectCollapsedItemsSlotContextOnCloseContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TSelectConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectConfig : VueProps
 {
     /// <summary>
@@ -29611,7 +29065,6 @@ public readonly union TSelectCreateEventValue<T>(string, Number, bool, BigInt)
 /// <summary>
 /// 回车键按下时触发。`inputValue` 表示输入框的值，`value` 表示选中值
 /// </summary>
-[ECMAScript]
 public record TSelectEnterEventContext<T> : VueProps
 {
     /// <summary>
@@ -29641,7 +29094,6 @@ public record TSelectEnterEventContext<T> : VueProps
 /// <param name="filterWords">用于过滤候选项的输入文本。</param>
 /// <param name="option">当前候选项。</param>
 /// <returns>回调结果，类型为 TSelectFilterValueResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TSelectFilterValueResult<T> TSelectFilterValue<T>(string filterWords, T option);
 
 /// <summary>
@@ -29655,7 +29107,6 @@ public readonly union TSelectFilterValueResult<T>(bool, IPromise<bool>)
 /// <summary>
 /// 输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TSelectFocusEventContext<T> : VueProps
 {
     /// <summary>
@@ -29682,7 +29133,6 @@ public readonly union TSelectFocusEventContextE<T>(FocusEvent, KeyboardEvent)
 /// <summary>
 /// TDesign 的 TSelectInputBlurContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputBlurContext : VueProps
 {
     /// <summary>
@@ -29714,7 +29164,6 @@ public record TSelectInputBlurContext : VueProps
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TSelectInputClearEventContext : VueProps
 {
     /// <summary>
@@ -29728,7 +29177,6 @@ public record TSelectInputClearEventContext : VueProps
 /// <summary>
 /// TDesign 的 TSelectInputCollapsedItemsSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputCollapsedItemsSlotContext : VueProps
 {
     /// <summary>
@@ -29761,13 +29209,11 @@ public record TSelectInputCollapsedItemsSlotContext : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TSelectInputCollapsedItemsSlotContextOnClose(TSelectInputCollapsedItemsSlotContextOnCloseContext context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TSelectInputCollapsedItemsSlotContextOnCloseContext : VueProps
 {
     /// <summary>
@@ -29786,7 +29232,6 @@ public record TSelectInputCollapsedItemsSlotContextOnCloseContext : VueProps
 /// <summary>
 /// 按键按下 Enter 时触发
 /// </summary>
-[ECMAScript]
 public record TSelectInputEnterEventContext : VueProps
 {
     /// <summary>
@@ -29813,7 +29258,6 @@ public record TSelectInputEnterEventContext : VueProps
 /// <summary>
 /// TDesign 的 TSelectInputFocusContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputFocusContext : VueProps
 {
     /// <summary>
@@ -29840,7 +29284,6 @@ public record TSelectInputFocusContext : VueProps
 /// <summary>
 /// TDesign 的 TSelectInputKeys 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputKeys : VueProps
 {
     /// <summary>
@@ -29865,7 +29308,6 @@ public record TSelectInputKeys : VueProps
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TSelectInputMouseenterEventContext : VueProps
 {
     /// <summary>
@@ -29879,7 +29321,6 @@ public record TSelectInputMouseenterEventContext : VueProps
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TSelectInputMouseleaveEventContext : VueProps
 {
     /// <summary>
@@ -29893,7 +29334,6 @@ public record TSelectInputMouseleaveEventContext : VueProps
 /// <summary>
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
-[ECMAScript]
 public record TSelectInputPasteEventContext : VueProps
 {
     /// <summary>
@@ -29915,7 +29355,6 @@ public record TSelectInputPasteEventContext : VueProps
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectInputStatusValue
 {
@@ -29944,7 +29383,6 @@ public enum TSelectInputStatusValue
 /// <summary>
 /// TDesign 的 TSelectInputTagSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputTagSlotContext : VueProps
 {
     /// <summary>
@@ -30013,7 +29451,6 @@ public readonly union TSelectInputValue(string, Number, bool, Date, TJsonObject,
 /// <summary>
 /// TDesign 的 TSelectInputValueChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputValueChangeContext : VueProps
 {
     /// <summary>
@@ -30228,7 +29665,6 @@ public readonly struct TSelectInputValueChangeContextE : IUnion
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectInputValueChangeContextTrigger
 {
@@ -30267,7 +29703,6 @@ public enum TSelectInputValueChangeContextTrigger
 /// <summary>
 /// TDesign 的 TSelectInputValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectInputValueDisplaySlotContext : VueProps
 {
     /// <summary>
@@ -30290,7 +29725,6 @@ public record TSelectInputValueDisplaySlotContext : VueProps
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
 /// <param name="item">当前操作的数据项。</param>
-[ECMAScript]
 public delegate void TSelectInputValueDisplaySlotContextOnClose(Number index, TJsonValue? item = default);
 
 /// <summary>
@@ -30304,7 +29738,6 @@ public readonly union TSelectOption(TdOptionProps, TSelectOptionGroup, TJsonObje
 /// <summary>
 /// TDesign 的 TSelectOptionGroup 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectOptionGroup : VueProps
 {
     /// <summary>
@@ -30339,7 +29772,6 @@ public record TSelectOptionGroup : VueProps
 /// <summary>
 /// TDesign 的 TSelectOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectOptions<T> : VueProps
 {
     /// <summary>
@@ -30373,7 +29805,6 @@ public record TSelectOptions<T> : VueProps
 ///
 /// 下拉选项布局方式，有纵向排列和横向排列两种，默认纵向排列
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectOptionsLayoutValue
 {
@@ -30392,7 +29823,6 @@ public enum TSelectOptionsLayoutValue
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectOptionsType
 {
@@ -30411,7 +29841,6 @@ public enum TSelectOptionsType
 /// <summary>
 /// TDesign 的 TSelectRemoveContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectRemoveContext<T> : VueProps
 {
     /// <summary>
@@ -30472,7 +29901,6 @@ public readonly union TSelectRemoveContextValue<T>(string, Number, BigInt)
 /// <summary>
 /// 输入值变化时，触发搜索事件。主要用于远程搜索新数据
 /// </summary>
-[ECMAScript]
 public record TSelectSearchEventContext<T> : VueProps
 {
     /// <summary>
@@ -30487,7 +29915,6 @@ public record TSelectSearchEventContext<T> : VueProps
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectStatusValue
 {
@@ -30544,7 +29971,6 @@ public readonly union TSelectValue<T>(string, Number, bool, BigInt, T, TSelectVa
 /// <summary>
 /// TDesign 的 TSelectValueChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectValueChangeTrigger
 {
@@ -30583,7 +30009,6 @@ public enum TSelectValueChangeTrigger
 /// <summary>
 /// TDesign 的 TSelectValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSelectValueDisplaySlotContext<T> : VueProps
 {
     /// <summary>
@@ -30610,7 +30035,6 @@ public record TSelectValueDisplaySlotContext<T> : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
-[ECMAScript]
 public delegate void TSelectValueDisplaySlotContextOnClose<T>(Number index);
 
 /// <summary>
@@ -30625,7 +30049,6 @@ public readonly union TSelectValueDisplayValue<T>(string, TSelectValue<TSelectOp
 /// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据。
 /// 默认值：value
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSelectValueTypeValue
 {
@@ -30644,7 +30067,6 @@ public enum TSelectValueTypeValue
 /// <summary>
 /// 组件形状：圆形或圆角形状。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TShapeEnum
 {
@@ -30663,7 +30085,6 @@ public enum TShapeEnum
 /// <summary>
 /// TDesign 的 TSizeDragLimit 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSizeDragLimit : VueProps
 {
     /// <summary>
@@ -30682,7 +30103,6 @@ public record TSizeDragLimit : VueProps
 /// <summary>
 /// 组件尺寸：小号、中号、大号。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSizeEnum
 {
@@ -30706,7 +30126,6 @@ public enum TSizeEnum
 /// <summary>
 /// TDesign 的 TSizeLimitObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSizeLimitObj : VueProps
 {
     /// <summary>
@@ -30731,7 +30150,6 @@ public record TSizeLimitObj : VueProps
 /// <summary>
 /// 上传文件大小限制使用的单位。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSizeUnit
 {
@@ -30761,7 +30179,6 @@ public enum TSizeUnit
 /// 动画效果，有「渐变加载动画」和「闪烁加载动画」两种。值为 'none' 则表示没有动画
 /// 默认值：none
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSkeletonAnimationValue
 {
@@ -30813,7 +30230,6 @@ public readonly union TSkeletonRowColItem(Number, TSkeletonRowColObj, TSkeletonR
 /// <summary>
 /// TDesign 的 TSkeletonRowColObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSkeletonRowColObj : VueProps
 {
     /// <summary>
@@ -30876,7 +30292,6 @@ public readonly union TSkeletonRowColObjContent(string, RenderFragment)
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSkeletonRowColObjType
 {
@@ -30901,7 +30316,6 @@ public enum TSkeletonRowColObjType
 /// 快捷定义骨架图风格，有基础、头像组合等，具体参看代码示例
 /// 默认值：text
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSkeletonThemeValue
 {
@@ -30949,7 +30363,6 @@ public readonly union TSliderInputNumberPropsValue(bool, TdInputNumberProps<TInp
 /// <summary>
 /// TDesign 的 TSliderLabelSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSliderLabelSlotContext : VueProps
 {
     /// <summary>
@@ -30968,7 +30381,6 @@ public record TSliderLabelSlotContext : VueProps
 /// <summary>
 /// 对应上游 position 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSliderLabelSlotContextPosition
 {
@@ -31000,7 +30412,6 @@ public readonly union TSliderLabelValue(string, bool)
 /// 滑块布局方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSliderLayoutValue
 {
@@ -31019,7 +30430,6 @@ public enum TSliderLayoutValue
 /// <summary>
 /// TDesign 的 TSliderMarks 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSliderMarks : VueDictionary<TSliderMarksIndex>
 {
 }
@@ -31035,7 +30445,6 @@ public readonly union TSliderMarksIndex(string, RenderFragment<TSliderMarksIndex
 /// <summary>
 /// TDesign 的 TSliderMarks 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSliderMarksIndexOption2Context : VueProps
 {
     /// <summary>
@@ -31084,7 +30493,6 @@ public readonly union TSliderValue(Number, Number[])
 /// <summary>
 /// TDesign 的 TSortInfo 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSortInfo : VueProps
 {
     /// <summary>
@@ -31104,7 +30512,6 @@ public record TSortInfo : VueProps
 /// <summary>
 /// TDesign 的 TSortOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSortOptions<T> : VueProps
 {
     /// <summary>
@@ -31124,7 +30531,6 @@ public record TSortOptions<T> : VueProps
 /// <summary>
 /// 排序方向：降序、升序或两种方向均可。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSortType
 {
@@ -31148,7 +30554,6 @@ public enum TSortType
 /// <summary>
 /// 拖拽回调中的 Sortable 实例句柄。
 /// </summary>
-[ECMAScript]
 public sealed record TSortable : VueProps
 {
 }
@@ -31156,7 +30561,6 @@ public sealed record TSortable : VueProps
 /// <summary>
 /// TDesign 的 TSortableEvent 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSortableEvent : VueProps
 {
     /// <summary>
@@ -31267,7 +30671,6 @@ public record TSortableEvent : VueProps
 ///
 /// If MultiDrag is not used to sort, this array will be empty.
 /// </summary>
-[ECMAScript]
 public record TSortableEventNewIndiciesItem : VueProps
 {
     /// <summary>
@@ -31291,7 +30694,6 @@ public record TSortableEventNewIndiciesItem : VueProps
 ///
 /// If MultiDrag is not used to sort, this array will be empty.
 /// </summary>
-[ECMAScript]
 public record TSortableEventOldIndiciesItem : VueProps
 {
     /// <summary>
@@ -31319,7 +30721,6 @@ public readonly union TSortableEventPullMode(TSortableEventPullModeOption1, bool
 /// <summary>
 /// Pull mode if dragging into another sortable
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSortableEventPullModeOption1
 {
@@ -31333,7 +30734,6 @@ public enum TSortableEventPullModeOption1
 /// <summary>
 /// TDesign 的 TSortableOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSortableOptions : VueProps
 {
     /// <summary>
@@ -31645,13 +31045,11 @@ public readonly union TSortableOptionsDirection(TSortableOptionsDirectionOption1
 /// <param name="target">对应上游 target 字段或参数；数据形状见声明类型。</param>
 /// <param name="dragEl">对应上游 dragEl 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TDirection。</returns>
-[ECMAScript]
 public delegate TDirection TSortableOptionsDirectionOption1(TSortableEvent evt, HTMLElement target, HTMLElement dragEl);
 
 /// <summary>
 /// 对应上游 fallbackOffset 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TSortableOptionsFallbackOffsetOption1 : VueProps
 {
     /// <summary>
@@ -31682,7 +31080,6 @@ public readonly union TSortableOptionsFilter(string, TSortableOptionsFilterOptio
 /// <param name="target">对应上游 target 字段或参数；数据形状见声明类型。</param>
 /// <param name="sortable">对应上游 sortable 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TSortableOptionsFilterOption2(TSortableOptionsFilterOption2Event @event, HTMLElement target, TSortable sortable);
 
 /// <summary>
@@ -31770,42 +31167,36 @@ public readonly union TSortableOptionsGroup(string, TGroupOptions)
 /// Element is dropped into the list from another list
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnAddOption1(TSortableEvent @event);
 
 /// <summary>
 /// Called when dragging element changes position
 /// </summary>
 /// <param name="evt">对应上游 evt 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnChangeOption1(TSortableEvent evt);
 
 /// <summary>
 /// Element is chosen
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnChooseOption1(TSortableEvent @event);
 
 /// <summary>
 /// Created a clone of an element
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnCloneOption1(TSortableEvent @event);
 
 /// <summary>
 /// Element dragging ended
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnEndOption1(TSortableEvent @event);
 
 /// <summary>
 /// Attempt to drag a filtered element
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnFilterOption1(TSortableEvent @event);
 
 /// <summary>
@@ -31814,7 +31205,6 @@ public delegate void TSortableOptionsOnFilterOption1(TSortableEvent @event);
 /// <param name="evt">对应上游 evt 字段或参数；数据形状见声明类型。</param>
 /// <param name="originalEvent">对应上游 originalEvent 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TSortableOptionsOnMoveOption1Result?。</returns>
-[ECMAScript]
 public delegate TSortableOptionsOnMoveOption1Result? TSortableOptionsOnMoveOption1(TMoveEvent evt, EventRef originalEvent);
 
 /// <summary>
@@ -31849,35 +31239,30 @@ public readonly union TSortableOptionsOnMoveOption1Result(bool, Number)
 /// Element is removed from the list into another list
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnRemoveOption1(TSortableEvent @event);
 
 /// <summary>
 /// Called by any change to the list (add / update / remove)
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnSortOption1(TSortableEvent @event);
 
 /// <summary>
 /// Element dragging started
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnStartOption1(TSortableEvent @event);
 
 /// <summary>
 /// Element is unchosen
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnUnchooseOption1(TSortableEvent @event);
 
 /// <summary>
 /// Changed sorting within list
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TSortableOptionsOnUpdateOption1(TSortableEvent @event);
 
 /// <summary>
@@ -31885,13 +31270,11 @@ public delegate void TSortableOptionsOnUpdateOption1(TSortableEvent @event);
 /// </summary>
 /// <param name="dataTransfer">对应上游 dataTransfer 字段或参数；数据形状见声明类型。</param>
 /// <param name="draggedElement">对应上游 draggedElement 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TSortableOptionsSetDataOption1(DataTransfer dataTransfer, HTMLElement draggedElement);
 
 /// <summary>
 /// 对应上游 store 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TSortableOptionsStoreOption1 : VueProps
 {
     /// <summary>
@@ -31914,14 +31297,12 @@ public record TSortableOptionsStoreOption1 : VueProps
 /// </summary>
 /// <param name="sortable">对应上游 sortable 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 string[]。</returns>
-[ECMAScript]
 public delegate string[] TSortableOptionsStoreOption1Get(TSortable sortable);
 
 /// <summary>
 /// 对应上游 set 字段或参数；数据形状见声明类型。
 /// </summary>
 /// <param name="sortable">对应上游 sortable 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TSortableOptionsStoreOption1Set(TSortable sortable);
 
 /// <summary>
@@ -31930,13 +31311,11 @@ public delegate void TSortableOptionsStoreOption1Set(TSortable sortable);
 /// <param name="a">对应上游 a 字段或参数；数据形状见声明类型。</param>
 /// <param name="b">对应上游 b 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 Number。</returns>
-[ECMAScript]
 public delegate Number TSorterFun<T>(T a, T b);
 
 /// <summary>
 /// 对齐方式
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSpaceAlignValue
 {
@@ -31966,7 +31345,6 @@ public enum TSpaceAlignValue
 /// 间距方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSpaceDirectionValue
 {
@@ -32024,14 +31402,12 @@ public readonly union TSpaceSizeValue(TSpaceSize, TSpaceSize[])
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <returns>回调结果，类型为 Number。</returns>
-[ECMAScript]
 public delegate Number TStatisticFormatValue(Number @value);
 
 /// <summary>
 /// 趋势展示位置
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStatisticTrendPlacementValue
 {
@@ -32050,7 +31426,6 @@ public enum TStatisticTrendPlacementValue
 /// <summary>
 /// 趋势
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStatisticTrendValue
 {
@@ -32069,7 +31444,6 @@ public enum TStatisticTrendValue
 /// <summary>
 /// TDesign 的 TStatusRenderInfo 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TStatusRenderInfo : VueProps
 {
     /// <summary>
@@ -32088,13 +31462,11 @@ public record TStatusRenderInfo : VueProps
 /// <summary>
 /// Refresh 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public delegate void TStatusRenderInfoOnRefresh();
 
 /// <summary>
 /// TDesign 的 TStepDialogPlacement 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepDialogPlacement
 {
@@ -32141,7 +31513,6 @@ public readonly union TStepItemValueValue(string, Number)
 /// <summary>
 /// 浮层相对触发元素的位置；复合值的第一段表示方向，第二段表示边缘对齐方式。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepPopupPlacement
 {
@@ -32210,7 +31581,6 @@ public enum TStepPopupPlacement
 /// <summary>
 /// 步骤项状态：未开始、进行中、完成或错误。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepStatus
 {
@@ -32239,7 +31609,6 @@ public enum TStepStatus
 /// <summary>
 /// 当前步骤发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TStepsChangeEventContext : VueProps
 {
     /// <summary>
@@ -32308,7 +31677,6 @@ public readonly union TStepsChangeEventPrevious(string, Number)
 /// <summary>
 /// TDesign 的 TStepsConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TStepsConfig : VueProps
 {
     /// <summary>
@@ -32356,7 +31724,6 @@ public readonly union TStepsCurrentValue(string, Number)
 /// 步骤条方向，有两种：横向和纵向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepsLayoutValue
 {
@@ -32376,7 +31743,6 @@ public enum TStepsLayoutValue
 /// 步骤条分割符
 /// 默认值：line
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepsSeparatorValue
 {
@@ -32401,7 +31767,6 @@ public enum TStepsSeparatorValue
 /// 步骤条顺序
 /// 默认值：positive
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepsSequenceValue
 {
@@ -32421,7 +31786,6 @@ public enum TStepsSequenceValue
 /// 步骤条风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStepsThemeValue
 {
@@ -32441,7 +31805,6 @@ public enum TStepsThemeValue
 /// 触发浮层显示的方式
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStickyItemTriggerValue
 {
@@ -32460,7 +31823,6 @@ public enum TStickyItemTriggerValue
 /// <summary>
 /// 点击某一项时触发
 /// </summary>
-[ECMAScript]
 public record TStickyToolClickEventContext : VueProps
 {
     /// <summary>
@@ -32481,7 +31843,6 @@ public record TStickyToolClickEventContext : VueProps
 /// <summary>
 /// 悬浮到某一项时触发
 /// </summary>
-[ECMAScript]
 public record TStickyToolHoverEventContext : VueProps
 {
     /// <summary>
@@ -32531,7 +31892,6 @@ public readonly union TStickyToolOffsetValueItem(string, Number)
 /// 固定位置
 /// 默认值：right-bottom
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStickyToolPlacementValue
 {
@@ -32571,7 +31931,6 @@ public enum TStickyToolPlacementValue
 /// 侧边栏菜单形状，有 2 种：方形、圆形
 /// 默认值：square
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStickyToolShapeValue
 {
@@ -32591,7 +31950,6 @@ public enum TStickyToolShapeValue
 /// 侧边栏菜单类型，有 2 种：常规型和紧凑型
 /// 默认值：normal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TStickyToolTypeValue
 {
@@ -32638,7 +31996,6 @@ public readonly union TStickyToolWidthValue(string, Number)
 /// <summary>
 /// TDesign 的 TStyles 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TStyles : VueDictionary<TStylesIndex>
 {
 }
@@ -32674,7 +32031,6 @@ public readonly union TStylesIndex(string, Number)
 /// <summary>
 /// TDesign 的 TSubmitContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSubmitContext<T> : VueProps
 {
     /// <summary>
@@ -32705,7 +32061,6 @@ public record TSubmitContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TSuccessContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSuccessContext : VueProps
 {
     /// <summary>
@@ -32754,7 +32109,6 @@ public record TSuccessContext : VueProps
 /// 轮播切换动画效果类型：滑动、淡入淡出等
 /// 默认值：slide
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperAnimationValue
 {
@@ -32773,7 +32127,6 @@ public enum TSwiperAnimationValue
 /// <summary>
 /// 轮播切换时触发
 /// </summary>
-[ECMAScript]
 public record TSwiperChangeEventContext : VueProps
 {
     /// <summary>
@@ -32786,7 +32139,6 @@ public record TSwiperChangeEventContext : VueProps
 /// <summary>
 /// TDesign 的 TSwiperChangeSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperChangeSource
 {
@@ -32811,7 +32163,6 @@ public enum TSwiperChangeSource
 /// 轮播滑动方向，包括横向滑动和纵向滑动两个方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperDirectionValue
 {
@@ -32831,7 +32182,6 @@ public enum TSwiperDirectionValue
 /// 轮播切换动画效果类型：滑动、淡入淡出等
 /// 默认值：slide
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperItemAnimationValue
 {
@@ -32850,7 +32200,6 @@ public enum TSwiperItemAnimationValue
 /// <summary>
 /// 轮播切换时触发
 /// </summary>
-[ECMAScript]
 public record TSwiperItemChangeEventContext : VueProps
 {
     /// <summary>
@@ -32864,7 +32213,6 @@ public record TSwiperItemChangeEventContext : VueProps
 /// 轮播滑动方向，包括横向滑动和纵向滑动两个方向
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperItemDirectionValue
 {
@@ -32883,7 +32231,6 @@ public enum TSwiperItemDirectionValue
 /// <summary>
 /// 深色模式和浅色模式
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperItemThemeValue
 {
@@ -32903,7 +32250,6 @@ public enum TSwiperItemThemeValue
 /// 触发切换的方式：悬浮、点击等
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperItemTriggerValue
 {
@@ -32923,7 +32269,6 @@ public enum TSwiperItemTriggerValue
 /// 样式类型：默认样式、卡片样式
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperItemTypeValue
 {
@@ -32942,7 +32287,6 @@ public enum TSwiperItemTypeValue
 /// <summary>
 /// TDesign 的 TSwiperNavigation 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSwiperNavigation : VueProps
 {
     /// <summary>
@@ -32978,7 +32322,6 @@ public record TSwiperNavigation : VueProps
 /// 导航器位置，位于主体的内侧或是外侧
 /// 默认值：inside
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperNavigationPlacement
 {
@@ -32998,7 +32341,6 @@ public enum TSwiperNavigationPlacement
 /// 何时显示导航器的翻页按钮：始终显示、悬浮显示、永不显示
 /// 默认值：always
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperNavigationShowSlideBtn
 {
@@ -33023,7 +32365,6 @@ public enum TSwiperNavigationShowSlideBtn
 /// 导航器尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperNavigationSize
 {
@@ -33047,7 +32388,6 @@ public enum TSwiperNavigationSize
 /// <summary>
 /// TDesign 的 TSwiperNavigationType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperNavigationType
 {
@@ -33076,7 +32416,6 @@ public enum TSwiperNavigationType
 /// <summary>
 /// 深色模式和浅色模式
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperThemeValue
 {
@@ -33096,7 +32435,6 @@ public enum TSwiperThemeValue
 /// 触发切换的方式：悬浮、点击等
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperTriggerValue
 {
@@ -33116,7 +32454,6 @@ public enum TSwiperTriggerValue
 /// 样式类型：默认样式、卡片样式
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwiperTypeValue
 {
@@ -33136,7 +32473,6 @@ public enum TSwiperTypeValue
 /// Switch 切换状态前的回调方法，常用于需要发起异步请求的场景，回调返回值支持布尔和 Promise 类型，返回`false`或 Promise reject不继续执行change，否则则继续执行。
 /// </summary>
 /// <returns>回调结果，类型为 TSwitchBeforeChangeValueResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TSwitchBeforeChangeValueResult<T> TSwitchBeforeChangeValue<T>();
 
 /// <summary>
@@ -33150,7 +32486,6 @@ public readonly union TSwitchBeforeChangeValueResult<T>(bool, IPromise<bool>)
 /// <summary>
 /// 数据发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TSwitchChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -33164,7 +32499,6 @@ public record TSwitchChangeEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TSwitchLabelSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TSwitchLabelSlotContext<T> : VueProps
 {
     /// <summary>
@@ -33187,7 +32521,6 @@ public readonly union TSwitchLabelValueItem<T>(string, RenderFragment)
 /// 开关尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TSwitchSizeValue
 {
@@ -33239,7 +32572,6 @@ public readonly union TSwitchValue(string, Number, bool)
 /// <summary>
 /// 点击删除按钮时触发
 /// </summary>
-[ECMAScript]
 public record TTabPanelRemoveEventOptions : VueProps
 {
     /// <summary>
@@ -33287,7 +32619,6 @@ public readonly union TTabValue(string, Number)
 /// <summary>
 /// TDesign 的 TTableAbnormalDragSortContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableAbnormalDragSortContext<T> : VueProps
 {
     /// <summary>
@@ -33365,7 +32696,6 @@ public readonly union TTableActiveRowKeysValueItem<T>(string, Number)
 /// 默认不会高亮点击行，`activeRowType=single` 表示鼠标点击仅允许同时高亮一行，Shift 键盘操作加鼠标操作依然可以高亮多行，因为这属于明显的区域选择行为。`activeRowType= multiple ` 表示允许鼠标点击同时高亮多行
 /// 默认值：''
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableActiveRowTypeValue
 {
@@ -33384,7 +32714,6 @@ public enum TTableActiveRowTypeValue
 /// <summary>
 /// 异步加载区域被点击时触发
 /// </summary>
-[ECMAScript]
 public record TTableAsyncLoadingClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -33397,7 +32726,6 @@ public record TTableAsyncLoadingClickEventContext<T> : VueProps
 /// <summary>
 /// 当前状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableAsyncLoadingClickEventContextStatus
 {
@@ -33416,7 +32744,6 @@ public enum TTableAsyncLoadingClickEventContextStatus
 /// <summary>
 /// 异步加载状态。值为 `loading` 显示默认文字 “正在加载中，请稍后”，值为 `load-more` 显示“点击加载更多”，值为其他，表示完全自定义异步加载区域内容
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableAsyncLoadingValue
 {
@@ -33435,7 +32762,6 @@ public enum TTableAsyncLoadingValue
 /// <summary>
 /// TDesign 的 TTableChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableChangeContext<T> : VueProps
 {
     /// <summary>
@@ -33454,7 +32780,6 @@ public record TTableChangeContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TTableChangeData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableChangeData : VueProps
 {
     /// <summary>
@@ -33479,7 +32804,6 @@ public record TTableChangeData : VueProps
 /// <summary>
 /// TDesign 的 TTableChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableChangeTrigger
 {
@@ -33513,13 +32837,11 @@ public readonly union TTableColumnClassName<T>(TClassName, TTableColumnClassName
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TClassName。</returns>
-[ECMAScript]
 public delegate TClassName TTableColumnClassNameOption2<T>(TCellData<T> context);
 
 /// <summary>
 /// TDesign 的 TTableColumnController 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableColumnController : VueProps
 {
     /// <summary>
@@ -33590,7 +32912,6 @@ public record TTableColumnController : VueProps
 /// 指列配置弹框中，各列的字段平铺方式：`fixed-width` 表示固定宽度，每行固定数量，横向和纵向均对齐，`auto-width` 表示宽度随列标题数量自由显示，横向铺满，纵向不要求对齐
 /// 默认值：auto-width
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableColumnControllerDisplayType
 {
@@ -33610,7 +32931,6 @@ public enum TTableColumnControllerDisplayType
 /// 列配置按钮基于表格的放置位置：左上角、右上角、左下角、右下角等
 /// 默认值：top-right
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableColumnControllerPlacement
 {
@@ -33639,7 +32959,6 @@ public enum TTableColumnControllerPlacement
 /// <summary>
 /// 列配置弹窗显示或隐藏变化时触发
 /// </summary>
-[ECMAScript]
 public record TTableColumnControllerVisibleChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -33652,7 +32971,6 @@ public record TTableColumnControllerVisibleChangeEventContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableColumnControllerVisibleChangeEventContextTrigger
 {
@@ -33676,7 +32994,6 @@ public enum TTableColumnControllerVisibleChangeEventContextTrigger
 /// <summary>
 /// TDesign 的 TTableColumnFilter 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableColumnFilter : VueProps
 {
     /// <summary>
@@ -33766,7 +33083,6 @@ public readonly union TTableColumnFilterLabel(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TTableColumnGroup 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableColumnGroup : VueProps
 {
     /// <summary>
@@ -33821,7 +33137,6 @@ public readonly union TTableColumnGroupValue(string, Number)
 /// <summary>
 /// 列调整大小之后触发。`context.columnsWidth` 表示操作后各个列的宽度；
 /// </summary>
-[ECMAScript]
 public record TTableColumnResizeChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -33835,7 +33150,6 @@ public record TTableColumnResizeChangeEventContext<T> : VueProps
 /// <summary>
 /// 对应上游 columnsWidth 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionary<Number>
 {
 }
@@ -33843,7 +33157,6 @@ public record TTableColumnResizeChangeEventContextColumnsWidth<T> : VueDictionar
 /// <summary>
 /// TDesign 的 TTableColumnResizeConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableColumnResizeConfig : VueProps
 {
     /// <summary>
@@ -33862,7 +33175,6 @@ public record TTableColumnResizeConfig : VueProps
 /// <summary>
 /// TDesign 的 TTableConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableConfig : VueProps
 {
     /// <summary>
@@ -34019,7 +33331,6 @@ public readonly union TTableConfigEmpty(string, RenderFragment)
 /// <summary>
 /// 树形结构，展开和折叠图标。如果没有配置，会使用组件内置的默认图标
 /// </summary>
-[ECMAScript]
 public record TTableConfigTreeExpandAndFoldIconContext : VueProps
 {
     /// <summary>
@@ -34032,7 +33343,6 @@ public record TTableConfigTreeExpandAndFoldIconContext : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableConfigTreeExpandAndFoldIconContextType
 {
@@ -34051,7 +33361,6 @@ public enum TTableConfigTreeExpandAndFoldIconContextType
 /// <summary>
 /// TDesign 的 TTableDataChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableDataChangeContext : VueProps
 {
     /// <summary>
@@ -34064,7 +33373,6 @@ public record TTableDataChangeContext : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableDataChangeContextTrigger
 {
@@ -34078,7 +33386,6 @@ public enum TTableDataChangeContextTrigger
 /// <summary>
 /// 拖拽排序方式，值为 `row` 表示行拖拽排序，这种方式无法进行文本复制，慎用。值为`row-handler` 表示通过拖拽手柄进行行拖拽排序。值为 `col` 表示列顺序拖拽。值为 `row-handler-col` 表示同时支持行拖拽和列拖拽。⚠️`drag-col` 已废弃，请勿使用。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableDragSortValue
 {
@@ -34112,7 +33419,6 @@ public enum TTableDragSortValue
 /// <summary>
 /// TDesign 的 TTableEditableCellConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableEditableCellConfig<T> : VueProps
 {
     /// <summary>
@@ -34191,14 +33497,12 @@ public record TTableEditableCellConfig<T> : VueProps
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TTableEditableCellConfigOnResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TTableEditableCellConfigOnResult<T> TTableEditableCellConfigOn<T>(TTableEditableCellPropsParams<T> context);
 
 /// <summary>
 /// 编辑完成后，退出编辑模式时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TTableEditableCellConfigOnEdited<T>(TPrimaryTableOnEditedContext<T> context);
 
 /// <summary>
@@ -34207,7 +33511,6 @@ public delegate void TTableEditableCellConfigOnEdited<T>(TPrimaryTableOnEditedCo
 /// 更新当前行编辑态数据示例：`updateEditedCellValue({ isUpdateCurrentRow: true, column_key: 'test'  })`；
 /// 更新其他行编辑态数据示例：`updateEditedCellValue({ rowValue: '124', column_key: 'test' })`
 /// </summary>
-[ECMAScript]
 public record TTableEditableCellConfigOnResult<T> : VueDictionary<TCallback>
 {
 }
@@ -34216,7 +33519,6 @@ public record TTableEditableCellConfigOnResult<T> : VueDictionary<TCallback>
 /// 触发校验的时机，有 2 种：退出编辑时和数据变化时
 /// 默认值：'exit'
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableEditableCellConfigValidateTrigger
 {
@@ -34245,13 +33547,11 @@ public readonly union TTableEditableCellProps<T>(TJsonObject, TTableEditableCell
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TJsonObject。</returns>
-[ECMAScript]
 public delegate TJsonObject TTableEditableCellPropsOption2<T>(TTableEditableCellPropsParams<T> @params);
 
 /// <summary>
 /// TDesign 的 TTableEditableCellPropsParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableEditableCellPropsParams<T> : VueProps
 {
     /// <summary>
@@ -34297,7 +33597,6 @@ public record TTableEditableCellPropsParams<T> : VueProps
 /// 对应上游 updateEditedCellValue 字段或参数；数据形状见声明类型。
 /// </summary>
 /// <param name="val">对应上游 val 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TTableEditableCellPropsParamsUpdateEditedCellValue<T>(TTableEditableCellPropsParamsUpdateEditedCellValueVal<T> val);
 
 /// <summary>
@@ -34311,7 +33610,6 @@ public readonly union TTableEditableCellPropsParamsUpdateEditedCellValueVal<T>(T
 /// <summary>
 /// 对应上游 updateEditedCellValue 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TTableEditableCellPropsParamsUpdateEditedCellValueValOption2<T> : VueProps
 {
     /// <summary>
@@ -34368,7 +33666,6 @@ public readonly union TTableEditableCellRules<T>(TFormRule[], TTableEditableCell
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TFormRule[]。</returns>
-[ECMAScript]
 public delegate TFormRule[] TTableEditableCellRulesOption2<T>(TPrimaryTableCellParams<T> @params);
 
 /// <summary>
@@ -34402,7 +33699,6 @@ public readonly union TTableEditableRowKeysValueItem<T>(string, Number)
 /// <summary>
 /// TDesign 的 TTableErrorListMap 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableErrorListMap : VueDictionary<TAllValidateResult[]>
 {
 }
@@ -34467,7 +33763,6 @@ public readonly union TTableExpandedRowKeysValueItem<T>(string, Number)
 /// <summary>
 /// TDesign 的 TTableExpandedRowParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableExpandedRowParams<T> : VueProps
 {
     /// <summary>
@@ -34500,7 +33795,6 @@ public readonly union TTableExpandedRowParamsColumns<T>(TPrimaryTableCol<T>[], T
 /// <summary>
 /// TDesign 的 TTableFilterChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableFilterChangeContext<T> : VueProps
 {
     /// <summary>
@@ -34519,7 +33813,6 @@ public record TTableFilterChangeContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableFilterChangeContextTrigger
 {
@@ -34548,7 +33841,6 @@ public enum TTableFilterChangeContextTrigger
 /// <summary>
 /// TDesign 的 TTableFilterIconSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableFilterIconSlotContext<T> : VueProps
 {
     /// <summary>
@@ -34696,13 +33988,11 @@ public readonly union TTableRowAttributes<T>(THTMLElementAttributes, TTableRowAt
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 THTMLElementAttributes。</returns>
-[ECMAScript]
 public delegate THTMLElementAttributes TTableRowAttributesOption2<T>(TTableRowAttributesOption2Params<T> @params);
 
 /// <summary>
 /// TDesign 的 TTableRowAttributes 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableRowAttributesOption2Params<T> : VueProps
 {
     /// <summary>
@@ -34727,7 +34017,6 @@ public record TTableRowAttributesOption2Params<T> : VueProps
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableRowAttributesOption2ParamsType
 {
@@ -34756,13 +34045,11 @@ public readonly union TTableRowClassNameValue<T>(TClassName, TTableRowClassNameV
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TClassName。</returns>
-[ECMAScript]
 public delegate TClassName TTableRowClassNameValueOption2<T>(TRowClassNameParams<T> @params);
 
 /// <summary>
 /// TDesign 的 TTableRowData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableRowData : VueProps
 {
     /// <summary>
@@ -34775,7 +34062,6 @@ public record TTableRowData : VueProps
 /// <summary>
 /// 行选中类型，单选或多选。效果和 `columns` 中配置的 `{ colKey: 'row-select', type: 'single' }` 一样
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableRowSelectionTypeValue
 {
@@ -34794,7 +34080,6 @@ public enum TTableRowSelectionTypeValue
 /// <summary>
 /// TDesign 的 TTableRowState 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableRowState<T> : VueProps
 {
     /// <summary>
@@ -34885,7 +34170,6 @@ public readonly union TTableRowStateId<T>(string, Number)
 /// <summary>
 /// TDesign 的 TTableRowValidateResult 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableRowValidateResult<T> : VueProps
 {
     /// <summary>
@@ -34932,13 +34216,11 @@ public record TTableRowValidateResult<T> : VueProps
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
 /// <returns>回调结果，类型为 TRowspanColspan。</returns>
-[ECMAScript]
 public delegate TRowspanColspan TTableRowspanAndColspanFunc<T>(TBaseTableCellParams<T> @params);
 
 /// <summary>
 /// 表格内容滚动时触发
 /// </summary>
-[ECMAScript]
 public record TTableScrollEventParams<T> : VueProps
 {
     /// <summary>
@@ -34953,7 +34235,6 @@ public record TTableScrollEventParams<T> : VueProps
 /// 表格内容横向滚动时触发。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TTableScrollXEventParams<T> : VueProps
 {
     /// <summary>
@@ -34968,7 +34249,6 @@ public record TTableScrollXEventParams<T> : VueProps
 /// 表格内容纵向滚动时触发。当内容超出高度(height)或最大高度(max-height)时，会出现纵向滚动条。请更为使用 `onScroll` 事件
 /// 已弃用：
 /// </summary>
-[ECMAScript]
 public record TTableScrollYEventParams<T> : VueProps
 {
     /// <summary>
@@ -35048,7 +34328,6 @@ public readonly union TTableSort(TSortInfo, TSortInfo[])
 /// 表格布局方式，`&lt;table&gt;` 元素原生属性。[MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/table-layout)。注意，在列宽调整下场景只能使用 `fixed` 模式
 /// 默认值：fixed
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableTableLayoutValue
 {
@@ -35067,7 +34346,6 @@ public enum TTableTableLayoutValue
 /// <summary>
 /// TDesign 的 TTableTreeConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableTreeConfig : VueProps
 {
     /// <summary>
@@ -35116,7 +34394,6 @@ public record TTableTreeConfig : VueProps
 /// <summary>
 /// TDesign 的 TTableTreeExpandChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableTreeExpandChangeContext<T> : VueProps
 {
     /// <summary>
@@ -35148,7 +34425,6 @@ public record TTableTreeExpandChangeContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableTreeExpandChangeContextTrigger
 {
@@ -35167,7 +34443,6 @@ public enum TTableTreeExpandChangeContextTrigger
 /// <summary>
 /// TDesign 的 TTableTreeNodeExpandOptions 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTableTreeNodeExpandOptions<T> : VueProps
 {
     /// <summary>
@@ -35205,7 +34480,6 @@ public record TTableTreeNodeExpandOptions<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableTreeNodeExpandOptionsTrigger
 {
@@ -35239,7 +34513,6 @@ public enum TTableTreeNodeExpandOptionsTrigger
 /// <summary>
 /// 类型标识，取值含义见对应类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableTreeNodeExpandOptionsType
 {
@@ -35258,7 +34531,6 @@ public enum TTableTreeNodeExpandOptionsType
 /// <summary>
 /// TDesign 的 TTableValidateTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableValidateTrigger
 {
@@ -35278,7 +34550,6 @@ public enum TTableValidateTrigger
 /// 行内容上下方向对齐
 /// 默认值：middle
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTableVerticalAlignValue
 {
@@ -35302,7 +34573,6 @@ public enum TTableVerticalAlignValue
 /// <summary>
 /// 添加选项卡时触发
 /// </summary>
-[ECMAScript]
 public record TTabsAddEventContext : VueProps
 {
     /// <summary>
@@ -35316,7 +34586,6 @@ public record TTabsAddEventContext : VueProps
 /// <summary>
 /// TDesign 的 TTabsDragSortContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTabsDragSortContext : VueProps
 {
     /// <summary>
@@ -35348,7 +34617,6 @@ public record TTabsDragSortContext : VueProps
 /// 选项卡位置
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTabsPlacementValue
 {
@@ -35377,7 +34645,6 @@ public enum TTabsPlacementValue
 /// <summary>
 /// 删除选项卡时触发
 /// </summary>
-[ECMAScript]
 public record TTabsRemoveEventOptions : VueProps
 {
     /// <summary>
@@ -35404,7 +34671,6 @@ public record TTabsRemoveEventOptions : VueProps
 /// Tab较多的时候，选中滑块滚动最终停留的位置
 /// 默认值：auto
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTabsScrollPositionValue
 {
@@ -35434,7 +34700,6 @@ public enum TTabsScrollPositionValue
 /// 组件尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTabsSizeValue
 {
@@ -35454,7 +34719,6 @@ public enum TTabsSizeValue
 /// 选项卡风格，包含 默认风格 和 卡片风格两种
 /// 默认值：normal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTabsThemeValue
 {
@@ -35473,7 +34737,6 @@ public enum TTabsThemeValue
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TTagClickEventContext : VueProps
 {
     /// <summary>
@@ -35487,7 +34750,6 @@ public record TTagClickEventContext : VueProps
 /// <summary>
 /// 如果关闭按钮存在，点击关闭按钮时触发
 /// </summary>
-[ECMAScript]
 public record TTagCloseEventContext : VueProps
 {
     /// <summary>
@@ -35501,7 +34763,6 @@ public record TTagCloseEventContext : VueProps
 /// <summary>
 /// TDesign 的 TTagConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagConfig : VueProps
 {
     /// <summary>
@@ -35514,7 +34775,6 @@ public record TTagConfig : VueProps
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputBlurEventContext : VueProps
 {
     /// <summary>
@@ -35535,7 +34795,6 @@ public record TTagInputBlurEventContext : VueProps
 /// <summary>
 /// TDesign 的 TTagInputChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagInputChangeContext : VueProps
 {
     /// <summary>
@@ -35602,7 +34861,6 @@ public readonly union TTagInputChangeContextItem(string, Number)
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputClearEventContext : VueProps
 {
     /// <summary>
@@ -35616,7 +34874,6 @@ public record TTagInputClearEventContext : VueProps
 /// <summary>
 /// 点击组件时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputClickEventContext : VueProps
 {
     /// <summary>
@@ -35630,7 +34887,6 @@ public record TTagInputClickEventContext : VueProps
 /// <summary>
 /// TDesign 的 TTagInputCollapsedItemsSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagInputCollapsedItemsSlotContext : VueProps
 {
     /// <summary>
@@ -35665,13 +34921,11 @@ public record TTagInputCollapsedItemsSlotContext : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TTagInputCollapsedItemsSlotContextOnClose(TTagInputCollapsedItemsSlotContextOnCloseContext context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TTagInputCollapsedItemsSlotContextOnCloseContext : VueProps
 {
     /// <summary>
@@ -35690,7 +34944,6 @@ public record TTagInputCollapsedItemsSlotContextOnCloseContext : VueProps
 /// <summary>
 /// TDesign 的 TTagInputDragSortContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagInputDragSortContext : VueProps
 {
     /// <summary>
@@ -35784,7 +35037,6 @@ public readonly union TTagInputDragSortContextTarget(string, Number)
 /// <summary>
 /// 按键按下 Enter 时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputEnterEventContext : VueProps
 {
     /// <summary>
@@ -35806,7 +35058,6 @@ public record TTagInputEnterEventContext : VueProps
 /// 标签超出时的呈现方式，有两种：横向滚动显示 和 换行显示
 /// 默认值：break-line
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagInputExcessTagsDisplayTypeValue
 {
@@ -35825,7 +35076,6 @@ public enum TTagInputExcessTagsDisplayTypeValue
 /// <summary>
 /// 聚焦时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputFocusEventContext : VueProps
 {
     /// <summary>
@@ -35846,7 +35096,6 @@ public record TTagInputFocusEventContext : VueProps
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputMouseenterEventContext : VueProps
 {
     /// <summary>
@@ -35860,7 +35109,6 @@ public record TTagInputMouseenterEventContext : VueProps
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TTagInputMouseleaveEventContext : VueProps
 {
     /// <summary>
@@ -35874,7 +35122,6 @@ public record TTagInputMouseleaveEventContext : VueProps
 /// <summary>
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
-[ECMAScript]
 public record TTagInputPasteEventContext : VueProps
 {
     /// <summary>
@@ -35895,7 +35142,6 @@ public record TTagInputPasteEventContext : VueProps
 /// <summary>
 /// TDesign 的 TTagInputRemoveContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagInputRemoveContext : VueProps
 {
     /// <summary>
@@ -35969,7 +35215,6 @@ public readonly union TTagInputRemoveContextItem(string, Number)
 /// <summary>
 /// TDesign 的 TTagInputRemoveTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagInputRemoveTrigger
 {
@@ -35988,7 +35233,6 @@ public enum TTagInputRemoveTrigger
 /// <summary>
 /// 输入框状态
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagInputStatusValue
 {
@@ -36017,7 +35261,6 @@ public enum TTagInputStatusValue
 /// <summary>
 /// TDesign 的 TTagInputTagSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagInputTagSlotContext : VueProps
 {
     /// <summary>
@@ -36058,7 +35301,6 @@ public readonly union TTagInputTagSlotContextValue(string, Number)
 /// <summary>
 /// TDesign 的 TTagInputTriggerSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagInputTriggerSource
 {
@@ -36087,7 +35329,6 @@ public enum TTagInputTriggerSource
 /// <summary>
 /// TDesign 的 TTagInputValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTagInputValueDisplaySlotContext : VueProps
 {
     /// <summary>
@@ -36110,7 +35351,6 @@ public record TTagInputValueDisplaySlotContext : VueProps
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
 /// <param name="item">当前操作的数据项。</param>
-[ECMAScript]
 public delegate void TTagInputValueDisplaySlotContextOnClose(Number index, TJsonValue? item = default);
 
 /// <summary>
@@ -36173,7 +35413,6 @@ public readonly union TTagMaxWidthValue(string, Number)
 /// 标签类型，有三种：方形、圆角方形、标记型
 /// 默认值：square
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagShapeValue
 {
@@ -36198,7 +35437,6 @@ public enum TTagShapeValue
 /// 组件风格，用于描述组件不同的应用场景
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagThemeValue
 {
@@ -36241,7 +35479,6 @@ public readonly union TTagTitleValue(string, bool)
 /// 标签风格变体
 /// 默认值：dark
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTagVariantValue
 {
@@ -36270,7 +35507,6 @@ public enum TTagVariantValue
 /// <summary>
 /// TDesign 的 TTargetParams 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTargetParams : VueProps
 {
     /// <summary>
@@ -36317,7 +35553,6 @@ public readonly union TTextMarkValue(string, bool)
 /// <summary>
 /// 主题
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTextThemeValue
 {
@@ -36361,7 +35596,6 @@ public readonly union TTextareaAutosizeValue(bool, TTextareaAutosizeValueOption2
 /// 高度自动撑开。 autosize = true 表示组件高度自动撑开，同时，依旧允许手动拖高度。如果设置了 autosize.maxRows 或者 autosize.minRows 则不允许手动调整高度
 /// 默认值：false
 /// </summary>
-[ECMAScript]
 public record TTextareaAutosizeValueOption2 : VueProps
 {
     /// <summary>
@@ -36380,7 +35614,6 @@ public record TTextareaAutosizeValueOption2 : VueProps
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTextareaBlurEventContext : VueProps
 {
     /// <summary>
@@ -36394,7 +35627,6 @@ public record TTextareaBlurEventContext : VueProps
 /// <summary>
 /// 输入内容变化时触发
 /// </summary>
-[ECMAScript]
 public record TTextareaChangeEventContext : VueProps
 {
     /// <summary>
@@ -36407,7 +35639,6 @@ public record TTextareaChangeEventContext : VueProps
 /// <summary>
 /// 获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTextareaFocusEventContext : VueProps
 {
     /// <summary>
@@ -36421,7 +35652,6 @@ public record TTextareaFocusEventContext : VueProps
 /// <summary>
 /// 键盘按下时触发
 /// </summary>
-[ECMAScript]
 public record TTextareaKeydownEventContext : VueProps
 {
     /// <summary>
@@ -36435,7 +35665,6 @@ public record TTextareaKeydownEventContext : VueProps
 /// <summary>
 /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
 /// </summary>
-[ECMAScript]
 public record TTextareaKeypressEventContext : VueProps
 {
     /// <summary>
@@ -36449,7 +35678,6 @@ public record TTextareaKeypressEventContext : VueProps
 /// <summary>
 /// 释放键盘时触发
 /// </summary>
-[ECMAScript]
 public record TTextareaKeyupEventContext : VueProps
 {
     /// <summary>
@@ -36492,7 +35720,6 @@ public readonly union TTextareaMaxlengthValue(string, Number)
 /// 文本框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTextareaStatusValue
 {
@@ -36521,7 +35748,6 @@ public enum TTextareaStatusValue
 /// <summary>
 /// 字数超出限制时触发
 /// </summary>
-[ECMAScript]
 public record TTextareaValidateEventContext : VueProps
 {
     /// <summary>
@@ -36534,7 +35760,6 @@ public record TTextareaValidateEventContext : VueProps
 /// <summary>
 /// 对应上游 error 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTextareaValidateEventContextError
 {
@@ -36581,7 +35806,6 @@ public readonly union TTextareaValue(string, Number)
 /// <summary>
 /// 当输入框失去焦点时触发，value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TTimePickerBlurEventContext : VueProps
 {
     /// <summary>
@@ -36620,7 +35844,6 @@ public record TTimePickerBlurEventContext : VueProps
 /// <summary>
 /// 点击清空按钮时触发
 /// </summary>
-[ECMAScript]
 public record TTimePickerClearEventContext : VueProps
 {
     /// <summary>
@@ -36634,7 +35857,6 @@ public record TTimePickerClearEventContext : VueProps
 /// <summary>
 /// 面板关闭时触发
 /// </summary>
-[ECMAScript]
 public record TTimePickerCloseEventContext : VueProps
 {
     /// <summary>
@@ -36648,7 +35870,6 @@ public record TTimePickerCloseEventContext : VueProps
 /// <summary>
 /// TDesign 的 TTimePickerConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTimePickerConfig : VueProps
 {
     /// <summary>
@@ -36690,7 +35911,6 @@ public record TTimePickerConfig : VueProps
 /// <summary>
 /// 点击确认按钮时触发
 /// </summary>
-[ECMAScript]
 public record TTimePickerConfirmEventContext : VueProps
 {
     /// <summary>
@@ -36709,13 +35929,11 @@ public record TTimePickerConfirmEventContext : VueProps
 /// <param name="s">对应上游 s 字段或参数；数据形状见声明类型。</param>
 /// <param name="ms">对应上游 ms 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TTimePickerDisableTimeValueResultPartial。</returns>
-[ECMAScript]
 public delegate TTimePickerDisableTimeValueResultPartial TTimePickerDisableTimeValue(Number h, Number m, Number s, Number ms);
 
 /// <summary>
 /// 禁用时间项的配置函数
 /// </summary>
-[ECMAScript]
 public record TTimePickerDisableTimeValueResultPartial : VueProps
 {
     /// <summary>
@@ -36750,7 +35968,6 @@ public record TTimePickerDisableTimeValueResultPartial : VueProps
 /// <summary>
 /// 输入框获得焦点时触发，value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TTimePickerFocusEventContext : VueProps
 {
     /// <summary>
@@ -36771,7 +35988,6 @@ public record TTimePickerFocusEventContext : VueProps
 /// <summary>
 /// 当输入框内容发生变化时触发，参数 value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TTimePickerInputEventContext : VueProps
 {
     /// <summary>
@@ -36792,7 +36008,6 @@ public record TTimePickerInputEventContext : VueProps
 /// <summary>
 /// 面板打开时触发
 /// </summary>
-[ECMAScript]
 public record TTimePickerOpenEventContext : VueProps
 {
     /// <summary>
@@ -36806,7 +36021,6 @@ public record TTimePickerOpenEventContext : VueProps
 /// <summary>
 /// 面板选中值后触发
 /// </summary>
-[ECMAScript]
 public record TTimePickerPickEventContext : VueProps
 {
     /// <summary>
@@ -36821,7 +36035,6 @@ public record TTimePickerPickEventContext : VueProps
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimePickerSizeValue
 {
@@ -36846,7 +36059,6 @@ public enum TTimePickerSizeValue
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimePickerStatusValue
 {
@@ -36904,7 +36116,6 @@ public readonly union TTimePickerStepsValueItem(string, Number)
 /// <summary>
 /// TDesign 的 TTimePickerValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTimePickerValueDisplaySlotContext : VueProps
 {
     /// <summary>
@@ -36918,7 +36129,6 @@ public record TTimePickerValueDisplaySlotContext : VueProps
 /// <summary>
 /// 当输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTimeRangePickerBlurEventContext : VueProps
 {
     /// <summary>
@@ -36950,13 +36160,11 @@ public record TTimeRangePickerBlurEventContext : VueProps
 /// <param name="ms">对应上游 ms 字段或参数；数据形状见声明类型。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TTimeRangePickerDisableTimeValueResultPartial。</returns>
-[ECMAScript]
 public delegate TTimeRangePickerDisableTimeValueResultPartial TTimeRangePickerDisableTimeValue(Number h, Number m, Number s, Number ms, TTimeRangePickerDisableTimeValueContext context);
 
 /// <summary>
 /// 禁用时间项
 /// </summary>
-[ECMAScript]
 public record TTimeRangePickerDisableTimeValueContext : VueProps
 {
     /// <summary>
@@ -36969,7 +36177,6 @@ public record TTimeRangePickerDisableTimeValueContext : VueProps
 /// <summary>
 /// 禁用时间项
 /// </summary>
-[ECMAScript]
 public record TTimeRangePickerDisableTimeValueResultPartial : VueProps
 {
     /// <summary>
@@ -37005,7 +36212,6 @@ public readonly union TTimeRangePickerDisabledValue(bool, bool[])
 /// <summary>
 /// 范围输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTimeRangePickerFocusEventContext : VueProps
 {
     /// <summary>
@@ -37031,7 +36237,6 @@ public record TTimeRangePickerFocusEventContext : VueProps
 /// <summary>
 /// 当输入框内容发生变化时触发，参数 input 表示输入内容，value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TTimeRangePickerInputEventContext : VueProps
 {
     /// <summary>
@@ -37057,7 +36262,6 @@ public record TTimeRangePickerInputEventContext : VueProps
 /// <summary>
 /// 范围选择器当前操作的是开始端还是结束端。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimeRangePickerPartial
 {
@@ -37076,7 +36280,6 @@ public enum TTimeRangePickerPartial
 /// <summary>
 /// 面板选中值后触发
 /// </summary>
-[ECMAScript]
 public record TTimeRangePickerPickEventContext : VueProps
 {
     /// <summary>
@@ -37105,7 +36308,6 @@ public readonly union TTimeRangePickerPlaceholderValue(string, string[])
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimeRangePickerSizeValue
 {
@@ -37130,7 +36332,6 @@ public enum TTimeRangePickerSizeValue
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimeRangePickerStatusValue
 {
@@ -37188,7 +36389,6 @@ public readonly union TTimeRangePickerStepsValueItem(string, Number)
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TTimelineItemClickEventContext : VueProps
 {
     /// <summary>
@@ -37209,7 +36409,6 @@ public record TTimelineItemClickEventContext : VueProps
 /// <summary>
 /// 标签信息相对于时间轴的位置，在 `mode='alternate'` 时生效，优先级高于 `Timeline.labelAlign`
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimelineItemLabelAlignValue
 {
@@ -37239,7 +36438,6 @@ public enum TTimelineItemLabelAlignValue
 /// 标签信息放在时间轴的位置，`mode='alternate'` 时生效。纵向时间轴信息位置：左侧、右侧或两侧，默认信息在时间轴右侧。横向时间轴信息位置：上方、下方、两侧
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimelineLabelAlignValue
 {
@@ -37274,7 +36472,6 @@ public enum TTimelineLabelAlignValue
 /// 时间轴方向：水平方向、垂直方向
 /// 默认值：vertical
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimelineLayoutValue
 {
@@ -37294,7 +36491,6 @@ public enum TTimelineLayoutValue
 /// 标签与内容文本的位置关系，`alternate` 为展示在轴两侧，`same` 为展示在同一侧
 /// 默认值：alternate
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimelineModeValue
 {
@@ -37314,7 +36510,6 @@ public enum TTimelineModeValue
 /// 步骤条风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTimelineThemeValue
 {
@@ -37343,7 +36538,6 @@ public readonly union TTitleEllipsisValue(bool, TTypographyEllipsis)
 /// 标题等级
 /// 默认值：h1
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTitleLevelValue
 {
@@ -37390,7 +36584,6 @@ public readonly union TTitleType(string, RenderFragment)
 /// <summary>
 /// 内容面板点击时触发
 /// </summary>
-[ECMAScript]
 public record TTooltipOverlayClickEventContext : VueProps
 {
     /// <summary>
@@ -37415,7 +36608,6 @@ public readonly union TTooltipOverlayInnerStyleValue(TStyles, TTooltipOverlayInn
 /// <param name="triggerElement">对应上游 triggerElement 字段或参数；数据形状见声明类型。</param>
 /// <param name="popupElement">对应上游 popupElement 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TStyles。</returns>
-[ECMAScript]
 public delegate TStyles TTooltipOverlayInnerStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 /// <summary>
@@ -37432,7 +36624,6 @@ public readonly union TTooltipOverlayStyleValue(TStyles, TTooltipOverlayStyleVal
 /// <param name="triggerElement">对应上游 triggerElement 字段或参数；数据形状见声明类型。</param>
 /// <param name="popupElement">对应上游 popupElement 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TStyles。</returns>
-[ECMAScript]
 public delegate TStyles TTooltipOverlayStyleValueOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 /// <summary>
@@ -37448,7 +36639,6 @@ public readonly union TTooltipPlacementValue(TTooltipPlacementValueOption1, TPop
 /// 浮层出现位置
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTooltipPlacementValueOption1
 {
@@ -37462,7 +36652,6 @@ public enum TTooltipPlacementValueOption1
 /// <summary>
 /// 下拉选项滚动事件
 /// </summary>
-[ECMAScript]
 public record TTooltipScrollEventContext : VueProps
 {
     /// <summary>
@@ -37476,7 +36665,6 @@ public record TTooltipScrollEventContext : VueProps
 /// <summary>
 /// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
 /// </summary>
-[ECMAScript]
 public record TTooltipScrollToBottomEventContext : VueProps
 {
     /// <summary>
@@ -37491,7 +36679,6 @@ public record TTooltipScrollToBottomEventContext : VueProps
 /// 文字提示风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTooltipThemeValue
 {
@@ -37531,7 +36718,6 @@ public enum TTooltipThemeValue
 /// 触发浮层出现的方式
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTooltipTriggerValue
 {
@@ -37565,7 +36751,6 @@ public enum TTooltipTriggerValue
 /// <summary>
 /// TDesign 的 TTransferConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTransferConfig : VueProps
 {
     /// <summary>
@@ -37594,7 +36779,6 @@ public record TTransferConfig : VueProps
 /// 穿梭框可操作方向
 /// 默认值：both
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTransferDirectionValue
 {
@@ -37635,7 +36819,6 @@ public readonly union TTransferEmptyValue<T>(TEmptyType, TEmptyType[])
 /// <summary>
 /// TDesign 的 TTransferFooterSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTransferFooterSlotContext<T> : VueProps
 {
     /// <summary>
@@ -37656,7 +36839,6 @@ public readonly union TTransferFooterValueItem<T>(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TTransferItem 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTransferItem<T> : VueProps
 {
     /// <summary>
@@ -37681,7 +36863,6 @@ public record TTransferItem<T> : VueProps
 /// <summary>
 /// 穿梭框的源列表或目标列表。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTransferListType
 {
@@ -37700,7 +36881,6 @@ public enum TTransferListType
 /// <summary>
 /// TDesign 的 TTransferOperationSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTransferOperationSlotContext<T> : VueProps
 {
     /// <summary>
@@ -37713,7 +36893,6 @@ public record TTransferOperationSlotContext<T> : VueProps
 /// <summary>
 /// 对应上游 direction 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTransferOperationSlotContextDirection
 {
@@ -37740,7 +36919,6 @@ public readonly union TTransferOperationValueItem<T>(string, RenderFragment)
 /// <summary>
 /// 分页发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TTransferPageChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -37761,7 +36939,6 @@ public readonly union TTransferPaginationValue<T>(TdPaginationProps, TdPaginatio
 /// <summary>
 /// 列表滚动时触发，bottomDistance 表示元素滚动到底部的距离
 /// </summary>
-[ECMAScript]
 public record TTransferScrollEventOptions<T> : VueProps
 {
     /// <summary>
@@ -37806,7 +36983,6 @@ public readonly union TTransferShowCheckAllValue<T>(bool, bool[])
 /// 目标数据列表排列顺序
 /// 默认值：original
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTransferTargetSortValue
 {
@@ -37830,7 +37006,6 @@ public enum TTransferTargetSortValue
 /// <summary>
 /// TDesign 的 TTransferTitleSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTransferTitleSlotContext<T> : VueProps
 {
     /// <summary>
@@ -37846,7 +37021,6 @@ public record TTransferTitleSlotContext<T> : VueProps
 /// </summary>
 /// <param name="tree">对应上游 tree 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 RenderFragment。</returns>
-[ECMAScript]
 public delegate RenderFragment TTransferTreeValue<T>(TTreeProps<TTreeOptionData<TTypeTreeOptionDataTDefault>> tree);
 
 /// <summary>
@@ -37880,7 +37054,6 @@ public readonly union TTransferValue(string, Number)
 /// <summary>
 /// 节点激活时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeActiveEventContext<T> : VueProps
 {
     /// <summary>
@@ -37906,7 +37079,6 @@ public record TTreeActiveEventContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeActiveEventContextTrigger
 {
@@ -37927,13 +37099,11 @@ public enum TTreeActiveEventContextTrigger
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeAllowDropValue<T>(TTreeAllowDropValueContext<T> context);
 
 /// <summary>
 /// 判断节点是否可以执行 drop 操作，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeAllowDropValueContext<T> : VueProps
 {
     /// <summary>
@@ -37967,7 +37137,6 @@ public record TTreeAllowDropValueContext<T> : VueProps
 /// <summary>
 /// 节点选中状态变化时触发，context.node 表示当前变化的选项，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -37993,7 +37162,6 @@ public record TTreeChangeEventContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeChangeEventContextTrigger
 {
@@ -38012,7 +37180,6 @@ public enum TTreeChangeEventContextTrigger
 /// <summary>
 /// 节点点击时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeClickEventContext<T> : VueProps
 {
     /// <summary>
@@ -38033,7 +37200,6 @@ public record TTreeClickEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TTreeConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeConfig : VueProps
 {
     /// <summary>
@@ -38065,13 +37231,11 @@ public readonly union TTreeDisableCheckValue<T>(bool, TTreeDisableCheckValueOpti
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeDisableCheckValueOption2<T>(TTreeNodeModel<T> node);
 
 /// <summary>
 /// 节点结束拖拽时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeDragEndEventContext<T> : VueProps
 {
     /// <summary>
@@ -38092,7 +37256,6 @@ public record TTreeDragEndEventContext<T> : VueProps
 /// <summary>
 /// 节点拖拽时离开目标元素时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeDragLeaveEventContext<T> : VueProps
 {
     /// <summary>
@@ -38113,7 +37276,6 @@ public record TTreeDragLeaveEventContext<T> : VueProps
 /// <summary>
 /// 节点拖拽到目标元素时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeDragOverEventContext<T> : VueProps
 {
     /// <summary>
@@ -38134,7 +37296,6 @@ public record TTreeDragOverEventContext<T> : VueProps
 /// <summary>
 /// 节点开始拖拽时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeDragStartEventContext<T> : VueProps
 {
     /// <summary>
@@ -38155,7 +37316,6 @@ public record TTreeDragStartEventContext<T> : VueProps
 /// <summary>
 /// 节点在目标元素上释放时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeDropEventContext<T> : VueProps
 {
     /// <summary>
@@ -38189,7 +37349,6 @@ public record TTreeDropEventContext<T> : VueProps
 /// <summary>
 /// 节点展开或收起时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeExpandEventContext<T> : VueProps
 {
     /// <summary>
@@ -38215,7 +37374,6 @@ public record TTreeExpandEventContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeExpandEventContextTrigger
 {
@@ -38241,7 +37399,6 @@ public enum TTreeExpandEventContextTrigger
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeFilterValue<T>(TTreeNodeModel<T> node);
 
 /// <summary>
@@ -38275,7 +37432,6 @@ public readonly union TTreeHeightValue<T>(string, Number)
 /// <summary>
 /// TDesign 的 TTreeKeysType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeKeysType : VueProps
 {
     /// <summary>
@@ -38316,7 +37472,6 @@ public readonly union TTreeLabelValue<T>(string, bool)
 /// <summary>
 /// 异步加载后触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TTreeLoadEventContext<T> : VueProps
 {
     /// <summary>
@@ -38332,7 +37487,6 @@ public record TTreeLoadEventContext<T> : VueProps
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 IPromise&lt;T[]&gt;。</returns>
-[ECMAScript]
 public delegate IPromise<T[]> TTreeLoadValue<T>(TTreeNodeModel<T> node);
 
 /// <summary>
@@ -38366,7 +37520,6 @@ public readonly union TTreeMaxHeightValue<T>(string, Number)
 /// <summary>
 /// TDesign 的 TTreeNodeModel 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeNodeModel<T> : VueProps
 {
     /// <summary>
@@ -38576,7 +37729,6 @@ public record TTreeNodeModel<T> : VueProps
 /// 追加子节点数据，泛型 `T` 表示树节点 TS 类型，继承 `TreeOptionData`
 /// </summary>
 /// <param name="data">本次操作使用的数据。</param>
-[ECMAScript]
 public delegate void TTreeNodeModelAppendData<T>(TTreeNodeModelAppendDataData<T> data);
 
 /// <summary>
@@ -38592,7 +37744,6 @@ public readonly union TTreeNodeModelAppendDataData<T>(T, T[])
 /// </summary>
 /// <param name="deep">对应上游 deep 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TTreeNodeModelGetChildrenResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TTreeNodeModelGetChildrenResult<T> TTreeNodeModelGetChildren<T>(bool deep);
 
 /// <summary>
@@ -38607,98 +37758,84 @@ public readonly union TTreeNodeModelGetChildrenResult<T>(TTreeNodeModel<T>[], bo
 /// 获取节点在父节点的子节点列表中的位置，如果没有父节点，则获取节点在根节点列表的位置
 /// </summary>
 /// <returns>回调结果，类型为 Number。</returns>
-[ECMAScript]
 public delegate Number TTreeNodeModelGetIndex<T>();
 
 /// <summary>
 /// 获取节点所在的层级
 /// </summary>
 /// <returns>回调结果，类型为 Number。</returns>
-[ECMAScript]
 public delegate Number TTreeNodeModelGetLevel<T>();
 
 /// <summary>
 /// 获取单个父节点
 /// </summary>
 /// <returns>回调结果，类型为 TTreeNodeModel&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TTreeNodeModel<T> TTreeNodeModelGetParent<T>();
 
 /// <summary>
 /// 获取所有父节点
 /// </summary>
 /// <returns>回调结果，类型为 TTreeNodeModel&lt;T&gt;[]。</returns>
-[ECMAScript]
 public delegate TTreeNodeModel<T>[] TTreeNodeModelGetParents<T>();
 
 /// <summary>
 /// 获取节点全路径
 /// </summary>
 /// <returns>回调结果，类型为 TTreeNodeModel&lt;T&gt;[]。</returns>
-[ECMAScript]
 public delegate TTreeNodeModel<T>[] TTreeNodeModelGetPath<T>();
 
 /// <summary>
 /// 获取根节点
 /// </summary>
 /// <returns>回调结果，类型为 TTreeNodeModel&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TTreeNodeModel<T> TTreeNodeModelGetRoot<T>();
 
 /// <summary>
 /// 获取兄弟节点，包含自己在内
 /// </summary>
 /// <returns>回调结果，类型为 TTreeNodeModel&lt;T&gt;[]。</returns>
-[ECMAScript]
 public delegate TTreeNodeModel<T>[] TTreeNodeModelGetSiblings<T>();
 
 /// <summary>
 /// 在当前节点前插入新节点，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="newData">对应上游 newData 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TTreeNodeModelInsertAfter<T>(T newData);
 
 /// <summary>
 /// 在当前节点前插入新节点，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="newData">对应上游 newData 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TTreeNodeModelInsertBefore<T>(T newData);
 
 /// <summary>
 /// 是否为兄弟节点中的第一个节点
 /// </summary>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeNodeModelIsFirst<T>();
 
 /// <summary>
 /// 是否为兄弟节点中的最后一个节点
 /// </summary>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeNodeModelIsLast<T>();
 
 /// <summary>
 /// 是否为叶子节点
 /// </summary>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeNodeModelIsLeaf<T>();
 
 /// <summary>
 /// 移除当前节点或当前节点的子节点，值为空则移除当前节点，值存在则移除当前节点的子节点
 /// </summary>
 /// <param name="value">当前值。</param>
-[ECMAScript]
 public delegate void TTreeNodeModelRemove<T>(TTreeNodeValue? @value = default);
 
 /// <summary>
 /// 设置节点数据，数据变化可自动刷新页面，泛型 `T` 表示树节点 TS 类型，继承 `TreeOptionData`
 /// </summary>
 /// <param name="data">本次操作使用的数据。</param>
-[ECMAScript]
 public delegate void TTreeNodeModelSetData<T>(T data);
 
 /// <summary>
@@ -38760,7 +37897,6 @@ public readonly union TTreeNodeValue(string, Number)
 /// <summary>
 /// TDesign 的 TTreeOptionData 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeOptionData<T> : VueProps
 {
     /// <summary>
@@ -38821,7 +37957,6 @@ public readonly union TTreeOptionDataLabel<T>(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TTreeProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeProps<T> : VueProps
 {
     /// <summary>
@@ -39153,7 +38288,6 @@ public record TTreeProps<T> : VueProps
 /// <summary>
 /// 滚动事件
 /// </summary>
-[ECMAScript]
 public record TTreeScrollEventParams<T> : VueProps
 {
     /// <summary>
@@ -39167,7 +38301,6 @@ public record TTreeScrollEventParams<T> : VueProps
 /// <summary>
 /// 输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTreeSelectBlurEventContext<DataOption, TreeValueType> : VueProps
 {
     /// <summary>
@@ -39187,7 +38320,6 @@ public record TTreeSelectBlurEventContext<DataOption, TreeValueType> : VueProps
 /// <summary>
 /// TDesign 的 TTreeSelectChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeSelectChangeContext<DataOption> : VueProps
 {
     /// <summary>
@@ -39324,7 +38456,6 @@ public readonly struct TTreeSelectChangeContextE<DataOption> : IUnion
 /// <summary>
 /// 点击清除按钮时触发
 /// </summary>
-[ECMAScript]
 public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
 {
     /// <summary>
@@ -39338,7 +38469,6 @@ public record TTreeSelectClearEventContext<DataOption, TreeValueType> : VueProps
 /// <summary>
 /// TDesign 的 TTreeSelectCollapsedItemsSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeSelectCollapsedItemsSlotContext<DataOption, TreeValueType> : VueProps
 {
     /// <summary>
@@ -39373,13 +38503,11 @@ public record TTreeSelectCollapsedItemsSlotContext<DataOption, TreeValueType> : 
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TTreeSelectCollapsedItemsSlotContextOnClose<DataOption, TreeValueType>(TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, TreeValueType> context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, TreeValueType> : VueProps
 {
     /// <summary>
@@ -39398,7 +38526,6 @@ public record TTreeSelectCollapsedItemsSlotContextOnCloseContext<DataOption, Tre
 /// <summary>
 /// TDesign 的 TTreeSelectConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeSelectConfig : VueProps
 {
     /// <summary>
@@ -39457,13 +38584,11 @@ public readonly union TTreeSelectDataOptionDefaultTDefault(string, Number)
 /// <param name="filterWords">用于过滤候选项的输入文本。</param>
 /// <param name="option">当前候选项。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TTreeSelectFilterValue<DataOption, TreeValueType>(string filterWords, DataOption option);
 
 /// <summary>
 /// 输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TTreeSelectFocusEventContext<DataOption, TreeValueType> : VueProps
 {
     /// <summary>
@@ -39484,7 +38609,6 @@ public record TTreeSelectFocusEventContext<DataOption, TreeValueType> : VueProps
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeSelectSizeValue
 {
@@ -39508,7 +38632,6 @@ public enum TTreeSelectSizeValue
 /// <summary>
 /// 输入框状态
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeSelectStatusValue
 {
@@ -39565,7 +38688,6 @@ public readonly union TTreeSelectValue(string, Number, TJsonObject, TTreeSelectV
 /// <summary>
 /// TDesign 的 TTreeSelectValueChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeSelectValueChangeTrigger
 {
@@ -39599,7 +38721,6 @@ public enum TTreeSelectValueChangeTrigger
 /// <summary>
 /// TDesign 的 TTreeSelectValueDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType> : VueProps
 {
     /// <summary>
@@ -39620,14 +38741,12 @@ public record TTreeSelectValueDisplaySlotContext<DataOption, TreeValueType> : Vu
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public delegate void TTreeSelectValueDisplaySlotContextOnClose<DataOption, TreeValueType>();
 
 /// <summary>
 /// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据
 /// 默认值：value
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeSelectValueTypeValue
 {
@@ -39646,7 +38765,6 @@ public enum TTreeSelectValueTypeValue
 /// <summary>
 /// 对应上游 treeStore 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public sealed record TTreeStore : VueProps
 {
 }
@@ -39683,7 +38801,6 @@ public readonly union TTreeTDefaultTDefault(string, Number)
 /// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
 /// 默认值：onlyLeaf
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTreeValueModeValue
 {
@@ -39707,7 +38824,6 @@ public enum TTreeValueModeValue
 /// <summary>
 /// TDesign 的 TTriggerContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTriggerContext : VueProps
 {
     /// <summary>
@@ -39734,13 +38850,11 @@ public record TTriggerContext : VueProps
 /// 对应上游 triggerUpload 字段或参数；数据形状见声明类型。
 /// </summary>
 /// <param name="e">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TTriggerContextTriggerUpload(MouseEvent e);
 
 /// <summary>
 /// TDesign 的 TTriggerSource 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TTriggerSource
 {
@@ -39797,7 +38911,6 @@ public readonly union TTypeTreeOptionDataTDefault(string, Number)
 /// <summary>
 /// TDesign 的 TTypographyConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTypographyConfig : VueProps
 {
     /// <summary>
@@ -39825,7 +38938,6 @@ public record TTypographyConfig : VueProps
 /// <summary>
 /// TDesign 的 TTypographyCopyable 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTypographyCopyable : VueProps
 {
     /// <summary>
@@ -39857,13 +38969,11 @@ public record TTypographyCopyable : VueProps
 /// <summary>
 /// 点击复制按钮的回调
 /// </summary>
-[ECMAScript]
 public delegate void TTypographyCopyableOnCopy();
 
 /// <summary>
 /// 自定义复制触发元素，一般用于自定义复制图标
 /// </summary>
-[ECMAScript]
 public record TTypographyCopyableSuffixContext : VueProps
 {
     /// <summary>
@@ -39876,7 +38986,6 @@ public record TTypographyCopyableSuffixContext : VueProps
 /// <summary>
 /// TDesign 的 TTypographyEllipsis 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TTypographyEllipsis : VueProps
 {
     /// <summary>
@@ -39923,13 +39032,11 @@ public record TTypographyEllipsis : VueProps
 /// 点击省略按钮的回调
 /// </summary>
 /// <param name="expanded">是否展开。</param>
-[ECMAScript]
 public delegate void TTypographyEllipsisOnExpand(bool expanded);
 
 /// <summary>
 /// 自定义省略触发元素，一般用于自定义折叠图标
 /// </summary>
-[ECMAScript]
 public record TTypographyEllipsisSuffixContext : VueProps
 {
     /// <summary>
@@ -39945,7 +39052,6 @@ public record TTypographyEllipsisSuffixContext : VueProps
 /// </summary>
 /// <param name="file">当前上传文件的信息。</param>
 /// <returns>回调结果，类型为 TUploadBeforeAllFilesUploadValueResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TUploadBeforeAllFilesUploadValueResult<T> TUploadBeforeAllFilesUploadValue<T>(TUploadFile[] @file);
 
 /// <summary>
@@ -39963,7 +39069,6 @@ public readonly union TUploadBeforeAllFilesUploadValueResult<T>(bool, IPromise<b
 /// </summary>
 /// <param name="file">当前上传文件的信息。</param>
 /// <returns>回调结果，类型为 TUploadBeforeUploadValueResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TUploadBeforeUploadValueResult<T> TUploadBeforeUploadValue<T>(TUploadFile @file);
 
 /// <summary>
@@ -39978,7 +39083,6 @@ public readonly union TUploadBeforeUploadValueResult<T>(bool, IPromise<bool>)
 /// <summary>
 /// TDesign 的 TUploadCancelUploadButtonSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadCancelUploadButtonSlotContext<T> : VueProps
 {
     /// <summary>
@@ -40006,13 +39110,11 @@ public record TUploadCancelUploadButtonSlotContext<T> : VueProps
 /// 对应上游 cancelUpload 字段或参数；数据形状见声明类型。
 /// </summary>
 /// <param name="ctx">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TUploadCancelUploadButtonSlotContextCancelUpload<T>(TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> ctx);
 
 /// <summary>
 /// 对应上游 cancelUpload 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public record TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> : VueProps
 {
     /// <summary>
@@ -40026,7 +39128,6 @@ public record TUploadCancelUploadButtonSlotContextCancelUploadCtx<T> : VueProps
 /// <summary>
 /// TDesign 的 TUploadChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadChangeContext : VueProps
 {
     /// <summary>
@@ -40077,7 +39178,6 @@ public readonly union TUploadChangeContextE(MouseEvent, ProgressEvent)
 /// <summary>
 /// TDesign 的 TUploadChangeTrigger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadChangeTrigger
 {
@@ -40116,7 +39216,6 @@ public enum TUploadChangeTrigger
 /// <summary>
 /// TDesign 的 TUploadConfig 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadConfig : VueProps
 {
     /// <summary>
@@ -40161,7 +39260,6 @@ public record TUploadConfig : VueProps
 /// <summary>
 /// TDesign 的 TUploadConfigDragger 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadConfigDragger : VueProps
 {
     /// <summary>
@@ -40189,7 +39287,6 @@ public record TUploadConfigDragger : VueProps
 /// <summary>
 /// TDesign 的 TUploadConfigFileList 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadConfigFileList : VueProps
 {
     /// <summary>
@@ -40231,7 +39328,6 @@ public record TUploadConfigFileList : VueProps
 /// <summary>
 /// TDesign 的 TUploadConfigProgress 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadConfigProgress : VueProps
 {
     /// <summary>
@@ -40276,13 +39372,11 @@ public readonly union TUploadDataValue<T>(VueDictionary<TJsonValue>, TUploadData
 /// </summary>
 /// <param name="files">上传文件列表。</param>
 /// <returns>回调结果，类型为 VueDictionary&lt;TJsonValue&gt;。</returns>
-[ECMAScript]
 public delegate VueDictionary<TJsonValue> TUploadDataValueOption2<T>(TUploadFile[] files);
 
 /// <summary>
 /// TDesign 的 TUploadDisplayDragEvents 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadDisplayDragEvents : VueProps
 {
     /// <summary>
@@ -40314,34 +39408,29 @@ public record TUploadDisplayDragEvents : VueProps
 /// Dragenter 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDragenter(DragEvent @event);
 
 /// <summary>
 /// Dragleave 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDragleave(DragEvent @event);
 
 /// <summary>
 /// Dragover 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDragover(DragEvent @event);
 
 /// <summary>
 /// Drop 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="event">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TUploadDisplayDragEventsOnDrop(DragEvent @event);
 
 /// <summary>
 /// 进入拖拽区域时触发
 /// </summary>
-[ECMAScript]
 public record TUploadDragenterEventContext<T> : VueProps
 {
     /// <summary>
@@ -40355,7 +39444,6 @@ public record TUploadDragenterEventContext<T> : VueProps
 /// <summary>
 /// 离开拖拽区域时触发
 /// </summary>
-[ECMAScript]
 public record TUploadDragleaveEventContext<T> : VueProps
 {
     /// <summary>
@@ -40369,7 +39457,6 @@ public record TUploadDragleaveEventContext<T> : VueProps
 /// <summary>
 /// 拖拽结束时触发
 /// </summary>
-[ECMAScript]
 public record TUploadDropEventContext<T> : VueProps
 {
     /// <summary>
@@ -40383,7 +39470,6 @@ public record TUploadDropEventContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TUploadFailContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadFailContext : VueProps
 {
     /// <summary>
@@ -40428,7 +39514,6 @@ public record TUploadFailContext : VueProps
 /// <summary>
 /// TDesign 的 TUploadFile 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadFile : VueProps
 {
     /// <summary>
@@ -40500,7 +39585,6 @@ public record TUploadFile : VueProps
 /// <summary>
 /// TDesign 的 TUploadFileListDisplaySlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadFileListDisplaySlotContext<T> : VueProps
 {
     /// <summary>
@@ -40520,7 +39604,6 @@ public record TUploadFileListDisplaySlotContext<T> : VueProps
 /// <summary>
 /// 文件上传生命周期状态。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadFileStatus
 {
@@ -40555,7 +39638,6 @@ public enum TUploadFileStatus
 /// </summary>
 /// <param name="requestData">对应上游 requestData 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TJsonObject。</returns>
-[ECMAScript]
 public delegate TJsonObject TUploadFormatRequestValue<T>(TJsonObject requestData);
 
 /// <summary>
@@ -40568,7 +39650,6 @@ public delegate TJsonObject TUploadFormatRequestValue<T>(TJsonObject requestData
 /// <param name="response">对应上游 response 字段或参数；数据形状见声明类型。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TResponseType。</returns>
-[ECMAScript]
 public delegate TResponseType TUploadFormatResponseValue<T>(TJsonValue response, TFormatResponseContext context);
 
 /// <summary>
@@ -40576,13 +39657,11 @@ public delegate TResponseType TUploadFormatResponseValue<T>(TJsonValue response,
 /// </summary>
 /// <param name="file">当前上传文件的信息。</param>
 /// <returns>回调结果，类型为 TUploadFile。</returns>
-[ECMAScript]
 public delegate TUploadFile TUploadFormatValue<T>(FileRef @file);
 
 /// <summary>
 /// 设置上传的请求头部，`action` 存在时有效
 /// </summary>
-[ECMAScript]
 public record TUploadHeadersValue<T> : VueDictionary<string>
 {
 }
@@ -40591,7 +39670,6 @@ public record TUploadHeadersValue<T> : VueDictionary<string>
 /// HTTP 请求类型
 /// 默认值：POST
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadMethodValue
 {
@@ -40650,7 +39728,6 @@ public enum TUploadMethodValue
 /// <summary>
 /// 单个文件上传成功后触发，在多文件场景下会触发多次。`context.file` 表示当前上传成功的单个文件，`context.response` 表示上传请求的返回数据
 /// </summary>
-[ECMAScript]
 public sealed record TUploadOneFileSuccessEventContext<T> : VueProps
 {
     /// <summary>
@@ -40680,7 +39757,6 @@ public sealed record TUploadOneFileSuccessEventContext<T> : VueProps
 /// <summary>
 /// 点击图片预览时触发，文件没有预览
 /// </summary>
-[ECMAScript]
 public record TUploadPreviewEventOptions<T> : VueProps
 {
     /// <summary>
@@ -40707,7 +39783,6 @@ public record TUploadPreviewEventOptions<T> : VueProps
 /// <summary>
 /// TDesign 的 TUploadProgressType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadProgressType
 {
@@ -40726,7 +39801,6 @@ public enum TUploadProgressType
 /// <summary>
 /// TDesign 的 TUploadRemoveContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadRemoveContext : VueProps
 {
     /// <summary>
@@ -40758,7 +39832,6 @@ public record TUploadRemoveContext : VueProps
 /// </summary>
 /// <param name="files">上传文件列表。</param>
 /// <returns>回调结果，类型为 IPromise&lt;TRequestMethodResponse&gt;。</returns>
-[ECMAScript]
 public delegate IPromise<TRequestMethodResponse> TUploadRequestMethodValue<T>(TUploadRequestMethodValueFiles<T> files);
 
 /// <summary>
@@ -40776,7 +39849,6 @@ public readonly union TUploadRequestMethodValueFiles<T>(TUploadFile, TUploadFile
 /// <summary>
 /// TDesign 的 TUploadSelectChangeContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadSelectChangeContext : VueProps
 {
     /// <summary>
@@ -40818,7 +39890,6 @@ public readonly union TUploadSizeLimitValue<T>(Number, TSizeLimitObj)
 /// <summary>
 /// 文件上传提示文本状态
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadStatusValue
 {
@@ -40848,7 +39919,6 @@ public enum TUploadStatusValue
 /// 组件风格。custom 表示完全自定义风格；file 表示默认文件上传风格；file-input 表示输入框形式的文件上传；file-flow 表示文件批量上传；image 表示默认图片上传风格；image-flow 表示图片批量上传
 /// 默认值：file
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadThemeValue
 {
@@ -40887,7 +39957,6 @@ public enum TUploadThemeValue
 /// <summary>
 /// TDesign 的 TUploadTriggerUploadText 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadTriggerUploadText : VueProps
 {
     /// <summary>
@@ -40930,7 +39999,6 @@ public record TUploadTriggerUploadText : VueProps
 /// <summary>
 /// TDesign 的 TUploadUploadButtonSlotContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TUploadUploadButtonSlotContext<T> : VueProps
 {
     /// <summary>
@@ -40963,7 +40031,6 @@ public record TUploadUploadButtonSlotContext<T> : VueProps
 /// <summary>
 /// 对应上游 uploadFiles 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 public delegate void TUploadUploadButtonSlotContextUploadFiles<T>();
 
 /// <summary>
@@ -40971,7 +40038,6 @@ public delegate void TUploadUploadButtonSlotContextUploadFiles<T>();
 /// 注意：如果设置允许上传同名文件，即 `allowUploadDuplicateFile=true`，则不会因为文件重名触发该事件。
 /// 结合 `status` 和 `tips` 可以在组件中呈现不同类型的错误（或告警）提示
 /// </summary>
-[ECMAScript]
 public record TUploadValidateEventContext<T> : VueProps
 {
     /// <summary>
@@ -40991,7 +40057,6 @@ public record TUploadValidateEventContext<T> : VueProps
 /// <summary>
 /// 上传前校验的失败类型或校验阶段。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadValidateType
 {
@@ -41025,7 +40090,6 @@ public enum TUploadValidateType
 /// <summary>
 /// 待上传文件列表发生变化时触发。`context.files` 表示事件参数为待上传文件，`context.trigger` 引起此次变化的触发来源
 /// </summary>
-[ECMAScript]
 public record TUploadWaitingUploadFilesChangeEventContext<T> : VueProps
 {
     /// <summary>
@@ -41045,7 +40109,6 @@ public record TUploadWaitingUploadFilesChangeEventContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TUploadWaitingUploadFilesChangeEventContextTrigger
 {
@@ -41069,7 +40132,6 @@ public enum TUploadWaitingUploadFilesChangeEventContextTrigger
 /// <summary>
 /// TDesign 的 TValidateResultContext 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public sealed record TValidateResultContext<T> : VueProps
 {
     /// <summary>
@@ -41094,7 +40156,6 @@ public sealed record TValidateResultContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TValidateResultObj 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TValidateResultObj<T> : VueDictionary<TValidateResultObjIndex<T>>
 {
 }
@@ -41110,7 +40171,6 @@ public readonly union TValidateResultObjIndex<T>(bool, TAllValidateResult[])
 /// <summary>
 /// TDesign 的 TValidateResultType 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TValidateResultType : VueProps
 {
     /// <summary>
@@ -41353,7 +40413,6 @@ public readonly union TValidateResultTypePattern(RegExp, string)
 /// 校验未通过时呈现的错误信息类型，有 告警信息提示 和 错误信息提示 等两种
 /// 默认值：error
 /// </summary>
-[ECMAScript]
 [String]
 public enum TValidateResultTypeType
 {
@@ -41380,7 +40439,6 @@ public readonly union TValidateResultTypeUrl(bool, TIsURLOptions)
 /// <summary>
 /// 表单规则的校验触发时机。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TValidateTriggerType
 {
@@ -41409,7 +40467,6 @@ public enum TValidateTriggerType
 /// <summary>
 /// TDesign 的 TWatermarkImage 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TWatermarkImage : VueProps
 {
     /// <summary>
@@ -41430,7 +40487,6 @@ public record TWatermarkImage : VueProps
 /// <summary>
 /// TDesign 的 TWatermarkText 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TWatermarkText : VueProps
 {
     /// <summary>
@@ -41473,7 +40529,6 @@ public record TWatermarkText : VueProps
 /// 水印文本文字粗细
 /// 默认值：normal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TWatermarkTextFontWeight
 {
@@ -41518,7 +40573,6 @@ public readonly union TWatermarkWatermarkContentValueOption3Item(TWatermarkText,
 /// <summary>
 /// TDesign 的 Tanimation 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record Tanimation : VueProps
 {
     /// <summary>
@@ -41537,7 +40591,6 @@ public record Tanimation : VueProps
 /// <summary>
 /// TDesign 的 TdAffixProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdAffixProps : VueProps
 {
     /// <summary>
@@ -41607,13 +40660,11 @@ public readonly union TdAffixPropsDefault(string, RenderFragment)
 /// </summary>
 /// <param name="affixed">对应上游 affixed 字段或参数；数据形状见声明类型。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdAffixPropsOnFixedChange(bool affixed, TdAffixPropsOnFixedChangeContext context);
 
 /// <summary>
 /// 固定状态发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TdAffixPropsOnFixedChangeContext : VueProps
 {
     /// <summary>
@@ -41626,7 +40677,6 @@ public record TdAffixPropsOnFixedChangeContext : VueProps
 /// <summary>
 /// TDesign 的 TdAvatarProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdAvatarProps : VueProps
 {
     /// <summary>
@@ -41715,13 +40765,11 @@ public readonly union TdAvatarPropsDefault(string, RenderFragment)
 /// 图片加载失败时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdAvatarPropsOnError(TdAvatarPropsOnErrorContext context);
 
 /// <summary>
 /// 图片加载失败时触发
 /// </summary>
-[ECMAScript]
 public record TdAvatarPropsOnErrorContext : VueProps
 {
     /// <summary>
@@ -41735,7 +40783,6 @@ public record TdAvatarPropsOnErrorContext : VueProps
 /// <summary>
 /// TDesign 的 TdBreadcrumbItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdBreadcrumbItemProps : VueProps
 {
     /// <summary>
@@ -41828,14 +40875,12 @@ public readonly union TdBreadcrumbItemPropsDefault(string, RenderFragment)
 /// 点击时触发
 /// </summary>
 /// <param name="e">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TdBreadcrumbItemPropsOnClick(MouseEvent e);
 
 /// <summary>
 /// 链接或路由跳转方式
 /// 默认值：_self
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdBreadcrumbItemPropsTarget
 {
@@ -41872,7 +40917,6 @@ public readonly union TdBreadcrumbItemPropsTo(string, TRoute)
 /// <summary>
 /// TDesign 的 TdButtonProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdButtonProps : VueProps
 {
     /// <summary>
@@ -42012,14 +41056,12 @@ public readonly union TdButtonPropsDefault(string, RenderFragment)
 /// 点击时触发
 /// </summary>
 /// <param name="e">触发本次回调的原生 DOM 事件。</param>
-[ECMAScript]
 public delegate void TdButtonPropsOnClick(MouseEvent e);
 
 /// <summary>
 /// 按钮形状，有 4 种：长方形、正方形、圆角长方形、圆形
 /// 默认值：rectangle
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdButtonPropsShape
 {
@@ -42048,7 +41090,6 @@ public enum TdButtonPropsShape
 /// <summary>
 /// 渲染按钮的 HTML 标签，默认使用标签 `&lt;button&gt;` 渲染，可以自定义为 `&lt;a&gt;` `&lt;div&gt;` 等。透传全部 HTML 属性，如：`href/target/data-*` 等。⚠️ 禁用按钮 `&lt;button disabled&gt;`无法显示 Popup 浮层信息，可通过修改 `tag=div` 解决这个问题
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdButtonPropsTag
 {
@@ -42072,7 +41113,6 @@ public enum TdButtonPropsTag
 /// <summary>
 /// 组件风格，依次为默认色、品牌色、危险色、警告色、成功色
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdButtonPropsTheme
 {
@@ -42107,7 +41147,6 @@ public enum TdButtonPropsTheme
 /// 按钮类型
 /// 默认值：button
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdButtonPropsType
 {
@@ -42132,7 +41171,6 @@ public enum TdButtonPropsType
 /// 按钮形式，基础、线框、虚线、文字
 /// 默认值：base
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdButtonPropsVariant
 {
@@ -42161,7 +41199,6 @@ public enum TdButtonPropsVariant
 /// <summary>
 /// TDesign 的 TdCheckTagProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdCheckTagProps : VueProps
 {
     /// <summary>
@@ -42280,20 +41317,17 @@ public readonly union TdCheckTagPropsDefault(string, RenderFragment)
 /// </summary>
 /// <param name="checked">是否选中。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdCheckTagPropsOnChange(bool @checked, TCheckTagChangeContext context);
 
 /// <summary>
 /// 点击标签时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdCheckTagPropsOnClick(TdCheckTagPropsOnClickContext context);
 
 /// <summary>
 /// 点击标签时触发
 /// </summary>
-[ECMAScript]
 public record TdCheckTagPropsOnClickContext : VueProps
 {
     /// <summary>
@@ -42335,7 +41369,6 @@ public readonly union TdCheckTagPropsValue(string, Number)
 /// <summary>
 /// TDesign 的 TdCheckboxGroupProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdCheckboxGroupProps<T> : VueProps
 {
     /// <summary>
@@ -42409,13 +41442,11 @@ public record TdCheckboxGroupProps<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdCheckboxGroupPropsOnChange<T>(T @value, TCheckboxGroupChangeContext context);
 
 /// <summary>
 /// TDesign 的 TdCheckboxProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdCheckboxProps : VueProps
 {
     /// <summary>
@@ -42532,13 +41563,11 @@ public readonly union TdCheckboxPropsLabel(string, RenderFragment)
 /// </summary>
 /// <param name="checked">是否选中。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdCheckboxPropsOnChange(bool @checked, TdCheckboxPropsOnChangeContext context);
 
 /// <summary>
 /// 值变化时触发
 /// </summary>
-[ECMAScript]
 public record TdCheckboxPropsOnChangeContext : VueProps
 {
     /// <summary>
@@ -42580,7 +41609,6 @@ public readonly union TdCheckboxPropsValue(string, Number, bool)
 /// <summary>
 /// TDesign 的 TdDescriptionsItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdDescriptionsItemProps : VueProps
 {
     /// <summary>
@@ -42636,7 +41664,6 @@ public readonly union TdDescriptionsItemPropsLabel(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdDialogProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdDialogProps : VueProps
 {
     /// <summary>
@@ -42938,7 +41965,6 @@ public readonly union TdDialogPropsHeader(string, bool, RenderFragment)
 /// 对话框类型，有 4 种：模态对话框、非模态对话框、普通对话框、全屏对话框。弹出「模态对话框」时，只能操作对话框里面的内容，不能操作其他内容。弹出「非模态对话框」时，则可以操作页面内所有内容。「普通对话框」是指没有脱离文档流的对话框，可以在这个基础上开发更多的插件
 /// 默认值：modal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdDialogPropsMode
 {
@@ -42967,26 +41993,22 @@ public enum TdDialogPropsMode
 /// <summary>
 /// 对话框执行消失动画效果前触发
 /// </summary>
-[ECMAScript]
 public delegate void TdDialogPropsOnBeforeClose();
 
 /// <summary>
 /// 对话框执行弹出动画效果前触发
 /// </summary>
-[ECMAScript]
 public delegate void TdDialogPropsOnBeforeOpen();
 
 /// <summary>
 /// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDialogPropsOnCancel(TdDialogPropsOnCancelContext context);
 
 /// <summary>
 /// 如果“取消”按钮存在，则点击“取消”按钮时触发，同时触发关闭事件
 /// </summary>
-[ECMAScript]
 public record TdDialogPropsOnCancelContext : VueProps
 {
     /// <summary>
@@ -43001,20 +42023,17 @@ public record TdDialogPropsOnCancelContext : VueProps
 /// 关闭事件，点击取消按钮、点击关闭按钮、点击蒙层、按下 ESC 等场景下触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDialogPropsOnClose(TDialogCloseContext context);
 
 /// <summary>
 /// 点击右上角关闭按钮时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDialogPropsOnCloseBtnClick(TdDialogPropsOnCloseBtnClickContext context);
 
 /// <summary>
 /// 点击右上角关闭按钮时触发
 /// </summary>
-[ECMAScript]
 public record TdDialogPropsOnCloseBtnClickContext : VueProps
 {
     /// <summary>
@@ -43028,20 +42047,17 @@ public record TdDialogPropsOnCloseBtnClickContext : VueProps
 /// <summary>
 /// 对话框消失动画效果结束后触发
 /// </summary>
-[ECMAScript]
 public delegate void TdDialogPropsOnClosed();
 
 /// <summary>
 /// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDialogPropsOnConfirm(TdDialogPropsOnConfirmContext context);
 
 /// <summary>
 /// 如果“确认”按钮存在，则点击“确认”按钮时触发，或者键盘按下回车键时触发
 /// </summary>
-[ECMAScript]
 public record TdDialogPropsOnConfirmContext : VueProps
 {
     /// <summary>
@@ -43063,13 +42079,11 @@ public readonly union TdDialogPropsOnConfirmContextE(MouseEvent, KeyboardEvent)
 /// 按下 ESC 时触发事件
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDialogPropsOnEscKeydown(TdDialogPropsOnEscKeydownContext context);
 
 /// <summary>
 /// 按下 ESC 时触发事件
 /// </summary>
-[ECMAScript]
 public record TdDialogPropsOnEscKeydownContext : VueProps
 {
     /// <summary>
@@ -43083,20 +42097,17 @@ public record TdDialogPropsOnEscKeydownContext : VueProps
 /// <summary>
 /// 对话框弹出动画效果结束后触发
 /// </summary>
-[ECMAScript]
 public delegate void TdDialogPropsOnOpened();
 
 /// <summary>
 /// 如果蒙层存在，点击蒙层时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDialogPropsOnOverlayClick(TdDialogPropsOnOverlayClickContext context);
 
 /// <summary>
 /// 如果蒙层存在，点击蒙层时触发
 /// </summary>
-[ECMAScript]
 public record TdDialogPropsOnOverlayClickContext : VueProps
 {
     /// <summary>
@@ -43111,7 +42122,6 @@ public record TdDialogPropsOnOverlayClickContext : VueProps
 /// 对话框位置，内置两种：垂直水平居中显示 和 靠近顶部（top:20%）显示。默认情况，为避免贴顶或贴底，顶部和底部距离最小为 `48px`，可通过调整 `top` 覆盖默认大小
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdDialogPropsPlacement
 {
@@ -43131,7 +42141,6 @@ public enum TdDialogPropsPlacement
 /// 对话框风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdDialogPropsTheme
 {
@@ -43221,7 +42230,6 @@ public readonly union TdDialogPropsWidth(string, Number)
 /// <summary>
 /// TDesign 的 TdDropdownItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdDropdownItemProps : VueProps
 {
     /// <summary>
@@ -43292,13 +42300,11 @@ public readonly union TdDropdownItemPropsContent(string, RenderFragment)
 /// </summary>
 /// <param name="dropdownItem">对应上游 dropdownItem 字段或参数；数据形状见声明类型。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdDropdownItemPropsOnClick(TdDropdownItemPropsOnClickDropdownItem dropdownItem, TdDropdownItemPropsOnClickContext context);
 
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TdDropdownItemPropsOnClickContext : VueProps
 {
     /// <summary>
@@ -43368,7 +42374,6 @@ public readonly union TdDropdownItemPropsValue(string, Number, TJsonObject)
 /// <summary>
 /// TDesign 的 TdFormItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdFormItemProps : VueProps
 {
     /// <summary>
@@ -43475,7 +42480,6 @@ public readonly union TdFormItemPropsLabel(string, RenderFragment)
 /// <summary>
 /// 表单字段标签对齐方式：左对齐、右对齐、顶部对齐。默认使用 Form 的对齐方式，优先级高于 Form.labelAlign
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdFormItemPropsLabelAlign
 {
@@ -43528,7 +42532,6 @@ public readonly union TdFormItemPropsLabelWidth(string, Number)
 /// 校验状态，可在需要完全自主控制校验状态时使用
 /// 默认值：''
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdFormItemPropsStatus
 {
@@ -43568,7 +42571,6 @@ public readonly union TdFormItemPropsTips(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdImageProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdImageProps : VueProps
 {
     /// <summary>
@@ -43695,7 +42697,6 @@ public readonly union TdImagePropsError(string, RenderFragment)
 /// 图片填充模式
 /// 默认值：fill
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImagePropsFit
 {
@@ -43738,13 +42739,11 @@ public readonly union TdImagePropsLoading(string, RenderFragment)
 /// 图片加载失败时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdImagePropsOnError(TdImagePropsOnErrorContext context);
 
 /// <summary>
 /// 图片加载失败时触发
 /// </summary>
-[ECMAScript]
 public record TdImagePropsOnErrorContext : VueProps
 {
     /// <summary>
@@ -43759,13 +42758,11 @@ public record TdImagePropsOnErrorContext : VueProps
 /// 图片加载完成时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdImagePropsOnLoad(TdImagePropsOnLoadContext context);
 
 /// <summary>
 /// 图片加载完成时触发
 /// </summary>
-[ECMAScript]
 public record TdImagePropsOnLoadContext : VueProps
 {
     /// <summary>
@@ -43788,7 +42785,6 @@ public readonly union TdImagePropsOverlayContent(string, RenderFragment)
 /// 浮层 `overlayContent` 出现的时机
 /// 默认值：always
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImagePropsOverlayTrigger
 {
@@ -43816,7 +42812,6 @@ public readonly union TdImagePropsPlaceholder(string, RenderFragment)
 /// `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
 /// 默认值：strict-origin-when-cross-origin
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImagePropsReferrerpolicy
 {
@@ -43866,7 +42861,6 @@ public enum TdImagePropsReferrerpolicy
 /// 图片圆角类型
 /// 默认值：square
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImagePropsShape
 {
@@ -43898,7 +42892,6 @@ public readonly union TdImagePropsSrc(string, FileRef)
 /// <summary>
 /// TDesign 的 TdImageViewerProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdImageViewerProps : VueProps
 {
     /// <summary>
@@ -44063,7 +43056,6 @@ public readonly union TdImageViewerPropsCloseBtn(bool, RenderFragment)
 /// <summary>
 /// 图片预览中的 `&lt;img&gt;` 标签的原生属性，[MDN 定义](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy)
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImageViewerPropsImageReferrerpolicy
 {
@@ -44122,7 +43114,6 @@ public readonly union TdImageViewerPropsImagesItem(string, FileRef, TImageInfo)
 /// 模态预览（modal）和非模态预览（modeless)
 /// 默认值：modal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImageViewerPropsMode
 {
@@ -44151,13 +43142,11 @@ public readonly union TdImageViewerPropsNavigationArrow(bool, RenderFragment)
 /// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdImageViewerPropsOnClose(TdImageViewerPropsOnCloseContext context);
 
 /// <summary>
 /// 关闭时触发，事件参数包含触发关闭的来源：关闭按钮、遮罩层、ESC 键
 /// </summary>
-[ECMAScript]
 public record TdImageViewerPropsOnCloseContext : VueProps
 {
     /// <summary>
@@ -44184,7 +43173,6 @@ public readonly union TdImageViewerPropsOnCloseContextE(MouseEvent, KeyboardEven
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImageViewerPropsOnCloseContextTrigger
 {
@@ -44209,7 +43197,6 @@ public enum TdImageViewerPropsOnCloseContextTrigger
 /// 自定义预览图片下载操作，url为图片链接
 /// </summary>
 /// <param name="url">对应上游 url 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TdImageViewerPropsOnDownload(TdImageViewerPropsOnDownloadUrl url);
 
 /// <summary>
@@ -44225,13 +43212,11 @@ public readonly union TdImageViewerPropsOnDownloadUrl(string, FileRef)
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdImageViewerPropsOnIndexChange(Number index, TdImageViewerPropsOnIndexChangeContext context);
 
 /// <summary>
 /// 预览图片切换时触发，`context.prev` 切换到上一张图片，`context.next` 切换到下一张图片
 /// </summary>
-[ECMAScript]
 public record TdImageViewerPropsOnIndexChangeContext : VueProps
 {
     /// <summary>
@@ -44244,7 +43229,6 @@ public record TdImageViewerPropsOnIndexChangeContext : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdImageViewerPropsOnIndexChangeContextTrigger
 {
@@ -44284,7 +43268,6 @@ public readonly union TdImageViewerPropsTrigger(RenderFragment, RenderFragment<T
 /// <summary>
 /// 触发图片预览的元素，可能是一个预览按钮，可能是一张缩略图，完全自定义，默认为预览图片的缩略图
 /// </summary>
-[ECMAScript]
 public record TdImageViewerPropsTriggerOption2Context : VueProps
 {
     /// <summary>
@@ -44299,13 +43282,11 @@ public record TdImageViewerPropsTriggerOption2Context : VueProps
 /// 对应上游 open 字段或参数；数据形状见声明类型。
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
-[ECMAScript]
 public delegate void TdImageViewerPropsTriggerOption2ContextOpen(Number? index = default);
 
 /// <summary>
 /// TDesign 的 TdInputNumberProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdInputNumberProps<T> : VueProps
 {
     /// <summary>
@@ -44508,7 +43489,6 @@ public record TdInputNumberProps<T> : VueProps
 /// <summary>
 /// 文本内容位置，居左/居中/居右
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputNumberPropsAlign
 {
@@ -44535,13 +43515,11 @@ public enum TdInputNumberPropsAlign
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 TInputNumberValue。</returns>
-[ECMAScript]
 public delegate TInputNumberValue TdInputNumberPropsFormat<T>(TInputNumberValue @value, TdInputNumberPropsFormatContext<T>? context = default);
 
 /// <summary>
 /// 格式化输入框展示值。第二个事件参数 `context.fixedNumber` 表示处理过小数位数 `decimalPlaces` 的数字
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsFormatContext<T> : VueProps
 {
     /// <summary>
@@ -44564,13 +43542,11 @@ public readonly union TdInputNumberPropsLabel<T>(string, RenderFragment)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnBlur<T>(TInputNumberValue @value, TdInputNumberPropsOnBlurContext<T> context);
 
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnBlurContext<T> : VueProps
 {
     /// <summary>
@@ -44586,7 +43562,6 @@ public record TdInputNumberPropsOnBlurContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnChange<T>(T @value, TChangeContext context);
 
 /// <summary>
@@ -44594,13 +43569,11 @@ public delegate void TdInputNumberPropsOnChange<T>(T @value, TChangeContext cont
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnEnter<T>(TInputNumberValue @value, TdInputNumberPropsOnEnterContext<T> context);
 
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnEnterContext<T> : VueProps
 {
     /// <summary>
@@ -44616,13 +43589,11 @@ public record TdInputNumberPropsOnEnterContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnFocus<T>(TInputNumberValue @value, TdInputNumberPropsOnFocusContext<T> context);
 
 /// <summary>
 /// 获取焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnFocusContext<T> : VueProps
 {
     /// <summary>
@@ -44638,13 +43609,11 @@ public record TdInputNumberPropsOnFocusContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnKeydown<T>(TInputNumberValue @value, TdInputNumberPropsOnKeydownContext<T> context);
 
 /// <summary>
 /// 键盘按下时触发
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnKeydownContext<T> : VueProps
 {
     /// <summary>
@@ -44660,13 +43629,11 @@ public record TdInputNumberPropsOnKeydownContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnKeypress<T>(TInputNumberValue @value, TdInputNumberPropsOnKeypressContext<T> context);
 
 /// <summary>
 /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnKeypressContext<T> : VueProps
 {
     /// <summary>
@@ -44682,13 +43649,11 @@ public record TdInputNumberPropsOnKeypressContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnKeyup<T>(TInputNumberValue @value, TdInputNumberPropsOnKeyupContext<T> context);
 
 /// <summary>
 /// 释放键盘时触发
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnKeyupContext<T> : VueProps
 {
     /// <summary>
@@ -44703,13 +43668,11 @@ public record TdInputNumberPropsOnKeyupContext<T> : VueProps
 /// 最大值或最小值校验结束后触发，`exceed-maximum` 表示超出最大值，`below-minimum` 表示小于最小值
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputNumberPropsOnValidate<T>(TdInputNumberPropsOnValidateContext<T> context);
 
 /// <summary>
 /// 最大值或最小值校验结束后触发，`exceed-maximum` 表示超出最大值，`below-minimum` 表示小于最小值
 /// </summary>
-[ECMAScript]
 public record TdInputNumberPropsOnValidateContext<T> : VueProps
 {
     /// <summary>
@@ -44722,7 +43685,6 @@ public record TdInputNumberPropsOnValidateContext<T> : VueProps
 /// <summary>
 /// 对应上游 error 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputNumberPropsOnValidateContextError
 {
@@ -44742,7 +43704,6 @@ public enum TdInputNumberPropsOnValidateContextError
 /// 组件尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputNumberPropsSize
 {
@@ -44767,7 +43728,6 @@ public enum TdInputNumberPropsSize
 /// 文本框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputNumberPropsStatus
 {
@@ -44805,7 +43765,6 @@ public readonly union TdInputNumberPropsSuffix<T>(string, RenderFragment)
 /// 按钮布局
 /// 默认值：row
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputNumberPropsTheme
 {
@@ -44837,7 +43796,6 @@ public readonly union TdInputNumberPropsTips<T>(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdInputProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdInputProps<T> : VueProps
 {
     /// <summary>
@@ -45128,7 +44086,6 @@ public record TdInputProps<T> : VueProps
 /// 文本内容位置，居左/居中/居右
 /// 默认值：left
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputPropsAlign
 {
@@ -45190,13 +44147,11 @@ public readonly union TdInputPropsMaxlength<T>(string, Number)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnBlur<T>(T @value, TdInputPropsOnBlurContext<T> context);
 
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnBlurContext<T> : VueProps
 {
     /// <summary>
@@ -45212,13 +44167,11 @@ public record TdInputPropsOnBlurContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnChange<T>(T @value, TdInputPropsOnChangeContext<T>? context = default);
 
 /// <summary>
 /// 输入框值发生变化时触发。参数 `trigger=initial` 表示传入的数据不符合预期，组件自动处理后触发 change 告知父组件。如：初始值长度超过 `maxlength` 限制
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnChangeContext<T> : VueProps
 {
     /// <summary>
@@ -45245,7 +44198,6 @@ public readonly union TdInputPropsOnChangeContextE<T>(InputEvent, MouseEvent, Co
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputPropsOnChangeContextTrigger
 {
@@ -45270,13 +44222,11 @@ public enum TdInputPropsOnChangeContextTrigger
 /// 清空按钮点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnClear<T>(TdInputPropsOnClearContext<T> context);
 
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnClearContext<T> : VueProps
 {
     /// <summary>
@@ -45291,13 +44241,11 @@ public record TdInputPropsOnClearContext<T> : VueProps
 /// 点击组件时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnClick<T>(TdInputPropsOnClickContext<T> context);
 
 /// <summary>
 /// 点击组件时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnClickContext<T> : VueProps
 {
     /// <summary>
@@ -45313,13 +44261,11 @@ public record TdInputPropsOnClickContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnCompositionend<T>(string @value, TdInputPropsOnCompositionendContext<T> context);
 
 /// <summary>
 /// 中文输入结束时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnCompositionendContext<T> : VueProps
 {
     /// <summary>
@@ -45335,13 +44281,11 @@ public record TdInputPropsOnCompositionendContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnCompositionstart<T>(string @value, TdInputPropsOnCompositionstartContext<T> context);
 
 /// <summary>
 /// 中文输入开始时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnCompositionstartContext<T> : VueProps
 {
     /// <summary>
@@ -45357,13 +44301,11 @@ public record TdInputPropsOnCompositionstartContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnEnter<T>(T @value, TdInputPropsOnEnterContext<T> context);
 
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnEnterContext<T> : VueProps
 {
     /// <summary>
@@ -45379,13 +44321,11 @@ public record TdInputPropsOnEnterContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnFocus<T>(T @value, TdInputPropsOnFocusContext<T> context);
 
 /// <summary>
 /// 获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnFocusContext<T> : VueProps
 {
     /// <summary>
@@ -45401,13 +44341,11 @@ public record TdInputPropsOnFocusContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnKeydown<T>(T @value, TdInputPropsOnKeydownContext<T> context);
 
 /// <summary>
 /// 键盘按下时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnKeydownContext<T> : VueProps
 {
     /// <summary>
@@ -45423,13 +44361,11 @@ public record TdInputPropsOnKeydownContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnKeypress<T>(T @value, TdInputPropsOnKeypressContext<T> context);
 
 /// <summary>
 /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnKeypressContext<T> : VueProps
 {
     /// <summary>
@@ -45445,13 +44381,11 @@ public record TdInputPropsOnKeypressContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnKeyup<T>(T @value, TdInputPropsOnKeyupContext<T> context);
 
 /// <summary>
 /// 释放键盘时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnKeyupContext<T> : VueProps
 {
     /// <summary>
@@ -45466,13 +44400,11 @@ public record TdInputPropsOnKeyupContext<T> : VueProps
 /// 进入输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnMouseenter<T>(TdInputPropsOnMouseenterContext<T> context);
 
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnMouseenterContext<T> : VueProps
 {
     /// <summary>
@@ -45487,13 +44419,11 @@ public record TdInputPropsOnMouseenterContext<T> : VueProps
 /// 离开输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnMouseleave<T>(TdInputPropsOnMouseleaveContext<T> context);
 
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnMouseleaveContext<T> : VueProps
 {
     /// <summary>
@@ -45508,13 +44438,11 @@ public record TdInputPropsOnMouseleaveContext<T> : VueProps
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnPaste<T>(TdInputPropsOnPasteContext<T> context);
 
 /// <summary>
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnPasteContext<T> : VueProps
 {
     /// <summary>
@@ -45536,13 +44464,11 @@ public record TdInputPropsOnPasteContext<T> : VueProps
 /// 字数超出限制时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnValidate<T>(TdInputPropsOnValidateContext<T> context);
 
 /// <summary>
 /// 字数超出限制时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnValidateContext<T> : VueProps
 {
     /// <summary>
@@ -45555,7 +44481,6 @@ public record TdInputPropsOnValidateContext<T> : VueProps
 /// <summary>
 /// 对应上游 error 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputPropsOnValidateContextError
 {
@@ -45575,13 +44500,11 @@ public enum TdInputPropsOnValidateContextError
 /// 输入框中滚动鼠标时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdInputPropsOnWheel<T>(TdInputPropsOnWheelContext<T> context);
 
 /// <summary>
 /// 输入框中滚动鼠标时触发
 /// </summary>
-[ECMAScript]
 public record TdInputPropsOnWheelContext<T> : VueProps
 {
     /// <summary>
@@ -45596,7 +44519,6 @@ public record TdInputPropsOnWheelContext<T> : VueProps
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputPropsStatus
 {
@@ -45642,7 +44564,6 @@ public readonly union TdInputPropsTips<T>(string, RenderFragment)
 /// 输入框类型。`type=number` 仅支持最基础的数字输入功能，更多功能建议使用 `InputNumber` 组件
 /// 默认值：text
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdInputPropsType
 {
@@ -45691,7 +44612,6 @@ public enum TdInputPropsType
 /// <summary>
 /// TDesign 的 TdLoadingProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdLoadingProps : VueProps
 {
     /// <summary>
@@ -45818,7 +44738,6 @@ public readonly union TdLoadingPropsText(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdOptionProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdOptionProps : VueProps
 {
     /// <summary>
@@ -45915,7 +44834,6 @@ public readonly union TdOptionPropsValue(string, Number, bool, BigInt)
 /// <summary>
 /// TDesign 的 TdPaginationProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdPaginationProps : VueProps
 {
     /// <summary>
@@ -46079,7 +44997,6 @@ public record TdPaginationProps : VueProps
 /// 当前页或分页大小发生变化时触发
 /// </summary>
 /// <param name="pageInfo">对应上游 pageInfo 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TdPaginationPropsOnChange(TPageInfo pageInfo);
 
 /// <summary>
@@ -46087,7 +45004,6 @@ public delegate void TdPaginationPropsOnChange(TPageInfo pageInfo);
 /// </summary>
 /// <param name="current">对应上游 current 字段或参数；数据形状见声明类型。</param>
 /// <param name="pageInfo">对应上游 pageInfo 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TdPaginationPropsOnCurrentChange(Number current, TPageInfo pageInfo);
 
 /// <summary>
@@ -46095,14 +45011,12 @@ public delegate void TdPaginationPropsOnCurrentChange(Number current, TPageInfo 
 /// </summary>
 /// <param name="pageSize">对应上游 pageSize 字段或参数；数据形状见声明类型。</param>
 /// <param name="pageInfo">对应上游 pageInfo 字段或参数；数据形状见声明类型。</param>
-[ECMAScript]
 public delegate void TdPaginationPropsOnPageSizeChange(Number pageSize, TPageInfo pageInfo);
 
 /// <summary>
 /// 页码数量超出时，前后省略模式, `mid`表示中间省略, `both-ends` 表示两端省略
 /// 默认值：mid
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdPaginationPropsPageEllipsisMode
 {
@@ -46151,7 +45065,6 @@ public readonly union TdPaginationPropsPageSizeOptionsItem(Number, TdPaginationP
 /// 分页大小控制器，值为 [] 则不显示
 /// 默认值：[5, 10, 20, 50]
 /// </summary>
-[ECMAScript]
 public record TdPaginationPropsPageSizeOptionsItemOption2 : VueProps
 {
     /// <summary>
@@ -46172,7 +45085,6 @@ public record TdPaginationPropsPageSizeOptionsItemOption2 : VueProps
 /// 分页组件尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdPaginationPropsSize
 {
@@ -46192,7 +45104,6 @@ public enum TdPaginationPropsSize
 /// 分页组件风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdPaginationPropsTheme
 {
@@ -46220,7 +45131,6 @@ public readonly union TdPaginationPropsTotalContent(bool, RenderFragment)
 /// <summary>
 /// TDesign 的 TdPopupProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdPopupProps : VueProps
 {
     /// <summary>
@@ -46422,13 +45332,11 @@ public readonly union TdPopupPropsDelay(Number, Number[])
 /// 内容面板点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdPopupPropsOnOverlayClick(TdPopupPropsOnOverlayClickContext context);
 
 /// <summary>
 /// 内容面板点击时触发
 /// </summary>
-[ECMAScript]
 public record TdPopupPropsOnOverlayClickContext : VueProps
 {
     /// <summary>
@@ -46443,13 +45351,11 @@ public record TdPopupPropsOnOverlayClickContext : VueProps
 /// 下拉选项滚动事件
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdPopupPropsOnScroll(TdPopupPropsOnScrollContext context);
 
 /// <summary>
 /// 下拉选项滚动事件
 /// </summary>
-[ECMAScript]
 public record TdPopupPropsOnScrollContext : VueProps
 {
     /// <summary>
@@ -46464,13 +45370,11 @@ public record TdPopupPropsOnScrollContext : VueProps
 /// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdPopupPropsOnScrollToBottom(TdPopupPropsOnScrollToBottomContext context);
 
 /// <summary>
 /// 下拉滚动触底事件，常用于滚动到底执行具体业务逻辑
 /// </summary>
-[ECMAScript]
 public record TdPopupPropsOnScrollToBottomContext : VueProps
 {
     /// <summary>
@@ -46486,7 +45390,6 @@ public record TdPopupPropsOnScrollToBottomContext : VueProps
 /// </summary>
 /// <param name="visible">是否显示。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdPopupPropsOnVisibleChange(bool visible, TPopupVisibleChangeContext context);
 
 /// <summary>
@@ -46503,7 +45406,6 @@ public readonly union TdPopupPropsOverlayInnerStyle(TStyles, TdPopupPropsOverlay
 /// <param name="triggerElement">对应上游 triggerElement 字段或参数；数据形状见声明类型。</param>
 /// <param name="popupElement">对应上游 popupElement 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TStyles。</returns>
-[ECMAScript]
 public delegate TStyles TdPopupPropsOverlayInnerStyleOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 /// <summary>
@@ -46520,14 +45422,12 @@ public readonly union TdPopupPropsOverlayStyle(TStyles, TdPopupPropsOverlayStyle
 /// <param name="triggerElement">对应上游 triggerElement 字段或参数；数据形状见声明类型。</param>
 /// <param name="popupElement">对应上游 popupElement 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TStyles。</returns>
-[ECMAScript]
 public delegate TStyles TdPopupPropsOverlayStyleOption2(HTMLElement triggerElement, HTMLElement popupElement);
 
 /// <summary>
 /// 触发浮层出现的方式
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdPopupPropsTrigger
 {
@@ -46569,7 +45469,6 @@ public readonly union TdPopupPropsTriggerElement(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdRadioGroupProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdRadioGroupProps<T> : VueProps
 {
     /// <summary>
@@ -46661,7 +45560,6 @@ public record TdRadioGroupProps<T> : VueProps
 /// 当取值为 vertical 时，单选框选项以垂直方向排列。
 /// 默认值：horizontal
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdRadioGroupPropsDirection
 {
@@ -46682,13 +45580,11 @@ public enum TdRadioGroupPropsDirection
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRadioGroupPropsOnChange<T>(T @value, TdRadioGroupPropsOnChangeContext<T> context);
 
 /// <summary>
 /// 选中值发生变化时触发, `context.name` 指 RadioGroup 的 name 属性
 /// </summary>
-[ECMAScript]
 public record TdRadioGroupPropsOnChangeContext<T> : VueProps
 {
     /// <summary>
@@ -46709,7 +45605,6 @@ public record TdRadioGroupPropsOnChangeContext<T> : VueProps
 /// 用于在使用 options 方式渲染时决定组件的风格
 /// 默认值：radio
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdRadioGroupPropsTheme
 {
@@ -46729,7 +45624,6 @@ public enum TdRadioGroupPropsTheme
 /// 单选组件按钮形式
 /// 默认值：outline
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdRadioGroupPropsVariant
 {
@@ -46753,7 +45647,6 @@ public enum TdRadioGroupPropsVariant
 /// <summary>
 /// TDesign 的 TdRadioProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdRadioProps<T> : VueProps
 {
     /// <summary>
@@ -46855,13 +45748,11 @@ public readonly union TdRadioPropsLabel<T>(string, RenderFragment)
 /// </summary>
 /// <param name="checked">是否选中。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRadioPropsOnChange<T>(bool @checked, TdRadioPropsOnChangeContext<T> context);
 
 /// <summary>
 /// 选中状态变化时触发
 /// </summary>
-[ECMAScript]
 public record TdRadioPropsOnChangeContext<T> : VueProps
 {
     /// <summary>
@@ -46876,13 +45767,11 @@ public record TdRadioPropsOnChangeContext<T> : VueProps
 /// 点击时触发，一般用于外层阻止冒泡场景
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRadioPropsOnClick<T>(TdRadioPropsOnClickContext<T> context);
 
 /// <summary>
 /// 点击时触发，一般用于外层阻止冒泡场景
 /// </summary>
-[ECMAScript]
 public record TdRadioPropsOnClickContext<T> : VueProps
 {
     /// <summary>
@@ -46896,7 +45785,6 @@ public record TdRadioPropsOnClickContext<T> : VueProps
 /// <summary>
 /// TDesign 的 TdRangeInputProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdRangeInputProps : VueProps
 {
     /// <summary>
@@ -47114,13 +46002,11 @@ public readonly union TdRangeInputPropsLabel(string, RenderFragment)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnBlur(TInputValue[] @value, TdRangeInputPropsOnBlurContext? context = default);
 
 /// <summary>
 /// 范围输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnBlurContext : VueProps
 {
     /// <summary>
@@ -47141,13 +46027,11 @@ public record TdRangeInputPropsOnBlurContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnChange(TInputValue[] @value, TdRangeInputPropsOnChangeContext? context = default);
 
 /// <summary>
 /// 范围输入框值发生变化时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnChangeContext : VueProps
 {
     /// <summary>
@@ -47180,7 +46064,6 @@ public readonly union TdRangeInputPropsOnChangeContextE(InputEvent, MouseEvent, 
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdRangeInputPropsOnChangeContextTrigger
 {
@@ -47205,13 +46088,11 @@ public enum TdRangeInputPropsOnChangeContextTrigger
 /// 清空按钮点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnClear(TdRangeInputPropsOnClearContext context);
 
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnClearContext : VueProps
 {
     /// <summary>
@@ -47226,13 +46107,11 @@ public record TdRangeInputPropsOnClearContext : VueProps
 /// 范围输入框点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnClick(TdRangeInputPropsOnClickContext? context = default);
 
 /// <summary>
 /// 范围输入框点击时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnClickContext : VueProps
 {
     /// <summary>
@@ -47253,13 +46132,11 @@ public record TdRangeInputPropsOnClickContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnEnter(TInputValue[] @value, TdRangeInputPropsOnEnterContext? context = default);
 
 /// <summary>
 /// 回车键按下时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnEnterContext : VueProps
 {
     /// <summary>
@@ -47288,13 +46165,11 @@ public readonly union TdRangeInputPropsOnEnterContextE(InputEvent, MouseEvent)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnFocus(TInputValue[] @value, TdRangeInputPropsOnFocusContext? context = default);
 
 /// <summary>
 /// 范围输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnFocusContext : VueProps
 {
     /// <summary>
@@ -47314,13 +46189,11 @@ public record TdRangeInputPropsOnFocusContext : VueProps
 /// 进入输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnMouseenter(TdRangeInputPropsOnMouseenterContext context);
 
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnMouseenterContext : VueProps
 {
     /// <summary>
@@ -47335,13 +46208,11 @@ public record TdRangeInputPropsOnMouseenterContext : VueProps
 /// 离开输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdRangeInputPropsOnMouseleave(TdRangeInputPropsOnMouseleaveContext context);
 
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdRangeInputPropsOnMouseleaveContext : VueProps
 {
     /// <summary>
@@ -47373,7 +46244,6 @@ public readonly union TdRangeInputPropsSeparator(string, RenderFragment)
 /// 输入框尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdRangeInputPropsSize
 {
@@ -47398,7 +46268,6 @@ public enum TdRangeInputPropsSize
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdRangeInputPropsStatus
 {
@@ -47443,7 +46312,6 @@ public readonly union TdRangeInputPropsTips(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdSelectInputProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdSelectInputProps : VueProps
 {
     /// <summary>
@@ -47720,7 +46588,6 @@ public record TdSelectInputProps : VueProps
 /// <summary>
 /// 标签过多的情况下，折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 `collapsedItems` 自定义。`value` 表示所有标签值，`collapsedSelectedItems` 表示折叠标签值，`count` 表示折叠的数量，`onClose` 表示移除标签的事件回调
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsCollapsedItemsContext : VueProps
 {
     /// <summary>
@@ -47753,13 +46620,11 @@ public record TdSelectInputPropsCollapsedItemsContext : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsCollapsedItemsContextOnClose(TdSelectInputPropsCollapsedItemsContextOnCloseContext context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsCollapsedItemsContextOnCloseContext : VueProps
 {
     /// <summary>
@@ -47788,20 +46653,17 @@ public readonly union TdSelectInputPropsLabel(string, RenderFragment)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnBlur(TSelectInputValue @value, TSelectInputBlurContext context);
 
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnClear(TdSelectInputPropsOnClearContext context);
 
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsOnClearContext : VueProps
 {
     /// <summary>
@@ -47817,13 +46679,11 @@ public record TdSelectInputPropsOnClearContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnEnter(TSelectInputValue @value, TdSelectInputPropsOnEnterContext context);
 
 /// <summary>
 /// 按键按下 Enter 时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsOnEnterContext : VueProps
 {
     /// <summary>
@@ -47852,7 +46712,6 @@ public record TdSelectInputPropsOnEnterContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnFocus(TSelectInputValue @value, TSelectInputFocusContext context);
 
 /// <summary>
@@ -47860,20 +46719,17 @@ public delegate void TdSelectInputPropsOnFocus(TSelectInputValue @value, TSelect
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnInputChange(string @value, TSelectInputValueChangeContext? context = default);
 
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnMouseenter(TdSelectInputPropsOnMouseenterContext context);
 
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsOnMouseenterContext : VueProps
 {
     /// <summary>
@@ -47888,13 +46744,11 @@ public record TdSelectInputPropsOnMouseenterContext : VueProps
 /// 离开输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnMouseleave(TdSelectInputPropsOnMouseleaveContext context);
 
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsOnMouseleaveContext : VueProps
 {
     /// <summary>
@@ -47909,13 +46763,11 @@ public record TdSelectInputPropsOnMouseleaveContext : VueProps
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnPaste(TdSelectInputPropsOnPasteContext context);
 
 /// <summary>
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsOnPasteContext : VueProps
 {
     /// <summary>
@@ -47938,7 +46790,6 @@ public record TdSelectInputPropsOnPasteContext : VueProps
 /// </summary>
 /// <param name="visible">是否显示。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnPopupVisibleChange(bool visible, TPopupVisibleChangeContext context);
 
 /// <summary>
@@ -47946,7 +46797,6 @@ public delegate void TdSelectInputPropsOnPopupVisibleChange(bool visible, TPopup
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsOnTagChange(TTagInputValueItem[] @value, TTagInputChangeContext context);
 
 /// <summary>
@@ -47961,7 +46811,6 @@ public readonly union TdSelectInputPropsPanel(string, RenderFragment)
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdSelectInputPropsStatus
 {
@@ -48006,7 +46855,6 @@ public readonly union TdSelectInputPropsTag(string, RenderFragment<TdSelectInput
 /// <summary>
 /// 多选场景下，自定义选中标签的内部内容。注意和 `valueDisplay` 区分，`valueDisplay`  是用来定义全部标签内容，而非某一个标签
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsTagOption2Context : VueProps
 {
     /// <summary>
@@ -48063,7 +46911,6 @@ public readonly union TdSelectInputPropsValueDisplay(string, RenderFragment<TdSe
 /// <summary>
 /// 自定义值呈现的全部内容，参数为所有标签的值
 /// </summary>
-[ECMAScript]
 public record TdSelectInputPropsValueDisplayOption2Context : VueProps
 {
     /// <summary>
@@ -48086,13 +46933,11 @@ public record TdSelectInputPropsValueDisplayOption2Context : VueProps
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
 /// <param name="item">当前操作的数据项。</param>
-[ECMAScript]
 public delegate void TdSelectInputPropsValueDisplayOption2ContextOnClose(Number index, TJsonValue? item = default);
 
 /// <summary>
 /// TDesign 的 TdSelectProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdSelectProps<T> : VueProps
 {
     /// <summary>
@@ -48443,7 +47288,6 @@ public record TdSelectProps<T> : VueProps
 /// <summary>
 /// 多选情况下，用于设置折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 collapsedItems 自定义。`value` 表示当前存在的所有标签，`collapsedSelectedItems` 表示折叠的标签，泛型 `T` 继承 `SelectOption`，表示选项数据；`count` 表示折叠的数量, `onClose` 表示移除标签
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsCollapsedItemsContext<T> : VueProps
 {
     /// <summary>
@@ -48478,13 +47322,11 @@ public record TdSelectPropsCollapsedItemsContext<T> : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsCollapsedItemsContextOnClose<T>(TdSelectPropsCollapsedItemsContextOnCloseContext<T> context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsCollapsedItemsContextOnCloseContext<T> : VueProps
 {
     /// <summary>
@@ -48514,7 +47356,6 @@ public readonly union TdSelectPropsEmpty<T>(string, RenderFragment)
 /// <param name="filterWords">用于过滤候选项的输入文本。</param>
 /// <param name="option">当前候选项。</param>
 /// <returns>回调结果，类型为 TdSelectPropsFilterResult&lt;T&gt;。</returns>
-[ECMAScript]
 public delegate TdSelectPropsFilterResult<T> TdSelectPropsFilter<T>(string filterWords, T option);
 
 /// <summary>
@@ -48545,13 +47386,11 @@ public readonly union TdSelectPropsLoadingText<T>(string, RenderFragment)
 /// 输入框失去焦点时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnBlur<T>(TdSelectPropsOnBlurContext<T> context);
 
 /// <summary>
 /// 输入框失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsOnBlurContext<T> : VueProps
 {
     /// <summary>
@@ -48580,13 +47419,11 @@ public readonly union TdSelectPropsOnBlurContextE<T>(FocusEvent, KeyboardEvent)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnChange<T>(TSelectValue<TSelectOption> @value, TdSelectPropsOnChangeContext<T> context);
 
 /// <summary>
 /// 选中值变化时触发。`context.trigger` 表示触发变化的来源；`context.selectedOptions` 表示选中值的完整对象，数组长度一定和 `value` 相同；`context.option` 表示当前操作的选项，不一定存在
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsOnChangeContext<T> : VueProps
 {
     /// <summary>
@@ -48627,13 +47464,11 @@ public readonly union TdSelectPropsOnChangeContextE<T>(MouseEvent, KeyboardEvent
 /// 点击清除按钮时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnClear<T>(TdSelectPropsOnClearContext<T> context);
 
 /// <summary>
 /// 点击清除按钮时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsOnClearContext<T> : VueProps
 {
     /// <summary>
@@ -48648,7 +47483,6 @@ public record TdSelectPropsOnClearContext<T> : VueProps
 /// 当选择新创建的条目时触发
 /// </summary>
 /// <param name="value">当前值。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnCreate<T>(TdSelectPropsOnCreateValue<T> @value);
 
 /// <summary>
@@ -48683,13 +47517,11 @@ public readonly union TdSelectPropsOnCreateValue<T>(string, Number, bool, BigInt
 /// 回车键按下时触发。`inputValue` 表示输入框的值，`value` 表示选中值
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnEnter<T>(TdSelectPropsOnEnterContext<T> context);
 
 /// <summary>
 /// 回车键按下时触发。`inputValue` 表示输入框的值，`value` 表示选中值
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsOnEnterContext<T> : VueProps
 {
     /// <summary>
@@ -48717,13 +47549,11 @@ public record TdSelectPropsOnEnterContext<T> : VueProps
 /// 输入框获得焦点时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnFocus<T>(TdSelectPropsOnFocusContext<T> context);
 
 /// <summary>
 /// 输入框获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsOnFocusContext<T> : VueProps
 {
     /// <summary>
@@ -48752,7 +47582,6 @@ public readonly union TdSelectPropsOnFocusContextE<T>(FocusEvent, KeyboardEvent)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnInputChange<T>(string @value, TSelectInputValueChangeContext? context = default);
 
 /// <summary>
@@ -48760,14 +47589,12 @@ public delegate void TdSelectPropsOnInputChange<T>(string @value, TSelectInputVa
 /// </summary>
 /// <param name="visible">是否显示。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnPopupVisibleChange<T>(bool visible, TPopupVisibleChangeContext context);
 
 /// <summary>
 /// 多选模式下，选中数据被移除时触发
 /// </summary>
 /// <param name="options">本次操作使用的参数配置。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnRemove<T>(TSelectRemoveContext<T> options);
 
 /// <summary>
@@ -48775,13 +47602,11 @@ public delegate void TdSelectPropsOnRemove<T>(TSelectRemoveContext<T> options);
 /// </summary>
 /// <param name="filterWords">用于过滤候选项的输入文本。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdSelectPropsOnSearch<T>(string filterWords, TdSelectPropsOnSearchContext<T> context);
 
 /// <summary>
 /// 输入值变化时，触发搜索事件。主要用于远程搜索新数据
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsOnSearchContext<T> : VueProps
 {
     /// <summary>
@@ -48812,7 +47637,6 @@ public readonly union TdSelectPropsPanelTopContent<T>(string, RenderFragment)
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdSelectPropsStatus
 {
@@ -48873,7 +47697,6 @@ public readonly union TdSelectPropsValueDisplayOption2Context<T>(TdSelectPropsVa
 /// <summary>
 /// 自定义选中项呈现的内容
 /// </summary>
-[ECMAScript]
 public record TdSelectPropsValueDisplayOption2ContextOption1<T> : VueProps
 {
     /// <summary>
@@ -48900,14 +47723,12 @@ public record TdSelectPropsValueDisplayOption2ContextOption1<T> : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
-[ECMAScript]
 public delegate void TdSelectPropsValueDisplayOption2ContextOption1OnClose<T>(Number index);
 
 /// <summary>
 /// 用于控制选中值的类型。假设数据选项为：`[{ label: '姓名', value: 'name' }]`，value 表示值仅返回数据选项中的 value， object 表示值返回全部数据。
 /// 默认值：value
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdSelectPropsValueType
 {
@@ -48926,7 +47747,6 @@ public enum TdSelectPropsValueType
 /// <summary>
 /// TDesign 的 TdStepItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdStepItemProps : VueProps
 {
     /// <summary>
@@ -49050,7 +47870,6 @@ public readonly union TdStepItemPropsValue(string, Number)
 /// <summary>
 /// TDesign 的 TdStickyItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdStickyItemProps : VueProps
 {
     /// <summary>
@@ -49105,7 +47924,6 @@ public readonly union TdStickyItemPropsPopup(string, RenderFragment)
 /// 触发浮层显示的方式
 /// 默认值：hover
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdStickyItemPropsTrigger
 {
@@ -49124,7 +47942,6 @@ public enum TdStickyItemPropsTrigger
 /// <summary>
 /// TDesign 的 TdTabPanelProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTabPanelProps : VueProps
 {
     /// <summary>
@@ -49205,13 +48022,11 @@ public readonly union TdTabPanelPropsLabel(string, RenderFragment)
 /// 点击删除按钮时触发
 /// </summary>
 /// <param name="options">本次操作使用的参数配置。</param>
-[ECMAScript]
 public delegate void TdTabPanelPropsOnRemove(TdTabPanelPropsOnRemoveOptions options);
 
 /// <summary>
 /// 点击删除按钮时触发
 /// </summary>
-[ECMAScript]
 public record TdTabPanelPropsOnRemoveOptions : VueProps
 {
     /// <summary>
@@ -49239,7 +48054,6 @@ public readonly union TdTabPanelPropsPanel(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdTagInputProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTagInputProps : VueProps
 {
     /// <summary>
@@ -49492,7 +48306,6 @@ public record TdTagInputProps : VueProps
 /// <summary>
 /// 标签过多的情况下，折叠项内容，默认为 `+N`。如果需要悬浮就显示其他内容，可以使用 collapsedItems 自定义。`value` 表示当前存在的所有标签，`collapsedSelectedItems` 表示折叠的标签，`count` 表示折叠的数量，`onClose` 表示移除标签的事件回调
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsCollapsedItemsContext : VueProps
 {
     /// <summary>
@@ -49527,13 +48340,11 @@ public record TdTagInputPropsCollapsedItemsContext : VueProps
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsCollapsedItemsContextOnClose(TdTagInputPropsCollapsedItemsContextOnCloseContext context);
 
 /// <summary>
 /// Close 事件回调；参数和返回值见委托签名。
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsCollapsedItemsContextOnCloseContext : VueProps
 {
     /// <summary>
@@ -49553,7 +48364,6 @@ public record TdTagInputPropsCollapsedItemsContextOnCloseContext : VueProps
 /// 标签超出时的呈现方式，有两种：横向滚动显示 和 换行显示
 /// 默认值：break-line
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTagInputPropsExcessTagsDisplayType
 {
@@ -49582,13 +48392,11 @@ public readonly union TdTagInputPropsLabel(string, RenderFragment)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnBlur(TTagInputValueItem[] @value, TdTagInputPropsOnBlurContext context);
 
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnBlurContext : VueProps
 {
     /// <summary>
@@ -49611,20 +48419,17 @@ public record TdTagInputPropsOnBlurContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnChange(TTagInputValueItem[] @value, TTagInputChangeContext context);
 
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnClear(TdTagInputPropsOnClearContext context);
 
 /// <summary>
 /// 清空按钮点击时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnClearContext : VueProps
 {
     /// <summary>
@@ -49639,13 +48444,11 @@ public record TdTagInputPropsOnClearContext : VueProps
 /// 点击组件时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnClick(TdTagInputPropsOnClickContext context);
 
 /// <summary>
 /// 点击组件时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnClickContext : VueProps
 {
     /// <summary>
@@ -49660,7 +48463,6 @@ public record TdTagInputPropsOnClickContext : VueProps
 /// 【开发中】拖拽排序时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnDragSort(TTagInputDragSortContext context);
 
 /// <summary>
@@ -49668,13 +48470,11 @@ public delegate void TdTagInputPropsOnDragSort(TTagInputDragSortContext context)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnEnter(TTagInputValueItem[] @value, TdTagInputPropsOnEnterContext context);
 
 /// <summary>
 /// 按键按下 Enter 时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnEnterContext : VueProps
 {
     /// <summary>
@@ -49697,13 +48497,11 @@ public record TdTagInputPropsOnEnterContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnFocus(TTagInputValueItem[] @value, TdTagInputPropsOnFocusContext context);
 
 /// <summary>
 /// 聚焦时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnFocusContext : VueProps
 {
     /// <summary>
@@ -49726,20 +48524,17 @@ public record TdTagInputPropsOnFocusContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnInputChange(string @value, TInputValueChangeContext? context = default);
 
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnMouseenter(TdTagInputPropsOnMouseenterContext context);
 
 /// <summary>
 /// 进入输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnMouseenterContext : VueProps
 {
     /// <summary>
@@ -49754,13 +48549,11 @@ public record TdTagInputPropsOnMouseenterContext : VueProps
 /// 离开输入框时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnMouseleave(TdTagInputPropsOnMouseleaveContext context);
 
 /// <summary>
 /// 离开输入框时触发
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnMouseleaveContext : VueProps
 {
     /// <summary>
@@ -49775,13 +48568,11 @@ public record TdTagInputPropsOnMouseleaveContext : VueProps
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnPaste(TdTagInputPropsOnPasteContext context);
 
 /// <summary>
 /// 粘贴事件，`pasteValue` 表示粘贴板的内容
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsOnPasteContext : VueProps
 {
     /// <summary>
@@ -49803,13 +48594,11 @@ public record TdTagInputPropsOnPasteContext : VueProps
 /// 移除单个标签时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsOnRemove(TTagInputRemoveContext context);
 
 /// <summary>
 /// 输入框状态
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTagInputPropsStatus
 {
@@ -49854,7 +48643,6 @@ public readonly union TdTagInputPropsTag(string, RenderFragment<TdTagInputPropsT
 /// <summary>
 /// 自定义标签的内部内容，每一个标签的当前值。注意和 `valueDisplay` 区分，`valueDisplay`  是用来定义全部标签内容，而非某一个标签
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsTagOption2Context : VueProps
 {
     /// <summary>
@@ -49911,7 +48699,6 @@ public readonly union TdTagInputPropsValueDisplay(string, RenderFragment<TdTagIn
 /// <summary>
 /// 自定义值呈现的全部内容，参数为所有标签的值
 /// </summary>
-[ECMAScript]
 public record TdTagInputPropsValueDisplayOption2Context : VueProps
 {
     /// <summary>
@@ -49934,13 +48721,11 @@ public record TdTagInputPropsValueDisplayOption2Context : VueProps
 /// </summary>
 /// <param name="index">当前项的索引，从 0 开始。</param>
 /// <param name="item">当前操作的数据项。</param>
-[ECMAScript]
 public delegate void TdTagInputPropsValueDisplayOption2ContextOnClose(Number index, TJsonValue? item = default);
 
 /// <summary>
 /// TDesign 的 TdTagProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTagProps : VueProps
 {
     /// <summary>
@@ -50083,13 +48868,11 @@ public readonly union TdTagPropsMaxWidth(string, Number)
 /// 点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagPropsOnClick(TdTagPropsOnClickContext context);
 
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TdTagPropsOnClickContext : VueProps
 {
     /// <summary>
@@ -50104,13 +48887,11 @@ public record TdTagPropsOnClickContext : VueProps
 /// 如果关闭按钮存在，点击关闭按钮时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTagPropsOnClose(TdTagPropsOnCloseContext context);
 
 /// <summary>
 /// 如果关闭按钮存在，点击关闭按钮时触发
 /// </summary>
-[ECMAScript]
 public record TdTagPropsOnCloseContext : VueProps
 {
     /// <summary>
@@ -50125,7 +48906,6 @@ public record TdTagPropsOnCloseContext : VueProps
 /// 标签类型，有三种：方形、圆角方形、标记型
 /// 默认值：square
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTagPropsShape
 {
@@ -50150,7 +48930,6 @@ public enum TdTagPropsShape
 /// 组件风格，用于描述组件不同的应用场景
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTagPropsTheme
 {
@@ -50193,7 +48972,6 @@ public readonly union TdTagPropsTitle(string, bool)
 /// 标签风格变体
 /// 默认值：dark
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTagPropsVariant
 {
@@ -50222,7 +49000,6 @@ public enum TdTagPropsVariant
 /// <summary>
 /// TDesign 的 TdTextareaProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTextareaProps : VueProps
 {
     /// <summary>
@@ -50370,7 +49147,6 @@ public readonly union TdTextareaPropsAutosize(bool, TdTextareaPropsAutosizeOptio
 /// 高度自动撑开。 autosize = true 表示组件高度自动撑开，同时，依旧允许手动拖高度。如果设置了 autosize.maxRows 或者 autosize.minRows 则不允许手动调整高度
 /// 默认值：false
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsAutosizeOption2 : VueProps
 {
     /// <summary>
@@ -50419,13 +49195,11 @@ public readonly union TdTextareaPropsMaxlength(string, Number)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnBlur(TTextareaValue @value, TdTextareaPropsOnBlurContext context);
 
 /// <summary>
 /// 失去焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnBlurContext : VueProps
 {
     /// <summary>
@@ -50441,13 +49215,11 @@ public record TdTextareaPropsOnBlurContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnChange(TTextareaValue @value, TdTextareaPropsOnChangeContext? context = default);
 
 /// <summary>
 /// 输入内容变化时触发
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnChangeContext : VueProps
 {
     /// <summary>
@@ -50462,13 +49234,11 @@ public record TdTextareaPropsOnChangeContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnFocus(TTextareaValue @value, TdTextareaPropsOnFocusContext context);
 
 /// <summary>
 /// 获得焦点时触发
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnFocusContext : VueProps
 {
     /// <summary>
@@ -50484,13 +49254,11 @@ public record TdTextareaPropsOnFocusContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnKeydown(TTextareaValue @value, TdTextareaPropsOnKeydownContext context);
 
 /// <summary>
 /// 键盘按下时触发
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnKeydownContext : VueProps
 {
     /// <summary>
@@ -50506,13 +49274,11 @@ public record TdTextareaPropsOnKeydownContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnKeypress(TTextareaValue @value, TdTextareaPropsOnKeypressContext context);
 
 /// <summary>
 /// 按下字符键时触发（keydown -&gt; keypress -&gt; keyup）
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnKeypressContext : VueProps
 {
     /// <summary>
@@ -50528,13 +49294,11 @@ public record TdTextareaPropsOnKeypressContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnKeyup(TTextareaValue @value, TdTextareaPropsOnKeyupContext context);
 
 /// <summary>
 /// 释放键盘时触发
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnKeyupContext : VueProps
 {
     /// <summary>
@@ -50549,13 +49313,11 @@ public record TdTextareaPropsOnKeyupContext : VueProps
 /// 字数超出限制时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTextareaPropsOnValidate(TdTextareaPropsOnValidateContext context);
 
 /// <summary>
 /// 字数超出限制时触发
 /// </summary>
-[ECMAScript]
 public record TdTextareaPropsOnValidateContext : VueProps
 {
     /// <summary>
@@ -50568,7 +49330,6 @@ public record TdTextareaPropsOnValidateContext : VueProps
 /// <summary>
 /// 对应上游 error 字段或参数；数据形状见声明类型。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTextareaPropsOnValidateContextError
 {
@@ -50588,7 +49349,6 @@ public enum TdTextareaPropsOnValidateContextError
 /// 文本框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTextareaPropsStatus
 {
@@ -50625,7 +49385,6 @@ public readonly union TdTextareaPropsTips(string, RenderFragment)
 /// <summary>
 /// TDesign 的 TdTimePickerProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTimePickerProps : VueProps
 {
     /// <summary>
@@ -50846,13 +49605,11 @@ public record TdTimePickerProps : VueProps
 /// <param name="s">对应上游 s 字段或参数；数据形状见声明类型。</param>
 /// <param name="ms">对应上游 ms 字段或参数；数据形状见声明类型。</param>
 /// <returns>回调结果，类型为 TdTimePickerPropsDisableTimeResultPartial。</returns>
-[ECMAScript]
 public delegate TdTimePickerPropsDisableTimeResultPartial TdTimePickerPropsDisableTime(Number h, Number m, Number s, Number ms);
 
 /// <summary>
 /// 禁用时间项的配置函数
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsDisableTimeResultPartial : VueProps
 {
     /// <summary>
@@ -50896,13 +49653,11 @@ public readonly union TdTimePickerPropsLabel(string, RenderFragment)
 /// 当输入框失去焦点时触发，value 表示组件当前有效值
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnBlur(TdTimePickerPropsOnBlurContext context);
 
 /// <summary>
 /// 当输入框失去焦点时触发，value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnBlurContext : VueProps
 {
     /// <summary>
@@ -50942,20 +49697,17 @@ public record TdTimePickerPropsOnBlurContext : VueProps
 /// 选中值发生变化时触发
 /// </summary>
 /// <param name="value">当前值。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnChange(string @value);
 
 /// <summary>
 /// 点击清空按钮时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnClear(TdTimePickerPropsOnClearContext context);
 
 /// <summary>
 /// 点击清空按钮时触发
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnClearContext : VueProps
 {
     /// <summary>
@@ -50970,13 +49722,11 @@ public record TdTimePickerPropsOnClearContext : VueProps
 /// 面板关闭时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnClose(TdTimePickerPropsOnCloseContext context);
 
 /// <summary>
 /// 面板关闭时触发
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnCloseContext : VueProps
 {
     /// <summary>
@@ -50991,13 +49741,11 @@ public record TdTimePickerPropsOnCloseContext : VueProps
 /// 点击确认按钮时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnConfirm(TdTimePickerPropsOnConfirmContext context);
 
 /// <summary>
 /// 点击确认按钮时触发
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnConfirmContext : VueProps
 {
     /// <summary>
@@ -51012,13 +49760,11 @@ public record TdTimePickerPropsOnConfirmContext : VueProps
 /// 输入框获得焦点时触发，value 表示组件当前有效值
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnFocus(TdTimePickerPropsOnFocusContext context);
 
 /// <summary>
 /// 输入框获得焦点时触发，value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnFocusContext : VueProps
 {
     /// <summary>
@@ -51040,13 +49786,11 @@ public record TdTimePickerPropsOnFocusContext : VueProps
 /// 当输入框内容发生变化时触发，参数 value 表示组件当前有效值
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnInput(TdTimePickerPropsOnInputContext context);
 
 /// <summary>
 /// 当输入框内容发生变化时触发，参数 value 表示组件当前有效值
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnInputContext : VueProps
 {
     /// <summary>
@@ -51068,13 +49812,11 @@ public record TdTimePickerPropsOnInputContext : VueProps
 /// 面板打开时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnOpen(TdTimePickerPropsOnOpenContext context);
 
 /// <summary>
 /// 面板打开时触发
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnOpenContext : VueProps
 {
     /// <summary>
@@ -51090,13 +49832,11 @@ public record TdTimePickerPropsOnOpenContext : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimePickerPropsOnPick(string @value, TdTimePickerPropsOnPickContext context);
 
 /// <summary>
 /// 面板选中值后触发
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsOnPickContext : VueProps
 {
     /// <summary>
@@ -51111,7 +49851,6 @@ public record TdTimePickerPropsOnPickContext : VueProps
 /// 尺寸
 /// 默认值：medium
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTimePickerPropsSize
 {
@@ -51136,7 +49875,6 @@ public enum TdTimePickerPropsSize
 /// 输入框状态
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTimePickerPropsStatus
 {
@@ -51210,7 +49948,6 @@ public readonly union TdTimePickerPropsValueDisplay(string, RenderFragment<TdTim
 /// <summary>
 /// 自定义选中项呈现的内容
 /// </summary>
-[ECMAScript]
 public record TdTimePickerPropsValueDisplayOption2Context : VueProps
 {
     /// <summary>
@@ -51224,7 +49961,6 @@ public record TdTimePickerPropsValueDisplayOption2Context : VueProps
 /// <summary>
 /// TDesign 的 TdTimelineItemProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTimelineItemProps : VueProps
 {
     /// <summary>
@@ -51290,7 +50026,6 @@ public readonly union TdTimelineItemPropsLabel(string, RenderFragment)
 /// <summary>
 /// 标签信息相对于时间轴的位置，在 `mode='alternate'` 时生效，优先级高于 `Timeline.labelAlign`
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTimelineItemPropsLabelAlign
 {
@@ -51320,13 +50055,11 @@ public enum TdTimelineItemPropsLabelAlign
 /// 点击时触发
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTimelineItemPropsOnClick(TdTimelineItemPropsOnClickContext context);
 
 /// <summary>
 /// 点击时触发
 /// </summary>
-[ECMAScript]
 public record TdTimelineItemPropsOnClickContext : VueProps
 {
     /// <summary>
@@ -51347,7 +50080,6 @@ public record TdTimelineItemPropsOnClickContext : VueProps
 /// <summary>
 /// TDesign 的 TdTooltipProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTooltipProps : VueProps
 {
     /// <summary>
@@ -51517,7 +50249,6 @@ public record TdTooltipProps : VueProps
 /// <summary>
 /// TDesign 的 TdTooltipProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public sealed record TdTooltipPropsBase1 : VueProps
 {
     /// <summary>
@@ -51677,7 +50408,6 @@ public readonly union TdTooltipPropsPlacement(TdTooltipPropsPlacementOption1, TP
 /// 浮层出现位置
 /// 默认值：top
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTooltipPropsPlacementOption1
 {
@@ -51692,7 +50422,6 @@ public enum TdTooltipPropsPlacementOption1
 /// 文字提示风格
 /// 默认值：default
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTooltipPropsTheme
 {
@@ -51731,7 +50460,6 @@ public enum TdTooltipPropsTheme
 /// <summary>
 /// TDesign 的 TdTreeProps 类型；用于对应上游类型的数据传递。
 /// </summary>
-[ECMAScript]
 public record TdTreeProps<T> : VueProps
 {
     /// <summary>
@@ -52059,13 +50787,11 @@ public record TdTreeProps<T> : VueProps
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TdTreePropsAllowDrop<T>(TdTreePropsAllowDropContext<T> context);
 
 /// <summary>
 /// 判断节点是否可以执行 drop 操作，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsAllowDropContext<T> : VueProps
 {
     /// <summary>
@@ -52111,7 +50837,6 @@ public readonly union TdTreePropsDisableCheck<T>(bool, TdTreePropsDisableCheckOp
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TdTreePropsDisableCheckOption2<T>(TTreeNodeModel<T> node);
 
 /// <summary>
@@ -52128,7 +50853,6 @@ public readonly union TdTreePropsEmpty<T>(string, RenderFragment)
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 bool。</returns>
-[ECMAScript]
 public delegate bool TdTreePropsFilter<T>(TTreeNodeModel<T> node);
 
 /// <summary>
@@ -52192,7 +50916,6 @@ public readonly union TdTreePropsLine<T>(bool, RenderFragment)
 /// </summary>
 /// <param name="node">当前节点。</param>
 /// <returns>回调结果，类型为 IPromise&lt;T[]&gt;。</returns>
-[ECMAScript]
 public delegate IPromise<T[]> TdTreePropsLoad<T>(TTreeNodeModel<T> node);
 
 /// <summary>
@@ -52228,13 +50951,11 @@ public readonly union TdTreePropsMaxHeight<T>(string, Number)
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnActive<T>(TTreeNodeValue[] @value, TdTreePropsOnActiveContext<T> context);
 
 /// <summary>
 /// 节点激活时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnActiveContext<T> : VueProps
 {
     /// <summary>
@@ -52260,7 +50981,6 @@ public record TdTreePropsOnActiveContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTreePropsOnActiveContextTrigger
 {
@@ -52281,13 +51001,11 @@ public enum TdTreePropsOnActiveContextTrigger
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnChange<T>(TTreeNodeValue[] @value, TdTreePropsOnChangeContext<T> context);
 
 /// <summary>
 /// 节点选中状态变化时触发，context.node 表示当前变化的选项，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnChangeContext<T> : VueProps
 {
     /// <summary>
@@ -52313,7 +51031,6 @@ public record TdTreePropsOnChangeContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTreePropsOnChangeContextTrigger
 {
@@ -52333,13 +51050,11 @@ public enum TdTreePropsOnChangeContextTrigger
 /// 节点点击时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnClick<T>(TdTreePropsOnClickContext<T> context);
 
 /// <summary>
 /// 节点点击时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnClickContext<T> : VueProps
 {
     /// <summary>
@@ -52361,13 +51076,11 @@ public record TdTreePropsOnClickContext<T> : VueProps
 /// 节点结束拖拽时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnDragEnd<T>(TdTreePropsOnDragEndContext<T> context);
 
 /// <summary>
 /// 节点结束拖拽时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnDragEndContext<T> : VueProps
 {
     /// <summary>
@@ -52389,13 +51102,11 @@ public record TdTreePropsOnDragEndContext<T> : VueProps
 /// 节点拖拽时离开目标元素时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnDragLeave<T>(TdTreePropsOnDragLeaveContext<T> context);
 
 /// <summary>
 /// 节点拖拽时离开目标元素时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnDragLeaveContext<T> : VueProps
 {
     /// <summary>
@@ -52417,13 +51128,11 @@ public record TdTreePropsOnDragLeaveContext<T> : VueProps
 /// 节点拖拽到目标元素时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnDragOver<T>(TdTreePropsOnDragOverContext<T> context);
 
 /// <summary>
 /// 节点拖拽到目标元素时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnDragOverContext<T> : VueProps
 {
     /// <summary>
@@ -52445,13 +51154,11 @@ public record TdTreePropsOnDragOverContext<T> : VueProps
 /// 节点开始拖拽时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnDragStart<T>(TdTreePropsOnDragStartContext<T> context);
 
 /// <summary>
 /// 节点开始拖拽时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnDragStartContext<T> : VueProps
 {
     /// <summary>
@@ -52473,13 +51180,11 @@ public record TdTreePropsOnDragStartContext<T> : VueProps
 /// 节点在目标元素上释放时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnDrop<T>(TdTreePropsOnDropContext<T> context);
 
 /// <summary>
 /// 节点在目标元素上释放时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnDropContext<T> : VueProps
 {
     /// <summary>
@@ -52515,13 +51220,11 @@ public record TdTreePropsOnDropContext<T> : VueProps
 /// </summary>
 /// <param name="value">当前值。</param>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnExpand<T>(TTreeNodeValue[] @value, TdTreePropsOnExpandContext<T> context);
 
 /// <summary>
 /// 节点展开或收起时触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnExpandContext<T> : VueProps
 {
     /// <summary>
@@ -52547,7 +51250,6 @@ public record TdTreePropsOnExpandContext<T> : VueProps
 /// <summary>
 /// 触发本次变化的操作来源。
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTreePropsOnExpandContextTrigger
 {
@@ -52572,13 +51274,11 @@ public enum TdTreePropsOnExpandContextTrigger
 /// 异步加载后触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
 /// <param name="context">本次操作的上下文，包含相关数据和触发来源。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnLoad<T>(TdTreePropsOnLoadContext<T> context);
 
 /// <summary>
 /// 异步加载后触发，泛型 `T` 表示树节点 TS 类型
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnLoadContext<T> : VueProps
 {
     /// <summary>
@@ -52593,13 +51293,11 @@ public record TdTreePropsOnLoadContext<T> : VueProps
 /// 滚动事件
 /// </summary>
 /// <param name="params">本次操作使用的参数配置。</param>
-[ECMAScript]
 public delegate void TdTreePropsOnScroll<T>(TdTreePropsOnScrollParams<T> @params);
 
 /// <summary>
 /// 滚动事件
 /// </summary>
-[ECMAScript]
 public record TdTreePropsOnScrollParams<T> : VueProps
 {
     /// <summary>
@@ -52614,7 +51312,6 @@ public record TdTreePropsOnScrollParams<T> : VueProps
 /// 选中值模式。all 表示父节点和子节点全部会出现在选中值里面；parentFirst 表示当子节点全部选中时，仅父节点在选中值里面；onlyLeaf 表示无论什么情况，选中值仅呈现叶子节点
 /// 默认值：onlyLeaf
 /// </summary>
-[ECMAScript]
 [String]
 public enum TdTreePropsValueMode
 {

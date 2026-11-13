@@ -984,7 +984,6 @@ public enum ElLinkType
 /// <summary>
 /// 以 CSS 属性名为键的样式对象，用于 Element Plus 的内联样式参数。
 /// </summary>
-[ECMAScript]
 [Description("@#Styles")]
 public sealed record ElStyles : VueDictionary<VueStringNumberValue>
 {
@@ -1018,7 +1017,6 @@ public readonly union ElDirectiveValue(bool, VueProps)
 /// <summary>
 /// Loading 服务的遮罩配置，包括目标区域、图标、提示文字和滚动锁定。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElLoadingOptions : VueProps
 {
@@ -1091,7 +1089,6 @@ public sealed record ElLoadingOptions : VueProps
 /// 用于 ElConfigProvider.Button 的参数类型。
 /// button related configuration, [see the following table](#button-attribute)
 /// </summary>
-[ECMAScript]
 [Description("@#ButtonConfigContext")]
 public sealed record ElButtonConfig : VueProps
 {
@@ -1135,7 +1132,6 @@ public sealed record ElButtonConfig : VueProps
 /// <summary>
 /// ConfigProvider 作用域内 Card 组件的默认配置。
 /// </summary>
-[ECMAScript]
 [Description("@#CardConfigContext")]
 public sealed record ElCardConfig : VueProps
 {
@@ -1150,7 +1146,6 @@ public sealed record ElCardConfig : VueProps
 /// 用于 ElMention.Options 的参数类型。
 /// mention options list
 /// </summary>
-[ECMAScript]
 [Description("@#MentionOption")]
 public sealed record ElMentionOption : VueDictionary
 {
@@ -1177,7 +1172,6 @@ public sealed record ElMentionOption : VueDictionary
 /// 用于 ElConfigProvider.Dialog 的参数类型。
 /// dialog related configuration, [see the following table](#dialog-attribute)
 /// </summary>
-[ECMAScript]
 [Description("@#DialogConfigContext")]
 public sealed record ElDialogConfig : VueProps
 {
@@ -1210,7 +1204,6 @@ public sealed record ElDialogConfig : VueProps
 /// 用于 ElConfigProvider.Link 的参数类型。
 /// link related configuration, [see the following table](#link-attribute)
 /// </summary>
-[ECMAScript]
 [Description("@#LinkConfigContext")]
 public sealed record ElLinkConfig : VueProps
 {
@@ -1231,7 +1224,6 @@ public sealed record ElLinkConfig : VueProps
 /// 用于 ElConfigProvider.Message 的参数类型。
 /// message related configuration, [see the following table](#message-attribute)
 /// </summary>
-[ECMAScript]
 [Description("@#MessageConfigContext")]
 public sealed record ElMessageConfig : VueProps
 {
@@ -1264,7 +1256,6 @@ public sealed record ElMessageConfig : VueProps
 /// 用于 ElConfigProvider.Table 的参数类型。
 /// table related configuration, [see the following table](#table-attribute)
 /// </summary>
-[ECMAScript]
 [Description("@#TableConfigContext")]
 public sealed record ElTableConfig : VueProps
 {
@@ -1296,7 +1287,6 @@ public sealed record ElTableConfig : VueProps
 /// <summary>
 /// 可嵌套的本地化文本映射，键对应语言包中的消息路径。
 /// </summary>
-[ECMAScript]
 [Description("@#TranslatePair")]
 public sealed record ElTranslatePair : VueDictionary<ElTranslateValue>
 {
@@ -1329,7 +1319,6 @@ public readonly union ElTranslateValue(string, string[], ElTranslatePair)
 /// 用于 ElConfigProvider.Locale 的参数类型。
 /// Locale Object
 /// </summary>
-[ECMAScript]
 [Description("@#Language")]
 public sealed record ElLanguage : VueProps
 {
@@ -1386,7 +1375,6 @@ public readonly union ElValueOnClearValue(bool, double, string, ElValueOnClearCa
 /// <summary>
 /// 以字符串键控制启用状态的映射，常用于 CSS 类名条件。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElStringBooleanMap : VueDictionary<bool>
 {
@@ -1413,7 +1401,6 @@ public readonly union ElStringBooleanClassValue(string, ElStringBooleanMap)
 /// <summary>
 /// 自动补全候选项的原始数据对象；显示字段由 value-key 指定。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElAutocompleteSuggestionItem : VueDictionary
 {
@@ -1422,7 +1409,6 @@ public sealed record ElAutocompleteSuggestionItem : VueDictionary
 /// <summary>
 /// 容器尺寸变化回调的数据，包含最新可用宽度与高度。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElAutoResizerResizeContext : VueProps
 {
@@ -1442,14 +1428,12 @@ public sealed record ElAutoResizerResizeContext : VueProps
 /// <summary>
 /// 容器尺寸变化后接收最新宽度和高度，用于同步子组件的布局。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElAutoResizerResizeCallback(ElAutoResizerResizeContext context);
 
 /// <summary>
 /// 将查询完成的候选项数组交回自动补全组件，以更新建议列表。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElAutocompleteFetchSuggestionsCallback(ElAutocompleteSuggestionItem[] data);
 
@@ -1457,7 +1441,6 @@ public delegate void ElAutocompleteFetchSuggestionsCallback(ElAutocompleteSugges
 /// 用于 ElAutocompleteFetchSuggestionsValue.AsAsyncCallback 的回调签名。
 /// 读取当前值的 ElAutocompleteFetchSuggestionsAsyncCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<ElAutocompleteSuggestionItem[]?> ElAutocompleteFetchSuggestionsAsyncCallback(
     string queryString,
@@ -1467,7 +1450,6 @@ public delegate IPromise<ElAutocompleteSuggestionItem[]?> ElAutocompleteFetchSug
 /// 用于 ElAutocompleteFetchSuggestionsValue.AsCallback 的回调签名。
 /// 读取当前值的 ElAutocompleteFetchSuggestionsCallbackOnly 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElAutocompleteFetchSuggestionsCallbackOnly(string queryString, ElAutocompleteFetchSuggestionsCallback callback);
 
@@ -1501,7 +1483,6 @@ public readonly union ElAutocompleteFetchSuggestionsValue(
 /// <summary>
 /// 日历日期单元格的上下文，包含日期、月份类别和选择状态。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElCalendarDateCellContext : VueProps
 {
@@ -1536,21 +1517,18 @@ public sealed record ElCalendarDateCellContext : VueProps
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 /// <param name="type">正在格式化的日期部分，决定返回日历标题中的年份或月份文本。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStringNumberValue ElCalendarFormatterCallback(Number value, string type);
 
 /// <summary>
 /// 同步返回是否允许继续当前操作；返回 false 可阻止对应操作。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElAsyncBooleanCallback();
 
 /// <summary>
 /// 异步决定是否继续当前操作；Promise 完成后的布尔值交给对应组件处理。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<bool?> ElAsyncBooleanPromiseCallback();
 
@@ -1575,7 +1553,6 @@ public readonly union ElAsyncBooleanResult(bool, IPromise<bool?>)
 /// <summary>
 /// 结束关闭前拦截并执行对话框关闭；cancel 为 true 时保留对话框。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElDialogDoneCallback(bool? cancel = null);
 
@@ -1584,7 +1561,6 @@ public delegate void ElDialogDoneCallback(bool? cancel = null);
 /// callback before Dialog closes, and it will prevent Dialog from closing, use done to close the dialog
 /// If set, closing procedure will be halted
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElDialogBeforeCloseCallback(ElDialogDoneCallback done);
 
@@ -1594,7 +1570,6 @@ public delegate void ElDialogBeforeCloseCallback(ElDialogDoneCallback done);
 /// specifies the format of the value presented in the input
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElInputFormatter(string value);
 
@@ -1604,7 +1579,6 @@ public delegate string ElInputFormatter(string value);
 /// specifies the value extracted from the formatted input
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElInputParser(string value);
 
@@ -1613,7 +1587,6 @@ public delegate string ElInputParser(string value);
 /// custom function to count graphemes; when set, native `maxlength`/`minlength` constraints are bypassed. Component uses `Intl.Segmenter` (Chrome 87+, Firefox 125+, Safari 14.1+) for proper grapheme clustering; older browsers fall back to `Array.from()` for code-point iteration
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate Number ElInputCountGraphemes(string value);
 
@@ -1621,7 +1594,6 @@ public delegate Number ElInputCountGraphemes(string value);
 /// 用于 ElInputOtp.Validator 的回调签名。
 /// Custom validator function
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElInputOtpValidator(string @char, Number index);
 
@@ -1629,7 +1601,6 @@ public delegate bool ElInputOtpValidator(string @char, Number index);
 /// 用于 ElInputOtpSeparatorValue.AsRenderer 的回调签名。
 /// 读取当前值的 ElInputOtpSeparatorRenderer 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStringNumberVNodeValue ElInputOtpSeparatorRenderer(Number index);
 
@@ -1661,7 +1632,6 @@ public readonly union ElInputOtpSeparatorValue(string, IVNode, ElInputOtpSeparat
 /// 用于 ElMentionFilterOptionValue.AsCallback 的回调签名。
 /// 读取当前值的 ElMentionFilterOption 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElMentionFilterOption(string pattern, ElMentionOption option);
 
@@ -1688,14 +1658,12 @@ public readonly union ElMentionFilterOptionValue(bool, ElMentionFilterOption)
 /// 用于 ElMention.CheckIsWhole 的回调签名。
 /// when backspace is pressed to delete, check if the mention is a whole
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElMentionCheckIsWhole(string pattern, string prefix);
 
 /// <summary>
 /// 进度颜色区间的上限和颜色，供 Progress 根据 percentage 选择颜色。
 /// </summary>
-[ECMAScript]
 [Description("@#ProgressColor")]
 public sealed record ElProgressColorStop : VueProps
 {
@@ -1716,7 +1684,6 @@ public sealed record ElProgressColorStop : VueProps
 /// 用于 ElProgressColorValue.AsCallback 的回调签名。
 /// 读取当前值的 ElProgressColorCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElProgressColorCallback(Number percentage);
 
@@ -1751,7 +1718,6 @@ public readonly union ElProgressColorValue(
 /// 用于 ElProgress.Format 的回调签名。
 /// custom text format
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElProgressFormatCallback(Number percentage);
 
@@ -1759,7 +1725,6 @@ public delegate string ElProgressFormatCallback(Number percentage);
 /// 用于 ElCascader.FilterMethod 的回调签名。
 /// customize search logic, the first parameter is `node`, the second is `keyword`, and need return a boolean value indicating whether it hits.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElCascaderFilterMethod(VueDictionary node, string keyword);
 
@@ -1767,7 +1732,6 @@ public delegate bool ElCascaderFilterMethod(VueDictionary node, string keyword);
 /// 筛选前执行异步处理；Promise 被拒绝时阻止本次筛选。
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<VueValue?> ElCascaderBeforeFilterAsyncCallback(string value);
 
@@ -1775,7 +1739,6 @@ public delegate IPromise<VueValue?> ElCascaderBeforeFilterAsyncCallback(string v
 /// 筛选前检查输入文本；返回 false 时阻止本次筛选。
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElCascaderBeforeFilterSyncCallback(string value);
 
@@ -1802,21 +1765,18 @@ public readonly union ElCascaderBeforeFilterResult(bool, IPromise<VueValue?>)
 /// hook function before filtering with the value to be filtered as its parameter. If `false` is returned or a `Promise` is returned and then is rejected, filtering will be aborted
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate ElCascaderBeforeFilterResult ElCascaderBeforeFilterCallback(string value);
 
 /// <summary>
 /// 展开或收起前异步确认；返回 false 或拒绝 Promise 可阻止切换。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<bool?> ElCollapseBeforeCollapseAsyncCallback(VueStringNumberValue name);
 
 /// <summary>
 /// 展开或收起前同步确认；返回 false 可阻止切换。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElCollapseBeforeCollapseSyncCallback(VueStringNumberValue name);
 
@@ -1842,7 +1802,6 @@ public readonly union ElCollapseBeforeCollapseResult(bool, IPromise<bool?>)
 /// 用于 ElCollapse.BeforeCollapse 的回调签名。
 /// before-collapse hook before the collapse state changes. If `false` is returned or a `Promise` is returned and then is rejected, will stop collapsing
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElCollapseBeforeCollapseResult ElCollapseBeforeCollapseCallback(VueStringNumberValue name);
 
@@ -1850,7 +1809,6 @@ public delegate ElCollapseBeforeCollapseResult ElCollapseBeforeCollapseCallback(
 /// 用于 ElDatePicker.CellClassName、ElDatePickerPanel.CellClassName 的回调签名。
 /// set custom className
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElDateLikeCellClassName(Date date);
 
@@ -1858,7 +1816,6 @@ public delegate string ElDateLikeCellClassName(Date date);
 /// 用于 ElDatePicker.DisabledDate、ElDatePickerPanel.DisabledDate 的回调签名。
 /// a function determining if a date is disabled with that date as its parameter. Should return a Boolean
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElDateLikeDisabledDate(Date date);
 
@@ -1866,7 +1823,6 @@ public delegate bool ElDateLikeDisabledDate(Date date);
 /// 用于 ElValueOnClearValue.AsCallback 的回调签名。
 /// 读取当前值的 ElValueOnClearCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElValueOnClearCallback();
 
@@ -1874,7 +1830,6 @@ public delegate void ElValueOnClearCallback();
 /// 用于 ElTable.TooltipOptions、ElTableConfig.TooltipOptions 的参数类型。
 /// the options for the overflow tooltip, [see the following tooltip component](tooltip.html#attributes)
 /// </summary>
-[ECMAScript]
 [Description("@#TableOverflowTooltipOptions")]
 public sealed record ElTableOverflowTooltipOptions : VueProps
 {
@@ -1968,7 +1923,6 @@ public readonly union ElTableOverflowTooltipValue(bool, ElTableOverflowTooltipOp
 /// <summary>
 /// 多行输入框自动高度的最少、最多行数限制。
 /// </summary>
-[ECMAScript]
 [Description("@#InputAutoSizeOptions")]
 public sealed record ElInputAutoSizeOptions : VueProps
 {
@@ -2007,7 +1961,6 @@ public readonly union ElInputAutoSize(bool, ElInputAutoSizeOptions)
 /// <summary>
 /// 栅格列在特定响应式断点下使用的跨度、偏移和左右移动配置。
 /// </summary>
-[ECMAScript]
 [Description("@#ColSizeObject")]
 public sealed record ElColSizeProps : VueProps
 {
@@ -2113,7 +2066,6 @@ public readonly union ElSpaceSizeValue(ElComponentSize, Number, VueNumberPair)
 /// <summary>
 /// 节流渲染的初始状态和前后延迟配置。
 /// </summary>
-[ECMAScript]
 [Description("@#ThrottleRender")]
 public sealed record ElThrottleRenderOptions : VueProps
 {
@@ -2205,7 +2157,6 @@ public enum ElTableSortOrder
 /// 用于 ElTable.DefaultSort 的参数类型。
 /// set the default sort column and order. property `prop` is used to set default sort column, property `order` is used to set default sort order
 /// </summary>
-[ECMAScript]
 [Description("@#Sort")]
 public sealed record ElTableSort : VueProps
 {
@@ -2238,7 +2189,6 @@ public sealed record ElTableSort : VueProps
 /// 用于 ElTable.TreeProps 的参数类型。
 /// configuration for rendering nested data
 /// </summary>
-[ECMAScript]
 [Description("@#TreeProps")]
 public sealed record ElTableTreeProps : VueProps
 {
@@ -2265,7 +2215,6 @@ public sealed record ElTableTreeProps : VueProps
 /// 用于 ElTableColumn.Filters 的参数类型。
 /// an array of data filtering options. For each element in this array, `text` and `value` are required
 /// </summary>
-[ECMAScript]
 [Description("@#Filter")]
 public sealed record ElTableFilterItem : VueProps
 {
@@ -2285,7 +2234,6 @@ public sealed record ElTableFilterItem : VueProps
 /// <summary>
 /// 扩展浏览器 File 的上传原始文件，带有组件分配的 uid。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadRawFile")]
 public sealed record ElUploadRawFile : VueProps
 {
@@ -2306,7 +2254,6 @@ public sealed record ElUploadRawFile : VueProps
 /// 用于 ElUpload.FileList 的参数类型。
 /// default uploaded files.
 /// </summary>
-[ECMAScript]
 [Description("@#UploadUserFile")]
 public sealed record ElUploadUserFile : VueProps
 {
@@ -2362,7 +2309,6 @@ public sealed record ElUploadUserFile : VueProps
 /// <summary>
 /// 上传列表中的文件状态，包含进度、响应、预览地址和原始文件。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadFile")]
 public sealed record ElUploadFile : VueProps
 {
@@ -2516,7 +2462,6 @@ public readonly union ElTooltipTriggerValue(ElTooltipTriggerType, ElTooltipTrigg
 /// 用于 ElSelect.TagTooltip、ElVirtualizedSelect.TagTooltip 的参数类型。
 /// configuration object for the collapse-tags tooltip. To use this, `collapse-tags` and `collapse-tags-tooltip` must be true
 /// </summary>
-[ECMAScript]
 [Description("@#TagTooltipProps")]
 public sealed record ElTagTooltipProps : VueProps
 {
@@ -2603,7 +2548,6 @@ public sealed record ElTagTooltipProps : VueProps
 /// 用于 ElDropdown.ButtonProps 的参数类型。
 /// props for the button component, refer to [Button Attributes](./button.html#button-attributes)
 /// </summary>
-[ECMAScript]
 [Description("@#ButtonProps")]
 public sealed record ElButtonProps : VueProps
 {
@@ -2726,7 +2670,6 @@ public sealed record ElButtonProps : VueProps
 /// 用于 ElTransfer.Data 的参数类型。
 /// data source
 /// </summary>
-[ECMAScript]
 [Description("@#TransferDataItem")]
 public sealed record ElTransferDataItem : VueDictionary
 {
@@ -2762,7 +2705,6 @@ public enum ElTransferTargetOrder
 /// 用于 ElTransfer.Format 的参数类型。
 /// texts for checking status in list header
 /// </summary>
-[ECMAScript]
 [Description("@#TransferFormat")]
 public sealed record ElTransferFormat : VueProps
 {
@@ -2783,7 +2725,6 @@ public sealed record ElTransferFormat : VueProps
 /// 用于 ElTransfer.Props 的参数类型。
 /// prop aliases for data source
 /// </summary>
-[ECMAScript]
 [Description("@#TransferPropsAlias")]
 public sealed record ElTransferPropsAlias : VueProps
 {
@@ -2886,7 +2827,6 @@ public static class ElTransferTextPairCollectionBuilder
 /// configuration options
 /// configuration options, see the following table
 /// </summary>
-[ECMAScript]
 [Description("@#SelectPropsAlias")]
 public sealed record ElSelectPropsAlias : VueProps
 {
@@ -2919,7 +2859,6 @@ public sealed record ElSelectPropsAlias : VueProps
 /// 用于 ElCheckboxGroup.Props 的参数类型。
 /// configuration options
 /// </summary>
-[ECMAScript]
 [Description("@#CheckboxOptionProps")]
 public sealed record ElCheckboxOptionPropsAlias : VueProps
 {
@@ -2946,7 +2885,6 @@ public sealed record ElCheckboxOptionPropsAlias : VueProps
 /// 用于 ElMention.Props 的参数类型。
 /// configuration options
 /// </summary>
-[ECMAScript]
 [Description("@#MentionOptionProps")]
 public sealed record ElMentionOptionPropsAlias : VueProps
 {
@@ -2973,7 +2911,6 @@ public sealed record ElMentionOptionPropsAlias : VueProps
 /// 用于 ElRadioGroup.Props 的参数类型。
 /// configuration options
 /// </summary>
-[ECMAScript]
 [Description("@#radioOptionProp")]
 public sealed record ElRadioOptionPropsAlias : VueProps
 {
@@ -3000,7 +2937,6 @@ public sealed record ElRadioOptionPropsAlias : VueProps
 /// 用于 ElSegmented.Props 的参数类型。
 /// configuration options, see the following table
 /// </summary>
-[ECMAScript]
 [Description("@#SegmentedPropsAlias")]
 public sealed record ElSegmentedPropsAlias : VueProps
 {
@@ -3027,7 +2963,6 @@ public sealed record ElSegmentedPropsAlias : VueProps
 /// 用于 ElTree.Props、ElTreeV2.Props 的参数类型。
 /// configuration options, see the following table
 /// </summary>
-[ECMAScript]
 [Description("@#TreeOptionProps")]
 public sealed record ElTreeOptionProps : VueProps
 {
@@ -3066,7 +3001,6 @@ public sealed record ElTreeOptionProps : VueProps
 /// 用于 ElCascader.Props、ElCascaderPanel.Props 的参数类型。
 /// configuration options, see the following `CascaderProps` table.
 /// </summary>
-[ECMAScript]
 [Description("@#CascaderProps")]
 public sealed record ElCascaderProps : VueProps
 {
@@ -3177,7 +3111,6 @@ public sealed record ElCascaderProps : VueProps
 /// <summary>
 /// 表单字段的 async-validator 规则；通过字段名与 FormItem 关联。
 /// </summary>
-[ECMAScript]
 [Description("@#FormItemRule")]
 public sealed record ElFormItemRule : VueDictionary
 {
@@ -3239,7 +3172,6 @@ public readonly union ElFormRuleValue(ElFormItemRules, ElFormRules)
 /// 用于 ElForm.Rules 的参数类型。
 /// Validation rules of form.
 /// </summary>
-[ECMAScript]
 [Description("@#FormRules")]
 public sealed record ElFormRules : VueDictionary<ElFormRuleValue>
 {
@@ -3248,7 +3180,6 @@ public sealed record ElFormRules : VueDictionary<ElFormRuleValue>
 /// <summary>
 /// 按评分阈值配置显示颜色的映射。
 /// </summary>
-[ECMAScript]
 [Description("@#RateColorMap")]
 public sealed record ElRateColorMap : VueDictionary<string>
 {
@@ -3284,7 +3215,6 @@ public readonly union ElRateColorsValue(
 /// <summary>
 /// 按评分阈值配置评分图标的映射。
 /// </summary>
-[ECMAScript]
 [Description("@#RateIconMap")]
 public sealed record ElRateIconMap : VueDictionary<VueStringComponentValue>
 {
@@ -3336,7 +3266,6 @@ public readonly union ElRateIconsValue(
 /// <summary>
 /// 滑块某个数值位置的标记标签及样式。
 /// </summary>
-[ECMAScript]
 [Description("@#SliderMarker")]
 public sealed record ElSliderMarker : VueProps
 {
@@ -3375,7 +3304,6 @@ public readonly union ElSliderMarkValue(string, ElSliderMarker)
 /// 用于 ElSlider.Marks 的参数类型。
 /// marks, type of key must be `number` and must in closed interval `[min, max]`, each mark can custom style
 /// </summary>
-[ECMAScript]
 [Description("@#SliderMarks")]
 public sealed record ElSliderMarks : VueDictionary<ElSliderMarkValue>
 {
@@ -3447,7 +3375,6 @@ public enum ElTableV2FixedDirection
 /// <summary>
 /// 虚拟表格动态 CSS 类名回调的行、列和单元格数据。
 /// </summary>
-[ECMAScript]
 [Description("@#TableV2ClassContext")]
 public sealed record ElTableV2ClassContext : VueProps
 {
@@ -3498,7 +3425,6 @@ public sealed record ElTableV2ClassContext : VueProps
 /// 用于 ElTableV2ClassValue.AsGetter 的回调签名。
 /// 读取当前值的 ElTableV2ClassGetter 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#ClassGetter")]
 public delegate string ElTableV2ClassGetter(ElTableV2ClassContext context);
 
@@ -3525,7 +3451,6 @@ public readonly union ElTableV2ClassValue(string, ElTableV2ClassGetter)
 /// <summary>
 /// 虚拟表格动态属性回调的当前行列上下文。
 /// </summary>
-[ECMAScript]
 [Description("@#TableV2DynamicPropsContext")]
 public sealed record ElTableV2DynamicPropsContext : VueProps
 {
@@ -3576,7 +3501,6 @@ public sealed record ElTableV2DynamicPropsContext : VueProps
 /// 用于 ElTableV2DynamicPropsValue.AsGetter 的回调签名。
 /// 读取当前值的 ElTableV2DynamicPropsGetter 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#DynamicPropsGetter")]
 public delegate VueDictionary ElTableV2DynamicPropsGetter(ElTableV2DynamicPropsContext context);
 
@@ -3734,7 +3658,6 @@ public readonly union ElTableV2KeyValue(VueKey)
 /// 用于 ElTableV2.SortBy 的参数类型。
 /// Sort indicator
 /// </summary>
-[ECMAScript]
 [Description("@#SortBy")]
 public sealed record ElTableV2SortBy : VueProps
 {
@@ -3755,7 +3678,6 @@ public sealed record ElTableV2SortBy : VueProps
 /// 用于 ElTableV2.SortState 的参数类型。
 /// Multiple sort indicator
 /// </summary>
-[ECMAScript]
 [Description("@#SortState")]
 public sealed record ElTableV2SortState : VueDictionary<ElTableV2SortOrder>
 {
@@ -3765,7 +3687,6 @@ public sealed record ElTableV2SortState : VueDictionary<ElTableV2SortOrder>
 /// 用于 ElTableV2.Columns 的参数类型。
 /// An array of column definitions.
 /// </summary>
-[ECMAScript]
 [Description("@#Column")]
 public sealed record ElTableV2Column : VueDictionary
 {
@@ -3896,7 +3817,6 @@ public readonly union ElTableV2FixedValue(bool, ElTableV2FixedDirection)
 /// An array of data to be rendered in the table.
 /// Data for rendering rows above the main content and below the header
 /// </summary>
-[ECMAScript]
 [Description("@#TableData")]
 public sealed record ElTableV2DataItem : VueDictionary
 {
@@ -3938,7 +3858,6 @@ public readonly union ElTableV2HeaderHeightValue(double, Number[]) : IEnumerable
 /// <summary>
 /// 虚拟表格自定义单元格取值函数的行列上下文。
 /// </summary>
-[ECMAScript]
 [Description("@#TableV2DataGetterContext")]
 public sealed record ElTableV2DataGetterContext : VueProps
 {
@@ -3977,14 +3896,12 @@ public sealed record ElTableV2DataGetterContext : VueProps
 /// 用于 ElTableV2.DataGetter 的回调签名。
 /// A method to customize data fetch from the data source.
 /// </summary>
-[ECMAScript]
 [Description("@#DataGetter")]
 public delegate VueValue ElTableV2DataGetter(ElTableV2DataGetterContext context);
 
 /// <summary>
 /// 虚拟表格单元格渲染函数的上下文，包含已提取值和原始行数据。
 /// </summary>
-[ECMAScript]
 [Description("@#TableV2CellRendererContext")]
 public sealed record ElTableV2CellRendererContext : VueProps
 {
@@ -4028,7 +3945,6 @@ public sealed record ElTableV2CellRendererContext : VueProps
 /// <summary>
 /// 虚拟表格表头单元格渲染函数的当前列和表头位置。
 /// </summary>
-[ECMAScript]
 [Description("@#TableV2HeaderCellRendererContext")]
 public sealed record ElTableV2HeaderCellRendererContext : VueProps
 {
@@ -4060,21 +3976,18 @@ public sealed record ElTableV2HeaderCellRendererContext : VueProps
 /// <summary>
 /// 根据当前单元格上下文返回用于显示的 Vue VNode。
 /// </summary>
-[ECMAScript]
 [Description("@#CellRenderer")]
 public delegate IVNode ElTableV2CellRenderer(ElTableV2CellRendererContext context);
 
 /// <summary>
 /// 根据表头上下文返回自定义表头的 Vue VNode。
 /// </summary>
-[ECMAScript]
 [Description("@#HeaderCellRenderer")]
 public delegate IVNode ElTableV2HeaderCellRenderer(ElTableV2HeaderCellRendererContext context);
 
 /// <summary>
 /// 虚拟表格行事件携带的原生事件、行数据和行标识。
 /// </summary>
-[ECMAScript]
 [Description("@#TableV2RowEventHandlerContext")]
 public sealed record ElTableV2RowEventHandlerContext : VueProps
 {
@@ -4106,7 +4019,6 @@ public sealed record ElTableV2RowEventHandlerContext : VueProps
 /// <summary>
 /// 处理虚拟表格的行级鼠标事件；上下文包含原生事件及行数据。
 /// </summary>
-[ECMAScript]
 [Description("@#RowEventHandler")]
 public delegate void ElTableV2RowEventHandler(ElTableV2RowEventHandlerContext context);
 
@@ -4114,7 +4026,6 @@ public delegate void ElTableV2RowEventHandler(ElTableV2RowEventHandlerContext co
 /// 用于 ElTableV2.RowEventHandlers 的参数类型。
 /// A collection of handlers attached to each row
 /// </summary>
-[ECMAScript]
 [Description("@#RowEventHandlers")]
 public sealed record ElTableV2RowEventHandlers : VueProps
 {
@@ -4171,7 +4082,6 @@ public readonly union ElTransferRenderContentResult(IVNode, IVNode[])
 /// 用于 ElTransfer.FilterMethod 的回调签名。
 /// custom filter method
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTransferFilterMethod(string query, ElTransferDataItem item);
 
@@ -4179,14 +4089,12 @@ public delegate bool ElTransferFilterMethod(string query, ElTransferDataItem ite
 /// 用于 ElTransfer.RenderContent 的回调签名。
 /// custom render function for data items
 /// </summary>
-[ECMAScript]
 [Description("@#renderContent")]
 public delegate ElTransferRenderContentResult ElTransferRenderContent(VueRenderHost h, ElTransferDataItem option);
 
 /// <summary>
 /// Tree 内部节点投影，用于拖放、筛选和懒加载回调；原始业务数据使用 ElTreeNodeData。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElTreeNode : VueDictionary
 {
@@ -4195,7 +4103,6 @@ public sealed record ElTreeNode : VueDictionary
 /// <summary>
 /// Tree 的原始节点数据对象，字段名称可通过 props 配置。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElTreeNodeData : VueDictionary
 {
@@ -4204,7 +4111,6 @@ public sealed record ElTreeNodeData : VueDictionary
 /// <summary>
 /// Tree 自定义节点渲染的上下文，包含节点、原始数据及组件内部状态。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElTreeRenderContentContext : VueProps
 {
@@ -4236,7 +4142,6 @@ public sealed record ElTreeRenderContentContext : VueProps
 /// <summary>
 /// 树节点拖放指示的位置描述。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElTreeDropIndicator : VueProps
 {
@@ -4250,21 +4155,18 @@ public sealed record ElTreeDropIndicator : VueProps
 /// <summary>
 /// 根据原始数据和内部节点返回自定义 CSS 类名或类名开关映射。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElStringBooleanClassValue ElTreeOptionClassCallback(ElTreeNodeData data, ElTreeNode node);
 
 /// <summary>
 /// 提交懒加载得到的子节点数据，并结束本次级联节点加载。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElCascaderLazyResolveCallback(VueDictionary[]? dataList = null);
 
 /// <summary>
 /// 通知级联选择器本次懒加载失败并停止加载状态。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElCascaderLazyRejectCallback();
 
@@ -4272,7 +4174,6 @@ public delegate void ElCascaderLazyRejectCallback();
 /// 用于 ElCascaderProps.LazyLoad 的回调签名。
 /// method for loading child nodes data, only works when `lazy` is true. The reject parameter is supported after version ^(2.11.5).
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElCascaderLazyLoadCallback(
     VueDictionary node,
@@ -4283,21 +4184,18 @@ public delegate void ElCascaderLazyLoadCallback(
 /// 用于 ElTree.RenderContent、ElTreeSelect.RenderContent 的回调签名。
 /// render function for tree node
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElTransferRenderContentResult ElTreeRenderContentCallback(VueRenderHost h, ElTreeRenderContentContext context);
 
 /// <summary>
 /// 向树组件提交懒加载得到的子节点数组。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElTreeResolveChildrenCallback(ElTreeNodeData[] data);
 
 /// <summary>
 /// 结束当前树节点的加载状态，可用于本次加载未成功的情形。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElTreeStopLoadingCallback();
 
@@ -4305,7 +4203,6 @@ public delegate void ElTreeStopLoadingCallback();
 /// 用于 ElTree.Load、ElTreeSelect.Load 的回调签名。
 /// method for loading subtree data, only works when `lazy` is true
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElTreeLoadCallback(
     ElTreeNode rootNode,
@@ -4319,7 +4216,6 @@ public delegate void ElTreeLoadCallback(
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 /// <param name="data">当前树节点的原始业务数据。</param>
 /// <param name="child">当前节点实例，可读取层级、父子关系和展开状态。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTreeFilterNodeMethod(VueValue? value, ElTreeNodeData data, ElTreeNode child);
 
@@ -4327,7 +4223,6 @@ public delegate bool ElTreeFilterNodeMethod(VueValue? value, ElTreeNodeData data
 /// 用于 ElTree.AllowDrag、ElTreeSelect.AllowDrag 的回调签名。
 /// this function will be executed before dragging a node. If `false` is returned, the node can not be dragged
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTreeAllowDragCallback(ElTreeNode node);
 
@@ -4335,7 +4230,6 @@ public delegate bool ElTreeAllowDragCallback(ElTreeNode node);
 /// 用于 ElTree.AllowDrop、ElTreeSelect.AllowDrop 的回调签名。
 /// this function will be executed before the dragging node is dropped. If `false` is returned, the dragging node can not be dropped at the target node. `type` has three possible values: 'prev' (inserting the dragging node before the target node), 'inner' (inserting the dragging node to the target node) and 'next' (inserting the dragging node after the target node)
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTreeAllowDropCallback(
     ElTreeNode draggingNode,
@@ -4346,7 +4240,6 @@ public delegate bool ElTreeAllowDropCallback(
 /// 用于 ElTreeV2.FilterMethod 的回调签名。
 /// this function will be executed on each node when use filter method. if return `false`, tree node will be hidden.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTreeV2FilterMethod(string query, ElTreeNodeData data, ElTreeNode node);
 
@@ -4356,7 +4249,6 @@ public delegate bool ElTreeV2FilterMethod(string query, ElTreeNodeData data, ElT
 /// function that gets called when the input value changes. Its parameter is the current input value. To use this, `filterable` must be true
 /// custom filter method, the first parameter is the current input value. To use this, `filterable` must be true method
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElSelectQueryCallback(string query);
 
@@ -4365,7 +4257,6 @@ public delegate void ElSelectQueryCallback(string query);
 /// format to display tooltip value
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStringNumberValue ElSliderFormatTooltipCallback(Number value);
 
@@ -4374,7 +4265,6 @@ public delegate VueStringNumberValue ElSliderFormatTooltipCallback(Number value)
 /// format to display the `aria-valuenow` attribute for screen readers
 /// </summary>
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElSliderFormatValueTextCallback(Number value);
 
@@ -4382,21 +4272,18 @@ public delegate string ElSliderFormatValueTextCallback(Number value);
 /// 用于 ElSwitch.BeforeChange 的回调签名。
 /// before-change hook before the switch state changes. If `false` is returned or a `Promise` is returned and then is rejected, will stop switching
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElAsyncBooleanResult ElSwitchBeforeChangeCallback();
 
 /// <summary>
 /// 标签页切换前异步确认；拒绝 Promise 或返回 false 时阻止离开当前标签页。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<bool?> ElTabsBeforeLeaveAsyncCallback(VueStringNumberValue? newName, VueStringNumberValue? oldName);
 
 /// <summary>
 /// 标签页切换前同步确认；返回 false 时阻止切换。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool? ElTabsBeforeLeaveSyncCallback(VueStringNumberValue? newName, VueStringNumberValue? oldName);
 
@@ -4422,7 +4309,6 @@ public readonly union ElTabsBeforeLeaveResult(bool, IPromise<bool?>)
 /// 用于 ElTabs.BeforeLeave 的回调签名。
 /// hook function before switching tab. If `false` is returned or a `Promise` is returned and then is rejected, switching will be prevented
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElTabsBeforeLeaveResult? ElTabsBeforeLeaveCallback(
     VueStringNumberValue? newName,
@@ -4431,7 +4317,6 @@ public delegate ElTabsBeforeLeaveResult? ElTabsBeforeLeaveCallback(
 /// <summary>
 /// 带 percent 百分比字段的上传进度事件。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadProgressEvent")]
 public sealed record ElUploadProgressEvent : VueProps
 {
@@ -4445,7 +4330,6 @@ public sealed record ElUploadProgressEvent : VueProps
 /// <summary>
 /// 上传请求错误，携带错误名称、消息及可用的请求错误字段。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadError")]
 public sealed record ElUploadAjaxError : VueProps
 {
@@ -4465,7 +4349,6 @@ public sealed record ElUploadAjaxError : VueProps
 /// <summary>
 /// 上传时附加的表单字段映射。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadRequestData")]
 public sealed record ElUploadRequestData : VueDictionary<VueValue>
 {
@@ -4492,7 +4375,6 @@ public readonly union ElUploadRequestHeaders(Headers, VueDictionary)
 /// <summary>
 /// 自定义上传请求的完整参数，包含文件、URL、请求头和状态回调。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadRequestOptions")]
 public sealed record ElUploadRequestOptions : VueProps
 {
@@ -4560,21 +4442,18 @@ public sealed record ElUploadRequestOptions : VueProps
 /// <summary>
 /// 向上传组件报告请求失败，以更新列表中的错误状态。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadRequestOnErrorCallback(ElUploadAjaxError error);
 
 /// <summary>
 /// 向上传组件报告最新上传进度。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadRequestOnProgressCallback(ElUploadProgressEvent @event);
 
 /// <summary>
 /// 向上传组件提交请求成功的响应数据。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadRequestOnSuccessCallback(VueValue? response);
 
@@ -4600,14 +4479,12 @@ public readonly union ElUploadRequestResult(XMLHttpRequest, IPromise<VueValue?>)
 /// 用于 ElUpload.HttpRequest 的回调签名。
 /// override default xhr behavior, allowing you to implement your own upload-file's request.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElUploadRequestResult ElUploadRequestCallback(ElUploadRequestOptions options);
 
 /// <summary>
 /// 上传文件附带的数据字段，可由同步或异步数据工厂产生。
 /// </summary>
-[ECMAScript]
 [Description("@#UploadData")]
 public sealed record ElUploadData : VueDictionary<VueValue>
 {
@@ -4617,7 +4494,6 @@ public sealed record ElUploadData : VueDictionary<VueValue>
 /// 用于 ElUploadDataValue.AsAsyncFactory 的回调签名。
 /// 读取当前值的 ElUploadDataPromiseFactory 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<ElUploadData> ElUploadDataPromiseFactory(ElUploadRawFile rawFile);
 
@@ -4625,7 +4501,6 @@ public delegate IPromise<ElUploadData> ElUploadDataPromiseFactory(ElUploadRawFil
 /// 用于 ElUploadDataValue.AsFactory 的回调签名。
 /// 读取当前值的 ElUploadDataFactory 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElUploadData ElUploadDataFactory(ElUploadRawFile rawFile);
 
@@ -4794,21 +4669,18 @@ public readonly struct ElUploadBeforeUploadResult : IUnion
 /// 用于 ElUpload.BeforeUpload 的回调签名。
 /// hook function before uploading with the file to be uploaded as its parameter. If `false` is returned or a `Promise` is returned and then is rejected, uploading will be aborted.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElUploadBeforeUploadResult? ElUploadBeforeUploadCallback(ElUploadRawFile rawFile);
 
 /// <summary>
 /// 删除上传项前同步确认；返回 false 时阻止移除。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElUploadBeforeRemoveSyncCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
 /// <summary>
 /// 删除上传项前异步确认；返回 false 或拒绝 Promise 时阻止移除。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IPromise<bool?> ElUploadBeforeRemoveAsyncCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
@@ -4834,7 +4706,6 @@ public readonly union ElUploadBeforeRemoveResult(bool, IPromise<bool?>)
 /// 用于 ElUpload.BeforeRemove 的回调签名。
 /// hook function before removing a file with the file and file list as its parameters. If `false` is returned or a `Promise` is returned and then is rejected, removing will be aborted.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElUploadBeforeRemoveResult ElUploadBeforeRemoveCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
@@ -4842,7 +4713,6 @@ public delegate ElUploadBeforeRemoveResult ElUploadBeforeRemoveCallback(ElUpload
 /// 用于 ElUpload.OnPreview 的回调签名。
 /// hook function when clicking the uploaded files.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadPreviewCallback(ElUploadFile uploadFile);
 
@@ -4851,7 +4721,6 @@ public delegate void ElUploadPreviewCallback(ElUploadFile uploadFile);
 /// hook function when files are removed.
 /// hook function when select file or upload file success or upload file fail.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadFileListCallback(ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
@@ -4859,7 +4728,6 @@ public delegate void ElUploadFileListCallback(ElUploadFile uploadFile, ElUploadF
 /// 用于 ElUpload.OnSuccess 的回调签名。
 /// hook function when uploaded successfully.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadSuccessCallback(VueValue? response, ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
@@ -4867,7 +4735,6 @@ public delegate void ElUploadSuccessCallback(VueValue? response, ElUploadFile up
 /// 用于 ElUpload.OnProgress 的回调签名。
 /// hook function when some progress occurs.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadProgressCallback(ElUploadProgressEvent @event, ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
@@ -4875,7 +4742,6 @@ public delegate void ElUploadProgressCallback(ElUploadProgressEvent @event, ElUp
 /// 用于 ElUpload.OnError 的回调签名。
 /// hook function when some errors occurs.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadErrorCallback(Error error, ElUploadFile uploadFile, ElUploadFile[] uploadFiles);
 
@@ -4883,7 +4749,6 @@ public delegate void ElUploadErrorCallback(Error error, ElUploadFile uploadFile,
 /// 用于 ElUpload.OnExceed 的回调签名。
 /// hook function when limit is exceeded.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElUploadExceedCallback(FileRef[] files, ElUploadUserFile[] uploadFiles);
 
@@ -4891,7 +4756,6 @@ public delegate void ElUploadExceedCallback(FileRef[] files, ElUploadUserFile[] 
 /// 用于 ElTimePicker.DisabledHours 的回调签名。
 /// To specify the array of hours that cannot be selected
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate Number[] ElTimePickerDisabledHoursCallback(string role, Dayjs? comparingDate = null);
 
@@ -4899,7 +4763,6 @@ public delegate Number[] ElTimePickerDisabledHoursCallback(string role, Dayjs? c
 /// 用于 ElTimePicker.DisabledMinutes 的回调签名。
 /// To specify the array of minutes that cannot be selected
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate Number[] ElTimePickerDisabledMinutesCallback(Number hour, string role, Dayjs? comparingDate = null);
 
@@ -4907,14 +4770,12 @@ public delegate Number[] ElTimePickerDisabledMinutesCallback(Number hour, string
 /// 用于 ElTimePicker.DisabledSeconds 的回调签名。
 /// To specify the array of seconds that cannot be selected
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate Number[] ElTimePickerDisabledSecondsCallback(Number hour, Number minute, string role, Dayjs? comparingDate = null);
 
 /// <summary>
 /// 表格溢出提示格式化回调的行、列与单元格值。
 /// </summary>
-[ECMAScript]
 [Description("@#TableOverflowTooltipData")]
 public sealed record ElTableTooltipFormatterContext : VueProps
 {
@@ -4941,14 +4802,12 @@ public sealed record ElTableTooltipFormatterContext : VueProps
 /// 用于 ElTable.TooltipFormatter、ElTableColumn.TooltipFormatter、ElTableConfig.TooltipFormatter 的回调签名。
 /// customize tooltip content when using `show-overflow-tooltip`
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStringNumberVNodeValue ElTableTooltipFormatter(ElTableTooltipFormatterContext data);
 
 /// <summary>
 /// 表格列在渲染和格式化回调中暴露的列配置。
 /// </summary>
-[ECMAScript]
 [Description("@#TableColumnCtx")]
 public sealed record ElTableColumnContext : VueProps
 {
@@ -4992,7 +4851,6 @@ public sealed record ElTableColumnContext : VueProps
 /// <summary>
 /// 表格行样式或类名回调的行数据和行索引。
 /// </summary>
-[ECMAScript]
 [Description("@#TableRowContext")]
 public sealed record ElTableRowContext : VueProps
 {
@@ -5012,7 +4870,6 @@ public sealed record ElTableRowContext : VueProps
 /// <summary>
 /// 表格单元格回调的行数据、列配置及行列索引。
 /// </summary>
-[ECMAScript]
 [Description("@#TableCellContext")]
 public sealed record ElTableCellContext : VueProps
 {
@@ -5044,7 +4901,6 @@ public sealed record ElTableCellContext : VueProps
 /// <summary>
 /// 表格汇总函数的全部列配置及参与汇总的行数据。
 /// </summary>
-[ECMAScript]
 [Description("@#SummaryMethodContext")]
 public sealed record ElTableSummaryMethodContext : VueProps
 {
@@ -5082,7 +4938,6 @@ public readonly union ElTableSpanMethodResult(Number[], ElTableSpanMethodCoordin
 /// <summary>
 /// 单元格合并函数返回的 rowspan 与 colspan。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record ElTableSpanMethodCoordinates : VueProps
 {
@@ -5103,7 +4958,6 @@ public sealed record ElTableSpanMethodCoordinates : VueProps
 /// 用于 ElTableRowClassNameValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableRowClassNameCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElTableRowClassNameCallback(ElTableRowContext context);
 
@@ -5111,7 +4965,6 @@ public delegate string ElTableRowClassNameCallback(ElTableRowContext context);
 /// 用于 ElTableRowStyleValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableRowStyleCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStyleValue ElTableRowStyleCallback(ElTableRowContext context);
 
@@ -5119,7 +4972,6 @@ public delegate VueStyleValue ElTableRowStyleCallback(ElTableRowContext context)
 /// 用于 ElTableCellClassNameValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableCellClassNameCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElTableCellClassNameCallback(ElTableCellContext context);
 
@@ -5127,7 +4979,6 @@ public delegate string ElTableCellClassNameCallback(ElTableCellContext context);
 /// 用于 ElTableCellStyleValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableCellStyleCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStyleValue ElTableCellStyleCallback(ElTableCellContext context);
 
@@ -5223,7 +5074,6 @@ public readonly union ElTableCellStyleValue(VueStyleValue, ElTableCellStyleCallb
 /// 用于 ElTableRowKeyValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableRowKeyCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElTableRowKeyCallback(VueDictionary row);
 
@@ -5250,7 +5100,6 @@ public readonly union ElTableRowKeyValue(string, ElTableRowKeyCallback)
 /// 用于 ElTable.SummaryMethod 的回调签名。
 /// custom summary method
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStringNumberVNodeValue[] ElTableSummaryMethodCallback(ElTableSummaryMethodContext context);
 
@@ -5258,14 +5107,12 @@ public delegate VueStringNumberVNodeValue[] ElTableSummaryMethodCallback(ElTable
 /// 用于 ElTable.SpanMethod 的回调签名。
 /// method that returns rowspan and colspan
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate ElTableSpanMethodResult? ElTableSpanMethodCallback(ElTableCellContext context);
 
 /// <summary>
 /// 树形表格懒加载节点的展开、加载和缩进状态。
 /// </summary>
-[ECMAScript]
 [Description("@#TableTreeNode")]
 public sealed record ElTableTreeNode : VueProps
 {
@@ -5297,7 +5144,6 @@ public sealed record ElTableTreeNode : VueProps
 /// <summary>
 /// 将异步读取的子行数据交给表格，并完成本次懒加载。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElTableResolveChildrenCallback(VueDictionary[] data);
 
@@ -5305,7 +5151,6 @@ public delegate void ElTableResolveChildrenCallback(VueDictionary[] data);
 /// 用于 ElTable.Load 的回调签名。
 /// method for loading child row data, only works when `lazy` is true
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElTableLoadCallback(VueDictionary row, ElTableTreeNode treeNode, ElTableResolveChildrenCallback resolve);
 
@@ -5313,14 +5158,12 @@ public delegate void ElTableLoadCallback(VueDictionary row, ElTableTreeNode tree
 /// 用于 ElTable.RowExpandable 的回调签名。
 /// enable expandable rows, works when the table has a column type=&quot;expand&quot;
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTableRowExpandableCallback(VueDictionary row, Number index);
 
 /// <summary>
 /// 表格自定义表头函数的列配置、位置及组件状态。
 /// </summary>
-[ECMAScript]
 [Description("@#TableColumnHeaderContext")]
 public sealed record ElTableColumnHeaderContext : VueProps
 {
@@ -5353,7 +5196,6 @@ public sealed record ElTableColumnHeaderContext : VueProps
 /// 用于 ElTableColumnIndexValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableColumnIndexCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate Number ElTableColumnIndexCallback(Number index);
 
@@ -5400,7 +5242,6 @@ public readonly union ElTableColumnIndexValue(Number, ElTableColumnIndexCallback
 /// 用于 ElTableColumn.RenderHeader 的回调签名。
 /// render function for table header of this column
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate IVNode ElTableColumnRenderHeaderCallback(ElTableColumnHeaderContext context);
 
@@ -5408,7 +5249,6 @@ public delegate IVNode ElTableColumnRenderHeaderCallback(ElTableColumnHeaderCont
 /// 用于 ElTableColumn.SortMethod 的回调签名。
 /// sorting method, works when `sortable` is `true`. Should return a number, just like Array.sort
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate Number ElTableColumnSortMethodCallback(VueDictionary left, VueDictionary right);
 
@@ -5416,7 +5256,6 @@ public delegate Number ElTableColumnSortMethodCallback(VueDictionary left, VueDi
 /// 用于 ElTableColumnSortByValue.AsCallback 的回调签名。
 /// 读取当前值的 ElTableColumnSortByCallback 分支；不属于该分支时返回 null。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate string ElTableColumnSortByCallback(VueDictionary row, Number index, VueDictionary[]? array = null);
 
@@ -5451,7 +5290,6 @@ public readonly union ElTableColumnSortByValue(
 /// 用于 ElTableColumn.Formatter 的回调签名。
 /// function that formats cell content
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate VueStringNumberVNodeValue ElTableColumnFormatterCallback(
     VueDictionary row,
@@ -5463,7 +5301,6 @@ public delegate VueStringNumberVNodeValue ElTableColumnFormatterCallback(
 /// 用于 ElTableColumn.Selectable 的回调签名。
 /// function that determines if a certain row can be selected, works when `type` is 'selection'
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public delegate bool ElTableColumnSelectableCallback(VueDictionary row, Number index);
 
@@ -5474,14 +5311,12 @@ public delegate bool ElTableColumnSelectableCallback(VueDictionary row, Number i
 /// <param name="value">要传入的值，保持其声明的类型和数据。</param>
 /// <param name="row">当前待判断的行数据。</param>
 /// <param name="column">配置此过滤器的表格列上下文。</param>
-[ECMAScript]
 [Description("@#")]
 public delegate void ElTableColumnFilterMethodCallback(string value, VueDictionary row, ElTableColumnContext column);
 
 /// <summary>
 /// 虚拟选择器的选项数据；支持由用户输入创建的候选项。
 /// </summary>
-[ECMAScript]
 [Description("@#SelectV2Option")]
 public sealed record ElSelectV2Option : VueDictionary
 {
@@ -5495,7 +5330,6 @@ public sealed record ElSelectV2Option : VueDictionary
 /// <summary>
 /// 虚拟选择器的选项分组，包含组标签和子选项。
 /// </summary>
-[ECMAScript]
 [Description("@#OptionGroup")]
 public sealed record ElSelectV2OptionGroup : VueDictionary
 {

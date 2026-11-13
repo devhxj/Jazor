@@ -11,7 +11,6 @@ namespace ECMAScript;
 /// 构造可调整大小的 JavaScript <c>ArrayBuffer</c> 时使用的选项。
 /// </summary>
 /// <param name="MaxByteLength">Maximum capacity allowed for a resizable buffer. 可调整缓冲区允许的最大字节容量。</param>
-[ECMAScript]
 public record struct ArrayBufferOption(Number? MaxByteLength = null);
 
 /// <summary>

@@ -140,7 +140,6 @@ public readonly union VueUseMaybeElement(
 /// <c>useMouse()</c> 的选项对象。
 /// Options for <c>useMouse()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseMouseOptions
 {
@@ -165,7 +164,6 @@ public record VueUseMouseOptions
 /// <c>useMouseInElement()</c> 的选项对象。
 /// Options for <c>useMouseInElement()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseMouseInElementOptions
 {
@@ -375,7 +373,6 @@ public abstract class VueUseElementBoundingReturn
 /// <c>useElementBounding()</c> 的选项对象。
 /// Options for <c>useElementBounding()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseElementBoundingOptions
 {
@@ -424,7 +421,6 @@ public abstract class VueUseWindowScrollReturn
 /// <c>useIntersectionObserver()</c> 的选项对象。
 /// Options for <c>useIntersectionObserver()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseIntersectionObserverOptions
 {
@@ -501,7 +497,6 @@ public delegate void VueUseResizeObserverCallback(Array<ResizeObserverEntry?> en
 /// <c>useStorage()</c> 系列及 <c>useLocalStorage()</c>、<c>useSessionStorage()</c> 的选项对象。
 /// Options shared by <c>useStorage()</c>, <c>useLocalStorage()</c>, and <c>useSessionStorage()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseStorageOptions
 {
@@ -526,7 +521,6 @@ public record VueUseStorageOptions
 /// <c>useClipboard()</c> 的选项对象。
 /// Options for <c>useClipboard()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseClipboardOptions
 {
@@ -585,7 +579,6 @@ public abstract class VueUseClipboardReturn
 /// <c>useTitle()</c> 的选项对象。
 /// Options for <c>useTitle()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseTitleOptions
 {
@@ -602,7 +595,6 @@ public record VueUseTitleOptions
 /// <c>useFavicon()</c> 的选项对象。
 /// Options for <c>useFavicon()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseFaviconOptions
 {
@@ -619,7 +611,6 @@ public record VueUseFaviconOptions
 /// <c>useFullscreen()</c> 的选项对象。
 /// Options for <c>useFullscreen()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseFullscreenOptions
 {

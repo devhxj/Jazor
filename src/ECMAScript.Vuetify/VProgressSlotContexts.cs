@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// VProgressCircular 默认插槽的上下文数据。
 /// Slot context for the VProgressCircular default slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VProgressCircularDefaultSlotContext
 {
@@ -19,7 +18,6 @@ public sealed record VProgressCircularDefaultSlotContext
 /// VProgressLinear 默认插槽的上下文数据。
 /// Slot context for the VProgressLinear default slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VProgressLinearDefaultSlotContext
 {

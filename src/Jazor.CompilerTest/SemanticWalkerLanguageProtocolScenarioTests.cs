@@ -200,7 +200,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
             new SemanticWalker(true).Visit(block, new SenseArgument()));
 
         StringAssert.Contains(exception.Message, "Release.Deconstruct", StringComparison.Ordinal);
-        StringAssert.Contains(exception.Message, "Only whitelist members", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "explicit host mapping is required", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -282,16 +282,14 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
     }
 
     [TestMethod]
-    public void Visit_NonStructuralObjectLiteralHost_UsesTheDeclaredNameBoundary()
+    public void Visit_UnmarkedRecord_UsesStructuralObjectCreation()
     {
         var script = VisitBlock(
             """
             using System.ComponentModel;
             using ECMAScript;
 
-            [ECMAScript]
-            [Description("@#")]
-            sealed class RuntimeAttributes
+            sealed record RuntimeAttributes
             {
                 public string? Title { get; set; }
 
@@ -320,7 +318,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
     }
 
     [TestMethod]
-    public void Visit_NonStructuralObjectLiteralHostWithConstructorArguments_RejectsRuntimeAllocation()
+    public void Visit_HostClassWithoutRuntimeName_RejectsInsteadOfErasingConstruction()
     {
         var block = GetBlock(
             """
@@ -348,7 +346,7 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
         var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
             new SemanticWalker(true).Visit(block, new SenseArgument()));
 
-        StringAssert.Contains(exception.Message, "does not support constructor arguments", StringComparison.Ordinal);
+        StringAssert.Contains(exception.Message, "has no runtime constructor name", StringComparison.Ordinal);
     }
 
     [TestMethod]

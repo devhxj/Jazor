@@ -3,7 +3,6 @@ using ECMAScript;
 
 namespace VueRoute.MemorySmoke.Host;
 
-[ECMAScript]
 [Description("@#")]
 public sealed record DetailRouteProps : ECMAScript.Vue.VueProps
 {
@@ -14,7 +13,6 @@ public sealed record DetailRouteProps : ECMAScript.Vue.VueProps
     public string Source { get; init; } = "";
 }
 
-[ECMAScript]
 [Description("@#")]
 public sealed record QueryEchoProps : ECMAScript.Vue.VueProps
 {

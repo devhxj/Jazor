@@ -123,6 +123,8 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 
 `[ECMAScript("specifier")]` 与 `[ECMAScriptModule("path")]` 是**相反方向**的两件事：前者是"从哪个外部库导入"（消费），后者是"这个类型生成到哪个模块"（产出）。两者可以同时出现在一个类型上，互不冲突，各自解析。
 
+这些特性不承担普通源码类型的编译许可。模块内的普通实现与可达辅助类型按源码和符号归属参与转换；纯数据 record 依据其声明种类生成对象字面量。带空名称的宿主 class 仍是 class，不会据此生成 `{}`；options 和 dictionary 声明应采用 record。
+
 **声明面同项目（已定）**：`[Style]` 与 `[ECMAScript]` 位于同一个程序集 `ECMAScript.Contract`（`netstandard2.0`、零依赖），命名空间同为 `ECMAScript`。绑定库经 `ECMAScript` 的程序集引用传递可见两者。声明面特性集中在一处，不分散到实现程序集，避免绑定库为用一个特性而引入实现依赖。
 
 `[ECMAScriptName]` / `[Description("@#...")]` 的名字机制**位置不变**，仍位于 `ECMAScript` 程序集（`src/ECMAScript/attribute/`）。它是既有实现的一部分，本次规则不为它增加迁移工作量。

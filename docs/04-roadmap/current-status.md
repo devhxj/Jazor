@@ -6,6 +6,8 @@
 
 1.1.0 工具链已切换为进程内 NodeApi + LibNode + pnpm API。Release 主测试、默认 Debug 覆盖率、完整 48 项 Emit 消费者、Windows NuGet SPA/SSR 浏览器发布和[四平台组合 CI](https://github.com/devhxj/Jazor/actions/runs/43030143205)已通过。迁移契约和限制见[迁移方案](./nodejs-pnpm-migration-plan.md)。维护者指定该底层重构以 1.1.0 发布，宿主配置迁移见 CHANGELOG；平台声明只覆盖实际证据，不由包内 RID 资产推断支持。
 
+当前未发布源码已完成[ECMAScript 标注与类型语义调整](./ecmascript-type-semantics-plan.md)：普通源码辅助类型沿编译根的依赖闭包生成实现，无需 `[ECMAScript]` 许可；class 保留构造和实例行为，record 承担对象字面量。Analyzer 覆盖前端辅助类型并保持后端范围隔离，纯数据声明和生成模板的冗余标注已清理。完整构建、主线测试、覆盖率、生成契约、本地 NuGet 与真实 Chrome 消费者通过；class→record 的破坏性迁移见 CHANGELOG，按 MAJOR 通道交付。
+
 preview.9 支持显式浏览器入口根、RazorVue 页面按导航加载、普通构建中的最终编译阶段计时，以及由声明生成的数值转换、属性提示和直接 union 标量投影。配置和验证入口分别见[安装与配置](../03-guides/installation-and-configuration.md)、[开发与测试](../03-guides/development-and-testing.md)、[数值/union 示例](../../samples/RazorVue.NumericUnion/README.md)。这些能力延续到 1.1.0；升级时所有 Jazor/ECMAScript 包必须统一到 `1.1.0`。
 
 本地发布门禁已通过，API 与绑定基线已复核；固定计数和消费者证明范围见[preview.9 验证快照](../05-history/evolution.md#2026-10-10-preview9-作者体验与发布准备)。官方 tag workflow 在上传前重新执行质量与 Windows SPA/SSR 消费者门禁。真实后端保存、插件启用后的业务流程与修改到可见的 HMR 长尾仍需继续验证。

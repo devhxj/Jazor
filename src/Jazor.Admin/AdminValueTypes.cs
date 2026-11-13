@@ -45,7 +45,6 @@ public enum AdminPageActionKind
     Danger
 }
 
-[ECMAScript]
 [Description("@#")]
 public sealed record AdminPageAction : VueProps
 {
@@ -71,7 +70,6 @@ public sealed record AdminPageAction : VueProps
     public EventCallback Click { get; init; }
 }
 
-[ECMAScript]
 [Description("@#")]
 public sealed record AdminBreadcrumbItem : VueProps
 {
@@ -91,7 +89,6 @@ public sealed record AdminBreadcrumbItem : VueProps
     public bool? Disabled { get; init; }
 }
 
-[ECMAScript]
 [Description("@#")]
 public sealed record AdminNavItem : VueProps
 {

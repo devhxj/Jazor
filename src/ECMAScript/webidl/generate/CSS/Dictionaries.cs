@@ -8,7 +8,6 @@ namespace ECMAScript.CSS;
 /// </remarks>
 /// <param name="ChildBreakTokens">BreakTokenOptions 字典中的 childBreakTokens 成员，WebIDL 类型为 sequence&lt;ChildBreakToken&gt;。可省略。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-breaktokenoptions-childbreaktokens">CSS Layout API Level 1: 4.5 Breaking and Fragmentation</see></param>
 /// <param name="Data">BreakTokenOptions 字典中的 data 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-breaktokenoptions-data">CSS Layout API Level 1: 4.5 Breaking and Fragmentation</see></param>
-[ECMAScript]
 [Description("@#BreakTokenOptions")]
 public record BreakTokenOptions(
     [property: Description("@#childBreakTokens")]ChildBreakToken[]? ChildBreakTokens = default,
@@ -26,7 +25,6 @@ public record BreakTokenOptions(
 /// <param name="ChildFragments">FragmentResultOptions 字典中的 childFragments 成员，WebIDL 类型为 sequence&lt;LayoutFragment&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-fragmentresultoptions-childfragments">CSS Layout API Level 1: 6.2 Performing Layout</see></param>
 /// <param name="Data">FragmentResultOptions 字典中的 data 成员，WebIDL 类型为 any。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-fragmentresultoptions-data">CSS Layout API Level 1: 6.2 Performing Layout</see></param>
 /// <param name="BreakToken">FragmentResultOptions 字典中的 breakToken 成员，WebIDL 类型为 BreakTokenOptions。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;null&quot;&#10;                }。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-fragmentresultoptions-breaktoken">CSS Layout API Level 1: 6.2 Performing Layout</see></param>
-[ECMAScript]
 [Description("@#FragmentResultOptions")]
 public record FragmentResultOptions(
     [property: Description("@#inlineSize")]double InlineSize = 0d,
@@ -44,7 +42,6 @@ public record FragmentResultOptions(
 /// </remarks>
 /// <param name="MaxContentSize">IntrinsicSizesResultOptions 字典中的 maxContentSize 成员，WebIDL 类型为 double。可省略。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-intrinsicsizesresultoptions-maxcontentsize">CSS Layout API Level 1: 6.2 Performing Layout</see></param>
 /// <param name="MinContentSize">IntrinsicSizesResultOptions 字典中的 minContentSize 成员，WebIDL 类型为 double。可省略。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-intrinsicsizesresultoptions-mincontentsize">CSS Layout API Level 1: 6.2 Performing Layout</see></param>
-[ECMAScript]
 [Description("@#IntrinsicSizesResultOptions")]
 public record IntrinsicSizesResultOptions(
     [property: Description("@#maxContentSize")]double MaxContentSize = default,
@@ -65,7 +62,6 @@ public record IntrinsicSizesResultOptions(
 /// <param name="BlockFragmentationOffset">LayoutConstraintsOptions 字典中的 blockFragmentationOffset 成员，WebIDL 类型为 double。可省略。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-layoutconstraintsoptions-blockfragmentationoffset">CSS Layout API Level 1: 4.4.1 Constraints for Layout Children</see></param>
 /// <param name="BlockFragmentationType">LayoutConstraintsOptions 字典中的 blockFragmentationType 成员，WebIDL 类型为 BlockFragmentationType。可省略。WebIDL 默认值：none。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-layoutconstraintsoptions-blockfragmentationtype">CSS Layout API Level 1: 4.4.1 Constraints for Layout Children</see></param>
 /// <param name="Data">LayoutConstraintsOptions 字典中的 data 成员，WebIDL 类型为 any。可省略。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-layoutconstraintsoptions-data">CSS Layout API Level 1: 4.4.1 Constraints for Layout Children</see></param>
-[ECMAScript]
 [Description("@#LayoutConstraintsOptions")]
 public record LayoutConstraintsOptions(
     [property: Description("@#availableInlineSize")]double AvailableInlineSize = default,
@@ -86,7 +82,6 @@ public record LayoutConstraintsOptions(
 /// </remarks>
 /// <param name="ChildDisplay">LayoutOptions 字典中的 childDisplay 成员，WebIDL 类型为 ChildDisplayType。可省略。WebIDL 默认值：block。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-layoutoptions-childdisplay">CSS Layout API Level 1: 3.2 Registering A Layout</see></param>
 /// <param name="Sizing">LayoutOptions 字典中的 sizing 成员，WebIDL 类型为 LayoutSizingMode。可省略。WebIDL 默认值：block-like。 <see href="https://drafts.css-houdini.org/css-layout-api-1/#dom-layoutoptions-sizing">CSS Layout API Level 1: 3.2 Registering A Layout</see></param>
-[ECMAScript]
 [Description("@#LayoutOptions")]
 public record LayoutOptions(
     [property: Description("@#childDisplay")]ChildDisplayType ChildDisplay = ChildDisplayType.Block,
@@ -99,7 +94,6 @@ public record LayoutOptions(
 /// <see href="https://drafts.css-houdini.org/css-paint-api-1/#dictdef-paintrenderingcontext2dsettings">CSS Painting API Level 1: 2 Paint Worklet</see>
 /// </remarks>
 /// <param name="Alpha">PaintRenderingContext2DSettings 字典中的 alpha 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://drafts.css-houdini.org/css-paint-api-1/#dom-paintrenderingcontext2dsettings-alpha">CSS Painting API Level 1: 2 Paint Worklet</see></param>
-[ECMAScript]
 [Description("@#PaintRenderingContext2DSettings")]
 public record PaintRenderingContext2DSettings(
     [property: Description("@#alpha")]bool Alpha = false);
@@ -114,7 +108,6 @@ public record PaintRenderingContext2DSettings(
 /// <param name="Syntax">PropertyDefinition 字典中的 syntax 成员，WebIDL 类型为 DOMString。可省略。WebIDL 默认值：*。 <see href="https://drafts.css-houdini.org/css-properties-values-api-1/#dom-propertydefinition-syntax">CSS Properties and Values API Level 1: 4.2 The PropertyDefinition Dictionary</see></param>
 /// <param name="Inherits">PropertyDefinition 字典中的 inherits 成员，WebIDL 类型为 boolean。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;boolean&quot;,&#10;                  &quot;value&quot;: true&#10;                }。 <see href="https://drafts.css-houdini.org/css-properties-values-api-1/#dom-propertydefinition-inherits">CSS Properties and Values API Level 1: 4.2 The PropertyDefinition Dictionary</see></param>
 /// <param name="InitialValue">PropertyDefinition 字典中的 initialValue 成员，WebIDL 类型为 DOMString。可省略。 <see href="https://drafts.css-houdini.org/css-properties-values-api-1/#dom-propertydefinition-initialvalue">CSS Properties and Values API Level 1: 4.2 The PropertyDefinition Dictionary</see></param>
-[ECMAScript]
 [Description("@#PropertyDefinition")]
 public record PropertyDefinition(
     [property: Description("@#name")]string? Name = default,
@@ -129,7 +122,6 @@ public record PropertyDefinition(
 /// <see href="https://drafts.css-houdini.org/css-typed-om-1/#dictdef-cssmatrixcomponentoptions">CSS Typed OM Level 1: 4.4 CSSTransformValue objects</see>
 /// </remarks>
 /// <param name="Is2D">CSSMatrixComponentOptions 字典中的 is2D 成员，WebIDL 类型为 boolean。可省略。 <see href="https://drafts.css-houdini.org/css-typed-om-1/#dom-cssmatrixcomponentoptions-is2d">CSS Typed OM Level 1: 4.4 CSSTransformValue objects</see></param>
-[ECMAScript]
 [Description("@#CSSMatrixComponentOptions")]
 public record CSSMatrixComponentOptions(
     [property: Description("@#is2D")]bool Is2D = default);
@@ -148,7 +140,6 @@ public record CSSMatrixComponentOptions(
 /// <param name="Flex">CSSNumericType 字典中的 flex 成员，WebIDL 类型为 long。可省略。 <see href="https://drafts.css-houdini.org/css-typed-om-1/#dom-cssnumerictype-flex">CSS Typed OM Level 1: 4.3.1 Common Numeric Operations, and the CSSNumericValue Superclass</see></param>
 /// <param name="Percent">CSSNumericType 字典中的 percent 成员，WebIDL 类型为 long。可省略。 <see href="https://drafts.css-houdini.org/css-typed-om-1/#dom-cssnumerictype-percent">CSS Typed OM Level 1: 4.3.1 Common Numeric Operations, and the CSSNumericValue Superclass</see></param>
 /// <param name="PercentHint">CSSNumericType 字典中的 percentHint 成员，WebIDL 类型为 CSSNumericBaseType。可省略。 <see href="https://drafts.css-houdini.org/css-typed-om-1/#dom-cssnumerictype-percenthint">CSS Typed OM Level 1: 4.3.1 Common Numeric Operations, and the CSSNumericValue Superclass</see></param>
-[ECMAScript]
 [Description("@#CSSNumericType")]
 public record CSSNumericType(
     [property: Description("@#length")]int Length = default,
@@ -168,7 +159,6 @@ public record CSSNumericType(
 /// </remarks>
 /// <param name="Highlight">HighlightHitResult 字典中的 highlight 成员，WebIDL 类型为 Highlight。可省略。 <see href="https://drafts.csswg.org/css-highlight-api-1/#dom-highlighthitresult-highlight">CSS Custom Highlight API Module Level 1: 6 Interacting with Custom Highlights</see></param>
 /// <param name="Ranges">HighlightHitResult 字典中的 ranges 成员，WebIDL 类型为 sequence&lt;AbstractRange&gt;。可省略。 <see href="https://drafts.csswg.org/css-highlight-api-1/#dom-highlighthitresult-ranges">CSS Custom Highlight API Module Level 1: 6 Interacting with Custom Highlights</see></param>
-[ECMAScript]
 [Description("@#HighlightHitResult")]
 public record HighlightHitResult(
     [property: Description("@#highlight")]Highlight? Highlight = default,
@@ -181,7 +171,6 @@ public record HighlightHitResult(
 /// <see href="https://drafts.csswg.org/css-highlight-api-1/#dictdef-highlightsfrompointoptions">CSS Custom Highlight API Module Level 1: 6 Interacting with Custom Highlights</see>
 /// </remarks>
 /// <param name="ShadowRoots">HighlightsFromPointOptions 字典中的 shadowRoots 成员，WebIDL 类型为 sequence&lt;ShadowRoot&gt;。可省略。WebIDL 默认值：{&#10;                  &quot;type&quot;: &quot;sequence&quot;,&#10;                  &quot;value&quot;: []&#10;                }。 <see href="https://drafts.csswg.org/css-highlight-api-1/#dom-highlightsfrompointoptions-shadowroots">CSS Custom Highlight API Module Level 1: 6 Interacting with Custom Highlights</see></param>
-[ECMAScript]
 [Description("@#HighlightsFromPointOptions")]
 public record HighlightsFromPointOptions(
     [property: Description("@#shadowRoots")]ShadowRoot[]? ShadowRoots = default);
@@ -195,7 +184,6 @@ public record HighlightsFromPointOptions(
 /// <param name="BaseURL">Set sheet&apos;s stylesheet base URL to the baseURL attribute value from options. <see href="https://drafts.csswg.org/cssom-1/#dom-cssstylesheetinit-baseurl">CSS Object Model (CSSOM) Module Level 1: 6.1.2 The CSSStyleSheet Interface</see></param>
 /// <param name="Media">If the media attribute of options is a string, create a MediaList object from the string and assign it as sheet&apos;s CSSStyleSheet/media. Otherwise, serialize a media query list from the attribute and then create a MediaList object from the resulting string and set it as sheet&apos;s CSSStyleSheet/media. <see href="https://drafts.csswg.org/cssom-1/#dom-cssstylesheetinit-media">CSS Object Model (CSSOM) Module Level 1: 6.1.2 The CSSStyleSheet Interface</see></param>
 /// <param name="Disabled">If the disabled attribute of options is true, set sheet&apos;s CSSStyleSheet/disabled flag. <see href="https://drafts.csswg.org/cssom-1/#dom-cssstylesheetinit-disabled">CSS Object Model (CSSOM) Module Level 1: 6.1.2 The CSSStyleSheet Interface</see></param>
-[ECMAScript]
 [Description("@#CSSStyleSheetInit")]
 public record CSSStyleSheetInit(
     [property: Description("@#baseURL")]string? BaseURL = null,
@@ -209,7 +197,6 @@ public record CSSStyleSheetInit(
 /// <see href="https://wicg.github.io/css-parser-api/#dictdef-cssparseroptions">CSS Parser API: 2 Parsing API</see>
 /// </remarks>
 /// <param name="AtRules">CSSParserOptions 字典中的 atRules 成员，WebIDL 类型为 object。可省略。 <see href="https://wicg.github.io/css-parser-api/#dom-cssparseroptions-atrules">CSS Parser API: 2 Parsing API</see></param>
-[ECMAScript]
 [Description("@#CSSParserOptions")]
 public record CSSParserOptions(
     [property: Description("@#atRules")]object? AtRules = default);

@@ -286,7 +286,6 @@ internal sealed class PreviewBindingEmitter
         var builder = new StringBuilder();
         AppendDocumentation(builder, declaration.Documentation);
         builder.AppendLine($"[Description(\"@#{enumName}\")]");
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[String]");
         builder.AppendLine($"public enum {WebIdlNaming.ToTypeName(enumName)}");
         builder.AppendLine("{");
@@ -323,7 +322,6 @@ internal sealed class PreviewBindingEmitter
 
         var builder = new StringBuilder();
         AppendDocumentation(builder, declaration.Documentation);
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
         builder.Append($"public delegate {returnType} {callbackName}({parameters});");
@@ -367,10 +365,9 @@ internal sealed class PreviewBindingEmitter
         var partialKeyword = declaration.Partial == true ? " partial" : string.Empty;
         var builder = new StringBuilder();
         AppendDocumentation(builder, declaration.Documentation);
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
-        builder.AppendLine($"public{partialKeyword} sealed class {callbackInterfaceName}Literal");
+        builder.AppendLine($"public{partialKeyword} sealed record {callbackInterfaceName}Literal");
         builder.AppendLine("{");
 
         var bodyMembers = new List<string>();
@@ -385,7 +382,6 @@ internal sealed class PreviewBindingEmitter
                 var callbackName = WebIdlNaming.ToPascalCase(memberName);
                 var callbackBuilder = new StringBuilder();
                 AppendDocumentation(callbackBuilder, memberDocumentation?.Documentation);
-                callbackBuilder.AppendLine("[ECMAScript]");
                 callbackBuilder.AppendLine($"[Description(\"@#{memberName}\")]" );
                 callbackBuilder.Append($"public {callbackName}Callback? {callbackName} {{ get; set; }}");
                 bodyMembers.Add(Indent(callbackBuilder.ToString(), 1));
@@ -417,7 +413,6 @@ internal sealed class PreviewBindingEmitter
 
         var builder = new StringBuilder();
         AppendDocumentation(builder, operationDocumentation?.Documentation ?? interfaceDocumentation);
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
         builder.Append($"public delegate {returnType} {callbackName}Callback({parameters});");
@@ -679,7 +674,6 @@ internal sealed class PreviewBindingEmitter
         {
             var emptyDictionary = new StringBuilder();
             AppendDocumentation(emptyDictionary, SelectDocumentation(declarations));
-            emptyDictionary.AppendLine("[ECMAScript]");
             emptyDictionary.AppendLine($"[Description(\"@#{name}\")]");
             emptyDictionary.Append($"public abstract record {recordName}();");
             return emptyDictionary.ToString();
@@ -688,7 +682,10 @@ internal sealed class PreviewBindingEmitter
         var builder = new StringBuilder();
         AppendDocumentation(builder, SelectDocumentation(declarations));
         AppendDictionaryParameterDocumentation(builder, parameterGroups.SelectMany(static group => group));
-        builder.AppendLine("[ECMAScript]");
+        // Multi-group dictionaries expose the existing extern Optional* construction protocol.
+        // Ordinary data records need no host marker merely to participate in compilation.
+        if (parameterGroups.Length > 1)
+            builder.AppendLine("[ECMAScript]");
         builder.AppendLine($"[Description(\"@#{name}\")]");
         builder.AppendLine($"public record {recordName}(");
         builder.Append("    ");

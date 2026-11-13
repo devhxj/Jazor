@@ -4,7 +4,6 @@ namespace ECMAScript.VueDataUi;
 /// vue-data-ui 图表配置的公共基础形状。它仍是普通 JavaScript object；继承字典是为了让上游
 /// 持续新增的 nested option 能以 <see cref="Vue.VueProps"/> 扩展，而不退回到 <see cref="object"/>。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VdConfig : Vue.VueDictionary<Vue.VueValue>
 {
@@ -58,12 +57,10 @@ public enum VdTheme
 /// 可扩展 dataset item 的基类。复杂图表可派生并声明其稳定字段，未知上游字段通过
 /// collection initializer 以 <see cref="Vue.VueValue"/> 写入，仍会 lowering 为 plain object。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDatasetItem : Vue.VueDictionary<Vue.VueValue>;
 
 /// <summary>通用 downsample 选项，适合 XY、scatter 与 sparkline 的大数据量场景。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDownsampleOptions : Vue.VueProps
 {
@@ -75,7 +72,6 @@ public record VdDownsampleOptions : Vue.VueProps
 }
 
 /// <summary>通用 chart 标题形状。Common title shape shared by the major chart families.</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChartTitle : Vue.VueProps
 {
@@ -111,7 +107,6 @@ public record VdChartTitle : Vue.VueProps
 }
 
 /// <summary>通用 chart subtitle 形状。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChartSubtitle : Vue.VueProps
 {
@@ -171,7 +166,6 @@ public enum VdXySeriesType
 }
 
 /// <summary>XY coordinate series 的一个点。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdXyCoordinate : Vue.VueProps
 {
@@ -205,7 +199,6 @@ public readonly union VdXySeriesValues(double?[], VdXyCoordinate[])
 }
 
 /// <summary>VdXy 的 authoring dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdXyDatasetItem : VdDatasetItem
 {
@@ -253,7 +246,6 @@ public record VdXyDatasetItem : VdDatasetItem
 }
 
 /// <summary>XY config 的稳定公共字段；详细 layout 继续可通过基类字典加 record 扩展。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdXyConfig : VdConfig
 {
@@ -271,7 +263,6 @@ public record VdXyConfig : VdConfig
 }
 
 /// <summary>VdDonut 的 authoring dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDonutDatasetItem : VdDatasetItem
 {
@@ -304,7 +295,6 @@ public record VdDonutDatasetItem : VdDatasetItem
 /// VdDonut <c>selectLegend</c> event 的图例摘要。它是 runtime emitted shape，
 /// 与 authoring dataset 分开，避免把 <c>values</c> 误当成单一聚合值。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDonutLegendItem : Vue.VueProps
 {
@@ -328,12 +318,10 @@ public record VdDonutLegendItem : Vue.VueProps
 }
 
 /// <summary>Donut 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDonutConfig : VdConfig;
 
 /// <summary>Gauge 的一个 range series。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGaugeDatasetSerieItem : Vue.VueProps
 {
@@ -363,7 +351,6 @@ public record VdGaugeDatasetSerieItem : Vue.VueProps
 }
 
 /// <summary>VdGauge 的 dataset。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGaugeDataset : Vue.VueProps
 {
@@ -393,12 +380,10 @@ public record VdGaugeDataset : Vue.VueProps
 }
 
 /// <summary>Gauge 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGaugeConfig : VdConfig;
 
 /// <summary>Vertical/Horizontal bar children。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdVerticalBarDatasetChild : Vue.VueProps
 {
@@ -416,7 +401,6 @@ public record VdVerticalBarDatasetChild : Vue.VueProps
 }
 
 /// <summary>Vertical/Horizontal bar 的 dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdVerticalBarDatasetItem : VdDatasetItem
 {
@@ -449,22 +433,18 @@ public record VdVerticalBarDatasetItem : VdDatasetItem
 /// Horizontal Bar 的 C# authoring name。upstream 是 Vertical Bar row 的 type alias，
 /// 这里保留独立名称以让组件参数和文档保持一一对应。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHorizontalBarDatasetItem : VdVerticalBarDatasetItem;
 
 /// <summary>Vertical bar 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdVerticalBarConfig : VdConfig;
 
 /// <summary>Horizontal bar 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHorizontalBarConfig : VdVerticalBarConfig;
 
 /// <summary>Sparkline 的时序点。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparklineDatasetItem : Vue.VueProps
 {
@@ -499,7 +479,6 @@ public enum VdSparklineType
 }
 
 /// <summary>Sparkline 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparklineConfig : VdConfig
 {
@@ -517,7 +496,6 @@ public record VdSparklineConfig : VdConfig
 }
 
 /// <summary>Sparkbar 的 dataset item。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkbarDatasetItem : VdDatasetItem
 {
@@ -553,12 +531,10 @@ public record VdSparkbarDatasetItem : VdDatasetItem
 }
 
 /// <summary>Sparkbar 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkbarConfig : VdConfig;
 
 /// <summary>Spark histogram 的单柱 input。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkHistogramDatasetItem : VdDatasetItem
 {
@@ -582,6 +558,5 @@ public record VdSparkHistogramDatasetItem : VdDatasetItem
 }
 
 /// <summary>Spark histogram 的稳定公共 config surface。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkHistogramConfig : VdConfig;

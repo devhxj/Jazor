@@ -7,7 +7,6 @@ namespace ECMAScript.WebAssembly;
 /// <see href="https://webassembly.github.io/content-security-policy/js-api/#enumdef-addresstype">WebAssembly JavaScript Interface: 5.1 Modules</see>
 /// </remarks>
 [Description("@#AddressType")]
-[ECMAScript]
 [String]
 public enum AddressType
 {
@@ -37,7 +36,6 @@ public enum AddressType
 /// <see href="https://webassembly.github.io/content-security-policy/js-api/#enumdef-importexportkind">WebAssembly JavaScript Interface: 5.1 Modules</see>
 /// </remarks>
 [Description("@#ImportExportKind")]
-[ECMAScript]
 [String]
 public enum ImportExportKind
 {
@@ -94,7 +92,6 @@ public enum ImportExportKind
 /// <see href="https://webassembly.github.io/content-security-policy/js-api/#enumdef-tablekind">WebAssembly JavaScript Interface: 5.4 Tables</see>
 /// </remarks>
 [Description("@#TableKind")]
-[ECMAScript]
 [String]
 public enum TableKind
 {
@@ -124,7 +121,6 @@ public enum TableKind
 /// <see href="https://webassembly.github.io/content-security-policy/js-api/#enumdef-valuetype">WebAssembly JavaScript Interface: 5.5 Globals</see>
 /// </remarks>
 [Description("@#ValueType")]
-[ECMAScript]
 [String]
 public enum ValueType
 {

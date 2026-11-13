@@ -9,7 +9,6 @@ namespace ECMAScript;
 /// 路由器选项配置包。
 /// Router options configuration bag.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterOptions : Vue.VueProps
 {
@@ -541,7 +540,6 @@ public record RouteParamsRaw : Vue.VueProps, System.Collections.IEnumerable
 /// 路由位置选项的基类，包含通用导航选项。
 /// Base class for route location options containing common navigation options.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public abstract record RouteLocationOptions : Vue.VueProps
 {
@@ -672,7 +670,6 @@ public abstract class RouteLocation
 /// 基于路径的原始路由位置的基类，包含查询和哈希。
 /// Base class for path-based raw route locations including query and hash.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public abstract record RouteLocationPathRawBase : RouteLocationOptions
 {
@@ -695,7 +692,6 @@ public abstract record RouteLocationPathRawBase : RouteLocationOptions
 /// 基于路径字符串的路由位置（非泛型版本）。
 /// Path-string-based route location (non-generic version).
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteLocationAsPath : RouteLocationPathRawBase
 {
@@ -711,7 +707,6 @@ public record RouteLocationAsPath : RouteLocationPathRawBase
 /// 包含查询和哈希的路由位置基类。
 /// Base class for route locations including query and hash.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public abstract record RouteQueryAndHash : Vue.VueProps
 {
@@ -734,7 +729,6 @@ public abstract record RouteQueryAndHash : Vue.VueProps
 /// 基于路径字符串的原始路由位置。
 /// Path-string-based raw route location.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteLocationPathRaw : RouteLocationPathRawBase
 {
@@ -750,7 +744,6 @@ public record RouteLocationPathRaw : RouteLocationPathRawBase
 /// 基于名称的相对原始路由位置的基类。
 /// Base class for name-based relative raw route locations.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public abstract record LocationAsRelativeRaw : RouteLocationOptions
 {
@@ -788,7 +781,6 @@ public abstract record LocationAsRelativeRaw : RouteLocationOptions
 /// 基于名称的相对路由位置（非泛型版本）。
 /// Name-based relative route location (non-generic version).
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteLocationAsRelative : LocationAsRelativeRaw
 {
@@ -798,7 +790,6 @@ public record RouteLocationAsRelative : LocationAsRelativeRaw
 /// 基于名称的原始路由位置。
 /// Name-based raw route location.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteLocationNamedRaw : LocationAsRelativeRaw
 {
@@ -808,7 +799,6 @@ public record RouteLocationNamedRaw : LocationAsRelativeRaw
 /// 路径解析器选项，控制路径令牌的匹配行为。
 /// Path parser options controlling how path tokens are matched.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record PathParserOptions : Vue.VueProps
 {
@@ -839,7 +829,6 @@ public record PathParserOptions : Vue.VueProps
 /// 表示路径解析器中提取的路径参数键。
 /// Represents a path parameter key extracted by the path parser.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record PathParserKey : Vue.VueProps
 {
@@ -925,7 +914,6 @@ public abstract class PathParser
 /// 基于路径的匹配器位置。
 /// Path-based matcher location.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MatcherLocationAsPath : Vue.VueProps
 {
@@ -941,7 +929,6 @@ public record MatcherLocationAsPath : Vue.VueProps
 /// 基于名称的相对匹配器位置。
 /// Name-based relative matcher location.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MatcherLocationAsRelative : Vue.VueProps
 {
@@ -957,7 +944,6 @@ public record MatcherLocationAsRelative : Vue.VueProps
 /// 具名匹配器位置，通过路由名称定位。
 /// Named matcher location, identified by route name.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MatcherLocationAsName : Vue.VueProps
 {
@@ -980,7 +966,6 @@ public record MatcherLocationAsName : Vue.VueProps
 /// 匹配器解析后的路由位置。
 /// Matcher-resolved route location.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record MatcherLocation : Vue.VueProps
 {
@@ -2223,7 +2208,6 @@ public record RouteNamedProps : Vue.VueProps, System.Collections.IEnumerable
 /// 路由记录的基类，包含所有路由记录类型的共享属性。
 /// Base class for route records containing shared properties for all route record types.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public abstract record RouteRecordBase : Vue.VueProps
 {
@@ -2289,7 +2273,6 @@ public abstract record RouteRecordBase : Vue.VueProps
 /// 单视图路由记录，定义一个默认视图的组件。
 /// Single-view route record defining a component for the default view.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteRecordSingleView : RouteRecordBase
 {
@@ -2312,7 +2295,6 @@ public record RouteRecordSingleView : RouteRecordBase
 /// 带子路由的单视图路由记录。
 /// Single-view route record with nested children.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteRecordSingleViewWithChildren : RouteRecordBase
 {
@@ -2349,7 +2331,6 @@ public record RouteRecordSingleViewWithChildren : RouteRecordBase
 /// 多视图（命名视图）路由记录。
 /// Multiple-view (named-view) route record.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteRecordMultipleViews : RouteRecordBase
 {
@@ -2372,7 +2353,6 @@ public record RouteRecordMultipleViews : RouteRecordBase
 /// 带子路由的多视图（命名视图）路由记录。
 /// Multiple-view (named-view) route record with nested children.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteRecordMultipleViewsWithChildren : RouteRecordBase
 {
@@ -2409,7 +2389,6 @@ public record RouteRecordMultipleViewsWithChildren : RouteRecordBase
 /// 重定向路由记录，将路由重定向到其他位置。
 /// Redirect route record that redirects to another location.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouteRecordRedirect : RouteRecordBase
 {
@@ -2489,7 +2468,6 @@ public enum RouterLinkAriaCurrentValue
 /// RouterLink 组件的核心选项。
 /// Core options for the RouterLink component.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterLinkOptions : Vue.VueProps
 {
@@ -2512,7 +2490,6 @@ public record RouterLinkOptions : Vue.VueProps
 /// RouterLink 组件的完整属性集。
 /// Full props for the RouterLink component.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterLinkProps : RouterLinkOptions
 {
@@ -2557,7 +2534,6 @@ public record RouterLinkProps : RouterLinkOptions
 /// useLink() 组合式函数的选项。
 /// Options for the useLink() composable.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record UseLinkOptions : Vue.VueProps
 {
@@ -2670,7 +2646,6 @@ public abstract class UseLinkResult : UseLinkReturn
 /// 滚动位置坐标，包含水平和垂直偏移量。
 /// Scroll position coordinates including horizontal and vertical offsets.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record ScrollPositionCoordinates : Vue.VueProps
 {
@@ -2700,7 +2675,6 @@ public record ScrollPositionCoordinates : Vue.VueProps
 /// 基于元素的滚动位置，指定要滚动到的目标元素。
 /// Element-based scroll position specifying the target element to scroll to.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record ScrollPositionElement : ScrollPositionCoordinates
 {
@@ -2716,7 +2690,6 @@ public record ScrollPositionElement : ScrollPositionCoordinates
 /// 规范化后的滚动位置，坐标为确定值。
 /// Normalized scroll position with definitive coordinate values.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record ScrollPositionNormalized : Vue.VueProps
 {
@@ -2943,7 +2916,6 @@ public readonly union RouterScrollHandler(RouterScrollBehavior, AsyncRouterScrol
 /// RouterLink 组件的插槽定义。
 /// Slot definitions for the RouterLink component.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterLinkSlots : Vue.VueSlots
 {
@@ -2959,7 +2931,6 @@ public record RouterLinkSlots : Vue.VueSlots
 /// RouterLink 作用域插槽中暴露的数据对象。
 /// Data object exposed in the RouterLink scoped slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterLinkSlotScope : Vue.VueProps
 {
@@ -3003,7 +2974,6 @@ public record RouterLinkSlotScope : Vue.VueProps
 /// RouterView 组件的属性。
 /// Props for the RouterView component.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterViewProps : Vue.VueProps
 {
@@ -3026,7 +2996,6 @@ public record RouterViewProps : Vue.VueProps
 /// RouterView 作用域插槽中暴露的数据对象。
 /// Data object exposed in the RouterView scoped slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterViewSlotScope : Vue.VueProps
 {
@@ -3049,7 +3018,6 @@ public record RouterViewSlotScope : Vue.VueProps
 /// RouterView 组件的插槽定义。
 /// Slot definitions for the RouterView component.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record RouterViewSlots : Vue.VueSlots
 {

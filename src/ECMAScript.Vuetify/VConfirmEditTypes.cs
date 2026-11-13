@@ -121,7 +121,6 @@ public delegate IVNode VConfirmEditActionsCallback(VueProps? props = null);
 /// Vuetify VConfirmEdit 公开的默认插槽上下文。
 /// Default slot context exposed by Vuetify VConfirmEdit.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VConfirmEditSlotContext
 {

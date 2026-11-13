@@ -800,7 +800,6 @@ public delegate VuetifyFilterMatch VuetifyFilterFunction(string? value, string? 
 /// 用于 VAutocomplete.CustomKeyFilter、VCombobox.CustomKeyFilter、VDataIterator.CustomKeyFilter、VTreeview.CustomKeyFilter 的参数类型。
 /// Function used on specific keys within the item object. `customFilter` is skipped for columns with `customKeyFilter` specified.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyFilterKeyFunctions : VueDictionary<VuetifyFilterFunction>;
 
@@ -1031,7 +1030,6 @@ public readonly union VuetifyFilterMatch(
 /// 当前渲染或操作的数据项。
 /// 当前条目的直接子项，形成嵌套分组或树形结构。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyListItem
 {

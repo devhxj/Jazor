@@ -5,7 +5,6 @@ namespace ECMAScript.Vuetify;
 /// Slot context exposed by Vuetify VListItem prepend, append, title,
 /// subtitle, and default slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VListItemSlotContext
 {
@@ -51,7 +50,6 @@ public delegate void VListItemSelectCallback(bool value);
 /// VListItem 标题插槽上下文。
 /// Slot context for VListItem title slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VListItemTitleSlotContext
 {
@@ -66,7 +64,6 @@ public sealed record VListItemTitleSlotContext
 /// VListItem 副标题插槽上下文。
 /// Slot context for VListItem subtitle slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VListItemSubtitleSlotContext
 {

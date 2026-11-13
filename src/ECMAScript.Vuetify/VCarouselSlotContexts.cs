@@ -65,7 +65,6 @@ public readonly union VuetifyCarouselVerticalDelimiters(bool, VuetifyCarouselVer
 /// Vuetify VCarousel 公开的项插槽上下文，用于自定义分隔符渲染。
 /// Item slot context exposed by Vuetify VCarousel for custom delimiter rendering.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VCarouselItemSlotContext
 {
@@ -86,7 +85,6 @@ public sealed record VCarouselItemSlotContext
 /// 提供给 Vuetify VCarousel 项插槽的属性对象。
 /// Props object provided to Vuetify VCarousel item slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VCarouselItemSlotProps : VueProps
 {

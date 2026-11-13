@@ -5,7 +5,6 @@ namespace ECMAScript.ElementPlus;
 /// <summary>
 /// Registry of Element Plus directives.
 /// </summary>
-[ECMAScript]
 [Description("@#ElDirectiveRegistry")]
 public sealed record ElDirectiveRegistry : VueDirectiveRegistry
 {

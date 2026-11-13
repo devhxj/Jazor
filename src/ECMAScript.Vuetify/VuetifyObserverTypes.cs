@@ -7,7 +7,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify IntersectionObserver 配置选项。
 /// Vuetify IntersectionObserver configuration options.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyIntersectionObserverOptions : VueProps
 {

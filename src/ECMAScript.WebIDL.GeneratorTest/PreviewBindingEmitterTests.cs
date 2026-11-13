@@ -644,7 +644,7 @@ public sealed class PreviewBindingEmitterTests
                 """));
 
         StringAssert.Contains(files["GlobalUsings.cs"], "global using EventListener = ECMAScript.EventListenerValue;");
-        StringAssert.Contains(files["Callbacks.cs"], "public sealed class EventListenerLiteral");
+        StringAssert.Contains(files["Callbacks.cs"], "public sealed record EventListenerLiteral");
         StringAssert.Contains(files["Unions.cs"], "public readonly union EventListenerValue(EventListenerLiteral, HandleEventCallback)");
         StringAssert.Contains(files["Unions.cs"], "public EventListenerLiteral? AsEventListenerLiteral => Value is EventListenerLiteral value ? value : default(EventListenerLiteral?);");
         Assert.IsFalse(files["Unions.cs"].Contains("private readonly EventListener? _value1;", StringComparison.Ordinal));

@@ -625,7 +625,6 @@ internal static class ElementPlusGenerator
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Registry of generated Element Plus components.");
         builder.AppendLine("/// </summary>");
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#ElComponentRegistry\")]");
         builder.AppendLine("public sealed record ElComponentRegistry : VueComponentRegistry");
         builder.AppendLine("{");
@@ -800,7 +799,6 @@ internal static class ElementPlusGenerator
         builder.AppendLine("/// <summary>");
         builder.AppendLine("/// Registry of Element Plus directives.");
         builder.AppendLine("/// </summary>");
-        builder.AppendLine("[ECMAScript]");
         builder.AppendLine("[Description(\"@#ElDirectiveRegistry\")]");
         builder.AppendLine("public sealed record ElDirectiveRegistry : VueDirectiveRegistry");
         builder.AppendLine("{");

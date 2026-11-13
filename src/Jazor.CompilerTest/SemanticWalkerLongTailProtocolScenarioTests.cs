@@ -643,7 +643,7 @@ public sealed class SemanticWalkerLongTailProtocolScenarioTests
 
             [ECMAScript]
             [Description("@#")]
-            sealed class ReleaseMetadata
+            sealed record ReleaseMetadata
             {
                 public string this[Number key]
                 {

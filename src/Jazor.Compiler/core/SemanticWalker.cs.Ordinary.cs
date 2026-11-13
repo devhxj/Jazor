@@ -1608,7 +1608,7 @@ public partial class SemanticWalker
 		if (!IsDefaultValueTypeSupported(type, isSupportedExternalType))
 		{
 			return fail(
-				$"External type '{type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported and cannot be used for default value. Only [ECMAScript]/[ECMAScriptModule] types (or nested under such types) and whitelist types are supported.");
+				$"External type '{type.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' is not supported and cannot be used for default value. A generated source implementation, module artifact or explicit host mapping is required.");
 		}
 
 		if (type is ITypeParameterSymbol typeParameter)

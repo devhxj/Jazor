@@ -211,7 +211,6 @@ public abstract class VueUseEventHook<T>
 /// <c>useAsyncState()</c> 的选项对象。
 /// Options for <c>useAsyncState()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseAsyncStateOptions
 {

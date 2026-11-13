@@ -80,7 +80,6 @@ public enum VueUseKeyModifier
 /// <c>useBase64()</c> 的选项对象。
 /// Options for <c>useBase64()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseBase64Options
 {
@@ -122,7 +121,6 @@ public abstract class VueUseBase64Return
 /// <c>useCountdown()</c> 的选项对象。
 /// Options for <c>useCountdown()</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VueUseCountdownOptions
 {

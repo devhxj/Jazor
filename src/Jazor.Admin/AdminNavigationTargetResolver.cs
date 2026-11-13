@@ -29,7 +29,6 @@ internal static class AdminNavigationTargetResolver
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    [ECMAScript]
     internal sealed class ResolvedNavigationTarget
     {
         public ResolvedNavigationTarget(string? href, RouteLocationRaw route, bool hasRoute)

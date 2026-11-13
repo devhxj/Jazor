@@ -165,7 +165,6 @@ public enum DateFnsAdditionalDigits
 /// date-fns 时间段对象；各分量按日历语义独立叠加，字段可省略。
 /// The date-fns duration object; components add up independently with calendar semantics and may be omitted.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsDuration
 {
@@ -202,7 +201,6 @@ public record DateFnsDuration
 /// date-fns 区间对象；start/end 为区间端点。
 /// The date-fns interval object; start/end are the interval endpoints.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsInterval
 {
@@ -232,7 +230,6 @@ public sealed class DateFnsLocaleObject
 /// <c>format</c> 的选项对象。
 /// Options for <c>format</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsFormatOptions
 {
@@ -261,7 +258,6 @@ public record DateFnsFormatOptions
 /// <c>parse</c> 的选项对象。
 /// Options for <c>parse</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsParseOptions
 {
@@ -290,7 +286,6 @@ public record DateFnsParseOptions
 /// <c>parseISO</c> 的选项对象。
 /// Options for <c>parseISO</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsParseISOOptions
 {
@@ -303,7 +298,6 @@ public record DateFnsParseISOOptions
 /// <c>formatISO</c> 的选项对象。
 /// Options for <c>formatISO</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsFormatISOOptions
 {
@@ -320,7 +314,6 @@ public record DateFnsFormatISOOptions
 /// <c>formatDistance</c> 与 <c>formatDistanceToNow</c> 的选项对象。
 /// Options for <c>formatDistance</c> and <c>formatDistanceToNow</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsFormatDistanceOptions
 {
@@ -341,7 +334,6 @@ public record DateFnsFormatDistanceOptions
 /// <c>formatDistanceStrict</c> 与 <c>formatDistanceToNowStrict</c> 的选项对象。
 /// Options for <c>formatDistanceStrict</c> and <c>formatDistanceToNowStrict</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsFormatDistanceStrictOptions
 {
@@ -366,7 +358,6 @@ public record DateFnsFormatDistanceStrictOptions
 /// <c>formatDuration</c> 的选项对象。
 /// Options for <c>formatDuration</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsFormatDurationOptions
 {
@@ -391,7 +382,6 @@ public record DateFnsFormatDurationOptions
 /// <c>formatRelative</c> 的选项对象。
 /// Options for <c>formatRelative</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsFormatRelativeOptions
 {
@@ -408,7 +398,6 @@ public record DateFnsFormatRelativeOptions
 /// <c>differenceInSeconds</c>/<c>differenceInMinutes</c>/<c>differenceInHours</c> 的选项对象。
 /// Options for <c>differenceInSeconds</c>/<c>differenceInMinutes</c>/<c>differenceInHours</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsRoundingOptions
 {
@@ -421,7 +410,6 @@ public record DateFnsRoundingOptions
 /// <c>eachDayOfInterval</c> 的选项对象。
 /// Options for <c>eachDayOfInterval</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsEachDayOfIntervalOptions
 {
@@ -434,7 +422,6 @@ public record DateFnsEachDayOfIntervalOptions
 /// <c>areIntervalsOverlapping</c> 的选项对象。
 /// Options for <c>areIntervalsOverlapping</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsAreIntervalsOverlappingOptions
 {
@@ -447,7 +434,6 @@ public record DateFnsAreIntervalsOverlappingOptions
 /// date-fns 模块级默认选项；通过 <c>setDefaultOptions</c>/<c>getDefaultOptions</c> 读写。
 /// The date-fns module-level default options, read and written via <c>setDefaultOptions</c>/<c>getDefaultOptions</c>.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record DateFnsDefaultOptions
 {

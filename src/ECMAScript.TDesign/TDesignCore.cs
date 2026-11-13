@@ -61,7 +61,6 @@ public sealed record TPlugin : VuePlugin
 /// <summary>
 /// TDesign 插件安装选项；当前绑定仅提供配置对象，不额外声明配置字段。
 /// </summary>
-[ECMAScript]
 [Description("@#TInstallOptions")]
 public sealed record TInstallOptions : VuePluginOptions
 {
@@ -70,7 +69,6 @@ public sealed record TInstallOptions : VuePluginOptions
 /// <summary>
 /// ConfigProvider 使用的全局配置，当前提供 CSS 类名前缀设置。
 /// </summary>
-[ECMAScript]
 [Description("@#GlobalConfigProvider")]
 public sealed record TGlobalConfig : VueProps
 {

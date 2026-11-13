@@ -101,7 +101,6 @@ public readonly union VuetifyStepperItemValue(string, VuetifyStepperItem)
 /// Vuetify VStepper 的 items 属性所接受的项目对象。未知键通过继承的字典表面保持可用。
 /// Item object accepted by Vuetify VStepper's items prop. Unknown item keys remain available through the inherited dictionary surface.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyStepperItem : VueDictionary
 {
@@ -134,7 +133,6 @@ public sealed record VuetifyStepperItem : VueDictionary
 /// Vuetify VStepper 默认和操作插槽所暴露的插槽上下文。
 /// Default/actions slot context exposed by Vuetify VStepper.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VStepperNavigationSlotContext
 {
@@ -155,7 +153,6 @@ public sealed record VStepperNavigationSlotContext
 /// Vuetify VStepper 通过 VStepperItem 暴露的头部/图标/标题/副标题插槽上下文。
 /// Header/icon/title/subtitle slot context exposed by Vuetify VStepperItem through VStepper.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VStepperItemSlotContext
 {
@@ -206,7 +203,6 @@ public sealed record VStepperItemSlotContext
 /// Vuetify VStepper 用于窗口内容的项目插槽上下文。
 /// Item slot context exposed by Vuetify VStepper for window content.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VStepperContentItemSlotContext
 {
@@ -233,7 +229,6 @@ public sealed record VStepperContentItemSlotContext
 /// Vuetify VStepper 上一步/下一步操作按钮插槽所暴露的属性对象。
 /// Props object exposed by Vuetify VStepper prev/next action button slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VStepperActionButtonProps : VueProps
 {
@@ -248,7 +243,6 @@ public sealed record VStepperActionButtonProps : VueProps
 /// Vuetify VStepper 上一步/下一步操作按钮的插槽上下文。
 /// Prev/next action button slot context exposed by Vuetify VStepper.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VStepperActionButtonSlotContext
 {

@@ -6,7 +6,6 @@ namespace ECMAScript;
 /// <remarks>
 /// <see href="https://dom.spec.whatwg.org/#callbackdef-mutationcallback">DOM Standard: 4.3.1 Interface MutationObserver</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void MutationCallback(MutationRecord[] mutations, MutationObserver observer);
@@ -17,7 +16,6 @@ public delegate void MutationCallback(MutationRecord[] mutations, MutationObserv
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">MDN Web Docs: EventListener.handleEvent</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void HandleEventCallback(EventRef @event);
@@ -28,7 +26,6 @@ public delegate void HandleEventCallback(EventRef @event);
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/createNodeIterator">MDN Web Docs: NodeFilter.acceptNode</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate ushort AcceptNodeCallback(Node node);
@@ -39,7 +36,6 @@ public delegate ushort AcceptNodeCallback(Node node);
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Node/lookupNamespaceURI">MDN Web Docs: XPathNSResolver.lookupNamespaceURI</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate string? LookupNamespaceURICallback(string? prefix);
@@ -53,7 +49,6 @@ public delegate string? LookupNamespaceURICallback(string? prefix);
 /// <example>
 /// <code>viewTransition = document.startViewTransition(updateCallback)</code>
 /// </example>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult<object> ViewTransitionUpdateCallback();
@@ -64,7 +59,6 @@ public delegate PromiseResult<object> ViewTransitionUpdateCallback();
 /// <remarks>
 /// <see href="https://drafts.csswg.org/resize-observer-1/#callbackdef-resizeobservercallback">Resize Observer Module Level 1: 2.2 ResizeObserverCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void ResizeObserverCallback(ResizeObserverEntry[] entries, ResizeObserver observer);
@@ -75,7 +69,6 @@ public delegate void ResizeObserverCallback(ResizeObserverEntry[] entries, Resiz
 /// <remarks>
 /// <see href="https://drafts.csswg.org/web-animations-2/#callbackdef-effectcallback">Web Animations Module Level 2: 4.12 The EffectCallback callback function</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void EffectCallback(double? progress, ParameterCurrentTarget currentTarget, Animation animation);
@@ -86,7 +79,6 @@ public delegate void EffectCallback(double? progress, ParameterCurrentTarget cur
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/canvas.html#blobcallback">HTML Standard: 4.12.5 The canvas element</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void BlobCallback(Blob? blob);
@@ -97,7 +89,6 @@ public delegate void BlobCallback(Blob? blob);
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/dnd.html#functionstringcallback">HTML Standard: 6.11.3.2 The DataTransferItem interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void FunctionStringCallback(string data);
@@ -108,7 +99,6 @@ public delegate void FunctionStringCallback(string data);
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/imagebitmap-and-animations.html#framerequestcallback">HTML Standard: 8.12 Animation frames</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void FrameRequestCallback(double time);
@@ -119,7 +109,6 @@ public delegate void FrameRequestCallback(double time);
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#eventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object EventHandlerNonNull(EventRef @event);
@@ -130,7 +119,6 @@ public delegate object EventHandlerNonNull(EventRef @event);
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#onbeforeunloadeventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate string? OnBeforeUnloadEventHandlerNonNull(EventRef @event);
@@ -141,7 +129,6 @@ public delegate string? OnBeforeUnloadEventHandlerNonNull(EventRef @event);
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/webappapis.html#onerroreventhandlernonnull">HTML Standard: 8.1.8.1 Event handlers</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object OnErrorEventHandlerNonNull(ParameterEvent @event, string source, uint lineno, uint colno, object error);
@@ -152,7 +139,6 @@ public delegate object OnErrorEventHandlerNonNull(ParameterEvent @event, string 
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/XRSession/requestAnimationFrame">MDN Web Docs: XRFrameRequestCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void XRFrameRequestCallback(double time, XRFrame frame);
@@ -163,7 +149,6 @@ public delegate void XRFrameRequestCallback(double time, XRFrame frame);
 /// <remarks>
 /// <see href="https://notifications.spec.whatwg.org/#callbackdef-notificationpermissioncallback">Notifications API Standard: 3 API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void NotificationPermissionCallback(NotificationPermission permission);
@@ -174,7 +159,6 @@ public delegate void NotificationPermissionCallback(NotificationPermission permi
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-queuingstrategysize">Streams Standard: 7.1 The queuing strategy API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate double QueuingStrategySize(object chunk);
@@ -185,7 +169,6 @@ public delegate double QueuingStrategySize(object chunk);
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-transformercancelcallback">Streams Standard: 6.2.3 The transformer API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult TransformerCancelCallback(object reason);
@@ -196,7 +179,6 @@ public delegate PromiseResult TransformerCancelCallback(object reason);
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-transformerflushcallback">Streams Standard: 6.2.3 The transformer API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult TransformerFlushCallback(TransformStreamDefaultController controller);
@@ -207,7 +189,6 @@ public delegate PromiseResult TransformerFlushCallback(TransformStreamDefaultCon
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-transformerstartcallback">Streams Standard: 6.2.3 The transformer API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object TransformerStartCallback(TransformStreamDefaultController controller);
@@ -218,7 +199,6 @@ public delegate object TransformerStartCallback(TransformStreamDefaultController
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-transformertransformcallback">Streams Standard: 6.2.3 The transformer API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult TransformerTransformCallback(object chunk, TransformStreamDefaultController controller);
@@ -229,7 +209,6 @@ public delegate PromiseResult TransformerTransformCallback(object chunk, Transfo
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsinkabortcallback">Streams Standard: 5.2.3 The underlying sink API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult UnderlyingSinkAbortCallback(object reason);
@@ -240,7 +219,6 @@ public delegate PromiseResult UnderlyingSinkAbortCallback(object reason);
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsinkclosecallback">Streams Standard: 5.2.3 The underlying sink API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult UnderlyingSinkCloseCallback();
@@ -251,7 +229,6 @@ public delegate PromiseResult UnderlyingSinkCloseCallback();
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsinkstartcallback">Streams Standard: 5.2.3 The underlying sink API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object UnderlyingSinkStartCallback(WritableStreamDefaultController controller);
@@ -262,7 +239,6 @@ public delegate object UnderlyingSinkStartCallback(WritableStreamDefaultControll
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsinkwritecallback">Streams Standard: 5.2.3 The underlying sink API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult UnderlyingSinkWriteCallback(object chunk, WritableStreamDefaultController controller);
@@ -273,7 +249,6 @@ public delegate PromiseResult UnderlyingSinkWriteCallback(object chunk, Writable
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsourcecancelcallback">Streams Standard: 4.2.3 The underlying source API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult UnderlyingSourceCancelCallback(object reason);
@@ -284,7 +259,6 @@ public delegate PromiseResult UnderlyingSourceCancelCallback(object reason);
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsourcepullcallback">Streams Standard: 4.2.3 The underlying source API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult UnderlyingSourcePullCallback(ReadableStreamController controller);
@@ -295,7 +269,6 @@ public delegate PromiseResult UnderlyingSourcePullCallback(ReadableStreamControl
 /// <remarks>
 /// <see href="https://streams.spec.whatwg.org/#callbackdef-underlyingsourcestartcallback">Streams Standard: 4.2.3 The underlying source API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object UnderlyingSourceStartCallback(ReadableStreamController controller);
@@ -306,7 +279,6 @@ public delegate object UnderlyingSourceStartCallback(ReadableStreamController co
 /// <remarks>
 /// <see href="https://w3c.github.io/IntersectionObserver/#callbackdef-intersectionobservercallback">Intersection Observer: 2.1 The IntersectionObserverCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void IntersectionObserverCallback(IntersectionObserverEntry[] entries, IntersectionObserver observer);
@@ -317,7 +289,6 @@ public delegate void IntersectionObserverCallback(IntersectionObserverEntry[] en
 /// <remarks>
 /// <see href="https://w3c.github.io/geolocation/#dom-positioncallback">Geolocation: 6 Geolocation interface and callbacks</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void PositionCallback(GeolocationPosition position);
@@ -328,7 +299,6 @@ public delegate void PositionCallback(GeolocationPosition position);
 /// <remarks>
 /// <see href="https://w3c.github.io/geolocation/#dom-positionerrorcallback">Geolocation: 6 Geolocation interface and callbacks</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void PositionErrorCallback(GeolocationPositionError positionError);
@@ -339,7 +309,6 @@ public delegate void PositionErrorCallback(GeolocationPositionError positionErro
 /// <remarks>
 /// <see href="https://w3c.github.io/performance-timeline/#callbackdef-performanceobservercallback">Performance Timeline: 4 The PerformanceObserver interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void PerformanceObserverCallback(PerformanceObserverEntryList entries, PerformanceObserver observer, PerformanceObserverCallbackOptions options);
@@ -350,7 +319,6 @@ public delegate void PerformanceObserverCallback(PerformanceObserverEntryList en
 /// <remarks>
 /// <see href="https://w3c.github.io/reporting/#callbackdef-reportingobservercallback">Reporting API: 4.1 Interface ReportingObserver</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void ReportingObserverCallback(Report[] reports, ReportingObserver observer);
@@ -361,7 +329,6 @@ public delegate void ReportingObserverCallback(Report[] reports, ReportingObserv
 /// <remarks>
 /// <see href="https://w3c.github.io/requestidlecallback/#dom-idlerequestcallback">requestIdleCallback(): 4.1 The requestIdleCallback() method</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void IdleRequestCallback(IdleDeadline deadline);
@@ -372,7 +339,6 @@ public delegate void IdleRequestCallback(IdleDeadline deadline);
 /// <remarks>
 /// <see href="https://w3c.github.io/trusted-types/dist/spec/#callbackdef-createhtmlcallback">Trusted Types: 2.3.3 TrustedTypePolicyOptions</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate string? CreateHTMLCallback(string input, object arguments);
@@ -383,7 +349,6 @@ public delegate string? CreateHTMLCallback(string input, object arguments);
 /// <remarks>
 /// <see href="https://w3c.github.io/trusted-types/dist/spec/#callbackdef-createscriptcallback">Trusted Types: 2.3.3 TrustedTypePolicyOptions</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate string? CreateScriptCallback(string input, object arguments);
@@ -394,7 +359,6 @@ public delegate string? CreateScriptCallback(string input, object arguments);
 /// <remarks>
 /// <see href="https://w3c.github.io/trusted-types/dist/spec/#callbackdef-createscripturlcallback">Trusted Types: 2.3.3 TrustedTypePolicyOptions</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate string? CreateScriptURLCallback(string input, object arguments);
@@ -405,7 +369,6 @@ public delegate string? CreateScriptURLCallback(string input, object arguments);
 /// <remarks>
 /// <see href="https://w3c.github.io/web-locks/#callbackdef-lockgrantedcallback">Web Locks API: 3.2 LockManager class</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult<object> LockGrantedCallback(Lock? @lock);
@@ -416,7 +379,6 @@ public delegate PromiseResult<object> LockGrantedCallback(Lock? @lock);
 /// <remarks>
 /// <see href="https://w3c.github.io/webcodecs/#callbackdef-audiodataoutputcallback">WebCodecs: 3 AudioDecoder Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void AudioDataOutputCallback(AudioData output);
@@ -427,7 +389,6 @@ public delegate void AudioDataOutputCallback(AudioData output);
 /// <remarks>
 /// <see href="https://w3c.github.io/webcodecs/#callbackdef-encodedaudiochunkoutputcallback">WebCodecs: 5 AudioEncoder Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void EncodedAudioChunkOutputCallback(EncodedAudioChunk output, EncodedAudioChunkMetadata metadata);
@@ -438,7 +399,6 @@ public delegate void EncodedAudioChunkOutputCallback(EncodedAudioChunk output, E
 /// <remarks>
 /// <see href="https://w3c.github.io/webcodecs/#callbackdef-encodedvideochunkoutputcallback">WebCodecs: 6 VideoEncoder Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void EncodedVideoChunkOutputCallback(EncodedVideoChunk chunk, EncodedVideoChunkMetadata metadata);
@@ -449,7 +409,6 @@ public delegate void EncodedVideoChunkOutputCallback(EncodedVideoChunk chunk, En
 /// <remarks>
 /// <see href="https://w3c.github.io/webcodecs/#callbackdef-videoframeoutputcallback">WebCodecs: 4 VideoDecoder Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void VideoFrameOutputCallback(VideoFrame output);
@@ -460,7 +419,6 @@ public delegate void VideoFrameOutputCallback(VideoFrame output);
 /// <remarks>
 /// <see href="https://w3c.github.io/webcodecs/#callbackdef-webcodecserrorcallback">WebCodecs: 7.16 WebCodecsErrorCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void WebCodecsErrorCallback(DOMException error);
@@ -471,7 +429,6 @@ public delegate void WebCodecsErrorCallback(DOMException error);
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnectionerrorcallback">WebRTC: Real-Time Communication in Browsers: RTCPeerConnectionErrorCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void RTCPeerConnectionErrorCallback(DOMException error);
@@ -482,7 +439,6 @@ public delegate void RTCPeerConnectionErrorCallback(DOMException error);
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-pc/#dom-rtcsessiondescriptioncallback">WebRTC: Real-Time Communication in Browsers: RTCSessionDescriptionCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void RTCSessionDescriptionCallback(RTCSessionDescriptionInit description);
@@ -493,7 +449,6 @@ public delegate void RTCSessionDescriptionCallback(RTCSessionDescriptionInit des
 /// <remarks>
 /// <see href="https://webaudio.github.io/web-audio-api/#audioworkletprocess-callback-parameters">Web Audio API 1.1: 1.32.5.3.1 Callback AudioWorkletProcessCallback Parameters</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate bool AudioWorkletProcessCallback(FrozenSet<FrozenSet<Float32Array>> inputs, FrozenSet<FrozenSet<Float32Array>> outputs, object parameters);
@@ -504,7 +459,6 @@ public delegate bool AudioWorkletProcessCallback(FrozenSet<FrozenSet<Float32Arra
 /// <remarks>
 /// <see href="https://webaudio.github.io/web-audio-api/#callback-decodeerrorcallback-parameters">Web Audio API 1.1: 1.1.4 Callback DecodeErrorCallback() Parameters</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void DecodeErrorCallback(DOMException error);
@@ -515,7 +469,6 @@ public delegate void DecodeErrorCallback(DOMException error);
 /// <remarks>
 /// <see href="https://webaudio.github.io/web-audio-api/#callback-decodesuccesscallback-parameters">Web Audio API 1.1: 1.1.3 Callback DecodeSuccessCallback() Parameters</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void DecodeSuccessCallback(AudioBuffer decodedData);
@@ -526,7 +479,6 @@ public delegate void DecodeSuccessCallback(AudioBuffer decodedData);
 /// <remarks>
 /// <see href="https://webaudio.github.io/web-audio-api/#callbackdef-audioworkletprocessorconstructor">Web Audio API 1.1: 1.32.3 The AudioWorkletGlobalScope Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate AudioWorkletProcessor AudioWorkletProcessorConstructor(object options);
@@ -537,7 +489,6 @@ public delegate AudioWorkletProcessor AudioWorkletProcessorConstructor(object op
 /// <remarks>
 /// <see href="https://webidl.spec.whatwg.org/#VoidFunction">Web IDL Standard: 4.6 VoidFunction</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void VoidFunction();
@@ -548,7 +499,6 @@ public delegate void VoidFunction();
 /// <remarks>
 /// <see href="https://webmachinelearning.github.io/prompt-api/#callbackdef-languagemodeltoolfunction">Prompt API: 3 The API</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult<string> LanguageModelToolFunction(object arguments);
@@ -559,7 +509,6 @@ public delegate PromiseResult<string> LanguageModelToolFunction(object arguments
 /// <remarks>
 /// <see href="https://webmachinelearning.github.io/webmcp/#callbackdef-toolexecutecallback">WebMCP: 4.2.1 ModelContextTool Dictionary</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult<object> ToolExecuteCallback(object inputObject, ToolExecuteCallbackOptions options);
@@ -570,7 +519,6 @@ public delegate PromiseResult<object> ToolExecuteCallback(object inputObject, To
 /// <remarks>
 /// <see href="https://webmachinelearning.github.io/writing-assistance-apis/#callbackdef-createmonitorcallback">Writing Assistance APIs: 5.1 Common APIs</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void CreateMonitorCallback(CreateMonitor monitor);
@@ -581,7 +529,6 @@ public delegate void CreateMonitorCallback(CreateMonitor monitor);
 /// <remarks>
 /// <see href="https://wicg.github.io/autofill-event/#callbackdef-refillcallback">Autofill Event: 3 The AutofillEvent Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult RefillCallback();
@@ -592,7 +539,6 @@ public delegate PromiseResult RefillCallback();
 /// <remarks>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-errorcallback">File and Directory Entries API: 7 Files and Directories</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void ErrorCallback(DOMException err);
@@ -603,7 +549,6 @@ public delegate void ErrorCallback(DOMException err);
 /// <remarks>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-filecallback">File and Directory Entries API: 7.4 The FileSystemFileEntry Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void FileCallback(FileRef file);
@@ -614,7 +559,6 @@ public delegate void FileCallback(FileRef file);
 /// <remarks>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-filesystementriescallback">File and Directory Entries API: 7.3 The FileSystemDirectoryReader Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void FileSystemEntriesCallback(FileSystemEntry[] entries);
@@ -625,7 +569,6 @@ public delegate void FileSystemEntriesCallback(FileSystemEntry[] entries);
 /// <remarks>
 /// <see href="https://wicg.github.io/entries-api/#callbackdef-filesystementrycallback">File and Directory Entries API: 7.2 The FileSystemDirectoryEntry Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void FileSystemEntryCallback(FileSystemEntry entry);
@@ -636,7 +579,6 @@ public delegate void FileSystemEntryCallback(FileSystemEntry entry);
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-catchcallback">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object CatchCallback(object value);
@@ -647,7 +589,6 @@ public delegate object CatchCallback(object value);
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-mapper">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object Mapper(object value, Number index);
@@ -658,7 +599,6 @@ public delegate object Mapper(object value, Number index);
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-observableinspectoraborthandler">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void ObservableInspectorAbortHandler(object value);
@@ -669,7 +609,6 @@ public delegate void ObservableInspectorAbortHandler(object value);
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-predicate">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate bool Predicate(object value, Number index);
@@ -680,7 +619,6 @@ public delegate bool Predicate(object value, Number index);
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-reducer">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object Reducer(object accumulator, object currentValue, Number index);
@@ -691,7 +629,6 @@ public delegate object Reducer(object accumulator, object currentValue, Number i
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-subscribecallback">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void SubscribeCallback(Subscriber subscriber);
@@ -702,7 +639,6 @@ public delegate void SubscribeCallback(Subscriber subscriber);
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-visitor">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void Visitor(object value, Number index);
@@ -713,7 +649,6 @@ public delegate void Visitor(object value, Number index);
 /// <remarks>
 /// <see href="https://wicg.github.io/scheduling-apis/#callbackdef-schedulerposttaskcallback">Prioritized Task Scheduling: 2.2 The Scheduler Interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object SchedulerPostTaskCallback();
@@ -724,7 +659,6 @@ public delegate object SchedulerPostTaskCallback();
 /// <remarks>
 /// <see href="https://wicg.github.io/video-rvfc/#callbackdef-videoframerequestcallback">HTMLVideoElement.requestVideoFrameCallback(): 3 VideoFrameRequestCallback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void VideoFrameRequestCallback(double now, VideoFrameCallbackMetadata metadata);
@@ -735,7 +669,6 @@ public delegate void VideoFrameRequestCallback(double now, VideoFrameCallbackMet
 /// <remarks>
 /// <see href="https://wicg.github.io/web-app-launch/#dom-launchconsumer">Web App Launch Handler API: 5.2 LaunchConsumer function</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object LaunchConsumer(LaunchParams @params);
@@ -746,7 +679,6 @@ public delegate object LaunchConsumer(LaunchParams @params);
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/custom-elements.html#customelementconstructor">HTML Standard: 4.13.4 The CustomElementRegistry interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate HTMLElement CustomElementConstructor();
@@ -757,7 +689,6 @@ public delegate HTMLElement CustomElementConstructor();
 /// <remarks>
 /// <see href="https://w3c.github.io/mediasession/#callbackdef-mediasessionactionhandler">Media Session: 5 The MediaSession interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void MediaSessionActionHandler(MediaSessionActionDetails details);
@@ -771,7 +702,6 @@ public delegate void MediaSessionActionHandler(MediaSessionActionDetails details
 /// <example>
 /// <code>precommitController.addHandler(NavigationInterceptHandler handler)</code>
 /// </example>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult NavigationInterceptHandler();
@@ -782,7 +712,6 @@ public delegate PromiseResult NavigationInterceptHandler();
 /// <remarks>
 /// <see href="https://html.spec.whatwg.org/multipage/nav-history-apis.html#navigationprecommithandler">HTML Standard: 7.2.6.10.2 The NavigationPrecommitController interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult NavigationPrecommitHandler(NavigationPrecommitController controller);
@@ -793,7 +722,6 @@ public delegate PromiseResult NavigationPrecommitHandler(NavigationPrecommitCont
 /// <remarks>
 /// <see href="https://wicg.github.io/observable/#callbackdef-observablesubscriptioncallback">Observable: 2.2 The Observable interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void ObservableSubscriptionCallback(object value);
@@ -804,7 +732,6 @@ public delegate void ObservableSubscriptionCallback(object value);
 /// <remarks>
 /// <see href="https://webidl.spec.whatwg.org/#Function">Web IDL Standard: 4.5 Function</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate object Function(object arguments);
@@ -815,7 +742,6 @@ public delegate object Function(object arguments);
 /// <remarks>
 /// <see href="https://w3c.github.io/remote-playback/#dom-remoteplaybackavailabilitycallback">Remote Playback API: 5.2 RemotePlayback interface</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void RemotePlaybackAvailabilityCallback(bool available);
@@ -826,7 +752,6 @@ public delegate void RemotePlaybackAvailabilityCallback(bool available);
 /// <remarks>
 /// <see href="https://w3c.github.io/compute-pressure/#dom-pressureupdatecallback">Compute Pressure Level 1: 10.1 The PressureUpdateCallback callback</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate void PressureUpdateCallback(PressureRecord[] changes, PressureObserver observer);
@@ -837,7 +762,6 @@ public delegate void PressureUpdateCallback(PressureRecord[] changes, PressureOb
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-identity/#dom-generateassertioncallback">Identity for WebRTC 1.0: Callback GenerateAssertionCallback Parameters</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult<RTCIdentityAssertionResult> GenerateAssertionCallback(string contents, string origin, RTCIdentityProviderOptions options);
@@ -848,7 +772,6 @@ public delegate PromiseResult<RTCIdentityAssertionResult> GenerateAssertionCallb
 /// <remarks>
 /// <see href="https://w3c.github.io/webrtc-identity/#dom-validateassertioncallback">Identity for WebRTC 1.0: Callback ValidateAssertionCallback Parameters</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
 public delegate PromiseResult<RTCIdentityValidationResult> ValidateAssertionCallback(string assertion, string origin);
@@ -859,10 +782,9 @@ public delegate PromiseResult<RTCIdentityValidationResult> ValidateAssertionCall
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">MDN Web Docs: EventListener</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public sealed class EventListenerLiteral
+public sealed record EventListenerLiteral
 {
     /// <summary>
     /// Note: This feature is available in Web Workers. The addEventListener() method of the EventTarget interface sets up a function that will be called whenever the specified event is delivered to the target. Common targets are Element, or its children, Document, and Window, but the target may be any object that supports events (such as IDBRequest). Note: The addEventListener() method is the recommended way to register an event listener. The benefits are as follows: It allows adding more than one handler for an event. This is particularly useful for libraries, JavaScript modules, or any other kind of code that needs to work well with other libraries or extensions. In contrast to using an onXYZ property, it gives you finer-grained control of the phase when the listener is activated (capturing vs. bubbling). It works on any event target, not just HTML or SVG elements. The method addEventListener() works by adding a function, or an object that implements a handleEvent() function, to the list of event listeners for the specified event type on the EventTarget on which it&apos;s called. If the function or object is already in the list of event listeners for this target, the function or object is not added a second time. Note: If a particular anonymous function is in the list of event listeners registered for a certain target, and then later in the code, an identical anonymous function is given in an addEventListener call, the second function will also be added to the list of event listeners for that target. Indeed, anonymous functions are not identical even if defined using the same unchanging source-code called repeatedly, even if in a loop. Repeatedly defining the same unnamed function in such cases can be problematic. (See Memory issues, below.) If an event listener is added to an EventTarget from inside another listener — that is, during the processing of the event — that event will not trigger the new listener. However, the new listener may be triggered during a later stage of event flow, such as during the bubbling phase.
@@ -881,10 +803,9 @@ public sealed class EventListenerLiteral
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Document/createNodeIterator">MDN Web Docs: NodeFilter</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public sealed class NodeFilterLiteral
+public sealed record NodeFilterLiteral
 {
     /// <summary>
     /// NodeFilter 的规范常量 SHOW_NOTATION，WebIDL 类型为 unsigned long，值为 0x800。
@@ -1047,10 +968,9 @@ public sealed class NodeFilterLiteral
 /// <remarks>
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/Node/lookupNamespaceURI">MDN Web Docs: XPathNSResolver</see>
 /// </remarks>
-[ECMAScript]
 [Description("@#")]
 [Category("literal")]
-public sealed class XPathNSResolverLiteral
+public sealed record XPathNSResolverLiteral
 {
     /// <summary>
     /// The lookupNamespaceURI() method of the Node interface takes a prefix as parameter and returns the namespace URI associated with it on the given node if found (and null if not). This method&apos;s existence allows Node objects to be passed as a namespace resolver to XPathEvaluator.createExpression() and XPathEvaluator.evaluate().

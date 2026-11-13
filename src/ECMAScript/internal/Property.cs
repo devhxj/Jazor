@@ -4,9 +4,8 @@ namespace ECMAScript;
 /// JavaScript own-property descriptor object shape.
 /// JavaScript 自身属性描述符对象形状。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
-public class PropertyDescriptorRef
+public record PropertyDescriptorRef
 {
 	/// <summary>
 	/// Gets or sets whether the descriptor can be changed and the property can be deleted.

@@ -12,7 +12,6 @@ public static partial class VueDevtools
     /// 注册 Devtools plugin 所需的身份与作用域描述。<see cref="App"/> 必须是同一应用实际使用的 Vue app，
     /// 否则 inspector/timeline 不会落入预期的 app scope。
     /// </summary>
-    [ECMAScript]
     [Description("@#")]
     public record PluginDescriptor : Vue.VueProps
     {
@@ -69,7 +68,6 @@ public static partial class VueDevtools
     /// 仅让 <see cref="PluginApi{TSettings}.GetSettings()"/> 和 settings hook 保持业务类型。
     /// </summary>
     /// <typeparam name="TSettings">应用声明的 settings 值 record。</typeparam>
-    [ECMAScript]
     [Description("@#")]
     public record PluginDescriptor<TSettings> : PluginDescriptor
         where TSettings : Vue.VueProps;
@@ -78,7 +76,6 @@ public static partial class VueDevtools
     /// Devtools settings 定义的动态键字典。collection initializer 会直接 lowering 为普通 JS object，
     /// 不会在运行时创建 <c>Map</c>。
     /// </summary>
-    [ECMAScript]
     [Description("@#")]
     public record PluginSettings : Vue.VueDictionary<PluginSetting>;
 
@@ -86,7 +83,6 @@ public static partial class VueDevtools
     /// Devtools 读取到的 settings 值字典。对于固定业务 schema，优先使用
     /// <see cref="PluginApi{TSettings}.GetSettings()"/> 获取具体 record。
     /// </summary>
-    [ECMAScript]
     [Description("@#")]
     public record PluginSettingsValues : Vue.VueDictionary<DevtoolsValue>;
 
@@ -94,12 +90,10 @@ public static partial class VueDevtools
     /// 所有 Devtools setting definition 的共同结果类型。具体 setting 必须通过各自的
     /// <c>Create(...)</c> factory 创建，factory 会写入不能由业务侧覆盖的官方 <c>type</c> literal。
     /// </summary>
-    [ECMAScript]
     [Description("@#")]
     public abstract record PluginSetting : Vue.VueProps;
 
     /// <summary>Boolean setting factory 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record BooleanPluginSettingOptions : Vue.VueProps
     {
@@ -176,7 +170,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Choice setting 的一个可选项。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record PluginSettingChoice : Vue.VueProps
     {
@@ -203,7 +196,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Choice setting factory 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record ChoicePluginSettingOptions : Vue.VueProps
     {
@@ -243,7 +235,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Text setting factory 的输入形状。</summary>
-    [ECMAScript]
     [Description("@#")]
     public record TextPluginSettingOptions : Vue.VueProps
     {

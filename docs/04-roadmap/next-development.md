@@ -29,6 +29,10 @@ NodeApi 工具链已在 1.1.0 接入，完整验收范围见[迁移方案](./nod
 | P0-4 | 先测量，再优化 direct render 与 CLR runtime。性能候选必须先建立固定输入、warm-up、多轮测量、产物体积和行为基线，再决定是否实施。 | `Jazor.RazorVue`、`Jazor.Compiler`、`Jazor.CLR` | 改动前记录阈值和基线；优化在不改变求值顺序、值语义、导入稳定性和 source map 的前提下达到阈值，否则不实施。 |
 | P0-5 | 将 `jazor/` 固定为标准前端项目：ECMAScript MJS 作为项目源码，binding 以 npm/JSR identity 和标准 ESM specifier 接入；Emit 在 MSBuild 中生成入口与 `package.json`，pnpm API 恢复依赖，Vite 与 Vue SSR 在 NodeApi 中消费同一项目。 | `Jazor.Emit`、`Jazor.NodeHost`、各 `ECMAScript.*` binding | 通过[npm/JSR 绑定与标准 Jazor 项目计划](./npm-jsr-binding-tree-shaking-plan.md)的标准项目、frozen lock、细粒度 JS/CSS tree shaking、组件内部依赖、SSR 及源码/NuGet consumer 验收矩阵。 |
 
+## 编译器：标注职责与类型语义调整
+
+当前源码已完成 `[ECMAScript]` 标注职责与类型语义调整，并通过切片验收：普通源码类型按编译范围、实现归属与实际操作参与转换；class 保留构造与实例行为，record 承担结构化对象，源码和生成模板的冗余标注已清理。该候选尚未发布，后续按 MAJOR 通道处理 class→record 的破坏性契约。范围、兼容性与可复现验收入口见 [ECMAScript 标注与类型语义调整计划](./ecmascript-type-semantics-plan.md)。
+
 ## P1：需要先确立协议的能力
 
 具体执行顺序、协议字段和 Definition of Done 见 [RazorVue P1 执行计划](./p1-plan.md)。

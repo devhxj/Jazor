@@ -30,7 +30,6 @@ public enum VuetifyJustify
 /// Vuetify VEmptyState 操作插槽暴露的属性对象。
 /// Props object exposed by the Vuetify VEmptyState actions slot.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VEmptyStateActionsProps
 {
@@ -45,7 +44,6 @@ public sealed record VEmptyStateActionsProps
 /// Vuetify VEmptyState 作用域操作插槽上下文。
 /// Scoped actions slot context exposed by Vuetify VEmptyState.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VEmptyStateActionsSlotContext
 {

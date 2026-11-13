@@ -4,7 +4,6 @@ namespace ECMAScript.VueDataUi;
 // Deep style/options remain extensible through VdConfig/VdDatasetItem, never object.
 
 /// <summary>Vd3dBar 的 breakdown 条目。</summary>
-[ECMAScript]
 [Description("@#")]
 public record Vd3dBarDatasetBreakdown : Vue.VueProps
 {
@@ -22,7 +21,6 @@ public record Vd3dBarDatasetBreakdown : Vue.VueProps
 }
 
 /// <summary>Vd3dBar 的单个 series。</summary>
-[ECMAScript]
 [Description("@#")]
 public record Vd3dBarDatasetSeriesItem : VdDatasetItem
 {
@@ -52,7 +50,6 @@ public record Vd3dBarDatasetSeriesItem : VdDatasetItem
 }
 
 /// <summary>Vd3dBar dataset 根对象。</summary>
-[ECMAScript]
 [Description("@#")]
 public record Vd3dBarDataset : Vue.VueProps
 {
@@ -70,17 +67,14 @@ public record Vd3dBarDataset : Vue.VueProps
 }
 
 /// <summary>3D bar configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record Vd3dBarConfig : VdConfig;
 
 /// <summary>Accordion configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdAccordionConfig : VdConfig;
 
 /// <summary>Age pyramid configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdAgePyramidConfig : VdConfig;
 
@@ -98,17 +92,14 @@ public static class VdAgePyramidData
 }
 
 /// <summary>Annotator 可选 dataset 的结构化 object。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdAnnotatorDataset : VdDatasetItem;
 
 /// <summary>Annotator configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdAnnotatorConfig : VdConfig;
 
 /// <summary>Bump chart 的 series row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdBumpDatasetItem : VdDatasetItem
 {
@@ -132,12 +123,10 @@ public record VdBumpDatasetItem : VdDatasetItem
 }
 
 /// <summary>Bump chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdBumpConfig : VdConfig;
 
 /// <summary>Carousel table dataset。每行 cell 保持 string/number closed domain。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdCarouselTableDataset : Vue.VueProps
 {
@@ -155,12 +144,10 @@ public record VdCarouselTableDataset : Vue.VueProps
 }
 
 /// <summary>Carousel table configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdCarouselTableConfig : VdConfig;
 
 /// <summary>Chestnut chart breakdown leaf。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChestnutDatasetBranchBreakdown : Vue.VueProps
 {
@@ -184,7 +171,6 @@ public record VdChestnutDatasetBranchBreakdown : Vue.VueProps
 }
 
 /// <summary>Chestnut chart branch。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChestnutDatasetBranch : Vue.VueProps
 {
@@ -208,7 +194,6 @@ public record VdChestnutDatasetBranch : Vue.VueProps
 }
 
 /// <summary>Chestnut chart root node。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChestnutDatasetRoot : VdDatasetItem
 {
@@ -232,12 +217,10 @@ public record VdChestnutDatasetRoot : VdDatasetItem
 }
 
 /// <summary>Chestnut chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChestnutConfig : VdConfig;
 
 /// <summary>Chord matrix dataset。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChordDataset : Vue.VueProps
 {
@@ -261,12 +244,10 @@ public record VdChordDataset : Vue.VueProps
 }
 
 /// <summary>Chord chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdChordConfig : VdConfig;
 
 /// <summary>Circle pack hierarchy node。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdCirclePackDatasetItem : VdDatasetItem
 {
@@ -296,17 +277,14 @@ public record VdCirclePackDatasetItem : VdDatasetItem
 }
 
 /// <summary>Circle pack configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdCirclePackConfig : VdConfig;
 
 /// <summary>Cursor visual configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdCursorConfig : VdConfig;
 
 /// <summary>DAG node authored by callers。额外 metadata 可通过继承的 dictionary 传递。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDagNode : VdDatasetItem
 {
@@ -336,7 +314,6 @@ public record VdDagNode : VdDatasetItem
 }
 
 /// <summary>DAG edge authored by callers。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDagEdge : Vue.VueProps
 {
@@ -384,7 +361,6 @@ public record VdDagEdge : Vue.VueProps
 }
 
 /// <summary>DAG dataset root。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDagDataset : Vue.VueProps
 {
@@ -402,7 +378,6 @@ public record VdDagDataset : Vue.VueProps
 }
 
 /// <summary>DAG chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDagConfig : VdConfig;
 
@@ -410,12 +385,10 @@ public record VdDagConfig : VdConfig;
 /// Dashboard item props base。具体 chart 可使用 <see cref="VdDashboardElementProps{TDataset,TConfig}"/>
 /// 保持内部 dataset/config 的 exact C# type。
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDashboardElementProps : Vue.VueProps;
 
 /// <summary>Dashboard 中一个具体图表的 typed props。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDashboardElementProps<TDataset, TConfig> : VdDashboardElementProps
 {
@@ -433,7 +406,6 @@ public record VdDashboardElementProps<TDataset, TConfig> : VdDashboardElementPro
 }
 
 /// <summary>Dashboard grid 中的一个 component placement。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDashboardElement : VdDatasetItem
 {
@@ -481,7 +453,6 @@ public record VdDashboardElement : VdDatasetItem
 }
 
 /// <summary>Dashboard <c>change</c> event 的 placement shape。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDashboardPlacedElement : Vue.VueProps
 {
@@ -529,7 +500,6 @@ public record VdDashboardPlacedElement : Vue.VueProps
 }
 
 /// <summary>Dashboard <c>copyAlt</c> event payload。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDashboardCopyAlt : Vue.VueProps
 {
@@ -547,12 +517,10 @@ public record VdDashboardCopyAlt : Vue.VueProps
 }
 
 /// <summary>Dashboard configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDashboardConfig : VdConfig;
 
 /// <summary>Digits visual configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDigitsConfig : VdConfig
 {
@@ -576,7 +544,6 @@ public record VdDigitsConfig : VdConfig
 }
 
 /// <summary>Donut evolution 的 series row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDonutEvolutionDatasetItem : VdDatasetItem
 {
@@ -600,7 +567,6 @@ public record VdDonutEvolutionDatasetItem : VdDatasetItem
 }
 
 /// <summary>Donut evolution configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdDonutEvolutionConfig : VdConfig;
 
@@ -620,17 +586,14 @@ public static class VdFlowData
 }
 
 /// <summary>Flow chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdFlowConfig : VdConfig;
 
 /// <summary>Galaxy configuration。Dataset reuses <see cref="VdDonutDatasetItem"/> rows.</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGalaxyConfig : VdConfig;
 
 /// <summary>Geo map point。Coordinates are emitted as a two-item JavaScript array.</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGeoDatasetItem : VdDatasetItem
 {
@@ -666,17 +629,14 @@ public record VdGeoDatasetItem : VdDatasetItem
 }
 
 /// <summary>Geo map configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGeoConfig : VdConfig;
 
 /// <summary>Gizmo configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdGizmoConfig : VdConfig;
 
 /// <summary>Hill chart item。The chart deliberately accepts arbitrary metadata alongside these stable fields.</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHillDatasetItem : VdDatasetItem
 {
@@ -712,12 +672,10 @@ public record VdHillDatasetItem : VdDatasetItem
 }
 
 /// <summary>Hill chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHillConfig : VdConfig;
 
 /// <summary>History plot coordinate。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHistoryPlotValue : Vue.VueProps
 {
@@ -741,7 +699,6 @@ public record VdHistoryPlotValue : Vue.VueProps
 }
 
 /// <summary>History plot series row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHistoryPlotDatasetItem : VdDatasetItem
 {
@@ -795,17 +752,14 @@ public record VdHistoryPlotDatasetItem : VdDatasetItem
 }
 
 /// <summary>History plot configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdHistoryPlotConfig : VdConfig;
 
 /// <summary>Mini loader configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdMiniLoaderConfig : VdConfig;
 
 /// <summary>Molecule graph node。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdMoleculeDatasetNode : Vue.VueProps
 {
@@ -835,12 +789,10 @@ public record VdMoleculeDatasetNode : Vue.VueProps
 }
 
 /// <summary>Molecule graph configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdMoleculeConfig : VdConfig;
 
 /// <summary>Mood radar's fixed five score buckets。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdMoodRadarDataset : Vue.VueProps
 {
@@ -876,12 +828,10 @@ public record VdMoodRadarDataset : Vue.VueProps
 }
 
 /// <summary>Mood radar configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdMoodRadarConfig : VdConfig;
 
 /// <summary>Nested donut ring and its inner donut series。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdNestedDonutsDatasetItem : VdDatasetItem
 {
@@ -899,12 +849,10 @@ public record VdNestedDonutsDatasetItem : VdDatasetItem
 }
 
 /// <summary>Nested donuts configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdNestedDonutsConfig : VdConfig;
 
 /// <summary>Onion chart layer。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdOnionDatasetItem : VdDatasetItem
 {
@@ -946,12 +894,10 @@ public record VdOnionDatasetItem : VdDatasetItem
 }
 
 /// <summary>Onion chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdOnionConfig : VdConfig;
 
 /// <summary>Parallel coordinate axis values。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdParallelCoordinatePlotDatasetSerieItem : Vue.VueProps
 {
@@ -969,7 +915,6 @@ public record VdParallelCoordinatePlotDatasetSerieItem : Vue.VueProps
 }
 
 /// <summary>Parallel coordinate plot series row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdParallelCoordinatePlotDatasetItem : VdDatasetItem
 {
@@ -999,12 +944,10 @@ public record VdParallelCoordinatePlotDatasetItem : VdDatasetItem
 }
 
 /// <summary>Parallel coordinate plot configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdParallelCoordinatePlotConfig : VdConfig;
 
 /// <summary>Quadrant point。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdQuadrantDatasetSerieItem : Vue.VueProps
 {
@@ -1028,7 +971,6 @@ public record VdQuadrantDatasetSerieItem : Vue.VueProps
 }
 
 /// <summary>Quadrant dataset row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdQuadrantDatasetItem : VdDatasetItem
 {
@@ -1058,12 +1000,10 @@ public record VdQuadrantDatasetItem : VdDatasetItem
 }
 
 /// <summary>Quadrant configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdQuadrantConfig : VdConfig;
 
 /// <summary>Rating detailed scores keyed by label。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRatingDatasetDetailed : Vue.VueDictionary<double>;
 
@@ -1084,7 +1024,6 @@ public readonly union VdRatingValue(double, VdRatingDatasetDetailed)
 }
 
 /// <summary>Rating and Smiley dataset root。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRatingDataset : Vue.VueProps
 {
@@ -1096,12 +1035,10 @@ public record VdRatingDataset : Vue.VueProps
 }
 
 /// <summary>Rating configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRatingConfig : VdConfig;
 
 /// <summary>Relation circle entity and its linked ids。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRelationCircleDatasetItem : VdDatasetItem
 {
@@ -1137,12 +1074,10 @@ public record VdRelationCircleDatasetItem : VdDatasetItem
 }
 
 /// <summary>Relation circle configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRelationCircleConfig : VdConfig;
 
 /// <summary>Ridgeline nested datapoint。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRidgelineDatapoint : Vue.VueProps
 {
@@ -1166,7 +1101,6 @@ public record VdRidgelineDatapoint : Vue.VueProps
 }
 
 /// <summary>Ridgeline series group。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRidgelineDatasetItem : VdDatasetItem
 {
@@ -1184,12 +1118,10 @@ public record VdRidgelineDatasetItem : VdDatasetItem
 }
 
 /// <summary>Ridgeline configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRidgelineConfig : VdConfig;
 
 /// <summary>Rings chart series row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRingsDatasetItem : VdDatasetItem
 {
@@ -1213,27 +1145,22 @@ public record VdRingsDatasetItem : VdDatasetItem
 }
 
 /// <summary>Rings chart configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdRingsConfig : VdConfig;
 
 /// <summary>Skeleton visual configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSkeletonConfig : VdConfig;
 
 /// <summary>Smiley configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSmileyConfig : VdConfig;
 
 /// <summary>Spark trend configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkTrendConfig : VdConfig;
 
 /// <summary>Spark gauge dataset root。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkgaugeDataset : Vue.VueProps
 {
@@ -1263,12 +1190,10 @@ public record VdSparkgaugeDataset : Vue.VueProps
 }
 
 /// <summary>Spark gauge configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkgaugeConfig : VdConfig;
 
 /// <summary>Spark stackbar segment。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkStackbarDatasetItem : VdDatasetItem
 {
@@ -1316,12 +1241,10 @@ public record VdSparkStackbarDatasetItem : VdDatasetItem
 }
 
 /// <summary>Spark stackbar configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdSparkStackbarConfig : VdConfig;
 
 /// <summary>Strip plot point。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStripPlotDatasetItem : Vue.VueProps
 {
@@ -1339,7 +1262,6 @@ public record VdStripPlotDatasetItem : Vue.VueProps
 }
 
 /// <summary>Strip plot group。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStripPlotDataset : VdDatasetItem
 {
@@ -1357,12 +1279,10 @@ public record VdStripPlotDataset : VdDatasetItem
 }
 
 /// <summary>Strip plot configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdStripPlotConfig : VdConfig;
 
 /// <summary>Thermometer gradient colors。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdThermometerColors : Vue.VueProps
 {
@@ -1380,7 +1300,6 @@ public record VdThermometerColors : Vue.VueProps
 }
 
 /// <summary>Thermometer dataset root。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdThermometerDataset : Vue.VueProps
 {
@@ -1416,17 +1335,14 @@ public record VdThermometerDataset : Vue.VueProps
 }
 
 /// <summary>Thermometer configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdThermometerConfig : VdConfig;
 
 /// <summary>Timer configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTimerConfig : VdConfig;
 
 /// <summary>Tiremarks dataset root。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTiremarksDataset : Vue.VueProps
 {
@@ -1438,12 +1354,10 @@ public record VdTiremarksDataset : Vue.VueProps
 }
 
 /// <summary>Tiremarks configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdTiremarksConfig : VdConfig;
 
 /// <summary>Wheel dataset root。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWheelDataset : Vue.VueProps
 {
@@ -1455,12 +1369,10 @@ public record VdWheelDataset : Vue.VueProps
 }
 
 /// <summary>Wheel configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWheelConfig : VdConfig;
 
 /// <summary>World map country value。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWorldDatasetItem : Vue.VueProps
 {
@@ -1484,17 +1396,14 @@ public record VdWorldDatasetItem : Vue.VueProps
 }
 
 /// <summary>World map's ISO-keyed dataset。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWorldDataset : Vue.VueDictionary<VdWorldDatasetItem>;
 
 /// <summary>World map configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdWorldConfig : VdConfig;
 
 /// <summary>XY canvas series row。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdXyCanvasDatasetItem : VdDatasetItem
 {
@@ -1584,7 +1493,6 @@ public record VdXyCanvasDatasetItem : VdDatasetItem
 }
 
 /// <summary>XY canvas configuration。</summary>
-[ECMAScript]
 [Description("@#")]
 public record VdXyCanvasConfig : VdConfig;
 

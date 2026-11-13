@@ -1697,7 +1697,7 @@ internal static class TDesignComponentGenerator
             {
                 AddDefinition(
                     "TCallback",
-                    $"[ECMAScript]{Environment.NewLine}public delegate void TCallback();{Environment.NewLine}");
+                    $"public delegate void TCallback();{Environment.NewLine}");
                 type = new MappedType("TCallback", IsReference: true);
                 return true;
             }
@@ -1708,7 +1708,7 @@ internal static class TDesignComponentGenerator
                 // in TDesign's options contract. Its callable runtime API is not a prop.
                 AddDefinition(
                     "TSortable",
-                    $"[ECMAScript]{Environment.NewLine}public sealed record TSortable : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                    $"public sealed record TSortable : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
                 type = new MappedType("TSortable", IsReference: true);
                 return true;
             }
@@ -1717,7 +1717,7 @@ internal static class TDesignComponentGenerator
             {
                 AddDefinition(
                     "TDayjs",
-                    $"[ECMAScript]{Environment.NewLine}public sealed record TDayjs : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                    $"public sealed record TDayjs : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
                 type = new MappedType("TDayjs", IsReference: true);
                 return true;
             }
@@ -1818,7 +1818,7 @@ internal static class TDesignComponentGenerator
                         // passed by reference. Model their handle without inventing APIs.
                         AddDefinition(
                             csharpName,
-                            $"[ECMAScript]{Environment.NewLine}public sealed record {DeclaredName(csharpName)} : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                            $"public sealed record {DeclaredName(csharpName)} : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
                         openType = new MappedType(DeclaredName(csharpName), IsReference: true);
                     }
                     else
@@ -2051,7 +2051,7 @@ internal static class TDesignComponentGenerator
 
             AddDefinition(
                 suggestedName,
-                $"[ECMAScript]{Environment.NewLine}public sealed record {DeclaredName(suggestedName)} : VueDictionary<{value.Name}>{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                $"public sealed record {DeclaredName(suggestedName)} : VueDictionary<{value.Name}>{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
             type = new MappedType(DeclaredName(suggestedName), IsReference: true);
             return true;
         }
@@ -2319,7 +2319,6 @@ internal static class TDesignComponentGenerator
         private void AddProjectedShape(string name, IReadOnlyList<MappedShapeProperty> properties)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("[ECMAScript]");
             builder.AppendLine($"public sealed record {DeclaredName(name)} : VueProps");
             builder.AppendLine("{");
             foreach (var property in properties)
@@ -2463,7 +2462,6 @@ internal static class TDesignComponentGenerator
                 : ownProperties;
 
             var builder = new StringBuilder();
-            builder.AppendLine("[ECMAScript]");
             builder.AppendLine($"public record {DeclaredName(suggestedName)} : {baseType?.Name ?? (indexValue is null ? "VueProps" : $"VueDictionary<{indexValue.Name}>")}");
             builder.AppendLine("{");
             foreach (var property in declaredProperties)
@@ -2492,7 +2490,7 @@ internal static class TDesignComponentGenerator
         {
             AddDefinition(
                 suggestedName,
-                $"[ECMAScript]{Environment.NewLine}public sealed record {DeclaredName(suggestedName)} : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                $"public sealed record {DeclaredName(suggestedName)} : VueProps{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
             _shapes[suggestedName] = new MappedShape(_definitionTypeParameters, []);
             type = new MappedType(DeclaredName(suggestedName), IsReference: true);
             return true;
@@ -2519,7 +2517,7 @@ internal static class TDesignComponentGenerator
                 $"[ECMAScript]{Environment.NewLine}public readonly union TJsonValue(bool, Number, string, TJsonValue[], TJsonObject){Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
             AddDefinition(
                 "TJsonObject",
-                $"[ECMAScript]{Environment.NewLine}public sealed record TJsonObject : VueDictionary<TJsonValue>{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                $"public sealed record TJsonObject : VueDictionary<TJsonValue>{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
         }
 
         private bool AddClassName(out MappedType type)
@@ -2528,7 +2526,7 @@ internal static class TDesignComponentGenerator
             const string dictionary = "TClassNameDictionary";
             AddDefinition(
                 dictionary,
-                $"[ECMAScript]{Environment.NewLine}public sealed record {dictionary} : VueDictionary<bool>{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
+                $"public sealed record {dictionary} : VueDictionary<bool>{Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
             AddDefinition(
                 className,
                 $"[ECMAScript]{Environment.NewLine}public readonly union {className}({dictionary}, {className}[], string){Environment.NewLine}{{{Environment.NewLine}}}{Environment.NewLine}");
@@ -2591,7 +2589,7 @@ internal static class TDesignComponentGenerator
 
             if (returnType != "void")
                 parameterDocumentation.AppendLine($"/// <returns>回调结果，类型为 {EscapeXml(returnType)}。</returns>");
-            AddDefinition(suggestedName, $"{parameterDocumentation}[ECMAScript]{Environment.NewLine}public delegate {returnType} {DeclaredName(suggestedName)}({string.Join(", ", mappedParameters)});{Environment.NewLine}");
+            AddDefinition(suggestedName, $"{parameterDocumentation}public delegate {returnType} {DeclaredName(suggestedName)}({string.Join(", ", mappedParameters)});{Environment.NewLine}");
             type = new MappedType(DeclaredName(suggestedName), IsReference: true);
             return true;
         }
@@ -2751,7 +2749,6 @@ internal static class TDesignComponentGenerator
         private void AddStringEnum(string name, IReadOnlyList<string> values)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("[ECMAScript]");
             builder.AppendLine("[String]");
             // String literal domains do not depend on an enclosing generic parameter.
             // Emitting enum<T> is illegal C# and would invent a runtime distinction.

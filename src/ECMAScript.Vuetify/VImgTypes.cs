@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// 图片源对象，包含多分辨率源和宽高比信息。
 /// Image source object containing multi-resolution sources and aspect ratio.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VImgSourceObject : VueProps
 {

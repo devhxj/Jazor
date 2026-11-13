@@ -7,7 +7,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[ECMAScript]
 [Description("@#")]
 public sealed record CounterMultiStoreComputed : Vue.VueProps
 {

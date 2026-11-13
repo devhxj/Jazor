@@ -1,6 +1,5 @@
 namespace Jazor.Admin;
 
-[ECMAScript]
 [Description("@#")]
 public sealed record AdminLayoutState : VueProps
 {

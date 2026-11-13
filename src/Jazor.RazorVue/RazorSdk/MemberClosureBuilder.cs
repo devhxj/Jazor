@@ -920,7 +920,10 @@ internal sealed record MemberClosure(
             ModulePolicy: VueModulePolicy.Instance,
             RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties,
             // 组件模块自身的输出路径：carrier 引用要相对它计算（载体是项目源码，不是包）。
-            CurrentModuleOutputPath: currentModuleOutputPath);
+            CurrentModuleOutputPath: currentModuleOutputPath,
+            // Direct render methods are not emitted as ordinary functions, but their source
+            // type dependencies still need implementations in the same artifact.
+            SourceDependencyFilter: CompilerClosure.ShouldInclude);
     }
 
     private bool ShouldIncludeCompilerMember(ISymbol symbol)

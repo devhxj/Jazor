@@ -13,20 +13,19 @@ using Jazor.Common;
 namespace Jazor.Analyzer;
 
 /// <summary>
-/// 表示一个诊断分析器，该分析器对标记有[ECMAScript]、[ECMAScriptModule]特性的类型和成员强制执行特定的规则。
+/// 分析前端编译根及其源码依赖，在作者源码中报告不支持的类型、成员和操作。
 /// </summary>
 /// <remarks>
-/// 约定“ES特性”包括 <b>[ECMAScript]</b>、<b>[ECMAScriptModule]</b>。分析器会诊断进入该编译域的源声明：
-/// class 与 structural record（含 record struct）同时分析声明和方法体，interface 与 delegate 只分析其声明签名，不考虑“ES特性”的来源。
-/// <para>1、支持类型：默认支持数组、Lambda、委托、枚举、接口、record、匿名类型、抽象类、特性、类型参数、类型白名单和其他被“ES特性”标注的类型</para>
+/// 模块根与源码依赖确定分析范围；普通类型无需宿主标注来获得编译许可。
+/// class 与 structural record（含 record struct）同时分析声明和方法体，interface 与 delegate 只分析其声明签名。
+/// <para>1、范围内的源码类型按支持的操作检查；外部类型需要已有擦除语义、宿主契约或类型白名单</para>
 /// <para>2、分析器对泛型实参、数组元素类型、局部推断类型、集合表达式等擦除位置做严格入口诊断；若出现闭合的外部具体类型，要求该类型本身受支持</para>
 /// <para>3、分析器不追踪类型参数 T 的真实来源；类型参数本身允许通过，等到具体运行时敏感的类型或成员用法再诊断</para>
-/// <para>4、支持成员：被ES特性标注的类型的成员都可以使用，其余需要匹配白名单中的构造函数、字段、属性、方法、索引器</para>
-/// <para>4、“ES特性”只能标记最外层的类、接口、枚举、委托等</para>
+/// <para>4、源码及宿主成员按各自语义检查；其他外部构造函数、字段、属性、方法和索引器需要匹配白名单</para>
 /// <para>5、仅允许模块 runtime 成员类中的非静态字段式事件；custom/static 事件仍在分析期拒绝</para>
-/// <para>6、“ES特性”标记的类中不能使用析构函数</para>
-/// <para>7、“ES特性”标记的类中默认支持Lambda、委托、枚举、接口、匿名类型、抽象类、特性、类型参数</para>
-/// <para>8、“ES特性”标记的类可支持其他特性，但不需要对特性的类型参数进行检查</para>
+/// <para>6、前端分析范围内的类不支持析构函数</para>
+/// <para>7、Lambda、委托、枚举、接口、匿名类型、抽象类和类型参数沿用各自既有支持边界</para>
+/// <para>8、声明上的特性仅作为元数据，不纳入其 CLR 实现的依赖分析</para>
 /// <para>9、interface 与 delegate 只检查声明签名；enum 不需要 runtime member 白名单诊断，非 record 的 struct 不在声明级分析范围</para>
 /// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -151,43 +150,65 @@ public partial class Analyzer : DiagnosticAnalyzer
 	{
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
-		context.RegisterSymbolAction(AnalyzeContractTypeSignature, SymbolKind.NamedType);
-		context.RegisterSymbolAction(AnalyzeSpreadPropertyUsage, SymbolKind.Property);
-		context.RegisterSymbolAction(AnalyzeEventSymbol, SymbolKind.Event);
-        context.RegisterSymbolStartAction(startContext =>
+		context.RegisterCompilationStartAction(compilationContext =>
 		{
-			var symbol = (INamedTypeSymbol)startContext.Symbol;
-			if (symbol.TypeKind != TypeKind.Class && !StructuralRecordSupport.IsStructuralRecordType(symbol))
-				return;
+            // Compilation-local scope prevents ordinary backend classes from entering frontend
+            // analysis. Source helpers are reached from roots, not opted in one attribute at a time.
+            var scope = new Lazy<ImmutableHashSet<INamedTypeSymbol>>(() =>
+            {
+                var compilation = compilationContext.Compilation;
+                IEnumerable<INamedTypeSymbol> FindRoots(INamespaceOrTypeSymbol owner)
+                {
+                    foreach (var member in owner.GetMembers())
+                    {
+                        if (member is INamedTypeSymbol type &&
+                            type.Locations.Any(static location => location.IsInSource) && HasECMAScriptAttribute(type))
+                            yield return type;
+                        if (member is INamespaceOrTypeSymbol container)
+                            foreach (var root in FindRoots(container))
+                                yield return root;
+                    }
+                }
+                return SourceTypeClosure.Collect(compilation, FindRoots(compilation.Assembly.GlobalNamespace),
+                        cancellationToken: compilationContext.CancellationToken, includeTypeAnnotations: true)
+                    .ToImmutableHashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+            });
+            bool InScope(INamedTypeSymbol type)
+            {
+                for (var current = type; current is not null; current = current.ContainingType)
+                    if (scope.Value.Contains(current.OriginalDefinition))
+                        return true;
+                return false;
+            }
 
-			var hasAttribute = HasECMAScriptAttribute(symbol);
-			// 特性只能标记最外层的类、接口、枚举、委托等，如果被包含，则直接报错
-			if (hasAttribute && symbol.ContainingType is not null)
-			{
-				startContext.RegisterSymbolEndAction(static endContext =>
-					endContext.ReportDiagnostic(Diagnostic.Create(Rule,
-						endContext.Symbol.Locations.FirstOrDefault(x => x.IsInSource) ?? Location.None, "Error Nested Class")));
+            compilationContext.RegisterSymbolAction(ctx =>
+            {
+                if (InScope((INamedTypeSymbol)ctx.Symbol))
+                    AnalyzeContractTypeSignature(ctx);
+            }, SymbolKind.NamedType);
+            compilationContext.RegisterSymbolAction(AnalyzeSpreadPropertyUsage, SymbolKind.Property);
+            compilationContext.RegisterSymbolAction(ctx =>
+            {
+                if (InScope(ctx.Symbol.ContainingType))
+                    AnalyzeEventSymbol(ctx);
+            }, SymbolKind.Event);
+            compilationContext.RegisterSymbolStartAction(startContext =>
+            {
+                var symbol = (INamedTypeSymbol)startContext.Symbol;
+                if ((symbol.TypeKind != TypeKind.Class && !StructuralRecordSupport.IsStructuralRecordType(symbol)) ||
+                    !InScope(symbol))
+                    return;
+                startContext.RegisterOperationAction(AnalysisOperationAction, AnalysisOperationKindArray);
+                startContext.RegisterSymbolEndAction(AnalysisSymbolEndAction);
+            }, SymbolKind.NamedType);
 
-				// 不诊断嵌套类（性能优化）
-				return;
-			}
-
-			// 跳过未被特性标注
-			if (!hasAttribute && !InECMAScriptAttribute(symbol))
-				return;
-
-			// 处理字段、属性初始值
-			startContext.RegisterOperationAction(AnalysisOperationAction, AnalysisOperationKindArray);
-
-			// 检查类成员定义中使用的类型
-			startContext.RegisterSymbolEndAction(AnalysisSymbolEndAction);
-		}, SymbolKind.NamedType);
+        });
 	}
 
 	private static void AnalyzeEventSymbol(SymbolAnalysisContext ctx)
 	{
 		var eventSymbol = (IEventSymbol)ctx.Symbol;
-		if (!InECMAScriptAttribute(eventSymbol.ContainingType))
+		if (!IsSourceOrHostType(eventSymbol.ContainingType))
 			return;
 
 		CheckType(ctx.ReportDiagnostic, eventSymbol.Type, GetLocation(eventSymbol.Locations));
@@ -204,7 +225,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 	{
 		var symbol = (INamedTypeSymbol)ctx.Symbol;
 		if (symbol.TypeKind is not (TypeKind.Interface or TypeKind.Delegate) ||
-			(!HasECMAScriptAttribute(symbol) && !InECMAScriptAttribute(symbol)))
+			(!HasECMAScriptAttribute(symbol) && !IsSourceOrHostType(symbol)))
 		{
 			return;
 		}
@@ -225,8 +246,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 		CheckTypeParameterConstraints(ctx.ReportDiagnostic, symbol.TypeParameters);
 	}
 
-	private static bool InECMAScriptAttribute(ITypeSymbol typeSymbol)
+	private static bool IsSourceOrHostType(ITypeSymbol typeSymbol)
 	{
+		// Source declarations are checked through the compilation-root scope. This predicate
+		// answers member/type support inside that scope, independently of host metadata.
+		if (typeSymbol.Locations.Any(static location => location.IsInSource))
+			return true;
 		ISymbol current;
 		if (typeSymbol.ContainingType is null)
 			current = typeSymbol;
@@ -298,7 +323,7 @@ public partial class Analyzer : DiagnosticAnalyzer
         if (StructuralRecordSupport.IsNonStructuralRecordRuntimeMember(method) ||
             (!IsWhiteListedMember(method) &&
              !method.GetAttributes().Any(Util.IsECMAScriptSupportMarkerAttributeData) &&
-             !InECMAScriptAttribute(method.ContainingType)))
+             !Util.HasECMAScriptSupportMarker(method.ContainingType)))
         {
             report(Diagnostic.Create(Rule, location, method.OriginalDefinition.ToDisplayString(Format.NameFormat)));
         }
@@ -538,7 +563,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		if (IsLibraryComponent(typeSymbol))
 			return;
 
-		if (!InECMAScriptAttribute(typeSymbol.OriginalDefinition))
+		if (!IsSourceOrHostType(typeSymbol.OriginalDefinition))
 			report(Diagnostic.Create(Rule, location, fullName));
 	}
 
@@ -667,7 +692,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var location = creation.Syntax.GetLocation();
 					CheckType(ctx.ReportDiagnostic, type, location);
 					// 特性和[ECMAScript]标注类型不需要检查
-					if (!IsAttribute(type) && !StructuralRecordSupport.IsStructuralRecordType(type) && !InECMAScriptAttribute(type))
+					if (!IsAttribute(type) && !StructuralRecordSupport.IsStructuralRecordType(type) && !IsSourceOrHostType(type))
 					{
 						// 添加构造函数检查
 						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(Format.NameFormat);
@@ -740,7 +765,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						IsWhiteListedMember(invocation.TargetMethod))
 						return;
 
-					if (InECMAScriptAttribute(invocation.TargetMethod.ContainingType))
+					if (IsSourceOrHostType(invocation.TargetMethod.ContainingType))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -788,7 +813,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 枚举字段、特性、白名单内不检查
 					if (operation.Field.ContainingType.TypeKind == TypeKind.Enum ||
 						StructuralRecordSupport.IsStructuralRecordMember(operation.Field) ||
-						InECMAScriptAttribute(operation.Field.ContainingType) ||
+						IsSourceOrHostType(operation.Field.ContainingType) ||
 						IsWhiteListedMember(operation.Field))
 						return;
 
@@ -826,7 +851,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 匿名类型、特性、白名单内不检查
 					if (operation.Property.ContainingType.IsAnonymousType ||
 						StructuralRecordSupport.IsStructuralRecordMember(operation.Property) ||
-						InECMAScriptAttribute(operation.Property.ContainingType) ||
+						IsSourceOrHostType(operation.Property.ContainingType) ||
 						IsWhiteListedProperty(operation))
 						return;
 
@@ -860,7 +885,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					if (IsWhiteListedMember(operation.Method))
 						return;
 
-					if (InECMAScriptAttribute(operation.Method.ContainingType))
+					if (IsSourceOrHostType(operation.Method.ContainingType))
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -1066,7 +1091,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		else if (IsRuntimeMemberClassForNameAnalysis(symbol))
 			CheckRuntimeClassJavaScriptNameScope(ctx.ReportDiagnostic, symbol);
 		else if (StructuralRecordSupport.IsStructuralRecordType(symbol) &&
-			InECMAScriptAttribute(symbol))
+			IsSourceOrHostType(symbol))
 			CheckStructuralRecordJavaScriptNameScope(ctx.ReportDiagnostic, symbol);
 	}
 

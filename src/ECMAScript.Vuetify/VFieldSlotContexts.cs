@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify 文本字段和文本区域装饰插槽共享的上下文。
 /// Context shared by Vuetify text-field and textarea adornment slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFieldSlotContext
 {
@@ -79,7 +78,6 @@ public sealed record VFieldSlotContext
 /// Vuetify 字段标签插槽上下文。
 /// Context exposed by Vuetify field label slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VFieldLabelSlotContext
 {
@@ -130,7 +128,6 @@ public sealed record VFieldLabelSlotContext
 /// Vuetify 输入作用域插槽上下文。
 /// Context exposed by Vuetify input scoped slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public record VInputSlotContext
 {
@@ -205,7 +202,6 @@ public record VInputSlotContext
 /// Vuetify 输入详细信息插槽上下文。
 /// Context exposed by Vuetify input details slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VInputDetailsSlotContext : VInputSlotContext
 {
@@ -215,7 +211,6 @@ public sealed record VInputDetailsSlotContext : VInputSlotContext
 /// 文本字段计数器插槽上下文。
 /// Context exposed by text-field counter slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VCounterSlotContext
 {

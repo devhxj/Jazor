@@ -46,6 +46,8 @@ Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://g
 
 ## Core Model
 
+Ordinary source types participate through the compilation root and its source dependencies without an `[ECMAScript]` permission marker. Classes retain construction and instance behavior; records describe structural objects. Host attributes declare actual JavaScript bindings and special value semantics. See the [type semantics change and migration plan](docs/04-roadmap/ecmascript-type-semantics-plan.md) for the current source candidate.
+
 ```mermaid
 flowchart LR
     subgraph Core["Jazor core platform: C# -> ECMAScript"]

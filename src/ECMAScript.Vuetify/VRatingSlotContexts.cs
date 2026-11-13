@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// VRating 项插槽的上下文数据。
 /// Context exposed by Vuetify VRating item slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VRatingItemSlotContext
 {
@@ -49,7 +48,6 @@ public sealed record VRatingItemSlotContext
 /// VRating 项标签插槽的上下文数据。
 /// Context exposed by Vuetify VRating item-label slots.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VRatingItemLabelSlotContext
 {

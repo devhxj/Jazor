@@ -49,7 +49,6 @@ public readonly union VDateInputDisplayFormatValue(string, VDateInputDisplayForm
 /// Vuetify VDateInput 操作插槽上下文。
 /// Actions slot context exposed by Vuetify VDateInput.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VDateInputActionsSlotContext
 {

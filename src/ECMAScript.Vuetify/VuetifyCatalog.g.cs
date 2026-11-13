@@ -701,7 +701,6 @@ public static class VuetifyLabsComponents
 /// <summary>
 /// Registry of stable Vuetify components.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyComponentRegistry")]
 public sealed record VuetifyComponentRegistry : VueComponentRegistry
 {
@@ -1129,7 +1128,6 @@ public sealed record VuetifyComponentRegistry : VueComponentRegistry
 /// <summary>
 /// Registry of Vuetify labs components.
 /// </summary>
-[ECMAScript]
 [Description("@#VuetifyLabsComponentRegistry")]
 public sealed record VuetifyLabsComponentRegistry : VueComponentRegistry
 {

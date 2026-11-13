@@ -4,7 +4,6 @@ namespace ECMAScript.Vuetify;
 /// Vuetify VVirtualScroll 暴露的作用域默认插槽上下文。
 /// Scoped default slot context exposed by Vuetify VVirtualScroll.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VVirtualScrollSlotContext
 {

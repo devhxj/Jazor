@@ -48,7 +48,6 @@ public enum VIconBtnSizeName
 /// 图标按钮尺寸条目，包含名称和数值。
 /// Icon button size entry containing a name and value pair.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VIconBtnSizeEntry
 {

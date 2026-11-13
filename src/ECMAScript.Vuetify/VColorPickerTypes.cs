@@ -95,7 +95,6 @@ public static class VuetifyColorPickerModesCollectionBuilder
 /// Vuetify RGB 颜色值。
 /// Vuetify RGB color value.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyRgbColor : VueProps
 {
@@ -128,7 +127,6 @@ public sealed record VuetifyRgbColor : VueProps
 /// Vuetify HSV 颜色值。
 /// Vuetify HSV color value.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyHsvColor : VueProps
 {
@@ -161,7 +159,6 @@ public sealed record VuetifyHsvColor : VueProps
 /// Vuetify HSL 颜色值。
 /// Vuetify HSL color value.
 /// </summary>
-[ECMAScript]
 [Description("@#")]
 public sealed record VuetifyHslColor : VueProps
 {
