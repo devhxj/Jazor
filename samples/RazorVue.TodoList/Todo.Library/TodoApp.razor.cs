@@ -1,13 +1,10 @@
-using System.ComponentModel;
 using ECMAScript;
 using Microsoft.AspNetCore.Components;
 using static ECMAScript.Vue;
 
 namespace Todo.Library;
 
-[ECMAScript]
-[Description("@#")]
-public sealed class TodoBrowserService
+public sealed record TodoBrowserService
 {
     public string Label { get; set; } = "missing";
 }
