@@ -4,16 +4,18 @@
 
 ## 2026-11-13
 
-### 未发布 | Unreleased
+### Jazor 1.2.0
 
-#### 新增能力
+中文 | English
+
+#### 新增功能
 
 - 普通源码类型通过编译入口及源码依赖参与转换，无需逐类型添加 `[ECMAScript]`。未标注的辅助类和静态 helper 可生成真实实现，RazorVue direct render 复用相同的符号绑定；前端 Analyzer 覆盖这些辅助类型并保留后端范围隔离。by @devhxj
 
-#### 体验优化与迁移
+#### 体验优化
 
 - 清理纯数据 record、枚举、回调委托和生成模板中的冗余标注；保留环境宿主、外部 ESM、extern 成员及宿主 union 的明确契约。by @devhxj
-- **破坏性变更与迁移**：class 不再因 `[ECMAScript]` 与空名称配置而生成对象字面量。配置对象应由 `class JsOptions` 改为 `record JsOptions`，并保留属性名称配置；`ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 对象同步迁移为 record。普通业务类型移除仅为准入而添加的标注，外部 CLR 调用仍需受支持的实现或映射。本次尚未发布，破坏性契约按 MAJOR 通道交付。by @devhxj
+- **破坏性变更与迁移**：class 不再因 `[ECMAScript]` 与空名称配置而生成对象字面量。配置对象应由 `class JsOptions` 改为 `record JsOptions`，并保留属性名称配置；`ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 对象同步迁移为 record。普通业务类型移除仅为准入而添加的标注，外部 CLR 调用仍需受支持的实现或映射。维护者明确指定本轮以 MINOR 发布，作为版本规则的单次例外；升级前需迁移受影响的 class 声明与继承。by @devhxj
 
 New Features
 
@@ -22,7 +24,7 @@ New Features
 Improvements
 
 - Remove redundant markers from data records, enums, callbacks and generator templates while retaining explicit host and erased-union contracts. by @devhxj
-- **Breaking change and migration**: use `record JsOptions` for plain JavaScript configuration objects. A class with an ambient marker and an empty name no longer erases construction to an object literal. `ErrorOptions`, `PropertyDescriptorRef` and WebIDL callback literal objects now use records. Remove permission-only markers from ordinary business types; unsupported external CLR calls still fail at their use sites. This source candidate is unreleased and requires the MAJOR channel for breaking contracts. by @devhxj
+- **Breaking change and migration**: use `record JsOptions` for plain JavaScript configuration objects. A class with an ambient marker and an empty name no longer erases construction to an object literal. `ErrorOptions`, `PropertyDescriptorRef` and WebIDL callback literal objects now use records. Remove permission-only markers from ordinary business types; unsupported external CLR calls still fail at their use sites. The maintainer explicitly selected the MINOR channel as a one-time versioning exception; migrate affected class declarations and inheritance before upgrading. by @devhxj
 
 ## 2026-11-12
 

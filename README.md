@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.1.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.1.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.2.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.2.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.1.0 is the current release, built on .NET 11 GA. Native union authoring still requires C# preview language mode.
+> Jazor 1.2.0 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
 
 > Jazor 1.1.0 runs tooling and SSR through in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Four-platform CI and Windows SPA/SSR package/browser gates have passed. The maintainer selected 1.1.0 for this infrastructure refactor; review the documented host configuration migration before upgrading. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
 
@@ -46,7 +46,7 @@ Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://g
 
 ## Core Model
 
-Ordinary source types participate through the compilation root and its source dependencies without an `[ECMAScript]` permission marker. Classes retain construction and instance behavior; records describe structural objects. Host attributes declare actual JavaScript bindings and special value semantics. See the [type semantics change and migration plan](docs/04-roadmap/ecmascript-type-semantics-plan.md) for the current source candidate.
+Ordinary source types participate through the compilation root and its source dependencies without an `[ECMAScript]` permission marker. Classes retain construction and instance behavior; records describe structural objects. Host attributes declare actual JavaScript bindings and special value semantics. See the [type semantics change and migration plan](docs/04-roadmap/ecmascript-type-semantics-plan.md) for the 1.2.0 contract.
 
 ```mermaid
 flowchart LR
@@ -114,7 +114,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.1.0
+dotnet add package Jazor --version 1.2.0
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -122,8 +122,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.1.0" />
-  <PackageReference Include="Jazor.Vue" Version="1.1.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.2.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.2.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -205,14 +205,14 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
-### Jazor 1.1.0 · 2026-11-12
+### Jazor 1.2.0 · 2026-11-13
 
-- Run the in-process NodeApi/pnpm toolchain on .NET SDK 11.0.100 with the documented LibNode 20.1800.215 host combination.
-- Install all Jazor/ECMAScript packages at `1.1.0`; C# compiler and component authoring semantics remain unchanged. Review the host configuration migration before upgrading. Native unions continue to require `<LangVersion>preview</LangVersion>`.
-- Adopt pnpm-lock.yaml and direct Vite/SSR API execution; remove old Deno and TaskName settings. Windows hosts use CETCompat=false.
-- Verify the toolchain on Windows, Linux and both macOS architectures, with Windows SPA/SSR package and browser gates.
+- Compile reachable source helpers without per-type `[ECMAScript]` markers; frontend analysis follows those helpers.
+- Keep class construction and instance behavior, and use records for plain JavaScript objects. Migrate affected options classes and inheritance before upgrading.
+- Remove redundant markers from data contracts and generated bindings while retaining explicit host, ESM and erased-union semantics.
+- Install all Jazor/ECMAScript packages at `1.2.0`. The maintainer selected this MINOR release as a one-time versioning exception; the migration remains breaking.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.1.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.2.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

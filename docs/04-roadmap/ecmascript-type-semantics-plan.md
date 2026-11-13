@@ -1,6 +1,6 @@
 # ECMAScript 标注与类型语义调整计划
 
-> 状态：源码实现与切片验收已完成，尚未发布。稳定规则已同步到架构、指南和 Compiler README；已发布的 1.1.0 仍按其 tag 契约使用。
+> 状态：源码实现与切片验收已完成，纳入 1.2.0。稳定规则已同步到架构、指南和 Compiler README；各版本仍按其 tag 契约使用。
 > 主要责任层：`Jazor.Compiler`、`Jazor.Analyzer`、`Jazor.Common`；绑定维护、生成器、RazorVue 与 Emit 按影响范围配合。
 
 本次调整取消 `[ECMAScript]` 的通用编译准入职责：普通 C# 类型无需标注即可在有效编译范围内参与转换；带标注的声明必须具有明确的 JavaScript 宿主含义。同时统一默认对象模型：`class` 保留类的构造与实例语义，`record` 承担结构化对象和对象字面量。清理源码、生成器和示例中的冗余标注是正式交付项。
@@ -169,7 +169,7 @@ dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build -
 
 稳定规则已同步到 [`ImplementationPrinciples.md`](../../src/Jazor.Compiler/ImplementationPrinciples.md)、[编译器架构](../02-architecture/compiler.md)、[类库与产物契约](../02-architecture/library-artifact-contract.md)、[绑定指南](../03-guides/js-resource-binding.md)、Compiler 与测试项目 README，以及 RazorVue 作者指南、sample 和[当前状态](./current-status.md)。公共 API 已从当前程序集生成候选快照并与冻结基线比较；冻结基线与既有已审阅删除记录保持不变，class→record 的语义兼容性按下述规则处理。
 
-取消许可限制属于支持面扩大；class 配置对象改为 record、去除旧对象创建解释可能影响现有消费者。发布时必须按正式版后的兼容规则判断：兼容新增走 MINOR，破坏已发布公共契约走 MAJOR，不能作为纯 PATCH 携带；本计划不预设版本号，也不引入旧行为 fallback。CHANGELOG 必须给出删除冗余标注与 class→record 的具体迁移示例。
+取消许可限制属于支持面扩大；class 配置对象改为 record、去除旧对象创建解释会影响现有消费者。维护者明确指定本轮以 1.2.0 发布，作为 MINOR 通道的单次例外；后续仍遵循兼容新增走 MINOR、破坏已发布契约走 MAJOR 的规则。本轮不引入旧行为 fallback，CHANGELOG 保留删除冗余标注与 class→record 的具体迁移说明；例外依据见[发版规则](../03-guides/release-and-versioning.md#120-类型语义调整例外)。
 
 - [x] 普通类型在已明确的编译范围内无需 `[ECMAScript]` 即可参与转换。
 - [x] 被使用的源码具有真实实现或明确模块/宿主来源，外部 CLR 使用点检查仍有效。

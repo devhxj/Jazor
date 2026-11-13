@@ -1,6 +1,6 @@
 # 1.0 公共 API 冻结审查
 
-> 当前正式版本：[1.1.0（2026-11-12）](https://github.com/devhxj/Jazor/releases/tag/v1.1.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[1.2.0（2026-11-13）](https://github.com/devhxj/Jazor/releases/tag/v1.2.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > preview.9 包含 `ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets`、Pagination 的两个 `EventCallback<Number>`，以及数值转换和直接 union 标量投影。机器 snapshot 按本次预览 API 更新；回调与投影的迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
@@ -76,7 +76,7 @@ preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审�
 
 以上记录 1.0.0 的冻结表面。1.1.0 直接调用 Vite 与 SSR API，移除 Vite/SSR 的 `TaskName`；维护者指定该底层重构使用 MINOR，迁移步骤见 CHANGELOG。已审阅签名由 `public-api-reviewed-removals.snapshot.md` 显式列出，既有稳定 tag 和冻结快照保持不变。
 
-当前未发布的类型语义调整将 `ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 从 class 迁移为 record，并清理许可用途的标注；这是需要 MAJOR 通道评审的公共契约变化。冻结快照继续用于报告差异，不以覆盖旧基线或沿用 1.1.0 的工具链例外放行。迁移路径见[类型语义调整计划](../04-roadmap/ecmascript-type-semantics-plan.md)与 CHANGELOG。
+1.2.0 类型语义调整将 `ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 从 class 迁移为 record，并清理许可用途的标注。维护者明确指定本轮使用 MINOR 通道；该单次例外仍保留破坏性迁移说明与发布门禁，冻结快照继续用于报告差异。迁移路径见[类型语义调整计划](../04-roadmap/ecmascript-type-semantics-plan.md)、[版本规则例外](./release-and-versioning.md#120-类型语义调整例外)与 CHANGELOG。
 
 当前候选的机器签名比较沿用既有已审阅删除记录后通过；该检查没有完整表达 class→record 的继承和对象模型变化，因此仍按上述破坏性迁移处理。
 

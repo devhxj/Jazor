@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前正式版本：[1.1.0（2026-11-12）](https://github.com/devhxj/Jazor/releases/tag/v1.1.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[1.2.0（2026-11-13）](https://github.com/devhxj/Jazor/releases/tag/v1.2.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -31,6 +31,10 @@
 维护者明确指定 NodeApi/pnpm 底层工具链重构以 `1.1.0` 发布，C# 编译语义和组件作者面保持不变。移除 Vite/SSR `TaskName`、旧 Deno 配置和锁文件切换仍须按 CHANGELOG 完成迁移；这是一项明确记录的版本规则例外，不把宿主配置变化描述为完全兼容，也不改变后续 MAJOR 规则。
 
 `public-api-baseline.snapshot.md` 保留 1.0.0 冻结结果；`public-api-reviewed-removals.snapshot.md` 只记录这次已审阅的 TaskName 及访问器签名。候选与 CI 通过显式 `--approved-removals` 参数检查，报告继续列出全部删除，任何未审阅删除仍阻断发布。
+
+### 1.2.0 类型语义调整例外
+
+维护者明确指定本轮 ECMAScript 标注与 class/record 调整以 `1.2.0` 发布。普通源码免许可属于新增能力；去除 class 的隐式对象字面量创建、将 `ErrorOptions`、`PropertyDescriptorRef` 与 WebIDL callback literal 改为 record 仍有破坏性影响，必须按 CHANGELOG 迁移。这是单次 MINOR 通道例外，不改变后续 MAJOR 规则，不覆盖冻结 API 基线，也不跳过发布门禁。
 
 ## 发版节奏
 
