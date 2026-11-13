@@ -70,7 +70,8 @@ internal static class RazorSgDirectRenderMatrixAssertions
         }
 
         if (expected.StartsWith("h(\"", StringComparison.Ordinal) &&
-            emitted.Contains("createElementBlock(" + expected.Substring(2), StringComparison.Ordinal))
+            (emitted.Contains("createElementBlock(" + expected.Substring(2), StringComparison.Ordinal) ||
+             emitted.Contains("createBlock(" + expected.Substring(2), StringComparison.Ordinal)))
         {
             return;
         }

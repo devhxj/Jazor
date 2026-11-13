@@ -267,7 +267,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
             StringComparison.Ordinal);
         StringAssert.Contains(
             observation.ModuleText,
-            "openBlock(), createElementBlock(\"section\", { class: props.Css }, props.Value, 3)",
+            "openBlock(), createBlock(\"section\", { class: props.Css }, props.Value, 3)",
             StringComparison.Ordinal);
         Assert.IsFalse(
             observation.ModuleText.Contains("const __jazor$hoistedProps", StringComparison.Ordinal),

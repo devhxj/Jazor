@@ -6457,8 +6457,14 @@ internal static class RenderEmitter
 
             // Comma expression preserves a single render invocation with no wrapper closure.
             // openBlock/createElementBlock mirrors Vue compiler's block collection protocol.
+            // createElementBlock skips Vue's class/style normalization. Dynamic CSS and splats
+            // need createBlock's normal VNode props path, while retaining block collection/flags.
+            // 数组/对象 class、style 与 splat 必须走 Vue 自身规范化，否则 DOM class 会含逗号。
+            var blockFactory = (patch.Flag & (VuePatchFlags.Class | VuePatchFlags.Style | VuePatchFlags.FullProps)) != 0
+                ? "createBlock"
+                : "createElementBlock";
             return VNodePlan.Block(
-                new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call("createElementBlock", arguments))),
+                new SequenceExpression(NodeList.From<Expression>(Call("openBlock"), Call(blockFactory, arguments))),
                 HasExplicitVNodeKey,
                 CanUseRenderList);
         }

@@ -208,6 +208,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 - 可达的普通源码 helper 无需逐类型添加 `[ECMAScript]`；前端分析同步覆盖这些辅助类型。
 - class 保留构造与实例行为，record 负责普通 JavaScript 对象；升级前迁移受影响的 options class 和继承。
 - 清理纯数据声明与生成绑定中的冗余标注，保留明确宿主、ESM 和 union 擦除语义。
+- 修复原生元素数组／对象 class、style 与属性展开值的挂载和更新行为。
 - 全部 Jazor/ECMAScript 包统一安装 `1.2.0`。维护者指定本次使用 MINOR 通道作为单次例外，破坏性迁移仍须处理。
 
 版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.2.0)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。

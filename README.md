@@ -210,6 +210,7 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 - Compile reachable source helpers without per-type `[ECMAScript]` markers; frontend analysis follows those helpers.
 - Keep class construction and instance behavior, and use records for plain JavaScript objects. Migrate affected options classes and inheritance before upgrading.
 - Remove redundant markers from data contracts and generated bindings while retaining explicit host, ESM and erased-union semantics.
+- Render array/object class and style values correctly on native elements, including updates and attribute splats.
 - Install all Jazor/ECMAScript packages at `1.2.0`. The maintainer selected this MINOR release as a one-time versioning exception; the migration remains breaking.
 
 Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.2.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
