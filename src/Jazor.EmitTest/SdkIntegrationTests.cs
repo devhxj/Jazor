@@ -5616,9 +5616,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalFrameworkPrimitivesReleaseConsumer;
 
-            [ECMAScript]
-            [Description("@#")]
-            public sealed class BrowserProbe
+            public sealed record BrowserProbe
             {
                 public string Label { get; set; } = "unset";
 
@@ -6125,9 +6123,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalComplexLifecycleReleaseConsumer;
 
-            [ECMAScript]
-            [System.ComponentModel.Description("@#")]
-            public sealed class LifecycleProbe
+            public sealed record LifecycleProbe
             {
                 public string FailureLog { get; set; } = "";
 
@@ -6480,9 +6476,7 @@ public sealed class SdkIntegrationTests
 
             namespace ExternalExtendedDomEventsReleaseConsumer;
 
-            [ECMAScript]
-            [Description("@#")]
-            public sealed class BrowserProbe
+            public sealed record BrowserProbe
             {
                 public string PointerStatus { get; set; } = "none";
                 public string WheelStatus { get; set; } = "none";
