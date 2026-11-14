@@ -2030,9 +2030,10 @@ public sealed class EcmaScriptPiniaImportTests
 		StringAssert.Contains(script, "function HandleMutation(mutation, state) {");
 		Assert.IsFalse(script.Contains("HandleMutation.bind", StringComparison.Ordinal), script);
 		Assert.IsFalse(script.Contains("this.HandleMutation", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "store.Count += 1;");
+        StringAssert.Contains(script, "store.Count = store.Count + 1 | 0;");
         StringAssert.Contains(script, "store.$patch({ Count: 5, Status: \"patched\" });");
 		StringAssert.Contains(script, "store.$patch(state => {");
+        StringAssert.Contains(script, "state.Count = state.Count + 2 | 0;");
 		StringAssert.Contains(script, "=== \"patch object\"");
 		StringAssert.Contains(script, "=== \"patch function\"");
 		StringAssert.Contains(script, "let patchMutation = mutation;");
