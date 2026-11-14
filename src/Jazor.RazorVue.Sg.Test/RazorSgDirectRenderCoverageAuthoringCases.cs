@@ -102,7 +102,7 @@ internal static partial class DirectRenderCaseCatalog
             "coverage_emitter_for_loop_multi_initializer_and_updates",
             "for (int index = 0, reverse = Items.Length - 1; index < reverse; index++, reverse--) { builder.AddContent(0, Items[index] + Items[reverse]); }",
             "for (; index <",
-            "reverse--",
+            "reverse = reverse - 1 | 0",
             usesFragment: true,
             usesStaticVNode: false,
             group: DirectRenderCaseGroup.Coverage,

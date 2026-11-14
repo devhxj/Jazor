@@ -71,7 +71,7 @@ public sealed class AstConverterDeclaredNameCollisionTests
         var suffixedAlias = generatedAlias + "$1";
         StringAssert.Contains(script, $"function {generatedAlias}()", StringComparison.Ordinal);
         StringAssert.Contains(script, $"let {suffixedAlias} = 2;", StringComparison.Ordinal);
-        StringAssert.Contains(script, $"return release + {suffixedAlias} +", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return (release + {suffixedAlias} | 0) +", StringComparison.Ordinal);
         StringAssert.Contains(script, "import { release as", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }

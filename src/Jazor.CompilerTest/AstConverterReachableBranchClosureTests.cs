@@ -115,7 +115,7 @@ public sealed class AstConverterReachableBranchClosureTests
         var script = module.ToKnRECMAScript();
         StringAssert.Contains(script, $"function {backingFieldName}()", StringComparison.Ordinal);
         StringAssert.Contains(script, "function get_ReleaseValue()", StringComparison.Ordinal);
-        StringAssert.Contains(script, $"return {backingFieldName}() + get_ReleaseValue();", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return {backingFieldName}() + get_ReleaseValue() | 0;", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
 
@@ -163,7 +163,7 @@ public sealed class AstConverterReachableBranchClosureTests
 
         var script = module.ToKnRECMAScript();
         StringAssert.Contains(script, $"import {{ Make as {aliasBase}2 }} from \"./runtime.js\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, $"return Make() + {aliasBase}2();", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return Make() + {aliasBase}2() | 0;", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
 
@@ -263,7 +263,7 @@ public sealed class AstConverterReachableBranchClosureTests
 
         var script = module.ToKnRECMAScript();
         StringAssert.Contains(script, $"import {{ Make as {aliasBase}1 }} from \"./runtime.js\";", StringComparison.Ordinal);
-        StringAssert.Contains(script, $"return {aliasBase}() + Make() + {aliasBase}1();", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return ({aliasBase}() + Make() | 0) + {aliasBase}1() | 0;", StringComparison.Ordinal);
         _ = new Parser().ParseModule(script);
     }
 

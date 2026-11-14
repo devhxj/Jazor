@@ -6,6 +6,7 @@ using Acornima.Ast;
 using ECMAScript.Contract;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
@@ -576,6 +577,9 @@ public partial class SemanticWalker
 					$"Conversion operator '{operation.OperatorMethod.OriginalDefinition.ToDisplayString(Jazor.Common.Format.NameFormat)}' requires an explicit whitelist/ECMAScript mapping and cannot fall back to raw JavaScript conversion.");
 		}
 
+		if (TryIntegralConversion(operation, expr) is { } integralConversion)
+			return integralConversion;
+
 		// 处理 Number 与 BigInt 之间的显式转换
 		if (operation.Type is not null && operation.Operand.Type is not null)
 		{
@@ -838,7 +842,9 @@ public partial class SemanticWalker
 			operation.OperatorKind == UnaryOperatorKind.Minus)
 		{
 			// 一元运算
-			return new NonUpdateUnaryExpression(CSharpUnaryOperators[operation.OperatorKind], operand);
+			var value = new NonUpdateUnaryExpression(CSharpUnaryOperators[operation.OperatorKind], operand);
+			return operation.OperatorMethod is null && operation.OperatorKind == UnaryOperatorKind.Minus && IntegralWidth(operation.Type).Bits != 0
+				? NormalizeIntegral(value, operation.Type!, operation.IsChecked) : value;
 		}
 		else if (operation.OperatorKind == UnaryOperatorKind.True)
 		{
@@ -897,6 +903,13 @@ public partial class SemanticWalker
 		}
 
 		var @operator = CSharpBinaryOperators[operation.OperatorKind];
+		if (operation.OperatorMethod is null && IntegralWidth(operation.Type).Bits != 0 &&
+			operation.OperatorKind is BinaryOperatorKind.Add or BinaryOperatorKind.Subtract or BinaryOperatorKind.Multiply or BinaryOperatorKind.Divide or BinaryOperatorKind.Remainder)
+		{
+			if (operation.IsLifted)
+				return HandleTransformationFailure<Node>(operation, "Lifted integral arithmetic requires explicit nullable result handling; use an explicit null branch.");
+			return IntegralBinary(operation.OperatorKind, left, right, operation.Type!, operation.IsChecked);
+		}
 
 		// 逻辑运算符 → LogicalExpression
 		if (@operator is Operator.LogicalAnd or Operator.LogicalOr)
@@ -1142,6 +1155,11 @@ public partial class SemanticWalker
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitAwait(IAwaitOperation operation, SenseArgument argument)
 	{
+		if (operation.Syntax is AwaitExpressionSyntax awaitSyntax &&
+			operation.SemanticModel!.GetAwaitExpressionInfo(awaitSyntax).GetAwaiterMethod is { } awaiter &&
+			awaiter.Locations.Any(location => location.IsInSource) && !Util.HasECMAScriptSupportMarker(awaiter.ContainingType))
+			return HandleTransformationFailure<Node>(operation,
+				"Custom C# awaiters require GetAwaiter/IsCompleted/OnCompleted/GetResult lowering. JavaScript await only supports the declared Promise protocol.");
 		var awaitedExpression = Translate<Expression>(operation.Operation, argument);
 		return new AwaitExpression(awaitedExpression);
 	}
@@ -1390,6 +1408,14 @@ public partial class SemanticWalker
 
 		var (@operator, _) = GetCompoundAssignmentOperators(operation.OperatorKind);
 
+		if (operation.OperatorMethod is null && IntegralWidth(operation.Target.Type).Bits != 0 &&
+			operation.OperatorKind is BinaryOperatorKind.Add or BinaryOperatorKind.Subtract or BinaryOperatorKind.Multiply or BinaryOperatorKind.Divide or BinaryOperatorKind.Remainder)
+		{
+			targetInitializations ??= [];
+			left = PrepareRepeatedReadWriteTarget(left, operation, argument, targetInitializations);
+			return WithOrigin(WrapTarget(new AssignmentExpression(Operator.Assignment, left,
+				IntegralBinary(operation.OperatorKind, left, right, operation.Target.Type!, operation.IsChecked))), operation);
+		}
 		return WithOrigin(WrapTarget(new AssignmentExpression(@operator, left, right)), operation);
 	}
 
@@ -1566,6 +1592,8 @@ public partial class SemanticWalker
 
 	internal Expression BuildImplicitMemberFieldDefaultValue(IFieldSymbol field, SenseArgument argument)
 	{
+		if (Host?.RewriteImplicitFieldDefaultValue(field, argument) is { } hostDefault)
+			return hostDefault;
 		// AstConverter only requests defaults for source fields and compiler-generated auto-property
 		// backing fields. The latter is always associated with its source property, so both routes
 		// have a stable syntax reference after the source compilation succeeds.
@@ -1951,6 +1979,25 @@ public partial class SemanticWalker
 			? Operator.Increment
 			: Operator.Decrement;
 		var prefix = !operation.IsPostfix; // 前缀当IsPostfix为false时
+		if (operation.OperatorMethod is null && IntegralWidth(operation.Target.Type).Bits != 0)
+		{
+			targetInitializations ??= [];
+			preparedTarget = PrepareRepeatedReadWriteTarget(preparedTarget, operation, argument, targetInitializations);
+			// For-loop update values are discarded. Avoid an old-value temporary so
+			// product render-loop framing can reuse the compiler's expression directly.
+			if (operation.Parent is IExpressionStatementOperation { Parent: IForLoopOperation loop } statement &&
+				loop.AtLoopBottom.Contains(statement))
+				return WithOrigin(WrapTarget(new AssignmentExpression(Operator.Assignment, preparedTarget,
+					BuildIncrementOrDecrementValue(operation, argument, preparedTarget))), operation);
+			var current = CreatePropertyMutationTemp(operation, argument, "current");
+			var expressions = new List<Expression>
+			{
+				new AssignmentExpression(Operator.Assignment, current, preparedTarget),
+				new AssignmentExpression(Operator.Assignment, preparedTarget, BuildIncrementOrDecrementValue(operation, argument, current))
+			};
+			expressions.Add(operation.IsPostfix ? current : preparedTarget);
+			return WithOrigin(WrapTarget(new SequenceExpression(NodeList.From(expressions))), operation);
+		}
 
 		return WithOrigin(WrapTarget(new UpdateExpression(@operator, preparedTarget, prefix: prefix)), operation);
 	}
@@ -1974,6 +2021,9 @@ public partial class SemanticWalker
 		}
 
 		var (_, binaryOperator) = GetCompoundAssignmentOperators(operation.OperatorKind);
+		if (operation.OperatorMethod is null && IntegralWidth(operation.Target.Type).Bits != 0 &&
+			operation.OperatorKind is BinaryOperatorKind.Add or BinaryOperatorKind.Subtract or BinaryOperatorKind.Multiply or BinaryOperatorKind.Divide or BinaryOperatorKind.Remainder)
+			return IntegralBinary(operation.OperatorKind, left, right, operation.Target.Type!, operation.IsChecked);
 
 		return new NonLogicalBinaryExpression(binaryOperator, left, right);
 	}
@@ -2002,6 +2052,9 @@ public partial class SemanticWalker
 		Expression one = GetMapperType(targetType).Mapper == TypeMapper.BigInt
 			? new BigIntLiteral(System.Numerics.BigInteger.One, "1n")
 			: new NumericLiteral(1, "1");
+		if (operation.OperatorMethod is null && IntegralWidth(targetType).Bits != 0)
+			return IntegralBinary(operation.Kind == OperationKind.Increment ? BinaryOperatorKind.Add : BinaryOperatorKind.Subtract,
+				operand, one, targetType, operation.IsChecked);
 		return new NonLogicalBinaryExpression(
 			operation.Kind == OperationKind.Increment ? Operator.Addition : Operator.Subtraction,
 			operand,

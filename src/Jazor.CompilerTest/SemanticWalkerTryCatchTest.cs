@@ -1300,7 +1300,7 @@ catch (ex) {
 
         AssertScriptEqual(
 @"try {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
     console.log(i);
   }
 } catch (ex) {
@@ -1340,7 +1340,7 @@ catch (ex) {
 
         AssertScriptEqual(
 @"{
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
     try {
       console.log(i);
     } catch (ex) {
@@ -1449,7 +1449,7 @@ catch (ex) {
 @"try {
   let x = 1;
 } finally {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -1761,9 +1761,21 @@ catch (ex) {
 @"{
   let x = 0;
   try {
-    x = 10 / 2;
+    x = (($dividend, $divisor) => ($nonzero => {
+      {
+        if ($nonzero === 0)
+          throw new Error(""DivideByZeroException"");
+        if ($dividend === -2147483648 && $nonzero === -1)
+          throw new Error(""OverflowException"");
+      }
+      return ($integer => {
+        if ($integer < -2147483648 || $integer > 2147483647)
+          throw new Error(""OverflowException"");
+        return $integer;
+      })(Math.trunc($dividend / $divisor) + 0);
+    })($divisor))(10, 2);
   } catch {
-    x = -1;
+    x = -1 | 0;
   }
   return x;
 }", script);
@@ -2127,7 +2139,7 @@ catch (ex) {
   try {
     console.log(""try"");
   } finally {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i = i + 1 | 0) {
       console.log(i);
     }
   }
@@ -2171,7 +2183,7 @@ catch (ex) {
 
         AssertScriptEqual(
 @"{
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i = i + 1 | 0) {
     try {
       if (i === 2)
         continue;
@@ -2216,7 +2228,7 @@ catch (ex) {
 
         AssertScriptEqual(
 @"{
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i = i + 1 | 0) {
     try {
       if (i === 3)
         break;
@@ -2791,7 +2803,7 @@ catch (ex) {
 
         AssertScriptEqual(@"{
   try {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 10; i = i + 1 | 0) {
       console.log(i);
     }
   } catch {

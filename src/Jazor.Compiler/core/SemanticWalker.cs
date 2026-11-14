@@ -1159,6 +1159,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
         if (operation is null)
             return null;
 
+        ValidateRuntimeProtocol(operation);
+
         _recursionDepth++;
         try
         {

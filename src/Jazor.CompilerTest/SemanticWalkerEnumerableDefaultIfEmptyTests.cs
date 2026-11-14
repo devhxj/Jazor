@@ -50,7 +50,7 @@ public sealed class SemanticWalkerEnumerableDefaultIfEmptyTests
         AssertImport(module, "defaultIfEmpty", scenarioId);
         StringAssert.Contains(script, "defaultIfEmpty(numbers, 0)", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "defaultIfEmpty(texts, null)", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "defaultIfEmpty(values, -5)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "defaultIfEmpty(values, -5 | 0)", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "__enumerableDefaultArg0", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("DefaultIfEmpty", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseModule(script);

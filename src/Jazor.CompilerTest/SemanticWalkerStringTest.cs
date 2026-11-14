@@ -344,7 +344,7 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let x = 5;
   let y = 3;
-  let message = `${x} + ${y} = ${x + y}`;
+  let message = `${x} + ${y} = ${x + y | 0}`;
 }", script);
 	}
 
@@ -408,7 +408,7 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let a = 5;
   let b = 3;
-  let message = `Sum: ${a + b}`;
+  let message = `Sum: ${a + b | 0}`;
 }", script);
 	}
 
@@ -657,7 +657,7 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let x = 5;
   let y = 3;
-  let sum = x + y;
+  let sum = x + y | 0;
   let message = `Result: ${x} + ${y} = ${sum}`;
 }", script);
 	}
@@ -759,7 +759,7 @@ public sealed class SemanticWalkerStringTest
   let age = 25;
   let greeting = `Hello, ${name ?? """"}!`;
   let info = `Name: ${name ?? """"}, Age: ${age}`;
-  let nextYear = `Next year: ${age + 1}`;
+  let nextYear = `Next year: ${age + 1 | 0}`;
   console.log(greeting);
   console.log(info);
   console.log(nextYear);
@@ -1052,7 +1052,7 @@ public sealed class SemanticWalkerStringTest
 		Assert.AreEqual(@"{
   let a = 1;
   let b = 2;
-  let result = `Sum: ${a + b}, Product: ${a * b}`;
+  let result = `Sum: ${a + b | 0}, Product: ${Math.imul(a, b) | 0}`;
 }", script);
 	}
 
@@ -1681,7 +1681,7 @@ ${name ?? """"}!`;
 		AssertScriptEqual(@"{
   let text = ""Hello"";
   let first = _5ad63706a889c294(text, 0);
-  let last = _5ad63706a889c294(text, text.length - 1);
+  let last = _5ad63706a889c294(text, text.length - 1 | 0);
 }", script);
 	}
 

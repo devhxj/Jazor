@@ -202,6 +202,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         ValidateModuleExportPolicy();
 
         var members = new List<Statement>();
+        // CLR storage is zeroed before any authored initializer can call back into the
+        // module. Product hosts own their setup/state initialization phases themselves.
+        var defaultStorage = _options.Host is null && EnumerateModuleMembersForConversion()
+            .OfType<IFieldSymbol>().Where(ShouldIncludeModuleMember)
+            .Any(field => GetFieldInitializerSyntax(field) is { } initializer &&
+                initializer.Value is not DefaultExpressionSyntax && !initializer.Value.IsKind(SyntaxKind.DefaultLiteralExpression) &&
+                !GetSemanticModel(initializer).GetConstantValue(initializer.Value).HasValue)
+                ? new List<Statement>() : null;
         var emittedMemberClasses = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
         // Source helpers are local implementations, not additional public module exports.
         // Emit their classes before module initializers can instantiate them.
@@ -229,7 +237,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             switch (member)
             {
                 case IFieldSymbol field:
-                    await ConvertModuleField(members, field, cancellationToken);
+                    await ConvertModuleField(members, field, cancellationToken, defaultStorage);
                     break;
                 case IPropertySymbol:
                     break;                    
@@ -256,6 +264,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             }
         }
 
+        if (defaultStorage is not null)
+            members.InsertRange(0, defaultStorage);
         var statements = NodeList.From(BuildImportDeclarations(members).Concat(members));
         return statements.Count > 0
             ? new Module(statements)
@@ -474,17 +484,28 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     /// <param name="statements"></param>
     /// <param name="symbol"></param>
     /// <returns></returns>
-    private async Task ConvertModuleField(List<Statement> statements, IFieldSymbol symbol, CancellationToken cancellationToken)
+    private async Task ConvertModuleField(List<Statement> statements, IFieldSymbol symbol, CancellationToken cancellationToken, List<Statement>? defaultStorage = null)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var (declaration, localName) = await ConvertVariableField(symbol, cancellationToken);
+        var target = statements;
+        if (defaultStorage is not null && !symbol.IsConst)
+        {
+            var initializer = declaration.Declarations[0].Init;
+            declaration = new VariableDeclaration(VariableDeclarationKind.Let, NodeList.From(
+                new VariableDeclarator(new Identifier(localName), GetMemberFieldDefaultValue(symbol))));
+            target = defaultStorage;
+            if (GetFieldInitializerSyntax(symbol) is not null)
+                statements.Add(new NonSpecialExpressionStatement(new AssignmentExpression(Operator.Assignment,
+                    new Identifier(localName), initializer!)));
+        }
         if (ShouldBePrivate(symbol.DeclaredAccessibility) ||
             !ShouldExportModuleMember(symbol))
-            statements.Add(declaration);
+            target.Add(declaration);
         else if (string.Equals(localName, GetModuleNamedExportName(symbol), System.StringComparison.Ordinal))
         {
-            statements.Add(new ExportNamedDeclaration(
+            target.Add(new ExportNamedDeclaration(
                 declaration,
                 NodeList.From<ExportSpecifier>([]),
                 null,
@@ -492,9 +513,20 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
         else
         {
-            statements.Add(declaration);
-            statements.Add(CreateNamedExport(localName, GetModuleNamedExportName(symbol)));
+            target.Add(declaration);
+            target.Add(CreateNamedExport(localName, GetModuleNamedExportName(symbol)));
         }
+    }
+
+    private static EqualsValueClauseSyntax? GetFieldInitializerSyntax(IFieldSymbol field)
+    {
+        var owner = field.AssociatedSymbol ?? field;
+        return owner.DeclaringSyntaxReferences.Select(reference => reference.GetSyntax()).Select(syntax => syntax switch
+        {
+            VariableDeclaratorSyntax variable => variable.Initializer,
+            PropertyDeclarationSyntax property => property.Initializer,
+            _ => null
+        }).FirstOrDefault(initializer => initializer is not null);
     }
 
     /// <summary>
@@ -507,6 +539,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private async Task ConvertModuleMethod(List<Statement> statements, IMethodSymbol symbol, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        // A product module may explicitly bind interface lifecycle methods to named
+        // host functions. Ordinary class interface dispatch still has no runtime slot.
+        ValidateSourceCallable(symbol, _options.Host is not null &&
+            _options.DeclaredNames?.ContainsKey(symbol.OriginalDefinition) == true);
 
         if (symbol.AssociatedSymbol is IEventSymbol eventSymbol)
             throw new NotSupportedException($"Jazor module class does not support Event:{eventSymbol.Name}.");
@@ -608,7 +645,13 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         {
             // Expression-bodied members are equally guaranteed to have a semantic operation once
             // the owning source tree passed C# compilation.
-            var operation = GetSemanticModel(expressionSyntax).GetOperation(expressionSyntax)!;
+            var model = GetSemanticModel(expressionSyntax);
+            var operation = model.GetOperation(expressionSyntax);
+            // Wrapper syntax may have no direct operation; the arrow owns a bound return
+            // including its implicit conversion (notably Expression<TDelegate> lambdas).
+            if (operation is null || SymbolEqualityComparer.Default.Equals(symbol.ReturnType.OriginalDefinition,
+                    model.Compilation.GetTypeByMetadataName("System.Linq.Expressions.Expression`1")))
+                operation = model.GetOperation(expressionSyntax.Parent!)!;
             functionOperation = operation;
             var walker = CreateSemanticWalker(cancellationToken);
             // Keep the historic expression-root scope key stable. The marker only distinguishes
@@ -729,6 +772,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             name = Util.GetConfigOrSymbolName(symbol);
 
         name = GetModuleDeclaredName(symbol);
+
+        init ??= GetMemberFieldDefaultValue(symbol);
 
         var identifier = new Identifier(name);
         var kind = symbol.IsConst || isPropertyInitOnly
@@ -855,6 +900,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private MethodDefinition ConvertMemberMethod(IMethodSymbol symbol, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        ValidateSourceCallable(symbol);
 
         if (symbol.IsAbstract)
             throw new NotSupportedException($"Jazor member class does not support abstract method {symbol.Name}.");
@@ -989,6 +1036,10 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         bool suppressInitializer = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (!symbol.ExplicitInterfaceImplementations.IsEmpty)
+            throw new SyntaxNodeTransformationException(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PropertyDeclaration,
+                "Explicit interface properties require a bound runtime implementation slot; a qualified C# name is not a JavaScript accessor.", symbol.Locations[0]);
 
         if ((symbol.GetMethod?.IsAbstract ?? false) || (symbol.SetMethod?.IsAbstract ?? false))
             throw new NotSupportedException($"Jazor member class does not support abstract property {symbol.Name}.");
@@ -1484,6 +1535,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                         throw new NotSupportedException($"Jazor member class does not support static constructor {ctor.Name}.");
                     break;
                 case IMethodSymbol accessor when accessor.AssociatedSymbol is IEventSymbol:
+                    break;
+                case IMethodSymbol explicitMethod when !explicitMethod.ExplicitInterfaceImplementations.IsEmpty:
+                    ValidateSourceCallable(explicitMethod);
                     break;
                 case IMethodSymbol func when func.MethodKind == MethodKind.Ordinary:
                     nodes.Add(ConvertMemberMethod(func, cancellationToken));
@@ -2674,6 +2728,16 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         => member.ContainingType is { } containingType &&
            _moduleNamePlan.SourceTypes.Contains(containingType.OriginalDefinition, SymbolEqualityComparer.Default) ||
            (_options.MemberFilter?.Invoke(member) ?? true);
+
+    private static void ValidateSourceCallable(IMethodSymbol symbol, bool hasHostImplementation = false)
+    {
+        if (symbol.ReturnsByRef || symbol.ReturnsByRefReadonly)
+            throw new SyntaxNodeTransformationException(Microsoft.CodeAnalysis.CSharp.SyntaxKind.RefExpression,
+                "Source ref returns require a storage-location protocol; a JavaScript value return cannot preserve the writable reference.", symbol.Locations[0]);
+        if (!hasHostImplementation && !symbol.ExplicitInterfaceImplementations.IsEmpty)
+            throw new SyntaxNodeTransformationException(Microsoft.CodeAnalysis.CSharp.SyntaxKind.MethodDeclaration,
+                "Explicit interface methods require a bound runtime implementation slot. Provide a public implementation until this dispatch protocol is supported.", symbol.Locations[0]);
+    }
 
     private static string GetPreferredModuleFieldDeclaredName(IFieldSymbol symbol)
     {

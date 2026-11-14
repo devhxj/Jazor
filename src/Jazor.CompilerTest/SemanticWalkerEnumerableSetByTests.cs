@@ -61,8 +61,8 @@ public sealed class SemanticWalkerEnumerableSetByTests
         StringAssert.Contains(body, "unionBy(first, second, value =>", StringComparison.Ordinal);
         StringAssert.Contains(body, "exceptBy(", StringComparison.Ordinal);
         StringAssert.Contains(body, "intersectBy(", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return value % 3;", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return value % 2;", StringComparison.Ordinal);
+        StringAssert.Contains(body, ")(value, 3)", StringComparison.Ordinal);
+        StringAssert.Contains(body, ")(value, 2)", StringComparison.Ordinal);
         StringAssert.Contains(body, "Array.from(__src)", StringComparison.Ordinal);
 
         var moduleImports = "import { " + string.Join(", ", importNames) + " } from \"" + imports[0].Key + "\";";

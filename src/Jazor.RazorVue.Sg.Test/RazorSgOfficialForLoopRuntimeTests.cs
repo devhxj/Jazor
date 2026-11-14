@@ -244,7 +244,7 @@ public sealed class RazorSgOfficialForLoopRuntimeTests
             componentMetadataName: "Demo.Pages.ForLoopMultipleUpdatesRuntime");
 
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
-        StringAssert.Contains(observation.ModuleText, "ordinal += 10", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, "ordinal = ordinal + 10 | 0", StringComparison.Ordinal);
 
         await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/for-loop-multiple-updates-runtime.js",

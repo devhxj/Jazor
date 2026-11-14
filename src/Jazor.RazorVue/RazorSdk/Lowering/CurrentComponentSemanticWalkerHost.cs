@@ -25,6 +25,14 @@ namespace Jazor.RazorVue.RazorSdk;
 /// </remarks>
 internal sealed class CurrentComponentSemanticWalkerHost : SemanticWalkerHost
 {
+    // Callback/DOM/markup values have host representations. An erased generic prop's
+    // unused module storage likewise does not require constructing a CLR default(T).
+    public override Expression? RewriteImplicitFieldDefaultValue(IFieldSymbol field, SenseArgument argument)
+        => IsDeclaredOnCurrentComponent(field) &&
+            (IsEventCallbackType(field.Type) || field.Type.ToDisplayString() is "Microsoft.AspNetCore.Components.ElementReference" or "Microsoft.AspNetCore.Components.MarkupString" ||
+             field.Type is ITypeParameterSymbol && field.AssociatedSymbol is IPropertySymbol property && IsParameterProperty(property))
+                ? new NullLiteral("null") : null;
+
     private const string ParameterAttributeMetadataName = "Microsoft.AspNetCore.Components.ParameterAttribute";
     private const string EventCallbackFactoryMetadataName = "Microsoft.AspNetCore.Components.EventCallbackFactory";
     private const string EventCallbackMetadataName = "Microsoft.AspNetCore.Components.EventCallback";

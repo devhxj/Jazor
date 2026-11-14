@@ -576,8 +576,9 @@ public sealed class SemanticWalkerSourceOriginTest
             """
             class TestClass
             {
-                string M(object value)
+                string M(int number)
                 {
+                    object value = number;
                     return value switch
                     {
                         int i when i > 0 => "positive",
@@ -846,8 +847,9 @@ public sealed class SemanticWalkerSourceOriginTest
             {
                 private sealed record Person(string Name, int Age);
 
-                string M(object value, int[] numbers)
+                string M(int number, int[] numbers)
                 {
+                    object value = number;
                     bool isType = value is int;
                     bool isNull = value is null;
                     bool isPattern = value is not (>= 0 and <= 10);
@@ -868,8 +870,9 @@ public sealed class SemanticWalkerSourceOriginTest
                     };
                 }
 
-                string N(object value)
+                string N(int number)
                 {
+                    object value = number;
                     return value switch
                     {
                         Person { Name: "A" } => "A",
@@ -903,7 +906,7 @@ public sealed class SemanticWalkerSourceOriginTest
             """
             class TestClass
             {
-                int M(object value)
+                int M(int value)
                 {
                     switch (value)
                     {

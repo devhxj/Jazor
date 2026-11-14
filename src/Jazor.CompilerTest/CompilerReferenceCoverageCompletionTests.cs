@@ -179,7 +179,7 @@ public sealed class CompilerReferenceCoverageCompletionTests
             }
             """);
 
-        StringAssert.Contains(script, "RuntimeSink.Expand(...new Array(count))", StringComparison.Ordinal);
+        StringAssert.Contains(script, "RuntimeSink.Expand(...new Array(count).fill(0))", StringComparison.Ordinal);
         StringAssert.Contains(script, ".slice(", StringComparison.Ordinal);
         StringAssert.Contains(script, ".length", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify(count, values, start) " + script);

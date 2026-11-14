@@ -560,7 +560,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("new Array(1)", script);
+        AssertScriptEqual("new Array(1).fill(null)", script);
     }
 
     [TestMethod]
@@ -581,7 +581,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("new Array(5)", script);
+        AssertScriptEqual("new Array(5).fill(0)", script);
     }
 
     [TestMethod]
@@ -645,7 +645,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitAnonymousObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("{Sum:x+y,Product:x*y}", script);
+        AssertScriptEqual("{Sum:x+y|0,Product:Math.imul(x,y)|0}", script);
     }
 
     [TestMethod]
@@ -943,7 +943,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitInterpolatedString(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("`Sum: ${x+y}, Product: ${x*y}`", script);
+        AssertScriptEqual("`Sum: ${x+y|0}, Product: ${Math.imul(x,y)|0}`", script);
     }
 
     [TestMethod]
@@ -1025,7 +1025,7 @@ public sealed class SemanticWalkerCreationTest
   let paramObj = new MyClass(42, ""test"");
   let anonymousObj = { Name: ""John"", Age: 30 };
   let array1 = [1, 2, 3];
-  let array2 = new Array(5);
+  let array2 = new Array(5).fill(0);
   let name = ""John"";
   let message = `Hello, ${name ?? """"}!`;
 }", script);
@@ -2138,7 +2138,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitArrayCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("new Array(5).fill().map(()=>new Array(5))", script);
+        AssertScriptEqual("(($dimension0,$dimension1)=>new Array($dimension0).fill().map(()=>new Array($dimension1).fill(0)))(5,5)", script);
     }
 
     [TestMethod]
@@ -2253,7 +2253,7 @@ public sealed class SemanticWalkerCreationTest
         var node = watcher.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("x=>{return x*2}", script);
+        AssertScriptEqual("x=>{return Math.imul(x,2)|0}", script);
     }
 
     [TestMethod]
@@ -2524,7 +2524,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitDelegateCreation(delegateCreationOp, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("x=>{return x*2}", script);
+        AssertScriptEqual("x=>{return Math.imul(x,2)|0}", script);
     }
 
     [TestMethod]
@@ -2593,7 +2593,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToECMAScript();
 
         // 交错数组（数组的数组）应该创建指定大小的数组
-        AssertScriptEqual("new Array(3)", script);
+        AssertScriptEqual("new Array(3).fill(null)", script);
     }
 
     [TestMethod]
@@ -3167,7 +3167,7 @@ public sealed class SemanticWalkerCreationTest
         var node = walker.VisitObjectCreation(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertScriptEqual("new MyClass(x+y,x*y)", script);
+        AssertScriptEqual("new MyClass(x+y|0,Math.imul(x,y)|0)", script);
     }
 
     [TestMethod]
@@ -3264,7 +3264,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let matrix = new Array(2).fill().map(() => new Array(3));
+  let matrix = (($dimension0, $dimension1) => new Array($dimension0).fill().map(() => new Array($dimension1).fill(0)))(2, 3);
 }", script);
     }
 
@@ -3289,7 +3289,7 @@ public sealed class SemanticWalkerCreationTest
         var script = node?.ToKnRECMAScript();
 
         AssertScriptEqual(@"{
-  let jagged = new Array(3);
+  let jagged = new Array(3).fill(null);
 }", script);
     }
 

@@ -32,9 +32,9 @@ public sealed class CompilerAuthoringBehaviorCoverageTests
         var script = VisitBlock(block);
 
         StringAssert.Contains(script, "Count", StringComparison.Ordinal);
-        StringAssert.Contains(script, "+= 2", StringComparison.Ordinal);
-        StringAssert.Contains(script, "++", StringComparison.Ordinal);
-        StringAssert.Contains(script, "--", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.Count = this.Count + 2 | 0", StringComparison.Ordinal);
+        StringAssert.Contains(script, "+ 1 | 0", StringComparison.Ordinal);
+        StringAssert.Contains(script, "- 1 | 0", StringComparison.Ordinal);
     }
 
     private static string VisitBlock(IBlockOperation block)

@@ -41,7 +41,7 @@ public sealed class SemanticWalkerRecordForEachTests
             "for (let { Name: name, Version: { Major: major, Minor: minor } } of releases)",
             StringComparison.Ordinal);
         StringAssert.Contains(script, "console.log(name);", StringComparison.Ordinal);
-        StringAssert.Contains(script, "console.log(major + minor);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "console.log(major + minor | 0);", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }
 

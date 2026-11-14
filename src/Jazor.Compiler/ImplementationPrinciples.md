@@ -193,6 +193,16 @@
 - 当前宿主映射是否存在
 - 当前是否要进入 runtime-sensitive lowering
 
+### 6.4 不得将缺失的运行时协议冒充为已有 JS 行为
+
+内建整数的位宽、checked 溢出、unchecked 回绕、向零截断除法和显式窄化由编译器统一 lowering，不能直接以 JS Number 算术代替。长度分配数组必须初始化元素；多维数组的维度必须单次求值，结构化默认值不得共享。
+
+模式 switch 的 return、await、yield、continue 和带标签的转移不能被额外函数截断；保留原函数控制流，并在执行 case 测试前声明测试需要的变量。额外临时变量是保真手段。
+
+当前不实现 C# 动态绑定器、表达式树对象模型、固定内存/指针、持久 ref 位置、共享位置 ref/out、多播委托、每个闭合泛型的静态存储、接口默认体/静态抽象分派、可变 record struct 隐式复制、可执行 record 构造器以及自定义枚举器/awaiter 协议。这些形式必须带源码位置明确失败。安全的现有 ref/out、JS iterable/Promise 宿主协议继续使用原有 lowering。
+
+数值类型共用 Number/BigInt 不能证明 CLR 装箱类型相同。只有源码和值的静态来源能证明具体 CLR 类型时才折叠 is/as/类型模式；无法证明时拒绝精确判定，不添加隐藏装箱标记或按数值形状猜测类型。
+
 ## 7. 四类 lowering 路线
 
 ### 7.1 值擦除型 lowering

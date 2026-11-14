@@ -240,12 +240,10 @@ public sealed class SemanticWalkerOrdinaryTest
 
     var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
 
-    Assert.AreEqual("""
-      {
-        let result = value + 1;
-        return result;
-      }
-      """.ReplaceLineEndings(), script?.ReplaceLineEndings());
+    Assert.AreEqual(@"{
+  let result = value + 1 | 0;
+  return result;
+}".ReplaceLineEndings(), script?.ReplaceLineEndings());
   }
 
   [TestMethod]
@@ -428,7 +426,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     if (i === 5)
       break;
   }
@@ -465,8 +463,16 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
-    if (i % 2 === 0)
+  for (let i = 0; i < 10; i = i + 1 | 0) {
+    if ((($dividend, $divisor) => ($nonzero => {
+      {
+        if ($nonzero === 0)
+          throw new Error(""DivideByZeroException"");
+        if ($dividend === -2147483648 && $nonzero === -1)
+          throw new Error(""OverflowException"");
+      }
+      return $dividend % $divisor + 0;
+    })($divisor))(i, 2) === 0)
       continue;
   }
 }", script);
@@ -534,7 +540,7 @@ public sealed class SemanticWalkerOrdinaryTest
                     {
                         switch (value)
                         {
-                            case int:
+                            case bool:
                                 break outer;
                         }
                     }
@@ -542,14 +548,8 @@ public sealed class SemanticWalkerOrdinaryTest
             }
             ");
 
-    var exception = Assert.Throws<OperationTransformationException>(
-      () => new SemanticWalker(true).Visit(block, new SenseArgument()));
-
-    Assert.AreEqual(OperationKind.Branch, exception.Kind);
-    StringAssert.Contains(
-      exception.Message,
-      "Labeled break/continue inside pattern-matching switch is not supported",
-      StringComparison.Ordinal);
+    var script = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToKnRECMAScript();
+    StringAssert.Contains(script, "break outer;", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -848,7 +848,11 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let d = 3.14;
-  let i = d;
+  let i = ($finite => {
+    if (!Number.isFinite($finite))
+      throw new Error(""OverflowException"");
+    return $finite;
+  })(Math.trunc(d)) | 0;
 }", script);
 
   }
@@ -986,13 +990,8 @@ public sealed class SemanticWalkerOrdinaryTest
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    AssertScriptEqual(@"{
-  let number = typeof value === ""number"" ? value : null;
-}", script);
+    var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new()));
+    StringAssert.Contains(failure.Message, "CLR boxing identities", StringComparison.Ordinal);
   }
 
   [TestMethod]
@@ -1088,7 +1087,7 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let result = _0aaf1073fc70e405(-5);
+  let result = _0aaf1073fc70e405(-5 | 0);
 }", script);
 
   }
@@ -1198,7 +1197,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 5;
-  let result = -x;
+  let result = -x | 0;
 }", script);
 
   }
@@ -1228,7 +1227,7 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(@"{
   let a = 5;
   let b = 3;
-  let result = a + b;
+  let result = a + b | 0;
 }", script);
 
   }
@@ -1341,7 +1340,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let func = (x, y) => {
-    return x + y;
+    return x + y | 0;
   };
 }", script);
 
@@ -2576,7 +2575,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 5;
-  x += 3;
+  x = x + 3 | 0;
 }", script);
 
   }
@@ -2679,8 +2678,12 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let value = 2147483647;
-  let checkedResult = value + 1;
-  let uncheckedResult = value + 1;
+  let checkedResult = ($integer => {
+    if ($integer < -2147483648 || $integer > 2147483647)
+      throw new Error(""OverflowException"");
+    return $integer;
+  })(value + 1);
+  let uncheckedResult = value + 1 | 0;
 }", script);
   }
 
@@ -2855,8 +2858,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 5;
-  x++;
+  v$0 = x, x = v$0 + 1 | 0, v$0;
 }", script);
   }
 
@@ -2882,8 +2886,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 5;
-  ++x;
+  v$0 = x, x = v$0 + 1 | 0, x;
 }", script);
 
   }
@@ -3119,31 +3124,36 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
+  let v$0, v$1;
   let x = 42;
   let str = ""Hello"";
   let flag = true;
-  let negX = -x;
+  let negX = -x | 0;
   let notFlag = !flag;
-  let sum = x + 10;
+  let sum = x + 10 | 0;
   let result = flag && !notFlag;
   let value = result ? 1 : 0;
   let nullableStr = null;
   let finalStr = nullableStr ?? ""default"";
   let name = null;
   name ??= ""Default"";
-  x += 5;
-  x -= 3;
-  x++;
-  --x;
+  x = x + 5 | 0;
+  x = x - 3 | 0;
+  v$0 = x, x = v$0 + 1 | 0, v$0;
+  v$1 = x, x = v$1 - 1 | 0, x;
   let func = (a, b) => {
-    return a + b;
+    return a + b | 0;
   };
   let array = [1, 2, 3, 4, 5];
   let array2 = [...array, 6, 7];
   let defaultVal = 0;
   let methodName = ""TestMethod"";
   let d = 3.14;
-  let i = d;
+  let i = ($finite => {
+    if (!Number.isFinite($finite))
+      throw new Error(""OverflowException"");
+    return $finite;
+  })(Math.trunc(d)) | 0;
   let testStr = null;
   let length = testStr?.length;
   return;
@@ -3192,7 +3202,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(
 @"{
-  let absValue = _0aaf1073fc70e405(-5);
+  let absValue = _0aaf1073fc70e405(-5 | 0);
   let text = ""Hello World"";
   let upperText = text.toUpperCase();
   function LocalFunction(param) {
@@ -3201,7 +3211,7 @@ public sealed class SemanticWalkerOrdinaryTest
   }
   LocalFunction(42);
   let add = (a, b) => {
-    return a + b;
+    return a + b | 0;
   };
   let result = add(3, 4);
   let sub = text.substring(0, 0 + 5);
@@ -3250,10 +3260,18 @@ public sealed class SemanticWalkerOrdinaryTest
 @"{
   label1: console.log(""Label1"");
   ;
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     if (i === 5)
       break;
-    if (i % 2 === 0)
+    if ((($dividend, $divisor) => ($nonzero => {
+      {
+        if ($nonzero === 0)
+          throw new Error(""DivideByZeroException"");
+        if ($dividend === -2147483648 && $nonzero === -1)
+          throw new Error(""OverflowException"");
+      }
+      return $dividend % $divisor + 0;
+    })($divisor))(i, 2) === 0)
       continue;
   }
   return;
@@ -3331,7 +3349,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 10;
-  x -= 3;
+  x = x - 3 | 0;
 }", script);
   }
 
@@ -3358,7 +3376,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 5;
-  x *= 2;
+  x = Math.imul(x, 2) | 0;
 }", script);
   }
 
@@ -3385,7 +3403,19 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 20;
-  x /= 4;
+  x = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return ($integer => {
+      if ($integer < -2147483648 || $integer > 2147483647)
+        throw new Error(""OverflowException"");
+      return $integer;
+    })(Math.trunc($dividend / $divisor) + 0);
+  })($divisor))(x, 4);
 }", script);
   }
 
@@ -3412,7 +3442,15 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 10;
-  x %= 3;
+  x = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return $dividend % $divisor + 0;
+  })($divisor))(x, 3);
 }", script);
   }
 
@@ -3442,8 +3480,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 5;
-  x--;
+  v$0 = x, x = v$0 - 1 | 0, v$0;
 }", script);
   }
 
@@ -3469,8 +3508,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 5;
-  --x;
+  v$0 = x, x = v$0 - 1 | 0, x;
 }", script);
   }
 
@@ -3680,7 +3720,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let i = 42;
-  let l = BigInt(i);
+  let l = BigInt.asIntN(64, BigInt(i));
 }", script);
   }
 
@@ -3707,7 +3747,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let l = 42n;
-  let i = Number(l);
+  let i = Number(BigInt.asIntN(32, l));
 }", script);
   }
 
@@ -3753,12 +3793,10 @@ public sealed class SemanticWalkerOrdinaryTest
     var node = walker.Visit(block, new());
     var script = node?.ToKnRECMAScript();
 
-    AssertScriptEqual("""
-{
-  let shifted = value.charCodeAt(0) + 32;
+    AssertScriptEqual(@"{
+  let shifted = value.charCodeAt(0) + 32 | 0;
   let lower = String.fromCharCode(shifted);
-}
-""", script);
+}", script);
   }
 
   [TestMethod]
@@ -4000,7 +4038,7 @@ public sealed class SemanticWalkerOrdinaryTest
 @"{
   let a = 10;
   let b = 3;
-  let result = a - b;
+  let result = a - b | 0;
 }".Replace("\r\n", "\n"),
         script?.Replace("\r\n", "\n"));
   }
@@ -4058,7 +4096,7 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(@"{
   let a = 5;
   let b = 3;
-  let result = a * b;
+  let result = Math.imul(a, b) | 0;
 }", script);
   }
 
@@ -4087,7 +4125,19 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(@"{
   let a = 10;
   let b = 2;
-  let result = a / b;
+  let result = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return ($integer => {
+      if ($integer < -2147483648 || $integer > 2147483647)
+        throw new Error(""OverflowException"");
+      return $integer;
+    })(Math.trunc($dividend / $divisor) + 0);
+  })($divisor))(a, b);
 }", script);
   }
 
@@ -4116,7 +4166,15 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(@"{
   let a = 10;
   let b = 3;
-  let result = a % b;
+  let result = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return $dividend % $divisor + 0;
+  })($divisor))(a, b);
 }", script);
   }
 
@@ -4411,7 +4469,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let func = x => {
-    return x * 2;
+    return Math.imul(x, 2) | 0;
   };
 }", script);
   }
@@ -4465,7 +4523,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let func = x => {
-    return x * 2;
+    return Math.imul(x, 2) | 0;
   };
 }", script);
   }
@@ -4523,8 +4581,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 0;
-  x++;
+  v$0 = x, x = v$0 + 1 | 0, v$0;
 }", script);
   }
 
@@ -4759,21 +4818,42 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0, v$1, v$2, v$3, v$4, v$5;
   let a = 10;
   let b = 5;
-  b += 3;
-  b -= 2;
-  b *= 2;
-  b /= 2;
-  b %= 3;
+  b = b + 3 | 0;
+  b = b - 2 | 0;
+  b = Math.imul(b, 2) | 0;
+  b = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return ($integer => {
+      if ($integer < -2147483648 || $integer > 2147483647)
+        throw new Error(""OverflowException"");
+      return $integer;
+    })(Math.trunc($dividend / $divisor) + 0);
+  })($divisor))(b, 2);
+  b = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return $dividend % $divisor + 0;
+  })($divisor))(b, 3);
   let name = null;
   name ??= ""Default"";
-  b++;
-  ++b;
-  b--;
-  --b;
-  let c = b++;
-  let d = ++b;
+  v$0 = b, b = v$0 + 1 | 0, v$0;
+  v$1 = b, b = v$1 + 1 | 0, b;
+  v$2 = b, b = v$2 - 1 | 0, v$2;
+  v$3 = b, b = v$3 - 1 | 0, b;
+  let c = (v$4 = b, b = v$4 + 1 | 0, v$4);
+  let d = (v$5 = b, b = v$5 + 1 | 0, b);
 }", script);
   }
   #endregion
@@ -4808,7 +4888,7 @@ public sealed class SemanticWalkerOrdinaryTest
 @"{
   let x = 10;
   let add = y => {
-    return y + x;
+    return y + x | 0;
   };
   let result = add(5);
 }", script);
@@ -4845,7 +4925,7 @@ public sealed class SemanticWalkerOrdinaryTest
   let a = 1;
   let b = 2;
   let sum = () => {
-    return a + b;
+    return a + b | 0;
   };
   let result = sum();
 }", script);
@@ -4882,11 +4962,11 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(
 @"{
-  let funcs = new Array(3);
-  for (let i = 0; i < 3; i++) {
+  let funcs = new Array(3).fill(null);
+  for (let i = 0; i < 3; i = i + 1 | 0) {
     let value = i;
     funcs[i] = x => {
-      return x + value;
+      return x + value | 0;
     };
   }
   let result = funcs[0](10);
@@ -4924,7 +5004,7 @@ public sealed class SemanticWalkerOrdinaryTest
   let multiplier = 2;
   let createAdder = x => {
     return y => {
-      return x * y + multiplier;
+      return (Math.imul(x, y) | 0) + multiplier | 0;
     };
   };
   let add3 = createAdder(3);
@@ -4959,7 +5039,7 @@ public sealed class SemanticWalkerOrdinaryTest
     Assert.AreEqual(
 @"{
   let add = (a, b) => {
-    return a + b;
+    return a + b | 0;
   };
   let result = add(3, 4);
 }", script);
@@ -4989,7 +5069,15 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let remainder = 10 % 3;
+  let remainder = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return $dividend % $divisor + 0;
+  })($divisor))(10, 3);
 }", script);
   }
 
@@ -5152,8 +5240,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 5;
-  let y = ++x;
+  let y = (v$0 = x, x = v$0 + 1 | 0, x);
 }", script);
   }
 
@@ -5179,8 +5268,9 @@ public sealed class SemanticWalkerOrdinaryTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
+  let v$0;
   let x = 5;
-  let y = x--;
+  let y = (v$0 = x, x = v$0 - 1 | 0, v$0);
 }", script);
   }
 
@@ -5302,7 +5392,15 @@ public sealed class SemanticWalkerOrdinaryTest
 
     Assert.AreEqual(@"{
   let x = 10;
-  x %= 3;
+  x = (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return $dividend % $divisor + 0;
+  })($divisor))(x, 3);
 }", script);
   }
 
@@ -5500,7 +5598,7 @@ public sealed class SemanticWalkerOrdinaryTest
 
     AssertScriptEqual(@"{
   let doubleIt = x => {
-    let doubled = x * 2;
+    let doubled = Math.imul(x, 2) | 0;
     return doubled;
   };
 }", script);

@@ -625,8 +625,9 @@ public sealed class CompilerTraditionalCoverageBehaviorTests
             }
             """;
 
-        var continueFailure = Assert.Throws<OperationTransformationException>(() => VisitBlock(continueSource));
-        StringAssert.Contains(continueFailure.Message, "Continue statements inside pattern-matching switch", StringComparison.Ordinal);
+        var continueScript = VisitBlock(continueSource);
+        StringAssert.Contains(continueScript, "switch (true)", StringComparison.Ordinal);
+        StringAssert.Contains(continueScript, "continue;", StringComparison.Ordinal);
 
         var labeledScript = VisitBlock(labeledSource);
         StringAssert.Contains(labeledScript, "break outer;", StringComparison.Ordinal);
@@ -732,7 +733,7 @@ public sealed class CompilerTraditionalCoverageBehaviorTests
             }
             """);
 
-        StringAssert.Contains(script, "=>", StringComparison.Ordinal);
+        StringAssert.Contains(script, "switch (true)", StringComparison.Ordinal);
         StringAssert.Contains(script, "return 0", StringComparison.Ordinal);
         _ = new Parser().ParseScript("function verify() " + script);
     }

@@ -114,7 +114,7 @@ internal static class IndexingLoweringScenarioCatalog
         Case("array.from-end.compound", "array-from-end-compound-mutation", """
                     int[] values = [1, 2, 3];
                     values[^1] += 4;
-            """, "values.length - 1", "+= 4"),
+            """, "values.length - 1", "values[v$0] = values[v$0] + 4 | 0"),
         Case("array.from-end.side-effecting-receiver", "array-from-end-single-evaluation", """
                     int[] values = [1, 2, 3];
                     Func<int[]> next = () => values;

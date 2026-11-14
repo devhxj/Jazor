@@ -43,10 +43,10 @@ public sealed class RazorSgOfficialCurrentComponentAuthoringTests
         var script = observation.ModuleText;
         StringAssert.Contains(script, "onClick: Refresh", StringComparison.Ordinal);
         StringAssert.Contains(script, "function Refresh()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.RefreshCount++;", StringComparison.Ordinal);
+        StringAssert.Contains(script, " = state.RefreshCount, state.RefreshCount = ", StringComparison.Ordinal);
         StringAssert.Contains(script, "stateHasChanged();", StringComparison.Ordinal);
 
-        var increment = script.IndexOf("state.RefreshCount++;", StringComparison.Ordinal);
+        var increment = script.IndexOf(" = state.RefreshCount, state.RefreshCount = ", StringComparison.Ordinal);
         var invalidate = script.IndexOf("stateHasChanged();", increment, StringComparison.Ordinal);
         Assert.IsTrue(increment < invalidate, script);
 
@@ -95,10 +95,10 @@ public sealed class RazorSgOfficialCurrentComponentAuthoringTests
         StringAssert.Contains(script, "onClick: QueueRefreshAsync", StringComparison.Ordinal);
         StringAssert.Contains(script, "function QueueRefreshAsync()", StringComparison.Ordinal);
         StringAssert.Contains(script, "return invokeAsync(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.RefreshCount++;", StringComparison.Ordinal);
+        StringAssert.Contains(script, " = state.RefreshCount, state.RefreshCount = ", StringComparison.Ordinal);
 
         var dispatch = script.IndexOf("return invokeAsync(() => {", StringComparison.Ordinal);
-        var increment = script.IndexOf("state.RefreshCount++;", dispatch, StringComparison.Ordinal);
+        var increment = script.IndexOf(" = state.RefreshCount, state.RefreshCount = ", dispatch, StringComparison.Ordinal);
         var actionReturn = script.IndexOf("return;", increment, StringComparison.Ordinal);
         Assert.IsTrue(dispatch < increment, script);
         Assert.IsTrue(increment < actionReturn, script);

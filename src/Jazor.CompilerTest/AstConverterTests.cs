@@ -605,7 +605,7 @@ AssertScriptEqual(
 
         // Assert
         Assert.AreEqual(
-@"let _38ee328c86b9b067;
+@"let _38ee328c86b9b067 = 0;
 export function get_Property() {
   return _38ee328c86b9b067;
 }
@@ -702,7 +702,7 @@ Assert.AreEqual(
     this.Field = value;
   }
   Double() {
-    return this.Field * 2;
+    return Math.imul(this.Field, 2) | 0;
   }
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
@@ -1034,7 +1034,7 @@ Assert.AreEqual(
         Assert.IsNotNull(script);
         StringAssert.Contains(script, "export class BaseClass", StringComparison.Ordinal);
         StringAssert.Contains(script, "export class NestedClass extends BaseClass", StringComparison.Ordinal);
-        StringAssert.Contains(script, "super(count + 1);", StringComparison.Ordinal);
+        StringAssert.Contains(script, "super(count + 1 | 0);", StringComparison.Ordinal);
         StringAssert.Contains(script, "this.Title =", StringComparison.Ordinal);
         StringAssert.Contains(script, $"#{countBackingField} = 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, $"#{plainBackingField} = 0;", StringComparison.Ordinal);
@@ -1043,7 +1043,7 @@ Assert.AreEqual(
         StringAssert.Contains(script, "Uninitialized = 0;", StringComparison.Ordinal);
         Assert.IsLessThan(
             script.IndexOf("this.Title =", StringComparison.Ordinal),
-            script.IndexOf("super(count + 1);", StringComparison.Ordinal),
+            script.IndexOf("super(count + 1 | 0);", StringComparison.Ordinal),
             "Derived member initialization must happen after the base constructor call.");
         _ = new Parser().ParseModule(script);
     }
@@ -1234,7 +1234,7 @@ $@"export class NestedClass {{
     this.Value = value;
   }}
   {ctor2}(value, increment) {{
-    this.Value = value + increment;
+    this.Value = value + increment | 0;
   }}
 }}
 ", script);
@@ -1385,7 +1385,7 @@ AssertScriptEqual(
 }
 export class NestedClass extends BaseClass {
   constructor(value) {
-    super(value + 1);
+    super(value + 1 | 0);
   }
 }
 ", script);
@@ -1448,7 +1448,7 @@ export class NestedClass extends BaseClass {{
     }}
     if ($ctor === ""{ctor1}"") {{
       let value = $args[1];
-      super(value + 1);
+      super(value + 1 | 0);
       this.{ctor1}(value);
       return;
     }}
@@ -1456,7 +1456,7 @@ export class NestedClass extends BaseClass {{
   }}
   {ctor0}() {{ }}
   {ctor1}(value) {{
-    this.Field = value * 2;
+    this.Field = Math.imul(value, 2) | 0;
   }}
 }}
 ", script);
@@ -1673,7 +1673,7 @@ export class NestedClass extends BaseClass {
     super();
   }
   Value() {
-    return super.Value() + 1;
+    return super.Value() + 1 | 0;
   }
 }
 ", script);
@@ -1731,7 +1731,7 @@ export class NestedClass extends BaseClass {{
     return super.Value;
   }}
   Write(value) {{
-    super.Value = value + 1;
+    super.Value = value + 1 | 0;
   }}
 }}
 ", script);
@@ -1772,7 +1772,7 @@ export class NestedClass extends BaseClass {{
         AssertScriptEqual(
 @"export class BaseClass {
   Value(value) {
-    return value + 1;
+    return value + 1 | 0;
   }
 }
 export class NestedClass extends BaseClass {
@@ -2280,8 +2280,8 @@ $@"export class Item {{
         StringAssert.Contains(script, "#_value = 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "static #_total = 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "this.#_value = value;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "Counter.#_total += value;", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return this.#_value + Counter.#_total;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "Counter.#_total = Counter.#_total + value | 0;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return this.#_value + Counter.#_total | 0;", StringComparison.Ordinal);
         _ = new Acornima.Parser().ParseModule(script);
     }
 
@@ -2438,7 +2438,7 @@ export class NestedClass {{
         AssertScriptEqual(
 @"export class NestedClass {
   Square(x) {
-    return x * x;
+    return Math.imul(x, x) | 0;
   }
 }
 ", script);
@@ -2783,7 +2783,7 @@ export let Field3 = 3;
         // Assert
         Assert.AreEqual(
 @"export function Add(a, b) {
-  return a + b;
+  return a + b | 0;
 }
 ", script);
 
@@ -2929,7 +2929,7 @@ export function get_ReadOnlyProperty() {
         Assert.AreEqual(
 @"let _field = 10;
 export function get_ComputedProperty() {
-  return _field * 2;
+  return Math.imul(_field, 2) | 0;
 }
 ", script);
 
@@ -2957,21 +2957,21 @@ export function get_ComputedProperty() {
 
         // Assert
         Assert.AreEqual(
-@"let _6f335f402aa64190;
+@"let _6f335f402aa64190 = 0;
 export function get_Prop1() {
   return _6f335f402aa64190;
 }
 export function set_Prop1(value) {
   _6f335f402aa64190 = value;
 }
-let _5bc1888a0261866a;
+let _5bc1888a0261866a = null;
 export function get_Prop2() {
   return _5bc1888a0261866a;
 }
 export function set_Prop2(value) {
   _5bc1888a0261866a = value;
 }
-let _2695ecdb6d62ea86;
+let _2695ecdb6d62ea86 = false;
 export function get_Prop3() {
   return _2695ecdb6d62ea86;
 }
@@ -3142,14 +3142,14 @@ Assert.AreEqual(
 @"export let A = 1;
 export let B = ""456"";
 export const C = 42;
-let _81c4b3c96dabee42;
+let _81c4b3c96dabee42 = 0;
 export function get_P1() {
   return _81c4b3c96dabee42;
 }
 export function set_P1(value) {
   _81c4b3c96dabee42 = value;
 }
-let _f616cc6f43cd37b6;
+let _f616cc6f43cd37b6 = 0;
 export function get_P2() {
   return _f616cc6f43cd37b6;
 }
@@ -3166,14 +3166,14 @@ export function get_P5() {
 export function set_P5(value) {
   B = value;
 }
-let _57556f0916b4200d;
+let _57556f0916b4200d = null;
 export function get_P6() {
   return _57556f0916b4200d;
 }
 export function set_P6(value) {
   _57556f0916b4200d = value;
 }
-let _aa3181446f60dc6e;
+let _aa3181446f60dc6e = null;
 export function get_P7() {
   return _aa3181446f60dc6e;
 }
@@ -3190,7 +3190,7 @@ export function set_P8(value) {
 export function Method_a604b94929b691c0() { }
 export function Method_d389d2b826e42edb(a) { }
 export function Method_04bbed0f7a07bb40(a, b) {
-  return a + b;
+  return a + b | 0;
 }
 ", script);
 
@@ -3275,7 +3275,8 @@ export function Method_04bbed0f7a07bb40(a, b) {
         // Assert
         Assert.AreEqual(
 @"import { createDefault } from ""./clr/System/Collections/Generic/ListT1Module.js"";
-export let Numbers = createDefault();
+export let Numbers = null;
+Numbers = createDefault();
 ", script);
 
     }
@@ -3414,7 +3415,8 @@ export let Numbers = createDefault();
 
         // Assert
         Assert.AreEqual(
-@"export let ArrayField = [1, 2, 3];
+@"export let ArrayField = null;
+ArrayField = [1, 2, 3];
 ", script);
 
     }
@@ -3440,7 +3442,8 @@ export let Numbers = createDefault();
         // Assert
         Assert.AreEqual(
 @"import { createDefault } from ""./clr/System/Collections/Generic/ListT1Module.js"";
-export let ListField = createDefault();
+export let ListField = null;
+ListField = createDefault();
 ", script);
 
     }
@@ -3466,7 +3469,8 @@ export let ListField = createDefault();
         // Assert
         Assert.AreEqual(
 @"import { createDefault } from ""./clr/System/Collections/Generic/DictionaryT2Module.js"";
-export let DictField = createDefault();
+export let DictField = null;
+DictField = createDefault();
 ", script);
 
     }
@@ -3531,7 +3535,7 @@ export function Max(a, b) {
         // todo:扩展函数还需要增加调用测试
         Assert.AreEqual(
 @"export function Double(value) {
-  return value * 2;
+  return Math.imul(value, 2) | 0;
 }
 ", script);
 
@@ -3592,7 +3596,8 @@ export function Max(a, b) {
         // Assert
         Assert.AreEqual(
 @"export function Increment(value) {
-  value++;
+  let __pmut$ff45798b0251e9080d7be480;
+  __pmut$ff45798b0251e9080d7be480 = value, value = __pmut$ff45798b0251e9080d7be480 + 1 | 0, __pmut$ff45798b0251e9080d7be480;
   return [value];
 }
 ".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -3624,8 +3629,9 @@ export function Max(a, b) {
         // Assert
         Assert.AreEqual(
 @"export function IncrementAndReturn(value) {
-  value++;
-  return [value + 10, value];
+  let __pmut$11203e3dce92ceb11abe312c;
+  __pmut$11203e3dce92ceb11abe312c = value, value = __pmut$11203e3dce92ceb11abe312c + 1 | 0, __pmut$11203e3dce92ceb11abe312c;
+  return [value + 10 | 0, value];
 }
 ".ReplaceLineEndings(), script?.ReplaceLineEndings());
 
@@ -3658,9 +3664,10 @@ export function Max(a, b) {
         // Assert
         Assert.AreEqual(
 @"export function Normalize(value) {
+  let __pmut$b4ae0dc97c04c0c9402a8bb4;
   if (value < 0)
     return [value];
-  value++;
+  __pmut$b4ae0dc97c04c0c9402a8bb4 = value, value = __pmut$b4ae0dc97c04c0c9402a8bb4 + 1 | 0, __pmut$b4ae0dc97c04c0c9402a8bb4;
   return [value];
 }
 ".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -3722,7 +3729,7 @@ export function get_Value() {
         Assert.AreEqual(
 @"let _field = 10;
 export function get_Doubled() {
-  return _field * 2;
+  return Math.imul(_field, 2) | 0;
 }
 ", script);
 
@@ -4301,7 +4308,7 @@ export let Value = _9f78f92d0753f4cf();
         // Assert
         Assert.AreEqual(
 @"export function Add(a, b = 10) {
-  return a + b;
+  return a + b | 0;
 }
 ", script);
 
@@ -4390,7 +4397,7 @@ export let Value = _9f78f92d0753f4cf();
 
         AssertScriptEqual(
 @"export function Check(value = 1) {
-  return value;
+  return value | 0;
 }
 ", script);
     }
@@ -4455,7 +4462,7 @@ export function Check(value = _c698784c1b652292(1.5)) {
 export function DoWork_6b6f7943743f9c5d(value) { }
 export function DoWork_53280513e48ce038(value) { }
 export function DoWork_90a9f2ec5e6402a1(a, b) {
-  return a + b;
+  return a + b | 0;
 }
 ", script);
 
@@ -4486,7 +4493,7 @@ export function DoWork_90a9f2ec5e6402a1(a, b) {
         // Assert
         Assert.AreEqual(
 @"export function Square(x) {
-  return x * x;
+  return Math.imul(x, x) | 0;
 }
 ", script);
 
@@ -4515,7 +4522,8 @@ export function DoWork_90a9f2ec5e6402a1(a, b) {
         Assert.AreEqual(
 @"let _counter = 0;
 export function Increment() {
-  _counter++;
+  let __pmut$6deb7aba56a2408497bbf03c;
+  __pmut$6deb7aba56a2408497bbf03c = _counter, _counter = __pmut$6deb7aba56a2408497bbf03c + 1 | 0, __pmut$6deb7aba56a2408497bbf03c;
 }
 ", script);
 
@@ -4614,7 +4622,7 @@ export function Increment() {
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "export let IsOrigin = (() => {");
+        StringAssert.Contains(script, "IsOrigin = (() => {");
         Assert.IsTrue(
             System.Text.RegularExpressions.Regex.IsMatch(script, @"let\s+__tbin\$[0-9a-f]+;"),
             $"Expected tuple-comparison temporary to be declared inside an initializer IIFE.{Environment.NewLine}{script}");
@@ -4647,7 +4655,8 @@ export function Increment() {
         // Assert
         Assert.AreEqual(
 @"import { createDefault } from ""./clr/System/Collections/Generic/DictionaryT2Module.js"";
-export let NestedGenerics = createDefault();
+export let NestedGenerics = null;
+NestedGenerics = createDefault();
 ", script);
 
     }
@@ -4679,7 +4688,7 @@ export let NestedGenerics = createDefault();
 @"export function Fibonacci(n) {
   if (n <= 1)
     return n;
-  return Fibonacci(n - 1) + Fibonacci(n - 2);
+  return Fibonacci(n - 1 | 0) + Fibonacci(n - 2 | 0) | 0;
 }
 ", script);
 
@@ -4743,7 +4752,8 @@ export let NestedGenerics = createDefault();
         // Assert
     Assert.AreEqual(
 @"import { _155212572c9a3297, _fb5a811e7a32a324 } from ""./clr/System/Numerics/BigIntegerModule.js"";
-export let Value = _155212572c9a3297(""33"");
+export let Value = 0n;
+Value = _155212572c9a3297(""33"");
 export function LogValue() {
   return _fb5a811e7a32a324(_155212572c9a3297(""44""));
 }
@@ -4829,7 +4839,7 @@ export function LogValue() {
         StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
         StringAssert.Contains(script, "item > threshold");
-        StringAssert.Contains(script, "item * 2");
+        StringAssert.Contains(script, "Math.imul(item, 2) | 0");
     }
 
     [TestMethod]
@@ -4859,7 +4869,7 @@ export function LogValue() {
         StringAssert.Contains(script, "return Array.from(__src).map(__callback);");
         StringAssert.Contains(script, "return Array.from(__src).filter(__callback);");
         StringAssert.Contains(script, "doubled");
-        StringAssert.Contains(script, "item * 2");
+        StringAssert.Contains(script, "Math.imul(item, 2) | 0");
     }
 
     [TestMethod]
@@ -5344,10 +5354,10 @@ export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + _49bf8261f5cf3a4b(value) + Math.floor(Math.log2(value)) + Math.clz32(value) + (value === 0 ? 32 : 31 - Math.clz32(value & -value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value >= 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (((((((((value > 0 ? 1 : value < 0 ? -1 : 0) + _49bf8261f5cf3a4b(value) | 0) + Math.floor(Math.log2(value)) | 0) + Math.clz32(value) | 0) + (value === 0 ? 32 : 31 - Math.clz32(value & -value)) | 0) + ((value & 1) === 0 ? 1 : 0) | 0) + (value < 0 ? 1 : 0) | 0) + ((value & 1) !== 0 ? 1 : 0) | 0) + (value >= 0 ? 1 : 0) | 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0) | 0;
 }
 export function SignedBounds(left, right) {
-  return Math.max(left, right) - Math.min(left, right);
+  return Math.max(left, right) - Math.min(left, right) | 0;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5438,19 +5448,19 @@ export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + _8ce36b36c4abd947(value) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((((value & 0xFFFF) << (3 & 15) | (value & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16) + ((((value & 0xFFFF) >>> (5 & 15) | (value & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value >= 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (((((((((((value > 0 ? 1 : value < 0 ? -1 : 0) + _8ce36b36c4abd947(value) | 0) + Math.floor(Math.log2(value)) | 0) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) | 0) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) | 0) + ((((value & 0xFFFF) << (3 & 15) | (value & 0xFFFF) >>> 16 - (3 & 15)) & 0xFFFF) << 16 >> 16) | 0) + ((((value & 0xFFFF) >>> (5 & 15) | (value & 0xFFFF) << 16 - (5 & 15)) & 0xFFFF) << 16 >> 16) | 0) + ((value & 1) === 0 ? 1 : 0) | 0) + (value < 0 ? 1 : 0) | 0) + ((value & 1) !== 0 ? 1 : 0) | 0) + (value >= 0 ? 1 : 0) | 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0) | 0;
 }
 export function SignedBounds(left, right) {
-  return Math.max(left, right) - Math.min(left, right);
+  return Math.max(left, right) - Math.min(left, right) | 0;
 }
 export function UnsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function UnsignedMeta(value) {
-  return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) + ((value << (3 & 15) | value >>> 16 - (3 & 15)) & 0xFFFF) + ((value >>> (5 & 15) | value << 16 - (5 & 15)) & 0xFFFF) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return ((((((((value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) | 0) + (value === 0 ? 16 : Math.clz32(value & 0xFFFF) - 16) | 0) + (value === 0 ? 16 : Math.floor(Math.log2(value & 0xFFFF & -(value & 0xFFFF)))) | 0) + ((value << (3 & 15) | value >>> 16 - (3 & 15)) & 0xFFFF) | 0) + ((value >>> (5 & 15) | value << 16 - (5 & 15)) & 0xFFFF) | 0) + ((value & 1) === 0 ? 1 : 0) | 0) + ((value & 1) !== 0 ? 1 : 0) | 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0) | 0;
 }
 export function UnsignedBounds(left, right) {
-  return Math.max(left, right) - Math.min(left, right);
+  return Math.max(left, right) - Math.min(left, right) | 0;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5492,13 +5502,13 @@ export function UnsignedBounds(left, right) {
   return Math.min(Math.max(value, min), max);
 }
 export function UnsignedMeta(value) {
-  return (value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return ((((value === 0 ? 0 : 1) + Math.floor(Math.log2(value)) | 0) + ((value & 1) === 0 ? 1 : 0) | 0) + ((value & 1) !== 0 ? 1 : 0) | 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0) | 0;
 }
 export function UnsignedCounts(value) {
-  return (value === 0 ? 8 : Math.clz32(value & 0xFF) - 24) + ((value & 1) + (value >> 1 & 1) + (value >> 2 & 1) + (value >> 3 & 1) + (value >> 4 & 1) + (value >> 5 & 1) + (value >> 6 & 1) + (value >> 7 & 1)) + (value === 0 ? 8 : Math.floor(Math.log2(value & 0xFF & -(value & 0xFF))));
+  return ((value === 0 ? 8 : Math.clz32(value & 0xFF) - 24) + ((value & 1) + (value >> 1 & 1) + (value >> 2 & 1) + (value >> 3 & 1) + (value >> 4 & 1) + (value >> 5 & 1) + (value >> 6 & 1) + (value >> 7 & 1)) | 0) + (value === 0 ? 8 : Math.floor(Math.log2(value & 0xFF & -(value & 0xFF)))) | 0;
 }
 export function UnsignedBounds(left, right) {
-  return Math.max(left, right) - Math.min(left, right);
+  return Math.max(left, right) - Math.min(left, right) | 0;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5535,7 +5545,7 @@ import { _8a073d758132b5bb } from ""./clr/System/UInt32Module.js"";
 export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
   let ushortPair = _80e78c0aa0b98fef(ushortLeft, ushortRight);
   let uintPair = _8a073d758132b5bb(uintLeft, uintRight);
-  return ushortPair.Quotient + ushortPair.Remainder + uintPair.Quotient + uintPair.Remainder;
+  return ((ushortPair.Quotient + ushortPair.Remainder | 0) + (uintPair.Quotient | 0) | 0) + (uintPair.Remainder | 0) | 0;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5566,7 +5576,7 @@ export function Sum(ushortLeft, ushortRight, uintLeft, uintRight) {
 @"import { _1636c956519f95fa, _b2c1f15fae072110 } from ""./clr/System/Int16Module.js"";
 export function Sum(left, right, value) {
   let pair = _b2c1f15fae072110(left, right);
-  return pair.Quotient + pair.Remainder + _1636c956519f95fa(value);
+  return (pair.Quotient + pair.Remainder | 0) + _1636c956519f95fa(value) | 0;
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5594,7 +5604,7 @@ export function Sum(left, right, value) {
 @"import { _2ea0cab4f3f489d9 } from ""./clr/System/UInt16Module.js"";
 import { _96cd49e102b39e5b } from ""./clr/System/UInt32Module.js"";
 export function Sum(ushortValue, uintValue) {
-  return BigInt(_2ea0cab4f3f489d9(ushortValue)) + BigInt(_96cd49e102b39e5b(uintValue));
+  return BigInt.asUintN(64, BigInt.asUintN(64, BigInt(_2ea0cab4f3f489d9(ushortValue))) + BigInt.asUintN(64, BigInt(_96cd49e102b39e5b(uintValue))));
 }
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -5671,19 +5681,19 @@ export function SignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function SignedMeta(value) {
-  return (value > 0 ? 1 : value < 0 ? -1 : 0) + _f0d5d38874458f27(value) + Math.floor(Math.log2(value)) + ((value & 1) === 0 ? 1 : 0) + (value < 0 ? 1 : 0) + ((value & 1) !== 0 ? 1 : 0) + (value >= 0 ? 1 : 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return (((((((value > 0 ? 1 : value < 0 ? -1 : 0) + _f0d5d38874458f27(value) | 0) + Math.floor(Math.log2(value)) | 0) + ((value & 1) === 0 ? 1 : 0) | 0) + (value < 0 ? 1 : 0) | 0) + ((value & 1) !== 0 ? 1 : 0) | 0) + (value >= 0 ? 1 : 0) | 0) + (value > 0 && (value & value - 1) === 0 ? 1 : 0) | 0;
 }
 export function SignedBounds(left, right) {
-  return Math.max(left, right) - Math.min(left, right);
+  return Math.max(left, right) - Math.min(left, right) | 0;
 }
 export function UnsignedClamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 export function UnsignedMeta(value) {
-  return BigInt(value === 0 ? 0 : 1) + BigInt(Math.floor(Math.log2(value))) + BigInt(Math.clz32(value)) + BigInt(value === 0 ? 32 : 31 - Math.clz32(value >>> 0 & -(value >>> 0))) + BigInt((value << (3 & 31) | value >>> 32 - (3 & 31)) >>> 0) + BigInt((value >>> (5 & 31) | value << 32 - (5 & 31)) >>> 0) + BigInt((value & 1) === 0 ? 1 : 0) + BigInt((value & 1) !== 0 ? 1 : 0) + BigInt(value > 0 && (value & value - 1) === 0 ? 1 : 0);
+  return BigInt.asIntN(64, BigInt.asIntN(64, BigInt.asIntN(64, BigInt.asIntN(64, BigInt.asIntN(64, BigInt.asIntN(64, BigInt.asIntN(64, BigInt.asIntN(64, BigInt(value === 0 ? 0 : 1) + BigInt(Math.floor(Math.log2(value)))) + BigInt(Math.clz32(value))) + BigInt(value === 0 ? 32 : 31 - Math.clz32(value >>> 0 & -(value >>> 0)))) + BigInt((value << (3 & 31) | value >>> 32 - (3 & 31)) >>> 0)) + BigInt((value >>> (5 & 31) | value << 32 - (5 & 31)) >>> 0)) + BigInt((value & 1) === 0 ? 1 : 0)) + BigInt((value & 1) !== 0 ? 1 : 0)) + BigInt(value > 0 && (value & value - 1) === 0 ? 1 : 0));
 }
 export function UnsignedBounds(left, right) {
-  return Math.max(left, right) - Math.min(left, right);
+  return Math.max(left, right) - Math.min(left, right) >>> 0;
 }
 export function UnsignedLongClamp(value, min, max) {
   return value < min ? min : value > max ? max : value;
@@ -6496,7 +6506,7 @@ export function ReadRef() {
         StringAssert.Contains(script, "export function Read()");
         StringAssert.Contains(script, "return Sum(1, 2);");
         StringAssert.Contains(script, "export function Sum(a, b)");
-        StringAssert.Contains(script, "return a + b;");
+        StringAssert.Contains(script, "return a + b | 0;");
     }
 
     [TestMethod]
@@ -8361,7 +8371,8 @@ function OnClick() { }
 
         Assert.AreEqual(
 @"import { h, withDirectives } from ""vue"";
-let Focus = { mounted: MountedDirective };
+let Focus = null;
+Focus = { mounted: MountedDirective };
 export function Render() {
   let directives = [new Array(Focus)];
   let button = h(""button"", ""Save"");
@@ -8420,7 +8431,8 @@ function MountedDirective(element, binding, vnode) {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""Panel"",
   inheritAttrs: false,
   expose: [""focus"", ""reset""],
@@ -8534,7 +8546,8 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""ValidatedLabel"",
   props: { label: {
     type: String,
@@ -8626,7 +8639,8 @@ function ValidateSave(value) {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""PropRegistryPanel"",
   props: { label: { type: String, required: true }, count: [Number, null] },
   render: Render
@@ -8859,7 +8873,8 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""LifecyclePanel"",
   beforeCreate: BeforeCreate,
   created: Created,
@@ -8957,7 +8972,8 @@ function Prefetch() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""ProviderPanel"",
   provide: { theme: ""dark"" },
   inject: [""feature""],
@@ -9023,7 +9039,8 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""ProviderPanel"",
   inject: { theme: ""theme"", label: { from: ""message"", default: ""fallback"" } },
   render: Render
@@ -9182,8 +9199,10 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-let CountKey = Symbol(""count"");
-export let Component = defineComponent({
+let CountKey = null;
+export let Component = null;
+CountKey = Symbol(""count"");
+Component = defineComponent({
   name: ""TypedPanel"",
   provide: BuildProvide(),
   inject: BuildInject(),
@@ -9288,7 +9307,8 @@ function OnTotalChanged(value, oldValue) { }
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""ProviderPanel"",
   provide: BuildProvide,
   render: Render
@@ -9362,8 +9382,10 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-let CountKey = Symbol(""count"");
-export let Component = defineComponent({
+let CountKey = null;
+export let Component = null;
+CountKey = Symbol(""count"");
+Component = defineComponent({
   name: ""ProviderPanel"",
   provide: { [CountKey]: 1 },
   inject: { count: CountKey, optionalCount: { from: CountKey, default: 2 } },
@@ -9431,7 +9453,8 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""ProviderPanel"",
   inject: { label: { from: ""message"", default: BuildDefaultLabel } },
   render: Render
@@ -9511,7 +9534,8 @@ export function Render() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""MixedPanel"",
   extends: { name: ""BasePanel"", created: BaseCreated },
   mixins: [{ name: ""FocusableMixin"", mounted: FocusMounted }],
@@ -9584,7 +9608,8 @@ function FocusMounted() { }
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""DataPanel"",
   data: CreateState,
   render: Render
@@ -9662,7 +9687,8 @@ function CreateState() {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""ComputedPanel"",
   computed: { doubled: ReadDoubled, plusOne: { get: ReadPlusOne, set: WritePlusOne } },
   render: Render
@@ -9797,7 +9823,8 @@ function WritePlusOne(value) { }
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""MethodsPanel"",
   methods: { reset: Reset, focus: Focus },
   render: Render
@@ -9956,7 +9983,8 @@ function Focus() { }
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""WatchPanel"",
   watch: {
     count: OnCountChanged,
@@ -10316,7 +10344,8 @@ function MergeRoute(parent, child) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"" });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
   return h(Child, { title: ""Welcome"" });
 }
@@ -10372,7 +10401,8 @@ export function Render() {
 
         Assert.AreEqual(
 @"import { defineComponent, h, ref } from ""vue"";
-export let Component = defineComponent({ name: ""CounterView"", setup: Setup });
+export let Component = null;
+Component = defineComponent({ name: ""CounterView"", setup: Setup });
 function Setup() {
   let count = ref(1);
   return () => {
@@ -10435,7 +10465,8 @@ function Setup() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""CounterView"",
   props: [""message""],
   emits: [""ready""],
@@ -10501,7 +10532,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""CounterView"",
   emits: [""batch""],
   setup: Setup
@@ -10580,7 +10612,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useModel } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""CounterView"",
   props: [""modelValue""],
   emits: [""update:modelValue""],
@@ -10588,7 +10621,7 @@ export let Component = defineComponent({
 });
 function Setup(props, context) {
   let model = useModel(props, ""modelValue"", { get: Normalize, set: Normalize });
-  model.value = model.value + 1;
+  model.value = model.value + 1 | 0;
   return () => {
     return h(""button"", model.value);
   };
@@ -10659,9 +10692,12 @@ function Normalize(value) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useModel } from ""vue"";
-let CounterModel = ""modelValue"";
-let CounterUpdate = `update:${CounterModel}`;
-export let Component = defineComponent({
+let CounterModel = null;
+let CounterUpdate = null;
+export let Component = null;
+CounterModel = ""modelValue"";
+CounterUpdate = `update:${CounterModel}`;
+Component = defineComponent({
   name: ""CounterView"",
   props: [CounterModel],
   emits: [CounterUpdate],
@@ -10743,9 +10779,12 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useModel } from ""vue"";
-let CountModel = ""count"";
-let CountUpdate = `update:${CountModel}`;
-export let Component = defineComponent({
+let CountModel = null;
+let CountUpdate = null;
+export let Component = null;
+CountModel = ""count"";
+CountUpdate = `update:${CountModel}`;
+Component = defineComponent({
   name: ""CounterView"",
   props: [CountModel],
   emits: [CountUpdate],
@@ -10824,9 +10863,12 @@ function Normalize(value) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useModel } from ""vue"";
-let CountModel = ""count"";
-let CountUpdate = `update:${CountModel}`;
-export let Component = defineComponent({
+let CountModel = null;
+let CountUpdate = null;
+export let Component = null;
+CountModel = ""count"";
+CountUpdate = `update:${CountModel}`;
+Component = defineComponent({
   name: ""CounterView"",
   props: [CountModel],
   emits: [CountUpdate],
@@ -10906,7 +10948,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useModel } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""CounterView"",
   props: [""modelValue""],
   emits: [""update:modelValue""],
@@ -10984,7 +11027,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useAttrs, useSlots } from ""vue"";
-export let Component = defineComponent({ name: ""PanelView"", setup: Setup });
+export let Component = null;
+Component = defineComponent({ name: ""PanelView"", setup: Setup });
 function Setup() {
   let attrs = useAttrs();
   let slots = useSlots();
@@ -11054,7 +11098,8 @@ function Setup() {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useAttrs } from ""vue"";
-export let Component = defineComponent({ name: ""PanelView"", setup: Setup });
+export let Component = null;
+Component = defineComponent({ name: ""PanelView"", setup: Setup });
 function Setup() {
   let attrs = useAttrs();
   return () => {
@@ -11141,7 +11186,8 @@ function Setup() {
 
         Assert.AreEqual(
 @"import { defineComponent, h, useAttrs, useSlots } from ""vue"";
-export let Component = defineComponent({ name: ""PanelView"", setup: Setup });
+export let Component = null;
+Component = defineComponent({ name: ""PanelView"", setup: Setup });
 function Setup() {
   let attrs = useAttrs();
   let slots = useSlots();
@@ -11201,7 +11247,8 @@ function Setup() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""PanelView"",
   props: [""title"", ""active""],
   emits: [""ready""],
@@ -11276,7 +11323,8 @@ function Setup() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({ name: ""CounterView"", setup: Setup });
+export let Component = null;
+Component = defineComponent({ name: ""CounterView"", setup: Setup });
 function Setup(props, context) {
   context.emit(""ready"", props.message);
   return () => {
@@ -11356,7 +11404,8 @@ function Setup(props, context) {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
   return h(Child, { title: ""Welcome"" }, { default: RenderBody });
 }
@@ -11421,7 +11470,8 @@ function SetupChild(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({ name: ""EmptyView"", setup: Setup });
+export let Component = null;
+Component = defineComponent({ name: ""EmptyView"", setup: Setup });
 function Setup(props, context) {
   return () => {
     return h(""div"", ""empty"");
@@ -11487,7 +11537,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   name: ""CounterView"",
   props: [""message""],
   emits: [""ready""],
@@ -11559,7 +11610,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Component = defineComponent({
+export let Component = null;
+Component = defineComponent({
   props: [""message""],
   emits: [""ready""],
   name: ""CounterView"",
@@ -11628,7 +11680,8 @@ function Setup(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"" });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
   return h(Child, null, { default: RenderBody });
 }
@@ -11688,7 +11741,8 @@ function RenderBody() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"" });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
   return h(Child, null, { default: RenderBody });
 }
@@ -11750,7 +11804,8 @@ function RenderBody() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"" });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"" });
 export function Render() {
   return h(Child, null, { Default: RenderBody });
 }
@@ -11818,7 +11873,8 @@ function RenderBody() {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
   return h(Child, { title: ""Welcome"" }, { default: RenderBody });
 }
@@ -11897,7 +11953,8 @@ function SetupChild(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
   return h(Child, { title: ""Welcome"" }, { header: RenderHeader });
 }
@@ -11976,7 +12033,8 @@ function SetupChild(props, context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({
+export let Child = null;
+Child = defineComponent({
   name: ""ChildView"",
   emits: [""ready""],
   setup: SetupChild
@@ -12060,7 +12118,8 @@ function SetupChild(context) {
 
         AssertScriptEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
   return h(Child, null, { default: RenderBody });
 }
@@ -12160,7 +12219,8 @@ function SetupChild(context) {
 
         Assert.AreEqual(
 @"import { defineComponent, h } from ""vue"";
-export let Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
+export let Child = null;
+Child = defineComponent({ name: ""ChildView"", setup: SetupChild });
 export function Render() {
   return h(Child, { title: ""Welcome"" }, { default: RenderBody, header: RenderHeader });
 }
@@ -12805,8 +12865,10 @@ function ApplyFocus(element, binding) {
 
         Assert.AreEqual(
 @"import { h, withDirectives, withModifiers } from ""vue"";
-let Focus = { mounted: MountedDirective };
-let Colorize = { mounted: ApplyColor };
+let Focus = null;
+let Colorize = null;
+Focus = { mounted: MountedDirective };
+Colorize = { mounted: ApplyColor };
 export function Render() {
   let button = h(""button"", { onClick: withModifiers(OnClick, [""stop"", ""prevent""]) }, ""Save"");
   return withDirectives(button, [new Array(Focus), new Array(Colorize, ""red"", ""background"", { important: true })]);
@@ -13794,7 +13856,7 @@ export function Boot() {
   scope.stop();
   let current = getCurrentScope();
   onScopeDispose(Cleanup, true);
-  return writable.value + custom.value + injected + typedInjected + scoped + normalizedGetter;
+  return ((((writable.value + custom.value | 0) + injected | 0) + typedInjected | 0) + scoped | 0) + normalizedGetter | 0;
 }
 function Read() {
   return 1;
@@ -13870,8 +13932,8 @@ function Cleanup() { }
         var script = module?.ToKnRECMAScript();
 
         Assert.AreEqual(
-@"let _input;
-let _output;
+@"let _input = null;
+let _output = null;
 export function RenderPreview() {
   if (_input == null || _output == null)
     return;
@@ -14920,7 +14982,7 @@ export function Create() {
 $@"import {{ Make as {makeId} }} from ""./clr/System/RuntimeModule.js"";
 export function Create() {{
   let Make = 1;
-  return {makeId}() + Make;
+  return {makeId}() + Make | 0;
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -14983,7 +15045,7 @@ export function Create() {{
 $@"import {{ Make }} from ""./clr/System/LeftModule.js"";
 import {{ Make as {rightMakeId} }} from ""./clr/System/RightModule.js"";
 export function Create() {{
-  return Make() + {rightMakeId}();
+  return Make() + {rightMakeId}() | 0;
 }}
 ".ReplaceLineEndings("\n"), script?.ReplaceLineEndings("\n"));
     }
@@ -15063,7 +15125,7 @@ export function Create() {{
 
         var leftLocal = ParseLocalBinding(importLines[0]);
         var rightLocal = ParseLocalBinding(importLines[1]);
-        StringAssert.Contains(script, $"return {rightLocal}() + {leftLocal}();");
+        StringAssert.Contains(script, $"return {rightLocal}() + {leftLocal}() | 0;");
     }
 
     [TestMethod]
@@ -16003,7 +16065,7 @@ export function Create() {{
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script, "let Value = (");
+        StringAssert.Contains(script, "Value = (");
         _ = new Acornima.Parser().ParseModule(script);
     }
 

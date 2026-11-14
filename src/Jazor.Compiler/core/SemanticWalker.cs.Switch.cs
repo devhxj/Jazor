@@ -34,7 +34,7 @@ public partial class SemanticWalker
 	/// }
 	/// 转换结果：
 	/// - 常量 case: 转换为 JavaScript 的 switch 语句
-	/// - 模式 case: 转换为 IIFE + if-else 链
+	/// - 模式 case: 简单路径使用 IIFE；return/await/yield/跨循环转移保留为原函数内 switch
 	/// </summary>
 	/// <param name="operation">当前访问的operation</param>
 	/// <param name="argument">用于存放当前operation内部需要的全局变量定义</param>
@@ -45,9 +45,17 @@ public partial class SemanticWalker
 		var hasPatternCase = operation.Cases
 			.Any(x=>x.Clauses.Any(y=>y.CaseKind == CaseKind.Pattern));
 
-		// 如果包含模式匹配，转换为 IIFE + if-else 链
+		// 模式匹配根据控制流选择结构化 switch 或简单 IIFE。
 		if (hasPatternCase)
+		{
+			// A synthetic function cannot carry return/await/yield/loop transfers across
+			// its boundary. Keep these statements in the authored function's control flow.
+			if (OperationTree.ContainsOperation(operation, static child => child is IReturnOperation or IAwaitOperation ||
+				child is IBranchOperation { BranchKind: BranchKind.Continue } ||
+				child.Syntax is Microsoft.CodeAnalysis.CSharp.Syntax.BreakStatementSyntax { Name: not null }))
+				return BuildStructuredPatternSwitch(operation, argument);
 			return VisitSwitchPatternMatching(operation, argument);
+		}
 
 		// 否则转换为传统的 switch 语句
 		return VisitSwitchTraditional(operation, argument);

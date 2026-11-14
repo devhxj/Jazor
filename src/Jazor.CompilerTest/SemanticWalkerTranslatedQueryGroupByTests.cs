@@ -47,8 +47,8 @@ public sealed class SemanticWalkerTranslatedQueryGroupByTests
         StringAssert.Contains(body, "_e62121525c074f74(");
         StringAssert.Contains(body, "_44a1c9f2c4f246e9(");
         StringAssert.Contains(body, "_1cb3ec9a7fb8aaab(");
-        StringAssert.Contains(body, "return value * 10;");
-        StringAssert.Contains(body, "return value % 2;");
+        StringAssert.Contains(body, "return Math.imul(value, 10) | 0;");
+        StringAssert.Contains(body, ")(value, 2)");
         Assert.IsFalse(body.Contains("TranslatedQuery", StringComparison.Ordinal), body);
 
         var moduleImports = imports

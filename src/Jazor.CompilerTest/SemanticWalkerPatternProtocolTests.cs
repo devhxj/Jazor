@@ -421,7 +421,21 @@ internal static class PatternProtocolCatalog
                         bool matches = value is int { };
                         Consume(matches);
             """,
-            "typeof value === \"number\"")
+            "let matches = true;"),
+        Success(
+            "switch.continue",
+            "switch=pattern;enclosing=loop;branch=continue;result=structured-control-flow",
+            """
+                        while (true)
+                        {
+                            switch ((object)GetNumber())
+                            {
+                                case bool:
+                                    continue;
+                            }
+                        }
+            """,
+            "continue;")
     ];
 
     public static IReadOnlyList<PatternProtocolFailureCase> FailureCases { get; } =
@@ -434,22 +448,7 @@ internal static class PatternProtocolCatalog
                         bool matches = buffer is [1, .. var middle, 4];
                 """,
             "Range-based slice property",
-            "Expose a Slice(int, int) member"),
-        Failure(
-            "switch.continue-iife",
-            "switch=pattern;enclosing=loop;branch=continue;result=rejected",
-            """
-                        while (true)
-                        {
-                            switch ((object)GetNumber())
-                            {
-                                case int:
-                                    continue;
-                            }
-                        }
-            """,
-            "Continue statements inside pattern-matching switch",
-            "IIFE boundary")
+            "Expose a Slice(int, int) member")
     ];
 
     private static PatternProtocolSuccessCase Success(

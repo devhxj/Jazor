@@ -589,7 +589,7 @@ public sealed class SemanticWalkerSwitchTest
     if (typeof v$0 === ""string"" && (s = v$0, true)) {
       return;
     }
-    if (typeof v$0 === ""number"" && (i = v$0, true)) {
+    if (false && (i = v$0, true)) {
       return;
     }
   })();
@@ -624,7 +624,7 @@ public sealed class SemanticWalkerSwitchTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.IsNotNull(script);
-		StringAssert.Contains(script, "(async () => {", StringComparison.Ordinal);
+		StringAssert.Contains(script, "switch (true) {", StringComparison.Ordinal);
 		StringAssert.Contains(script, "await Promise.resolve();", StringComparison.Ordinal);
 	}
 
@@ -1210,7 +1210,7 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
     switch (i) {
       case 0:
         break;
@@ -1398,7 +1398,7 @@ public sealed class SemanticWalkerSwitchTest
       console.log(s.length);
       return;
     }
-    if (typeof v$0 === ""number"" && (i = v$0, true)) {
+    if (false && (i = v$0, true)) {
       console.log(i);
       return;
     }
@@ -1935,7 +1935,7 @@ public sealed class SemanticWalkerSwitchTest
       result = 5;
       break;
     default:
-      result = -1;
+      result = -1 | 0;
       break;
   }
 }", script);
@@ -2147,20 +2147,24 @@ public sealed class SemanticWalkerSwitchTest
 
 		Assert.AreEqual(
 			@"{
-  (() => {
+  {
     let s;
     const v$0 = score;
-    if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 90) {
-      return ""A"";
+    switch (true) {
+      case typeof v$0 === ""number"" && (s = v$0, true) && s >= 90: {
+        return ""A"";
+      }
+      case typeof v$0 === ""number"" && (s = v$0, true) && s >= 80: {
+        return ""B"";
+      }
+      case typeof v$0 === ""number"" && (s = v$0, true) && s >= 70: {
+        return ""C"";
+      }
+      default: {
+        return ""F"";
+      }
     }
-    if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 80) {
-      return ""B"";
-    }
-    if (typeof v$0 === ""number"" && (s = v$0, true) && s >= 70) {
-      return ""C"";
-    }
-    return ""F"";
-  })();
+  }
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -2648,13 +2652,25 @@ public sealed class SemanticWalkerSwitchTest
   return (() => {
     const v$0 = op;
     if (v$0 === ""+"")
-      return a + b;
+      return a + b | 0;
     if (v$0 === ""-"")
-      return a - b;
+      return a - b | 0;
     if (v$0 === ""*"")
-      return a * b;
+      return Math.imul(a, b) | 0;
     if (v$0 === ""/"")
-      return a / b;
+      return (($dividend, $divisor) => ($nonzero => {
+        {
+          if ($nonzero === 0)
+            throw new Error(""DivideByZeroException"");
+          if ($dividend === -2147483648 && $nonzero === -1)
+            throw new Error(""OverflowException"");
+        }
+        return ($integer => {
+          if ($integer < -2147483648 || $integer > 2147483647)
+            throw new Error(""OverflowException"");
+          return $integer;
+        })(Math.trunc($dividend / $divisor) + 0);
+      })($divisor))(a, b);
     return 0;
   })();
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -2697,7 +2713,7 @@ public sealed class SemanticWalkerSwitchTest
     case 1:
       break;
     default:
-      return -1;
+      return -1 | 0;
   }
   return 1;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());

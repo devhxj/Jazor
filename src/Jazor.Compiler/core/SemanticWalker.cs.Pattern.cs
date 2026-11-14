@@ -1198,6 +1198,30 @@ public partial class SemanticWalker
 
 		value = StabilizePatternExpression(operation, value, context, "type", out var initialization);
 
+		var source = ResolveIsTypeSourceOperation(operation);
+		var sourceStaticType = source?.Type ?? (operation as IPatternOperation)?.InputType;
+		if (GetMapperType(typeSymbol).Mapper is TypeMapper.Number or TypeMapper.BigInt &&
+			sourceStaticType is { } sourceType && (sourceType.SpecialType == SpecialType.System_Object ||
+				sourceType.TypeKind is TypeKind.Dynamic or TypeKind.Interface))
+		{
+			if (source is null)
+				return HandleTransformationFailure<Expression>(operation,
+					$"Runtime numeric pattern from '{sourceType}' to '{typeSymbol}' cannot distinguish CLR boxing identities inside a nested pattern. Use a statically typed member.");
+			var resolved = ResolveBoxedNumericSource(source, operation);
+			if (resolved.Type is { IsValueType: true } concrete && !IsNullableType(concrete))
+			{
+				// Boxing a non-nullable value keeps its statically known CLR type even
+				// when the value comes from a call rather than a constant initializer.
+				var matches = SymbolEqualityComparer.Default.Equals(concrete, typeSymbol);
+				return PrependEvaluation(initialization, new BooleanLiteral(matches, matches ? "true" : "false"));
+			}
+			if (TryResolveDeterministicRuntimeValue(resolved, out var runtimeType, out _))
+				return PrependEvaluation(initialization, new BooleanLiteral(SymbolEqualityComparer.Default.Equals(runtimeType, typeSymbol),
+					SymbolEqualityComparer.Default.Equals(runtimeType, typeSymbol) ? "true" : "false"));
+			return HandleTransformationFailure<Expression>(operation,
+				$"Runtime numeric type test from '{sourceType}' to '{typeSymbol}' cannot distinguish CLR boxing identities on a shared JavaScript scalar carrier. Use a statically typed value.");
+		}
+
 		Expression? result;
 		if (typeSymbol.IsTupleType || typeSymbol.IsAnonymousType)
 			result = new LogicalExpression(
@@ -1280,6 +1304,38 @@ public partial class SemanticWalker
 		static NonLogicalBinaryExpression InstanceOfExpr(Expression target, Expression expr)
 		{
 			return new NonLogicalBinaryExpression(Operator.InstanceOf, target, expr);
+		}
+	}
+
+	private IOperation ResolveBoxedNumericSource(IOperation source, IOperation useSite)
+	{
+		var current = source;
+		while (true)
+		{
+			// Unwrap only reference/boxing wrappers. A numeric conversion changes the
+			// boxed CLR identity even when both sides use the same JS scalar carrier.
+			if (current is IConversionOperation { OperatorMethod: null } conversion &&
+				(conversion.Type!.IsReferenceType || conversion.Type.TypeKind == TypeKind.Dynamic))
+			{
+				current = conversion.Operand;
+				continue;
+			}
+			// Valid C# local initializers without reassignment form an acyclic graph
+			// under definite assignment; avoid a speculative provenance/dataflow walk.
+			if (current is ILocalReferenceOperation local &&
+				TryResolveSingleAssignmentLocalInitializer(local, useSite, out var initializer))
+			{
+				var root = useSite;
+				while (root.Parent is not null)
+					root = root.Parent;
+				// A later lexical write can run before this use on a subsequent loop
+				// iteration. Only immutable local provenance can prove boxing identity.
+				if (root.Descendants().Any(operation => WritesToLocal(operation, local.Local)))
+					return current;
+				current = initializer;
+				continue;
+			}
+			return current;
 		}
 	}
 
@@ -1594,8 +1650,13 @@ public partial class SemanticWalker
 	private static bool WritesToLocal(IOperation operation, ILocalSymbol local)
 	{
 		static bool IsSameLocal(IOperation? target, ILocalSymbol localSymbol)
-			=> target is ILocalReferenceOperation localReference &&
-			   SymbolEqualityComparer.Default.Equals(localReference.Local, localSymbol);
+			=> target switch
+			{
+				ILocalReferenceOperation localReference => SymbolEqualityComparer.Default.Equals(localReference.Local, localSymbol),
+				ITupleOperation tuple => tuple.Elements.Any(element => IsSameLocal(element, localSymbol)),
+				IDeclarationExpressionOperation declaration => IsSameLocal(declaration.Expression, localSymbol),
+				_ => false
+			};
 
 		return operation switch
 		{
@@ -1786,9 +1847,44 @@ public partial class SemanticWalker
 	///         Console.WriteLine("Default");
 	///         break;
 	/// }
-	/// 转换结果：IIFE + if-else 链
+	/// 跨循环/函数控制流使用原函数内 switch；简单路径保留 IIFE + if-else 链。
 	/// 注意：不支持 goto 语句，如需共享逻辑请提取为方法
 	/// </summary>
+	private NestedBlockStatement BuildStructuredPatternSwitch(ISwitchOperation operation, SenseArgument argument)
+	{
+		var context = EnsureScopeContext(operation, argument).EnterScope(operation, ScopeSite.NestedBlock());
+		var input = new Identifier(AllocateUniqueName(operation.Value, context, LoweringSite.SwitchPatternInput()));
+		var declaration = new VariableDeclaration(VariableDeclarationKind.Const,
+			NodeList.From(new VariableDeclarator(input, Translate<Expression>(operation.Value, context))));
+		var cases = new List<SwitchCase>();
+		foreach (var section in operation.Cases)
+		{
+			var sectionContext = context.EnterScope(section, ScopeSite.SwitchCaseBody()).WithPatternInput(input);
+			var tests = new List<Expression?>();
+			foreach (var clause in section.Clauses)
+			{
+				if (clause.CaseKind == CaseKind.Default)
+					tests.Add(null);
+				else
+				{
+					var test = Translate<Expression>(clause, sectionContext);
+					tests.Add(clause.CaseKind == CaseKind.SingleValue
+						? new NonLogicalBinaryExpression(Operator.StrictEquality, input, test) : test);
+				}
+			}
+			// Case tests execute before the case block is entered. Their bindings and
+			// cached property reads must therefore live in the enclosing switch scope.
+			foreach (var temporary in sectionContext.FlushVarDeclarator())
+				context.AddVarDeclarator(temporary, _recursionDepth);
+			var body = new NestedBlockStatement(NodeList.From(MaterializeScopedStatements(sectionContext,
+				TranslateOperationsToStatements(section.Body, sectionContext))));
+			for (var i = 0; i < tests.Count; i++)
+				cases.Add(new SwitchCase(tests[i], i == tests.Count - 1 ? NodeList.From<Statement>(body) : NodeList.Empty<Statement>()));
+		}
+		return new NestedBlockStatement(NodeList.From(MaterializeScopedStatements(context,
+			new Statement[] { declaration, new SwitchStatement(new BooleanLiteral(true, "true"), NodeList.From(cases)) })));
+	}
+
 	private CallExpression VisitSwitchPatternMatching(ISwitchOperation operation, SenseArgument argument)
 	{
 		var discriminant = Translate<Expression>(operation.Value, argument);
@@ -1871,27 +1967,12 @@ public partial class SemanticWalker
 		for (var index = 0; index < operations.Count; index++)
 		{
 			var operation = operations[index];
-			if (operation is IBranchOperation branchOperation)
+			// VisitSwitch routes cross-loop transfers to structured lowering. The only
+			// switch-local transfer this IIFE path rewrites is an ordinary break.
+			if (operation is IBranchOperation { BranchKind: BranchKind.Break })
 			{
-				// Pattern switches lower through an IIFE, where an unlabeled `return` represents only
-				// an ordinary switch break. A labeled branch cannot cross that function boundary.
-				if (branchOperation.Syntax is
-					BreakStatementSyntax { Name: not null } or
-					ContinueStatementSyntax { Name: not null })
-				{
-					HandleTransformationFailure<Node>(branchOperation, "Labeled break/continue inside pattern-matching switch is not supported (IIFE boundary).");
-				}
-
-				switch (branchOperation.BranchKind)
-				{
-					case BranchKind.Break:
-						pendingStatements.Add(new ReturnStatement(null));
-						continue;
-
-					case BranchKind.Continue:
-						HandleTransformationFailure<Node>(branchOperation, "Continue statements inside pattern-matching switch are not supported (IIFE boundary).");
-						continue;
-				}
+				pendingStatements.Add(new ReturnStatement(null));
+				continue;
 			}
 
 			pendingStatements.Add(Translate<Statement>(operation, context));

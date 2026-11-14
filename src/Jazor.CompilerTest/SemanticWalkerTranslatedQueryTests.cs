@@ -36,7 +36,7 @@ public sealed class SemanticWalkerTranslatedQueryTests
 		Assert.IsNotNull(body);
 		Assert.IsEmpty(argument.FlushImportSpecifiers(), body);
 		Assert.IsFalse(body.Contains("<>h__TransparentIdentifier", StringComparison.Ordinal), body);
-		StringAssert.Contains(body, "value * 2", StringComparison.Ordinal);
+		StringAssert.Contains(body, "Math.imul(value, 2) | 0", StringComparison.Ordinal);
 		StringAssert.Contains(body, "doubled > 3", StringComparison.Ordinal);
 		StringAssert.Contains(body, "doubled + 1", StringComparison.Ordinal);
 		Assert.IsFalse(body.Contains("TranslatedQuery", StringComparison.Ordinal), body);
@@ -122,8 +122,8 @@ public sealed class SemanticWalkerTranslatedQueryTests
         StringAssert.Contains(body, "return Array.from(__src).map(__callback);");
         StringAssert.Contains(body, "return Array.from(__src);");
         StringAssert.Contains(body, "value =>");
-        StringAssert.Contains(body, "value % 2 === 0");
-        StringAssert.Contains(body, "value * 3");
+        StringAssert.Contains(body, ")(value, 2) === 0");
+        StringAssert.Contains(body, "Math.imul(value, 3) | 0");
         Assert.IsFalse(body.Contains("TranslatedQuery", StringComparison.Ordinal), body);
 
         _ = new Parser().ParseModule(module);

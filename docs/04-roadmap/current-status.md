@@ -4,6 +4,8 @@
 
 > 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
 
+当前源码已修复语法审计中的 [35 个 bug](./compiler-syntax-bug-fixes.md)：整数语义、默认值和模式 switch 控制流修正为可观察行为一致；未实现的运行时协议在源码使用点明确诊断。这些改动尚未发布，不属于 1.2.0 的已交付能力。
+
 1.1.0 工具链已切换为进程内 NodeApi + LibNode + pnpm API。Release 主测试、默认 Debug 覆盖率、完整 48 项 Emit 消费者、Windows NuGet SPA/SSR 浏览器发布和[四平台组合 CI](https://github.com/devhxj/Jazor/actions/runs/43030143205)已通过。迁移契约和限制见[迁移方案](./nodejs-pnpm-migration-plan.md)。维护者指定该底层重构以 1.1.0 发布，宿主配置迁移见 CHANGELOG；平台声明只覆盖实际证据，不由包内 RID 资产推断支持。
 
 1.2.0 完成[ECMAScript 标注与类型语义调整](./ecmascript-type-semantics-plan.md)：普通源码辅助类型沿编译根的依赖闭包生成实现，无需 `[ECMAScript]` 许可；class 保留构造和实例行为，record 承担对象字面量。Analyzer 覆盖前端辅助类型并保持后端范围隔离，纯数据声明和生成模板的冗余标注已清理。完整构建、主线测试、覆盖率、生成契约、本地 NuGet 与真实 Chrome 消费者通过；维护者指定本轮使用 MINOR 通道，class→record 的破坏性影响与版本例外见 CHANGELOG。

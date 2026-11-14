@@ -14,12 +14,16 @@
 ## 稳定边界
 
 - 普通源码类型无需 `[ECMAScript]` 许可；`SourceTypeClosure` 收集入口可达的普通辅助类型，`AstConverter` 发射实现并提供共享的 `DeclaredNames`。宿主表达式通过 `SourceDependencyFilter` 声明依赖范围，可与普通成员发射范围分开。
-- class 保留类的默认构造与实例语义，record / record struct 创建生成结构化对象。命名配置不会把 class 转换成对象字面量；配置对象应声明为 record。
+- class 保留类的默认构造与实例语义，record / readonly record struct 创建生成结构化对象。可变 record struct 的隐式复制和 record 的可执行自定义构造协议暂不支持，并在使用点明确拒绝。命名配置不会把 class 转换成对象字面量；配置对象应声明为 record。
 - 目标是保持使用点可观察行为和确定性输出，不是复刻完整 CLR runtime identity。
 - 支持范围由已绑定的 Roslyn 语义、白名单映射和测试共同定义；不支持的运行时敏感类型或成员必须显式失败。
 - `Jazor.Analyzer` 可以在 erased positions 提前诊断，`SemanticWalker` 仍在真正 lowering 处做最终裁定。
 - interface 只作为编译期契约，不发射 runtime declaration；enum、tuple、record、`ref/out` 等按照各自已实现的擦除或协议语义处理。
 - temp 名、import alias、helper 名、声明排序和 source-origin 锚点都是长期输出契约。
+- 内建整数算术遵守声明位宽：除法向零截断，零除和有符号除法溢出抛错，`checked` 检查范围，`unchecked` 回绕；显式整数转换、复合赋值和更新复用同一数值规则。浮点到整数先截断，非有限值转换显式抛错；这不扩展 decimal、Int128 或完整 CLR 异常类型体系。
+- 长度分配数组和未初始化模块字段生成类型对应默认值；多维数组的维度只求值一次，结构化元素默认值独立创建。普通模块先为存储赋默认值，再执行会读取模块状态的非恒定初始化表达式。
+- 含 `return`、`await`、`yield` 或跨循环转移的模式 switch 保留原函数控制流；case 测试用到的绑定先在 switch 外层作用域声明。
+- `dynamic` 运算/转换、表达式树、指针/fixed、持久 ref 别名/ref 返回、不能证明位置不同的多 ref/out 调用、多播委托、泛型类静态存储、静态抽象/默认接口协议、自定义枚举器和 awaiter 不会静默降为不同的 JS 行为。数值装箱类型判定仅在 CLR 类型可证明时折叠，否则明确拒绝。
 
 ## 扩展位置
 

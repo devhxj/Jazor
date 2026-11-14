@@ -483,7 +483,7 @@ internal static class UsingLifetimeScenarioCatalog
                 {
                     switch (value)
                     {
-                        case int:
+                        case bool:
                         {
                             using var resource = new Resource();
                             After();

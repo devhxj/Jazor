@@ -46,6 +46,12 @@ public partial class SemanticWalker
 	/// </summary>
 	public Expression BuildForEachLoopCollection(IForEachLoopOperation operation, SenseArgument argument)
 	{
+		var collectionType = UnwrapImplicitConversions(operation.Collection).Type;
+		if (collectionType is INamedTypeSymbol { TypeKind: TypeKind.Class or TypeKind.Struct } sourceType &&
+			sourceType.Locations.Any(location => location.IsInSource) &&
+			!Util.HasECMAScriptSupportMarker(sourceType))
+			return HandleTransformationFailure<Expression>(operation,
+				"Source enumerator patterns require GetEnumerator/MoveNext/Current (or their async counterparts) and disposal lowering. A source collection is not automatically a JavaScript iterable.");
 		var collection = Translate<Expression>(operation.Collection, argument);
 		if (operation.Collection.Type is not INamedTypeSymbol
 			{ SpecialType: SpecialType.System_String } stringType)

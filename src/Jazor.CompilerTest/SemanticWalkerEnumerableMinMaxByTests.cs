@@ -56,7 +56,7 @@ public sealed class SemanticWalkerEnumerableMinMaxByTests
         CollectionAssert.AreEquivalent(new[] { "minBy", "maxBy" }, importNames);
         StringAssert.Contains(body, "minBy(releaseIds, releaseId => {", StringComparison.Ordinal);
         StringAssert.Contains(body, "maxBy(releaseIds, releaseId => {", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return releaseId % 10;", StringComparison.Ordinal);
+        StringAssert.Contains(body, ")(releaseId, 10)", StringComparison.Ordinal);
 
         var moduleImports = "import { " + string.Join(", ", importNames) + " } from \"" + imports[0].Key + "\";";
         _ = new Parser().ParseModule(moduleImports + "\nfunction verify() " + body);

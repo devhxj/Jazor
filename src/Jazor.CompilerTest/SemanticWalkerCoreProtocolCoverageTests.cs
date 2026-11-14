@@ -285,7 +285,7 @@ public sealed class SemanticWalkerCoreProtocolCoverageTests
             }
             """);
 
-        foreach (var @operator in new[] { "+=", "-=", "*=", "/=", "%=", "&=", "|=", "^=", "<<=", ">>=", ">>>=" })
+        foreach (var @operator in new[] { "total = total + 3 | 0", "total = total - 2 | 0", "Math.imul(total, 4)", "Math.trunc($dividend / $divisor)", "$dividend % $divisor", "&=", "|=", "^=", "<<=", ">>=", ">>>=" })
             StringAssert.Contains(script, @operator, StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }

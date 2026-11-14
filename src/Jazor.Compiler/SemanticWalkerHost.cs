@@ -18,6 +18,10 @@ namespace Jazor.Compiler;
 /// </remarks>
 public abstract class SemanticWalkerHost
 {
+    /// <summary>Projects an implicit field default for a host-owned value representation.</summary>
+    public virtual Expression? RewriteImplicitFieldDefaultValue(IFieldSymbol field, SenseArgument argument)
+        => null;
+
     public virtual Expression? RewriteConversionPreorder(IConversionOperation operation, SenseArgument argument)
         => null;
 

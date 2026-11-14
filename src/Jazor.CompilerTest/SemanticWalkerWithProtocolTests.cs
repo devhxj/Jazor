@@ -38,6 +38,12 @@ public sealed class SemanticWalkerWithProtocolTests
     public void Visit_WithProtocol_UsesBoundMembersAndPreservesEvaluationContract(WithProtocolCase testCase)
     {
         var operation = Operations.Value[testCase.Id];
+        if (testCase.Id == "with-protocol.record-struct.field")
+        {
+            var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(operation, new SenseArgument()));
+            StringAssert.Contains(failure.Message, "Mutable record structs", StringComparison.Ordinal);
+            return;
+        }
         var first = new SemanticWalker(true).VisitWith(operation, new SenseArgument())?.ToKnRECMAScript();
         var second = new SemanticWalker(true).VisitWith(operation, new SenseArgument())?.ToKnRECMAScript();
 

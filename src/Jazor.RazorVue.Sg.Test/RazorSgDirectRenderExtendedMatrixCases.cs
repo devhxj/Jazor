@@ -523,7 +523,7 @@ internal static partial class DirectRenderCaseCatalog
             new("text", "Text", "props.Text", "[Parameter] public string Text { get; set; } = \"\";"),
             new("concat", "\"prefix-\" + Text", "\"prefix-\" + props.Text", "[Parameter] public string Text { get; set; } = \"\";"),
             new("count", "Count", "props.Count", "[Parameter] public int Count { get; set; }"),
-            new("arithmetic", "Count * 3 + 1", "props.Count * 3 + 1", "[Parameter] public int Count { get; set; }"),
+            new("arithmetic", "Count * 3 + 1", "(Math.imul(props.Count, 3) | 0) + 1 | 0", "[Parameter] public int Count { get; set; }"),
             new("conditional", "Visible ? \"shown\" : \"hidden\"", "props.Visible ? \"shown\" : \"hidden\"", "[Parameter] public bool Visible { get; set; }"),
             new("negated", "!Visible", "!props.Visible", "[Parameter] public bool Visible { get; set; }"),
             new("length", "Items.Length", "props.Items.length", "[Parameter] public string[] Items { get; set; } = [];"),

@@ -4073,7 +4073,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "scope.Dispose();", StringComparison.Ordinal);
         Assert.IsFalse(script.Contains("scope.disposeAsync();", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function Dispose()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "state.disposeCount++;", StringComparison.Ordinal);
+        StringAssert.Contains(script, " = state.disposeCount, state.disposeCount = ", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -4287,7 +4287,7 @@ public sealed class MemberClosureTests
         StringAssert.Contains(script, "if (hasRendered && !scope.ShouldRender()) {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return cachedVNode;", StringComparison.Ordinal);
         StringAssert.Contains(script, "function ShouldRender()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "return state.count % 2 === 0;", StringComparison.Ordinal);
+        StringAssert.Contains(script, ")(state.count, 2) === 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "function $renderDirect() {", StringComparison.Ordinal);
         StringAssert.Contains(script, "return h(\"div\", null, [state.count]);", StringComparison.Ordinal);
         StringAssert.Contains(script, "cachedVNode = scope.$renderDirect();", StringComparison.Ordinal);

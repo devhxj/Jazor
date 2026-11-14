@@ -2,6 +2,16 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## Unreleased · 2026-11-15
+
+- 修复整数除法、checked 溢出、unchecked 回绕、整数转换和更新的错误结果，并正确初始化数组与模块字段。
+- 修复模式 switch 中 return、await 和循环转移被额外函数截断的问题，以及表达式体空抑制无法生成代码的问题。
+- 对缺少运行时协议的动态运算、内存/引用操作、接口分派、多播委托、泛型静态存储、record 复制/构造、自定义枚举器与 awaiter 给出明确源码诊断；数值装箱判定只采用可证明的 CLR 类型信息。此前静默生成错误代码的写法现在可能被拒绝，替代方案见[逐项修复记录](docs/04-roadmap/compiler-syntax-bug-fixes.md)。
+
+- Correct integer division, checked overflow, unchecked wrapping, integer conversion and updates; initialize allocated arrays and module fields with typed defaults.
+- Preserve return, await and loop transfers in pattern switches, and compile expression-bodied null suppression reliably.
+- Diagnose unsupported runtime protocols at their authored source locations instead of emitting misleading JavaScript. Numeric boxing checks require provable CLR identity. Previously accepted unsafe forms can now fail deliberately; see the [35 issue resolutions](docs/04-roadmap/compiler-syntax-bug-fixes.md).
+
 ## 2026-11-13
 
 ### Jazor 1.2.0

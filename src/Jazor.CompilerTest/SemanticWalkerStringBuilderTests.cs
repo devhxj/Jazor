@@ -55,7 +55,7 @@ public sealed class SemanticWalkerStringBuilderTests
         StringAssert.Contains(body, "_e7c76d547b84e1dd(builder, 0, destination, 1, 2)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_152bf60dc35a5bb6(builder, 1, 2)", StringComparison.Ordinal);
         StringAssert.Contains(body, "_34859fdec187084f(builder, \"a\", \"A\", 0, builder.length)", StringComparison.Ordinal);
-        StringAssert.Contains(body, "_085925374c6d3abd(builder, builder.length + 2)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "_085925374c6d3abd(builder, builder.length + 2 | 0)", StringComparison.Ordinal);
         StringAssert.Contains(body, "return _4941946dde4f03f0(builder, 0, builder.length);", StringComparison.Ordinal);
 
         _ = new Parser().ParseScript("function verify(text, destination) " + body);

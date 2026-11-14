@@ -1685,8 +1685,8 @@ public sealed class CompilerLoweringCoverageRegressionTests
         var script = VisitBlock(block);
 
         Assert.AreEqual(2, script.Split("NextIndex()", StringSplitOptions.None).Length - 1);
-        StringAssert.Contains(script, "++", StringComparison.Ordinal);
-        StringAssert.Contains(script, "--", StringComparison.Ordinal);
+        StringAssert.Contains(script, "+ 1 | 0", StringComparison.Ordinal);
+        StringAssert.Contains(script, "- 1 | 0", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -2267,7 +2267,7 @@ public sealed class CompilerLoweringCoverageRegressionTests
         StringAssert.Contains(script, "extends Base", StringComparison.Ordinal);
         StringAssert.Contains(script, "super(seed)", StringComparison.Ordinal);
         StringAssert.Contains(script, "Describe()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "this.Value++", StringComparison.Ordinal);
+        StringAssert.Contains(script, "this.Value =", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }
 

@@ -517,7 +517,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = VisitBlock(block);
 
-        StringAssert.Contains(script, "new Array(2).fill().map(() => new Array(3))");
+        StringAssert.Contains(script, "new Array($dimension0).fill().map(() => new Array($dimension1).fill(0))");
         ParseScript(script);
     }
 
@@ -528,7 +528,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         var script = VisitBlock(block);
 
-        StringAssert.Contains(script, "new Array(2).fill().map(() => new Array(3).fill().map(() => new Array(4)))");
+        StringAssert.Contains(script, "new Array($dimension2).fill(0)");
         ParseScript(script);
     }
 
@@ -552,7 +552,7 @@ public sealed class SemanticWalkerCreationAndIndexerProtocolTests
 
         StringAssert.Contains(
             script,
-            "v$0 = buffer.Length - 1, v$1 = buffer[v$0] + 2, buffer[v$0] = v$1, v$1");
+            "v$0 = buffer.Length - 1, v$1 = buffer[v$0] + 2 | 0, buffer[v$0] = v$1, v$1");
         ParseScript(script);
     }
 

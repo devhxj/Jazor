@@ -203,6 +203,10 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 Repository automation uses single-file C# entry points under `scripts/csharp/`. See [Development and Testing](docs/03-guides/development-and-testing.md) for the full workflow.
 
+## Unreleased compiler corrections
+
+Integer arithmetic, casts, array/field defaults and pattern-switch control flow now preserve the supported C# behavior. Missing runtime protocols produce source diagnostics. See the [35 issue resolutions](docs/04-roadmap/compiler-syntax-bug-fixes.md) and [Changelog](CHANGELOG.md) for the current source changes.
+
 ## Latest release
 
 ### Jazor 1.2.0 · 2026-11-13

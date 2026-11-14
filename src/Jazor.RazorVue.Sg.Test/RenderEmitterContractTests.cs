@@ -2392,7 +2392,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsTrue(emitted, failure);
         Assert.IsNotNull(result);
         Assert.IsTrue(result.UsesFragment);
-        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "index++", StringComparison.Ordinal);
+        StringAssert.Contains(result.RenderExpression.ToKnRECMAScript(), "index = index + 1 | 0", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -2424,7 +2424,7 @@ public sealed class RenderEmitterContractTests
         Assert.IsNotNull(result);
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "__jazor$loopVNode", StringComparison.Ordinal);
-        StringAssert.Contains(output, "index++", StringComparison.Ordinal);
+        StringAssert.Contains(output, " = index, index = ", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -2592,7 +2592,7 @@ public sealed class RenderEmitterContractTests
         var output = result.RenderExpression.ToKnRECMAScript();
         StringAssert.Contains(output, "for", StringComparison.Ordinal);
         StringAssert.Contains(output, "128", StringComparison.Ordinal);
-        StringAssert.Contains(output, "index++", StringComparison.Ordinal);
+        StringAssert.Contains(output, "index = index + 1 | 0", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -3012,7 +3012,7 @@ public sealed class RenderEmitterContractTests
             fixture,
             "__jazor$loopVNode",
             "const item",
-            "renderCount++",
+            " = renderCount, renderCount = ",
             "createElementBlock");
     }
 

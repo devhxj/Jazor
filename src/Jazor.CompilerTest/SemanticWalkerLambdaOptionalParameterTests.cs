@@ -38,11 +38,9 @@ public sealed class SemanticWalkerLambdaOptionalParameterTests
             .ToKnRECMAScript();
 
         Assert.AreEqual(
-            """
-            (value = 2) => {
-              return value + 1;
-            }
-            """.ReplaceLineEndings("\n"),
+            @"(value = 2) => {
+  return value + 1 | 0;
+}".ReplaceLineEndings("\n"),
             script?.ReplaceLineEndings("\n"),
             scenarioId);
         _ = new Parser().ParseExpression(script!);

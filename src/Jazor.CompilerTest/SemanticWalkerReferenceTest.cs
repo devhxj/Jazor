@@ -159,7 +159,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let a = 1;
   let b = 2;
-  let c = a + b;
+  let c = a + b | 0;
 }", script);
 	}
 
@@ -1560,7 +1560,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let sum = a + b + c;
+  let sum = (a + b | 0) + c | 0;
 }", script);
 	}
 
@@ -1874,7 +1874,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let current = this.Count;
-  let total = current + SharedState.Limit;
+  let total = current + SharedState.Limit | 0;
 }", script);
 	}
 
@@ -2818,7 +2818,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   let x = this._field;
-  let y = this._field + 1;
+  let y = this._field + 1 | 0;
 }", script);
 	}
 
@@ -3118,7 +3118,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let array = [1, 2, 3, 4, 5];
   let i = 1;
-  let x = array[i + 1];
+  let x = array[i + 1 | 0];
 }", script);
 	}
 
@@ -3386,13 +3386,13 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let v$0, v$1;
+  let v$0, v$1, v$2;
   let values = [1, 2, 3];
   let next = () => {
     return values;
   };
   v$0 = next(), v$0[v$0.length - 1] = 4;
-  v$1 = next(), v$1[v$1.length - 1] += 5;
+  v$1 = next(), v$2 = v$1.length - 1, v$1[v$2] = v$1[v$2] + 5 | 0;
 }", script);
 	}
 
@@ -3540,7 +3540,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let matrix = new Array(2).fill().map(() => new Array(3));
+  let matrix = (($dimension0, $dimension1) => new Array($dimension0).fill().map(() => new Array($dimension1).fill(0)))(2, 3);
   let x = matrix[0][1];
 }", script);
 	}
@@ -3567,7 +3567,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let jagged = new Array(2);
+  let jagged = new Array(2).fill(null);
   let x = jagged[0][1];
 }", script);
 	}
@@ -3595,7 +3595,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let array = new Array(5);
+  let array = new Array(5).fill(0);
   array[0] = 10;
   array[1] = 20;
 }", script);
@@ -3859,7 +3859,7 @@ public sealed class SemanticWalkerReferenceTest
 		Assert.AreEqual(@"{
   let offset = 1;
   function AddOffset(value) {
-    return value + offset;
+    return value + offset | 0;
   }
   let transform = AddOffset.bind(this);
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -3889,7 +3889,7 @@ public sealed class SemanticWalkerReferenceTest
 
 		Assert.AreEqual(@"{
   function Double(value) {
-    return value * 2;
+    return Math.imul(value, 2) | 0;
   }
   let transform = Double;
   let result = transform(21);
@@ -4601,7 +4601,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let nextAge = person.Age + 1;
+  let nextAge = person.Age + 1 | 0;
 }", script);
 	}
 
@@ -5797,7 +5797,7 @@ public sealed class SemanticWalkerReferenceTest
     add(v$0, 3);
     return v$0;
   })();
-  v$1 = _d389c31d59037b42(list, 0) + 5, _c16a7960302ea054(list, 0, v$1), v$1;
+  v$1 = _d389c31d59037b42(list, 0) + 5 | 0, _c16a7960302ea054(list, 0, v$1), v$1;
 }", script);
 	}
 
@@ -6241,7 +6241,7 @@ public sealed class SemanticWalkerReferenceTest
   let next = () => {
     return list;
   };
-  v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) + 5, _c16a7960302ea054(v$1, v$2, v$3), v$3;
+  v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) + 5 | 0, _c16a7960302ea054(v$1, v$2, v$3), v$3;
 }", script);
 	}
 
@@ -6275,7 +6275,7 @@ public sealed class SemanticWalkerReferenceTest
     add(v$0, 3);
     return v$0;
   })();
-  let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$1 + 1), v$1);
+  let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$1 + 1 | 0), v$1);
 }", script);
 	}
 
@@ -6365,7 +6365,7 @@ public sealed class SemanticWalkerReferenceTest
   let next = () => {
     return list;
   };
-  let before = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2), _c16a7960302ea054(v$1, v$2, v$3 + 1), v$3);
+  let before = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2), _c16a7960302ea054(v$1, v$2, v$3 + 1 | 0), v$3);
 }", script);
 	}
 
@@ -6395,7 +6395,7 @@ public sealed class SemanticWalkerReferenceTest
   let v$0;
   let dict = createDefault();
   setItem(dict, ""key"", 1);
-  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5, setItem(dict, ""key"", v$0), v$0;
+  v$0 = _e73dbdff85c46ddc(dict, ""key"") + 5 | 0, setItem(dict, ""key"", v$0), v$0;
 }", script);
 	}
 
@@ -6516,19 +6516,20 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
 		AssertScriptEqual(@"{
-  let v$1, v$2;
+  let v$2, v$3;
   let index = 0;
   let nextIndex = () => {
-    return index++;
+    let v$0;
+    return v$0 = index, index = v$0 + 1 | 0, v$0;
   };
   let list = (() => {
-    let v$0 = createDefault();
-    add(v$0, 1);
-    add(v$0, 2);
-    add(v$0, 3);
-    return v$0;
+    let v$1 = createDefault();
+    add(v$1, 1);
+    add(v$1, 2);
+    add(v$1, 3);
+    return v$1;
   })();
-  v$1 = nextIndex(), v$2 = _d389c31d59037b42(list, v$1) + 5, _c16a7960302ea054(list, v$1, v$2), v$2;
+  v$2 = nextIndex(), v$3 = _d389c31d59037b42(list, v$2) + 5 | 0, _c16a7960302ea054(list, v$2, v$3), v$3;
 }", script);
 	}
 
@@ -7136,7 +7137,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let matrix = new Array(3).fill().map(() => new Array(3));
+  let matrix = (($dimension0, $dimension1) => new Array($dimension0).fill().map(() => new Array($dimension1).fill(0)))(3, 3);
   matrix[0][0] = 1;
   let value = matrix[1][2];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -7165,7 +7166,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let jagged = new Array(3);
+  let jagged = new Array(3).fill(null);
   jagged[0] = [1, 2, 3];
   let value = jagged[0][1];
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
@@ -7220,7 +7221,7 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let matrix = new Array(3).fill().map(() => new Array(4));
+  let matrix = (($dimension0, $dimension1) => new Array($dimension0).fill().map(() => new Array($dimension1).fill(0)))(3, 4);
   let rank = 2;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -9021,7 +9022,7 @@ public sealed class SemanticWalkerReferenceTest
   let last = array.lastIndexOf(2);
   let sliced = array.slice(1, 2);
   let mappedSimple = array.map(value => {
-    return value + 1;
+    return value + 1 | 0;
   });
   array.forEach((value, index) => {
     return;
@@ -9097,10 +9098,10 @@ public sealed class SemanticWalkerReferenceTest
 		var script = node?.ToKnRECMAScript();
 
 		Assert.AreEqual(@"{
-  let signed = Int8Array.of(-1, 2, -1);
+  let signed = Int8Array.of(-1 | 0, 2, -1 | 0);
   let bigSigned = BigInt64Array.of(1n, 2n);
-  let first = signed.indexOf(-1);
-  let last = signed.lastIndexOf(-1);
+  let first = signed.indexOf(-1 | 0);
+  let last = signed.lastIndexOf(-1 | 0);
   let found = signed.findIndex((value, index, array) => {
     return value < 0;
   });
@@ -9109,7 +9110,7 @@ public sealed class SemanticWalkerReferenceTest
     return value;
   });
   let sorted = signed.sort((left, right) => {
-    return left - right;
+    return left - right | 0;
   });
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
@@ -9456,15 +9457,13 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual("""
-			{
-			  let values = (__src => {
-			    if (__src == null)
-			      throw new TypeError("source");
-			    return __src;
-			  })(new Array(length));
-			}
-			""", script);
+		AssertScriptEqual(@"{
+  let values = (__src => {
+    if (__src == null)
+      throw new TypeError(""source"");
+    return Array.from(__src);
+  })(new Array(length).fill(0));
+}", script);
 	}
 
 	[TestMethod]
@@ -9487,38 +9486,36 @@ public sealed class SemanticWalkerReferenceTest
 		var node = walker.Visit(block, new());
 		var script = node?.ToKnRECMAScript();
 
-		AssertScriptEqual("""
-			{
-			  let filtered = ((__src, __callback) => {
-			    if (__src == null)
-			      throw new TypeError("source");
-			    if (__callback == null)
-			      throw new TypeError("predicate");
-			    return Array.from(__src).filter(__callback);
-			  })(null, value => {
-			    return value > 0;
-			  });
-			  let projected = ((__src, __callback) => {
-			    if (__src == null)
-			      throw new TypeError("source");
-			    if (__callback == null)
-			      throw new TypeError("selector");
-			    return Array.from(__src).map(__callback);
-			  })(null, value => {
-			    return value * 2;
-			  });
-			  let list = (__src => {
-			    if (__src == null)
-			      throw new TypeError("source");
-			    return MarkAsMutableListCarrier(Array.from(__src));
-			  })(null);
-			  let array = (__src => {
-			    if (__src == null)
-			      throw new TypeError("source");
-			    return Array.from(__src);
-			  })(null);
-			}
-			""", script);
+		AssertScriptEqual(@"{
+  let filtered = ((__src, __callback) => {
+    if (__src == null)
+      throw new TypeError(""source"");
+    if (__callback == null)
+      throw new TypeError(""predicate"");
+    return Array.from(__src).filter(__callback);
+  })(null, value => {
+    return value > 0;
+  });
+  let projected = ((__src, __callback) => {
+    if (__src == null)
+      throw new TypeError(""source"");
+    if (__callback == null)
+      throw new TypeError(""selector"");
+    return Array.from(__src).map(__callback);
+  })(null, value => {
+    return Math.imul(value, 2) | 0;
+  });
+  let list = (__src => {
+    if (__src == null)
+      throw new TypeError(""source"");
+    return MarkAsMutableListCarrier(Array.from(__src));
+  })(null);
+  let array = (__src => {
+    if (__src == null)
+      throw new TypeError(""source"");
+    return Array.from(__src);
+  })(null);
+}", script);
 	}
 
 	[TestMethod]

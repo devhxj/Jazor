@@ -429,7 +429,7 @@ public sealed class CompilerCoverage98BoundaryTests
                 {
                     switch (value)
                     {
-                        case int number:
+                        case bool number:
                             return;
                         default:
                             return;
@@ -454,7 +454,7 @@ public sealed class CompilerCoverage98BoundaryTests
                 {
                     switch (value)
                     {
-                        case int number:
+                        case bool number:
                             break;
                         default:
                             break;
@@ -475,7 +475,7 @@ public sealed class CompilerCoverage98BoundaryTests
                     {
                         switch (value)
                         {
-                            case int number:
+                            case bool number:
                                 continue;
                             default:
                                 break;
@@ -484,9 +484,8 @@ public sealed class CompilerCoverage98BoundaryTests
                 }
             }
             """);
-        var exception = Assert.Throws<OperationTransformationException>(() =>
-            new SemanticWalker(true).Visit(continueBlock, new SenseArgument()));
-        StringAssert.Contains(exception.Message, "Continue statements inside pattern-matching switch", StringComparison.Ordinal);
+        var continued = new SemanticWalker(true).Visit(continueBlock, new SenseArgument())!.ToKnRECMAScript();
+        StringAssert.Contains(continued, "continue;", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -1706,7 +1705,7 @@ public sealed class CompilerCoverage98BoundaryTests
                     var alwaysTrue = new Implementation() is IMarker;
                     var alwaysFalse = new PlainType() is IMarker;
                     var defaultReference = default(string) is IMarker;
-                    var typePattern = input is int number;
+                    var typePattern = input is bool number;
                     var recursive = input is { };
                     var listPattern = new[] { 1, 2, 3 } is [var first, .. var rest];
                     (Value, this[0]) = pair;
@@ -2240,7 +2239,7 @@ public sealed class CompilerCoverage98BoundaryTests
                     {
                         switch (value)
                         {
-                            case int:
+                            case bool:
                                 continue;
                             default:
                                 break;
@@ -2250,9 +2249,8 @@ public sealed class CompilerCoverage98BoundaryTests
             }
             """);
 
-        var failure = Assert.Throws<OperationTransformationException>(() =>
-            new SemanticWalker(true).Visit(block, new SenseArgument()));
-        StringAssert.Contains(failure.Message, "Continue statements inside pattern-matching switch", StringComparison.Ordinal);
+        var script = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToKnRECMAScript();
+        StringAssert.Contains(script, "continue;", StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -2504,7 +2502,7 @@ public sealed class CompilerCoverage98BoundaryTests
                 {
                     switch (value)
                     {
-                        case int number:
+                        case bool number:
                             goto default;
                         default:
                             break;

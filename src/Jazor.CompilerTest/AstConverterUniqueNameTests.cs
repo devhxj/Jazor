@@ -920,7 +920,7 @@ public sealed class AstConverterUniqueNameTests
             {
                 public static int Get(object value)
                 {
-                    return (value is int) switch
+                    return (value is bool) switch
                     {
                         true => 1,
                         _ => 0
@@ -940,7 +940,7 @@ public sealed class AstConverterUniqueNameTests
                         _ => 2
                     };
 
-                    return (value is int) switch
+                    return (value is bool) switch
                     {
                         true => 1,
                         _ => 0

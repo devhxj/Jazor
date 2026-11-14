@@ -567,8 +567,9 @@ public sealed class SemanticWalkerSourceMapEmissionTest
         const string source = """
             class TestClass
             {
-                string M(object value)
+                string M(int number)
                 {
+                    object value = number;
                     return value switch
                     {
                         int i when i > 0 => "positive-int",

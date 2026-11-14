@@ -1963,7 +1963,11 @@ public partial class SemanticWalker
 			var dimensions = operation.DimensionSizes
 				.Select(dimension => Translate<Expression>(dimension, argument))
 				.ToArray();
-			return BuildMultiDimensionalArray(dimensions, 0);
+			// Dimension expressions are evaluated once even though inner arrays are allocated
+			// for every outer slot. Never share a structured element's mutable default.
+			return JavaScriptAstFactory.CreateSingleEvaluationArrowInvocation(
+				dimensions.Select((dimension, index) => ("$dimension" + index, dimension)).ToArray(),
+				values => BuildMultiDimensionalArray(values, 0, ArrayElementDefault()));
 		}
 
 		var elements = new List<Expression?>();
@@ -1992,10 +1996,14 @@ public partial class SemanticWalker
 			}
 
 			var sizeNode = Translate<Expression>(dimension, argument);
-			return new NewExpression(new Identifier("Array"), NodeList.From(sizeNode));
+			return InitializeArrayDefaults(new NewExpression(new Identifier("Array"), NodeList.From(sizeNode)),
+				ArrayElementDefault());
 		}
 
 		return new ArrayExpression(NodeList.From(elements));
+
+		Expression ArrayElementDefault() => arrayType.ElementType.IsReferenceType
+			? Null : BuildDefaultValueExpression(operation, arrayType.ElementType, argument);
 	}
 
 	private Expression BuildNestedArrayInitializer(IArrayInitializerOperation initializer, SenseArgument argument, ITypeSymbol? elementTargetType = null)
@@ -2012,18 +2020,27 @@ public partial class SemanticWalker
 		return new ArrayExpression(NodeList.From(elements));
 	}
 
-	private static Expression BuildMultiDimensionalArray(IReadOnlyList<Expression> dimensions, int dimensionIndex)
+	private static Expression InitializeArrayDefaults(Expression array, Expression defaultValue)
+	{
+		var fill = new CallExpression(new MemberExpression(array, new Identifier("fill"), false, false),
+			NodeList.From<Expression>(defaultValue is Literal ? defaultValue : new Identifier("undefined")), false);
+		return defaultValue is Literal ? fill : new CallExpression(
+			new MemberExpression(fill, new Identifier("map"), false, false),
+			NodeList.From<Expression>(new ArrowFunctionExpression(NodeList.Empty<Node>(), defaultValue, true, false)), false);
+	}
+
+	private static Expression BuildMultiDimensionalArray(IReadOnlyList<Expression> dimensions, int dimensionIndex, Expression defaultValue)
 	{
 		var currentArray = new NewExpression(new Identifier("Array"), NodeList.From(dimensions[dimensionIndex]));
 		if (dimensionIndex == dimensions.Count - 1)
-			return currentArray;
+			return InitializeArrayDefaults(currentArray, defaultValue);
 
 		var fillCall = new CallExpression(
 			new MemberExpression(currentArray, new Identifier("fill"), computed: false, optional: false),
 			NodeList.From<Expression>(),
 			optional: false);
 
-		var nested = BuildMultiDimensionalArray(dimensions, dimensionIndex + 1);
+		var nested = BuildMultiDimensionalArray(dimensions, dimensionIndex + 1, defaultValue);
 		var mapper = new ArrowFunctionExpression(
 			NodeList.From<Node>(),
 			nested,

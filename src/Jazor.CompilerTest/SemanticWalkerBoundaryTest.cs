@@ -165,9 +165,9 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let x = 5;
-  let andResult = x & -1;
-  let orResult = x | -1;
-  let xorResult = x ^ -1;
+  let andResult = x & (-1 | 0);
+  let orResult = x | (-1 | 0);
+  let xorResult = x ^ (-1 | 0);
 }", script);
 	}
 
@@ -264,7 +264,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let max = 2147483647;
-  let result = max + 1;
+  let result = max + 1 | 0;
 }", script);
 	}
 
@@ -293,7 +293,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let min = -2147483648;
-  let result = min - 1;
+  let result = min - 1 | 0;
 }", script);
 	}
 
@@ -782,7 +782,27 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let a = 1, b = 2, c = 3, d = 4, e = 5, f = 6;
-  let result = a + b * c - d / e % f;
+  let result = (a + (Math.imul(b, c) | 0) | 0) - (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return $dividend % $divisor + 0;
+  })($divisor))((($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return ($integer => {
+      if ($integer < -2147483648 || $integer > 2147483647)
+        throw new Error(""OverflowException"");
+      return $integer;
+    })(Math.trunc($dividend / $divisor) + 0);
+  })($divisor))(d, e), f) | 0;
 }", script);
 	}
 
@@ -815,7 +835,7 @@ public sealed class SemanticWalkerBoundaryTest
   let nested = x => {
     return y => {
       return z => {
-        return x + y + z;
+        return (x + y | 0) + z | 0;
       };
     };
   };
@@ -854,7 +874,7 @@ public sealed class SemanticWalkerBoundaryTest
 		// 空语句被放在同一行，最后一个 do-while 的格式不同
 		AssertScriptEqual(@"{
   while (false) { }
-  for (let i = 0; i < 0; i++) { }
+  for (let i = 0; i < 0; i = i + 1 | 0) { }
   do { }
   while (false);
 }", script);
@@ -893,10 +913,10 @@ public sealed class SemanticWalkerBoundaryTest
 
 		// 验证生成了三层 for 循环
 		AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-      for (let k = 0; k < 10; k++) {
-        let sum = i + j + k;
+  for (let i = 0; i < 10; i = i + 1 | 0) {
+    for (let j = 0; j < 10; j = j + 1 | 0) {
+      for (let k = 0; k < 10; k = k + 1 | 0) {
+        let sum = (i + j | 0) + k | 0;
       }
     }
   }
@@ -964,7 +984,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		// 当前实现统一使用 JavaScript 严格等于
 		AssertScriptEqual(@"{
-  for (let i = 0; i < 1000000; i++) {
+  for (let i = 0; i < 1000000; i = i + 1 | 0) {
     if (i === 500000)
       break;
   }
@@ -1253,7 +1273,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let large = new Array(1000);
+  let large = new Array(1000).fill(0);
 }", script);
 	}
 
@@ -1279,8 +1299,8 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let matrix2d = new Array(3).fill().map(() => new Array(4));
-  let matrix3d = new Array(2).fill().map(() => new Array(3).fill().map(() => new Array(4)));
+  let matrix2d = (($dimension0, $dimension1) => new Array($dimension0).fill().map(() => new Array($dimension1).fill(0)))(3, 4);
+  let matrix3d = (($dimension0, $dimension1, $dimension2) => new Array($dimension0).fill().map(() => new Array($dimension1).fill().map(() => new Array($dimension2).fill(0))))(2, 3, 4);
 }", script);
 	}
 
@@ -1443,7 +1463,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let a = 1;
-  let result = a + 1 + 2 + (a + 3 + 4);
+  let result = ((a + 1 | 0) + 2 | 0) + ((a + 3 | 0) + 4 | 0) | 0;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
 	}
 
@@ -1500,10 +1520,10 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let a = 1, b = 2, c = 3;
-  let result1 = a + b * c;
-  let result2 = (a + b) * c;
-  let result3 = a * b + c;
-  let result4 = a * (b + c);
+  let result1 = a + (Math.imul(b, c) | 0) | 0;
+  let result2 = Math.imul(a + b | 0, c) | 0;
+  let result3 = (Math.imul(a, b) | 0) + c | 0;
+  let result4 = Math.imul(a, b + c | 0) | 0;
 }", script);
 	}
 
@@ -1537,8 +1557,9 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let count = 0;
-  for (let i = 0; i < 0; i++) {
-    count++;
+  for (let i = 0; i < 0; i = i + 1 | 0) {
+    let v$0;
+    v$0 = count, count = v$0 + 1 | 0, v$0;
   }
 }", script);
 	}
@@ -1569,8 +1590,9 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let count = 0;
-  for (let i = 0; i < 1; i++) {
-    count++;
+  for (let i = 0; i < 1; i = i + 1 | 0) {
+    let v$0;
+    v$0 = count, count = v$0 + 1 | 0, v$0;
   }
 }", script);
 	}
@@ -1599,7 +1621,7 @@ public sealed class SemanticWalkerBoundaryTest
 		var script = node?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  for (let i = 10; i >= 0; i -= 2) {
+  for (let i = 10; i >= 0; i = i - 2 | 0) {
     console.log(i);
   }
 }", script);
@@ -1633,7 +1655,7 @@ public sealed class SemanticWalkerBoundaryTest
 		AssertScriptEqual(@"{
   if (n <= 1)
     return 1;
-  return n * this.Factorial(n - 1);
+  return Math.imul(n, this.Factorial(n - 1 | 0)) | 0;
 }", script);
 	}
 
@@ -1667,7 +1689,7 @@ public sealed class SemanticWalkerBoundaryTest
 		AssertScriptEqual(@"{
   if (n === 0)
     return true;
-  return this.IsOdd(n - 1);
+  return this.IsOdd(n - 1 | 0);
 }", script);
 	}
 
@@ -1727,7 +1749,7 @@ public sealed class SemanticWalkerBoundaryTest
 
 		AssertScriptEqual(@"{
   let max = 32767;
-  let min = -32768;
+  let min = -32768 | 0;
 }", script);
 	}
 

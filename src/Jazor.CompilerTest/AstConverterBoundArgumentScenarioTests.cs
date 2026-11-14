@@ -102,8 +102,8 @@ public sealed class AstConverterBoundArgumentScenarioTests
 
                 globalThis.__jazorTest("named arguments preserve source evaluation, parameter binding, defaults, and ref/out write-back", () => {
                   const result = Run();
-                  if (result !== 21355363011)
-                    throw new Error(`expected 21355363011, got ${result}`);
+                  if (result !== -119473469)
+                    throw new Error(`expected -119473469, got ${result}`);
                   const receiverResult = RunReceiverOrder();
                   if (receiverResult !== 9213132)
                     throw new Error(`expected receiver-first evaluation result 9213132, got ${receiverResult}`);

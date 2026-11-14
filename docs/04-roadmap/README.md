@@ -7,6 +7,7 @@
 | 阅读目的 | 入口 |
 | --- | --- |
 | 判断某项能力是否已经可以使用 | [当前状态](./current-status.md) |
+| 核对语法审计中 35 个 bug 的实现与诊断边界 | [逐项修复记录](./compiler-syntax-bug-fixes.md)（尚未发布） |
 | 了解下一阶段的优先级、边界和完成条件 | [下一阶段](./next-development.md) |
 | 了解 ECMAScript 标注职责、普通类型准入与 class/record 迁移 | [ECMAScript 标注与类型语义调整计划](./ecmascript-type-semantics-plan.md)（纳入 1.2.0） |
 | 执行 RazorVue P0 | [P0 执行计划](./p0-plan.md) |

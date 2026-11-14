@@ -64,7 +64,7 @@ public sealed class SemanticWalkerEnumerableFactoryTests
         Assert.AreEqual("./clr/System/Linq/EnumerableModule.js", imports[0].Key);
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEquivalent(new[] { "sequence", "empty", "concat", "range", "repeat", "asEnumerable" }, importNames);
-        StringAssert.Contains(body, "sequence(start - 1, start, start + 1)", StringComparison.Ordinal);
+        StringAssert.Contains(body, "sequence(start - 1 | 0, start, start + 1 | 0)", StringComparison.Ordinal);
         StringAssert.Contains(body, "empty()", StringComparison.Ordinal);
         StringAssert.Contains(body, "range(start, count)", StringComparison.Ordinal);
         StringAssert.Contains(body, "repeat(repeated, repeatCount)", StringComparison.Ordinal);

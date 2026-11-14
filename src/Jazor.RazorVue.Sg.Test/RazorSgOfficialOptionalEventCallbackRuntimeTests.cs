@@ -44,7 +44,7 @@ public sealed class RazorSgOfficialOptionalEventCallbackRuntimeTests
             StringComparison.Ordinal);
         RazorSgOfficialAuthoringTestHost.AssertDirectRenderModule(observation.ModuleText);
         StringAssert.Contains(observation.ModuleText, "await props.OnDismiss?.();", StringComparison.Ordinal);
-        StringAssert.Contains(observation.ModuleText, "state.DismissCount++;", StringComparison.Ordinal);
+        StringAssert.Contains(observation.ModuleText, " = state.DismissCount, state.DismissCount = ", StringComparison.Ordinal);
 
         await RazorSgOfficialNodeRuntimeTestHost.RunModuleTestAsync(
             "components/dismissible-panel-runtime.js",

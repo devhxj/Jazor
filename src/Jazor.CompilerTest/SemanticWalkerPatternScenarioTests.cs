@@ -178,7 +178,7 @@ internal static class PatternLoweringScenarioCatalog
                     value += 2;
                     bool result = value is IComparable;
                     """,
-                ["value += 2", "let result = true"]),
+                ["value = value + 2 | 0", "let result = true"]),
             new PatternLoweringScenario(
                 "pattern-lowering.interface-write.increment",
                 "family=interface-fold;write=increment;result=static-true",
@@ -187,7 +187,7 @@ internal static class PatternLoweringScenarioCatalog
                     value++;
                     bool result = value is IComparable;
                     """,
-                ["value++", "let result = true"]),
+                ["value = v$0 + 1 | 0", "let result = true"]),
             new PatternLoweringScenario(
                 "pattern-lowering.interface-write.deconstruction",
                 "family=interface-fold;write=deconstruction;result=static-true",

@@ -305,7 +305,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -337,7 +337,7 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   let i = 0;
-  for (; i < 10; i++) {
+  for (; i < 10; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -369,7 +369,7 @@ public sealed class SemanticWalkerLoopTest
 
     AssertScriptEqual(@"{
   let i;
-  for (i = 0; i < 3; i++) {
+  for (i = 0; i < 3; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -403,8 +403,8 @@ public sealed class SemanticWalkerLoopTest
     AssertScriptEqual(@"{
   let i;
   let j;
-  for (i = 0, j = 10; i < j; i++, j--) {
-    console.log(i + j);
+  for (i = 0, j = 10; i < j; i = i + 1 | 0, j = j - 1 | 0) {
+    console.log(i + j | 0);
   }
 }", script);
   }
@@ -435,7 +435,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; ; i++) {
+  for (let i = 0; ; i = i + 1 | 0) {
     if (i >= 10)
       break;
     console.log(i);
@@ -469,8 +469,9 @@ public sealed class SemanticWalkerLoopTest
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 10; ) {
+    let v$0;
     console.log(i);
-    i++;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -499,7 +500,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 10; i += 2) {
+  for (let i = 0; i < 10; i = i + 2 | 0) {
     console.log(i);
   }
 }", script);
@@ -533,8 +534,9 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let i = 0;
   while (i < 10) {
+    let v$0;
     console.log(i);
-    i++;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -570,9 +572,10 @@ public sealed class SemanticWalkerLoopTest
   let i = 0;
   let j = 0;
   while (i < 10 && j < 5) {
+    let v$0, v$1;
     console.log(i);
-    i++;
-    j++;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
+    v$1 = j, j = v$1 + 1 | 0, v$1;
   }
 }", script);
   }
@@ -621,13 +624,14 @@ public sealed class SemanticWalkerLoopTest
   for (let num of numbers) {
     console.log(num);
   }
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i = i + 1 | 0) {
     console.log(i);
   }
   let j = 0;
   while (j < 3) {
+    let v$0;
     console.log(j);
-    j++;
+    v$0 = j, j = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -659,9 +663,9 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      console.log(i * 3 + j);
+  for (let i = 0; i < 3; i = i + 1 | 0) {
+    for (let j = 0; j < 3; j = j + 1 | 0) {
+      console.log((Math.imul(i, 3) | 0) + j | 0);
     }
   }
 }", script);
@@ -899,7 +903,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 10; i >= 0; i--) {
+  for (let i = 10; i >= 0; i = i - 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -931,7 +935,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 10; i += 2) {
+  for (let i = 0; i < 10; i = i + 2 | 0) {
     console.log(i);
   }
 }", script);
@@ -963,7 +967,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 10; i = i * 2 + 1) {
+  for (let i = 0; i < 10; i = (Math.imul(i, 2) | 0) + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -1027,7 +1031,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -1067,8 +1071,9 @@ public sealed class SemanticWalkerLoopTest
     Assert.AreEqual(@"{
   let x = 5;
   while (x > 0) {
+    let v$0;
     console.log(x);
-    x--;
+    v$0 = x, x = v$0 - 1 | 0, v$0;
   }
 }", script);
   }
@@ -1106,9 +1111,10 @@ public sealed class SemanticWalkerLoopTest
   let i = 0;
   let j = 0;
   while (i < 10 || j < 5) {
+    let v$0, v$1;
     console.log(i);
-    i++;
-    j++;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
+    v$1 = j, j = v$1 + 1 | 0, v$1;
   }
 }", script);
   }
@@ -1145,7 +1151,7 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     if (i === 5)
       break;
     console.log(i);
@@ -1181,8 +1187,16 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
-    if (i % 2 === 0)
+  for (let i = 0; i < 10; i = i + 1 | 0) {
+    if ((($dividend, $divisor) => ($nonzero => {
+      {
+        if ($nonzero === 0)
+          throw new Error(""DivideByZeroException"");
+        if ($dividend === -2147483648 && $nonzero === -1)
+          throw new Error(""OverflowException"");
+      }
+      return $dividend % $divisor + 0;
+    })($divisor))(i, 2) === 0)
       continue;
     console.log(i);
   }
@@ -1217,11 +1231,11 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     if (i === 5)
       return i;
   }
-  return -1;
+  return -1 | 0;
 }", script);
   }
 
@@ -1260,11 +1274,11 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
+    for (let j = 0; j < 3; j = j + 1 | 0) {
       if (i === j)
         break;
-      console.log(i * 3 + j);
+      console.log((Math.imul(i, 3) | 0) + j | 0);
     }
   }
 }", script);
@@ -1301,11 +1315,11 @@ public sealed class SemanticWalkerLoopTest
     var script = node?.ToKnRECMAScript();
 
 AssertScriptEqual(@"{
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
+    for (let j = 0; j < 3; j = j + 1 | 0) {
       if (i === j)
         continue;
-      console.log(i * 3 + j);
+      console.log((Math.imul(i, 3) | 0) + j | 0);
     }
   }
 }", script);
@@ -1343,7 +1357,7 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let matrix = [[1, 2], [3, 4]];
   for (let row of matrix) {
-    for (let j = 0; j < row.length; j++) {
+    for (let j = 0; j < row.length; j = j + 1 | 0) {
       console.log(row[j]);
     }
   }
@@ -1383,7 +1397,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
     console.log(i);
   }
   let j = 0;
@@ -1445,18 +1459,19 @@ AssertScriptEqual(@"{
   for (let item of items) {
     console.log(item);
   }
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i = i + 1 | 0) {
     console.log(i);
   }
-  for (let j = 10; j >= 0; j--) {
+  for (let j = 10; j >= 0; j = j - 1 | 0) {
     if (j === 5)
       break;
     console.log(j);
   }
   let k = 0;
   while (k < 3) {
+    let v$0;
     console.log(k);
-    k++;
+    v$0 = k, k = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -1493,7 +1508,8 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let i = 0;
   do {
-    i++;
+    let v$0;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   } while (i < 10);
 }", script);
   }
@@ -1532,7 +1548,8 @@ AssertScriptEqual(@"{
   let i = 0;
   let j = 5;
   do {
-    i++;
+    let v$0;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   } while (i < 10 && j > 0);
 }", script);
   }
@@ -1578,10 +1595,12 @@ AssertScriptEqual(@"{
   let i = 0;
   let j = 0;
   do {
+    let v$1;
     do {
-      i++;
+      let v$0;
+      v$0 = i, i = v$0 + 1 | 0, v$0;
     } while (i < 3);
-    j++;
+    v$1 = j, j = v$1 + 1 | 0, v$1;
   } while (j < 5);
 }", script);
   }
@@ -1652,8 +1671,9 @@ AssertScriptEqual(@"{
   let items = [""a"", ""b"", ""c""];
   let index = 0;
   for (let item of items) {
+    let v$0;
     console.log(index + "": "" + item);
-    index++;
+    v$0 = index, index = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -1723,8 +1743,8 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0, j = 10; i < j; i++, j--) {
-    console.log(i + j);
+  for (let i = 0, j = 10; i < j; i = i + 1 | 0, j = j - 1 | 0) {
+    console.log(i + j | 0);
   }
 }", script);
   }
@@ -1755,8 +1775,9 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let limit = 10;
-  for (let i = 0; i < limit && limit > 0; i++) {
-    limit--;
+  for (let i = 0; i < limit && limit > 0; i = i + 1 | 0) {
+    let v$0;
+    v$0 = limit, limit = v$0 - 1 | 0, v$0;
   }
 }", script);
   }
@@ -1816,7 +1837,8 @@ AssertScriptEqual(@"{
 
     AssertScriptEqual(@"{
   for (let i = 0; i < 2; await TestClass.TickAsync()) {
-    i++;
+    let v$0;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   }
 }", script);
     _ = new Acornima.Parser().ParseModule($"async function test() {script}");
@@ -1846,8 +1868,8 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0, j = 10; i < 10; i++, j -= 2) {
-    console.log(i * j);
+  for (let i = 0, j = 10; i < 10; i = i + 1 | 0, j = j - 2 | 0) {
+    console.log(Math.imul(i, j) | 0);
   }
 }", script);
   }
@@ -1876,7 +1898,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 100; i >= 0; i -= 10) {
+  for (let i = 100; i >= 0; i = i - 10 | 0) {
     console.log(i);
   }
 }", script);
@@ -1906,7 +1928,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 1; i < 1000; i *= 2) {
+  for (let i = 1; i < 1000; i = Math.imul(i, 2) | 0) {
     console.log(i);
   }
 }", script);
@@ -1976,8 +1998,9 @@ AssertScriptEqual(@"{
   let count = 0;
   let sum = 0;
   while (count < 10) {
-    sum += count;
-    count++;
+    let v$0;
+    sum = sum + count | 0;
+    v$0 = count, count = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -2009,7 +2032,8 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let x = 0;
   while (x > 0) {
-    x--;
+    let v$0;
+    v$0 = x, x = v$0 - 1 | 0, v$0;
   }
 }", script);
   }
@@ -2045,7 +2069,8 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let x = 0;
   do {
-    x++;
+    let v$0;
+    v$0 = x, x = v$0 + 1 | 0, v$0;
   } while (false);
 }", script);
   }
@@ -2079,7 +2104,8 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let i = 0;
   do {
-    i++;
+    let v$0;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
     if (i > 5)
       break;
   } while (i < 100);
@@ -2118,10 +2144,19 @@ AssertScriptEqual(@"{
   let i = 0;
   let count = 0;
   do {
-    i++;
-    if (i % 2 === 0)
+    let v$0, v$1;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
+    if ((($dividend, $divisor) => ($nonzero => {
+      {
+        if ($nonzero === 0)
+          throw new Error(""DivideByZeroException"");
+        if ($dividend === -2147483648 && $nonzero === -1)
+          throw new Error(""OverflowException"");
+      }
+      return $dividend % $divisor + 0;
+    })($divisor))(i, 2) === 0)
       continue;
-    count++;
+    v$1 = count, count = v$1 + 1 | 0, v$1;
   } while (i < 10);
 }", script);
   }
@@ -2163,9 +2198,9 @@ AssertScriptEqual(@"{
 
 AssertScriptEqual(@"{
   let found = false;
-  for (let i = 0; i < 10 && !found; i++) {
-    for (let j = 0; j < 10; j++) {
-      if (i * j === 25) {
+  for (let i = 0; i < 10 && !found; i = i + 1 | 0) {
+    for (let j = 0; j < 10; j = j + 1 | 0) {
+      if ((Math.imul(i, j) | 0) === 25) {
         found = true;
         break;
       }
@@ -2203,8 +2238,8 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
 AssertScriptEqual(@"{
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+  for (let i = 0; i < 3; i = i + 1 | 0) {
+    for (let j = 0; j < 3; j = j + 1 | 0) {
       if (j === 1)
         continue;
       console.log(i + "","" + j);
@@ -2239,11 +2274,11 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
 AssertScriptEqual(@"{
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 100; i = i + 1 | 0) {
     if (i === 50)
       return i;
   }
-  return -1;
+  return -1 | 0;
 }", script);
   }
 
@@ -2276,7 +2311,8 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let count = 0;
   while (true) {
-    count++;
+    let v$0;
+    v$0 = count, count = v$0 + 1 | 0, v$0;
     if (count > 10)
       break;
   }
@@ -2310,7 +2346,8 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let x = 0;
   do {
-    x++;
+    let v$0;
+    v$0 = x, x = v$0 + 1 | 0, v$0;
   } while (false);
 }", script);
   }
@@ -2339,7 +2376,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0, j = 10; i < j; i++, j--) {
+  for (let i = 0, j = 10; i < j; i = i + 1 | 0, j = j - 1 | 0) {
     console.log(i + "","" + j);
   }
 }", script);
@@ -2375,8 +2412,9 @@ AssertScriptEqual(@"{
   let items = [10, 20, 30];
   let index = 0;
   for (let item of items) {
+    let v$0;
     console.log(index + "": "" + item);
-    index++;
+    v$0 = index, index = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -2414,9 +2452,9 @@ AssertScriptEqual(@"{
 
 AssertScriptEqual(@"{
   let found = false;
-  for (let i = 0; i < 5 && !found; i++) {
-    for (let j = 0; j < 5; j++) {
-      if (i * j === 12) {
+  for (let i = 0; i < 5 && !found; i = i + 1 | 0) {
+    for (let j = 0; j < 5; j = j + 1 | 0) {
+      if ((Math.imul(i, j) | 0) === 12) {
         found = true;
         break;
       }
@@ -2455,8 +2493,9 @@ AssertScriptEqual(@"{
   let count = 0;
   let sum = 0;
   while (count < 10) {
-    sum += count;
-    count++;
+    let v$0;
+    sum = sum + count | 0;
+    v$0 = count, count = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -2491,7 +2530,8 @@ AssertScriptEqual(@"{
 AssertScriptEqual(@"{
   let i = 0;
   do {
-    i++;
+    let v$0;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
     if (i === 5)
       continue;
     console.log(i);
@@ -2525,7 +2565,7 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   let i = 0;
-  for (; i < 5; i++) {
+  for (; i < 5; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -2556,7 +2596,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; ; i++) {
+  for (let i = 0; ; i = i + 1 | 0) {
     if (i >= 10)
       break;
     console.log(i);
@@ -2590,8 +2630,9 @@ AssertScriptEqual(@"{
 
     Assert.AreEqual(@"{
   for (let i = 0; i < 5; ) {
+    let v$0;
     console.log(i);
-    i++;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   }
 }", script);
   }
@@ -2658,9 +2699,9 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 2; i++) {
-    for (let j = 0; j < 2; j++) {
-      for (let k = 0; k < 2; k++) {
+  for (let i = 0; i < 2; i = i + 1 | 0) {
+    for (let j = 0; j < 2; j = j + 1 | 0) {
+      for (let k = 0; k < 2; k = k + 1 | 0) {
         console.log(i + "","" + j + "","" + k);
       }
     }
@@ -2696,7 +2737,7 @@ AssertScriptEqual(@"{
     Assert.AreEqual(@"{
   let x = 10;
   let y = 20;
-  for (let i = 0; i < x && i < y; i++) {
+  for (let i = 0; i < x && i < y; i = i + 1 | 0) {
     console.log(i);
   }
 }", script);
@@ -2728,9 +2769,10 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  for (let i = 0; i < 10; i++) {
-    let j = i++;
-    let k = ++i;
+  for (let i = 0; i < 10; i = i + 1 | 0) {
+    let v$0, v$1;
+    let j = (v$0 = i, i = v$0 + 1 | 0, v$0);
+    let k = (v$1 = i, i = v$1 + 1 | 0, i);
     console.log(j + "" "" + k);
   }
 }", script);
@@ -2766,11 +2808,12 @@ AssertScriptEqual(@"{
 AssertScriptEqual(@"{
   let i = 0;
   while (i < 100) {
+    let v$0;
     if (i === 42)
       return i;
-    i++;
+    v$0 = i, i = v$0 + 1 | 0, v$0;
   }
-  return -1;
+  return -1 | 0;
 }", script);
   }
 
@@ -2801,7 +2844,7 @@ AssertScriptEqual(@"{
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i = i + 1 | 0) {
     let result, v$0;
     if (v$0 = _16e2a901535b765e(""123"", undefined), result = v$0[1], v$0[0]) {
       console.log(result);

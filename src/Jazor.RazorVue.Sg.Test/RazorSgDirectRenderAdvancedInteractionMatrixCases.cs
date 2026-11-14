@@ -384,7 +384,7 @@ internal static partial class DirectRenderCaseCatalog
                     case 1:
                         parameters = "builder.AddComponentParameter(1, \"Count\", Count * 2 + " + hostIndex.ToString(CultureInfo.InvariantCulture) + "); builder.AddComponentParameter(2, \"Title\", " + CSharpStringLiteral(marker) + ");";
                         expected = "count";
-                        additional = "props.Count * 2";
+                        additional = "Math.imul(props.Count, 2) | 0";
                         members = "[Parameter] public int Count { get; set; }";
                         break;
                     case 2:

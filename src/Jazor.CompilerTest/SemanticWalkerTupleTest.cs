@@ -266,7 +266,7 @@ public sealed class SemanticWalkerTupleTest
         var node = walker.VisitTuple(operation, new());
         var script = node?.ToECMAScript();
 
-        AssertTupleScriptEqual("{sum:x+y,diff:x-y,product:x*y}", script);
+        AssertTupleScriptEqual("{sum:x+y|0,diff:x-y|0,product:Math.imul(x,y)|0}", script);
         //AssertTupleScriptEqual(@"Tuple.Create([['sum',x+y],['diff',x-y],['product',x*y]])", script);
     }
 
@@ -918,7 +918,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(
 @"{
-  let result = (BigInt(1) === 1n && 2 === 2);
+  let result = (1n === 1n && 2 === 2);
 }", script);
 
     }
@@ -2169,7 +2169,7 @@ public sealed class SemanticWalkerTupleTest
 
         AssertTupleScriptEqual(@"{
   let pair = { Item1: 1, Item2: 2 };
-  let sum = pair.Item1 + pair.Item2;
+  let sum = pair.Item1 + pair.Item2 | 0;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -2203,7 +2203,7 @@ public sealed class SemanticWalkerTupleTest
     Item4: 4,
     Item5: 5
   };
-  let sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5;
+  let sum = (((t.Item1 + t.Item2 | 0) + t.Item3 | 0) + t.Item4 | 0) + t.Item5 | 0;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -2237,7 +2237,7 @@ public sealed class SemanticWalkerTupleTest
     Item5: 5,
     Item6: 6
   };
-  let sum = t.Item1 + t.Item2 + t.Item3 + t.Item4 + t.Item5 + t.Item6;
+  let sum = ((((t.Item1 + t.Item2 | 0) + t.Item3 | 0) + t.Item4 | 0) + t.Item5 | 0) + t.Item6 | 0;
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }
 
@@ -2266,9 +2266,21 @@ public sealed class SemanticWalkerTupleTest
 @"{
   let a = 10;
   let t = {
-    Item1: a + 1,
-    Item2: a * 2,
-    Item3: a / 3
+    Item1: a + 1 | 0,
+    Item2: Math.imul(a, 2) | 0,
+    Item3: (($dividend, $divisor) => ($nonzero => {
+      {
+        if ($nonzero === 0)
+          throw new Error(""DivideByZeroException"");
+        if ($dividend === -2147483648 && $nonzero === -1)
+          throw new Error(""OverflowException"");
+      }
+      return ($integer => {
+        if ($integer < -2147483648 || $integer > 2147483647)
+          throw new Error(""OverflowException"");
+        return $integer;
+      })(Math.trunc($dividend / $divisor) + 0);
+    })($divisor))(a, 3)
   };
 }".ReplaceLineEndings(), script?.ReplaceLineEndings());
     }

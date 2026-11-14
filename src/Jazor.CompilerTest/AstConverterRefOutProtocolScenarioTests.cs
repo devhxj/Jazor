@@ -56,7 +56,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 		var transformReturn = ((FunctionBody)functionInitializers[0].Body).Body
 			.OfType<ReturnStatement>()
 			.Single();
-		AssertProtocolArray(transformReturn.Argument, ["current * 10", "current"], scenarioId);
+		AssertProtocolArray(transformReturn.Argument, ["Math.imul(current, 10) | 0", "current"], scenarioId);
 
 		var projectReturns = ((FunctionBody)functionInitializers[1].Body).Body
 			.OfType<ReturnStatement>()
@@ -479,7 +479,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
         var exportedMethod = module!.Body.OfType<ExportNamedDeclaration>().Single();
         Assert.IsInstanceOfType<FunctionDeclaration>(exportedMethod.Declaration, scenarioId);
         var outerFunction = (FunctionDeclaration)exportedMethod.Declaration;
-        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single();
+        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single(declaration => declaration.Declarations.Any(item => item.Id is Identifier { Name: "seed" }));
         var seedInitializer = seedDeclaration.Declarations.Single().Init;
 
         Assert.IsInstanceOfType<ArrowFunctionExpression>(seedInitializer, scenarioId);
@@ -522,7 +522,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 
         Assert.IsNotNull(module, scenarioId);
         var outerFunction = GetExportedFunction(module, scenarioId);
-        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single();
+        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single(declaration => declaration.Declarations.Any(item => item.Id is Identifier { Name: "seed" }));
         var seedInitializer = seedDeclaration.Declarations.Single().Init;
 
         Assert.IsInstanceOfType<ArrowFunctionExpression>(seedInitializer, scenarioId);
@@ -574,7 +574,7 @@ public sealed class AstConverterRefOutProtocolScenarioTests
 
         Assert.IsNotNull(module, scenarioId);
         var outerFunction = GetExportedFunction(module, scenarioId);
-        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single();
+        var seedDeclaration = outerFunction.Body.Body.OfType<VariableDeclaration>().Single(declaration => declaration.Declarations.Any(item => item.Id is Identifier { Name: "seed" }));
         var seedInitializer = seedDeclaration.Declarations.Single().Init;
 
         Assert.IsInstanceOfType<FunctionExpression>(seedInitializer, scenarioId);

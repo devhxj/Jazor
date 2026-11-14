@@ -47,8 +47,8 @@ public sealed class SemanticWalkerTranslatedQuerySelectManyTests
             $"Expected SelectMany result-selector import. Actual imports: {string.Join(", ", importNames)}{Environment.NewLine}{body}");
         StringAssert.Contains(body, "_aacc82f5a0d854d2(");
         StringAssert.Contains(body, "return outer > 0;");
-        StringAssert.Contains(body, "return [outer, outer * 10];");
-        StringAssert.Contains(body, "return outer + inner;");
+        StringAssert.Contains(body, "return [outer, Math.imul(outer, 10) | 0];");
+        StringAssert.Contains(body, "return outer + inner | 0;");
         StringAssert.Contains(body, "return Array.from(__src);");
         Assert.IsFalse(body.Contains("TranslatedQuery", StringComparison.Ordinal), body);
 

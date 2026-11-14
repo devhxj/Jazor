@@ -58,8 +58,8 @@ public sealed class SemanticWalkerEnumerableAggregateTests
         Assert.HasCount(3, importNames, body);
         foreach (var importName in importNames)
             StringAssert.Contains(body, importName + "(", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return total + releaseId;", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return total * 2;", StringComparison.Ordinal);
+        StringAssert.Contains(body, "return total + releaseId | 0;", StringComparison.Ordinal);
+        StringAssert.Contains(body, "return Math.imul(total, 2) | 0;", StringComparison.Ordinal);
 
         var moduleImports = imports.Select(static pair =>
             "import { " + string.Join(", ", pair.Value.Select(static specifier => specifier.ToECMAScript())) + " } from \"" + pair.Key + "\";");

@@ -467,7 +467,7 @@ public sealed class SemanticWalkerReachableBranchClosureTests
     }
 
     [TestMethod]
-    public void Visit_PatternSwitchContinue_RejectsCrossingTheGeneratedIifeBoundary()
+    public void Visit_PatternSwitchContinue_PreservesTheEnclosingLoopTarget()
     {
         var block = GetBlock(
             """
@@ -489,10 +489,9 @@ public sealed class SemanticWalkerReachableBranchClosureTests
             }
             """);
 
-        var exception = Assert.ThrowsExactly<OperationTransformationException>(() =>
-            new SemanticWalker(true).Visit(block, new SenseArgument()));
-
-        StringAssert.Contains(exception.Message, "Continue statements inside pattern-matching switch", StringComparison.Ordinal);
+        var script = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToKnRECMAScript();
+        StringAssert.Contains(script, "switch (true)", StringComparison.Ordinal);
+        StringAssert.Contains(script, "continue;", StringComparison.Ordinal);
     }
 
     [TestMethod]

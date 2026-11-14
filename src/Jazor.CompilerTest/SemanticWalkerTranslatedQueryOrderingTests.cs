@@ -53,8 +53,8 @@ public sealed class SemanticWalkerTranslatedQueryOrderingTests
         StringAssert.Contains(body, "return Array.from(__src).map(__callback);");
         StringAssert.Contains(body, "return Array.from(__src);");
         StringAssert.Contains(body, "return value > 0;");
-        StringAssert.Contains(body, "return value % 3;");
-        StringAssert.Contains(body, "return value * 2;");
+        StringAssert.Contains(body, ")(value, 3)");
+        StringAssert.Contains(body, "return Math.imul(value, 2) | 0;");
         Assert.IsFalse(body.Contains("TranslatedQuery", StringComparison.Ordinal), body);
 
         _ = new Parser().ParseModule(module);

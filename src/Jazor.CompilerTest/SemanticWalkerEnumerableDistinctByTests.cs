@@ -52,7 +52,7 @@ public sealed class SemanticWalkerEnumerableDistinctByTests
         var importNames = imports[0].Value.Select(static specifier => specifier.ToECMAScript()).ToArray();
         CollectionAssert.AreEqual(new[] { "distinctBy" }, importNames);
         StringAssert.Contains(body, "distinctBy(releaseIds, releaseId => {", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return releaseId % 2;", StringComparison.Ordinal);
+        StringAssert.Contains(body, ")(releaseId, 2)", StringComparison.Ordinal);
         StringAssert.Contains(body, "Array.from(__src)", StringComparison.Ordinal);
 
         var moduleImports = "import { " + string.Join(", ", importNames) + " } from \"" + imports[0].Key + "\";";

@@ -706,8 +706,8 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  let arr = new Array(5);
-  let doubles = new Array(10);
+  let arr = new Array(5).fill(0);
+  let doubles = new Array(10).fill(0);
 }", script);
     }
 
@@ -833,7 +833,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  let a = 1 + 2, b = 3 * 4, c = 5 - 6;
+  let a = 1 + 2 | 0, b = Math.imul(3, 4) | 0, c = 5 - 6 | 0;
   let x = true, y = false, z = a > b;
 }", script);
     }
@@ -939,7 +939,19 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  let result = (1 + 2) * 3 - 4 / 2;
+  let result = (Math.imul(1 + 2 | 0, 3) | 0) - (($dividend, $divisor) => ($nonzero => {
+    {
+      if ($nonzero === 0)
+        throw new Error(""DivideByZeroException"");
+      if ($dividend === -2147483648 && $nonzero === -1)
+        throw new Error(""OverflowException"");
+    }
+    return ($integer => {
+      if ($integer < -2147483648 || $integer > 2147483647)
+        throw new Error(""OverflowException"");
+      return $integer;
+    })(Math.trunc($dividend / $divisor) + 0);
+  })($divisor))(4, 2) | 0;
   let condition = 5 > 3 && 2 < 4 || false;
 }", script);
     }
@@ -1021,9 +1033,9 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  let sum = 1 + 2 + 3;
+  let sum = (1 + 2 | 0) + 3 | 0;
   let pi = 3.14159;
-  let product = 2 * 3 * 4;
+  let product = Math.imul(Math.imul(2, 3) | 0, 4) | 0;
 }", script);
     }
 
@@ -1085,7 +1097,7 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(
 @"{
   function Add(a, b) {
-    return a + b;
+    return a + b | 0;
   }
   let sum = Add(1, 2);
 }", script);
@@ -1115,7 +1127,7 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(
 @"{
   function Multiply(a, b) {
-    return a * b;
+    return Math.imul(a, b) | 0;
   }
   let result = TestClass.Multiply(3, 4);
 }", script);
@@ -1374,7 +1386,7 @@ public sealed class SemanticWalkerDeclarationTest
   let dict = createDefault();
   v$0 = _7db4d9112b4ba3c4(dict, ""a"", undefined), a = v$0[1], v$0[0];
   v$1 = _7db4d9112b4ba3c4(dict, ""b"", undefined), b = v$1[1], v$1[0];
-  console.log(a + b);
+  console.log(a + b | 0);
 }", script);
     }
 
@@ -1468,8 +1480,8 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  for (let i = 0; i < 10; i++) {
-    let loopVar = i * 2;
+  for (let i = 0; i < 10; i = i + 1 | 0) {
+    let loopVar = Math.imul(i, 2) | 0;
     console.log(loopVar);
   }
 }", script);
@@ -1985,7 +1997,7 @@ public sealed class SemanticWalkerDeclarationTest
 @"{
   let a, b, c;
   a = b = c = 5;
-  console.log(a + b + c);
+  console.log((a + b | 0) + c | 0);
 }", script);
     }
 
@@ -2093,7 +2105,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  let sum = 1 + 2 + 3;
+  let sum = (1 + 2 | 0) + 3 | 0;
   let greeting = ""Hello"" + "" "" + ""World"";
 }", script);
     }
@@ -2153,8 +2165,8 @@ public sealed class SemanticWalkerDeclarationTest
 
         Assert.AreEqual(
 @"{
-  let arr = new Array(5);
-  let strs = new Array(10);
+  let arr = new Array(5).fill(0);
+  let strs = new Array(10).fill(null);
 }", script);
     }
 
@@ -2180,7 +2192,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(
 @"{
-  let matrix = new Array(3).fill().map(() => new Array(4));
+  let matrix = (($dimension0, $dimension1) => new Array($dimension0).fill().map(() => new Array($dimension1).fill(0)))(3, 4);
 }", script);
     }
 
@@ -2206,7 +2218,7 @@ public sealed class SemanticWalkerDeclarationTest
 
         AssertScriptEqual(
 @"{
-  let jagged = new Array(3);
+  let jagged = new Array(3).fill(null);
 }", script);
     }
 
@@ -2241,7 +2253,7 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(
 @"{
   function Add(a, b) {
-    return a + b;
+    return a + b | 0;
   }
   let result = Add(5, 1);
 }", script);
@@ -2274,7 +2286,7 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(
 @"{
   function Factorial(n) {
-    return n <= 1 ? 1 : n * Factorial(n - 1);
+    return n <= 1 ? 1 : Math.imul(n, Factorial(n - 1 | 0)) | 0;
   }
   let result = Factorial(5);
 }", script);
@@ -2310,7 +2322,7 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(@"{
   let a, v$0, b, v$1;
   if ((v$0 = _16e2a901535b765e(""1"", undefined), a = v$0[1], v$0[0]) && (v$1 = _16e2a901535b765e(""2"", undefined), b = v$1[1], v$1[0])) {
-    console.log(a + b);
+    console.log(a + b | 0);
   }
 }", script);
     }

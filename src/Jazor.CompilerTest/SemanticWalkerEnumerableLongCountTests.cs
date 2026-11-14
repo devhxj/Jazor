@@ -56,7 +56,7 @@ public sealed class SemanticWalkerEnumerableLongCountTests
         CollectionAssert.AreEquivalent(new[] { "longCount", "longCountWhere" }, importNames);
         StringAssert.Contains(body, "longCount(releaseIds)", StringComparison.Ordinal);
         StringAssert.Contains(body, "longCountWhere(releaseIds, releaseId =>", StringComparison.Ordinal);
-        StringAssert.Contains(body, "return all + positive;", StringComparison.Ordinal);
+        StringAssert.Contains(body, "return BigInt.asIntN(64, all + positive);", StringComparison.Ordinal);
 
         var moduleImports = "import { " + string.Join(", ", importNames) + " } from \"" + imports[0].Key + "\";";
         _ = new Parser().ParseModule(moduleImports + "\nfunction verify() " + body);

@@ -281,7 +281,7 @@ internal static partial class DirectRenderCaseCatalog
             },
             1 => new("var " + local + " = Count * 2 + " + hostIndex.ToString(CultureInfo.InvariantCulture) + "; builder.AddContent(0, " + local + ");", "const " + local)
             {
-                AdditionalExpectedFragment = "props.Count * 2",
+                AdditionalExpectedFragment = "Math.imul(props.Count, 2) | 0",
                 Members = "[Parameter] public int Count { get; set; }",
                 UsesProps = true
             },

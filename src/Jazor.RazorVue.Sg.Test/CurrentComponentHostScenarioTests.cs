@@ -357,7 +357,7 @@ internal static class CurrentComponentHostScenarioCatalog
             "component-declared-invoke-async-member-path",
             CurrentComponentHostConfigurationKind.ComponentInvokeAsyncName,
             ComponentInvokeAsyncSource,
-            ["componentInvokeAsync(() => {", "state.count++;", "return;"],
+            ["componentInvokeAsync(() => {", " = state.count, state.count = ", "return;"],
             ["invokeAsync(() => {"]),
         Success(
             "external-instance-receiver",

@@ -78,6 +78,13 @@ public sealed class SemanticWalkerIsTypeSupportedTypesTests
     [DataRow("System.ValueTuple<int, int>", "value !== null && typeof value === \"object\"")]
     public void Visit_IsType_SupportedTarget_EmitsDeterministicRuntimeDiscriminator(string target, string expected)
     {
+        if (expected.Contains("\"number\"", StringComparison.Ordinal) || expected.Contains("\"bigint\"", StringComparison.Ordinal))
+        {
+            var failure = Assert.ThrowsExactly<OperationTransformationException>(() => Emit($"bool result = value is {target};"));
+            StringAssert.Contains(failure.Message, "CLR boxing identities", StringComparison.Ordinal);
+            Assert.IsNotNull(failure.SourceLocation);
+            return;
+        }
         var script = Emit($"bool result = value is {target};");
 
         StringAssert.Contains(script, $"let result = {expected};", StringComparison.Ordinal);
@@ -89,7 +96,7 @@ public sealed class SemanticWalkerIsTypeSupportedTypesTests
     [TestMethod]
     public void Visit_IsType_NullableTarget_DoesNotReferenceNullableRuntimeType()
     {
-        var script = Emit("bool result = value is int?;");
+        var script = Emit("object boxed = 1; bool result = boxed is int?;");
 
         Assert.IsFalse(script.Contains("Nullable", StringComparison.Ordinal), script);
     }

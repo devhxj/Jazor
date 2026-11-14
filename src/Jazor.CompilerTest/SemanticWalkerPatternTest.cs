@@ -317,7 +317,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 42;
-  let result = typeof obj === ""number"";
+  let result = true;
 }", script);
   }
 
@@ -346,7 +346,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitIsType(isTypeOperation!, new());
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"typeof obj === ""number""", script);
+    Assert.AreEqual("true", script);
   }
 
   /// <summary>
@@ -712,7 +712,7 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let value = -1;
+  let value = -1 | 0;
   let result = (() => {
     const v$0 = value;
     if (value > 0)
@@ -2146,7 +2146,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let value;
   let obj = 42;
-  if (typeof obj === ""number"" && (value = obj, true)) {
+  if (true && (value = obj, true)) {
     console.log(value);
   }
 }", script);
@@ -2180,7 +2180,7 @@ public sealed class SemanticWalkerPatternTest
     var node = walker.VisitDeclarationPattern(declarationPatternOperation, arg);
     var script = node?.ToKnRECMAScript();
 
-    Assert.AreEqual(@"typeof obj === ""number"" && (value = obj, true)", script);
+    Assert.AreEqual("true && (value = obj, true)", script);
   }
 
   [TestMethod]
@@ -2551,13 +2551,9 @@ public sealed class SemanticWalkerPatternTest
             }
             ");
 
-    var exception = Assert.Throws<OperationTransformationException>(
-      () => new SemanticWalker(true).Visit(block, new SenseArgument()));
-
-    StringAssert.Contains(
-      exception.Message,
-      "Continue statements inside pattern-matching switch are not supported",
-      StringComparison.Ordinal);
+    var script = new SemanticWalker(true).Visit(block, new SenseArgument())!.ToKnRECMAScript();
+    StringAssert.Contains(script, "switch (true)", StringComparison.Ordinal);
+    StringAssert.Contains(script, "continue;", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -2898,7 +2894,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 42n;
-  let result = typeof obj === ""bigint"";
+  let result = true;
 }", script);
   }
 
@@ -3152,7 +3148,7 @@ public sealed class SemanticWalkerPatternTest
     Assert.AreEqual(@"{
   let x, y;
   let obj = 42;
-  let result = typeof obj === ""number"" && (x = obj, true) && (typeof obj === ""number"" && (y = obj, true));
+  let result = true && (x = obj, true) && (true && (y = obj, true));
 }", script);
   }
 
@@ -3184,7 +3180,7 @@ public sealed class SemanticWalkerPatternTest
   let a, b, c;
   let array = [1, 2, 3];
   if (Array.isArray(array) && array.length === 3 && (a = array[0], true) && (b = array[1], true) && (c = array[2], true)) {
-    console.log(a + b + c);
+    console.log((a + b | 0) + c | 0);
   }
 }", script);
   }
@@ -3595,7 +3591,7 @@ public sealed class SemanticWalkerPatternTest
 
     Assert.AreEqual(@"{
   let obj = 123.45;
-  let result = typeof obj === ""number"";
+  let result = true;
 }", script);
   }
 
@@ -3826,7 +3822,7 @@ public sealed class SemanticWalkerPatternTest
     AssertScriptEqual(@"{
   let value;
   let obj = 42;
-  if (typeof obj === ""number"" && (value = obj, true)) {
+  if (true && (value = obj, true)) {
     console.log(value);
   }
 }", script);
@@ -3850,13 +3846,8 @@ public sealed class SemanticWalkerPatternTest
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    StringAssert.Contains(script, "let v$0, value;", StringComparison.Ordinal);
-    AssertContainsCount(script, "= GetValue(),", 1);
-    StringAssert.Contains(script, "let result = (v$0 = GetValue(), typeof v$0 === \"number\" && (value = v$0, true));", StringComparison.Ordinal);
+    var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new SenseArgument()));
+    StringAssert.Contains(failure.Message, "CLR boxing identities", StringComparison.Ordinal);
   }
 
   [TestMethod]
@@ -5006,7 +4997,7 @@ line2"";
     var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
 
     AssertScriptEqual(@"{
-  let value = new Array(3);
+  let value = new Array(3).fill(0);
   let result = false;
 }", script);
   }
@@ -5818,7 +5809,7 @@ line2"";
     Assert.AreEqual(@"{
   let x;
   let obj = 42;
-  if (typeof obj === ""number"" && (x = obj, true)) {
+  if (true && (x = obj, true)) {
     let y;
     if (x > 0 && (y = x, true)) {
       console.log(`${x}, ${y}`);
@@ -5850,19 +5841,8 @@ line2"";
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    Assert.AreEqual(@"{
-  let items = [1, ""hello"", 3.14];
-  for (let item of items) {
-    let value;
-    if (typeof item === ""number"" && (value = item, true)) {
-      console.log(value);
-    }
-  }
-}", script);
+    var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new SenseArgument()));
+    StringAssert.Contains(failure.Message, "CLR boxing identities", StringComparison.Ordinal);
   }
 
   #endregion
@@ -6000,18 +5980,8 @@ line2"";
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    AssertScriptEqual(@"{
-  let point = {
-    horizontal: 0,
-    vertical: 0,
-    label: ""origin""
-  };
-  let result = point.horizontal === 0 && point.vertical === 0 && point.label === ""origin"";
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new SenseArgument()));
+    StringAssert.Contains(failure.Message, "constructor body", StringComparison.Ordinal);
   }
 
   [TestMethod]
@@ -6242,7 +6212,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  let jagged = new Array(2);
+  let jagged = new Array(2).fill(null);
   jagged[0] = [1, 2];
   jagged[1] = [3, 4, 5];
   let result = Array.isArray(jagged) && jagged.length >= 1;
@@ -6618,7 +6588,7 @@ line2"";
     var script = node?.ToKnRECMAScript();
 
     Assert.AreEqual(@"{
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i = i + 1 | 0) {
     if (i > 0 && i < 5) {
       console.log(i);
     }
@@ -6653,7 +6623,8 @@ line2"";
     Assert.AreEqual(@"{
   let value = 5;
   do {
-    value--;
+    let v$0;
+    v$0 = value, value = v$0 - 1 | 0, v$0;
   } while (value > 0);
 }", script);
   }
@@ -6681,21 +6652,8 @@ line2"";
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    Assert.AreEqual(
-@"{
-  let items = [1, ""hello"", 3.14, 42];
-  for (let item of items) {
-    let value;
-    if (typeof item === ""number"" && (value = item, true) && item > 0) {
-      console.log(value);
-    }
-  }
-}", script);
-
+    var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new SenseArgument()));
+    StringAssert.Contains(failure.Message, "CLR boxing identities", StringComparison.Ordinal);
   }
 
   #endregion
@@ -6769,7 +6727,7 @@ line2"";
 
     AssertContainsCount(script, "obj.length", 1);
     StringAssert.Contains(script, "(v$0 = obj.length, v$0 > 0 && v$0 < 100)", StringComparison.Ordinal);
-    StringAssert.Contains(script, "|| typeof obj === \"number\";", StringComparison.Ordinal);
+    StringAssert.Contains(script, "|| false;", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -6884,7 +6842,7 @@ line2"";
     Assert.AreEqual(
 @"{
   let obj = 42;
-  let result = typeof obj === ""number"" && obj > 0 || typeof obj === ""string"" && obj != null && obj.length > 0;
+  let result = true && obj > 0 || typeof obj === ""string"" && obj != null && obj.length > 0;
 }", script);
 
   }
@@ -6912,7 +6870,7 @@ line2"";
 
     Assert.AreEqual(@"{
   let obj = 42;
-  console.log(typeof obj === ""number"" ? ""integer"" : ""not integer"");
+  console.log(true ? ""integer"" : ""not integer"");
 }", script);
   }
 
@@ -7181,7 +7139,7 @@ line2"";
     AssertScriptEqual(@"{
   let d;
   let obj = 3.14;
-  if (typeof obj === ""number"" && (d = obj, true)) {
+  if (true && (d = obj, true)) {
     console.log(d);
   }
 }", script);
@@ -7250,8 +7208,8 @@ line2"";
 
     Assert.AreEqual(
 @"{
-  let value = -5;
-  if (value === -5) {
+  let value = -5 | 0;
+  if (value === (-5 | 0)) {
     console.log(""negative five"");
   }
 }", script);
@@ -7780,7 +7738,7 @@ line2"";
     const v$0 = obj;
     if (typeof v$0 === ""string"" && (s = v$0, true))
       return `string: ${s ?? """"}`;
-    if (typeof v$0 === ""number"" && (i = v$0, true))
+    if (false && (i = v$0, true))
       return `int: ${i}`;
     return ""other"";
   })();
@@ -7815,7 +7773,7 @@ line2"";
     AssertScriptEqual(@"{
   let i;
   let obj = 42;
-  let result = typeof obj === ""number"" && (i = obj, true) ? `int: ${i}` : ""not int"";
+  let result = true && (i = obj, true) ? `int: ${i}` : ""not int"";
 }", script);
   }
 
@@ -7842,19 +7800,8 @@ line2"";
             }
             ");
 
-    var walker = new SemanticWalker(true);
-    var node = walker.Visit(block, new());
-    var script = node?.ToKnRECMAScript();
-
-    Assert.AreEqual(@"{
-  let items = [1, ""two"", 3];
-  for (let item of items) {
-    let n;
-    if (typeof item === ""number"" && (n = item, true)) {
-      console.log(n * 2);
-    }
-  }
-}".ReplaceLineEndings(), script?.ReplaceLineEndings());
+    var failure = Assert.ThrowsExactly<OperationTransformationException>(() => new SemanticWalker(true).Visit(block, new SenseArgument()));
+    StringAssert.Contains(failure.Message, "CLR boxing identities", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -7989,7 +7936,7 @@ line2"";
     AssertScriptEqual(@"{
   let n;
   let obj = 42;
-  if (typeof obj === ""number"" && (n = obj, true)) {
+  if (false && (n = obj, true)) {
     console.log(n);
   }
 }", script);
@@ -8564,7 +8511,7 @@ line2"";
   let first, second;
   let arr = [1, 2];
   if (Array.isArray(arr) && arr.length === 2 && (first = arr[0], true) && (second = arr[1], true)) {
-    console.log(first + second);
+    console.log(first + second | 0);
   }
 }", script);
   }
@@ -8597,7 +8544,7 @@ line2"";
     AssertScriptEqual(@"{
   let a, c;
   a = 1, c = 3;
-  console.log(a + c);
+  console.log(a + c | 0);
 }", script);
   }
 

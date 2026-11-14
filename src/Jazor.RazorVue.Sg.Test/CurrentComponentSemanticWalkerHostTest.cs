@@ -15,6 +15,65 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class VueSemanticWalkerHostTest
 {
     [TestMethod]
+    [DataRow("Changed")]
+    [DataRow("LocationChanged")]
+    public void RewriteComponentEvents_KeepsSourceEventsOnTheCompilerProtocol(string eventName)
+    {
+        var fixture = CompileComponent($$"""
+            public sealed class Counter : ComponentBase
+            {
+                public sealed class Source { public event Action {{eventName}}; }
+                private void Attach(Source source) { source.{{eventName}} += () => { }; }
+            }
+            """, "Attach");
+        var declarations = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default)
+        {
+            [fixture.Component.GetTypeMembers("Source").Single().OriginalDefinition] = "Source"
+        };
+        var script = new SemanticWalker(fixture.Component, declarations) { Host = new VueSemanticWalkerHost(fixture.Component) }
+            .Visit(fixture.BuildRenderTreeBody, new())!.ToKnRECMAScript();
+        StringAssert.Contains(script, "$eventTarget", StringComparison.Ordinal);
+        StringAssert.Contains(script, "source", StringComparison.Ordinal);
+        Assert.IsFalse(script.Contains("$navigation", StringComparison.Ordinal), script);
+    }
+
+    [TestMethod]
+    public void RewriteNavigationSubscription_RejectsAnUnlowerableHandlerAtItsSource()
+    {
+        var fixture = CompileComponent("""
+            public sealed class Counter : ComponentBase
+            {
+                [Inject] public NavigationManager Navigation { get; set; } = null!;
+                private void Attach() { Navigation.LocationChanged += null; }
+            }
+            """, "Attach");
+        var walker = new SemanticWalker(true) { Host = new VueSemanticWalkerHost(fixture.Component) };
+        var failure = Assert.ThrowsExactly<OperationTransformationException>(() => walker.Visit(fixture.BuildRenderTreeBody, new()));
+        StringAssert.Contains(failure.Message, "requires a component method or lambda handler", StringComparison.Ordinal);
+        Assert.IsNotNull(failure.SourceLocation);
+    }
+
+    [TestMethod]
+    [DataRow("private T value;")]
+    [DataRow("public T Value { get; set; }")]
+    public async Task CompileComponent_UnconstrainedStateDefault_ReportsTheCompilerBoundary(string state)
+    {
+        var fixture = CompileComponent($$"""
+            public sealed class Counter<T> : ComponentBase
+            {
+                {{state}}
+                protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+            }
+            """);
+        var converter = new AstConverter(fixture.Component, fixture.SemanticModel,
+            new AstConverterOptions(AstConverterProfile.Standard, Host: new VueSemanticWalkerHost(fixture.Component)));
+
+        var failure = await Assert.ThrowsExactlyAsync<SyntaxNodeTransformationException>(() => converter.Convert());
+        StringAssert.Contains(failure.Message, "default(T)", StringComparison.Ordinal);
+        Assert.IsNotNull(failure.SourceLocation);
+    }
+
+    [TestMethod]
     public void CollectReachableMembers_IncludesRenderStateParameterAndEventHandlerWithoutUnusedMembers()
     {
         var fixture = CompileComponent(
@@ -198,7 +257,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
+        StringAssert.Contains(script!, " = state.count, state.count = ", StringComparison.Ordinal);
         StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("StateHasChanged", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
@@ -236,7 +295,7 @@ public sealed class VueSemanticWalkerHostTest
         Assert.IsNotNull(script);
         StringAssert.Contains(script!, "invokeAsync(Increment);", StringComparison.Ordinal);
         StringAssert.Contains(script!, "invokeAsync(() => {", StringComparison.Ordinal);
-        StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
+        StringAssert.Contains(script!, " = state.count, state.count = ", StringComparison.Ordinal);
         StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("InvokeAsync", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("this.", StringComparison.Ordinal), script);
@@ -273,7 +332,7 @@ public sealed class VueSemanticWalkerHostTest
         var script = walker.Visit(fixture.BuildRenderTreeBody, new())?.ToKnRECMAScript()?.ReplaceLineEndings("\n");
 
         Assert.IsNotNull(script);
-        StringAssert.Contains(script!, "state.count++;", StringComparison.Ordinal);
+        StringAssert.Contains(script!, " = state.count, state.count = ", StringComparison.Ordinal);
         StringAssert.Contains(script!, "stateHasChanged();", StringComparison.Ordinal);
         StringAssert.Contains(script!, "invokeAsync(Increment);", StringComparison.Ordinal);
         Assert.IsFalse(script!.Contains("StateHasChanged", StringComparison.Ordinal), script);

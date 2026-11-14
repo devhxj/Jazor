@@ -3606,7 +3606,11 @@ public sealed class SdkIntegrationTests
         WriteFile(Path.Combine(harnessJazorRoot, "vite.config.js"), """
 
             import { defineConfig } from 'vite';
-            export default defineConfig({ base: './', build: {
+            export default defineConfig({ base: './', define: {
+              __VUE_OPTIONS_API__: false,
+              __VUE_PROD_DEVTOOLS__: false,
+              __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
+            }, build: {
               target: 'esnext', sourcemap: true,
               rolldownOptions: { input: 'client-entry.mjs', output: { entryFileNames: 'client-entry.js' } }
             }});

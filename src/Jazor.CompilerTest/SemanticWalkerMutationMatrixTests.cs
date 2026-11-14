@@ -213,161 +213,142 @@ internal static class MutationLoweringCaseCatalog
             "mutation-lowering.list.prefix-increment",
             "mapped-indexer-prefix-new-value",
             "ListPrefixIncrement",
-            """
-            {
-              let v$1;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 1);
-                add(v$0, 2);
-                add(v$0, 3);
-                return v$0;
-              })();
-              let after = (v$1 = _d389c31d59037b42(list, 0) + 1, _c16a7960302ea054(list, 0, v$1), v$1);
-            }
-            """),
+            @"{
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  let after = (v$1 = _d389c31d59037b42(list, 0) + 1 | 0, _c16a7960302ea054(list, 0, v$1), v$1);
+}"),
         Case(
             "mutation-lowering.list.prefix-decrement",
             "mapped-indexer-prefix-new-value",
             "ListPrefixDecrement",
-            """
-            {
-              let v$1;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 1);
-                add(v$0, 2);
-                add(v$0, 3);
-                return v$0;
-              })();
-              let after = (v$1 = _d389c31d59037b42(list, 0) - 1, _c16a7960302ea054(list, 0, v$1), v$1);
-            }
-            """),
+            @"{
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  let after = (v$1 = _d389c31d59037b42(list, 0) - 1 | 0, _c16a7960302ea054(list, 0, v$1), v$1);
+}"),
         Case(
             "mutation-lowering.list.postfix-decrement",
             "mapped-indexer-postfix-old-value",
             "ListPostfixDecrement",
-            """
-            {
-              let v$1;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 1);
-                add(v$0, 2);
-                add(v$0, 3);
-                return v$0;
-              })();
-              let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$1 - 1), v$1);
-            }
-            """),
+            @"{
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$1 - 1 | 0), v$1);
+}"),
         Case(
             "mutation-lowering.list-from-end.prefix-increment",
             "implicit-indexer-prefix-single-evaluation",
             "ListFromEndPrefixIncrement",
-            """
-            {
-              let v$1, v$2, v$3;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 1);
-                add(v$0, 2);
-                add(v$0, 3);
-                return v$0;
-              })();
-              let next = () => {
-                return list;
-              };
-              let after = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) + 1, _c16a7960302ea054(v$1, v$2, v$3), v$3);
-            }
-            """),
+            @"{
+  let v$1, v$2, v$3;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  let next = () => {
+    return list;
+  };
+  let after = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) + 1 | 0, _c16a7960302ea054(v$1, v$2, v$3), v$3);
+}"),
         Case(
             "mutation-lowering.list-from-end.prefix-decrement",
             "implicit-indexer-prefix-single-evaluation",
             "ListFromEndPrefixDecrement",
-            """
-            {
-              let v$1, v$2, v$3;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 1);
-                add(v$0, 2);
-                add(v$0, 3);
-                return v$0;
-              })();
-              let next = () => {
-                return list;
-              };
-              let after = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) - 1, _c16a7960302ea054(v$1, v$2, v$3), v$3);
-            }
-            """),
+            @"{
+  let v$1, v$2, v$3;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 1);
+    add(v$0, 2);
+    add(v$0, 3);
+    return v$0;
+  })();
+  let next = () => {
+    return list;
+  };
+  let after = (v$1 = next(), v$2 = v$1.length - 1, v$3 = _d389c31d59037b42(v$1, v$2) - 1 | 0, _c16a7960302ea054(v$1, v$2, v$3), v$3);
+}"),
         Case(
             "mutation-lowering.array.postfix-decrement",
             "native-array-update",
             "ArrayPostfixDecrement",
-            """
-            {
-              let values = [1, 2, 3];
-              let before = values[0]--;
-            }
-            """),
+            @"{
+  let v$0;
+  let values = [1, 2, 3];
+  let before = (v$0 = values[0], values[0] = v$0 - 1 | 0, v$0);
+}"),
         Case(
             "mutation-lowering.array-from-end.postfix-increment",
             "native-array-from-end-single-evaluation",
             "ArrayFromEndPostfixIncrement",
-            """
-            {
-              let v$0;
-              let values = [1, 2, 3];
-              let next = () => {
-                return values;
-              };
-              let before = (v$0 = next(), v$0[v$0.length - 1]++);
-            }
-            """),
+            @"{
+  let v$0, v$1, v$2;
+  let values = [1, 2, 3];
+  let next = () => {
+    return values;
+  };
+  let before = (v$0 = next(), v$1 = v$0.length - 1, (v$2 = v$0[v$1], v$0[v$1] = v$2 + 1 | 0, v$2));
+}"),
         Case(
             "mutation-lowering.array-from-end.prefix-decrement",
             "native-array-from-end-single-evaluation",
             "ArrayFromEndPrefixDecrement",
-            """
-            {
-              let v$0;
-              let values = [1, 2, 3];
-              let next = () => {
-                return values;
-              };
-              let after = (v$0 = next(), --v$0[v$0.length - 1]);
-            }
-            """),
+            @"{
+  let v$0, v$1, v$2;
+  let values = [1, 2, 3];
+  let next = () => {
+    return values;
+  };
+  let after = (v$0 = next(), v$1 = v$0.length - 1, (v$2 = v$0[v$1], v$0[v$1] = v$2 - 1 | 0, v$0[v$1]));
+}"),
         Case(
             "mutation-lowering.long-list.postfix-increment",
             "bigint-indexer-postfix-old-value",
             "LongListPostfixIncrement",
-            """
-            {
-              let v$1;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 10n);
-                return v$0;
-              })();
-              let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, v$1 + 1n), v$1);
-            }
-            """),
+            @"{
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 10n);
+    return v$0;
+  })();
+  let before = (v$1 = _d389c31d59037b42(list, 0), _c16a7960302ea054(list, 0, BigInt.asIntN(64, v$1 + 1n)), v$1);
+}"),
         Case(
             "mutation-lowering.long-list.prefix-decrement",
             "bigint-indexer-prefix-new-value",
             "LongListPrefixDecrement",
-            """
-            {
-              let v$1;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 10n);
-                return v$0;
-              })();
-              let after = (v$1 = _d389c31d59037b42(list, 0) - 1n, _c16a7960302ea054(list, 0, v$1), v$1);
-            }
-            """),
+            @"{
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 10n);
+    return v$0;
+  })();
+  let after = (v$1 = BigInt.asIntN(64, _d389c31d59037b42(list, 0) - 1n), _c16a7960302ea054(list, 0, v$1), v$1);
+}"),
         Case(
             "mutation-lowering.biginteger-list.postfix-increment",
             "mapped-bigint-indexer-postfix-old-value",
@@ -402,17 +383,15 @@ internal static class MutationLoweringCaseCatalog
             "mutation-lowering.ulong-list.prefix-increment",
             "bigint-indexer-prefix-new-value",
             "ULongListPrefixIncrement",
-            """
-            {
-              let v$1;
-              let list = (() => {
-                let v$0 = createDefault();
-                add(v$0, 10n);
-                return v$0;
-              })();
-              let after = (v$1 = _d389c31d59037b42(list, 0) + 1n, _c16a7960302ea054(list, 0, v$1), v$1);
-            }
-            """),
+            @"{
+  let v$1;
+  let list = (() => {
+    let v$0 = createDefault();
+    add(v$0, 10n);
+    return v$0;
+  })();
+  let after = (v$1 = BigInt.asUintN(64, _d389c31d59037b42(list, 0) + 1n), _c16a7960302ea054(list, 0, v$1), v$1);
+}"),
         Case(
             "mutation-lowering.int128-list.postfix-decrement",
             "bigint-indexer-postfix-old-value",

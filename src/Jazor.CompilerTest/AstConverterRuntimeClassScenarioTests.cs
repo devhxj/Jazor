@@ -692,7 +692,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var expectedHelper = Util.GetMemberConstructorHelperName(baseIntConstructor);
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, $"super(\"{expectedHelper}\", seed + 1)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, $"super(\"{expectedHelper}\", seed + 1 | 0)", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 
         var root = Path.Combine(
@@ -1740,7 +1740,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
 
         Assert.IsNotNull(script, scenarioId);
         StringAssert.Contains(script, "let i = 0;", StringComparison.Ordinal, scenarioId);
-        StringAssert.Contains(script, "for (; i < 2; i++)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "i < 2;", StringComparison.Ordinal, scenarioId);
         Assert.IsFalse(script.Contains("for (let i", StringComparison.Ordinal), scenarioId);
         _ = new Parser().ParseModule(script);
 
@@ -1825,7 +1825,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
         var script = module?.ToKnRECMAScript();
 
         Assert.IsNotNull(script, scenarioId);
-        StringAssert.Contains(script, "item++, await this.TickAsync(item)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "item = item + 1 | 0, await this.TickAsync(item)", StringComparison.Ordinal, scenarioId);
         StringAssert.Contains(script, "await Promise.resolve()", StringComparison.Ordinal, scenarioId);
         _ = new Parser().ParseModule(script);
 

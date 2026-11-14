@@ -39,11 +39,11 @@ public sealed class SemanticWalkerTranslatedQueryJoinTests
         AssertBodyUsesImports(
             GetBlockOperation(source, "JoinByParity"),
             ["_f10104b4c52b4f96"],
-            ["return outer % 2;", "return inner % 2;", "return outer * 100 + inner;"]);
+            [")(outer, 2)", ")(inner, 2)", "return (Math.imul(outer, 100) | 0) + inner | 0;"]);
         AssertBodyUsesImports(
             GetBlockOperation(source, "GroupJoinByParity"),
             ["_b61f41d1ac124b69", "_1cb3ec9a7fb8aaab"],
-            ["return outer % 2;", "return inner % 2;", "return outer * 10 + _1cb3ec9a7fb8aaab(matches);"]);
+            [")(outer, 2)", ")(inner, 2)", "return (Math.imul(outer, 10) | 0) + _1cb3ec9a7fb8aaab(matches) | 0;"]);
     }
 
     private static void AssertBodyUsesImports(

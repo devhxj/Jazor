@@ -17,6 +17,9 @@ namespace Jazor.Compiler;
 /// </remarks>
 public class CompositeSemanticWalkerHost : SemanticWalkerHost
 {
+    public override Expression? RewriteImplicitFieldDefaultValue(IFieldSymbol field, SenseArgument argument)
+        => First(host => host.RewriteImplicitFieldDefaultValue(field, argument));
+
     private readonly IReadOnlyList<SemanticWalkerHost> _hosts;
 
     public CompositeSemanticWalkerHost(params SemanticWalkerHost[] hosts)

@@ -304,7 +304,7 @@ public sealed class SemanticWalkerHostRewriteTest
         _ = new Acornima.Parser().ParseModule($"function test() {script}");
         Assert.IsFalse(script.Contains("childType", StringComparison.Ordinal), script);
         Assert.IsFalse(script.Contains("typeof", StringComparison.Ordinal), script);
-        StringAssert.Contains(script, "let count = 2, next = count + 1;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let count = 2, next = count + 1 | 0;", StringComparison.Ordinal);
         StringAssert.Contains(script, "console.log(next);", StringComparison.Ordinal);
         Assert.Contains("childType", skipHost.ClaimedSymbols);
     }
@@ -534,7 +534,7 @@ public sealed class SemanticWalkerHostRewriteTest
 
         Assert.IsNotNull(script);
         _ = new Acornima.Parser().ParseModule($"function test(count, offset) {script}");
-        StringAssert.Contains(script, "return props.count + offset;", StringComparison.Ordinal);
+        StringAssert.Contains(script, "return props.count + offset | 0;", StringComparison.Ordinal);
         Assert.AreEqual(1, host.RewriteCount);
     }
 
