@@ -2573,7 +2573,7 @@ public sealed class EcmaScriptVueRouteCompilerBoundaryTests
         StringAssert.Contains(script, "history.push(\"/users\", state);");
         StringAssert.Contains(script, "history.replace(\"/users/7\", state);");
         StringAssert.Contains(script, "let stop = history.listen((to, from, info) => {");
-        StringAssert.Contains(script, "history.go(-1, false);");
+        StringAssert.Contains(script, "history.go(-1 | 0, false);");
         StringAssert.Contains(script, "state: state");
     }
 
