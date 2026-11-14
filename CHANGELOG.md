@@ -2,15 +2,33 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## Unreleased · 2026-11-15
+## 2026-11-15
 
-- 修复整数除法、checked 溢出、unchecked 回绕、整数转换和更新的错误结果，并正确初始化数组与模块字段。
-- 修复模式 switch 中 return、await 和循环转移被额外函数截断的问题，以及表达式体空抑制无法生成代码的问题。
-- 对缺少运行时协议的动态运算、内存/引用操作、接口分派、多播委托、泛型静态存储、record 复制/构造、自定义枚举器与 awaiter 给出明确源码诊断；数值装箱判定只采用可证明的 CLR 类型信息。此前静默生成错误代码的写法现在可能被拒绝，替代方案见[逐项修复记录](docs/04-roadmap/compiler-syntax-bug-fixes.md)。
+### Jazor 1.3.0
 
-- Correct integer division, checked overflow, unchecked wrapping, integer conversion and updates; initialize allocated arrays and module fields with typed defaults.
-- Preserve return, await and loop transfers in pattern switches, and compile expression-bodied null suppression reliably.
-- Diagnose unsupported runtime protocols at their authored source locations instead of emitting misleading JavaScript. Numeric boxing checks require provable CLR identity. Previously accepted unsafe forms can now fail deliberately; see the [35 issue resolutions](docs/04-roadmap/compiler-syntax-bug-fixes.md).
+中文 | English
+
+#### 新增功能
+
+- 模式 switch 支持在原函数内保留 return、await、yield 和循环转移，包括带 await 的 guard 与 finally；新增宿主字段默认值扩展点，使 RazorVue 的回调、DOM 引用和泛型参数继续使用其已声明的运行时表示。新增支持面与扩展接口按 MINOR 通道发布。by @devhxj
+
+#### 问题修复
+
+- 修复整数除法、checked 溢出、unchecked 回绕、整数转换和更新的错误结果；保留求值顺序、零除异常和类型位宽。by @devhxj
+- 正确初始化数组和模块字段；多维数组的维度只求值一次，结构化默认值独立分配，模块初始化表达式可读取后续字段的默认值。by @devhxj
+- 修复表达式体中的空抑制等包装语法无法生成代码的问题。by @devhxj
+- 完成 35 项语法 bug 修复：缺少运行时协议的动态运算、内存/引用操作、接口分派、多播委托、泛型静态存储、record 复制/构造、自定义枚举器与 awaiter 提供带源码位置的诊断；数值装箱判定只采用可证明的 CLR 类型信息。此前会静默生成错误代码的写法现在明确拒绝，迁移替代方案见[逐项修复记录](docs/04-roadmap/compiler-syntax-bug-fixes.md)。by @devhxj
+
+New Features
+
+- Preserve return, await, yield and loop transfers inside the authored function for pattern switches, including awaited guards and finally blocks. Add a host field-default extension point so RazorVue callbacks, DOM references and generic parameters retain their declared runtime representations. The additional support and extension API use the MINOR channel. by @devhxj
+
+Bug Fixes
+
+- Correct integer division, checked overflow, unchecked wrapping, integer conversions and updates while preserving evaluation order, divide-by-zero failures and declared widths. by @devhxj
+- Initialize allocated arrays and module fields with typed defaults. Evaluate rectangular dimensions once, allocate independent structured defaults, and make forward field defaults visible to module initializers. by @devhxj
+- Compile expression-bodied null suppression and related wrapper syntax reliably. by @devhxj
+- Resolve 35 syntax bugs with correct output or source diagnostics for missing dynamic, memory/reference, interface dispatch, multicast delegate, generic static storage, record copy/construction, enumerator and awaiter protocols. Numeric boxing checks require provable CLR identity. Previously accepted forms that emitted incorrect code now fail deliberately; migration alternatives are listed in the [issue resolutions](docs/04-roadmap/compiler-syntax-bug-fixes.md). by @devhxj
 
 ## 2026-11-13
 

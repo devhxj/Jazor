@@ -1,6 +1,6 @@
 # Compiler syntax bug resolutions
 
-Status: implemented in the working source; not yet released.
+Release: [Jazor 1.3.0](https://github.com/devhxj/Jazor/releases/tag/v1.3.0).
 
 This ledger tracks the 35 `bug` issues from the C# syntax audit. A diagnostic resolution means the compiler deliberately rejects a runtime protocol it cannot preserve. It does not advertise support for that language feature. Ordinary source classes still compile without an `[ECMAScript]` permission marker.
 
