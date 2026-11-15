@@ -54,6 +54,12 @@ DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable�
 
 提案按复用验证、可构建组件、语义编辑器、npm 组件组合和发布消费者分阶段验收。首个导入器聚焦 npm，JSR 专用接入不在初始范围；运行时复用现有 NodeApi、pnpm、Vue ESM 与 Emit 链路。智能感知覆盖 C# 与组件参数补全、上下文类型、导航、诊断、重命名和不完整语法恢复；具体导入指令、组件参数/生命周期规则及编辑器范围需验证后确定，尚不构成可安装的支持声明。
 
+## LibNode LTS 原生包提案
+
+[Issue #139](https://github.com/devhxj/Jazor/issues/139)提出自行构建 `Jazor.LibNode` 总包及 RID 原生包：以实施时最新 Node.js LTS 为基线，参考微软 LibNode 的分包方式，移植与所选 `Microsoft.JavaScript.NodeApi` 匹配的 `node_embedding_*` C API，继续复用微软托管互操作层。2026-11-15 查询官方索引的首个候选为 Node `v26.13.1`；当前实际依赖仍是微软 LibNode `20.1800.215`，本提案不代表已经升级。
+
+验收要求复用微软现有嵌入、GC 与适用互操作测试，以及对应原生 C embedding 测试，保留断言与夹具，仅适配包选择、路径及运行入口；报告记录上游修订和实际加载的候选库，区分真实原生运行与 mock 覆盖。先验证 C ABI、已有四个平台组合和隔离 NuGet consumer，再通过现有 NodeApi、pnpm、Vite、WebIDL 与 SSR 发布闭包门禁。额外 RID、旧宿主 workaround 的移除及新 addon 兼容性必须分别取得证据；发布沿用 lockstep 版本与官方工作流。
+
 ## 写入当前状态的门槛
 
 1. C# API 通过正常类型检查和官方 Razor SG 绑定。
