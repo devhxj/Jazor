@@ -48,9 +48,11 @@ DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable�
 
 ## .jazor 作者格式提案
 
-[Issue #138](https://github.com/devhxj/Jazor/issues/138)提出在 C# 中使用类似 TSX 的标记表达式，并交付语义智能感知。这是待设计与实现的独立作者入口；当前已实现的 RazorVue 仍使用官方 Razor SG。
+[Issue #138](https://github.com/devhxj/Jazor/issues/138)提出 `.jazor` 组件文件：顶层 `<template>...</template>` 与同级 `@code { ... }`，文件隐式定义组件，作者无需声明静态类、`Setup()` 或模块特性。模板以 Razor 的 C# 表达式和控制流为起点，同时要求直接导入有类型声明的 npm Vue 组件及语义智能感知。这是待设计与实现的作者入口；当前已实现的 RazorVue 仍使用官方 Razor SG。
 
-提案按语法与类型投影、MSBuild/Compiler 接入、语言服务与编辑器、组件组合、发布消费者分阶段验收。C# 语义复用核心编译器；首个 UI 目标建议 Vue ESM。智能感知覆盖 C# 与组件参数补全、上下文类型、导航、诊断、重命名和不完整语法恢复；编辑器范围与组件 setup/render 发现规则需先经设计验证，尚不构成可安装的支持声明。
+优先验证薄适配层复用微软 Razor 的解析、官方 SG 及源码映射，C# 语义复用 Roslyn 与核心编译器；Vue 组件类型提取对比官方 `vue-component-meta` 和 Verter 的公开接口。微软 Razor 持续开发已迁到 [`dotnet/roslyn`](https://github.com/dotnet/roslyn/tree/main/src/Razor)。先证明公开 API、投影/生成顺序、编辑器接入与嵌入宿主兼容性，再决定依赖；Razor 编辑器内部实现和 Verter 的 TypeScript 投影不自动成为 `.jazor` 的 C# 语言服务。
+
+提案按复用验证、可构建组件、语义编辑器、npm 组件组合和发布消费者分阶段验收。首个导入器聚焦 npm，JSR 专用接入不在初始范围；运行时复用现有 NodeApi、pnpm、Vue ESM 与 Emit 链路。智能感知覆盖 C# 与组件参数补全、上下文类型、导航、诊断、重命名和不完整语法恢复；具体导入指令、组件参数/生命周期规则及编辑器范围需验证后确定，尚不构成可安装的支持声明。
 
 ## 写入当前状态的门槛
 
