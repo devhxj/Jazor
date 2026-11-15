@@ -505,6 +505,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool IsDirectlySupportedExternalType(ITypeSymbol typeSymbol, INamedTypeSymbol? currentSourceBoundary)
     {
+        if (LibraryImports?.ContainsType(typeSymbol) == true)
+            return true;
         var original = typeSymbol.OriginalDefinition;
         if (original.TypeKind is TypeKind.Array or TypeKind.Delegate or TypeKind.TypeParameter ||
             typeSymbol.IsTupleType ||
@@ -688,6 +690,8 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private bool IsSupportedExternalMember(IOperation operation, ISymbol symbol, ITypeSymbol hostType)
     {
+        if (LibraryImports?.ContainsMember(symbol) == true)
+            return true;
         if (IsStructuralMember(symbol))
             return true;
 
@@ -1055,6 +1059,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     public SemanticWalkerHost? Host { get; set; }
 
+    /// <summary>The compiler-owned recovered member plan used for ordinary library dispatch.</summary>
+    public OrdinaryLibraryImportPlan? LibraryImports { get; set; }
+
     public SemanticWalker()
     {
         _whiteListCompiles = [];
@@ -1158,6 +1165,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
         if (operation is null)
             return null;
+
+        if (LibraryImports is null && operation.SemanticModel is { } semanticModel)
+            LibraryImports = LibraryImportContext.ForCompilation(semanticModel.Compilation);
 
         ValidateRuntimeProtocol(operation);
 

@@ -9,9 +9,9 @@
 | 编译入口可达的普通源码 class、helper 和成员 | 生成受支持的实现，无需逐类型添加宿主标注 |
 | 已编译的 Jazor 类库 | 通过程序集中的 `Jazor.Generated.ModuleCatalog`、导出与依赖交付实现 |
 | 已声明的 JavaScript 资源库 | 通过 binding、npm/JSR identity、标准 ESM specifier 和资源闭包接入 |
-| 普通 NuGet / CLR DLL | 仅有元数据不提供 JavaScript 实现；运行时使用需要受支持的映射或已有产物 |
+| 普通 NuGet / CLR DLL | 按实际使用点自动恢复已解析实现程序集，恢复并编译可达的受支持 class 成员；其余外部运行时操作仍需映射或已有产物，见[类库导入](../04-roadmap/ordinary-nuget-compilation-research.md) |
 
-取消标注许可不意味着自动反编译或转换任意 DLL。普通类库实现恢复仍是[研究方向](../04-roadmap/ordinary-nuget-compilation-research.md)。跨项目引用和两类产物 carrier 见[类库契约](../02-architecture/library-artifact-contract.md)。
+取消标注许可不意味着自动反编译或转换任意 DLL。普通类库按需恢复的支持范围见[类库导入](../04-roadmap/ordinary-nuget-compilation-research.md)。跨项目引用和两类产物 carrier 见[类库契约](../02-architecture/library-artifact-contract.md)。
 
 ## class 与 record
 

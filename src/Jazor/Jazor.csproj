@@ -33,12 +33,14 @@
     <None Include="README.md" Pack="true" PackagePath="" />
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
+    <None Include="licenses\ilspy\LICENSE.txt" Pack="true" PackagePath="licenses/ilspy/LICENSE.txt" />
     <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\LICENSE" Pack="true" PackagePath="licenses/libnode/%(Filename)%(Extension)" />
     <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\NOTICE.txt" Pack="true" PackagePath="licenses/libnode/%(Filename)%(Extension)" />
     <!-- Tooling is a direct-reference capability. Only resource manifest location propagates. -->
     <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
     <None Include="build\Jazor.CompilationTiming.targets" Pack="true" PackagePath="build\Jazor.CompilationTiming.targets" />
+    <None Include="build\Jazor.LibraryImports.targets" Pack="true" PackagePath="build\Jazor.LibraryImports.targets" />
     <None Include="buildTransitive\Jazor.Resources.targets"
           Pack="true"
           PackagePath="buildTransitive\Jazor.Resources.targets" />
@@ -56,6 +58,7 @@
   <ItemGroup>
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="ICSharpCode.Decompiler" Version="$(DecompilerVersion)" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
     <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
     <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
@@ -99,6 +102,7 @@
     <!-- 跟随 Directory.Build.props 中的统一版本，避免升级 Acornima 后打包仍读取旧缓存路径。 -->
     <None Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
     <None Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
+    <None Include="$(NuGetPackageRoot)icsharpcode.decompiler\$(DecompilerVersion)\lib\netstandard2.0\ICSharpCode.Decompiler.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

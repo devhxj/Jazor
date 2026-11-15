@@ -16,6 +16,8 @@
 
 ## 2. 总体定位
 
+普通 NuGet/ProjectReference 的实现恢复是输入前端的扩展：MSBuild 提供当前 TFM/RID 已解析的本地实现资产，ILSpy 在进程内恢复，独立 Roslyn compilation 绑定并结构匹配原始成员，随后继续使用本编译器的 `IOperation` lowering。按实际使用点自动进入闭包，无需类型标注或额外导入项；宿主映射及生产者 catalog 优先使用既有协议，未实现 CLR 行为不能因反编译成功而放行。共享模块、恢复源码映射和精确边界见[普通类库导入](../../docs/04-roadmap/ordinary-nuget-compilation-research.md)。
+
 `Jazor.Compiler` 不是“把任意 .NET 程序完整编译成 JavaScript”的通用 CLR-to-JS 编译器。
 
 它更接近下面这个定义：

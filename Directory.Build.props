@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <AcornimaVersion>1.8.0</AcornimaVersion>
+    <DecompilerVersion>11.2.0.10050</DecompilerVersion>
     <AngleSharpVersion>1.7.2</AngleSharpVersion>
     <NodeApiVersion>0.9.36</NodeApiVersion>
     <LibNodeVersion>20.1800.215</LibNodeVersion>

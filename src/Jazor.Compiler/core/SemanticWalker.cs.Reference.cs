@@ -149,6 +149,8 @@ public partial class SemanticWalker
 
 		if (TryGetCurrentModuleDeclaredName(symbol, out var declaredName))
 			return declaredName;
+		if (LibraryImports?.ContainsMember(symbol) == true)
+			return LibraryImports.GetMemberName(symbol);
 
 		return Util.TryGetJazorImportRuntimeName(symbol, out var runtimeName)
 			? runtimeName
@@ -282,6 +284,13 @@ public partial class SemanticWalker
 
 	private Expression? BuildFullTypeName(ITypeSymbol symbol, SenseArgument? context = null)
 	{
+		if (context is { } libraryContext && LibraryImports is { } libraries &&
+			libraries.TryGetTypeBinding(symbol, out var libraryPath, out var libraryExport))
+		{
+			if (TryGetCurrentModuleDeclaredName(symbol, out var localLibraryType))
+				return new Identifier(localLibraryType);
+			return libraryContext.BindModuleCatalogImportSpecifier(libraryPath, libraryExport);
+		}
 		var namedTypeSymbol = symbol as INamedTypeSymbol;
 		if (namedTypeSymbol is not null)
 			Host?.ObserveTypeReference(namedTypeSymbol, context ?? SenseArgument.Default);
@@ -415,6 +424,16 @@ public partial class SemanticWalker
 		ISymbol? member)
 	{
 		expression = null;
+		if (LibraryImports is { } libraries &&
+			libraries.TryGetTypeBinding(containingType, out _, out _))
+		{
+			var host = BuildFullTypeName(containingType, context)!;
+			var name = member is null ? memberName : libraries.GetMemberName(member);
+			expression = member is IFieldSymbol field
+				? BuildFieldAccess(host, field, name, optional: false)
+				: new MemberExpression(host, new Identifier(name), false, false);
+			return true;
+		}
 		// Generated bindings may put each export on its own ESM entry point. Resolve the
 		// declaration-level path first, then retain the historical containing-type fallback.
 		// 组件级入口优先，类型级入口作为兼容回退。
@@ -673,6 +692,12 @@ public partial class SemanticWalker
 	private bool TryBuildImportedModulePropertyAccess(IPropertySymbol property, SenseArgument context, out Expression? expression)
 	{
 		expression = null;
+		if (LibraryImports?.ContainsMember(property) == true)
+		{
+			expression = new MemberExpression(BuildFullTypeName(property.ContainingType, context)!,
+				new Identifier(LibraryImports.GetMemberName(property)), false, false);
+			return true;
+		}
 		var explicitImportName = Util.GetSymbolConfigName(property.GetMethod!) ?? Util.GetSymbolConfigName(property);
 		if (!string.IsNullOrEmpty(explicitImportName))
 			return TryBuildImportedModuleMember(property.ContainingType, explicitImportName!, context, out expression, property);
@@ -712,7 +737,7 @@ public partial class SemanticWalker
 	private bool IsCurrentModuleRuntimeIndexer(IPropertySymbol property)
 		=> !property.IsStatic &&
 			(property.IsIndexer || property.Parameters.Length > 0) &&
-			TryGetCurrentModuleDeclaredName(property.ContainingType, out _);
+			(TryGetCurrentModuleDeclaredName(property.ContainingType, out _) || LibraryImports?.ContainsMember(property) == true);
 
 	private bool TryBuildCurrentModuleIndexerGetterCall(
 		IPropertySymbol property,
@@ -730,7 +755,8 @@ public partial class SemanticWalker
 
 		var helper = new MemberExpression(
 			instance,
-			new Identifier(Util.GetMemberIndexerAccessorHelperName(property.GetMethod)),
+			new Identifier(LibraryImports?.ContainsMember(property.GetMethod) == true
+				? LibraryImports.GetMemberName(property.GetMethod) : Util.GetMemberIndexerAccessorHelperName(property.GetMethod)),
 			computed: false,
 			optional: false);
 		expression = new CallExpression(helper, NodeList.From(arguments), optional: false);
@@ -757,7 +783,8 @@ public partial class SemanticWalker
 		setterArguments.Add(value);
 		var helper = new MemberExpression(
 			instance,
-			new Identifier(Util.GetMemberIndexerAccessorHelperName(property.SetMethod)),
+			new Identifier(LibraryImports?.ContainsMember(property.SetMethod) == true
+				? LibraryImports.GetMemberName(property.SetMethod) : Util.GetMemberIndexerAccessorHelperName(property.SetMethod)),
 			computed: false,
 			optional: false);
 		expression = new CallExpression(helper, NodeList.From(setterArguments), optional: false);
@@ -769,6 +796,13 @@ public partial class SemanticWalker
 		expression = null;
 		if (!property.IsStatic || property.SetMethod is null)
 			return false;
+		if (LibraryImports?.ContainsMember(property) == true)
+		{
+			var target = new MemberExpression(BuildFullTypeName(property.ContainingType, context)!,
+				new Identifier(LibraryImports.GetMemberName(property)), false, false);
+			expression = new AssignmentExpression(Operator.Assignment, target, value);
+			return true;
+		}
 
 		var setterName = GetMethodConfigOrWhiteListName(property.SetMethod);
 		if (!TryBuildImportedModuleMember(property.ContainingType, setterName, context, out var setter, property) ||

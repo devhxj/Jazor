@@ -2375,11 +2375,14 @@ $@"export class NestedClass {{
         var script = module?.ToKnRECMAScript();
 
         AssertScriptEqual(
-$@"import {{ _4cb33a818161a3e1 }} from ""./clr/System/DateTimeModule.js"";
+$@"import {{ _4cb33a818161a3e1, _bfa8ee5dd46e2005 }} from ""./clr/System/DateTimeModule.js"";
 export class NestedClass {{
-  static #{backingFieldName} = _4cb33a818161a3e1(2024, 1, 2);
+  static #{backingFieldName} = _bfa8ee5dd46e2005();
   static get Value() {{
     return this.#{backingFieldName};
+  }}
+  static {{
+    this.#{backingFieldName} = _4cb33a818161a3e1(2024, 1, 2);
   }}
 }}
 ", script);

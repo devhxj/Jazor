@@ -10,7 +10,7 @@
 | 核对语法审计中 35 个 bug 的实现与诊断边界 | [逐项修复记录](./compiler-syntax-bug-fixes.md)（1.3.0） |
 | 了解下一阶段的优先级、边界和完成条件 | [下一阶段](./next-development.md) |
 | 理解普通源码、class/record 与宿主标注 | [类型指南](../03-guides/type-semantics.md) |
-| 评估普通 C# / NuGet DLL 的实现恢复与转译路线 | [普通类库转译研究](./ordinary-nuget-compilation-research.md)（尚未实现产品支持） |
+| 使用普通 C# / NuGet DLL 自动导入 | [普通类库导入](./ordinary-nuget-compilation-research.md)（1.4.0 有界切片） |
 | 查看 C# 与 RazorVue 的具体支持边界及逐项 GitHub issue | [语法与 issue 索引](./csharp-syntax-gap-audit.md)（英文，区分已关闭 bug 与开放扩展） |
 | 推进作者体验和协议扩展 | [下一阶段](./next-development.md)中的责任层与验收条件 |
 | 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |

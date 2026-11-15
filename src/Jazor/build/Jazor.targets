@@ -16,6 +16,7 @@
   <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Jazor.Resources.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Jazor.CompilationTiming.targets"
           Condition="'$(_JazorCompilationTimingTargetsImported)' != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)Jazor.LibraryImports.targets" />
 
   <ItemGroup>
     <!-- Roslyn resolves analyzer dependencies only from registered analyzer paths. Register the

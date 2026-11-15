@@ -12,7 +12,7 @@
 
 | 优先级 | 提案 | 排序依据 | 首个交付门槛 |
 | --- | --- | --- | --- |
-| **P0：首先推进** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；已有有界算法探针证据 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
+| **P0：首批切片已交付** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；1.4.0 已实现普通 DLL/NuGet 自动导入、成员闭包与共享模块 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
 | **P1：其次推进** | [#139：Jazor.LibNode LTS 原生包](https://github.com/devhxj/Jazor/issues/139) | 掌握 LTS 原生构建与更新，验证现有 pnpm/Vite/SSR 和后续 npm 类型工具的兼容性 | 移植匹配微软托管层的 C ABI，复用上游测试，通过已声明平台的原生包与现有工具链门禁 |
 | **P2：随后推进** | [#138：.jazor 组件文件与语义智能感知](https://github.com/devhxj/Jazor/issues/138) | 改善组件作者体验、接入 npm Vue 组件；现有 RazorVue 可继续承担组件编写 | 确认 `<template>` + `@code`，验证 Razor/Roslyn 与 Vue 类型工具的复用；可构建组件、真实语义编辑器和直接 npm consumer 分阶段交付 |
 
@@ -50,7 +50,7 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 35 个语法 bug 的运行行为和诊断修复已随 1.3.0 交付。[语法 issue 索引](./csharp-syntax-gap-audit.md)中的开放 enhancement 优先选择真实消费者及 P0 普通类库导入所需的切片，再扩展构造链、参数绑定、源码运算符、接口分派和自定义解构/枚举；不把关闭 bug 等同于实现完整运行时协议。
 
-普通 NuGet DLL 的实现恢复仍是[研究方案](./ordinary-nuget-compilation-research.md)，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。自动依赖闭包、原始/恢复符号对应、compiler hooks 与产物集成完成前，不声明安装任意普通 NuGet 后即可用于前端。
+普通 NuGet DLL 的自动实现恢复已形成[有界交付切片](./ordinary-nuget-compilation-research.md)，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。后续按真实库需求扩展初始化、运行时类型和分派协议；不承诺任意 NuGet/CLR 兼容。下一条主线为 LibNode LTS，随后推进 `.jazor`。
 
 每个新增 lowering 先明确求值顺序、副作用、结果、使用点语义、确定性与失败边界，再由 Compiler / CLR / Analyzer 按职责实现。仅为擦除类型注解增加 blanket rejection 不属于实现路线。
 

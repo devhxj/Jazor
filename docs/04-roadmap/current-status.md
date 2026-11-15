@@ -1,6 +1,6 @@
 # 当前状态
 
-> 当前版本：[1.3.0（2026-11-15）](https://github.com/devhxj/Jazor/releases/tag/v1.3.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[1.4.0（2026-11-15）](https://github.com/devhxj/Jazor/releases/tag/v1.4.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 
@@ -10,6 +10,7 @@
 | --- | --- | --- |
 | C# 到 ECMAScript | Roslyn `IOperation` 经核心 Compiler 降低为 Acornima ESTree；导入、临时名、source origin 与 source map 保持确定性 | [编译器架构](../02-architecture/compiler.md)、[实现原则](../../src/Jazor.Compiler/ImplementationPrinciples.md) |
 | 普通源码与类型语义 | 可达的普通源码 helper 无需逐类型添加 `[ECMAScript]`；class 保留受支持的类行为，数据 record 表达结构化对象 | [类型与宿主标注](../03-guides/type-semantics.md) |
+| 普通 DLL 与 NuGet 导入 | ILSpy 恢复、独立 Roslyn 绑定、成员闭包、共享模块/状态、恢复源码映射；普通模块与 RazorVue 消费 | [类库导入](./ordinary-nuget-compilation-research.md) |
 | CLR 与宿主映射 | 白名单、runtime helper、强类型 ECMAScript/WebIDL binding 定义受支持的运行时语义；未实现语义在使用点明确诊断 | [Compiler](../../src/Jazor.Compiler/README.md)、[CLR](../../src/Jazor.CLR/README.md) |
 | Razor-to-Vue | 官方 Razor SG 的最终 `Compilation` 生成 Vue render-function ESM 模块；C# 表达式、成员与调用仍由核心 Compiler 翻译 | [Razor-to-Vue](../02-architecture/razor-to-vue.md) |
 | 模块与资源交付 | `ModuleCatalog`、ECMAScript 源码和 schema 2 binding metadata 接入标准 `jazor/` 项目，支持 npm/JSR identity、ESM specifier 和细粒度 JS/CSS tree shaking | [类库与产物契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md) |
@@ -32,7 +33,7 @@
 
 ## 类型与产品边界
 
-- 仅引用普通 NuGet / CLR DLL 不会自动获得 JavaScript 实现。源码闭包、已有 Jazor 模块产物或显式宿主映射提供实现；普通 DLL 的实现恢复仍是[研究方向](./ordinary-nuget-compilation-research.md)。
+- 普通 NuGet / ProjectReference 按实际使用点自动导入已解析的本地实现程序集，恢复并编译可达的受支持 class 成员；无需生产者标注。缺少实现或超出支持切片的外部运行时操作继续拒绝，见[类库导入](./ordinary-nuget-compilation-research.md)。
 - 泛型实参和数组元素等擦除位置与运行时构造、成员访问、默认值和类型检查分开验证。Analyzer 可以更早报告封闭具体外部类型，Compiler 保持使用点验证。
 - Microsoft/Blazor 内置 UI 组件与 `IJSRuntime` 字符串互操作使用明确的 Reject 边界；应用通过自定义组件、typed binding 和显式 endpoint 协议实现相应功能。
 - `StreamRendering` 使用 Reject；localization、复杂 validation、复杂 activation、完整 browser history、服务器 circuit 与完整 CLR/Blazor reference parity 不在当前已证明的支持范围内。

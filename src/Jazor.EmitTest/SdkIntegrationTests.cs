@@ -13,7 +13,7 @@ namespace Jazor.EmitTest;
 
 [TestClass]
 [TestCategory("Consumer")]
-public sealed class SdkIntegrationTests
+public sealed partial class SdkIntegrationTests
 {
     private static readonly Lazy<Task<LocalCorePackageFixture>> LocalCorePackage = new(CreateLocalCorePackageAsync);
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);

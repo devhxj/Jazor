@@ -67,11 +67,26 @@ public sealed class ESGenerator : IIncrementalGenerator
             predicate: static (node, _) => node is ClassDeclarationSyntax,
             transform: static (syntaxContext, _) => CreateCandidate(syntaxContext));
 
-        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect());
+        var inputs = context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith(".jazorimports", StringComparison.OrdinalIgnoreCase)).Collect();
+        var finalOwner = context.AnalyzerConfigOptionsProvider.Select(static (options, _) =>
+            options.GlobalOptions.TryGetValue("build_property.JazorRazorVue", out var value) && value == "true");
+        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect()).Combine(inputs).Combine(finalOwner);
         context.RegisterSourceOutput(combined, static (outputContext, source) =>
         {
-            var (compilation, candidates) = source;
-            EmitCatalogs(outputContext, compilation, candidates);
+            var (((compilation, candidates), files), razorOwnsFinalOutput) = source;
+            try
+            {
+                var implementationInputs = LibraryImportContext.ReadInputs(files, outputContext.CancellationToken);
+                LibraryImportContext.Configure(compilation, implementationInputs);
+                if (razorOwnsFinalOutput && !implementationInputs.IsDefaultOrEmpty)
+                    outputContext.AddSource(LibraryImportContext.CarrierHintName, LibraryImportContext.BuildCarrierSource(implementationInputs));
+                EmitCatalogs(outputContext, compilation, candidates, razorOwnsFinalOutput);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception exception)
+            {
+                outputContext.ReportDiagnostic(Diagnostic.Create(ModuleGenerationFailed, Location.None, compilation.AssemblyName, exception.Message));
+            }
         });
     }
 
@@ -85,7 +100,8 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static void EmitCatalogs(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<ModuleCandidate> candidates)
+        ImmutableArray<ModuleCandidate> candidates,
+        bool razorOwnsFinalOutput)
     {
         if (candidates.IsDefaultOrEmpty)
             return;
@@ -100,14 +116,15 @@ public sealed class ESGenerator : IIncrementalGenerator
             moduleCatalogCandidates.Add(candidate);
         }
 
-        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates);
+        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates, razorOwnsFinalOutput);
     }
 
     private static void EmitModuleCatalog(
         SourceProductionContext context,
         Compilation compilation,
         string assemblyName,
-        IReadOnlyList<ModuleCandidate> candidates)
+        IReadOnlyList<ModuleCandidate> candidates,
+        bool razorOwnsFinalOutput)
     {
         if (candidates.Count == 0)
             return;
@@ -153,6 +170,19 @@ public sealed class ESGenerator : IIncrementalGenerator
         var generatedModulePaths = new HashSet<string>(
             validPlans.Select(static plan => ECMAScriptModulePath.NormalizeRelativePath(plan.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
+        var imports = LibraryImportContext.ForCompilation(compilation);
+        if (imports is not null && !razorOwnsFinalOutput)
+        {
+            foreach (var imported in imports.BuildModules(context.CancellationToken))
+            {
+                generatedModulePaths.Add(imported.RelativePath);
+                var artifact = imported.Artifact;
+                generatedModules.Add(new GeneratedModuleInfo(assemblyName, imported.RelativePath, imported.RelativePath,
+                    imported.RelativePath, artifact.Content, ComputeSha256Hex(artifact.Content), imported.PackageImports,
+                    imported.Dependencies, imported.RelativePath + ".map", artifact.SourceMapContent,
+                    artifact.SourceMapContent is null ? null : ComputeSha256Hex(artifact.SourceMapContent)));
+            }
+        }
 
         foreach (var plan in validPlans)
         {

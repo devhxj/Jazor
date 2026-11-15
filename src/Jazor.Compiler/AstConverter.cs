@@ -188,6 +188,23 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     public ImmutableArray<ImportDeclaration> FlushImportDeclarations(IReadOnlyList<Statement> members)
         => BuildImportDeclarations(members).ToImmutableArray();
 
+    internal Module ConvertLibraryModule(IEnumerable<INamedTypeSymbol> types, CancellationToken cancellationToken)
+    {
+        var members = new List<Statement>();
+        var emitted = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        foreach (var type in types) Append(type);
+        return new Module(NodeList.From<Statement>(BuildImportDeclarations(members).Cast<Statement>().Concat(members)));
+
+        void Append(INamedTypeSymbol type)
+        {
+            if (!emitted.Add(type)) return;
+            var baseType = GetSupportedRuntimeClassBaseType(type);
+            if (baseType is not null) Append(baseType);
+            var declaration = ConvertMemberClass(type, baseType, cancellationToken);
+            members.Add(new ExportNamedDeclaration(declaration, NodeList.From<ExportSpecifier>([]), null, NodeList.From<ImportAttribute>([])));
+        }
+    }
+
     public async Task<Module?> Convert(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -396,7 +413,8 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
             _options.RuntimeClassPrivateStorage,
             RegisterStyleSpecifier)
         {
-            Host = effectiveHost
+            Host = effectiveHost,
+            LibraryImports = _options.LibraryImports ?? LibraryImportContext.ForCompilation(_classModel.Compilation)
         };
     }
 
@@ -1005,6 +1023,12 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         var isIndexerAccessor = symbol.AssociatedSymbol is IPropertySymbol { IsIndexer: true };
+        var writableParameters = symbol.Parameters.Where(static parameter => parameter.RefKind is RefKind.Ref or RefKind.Out)
+            .Select(parameter => (Expression)new Identifier(parameter.Name)).ToArray();
+        if (writableParameters.Length > 0)
+            // Runtime class methods use the same caller protocol as module functions. Library
+            // recovery must not accept ref/out calls whose callee silently returns undefined.
+            body = RefOutReturnProtocol.Apply(body, writableParameters, !symbol.ReturnsVoid);
         var name = isIndexerAccessor
             ? Util.GetMemberIndexerAccessorHelperName(symbol)
             : GetSymbolName(symbol);
@@ -1058,14 +1082,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         }
 
         // 处理 getter
-        if (symbol.GetMethod is not null)
+        if (symbol.GetMethod is not null && (_options.RuntimeMemberFilter?.Invoke(symbol.GetMethod) ?? true))
         {
             var getFuncDecl = ConvertMemberMethod(symbol.GetMethod, cancellationToken);
             properties.Add(getFuncDecl);
         }
 
         // 处理 setter
-        if (symbol.SetMethod is not null)
+        if (symbol.SetMethod is not null && (_options.RuntimeMemberFilter?.Invoke(symbol.SetMethod) ?? true))
         {
             if (!Util.IsBodylessInitAccessor(symbol.SetMethod))
             {
@@ -1461,6 +1485,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         ValidateRuntimeClassJavaScriptNameScope(symbol);
 
         var nodes = new List<Node>();
+        var staticInitializers = symbol.GetMembers().OfType<IFieldSymbol>()
+            .Where(field => field.IsStatic && ShouldIncludeMemberClassMember(field.AssociatedSymbol ?? field))
+            .Where(field => GetFieldInitializerSyntax(field) is not null).ToArray();
+        var needsStaticInitializationBlock = staticInitializers.Any(field =>
+            !GetSemanticModel(GetFieldInitializerSyntax(field)!).GetConstantValue(GetFieldInitializerSyntax(field)!.Value).HasValue);
         var constructorLowerings = GetMemberConstructorLowerings(symbol, baseType, cancellationToken);
         var hasExplicitConstructor = constructorLowerings.Count > 0;
         var hasPrimaryConstructor = constructorLowerings
@@ -1488,13 +1517,14 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 case IFieldSymbol field:
                     nodes.Add(ConvertMemberField(
                         field,
-                        suppressInitializer: primaryConstructorInitializerFields.Contains(field.OriginalDefinition)));
+                        suppressInitializer: primaryConstructorInitializerFields.Contains(field.OriginalDefinition) ||
+                            needsStaticInitializationBlock && field.IsStatic));
                     break;
                 case IPropertySymbol prop:
                     nodes.AddRange(ConvertMemberProperty(
                         prop,
                         cancellationToken,
-                        suppressInitializer: HasPrimaryConstructorInitializer(
+                        suppressInitializer: needsStaticInitializationBlock && prop.IsStatic || HasPrimaryConstructorInitializer(
                             prop,
                             primaryConstructorInitializerFields)));
                     break;
@@ -1567,6 +1597,20 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         if (baseType is not null && !hasExplicitConstructor)
             nodes.Insert(0, CreateImplicitBaseConstructor(baseType));
+
+        if (needsStaticInitializationBlock)
+        {
+            // CLR storage is zeroed as a group before initializer callbacks can observe later
+            // fields. JS inline class fields initialize sequentially and would expose undefined.
+            var initializers = new List<Statement>();
+            foreach (var field in staticInitializers)
+            {
+                var authored = ConvertMemberField(field);
+                var target = new MemberExpression(new ThisExpression(), authored.Key, authored.Computed, false);
+                initializers.Add(new NonSpecialExpressionStatement(new AssignmentExpression(Operator.Assignment, target, authored.Value!)));
+            }
+            nodes.Add(new StaticBlock(NodeList.From(initializers)));
+        }
 
         var className = ModuleDeclaredNames.ContainsKey(symbol.OriginalDefinition)
             ? GetModuleDeclaredName(symbol)
@@ -1786,6 +1830,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
         var lowerings = symbol.InstanceConstructors
             .Where(static ctor => !ctor.IsImplicitlyDeclared)
+            .Where(constructor => _options.RuntimeMemberFilter?.Invoke(constructor) ?? true)
             .OrderBy(static ctor => ctor.DeclaringSyntaxReferences[0].Span.Start)
             .Select(constructor => PrepareMemberConstructorLowering(constructor, baseType, cancellationToken))
             .ToList();
@@ -2725,9 +2770,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     }
 
     private bool ShouldIncludeMemberClassMember(ISymbol member)
-        => member.ContainingType is { } containingType &&
+        => (_options.RuntimeMemberFilter?.Invoke(member) ?? true) && (member.ContainingType is { } containingType &&
            _moduleNamePlan.SourceTypes.Contains(containingType.OriginalDefinition, SymbolEqualityComparer.Default) ||
-           (_options.MemberFilter?.Invoke(member) ?? true);
+           (_options.MemberFilter?.Invoke(member) ?? true));
 
     private static void ValidateSourceCallable(IMethodSymbol symbol, bool hasHostImplementation = false)
     {

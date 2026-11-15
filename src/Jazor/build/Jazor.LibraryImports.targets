@@ -1,0 +1,31 @@
+<Project>
+  <!-- ResolveReferences selects implementation assets for this exact TFM/RID, including
+       project outputs. Never substitute the compile-time ref assembly by filename probing. -->
+  <Target Name="_PrepareJazorLibraryImports"
+          BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile"
+          DependsOnTargets="ResolveReferences">
+    <PropertyGroup>
+      <_JazorLibraryImportManifest>$(IntermediateOutputPath)$(MSBuildProjectName).jazorimports</_JazorLibraryImportManifest>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Copy-local also contains native DLLs for multiple host RIDs (for example LibNode).
+           NuGet marks these as native assets; they have no managed implementation identity. -->
+      <_JazorImplementationAsset Include="@(ReferenceCopyLocalPaths)"
+                                 Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
+      <!-- Library projects need runtime assets too, even when CopyLocalLockFileAssemblies is
+           false. ResolvePackageAssets already selected their implementation TFM/RID. -->
+      <_JazorImplementationAsset Include="@(RuntimeCopyLocalItems)"
+                                 Condition="'%(RuntimeCopyLocalItems.Extension)' == '.dll'" />
+    </ItemGroup>
+    <GetFileHash Files="@(_JazorImplementationAsset)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_JazorHashedImplementationAsset" />
+    </GetFileHash>
+    <WriteLinesToFile File="$(_JazorLibraryImportManifest)"
+                      Lines="@(_JazorHashedImplementationAsset->'asset|%(Filename)|%(FullPath)|%(FileHash)')"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <ItemGroup>
+      <AdditionalFiles Include="$(_JazorLibraryImportManifest)" />
+      <FileWrites Include="$(_JazorLibraryImportManifest)" />
+    </ItemGroup>
+  </Target>
+</Project>

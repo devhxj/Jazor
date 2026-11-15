@@ -31,6 +31,23 @@ namespace Jazor.Analyzer;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class Analyzer : DiagnosticAnalyzer
 {
+    // Each compilation registers its own session. No mutable import state is shared across
+    // concurrent project/TFM analyses or stored in process-global symbol registries.
+    private Lazy<OrdinaryLibraryImportPlan?>? _libraryImports;
+    private string? _libraryImportFailure;
+    private OrdinaryLibraryImportPlan? ImportedLibraries
+    {
+        get
+        {
+            try { return _libraryImports?.Value; }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception exception) { _libraryImportFailure = exception.Message; return null; }
+        }
+    }
+    private static readonly DiagnosticDescriptor LibraryImportFailureRule = new(
+        "JAZOR007", "Ordinary library import failed", "Ordinary library import failed: {0}",
+        "Jazor.Compiler", DiagnosticSeverity.Error, isEnabledByDefault: true,
+        customTags: [WellKnownDiagnosticTags.CompilationEnd]);
 	private const string Attribute = "Attribute";
 	private const string DiagnosticId = "JAZOR001";
 	private const string AmbiguousRuntimeTypeFilterDiagnosticId = "JAZOR002";
@@ -106,7 +123,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 	/// </summary>
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
 		[Rule, AmbiguousRuntimeTypeFilterRule, InvalidSpreadUsageRule, ConflictingSpreadPropertyNameRule,
-			ConflictingJavaScriptNameMetadataRule, ConflictingJavaScriptNameRule];
+			ConflictingJavaScriptNameMetadataRule, ConflictingJavaScriptNameRule, LibraryImportFailureRule];
 
 	internal static readonly ImmutableArray<OperationKind> AnalysisOperationKinds =
 	[
@@ -152,6 +169,18 @@ public partial class Analyzer : DiagnosticAnalyzer
 		context.EnableConcurrentExecution();
 		context.RegisterCompilationStartAction(compilationContext =>
 		{
+            var session = new Analyzer();
+            session._libraryImports = new Lazy<OrdinaryLibraryImportPlan?>(() =>
+            {
+                LibraryImportContext.Configure(compilationContext.Compilation,
+                    LibraryImportContext.ReadInputs(compilationContext.Options.AdditionalFiles, compilationContext.CancellationToken));
+                return LibraryImportContext.ForCompilation(compilationContext.Compilation);
+            });
+            compilationContext.RegisterCompilationEndAction(end =>
+            {
+                if (session._libraryImportFailure is { } failure)
+                    end.ReportDiagnostic(Diagnostic.Create(LibraryImportFailureRule, Location.None, failure));
+            });
             // Compilation-local scope prevents ordinary backend classes from entering frontend
             // analysis. Source helpers are reached from roots, not opted in one attribute at a time.
             var scope = new Lazy<ImmutableHashSet<INamedTypeSymbol>>(() =>
@@ -184,13 +213,13 @@ public partial class Analyzer : DiagnosticAnalyzer
             compilationContext.RegisterSymbolAction(ctx =>
             {
                 if (InScope((INamedTypeSymbol)ctx.Symbol))
-                    AnalyzeContractTypeSignature(ctx);
+                    session.AnalyzeContractTypeSignature(ctx);
             }, SymbolKind.NamedType);
             compilationContext.RegisterSymbolAction(AnalyzeSpreadPropertyUsage, SymbolKind.Property);
             compilationContext.RegisterSymbolAction(ctx =>
             {
                 if (InScope(ctx.Symbol.ContainingType))
-                    AnalyzeEventSymbol(ctx);
+                    session.AnalyzeEventSymbol(ctx);
             }, SymbolKind.Event);
             compilationContext.RegisterSymbolStartAction(startContext =>
             {
@@ -198,14 +227,14 @@ public partial class Analyzer : DiagnosticAnalyzer
                 if ((symbol.TypeKind != TypeKind.Class && !StructuralRecordSupport.IsStructuralRecordType(symbol)) ||
                     !InScope(symbol))
                     return;
-                startContext.RegisterOperationAction(AnalysisOperationAction, AnalysisOperationKindArray);
-                startContext.RegisterSymbolEndAction(AnalysisSymbolEndAction);
+                startContext.RegisterOperationAction(session.AnalysisOperationAction, AnalysisOperationKindArray);
+                startContext.RegisterSymbolEndAction(session.AnalysisSymbolEndAction);
             }, SymbolKind.NamedType);
 
         });
 	}
 
-	private static void AnalyzeEventSymbol(SymbolAnalysisContext ctx)
+	private void AnalyzeEventSymbol(SymbolAnalysisContext ctx)
 	{
 		var eventSymbol = (IEventSymbol)ctx.Symbol;
 		if (!IsSourceOrHostType(eventSymbol.ContainingType))
@@ -221,7 +250,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			$"Event '{eventSymbol.Name}'"));
 	}
 
-	private static void AnalyzeContractTypeSignature(SymbolAnalysisContext ctx)
+	private void AnalyzeContractTypeSignature(SymbolAnalysisContext ctx)
 	{
 		var symbol = (INamedTypeSymbol)ctx.Symbol;
 		if (symbol.TypeKind is not (TypeKind.Interface or TypeKind.Delegate) ||
@@ -436,7 +465,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		}
 	}
 
-	private static void CheckPatternTypes(
+	private void CheckPatternTypes(
 		Action<Diagnostic> report,
 		IPatternOperation? pattern,
 		Location location)
@@ -551,8 +580,9 @@ public partial class Analyzer : DiagnosticAnalyzer
 		return builder.ToString();
 	}
 
-	private static void CheckDirectType(Action<Diagnostic> report, ITypeSymbol typeSymbol, Location location)
+	private void CheckDirectType(Action<Diagnostic> report, ITypeSymbol typeSymbol, Location location)
 	{
+		if (ImportedLibraries?.ContainsType(typeSymbol) == true) return;
 		var fullName = typeSymbol.OriginalDefinition.ToDisplayString(Format.NameFormat);
 		if (IsWhiteListedType(typeSymbol))
 			return;
@@ -567,7 +597,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			report(Diagnostic.Create(Rule, location, fullName));
 	}
 
-	private static void CheckMethodSignature(Action<Diagnostic> report, IMethodSymbol method, Location location)
+	private void CheckMethodSignature(Action<Diagnostic> report, IMethodSymbol method, Location location)
 	{
 		if (method.MethodKind != MethodKind.Constructor)
 			CheckType(report, method.ReturnType, location);
@@ -578,14 +608,14 @@ public partial class Analyzer : DiagnosticAnalyzer
 		CheckTypeParameterConstraints(report, method.TypeParameters);
 	}
 
-	private static void CheckPropertySignature(Action<Diagnostic> report, IPropertySymbol property)
+	private void CheckPropertySignature(Action<Diagnostic> report, IPropertySymbol property)
 	{
 		CheckType(report, property.Type, GetLocation(property.Locations));
 		foreach (var parameter in property.Parameters)
 			CheckType(report, parameter.Type, GetLocation(parameter.Locations));
 	}
 
-	private static void CheckTypeParameterConstraints(
+	private void CheckTypeParameterConstraints(
 		Action<Diagnostic> report,
 		ImmutableArray<ITypeParameterSymbol> typeParameters)
 	{
@@ -594,13 +624,13 @@ public partial class Analyzer : DiagnosticAnalyzer
 				CheckType(report, constraint, GetLocation(typeParam.Locations));
 	}
 
-	private static void CheckTypeArguments(Action<Diagnostic> report, ImmutableArray<ITypeSymbol> typeArguments, Location location)
+	private void CheckTypeArguments(Action<Diagnostic> report, ImmutableArray<ITypeSymbol> typeArguments, Location location)
 	{
 		foreach (var typeArgument in typeArguments)
 			CheckType(report, typeArgument, location);
 	}
 
-	private static void CheckType(Action<Diagnostic> report, ITypeSymbol? typeSymbol, Location location)
+	private void CheckType(Action<Diagnostic> report, ITypeSymbol? typeSymbol, Location location)
 	{
 		if (typeSymbol is null || typeSymbol is ITypeParameterSymbol)
 			return;
@@ -643,7 +673,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		CheckDirectType(report, typeSymbol.OriginalDefinition, location);
 	}
 
-	private static void AnalysisOperationAction(OperationAnalysisContext ctx)
+	private void AnalysisOperationAction(OperationAnalysisContext ctx)
 	{
 		if (ctx.Operation.Syntax.AncestorsAndSelf().Any(static syntax => syntax is AttributeSyntax))
 			return;
@@ -692,7 +722,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var location = creation.Syntax.GetLocation();
 					CheckType(ctx.ReportDiagnostic, type, location);
 					// 特性和[ECMAScript]标注类型不需要检查
-					if (!IsAttribute(type) && !StructuralRecordSupport.IsStructuralRecordType(type) && !IsSourceOrHostType(type))
+					if (!IsAttribute(type) && !StructuralRecordSupport.IsStructuralRecordType(type) && !IsSourceOrHostType(type) && ImportedLibraries?.ContainsMember(creation.Constructor!) != true)
 					{
 						// 添加构造函数检查
 						var ctorKey = creation.Constructor!.OriginalDefinition.ToDisplayString(Format.NameFormat);
@@ -765,7 +795,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 						IsWhiteListedMember(invocation.TargetMethod))
 						return;
 
-					if (IsSourceOrHostType(invocation.TargetMethod.ContainingType))
+					if (IsSourceOrHostType(invocation.TargetMethod.ContainingType) || ImportedLibraries?.ContainsMember(invocation.TargetMethod) == true)
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -813,7 +843,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 枚举字段、特性、白名单内不检查
 					if (operation.Field.ContainingType.TypeKind == TypeKind.Enum ||
 						StructuralRecordSupport.IsStructuralRecordMember(operation.Field) ||
-						IsSourceOrHostType(operation.Field.ContainingType) ||
+						IsSourceOrHostType(operation.Field.ContainingType) || ImportedLibraries?.ContainsMember(operation.Field) == true ||
 						IsWhiteListedMember(operation.Field))
 						return;
 
@@ -851,7 +881,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					// 匿名类型、特性、白名单内不检查
 					if (operation.Property.ContainingType.IsAnonymousType ||
 						StructuralRecordSupport.IsStructuralRecordMember(operation.Property) ||
-						IsSourceOrHostType(operation.Property.ContainingType) ||
+						IsSourceOrHostType(operation.Property.ContainingType) || ImportedLibraries?.ContainsMember(operation.Property) == true ||
 						IsWhiteListedProperty(operation))
 						return;
 
@@ -885,7 +915,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 					if (IsWhiteListedMember(operation.Method))
 						return;
 
-					if (IsSourceOrHostType(operation.Method.ContainingType))
+					if (IsSourceOrHostType(operation.Method.ContainingType) || ImportedLibraries?.ContainsMember(operation.Method) == true)
 						return;
 
 					ctx.ReportDiagnostic(Diagnostic.Create(Rule,
@@ -1038,7 +1068,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 		=> typeSymbol.OriginalDefinition.GetAttributes().Any(static attribute =>
 			ECMAScriptComponentMetadata.IsComponentAttribute(attribute));
 
-	private static void AnalysisSymbolEndAction(SymbolAnalysisContext ctx)
+	private void AnalysisSymbolEndAction(SymbolAnalysisContext ctx)
 	{
 		var symbol = (INamedTypeSymbol)ctx.Symbol;
 

@@ -21,7 +21,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.3.0" />
+  <PackageReference Include="Jazor" Version="1.4.0" />
 </ItemGroup>
 ```
 
@@ -33,7 +33,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 定义 module 的类库应隔离这项工具引用：
 
 ```xml
-<PackageReference Include="Jazor" Version="1.3.0" PrivateAssets="all" />
+<PackageReference Include="Jazor" Version="1.4.0" PrivateAssets="all" />
 ```
 
 最终 `Exe`/`WinExe` 宿主需要 Emit 时直接引用 `Jazor`，不设置 `PrivateAssets`。包内
@@ -45,6 +45,16 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 [类库产物与引用契约](../../docs/02-architecture/library-artifact-contract.md)。
 
 ## 宿主输出
+
+普通 NuGet 或 `ProjectReference` 无需生产者使用 Jazor，消费者保留正常引用即可：
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Fastenshtein" Version="1.1.1" />
+</ItemGroup>
+```
+
+这会恢复并编译可达的受支持成员；生产者无需标注类型。实例 class、共享状态、RazorVue、增量与限制见[普通类库导入](../../docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 
 ```xml
 <PropertyGroup>
@@ -70,11 +80,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.3.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.3.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.3.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.3.0" />
-  <PackageReference Include="ECMAScript.Style" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.4.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.4.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.4.0" />
+  <PackageReference Include="ECMAScript.Style" Version="1.4.0" />
 </ItemGroup>
 ```
 
@@ -111,8 +121,8 @@ ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SS
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.3.0" />
-  <PackageReference Include="Jazor.Vue" Version="1.3.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.4.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.4.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 

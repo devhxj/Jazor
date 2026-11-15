@@ -132,7 +132,12 @@ internal static class InitializeHookInstaller
             runResult.GeneratedTrees,
             cancellationToken);
         outputCompilation = compilation.AddSyntaxTrees(
-            runResult.GeneratedTrees.Where(static tree => !RazorSourceTextRegistry.IsCarrierTree(tree)));
+            runResult.GeneratedTrees.Where(static tree => !RazorSourceTextRegistry.IsCarrierTree(tree) &&
+                !Jazor.Compiler.LibraryImportContext.IsCarrierTree(tree)));
+        Jazor.Compiler.LibraryImportContext.Transfer(compilation, outputCompilation);
+        var libraryInputs = Jazor.Compiler.LibraryImportContext.ReadCarrierInputs(runResult.GeneratedTrees, cancellationToken);
+        if (!libraryInputs.IsDefaultOrEmpty)
+            Jazor.Compiler.LibraryImportContext.Configure(outputCompilation, libraryInputs);
         diagnostics = runResult.Diagnostics;
         if (ContainsRazorModuleCatalog(outputCompilation))
             return result;

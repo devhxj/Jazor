@@ -11,3 +11,4 @@ JAZOR003 | Security | Error | Invalid SpreadAttribute usage
 JAZOR004 | Security | Error | SpreadAttribute conflicts with explicit property name
 JAZOR005 | Security | Error | Description and ECMAScriptName specify different JavaScript names
 JAZOR006 | Security | Error | Duplicate JavaScript name in one emitted scope
+JAZOR007 | Jazor.Compiler | Error | Ordinary library implementation resolution or recovery failed

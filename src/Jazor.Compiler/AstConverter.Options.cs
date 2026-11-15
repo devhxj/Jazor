@@ -24,6 +24,12 @@ public sealed record AstConverterOptions(
     Func<ISymbol, bool>? SourceDependencyFilter = null)
 {
     public static AstConverterOptions Default { get; } = new(AstConverterProfile.Standard);
+
+    /// <summary>Shared implementation plan for ordinary libraries reached through resolved assets.</summary>
+    public OrdinaryLibraryImportPlan? LibraryImports { get; init; }
+
+    /// <summary>Additional member selection for recovered runtime classes, including source helpers.</summary>
+    public Func<ISymbol, bool>? RuntimeMemberFilter { get; init; }
 }
 
 /// <summary>

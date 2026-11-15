@@ -14,6 +14,7 @@
 ## 稳定边界
 
 - 普通源码类型无需 `[ECMAScript]` 许可；`SourceTypeClosure` 收集入口可达的普通辅助类型，`AstConverter` 发射实现并提供共享的 `DeclaredNames`。宿主表达式通过 `SourceDependencyFilter` 声明依赖范围，可与普通成员发射范围分开。
+- 普通 DLL/NuGet 根据实际使用点自动恢复已解析的实现程序集。ILSpy 在进程内恢复 C#，独立 Roslyn compilation 保留程序集身份并结构匹配成员；导入计划计算可达闭包，`SemanticWalker` 复用已有 lowering/import 与使用点验证。每个实现输出共享模块，source map 标识恢复源码。支持范围、缓存与配置见[类库导入](../../docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 - class 保留类的默认构造与实例语义，record / readonly record struct 创建生成结构化对象。可变 record struct 的隐式复制和 record 的可执行自定义构造协议暂不支持，并在使用点明确拒绝。命名配置不会把 class 转换成对象字面量；配置对象应声明为 record。
 - 目标是保持使用点可观察行为和确定性输出，不是复刻完整 CLR runtime identity。
 - 支持范围由已绑定的 Roslyn 语义、白名单映射和测试共同定义；不支持的运行时敏感类型或成员必须显式失败。

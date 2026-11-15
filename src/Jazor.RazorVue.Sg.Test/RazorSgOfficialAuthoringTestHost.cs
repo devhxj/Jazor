@@ -26,7 +26,9 @@ internal static class RazorSgOfficialAuthoringTestHost
         string codeBehindSource,
         string rootNamespace,
         string componentMetadataName,
-        IReadOnlyDictionary<string, string>? supportingSources = null)
+        IReadOnlyDictionary<string, string>? supportingSources = null,
+        IReadOnlyList<MetadataReference>? additionalReferences = null,
+        IReadOnlyList<Jazor.Compiler.LibraryImplementationReference>? libraryImports = null)
     {
         var parseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         var syntaxTrees = ImmutableArray.CreateBuilder<SyntaxTree>();
@@ -52,7 +54,7 @@ internal static class RazorSgOfficialAuthoringTestHost
         var baseCompilation = CSharpCompilation.Create(
             assemblyName: "RazorSg.OfficialAuthoring.Tests",
             syntaxTrees: syntaxTrees,
-            references: RazorSgTestHost.CreateMetadataReferences(),
+            references: RazorSgTestHost.CreateMetadataReferences().Concat(additionalReferences ?? []),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var projectDirectory = Path.GetDirectoryName(documentPath);
@@ -66,7 +68,8 @@ internal static class RazorSgOfficialAuthoringTestHost
                 ["build_property.RootNamespace"] = rootNamespace,
                 ["build_property.SupportLocalizedComponentNames"] = "true",
                 ["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = "false",
-                ["build_property.MSBuildProjectDirectory"] = projectDirectory!
+                ["build_property.MSBuildProjectDirectory"] = projectDirectory!,
+                ["build_property.JazorRazorVue"] = "true"
             },
             new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.OrdinalIgnoreCase)
             {
@@ -77,16 +80,31 @@ internal static class RazorSgOfficialAuthoringTestHost
                 }
             });
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
-            generators: [new RazorSourceGenerator().AsSourceGenerator()],
-            additionalTexts: [additionalText],
+            generators: libraryImports is null ? [new RazorSourceGenerator().AsSourceGenerator()] :
+                [new RazorSourceGenerator().AsSourceGenerator(), new Jazor.Compiler.ESGenerator().AsSourceGenerator()],
+            additionalTexts: libraryImports is null ? [additionalText] :
+                [additionalText, new InMemoryAdditionalText("consumer.jazorimports", string.Join("\n", libraryImports.Select(input =>
+                    "asset|" + input.AssemblyName + "|" + input.ImplementationPath)))],
             parseOptions: parseOptions,
             optionsProvider: optionsProvider);
+        if (libraryImports is not null)
+            Assert.IsTrue(InitializeHookInstaller.TryInstall(), InitializeHookInstaller.GetInstallFailure());
         driver = driver.RunGeneratorsAndUpdateCompilation(baseCompilation, out var compilation, out var diagnostics);
+        if (libraryImports is not null)
+        {
+            Assert.IsFalse(compilation.SyntaxTrees.Any(Jazor.Compiler.LibraryImportContext.IsCarrierTree));
+            Assert.HasCount(1, Jazor.Compiler.LibraryImportContext.ReadCarrierInputs(driver.GetRunResult().GeneratedTrees));
+            // The final hook attaches a catalog tree after lowering. Transfer to that last clone
+            // only for the helper's second direct lowering observation.
+            Jazor.Compiler.LibraryImportContext.Configure(compilation, libraryImports);
+            Jazor.Compiler.LibraryImportContext.AddRoots(compilation, [compilation.GetTypeByMetadataName(componentMetadataName)!],
+                Jazor.Compiler.RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+        }
         Assert.AreEqual(0, diagnostics.Length, string.Join(Environment.NewLine, diagnostics));
         // RC2 emits @code members separately from the render body. Observe the complete
         // official SG output so assertions cover both parts of the component.
         var generatedSource = string.Join("\n", driver.GetRunResult().Results
-            .Single()
+            .First()
             .GeneratedSources
             .OrderBy(static source => source.HintName, StringComparer.Ordinal)
             .Select(static source => source.SourceText.ToString()));
@@ -118,7 +136,10 @@ internal static class RazorSgOfficialAuthoringTestHost
         return new RazorSgOfficialAuthoringObservation(
             generatedSource.ReplaceLineEndings("\n"),
             artifact.ModuleText.ReplaceLineEndings("\n"),
-            artifact.SourceMapContent.ReplaceLineEndings("\n"));
+            artifact.SourceMapContent.ReplaceLineEndings("\n"))
+        {
+            ImportedModules = Jazor.Compiler.LibraryImportContext.ForCompilation(compilation)?.BuildModules() ?? []
+        };
     }
 
     public static Task<ImmutableArray<Diagnostic>> GetGeneratorDiagnosticsAsync(
@@ -252,4 +273,7 @@ internal static class RazorSgOfficialAuthoringTestHost
 internal sealed record RazorSgOfficialAuthoringObservation(
     string GeneratedCSharp,
     string ModuleText,
-    string SourceMapContent);
+    string SourceMapContent)
+{
+    internal IReadOnlyList<Jazor.Compiler.ImportedLibraryModule> ImportedModules { get; init; } = [];
+}

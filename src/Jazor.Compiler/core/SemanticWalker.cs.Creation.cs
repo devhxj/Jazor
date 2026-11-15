@@ -99,7 +99,9 @@ public partial class SemanticWalker
 					$"Class '{type.ToDisplayString(Format.NameFormat)}' has no runtime constructor name. Use a record for a plain JavaScript object, or declare the host constructor mapping.");
 			if (ShouldEmitMemberConstructorSelector(constructor))
 			{
-				var helperName = Util.GetMemberConstructorHelperName(constructor);
+				var helperName = LibraryImports?.ContainsMember(constructor) == true
+					? LibraryImports.GetConstructorSelector(constructor)
+					: Util.GetMemberConstructorHelperName(constructor);
 				arguments.Insert(0, CreateStringLiteral(helperName));
 			}
 			expr = usesMemberConstructorRefOutSink
@@ -203,6 +205,8 @@ public partial class SemanticWalker
 
 	private bool ShouldEmitMemberConstructorSelector(IMethodSymbol constructor)
 	{
+		if (LibraryImports?.ContainsMember(constructor) == true)
+			return LibraryImports.RequiresConstructorSelector(constructor);
 		var containingType = constructor.ContainingType!;
 
 		if (containingType.InstanceConstructors.Count(static ctor => !ctor.IsImplicitlyDeclared) <= 1)

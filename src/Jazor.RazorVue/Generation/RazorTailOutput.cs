@@ -55,8 +55,29 @@ internal static class RazorTailOutput
         if (timing is not null)
             timing.ComponentCount = components.Length;
 
+        // The product supplies its final SG roots and Proxy storage contract. Core recovery
+        // remains framework-neutral and does not discover ComponentBase or Vue protocols.
+        Jazor.Compiler.LibraryImportContext.AddRoots(compilation, components,
+            components.IsDefaultOrEmpty ? Jazor.Compiler.RuntimeClassPrivateStorage.JavaScriptPrivateFields :
+                Jazor.Compiler.RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+
         if (components.IsDefaultOrEmpty)
+        {
+            try
+            {
+                var libraryArtifacts = ImmutableArray.CreateBuilder<VueModuleArtifact>();
+                AddImportedLibraryArtifacts(compilation, libraryArtifacts, cancellationToken);
+                if (libraryArtifacts.Count > 0)
+                    catalogSource = BuildModuleCatalogSource(libraryArtifacts.ToImmutable(), appendToExistingModuleCatalog,
+                        compilation.AssemblyName ?? "Jazor.RazorVue");
+            }
+            catch (Exception exception)
+            {
+                diagnostics = ImmutableArray.Create(RazorVueDiagnosticFactory.FromException(exception, RazorVueDiagnosticCategory.VueModule));
+                return false;
+            }
             return true;
+        }
 
         var bound = GeneratedCSharpBinder.TryBindFinalCompilationWithDiagnostics(
                 compilation,
@@ -176,6 +197,7 @@ internal static class RazorTailOutput
 
         try
         {
+            AddImportedLibraryArtifacts(binding.Compilation, builder, cancellationToken);
             // The route catalog is an ordinary generated artifact, not a second router
             // protocol. It keeps route discovery tied to the same final SG symbols and module
             // paths as pages/layouts, while Emit remains responsible for materialization.
@@ -200,6 +222,24 @@ internal static class RazorTailOutput
             .ThenBy(static artifact => artifact.ComponentId, StringComparer.Ordinal)
             .ToImmutableArray();
         return true;
+    }
+
+    private static void AddImportedLibraryArtifacts(Compilation compilation,
+        ImmutableArray<VueModuleArtifact>.Builder builder, CancellationToken cancellationToken)
+    {
+        var libraryImports = Jazor.Compiler.LibraryImportContext.ForCompilation(compilation);
+        if (libraryImports is null) return;
+        foreach (var module in libraryImports.BuildModules(cancellationToken))
+        {
+            var content = module.Artifact.Content;
+            var hash = Jazor.Common.ArtifactHash.ComputeSha256(content);
+            var map = module.Artifact.SourceMapContent!;
+            builder.Add(new VueModuleArtifact(module.RelativePath, module.RelativePath, content, hash,
+                module.RelativePath + ".map", map, Jazor.Common.ArtifactHash.ComputeSha256(map),
+                module.PackageImports.ToImmutableArray(), ImmutableArray<VueAsset>.Empty,
+                new VueHmrMetadata(module.RelativePath, hash, hash, hash, VueHmrBoundaryKind.FullReloadRequired),
+                module.Dependencies.ToImmutableArray()));
+        }
     }
 
     private static ArtifactBuildResult[] BuildArtifacts(

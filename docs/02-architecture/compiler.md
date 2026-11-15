@@ -37,6 +37,7 @@
 ## 支持边界
 
 - 普通源码类型无需 `[ECMAScript]` 许可。编译器沿入口的源码依赖收集普通辅助类型，并生成必要的类实现；其他模块继续通过已有产物与导入契约引用。没有实现或映射的外部 CLR 成员仍在运行时敏感使用点失败。
+- 普通 DLL 按实际使用点使用当前 TFM/RID 已解析的实现资产，无需额外配置。`OrdinaryLibraryImportPlan` 用进程内 ILSpy 恢复，在独立 Roslyn compilation 中结构匹配原始符号、计算成员闭包，经现有 Compiler 生成共享模块与恢复源码映射；消费者绑定保持不变。缓存按 compilation 复用，无跨进程持久化恢复缓存。精确范围见[类库导入](../04-roadmap/ordinary-nuget-compilation-research.md)。
 - 普通辅助 class 的实现归属一个模块。多个生成模块共享同一个 class 时，必须经已有模块导出共享实现；编译器明确拒绝重复物化，以免拆分静态状态和运行时类型身份。
 - `class` 的默认模型保留构造和实例行为，`record` / `readonly record struct` 使用结构化对象模型；可变 record struct 的隐式复制和可执行 record 构造协议明确拒绝。空名称配置只影响名称，不能把 class 变成 `{}`。宿主 union 等特殊值协议继续按明确声明处理。
 - Analyzer 以编译根及其源码依赖确定分析范围，覆盖未标注的前端辅助类型，同时避免将无关后端实现纳入前端规则；擦除位置的具体外部类型仍保留更早、更严格的诊断。

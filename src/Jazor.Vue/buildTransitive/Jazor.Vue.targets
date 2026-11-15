@@ -20,8 +20,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="'@(PackageReference->WithMetadataValue('Identity', 'Jazor.Vue'))' != ''">
+    <CompilerVisibleProperty Include="JazorRazorVue" />
+    <_JazorDirectVuePackage Include="@(PackageReference->WithMetadataValue('Identity', 'Jazor.Vue'))" />
     <!-- Keep the RazorVue analyzer beside its parser and register it only for direct users. -->
     <Analyzer Include="$(MSBuildThisFileDirectory)..\tools\net11.0\analyzers\*.dll"
               Condition="Exists('$(MSBuildThisFileDirectory)..\tools\net11.0\analyzers')" />
   </ItemGroup>
+  <!-- GenerateMSBuildEditorConfigFile runs its Core dependency before BeforeTargets hooks
+       on the outer target. Set this property before that dependency captures its value. -->
+  <Target Name="_SetJazorRazorVueCompilerProperty" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun"
+          Condition="'@(_JazorDirectVuePackage)' != ''">
+    <PropertyGroup><JazorRazorVue>true</JazorRazorVue></PropertyGroup>
+  </Target>
 </Project>

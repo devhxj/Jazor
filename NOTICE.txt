@@ -1,6 +1,13 @@
 This project contains third-party components under the following licenses:
 
 -------------------------------------------------
+ICSharpCode.Decompiler / ILSpy (MIT)
+Copyright (c) 2011-2025 AlphaSierraPapa for the ILSpy team.
+https://github.com/icsharpcode/ILSpy
+Used in process to recover explicitly selected managed library implementations.
+The distributed Jazor package includes the upstream license under licenses/ilspy/.
+
+-------------------------------------------------
 Microsoft.JavaScript.NodeApi / node-api-dotnet (MIT)
 Copyright (c) Microsoft Corporation.
 https://github.com/microsoft/node-api-dotnet

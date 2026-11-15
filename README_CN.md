@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.3.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.3.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.4.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.4.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,13 +26,15 @@
 
 </div>
 
-> Jazor 1.3.0 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
+> Jazor 1.4.0 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
 
 > 工具链与 SSR 使用进程内 NodeApi、LibNode 和固定 pnpm API。运行条件与升级步骤见[工具链指南](docs/03-guides/toolchain-migration.md)，支持边界与验证入口见[当前状态](docs/04-roadmap/current-status.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
+
+普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块，适用于普通模块与 RazorVue。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 
 普通源码类型沿编译入口及源码依赖参与转换，无需逐类型添加 `[ECMAScript]` 许可标注。class 保留构造与实例行为，record 表达结构化对象；宿主标注仅声明实际 JavaScript 绑定和特殊值语义。具体规则与迁移步骤见[类型与宿主标注指南](docs/03-guides/type-semantics.md)。
 
@@ -113,15 +115,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.3.0
+dotnet add package Jazor --version 1.4.0
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.3.0" />
-  <PackageReference Include="Jazor.Vue" Version="1.3.0" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.4.0" />
+  <PackageReference Include="Jazor.Vue" Version="1.4.0" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -203,14 +205,14 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 最新更新
 
-### Jazor 1.3.0 · 2026-11-15
+### Jazor 1.4.0 · 2026-11-15
 
-- 修正整数除法、checked 溢出、unchecked 回绕、整数转换，以及数组和模块字段的默认初始化。
-- 模式 switch 在原函数内保留 return、await、yield 和循环转移，包括异步 guard 与 finally。
-- 完成 35 个语法 bug：11 项修正运行行为，24 项使用源码位置明确的不支持诊断；范围和替代写法见[逐项记录](docs/04-roadmap/compiler-syntax-bug-fixes.md)。
-- 全部 Jazor/ECMAScript 包统一安装 `1.3.0`；从旧版本升级前审阅类型与宿主配置迁移说明。
+- 普通 NuGet 与 ProjectReference 按实际使用点自动编译受支持实现，无需额外导入配置或生产者标注。
+- 多入口共享导入类与静态状态，适用于 RazorVue 和 SSR；未实现运行时语义继续明确诊断。
+- 内容哈希跟踪实现变化，source map 明确标识恢复源码；范围见[类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
+- 全部 Jazor/ECMAScript 包统一安装 `1.4.0`；从旧版本升级前审阅类型与宿主配置迁移说明。
 
-版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.3.0)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
+版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.4.0)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 
