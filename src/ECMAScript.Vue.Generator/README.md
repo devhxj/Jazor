@@ -36,9 +36,9 @@ Element Plus、Vuetify、TDesign 和 WebIDL 生成器共享相同处理，Lucide
 新增 numeric/union 绑定后运行这两个 authoring 命令即可；应用构建期间不扫描或重写源码。
 
 - `upstream/element-plus/2.14.5` 只冻结 Element Plus 生成实际需要的上游文件。
-- `element-plus-runtime/package.json` 与 `package-lock.json` 锁定 Element Plus 的校验输入；更新脚本通过 `npm ci` 验证上游 exports、样式和依赖元数据，不把绑定库自己的 dist 作为运行时 carrier。
+- `element-plus-runtime/package.json` 与 `package-lock.json` 锁定 Element Plus 的校验输入；更新脚本验证锁定的上游 exports、样式和依赖元数据，维护中的工具项目通过进程内固定 pnpm API 恢复，不把绑定库自己的 dist 作为运行时 carrier。
 - `upstream/tdesign-vue-next/1.20.7` 保存可复现 TDesign contract 所需的声明快照与外部类型输入。
-- Vuetify catalog 由当前 `[ECMAScript(import, Transform.Component, exportName)]` 声明经 Roslyn 生成 `VuetifyCatalog.g.cs`；它不是完整的上游类型镜像。
+- Vuetify catalog 由当前 `[ECMAScript("specifier")]` 与名称机制 声明经 Roslyn 生成 `VuetifyCatalog.g.cs`；它不是完整的上游类型镜像。
 - Vuetify 的 `V*.cs`、`VuetifyCatalog.g.cs` 与 `manifest.json` 是生成器受控产物；修改组件契约时应先修改 `VuetifyCatalogGenerator` 或锁定的 upstream 输入，再运行 `vuetify` 并用 `vuetify --check` 校验，禁止把生成文件作为独立手工源码维护。
 - 生成器不得用 `object`、`VueValue` 或占位类型伪造组件覆盖率。
 

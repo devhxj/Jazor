@@ -19,7 +19,7 @@
 | `ECMAScript.Pinia.Testing` | `@pinia/testing` 绑定：测试期 Pinia root、spy 与 initial-state 的 authoring contract |
 | `ECMAScript.Vue.Devtools` | Vue Devtools Plugin API 绑定：custom inspector、timeline、component hook、tab 与 command |
 | `ECMAScript.VueDataUi` | `vue-data-ui` 3.23.4 binding：完整 71 个公开 `Vd*` 组件、强类型 dataset/config 与按组件 ESM entry |
-| `ECMAScript.Lucide` | `lucide-vue-next` 的完整生成式 RazorVue/Blazor 图标 binding；按 named export 保持 tree shaking |
+| `ECMAScript.Lucide` | `lucide-vue-next` 的生成式 RazorVue 图标 binding；按 named export 保持 tree shaking |
 | `ECMAScript.Vuetify`、`ECMAScript.ElementPlus`、`ECMAScript.TDesign` | UI 组件库绑定 |
 | `ECMAScript.Style` | 强类型、确定性的 CSS-in-JS |
 

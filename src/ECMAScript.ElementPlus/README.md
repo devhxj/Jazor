@@ -24,7 +24,7 @@ ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完
 
 ## 下一轮分页与日期绑定（尚未公开发布）
 
-以下能力随 preview.9 交付。
+以下能力属于当前声明的支持切片。
 
 `ElPagination.OnCurrentChange` 与 `OnSizeChange` 使用 `EventCallback<Number>`，直接传递上游页码和每页数量。原来接受无参数回调的消费者应改为 `void PageChanged(Number value)` / `void SizeChanged(Number value)`；应用侧可以按原查询逻辑重置页码，无需再声明分页 wrapper。
 

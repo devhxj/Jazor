@@ -23,7 +23,7 @@ and composable entry for the generated `jazor` project.
 - 组件代理：`VueDraggableList`（`ModelValue`、`Tag`、`Options`、默认插槽与透传属性）
 - 选项：SortableJS 常用集（`Animation`、`ChosenClass`、`GhostClass`、`Group`、`Handle`、`Filter`、`Direction`、`Disabled`、`Sort` 等）与 12 个 `on*` 事件回调
 
-`VueDraggableList<TItem>` 按 `Transform.Component` 封装上游 `VueDraggable` 组件，`VueDraggable.UseDraggable` 映射上游 `useDraggable` composable。两者使用同一个 `vue-draggable-plus` 入口；该库的拖拽核心、组件生命周期、指令和 composable 共享状态，因此完整运行时闭包是组件绑定的稳定交付单元。
+`VueDraggableList<TItem>` 通过 `[ECMAScript("vue-draggable-plus")]`、组件 marker 和名称机制封装上游 `VueDraggable` 组件，`VueDraggable.UseDraggable` 映射上游 `useDraggable` composable。两者使用同一个 `vue-draggable-plus` 入口；该库的拖拽核心、组件生命周期、指令和 composable 共享状态，因此完整运行时闭包是组件绑定的稳定交付单元。
 
 未绑定：`vDraggable` 指令（Razor 指令编排尚未建模）、`closest`/`save`/`toArray`/`option` 等 Sortable 实例方法。需要时按需扩充。
 

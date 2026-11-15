@@ -1,10 +1,10 @@
 # 类库与标准前端项目契约
 
-> 适用范围：多项目解决方案、NuGet 类库、最终宿主、ECMAScript 源码与 npm/JSR 绑定。实施状态见[当前状态](../04-roadmap/current-status.md)，迁移步骤见[npm/JSR 绑定与标准 Jazor 项目计划](../04-roadmap/npm-jsr-binding-tree-shaking-plan.md)。
+> 适用范围：多项目解决方案、NuGet 类库、最终宿主、ECMAScript 源码与 npm/JSR 绑定。支持范围见[当前状态](../04-roadmap/current-status.md)，标准项目与资源规则如下。
 
 ## 核心模型
 
-最终宿主拥有一个标准前端项目根 `jazor/`。Emit 把编译结果和绑定声明接入该项目，共享 NodeApi 宿主在进程内调用 pnpm、Vite 与 Vue SSR API。当前候选的验收范围见[迁移方案](../04-roadmap/nodejs-pnpm-migration-plan.md)。
+最终宿主拥有一个标准前端项目根 `jazor/`。Emit 把编译结果和绑定声明接入该项目，共享 NodeApi 宿主在进程内调用 pnpm、Vite 与 Vue SSR API。运行条件与升级步骤见[工具链指南](../03-guides/toolchain-migration.md)。
 
 **交接边界**：Jazor 物化标准项目并拥有内嵌环境生命周期；包解析由 pnpm、HMR/debug/bundle 由 Vite、渲染由 Vue SSR 负责。编译器不重写工具的解析或运行语义。
 
@@ -111,7 +111,7 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 
 ### 特性
 
-三个特性职责互不重叠（已定）：
+特性按以下职责协作：
 
 | 特性 | 参数 | 职责 | 状态 |
 | --- | --- | --- | --- |
@@ -125,21 +125,21 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 
 这些特性不承担普通源码类型的编译许可。模块内的普通实现与可达辅助类型按源码和符号归属参与转换；纯数据 record 依据其声明种类生成对象字面量。带空名称的宿主 class 仍是 class，不会据此生成 `{}`；options 和 dictionary 声明应采用 record。
 
-**声明面同项目（已定）**：`[Style]` 与 `[ECMAScript]` 位于同一个程序集 `ECMAScript.Contract`（`netstandard2.0`、零依赖），命名空间同为 `ECMAScript`。绑定库经 `ECMAScript` 的程序集引用传递可见两者。声明面特性集中在一处，不分散到实现程序集，避免绑定库为用一个特性而引入实现依赖。
+**声明面同项目**：`[Style]` 与 `[ECMAScript]` 位于同一个程序集 `ECMAScript.Contract`（`netstandard2.0`、零依赖），命名空间同为 `ECMAScript`。绑定库经 `ECMAScript` 的程序集引用传递可见两者。声明面特性集中在一处，不分散到实现程序集，避免绑定库为用一个特性而引入实现依赖。
 
-`[ECMAScriptName]` / `[Description("@#...")]` 的名字机制**位置不变**，仍位于 `ECMAScript` 程序集（`src/ECMAScript/attribute/`）。它是既有实现的一部分，本次规则不为它增加迁移工作量。
+`[ECMAScriptName]` / `[Description("@#...")]` 的名字机制**位置不变**，仍位于 `ECMAScript` 程序集（`src/ECMAScript/attribute/`）。它是既有实现的一部分，名称配置不改变类型的对象模型。
 
 注：`ECMAScript.Contract` 内现有特性命名空间并不统一——`ECMAScriptAttribute` 是 `ECMAScript`，`EmitsAttribute`/`JazorAttribute`/`PropsAttribute` 是 `ECMAScript.Contract`。`[Style]` 与 `[ECMAScript]` 同命名空间，以保证两个配对使用的声明面特性写法一致。
 
-`[ECMAScript]` 最多一个参数。**不存在 `Transform`，也不存在组件专用参数**：值绑定与组件绑定使用同一条声明。成员级声明优先于类型级声明。（已定）
+`[ECMAScript]` 最多一个参数。**不存在 `Transform`，也不存在组件专用参数**：值绑定与组件绑定使用同一条声明。成员级声明优先于类型级声明。
 
-没有独立的 `[Export]` 特性：导出名由名字机制给出。（已定）
+没有独立的 `[Export]` 特性：导出名由名字机制给出。
 
-**不区分开发/生产 profile（已定）**：声明面每个特性只写一个 specifier，不提供 dev/prod 成对字段。差异由上游 package 的 `exports` conditions 解析决定——`PackageExportsResolver` 已按 conditions 工作。这与交接边界一致：Jazor 不做 profile 判断，只写出标准 ESM 图，profile 选择属于消费侧。绑定 metadata 中成对的 `development*`/`production*` 字段随之整体退役。
+**不区分开发/生产 profile**：声明面每个特性只写一个 specifier，不提供 dev/prod 成对字段。差异由上游 package 的 `exports` conditions 解析决定——`PackageExportsResolver` 已按 conditions 工作。这与交接边界一致：Jazor 不做 profile 判断，只写出标准 ESM 图，profile 选择属于消费侧。绑定 metadata 中成对的 `development*`/`production*` 字段随之整体退役。
 
 ### 名字与导出名
 
-名字解析是三态规则（已定）：
+名字解析是三态规则：
 
 | 写法 | 结果 |
 | --- | --- |
@@ -151,11 +151,11 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 
 ### 组件
 
-组件身份由约定判定：类型派生自 `Microsoft.AspNetCore.Components.ComponentBase` 且实现 Vue marker。声明面上组件与普通绑定没有区别，不需要组件标记。（已定）
+组件身份由约定判定：类型派生自 `Microsoft.AspNetCore.Components.ComponentBase` 且实现 Vue marker。声明面上组件与普通绑定没有区别，不需要组件标记。
 
 ### 样式边
 
-`[Style]` 是**绑定 CSS 导入**，声明该绑定入口需要的样式 side-effect specifier（已定）：
+`[Style]` 是**绑定 CSS 导入**，声明该绑定入口需要的样式 side-effect specifier：
 
 - 可重复；**声明顺序即导入顺序，也是 CSS 层叠顺序**。
 - 只声明 specifier。绑定不做形态判断，也不从扩展名推断是 JS 模块还是样式表。
@@ -164,9 +164,9 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 
 `[Style]` 与 `[ECMAScript]` 的区别是"要不要绑定名字"：`[ECMAScript]` 产生一个有名字的导入绑定，`[Style]` 只产生一条纯副作用边，不引入任何绑定的标识符。
 
-**依附于入口（已定）**：`[Style]` 挂在 `[ECMAScript("specifier")]` 声明的入口上，"入口"由 `[ECMAScript]` 唯一确定。只声明 `[Style]` 而没有对应 `[ECMAScript]` 入口时是**构建错误**，不允许样式边悬空。
+**依附于入口**：`[Style]` 挂在 `[ECMAScript("specifier")]` 声明的入口上，"入口"由 `[ECMAScript]` 唯一确定。只声明 `[Style]` 而没有对应 `[ECMAScript]` 入口时是**构建错误**，不允许样式边悬空。
 
-**处理边界（已定）**：Jazor 与 Emit 的职责到生成模块里的普通 side-effect import 为止。
+**处理边界**：Jazor 与 Emit 的职责到生成模块里的普通 side-effect import 为止。
 
 ```js
 import "element-plus/es/components/affix/style/css.mjs";
@@ -176,7 +176,7 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 ### specifier 形态规则
 
-**已定** 扩展名规则分两类，判据是"谁拥有这个文件"：
+扩展名规则分两类，判据是"谁拥有这个文件"：
 
 | 类别 | 形态 | 例子 |
 | --- | --- | --- |
@@ -198,7 +198,7 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 深层路径可解析的前提是上游 exports 允许它。绑定使用 `element-plus/es/components/affix/style/css.mjs` 这类深层 specifier 时，依赖的是上游 exports 的通配或兜底规则：`element-plus@2.14.5` 提供 `"./es/*.mjs"` 通配与 `"./*"` 兜底，`tdesign-vue-next@1.20.7` 则没有 `exports` 字段（任意路径按文件布局解析）。若上游改成封闭 exports，这些深层 specifier 会被阻止——因此绑定选择的 specifier 必须由恢复后的 package 实际验证可解析，不能只凭路径存在。
 
-**声明值就是生成 import 的真源（已定）**：`[ECMAScript("<specifier>")]` 保存的字符串**逐字**写进生成模块，绑定不得为它维护一份"逻辑名 → 真入口"的私有别名表。判据是该 specifier 在固定版本的上游包中真实可解析——`VuetifyCatalogGenerator` 已有 `ValidateImportSpecifiers` 逐个按上游 `exports`（精确键 / 单层通配 / 兜底）解析为真实文件，解析失败即构建错误。
+**声明值就是生成 import 的真源**：`[ECMAScript("<specifier>")]` 保存的字符串**逐字**写进生成模块，绑定不得为它维护一份"逻辑名 → 真入口"的私有别名表。判据是该 specifier 在固定版本的上游包中真实可解析——`VuetifyCatalogGenerator` 已有 `ValidateImportSpecifiers` 逐个按上游 `exports`（精确键 / 单层通配 / 兜底）解析为真实文件，解析失败即构建错误。
 
 这条规则排除了两类曾出现的简写形态：
 
@@ -212,7 +212,7 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 ### 同一模块多处声明
 
-**已定** 同一个上游模块可以由多处声明（不同创作面各有用途），但模块级事实必须一致：specifier、导出名、样式边。**不一致是构建错误**，不允许静默分叉。
+同一个上游模块可以由多处声明（不同创作面各有用途），但模块级事实必须一致：specifier、导出名、样式边。**不一致是构建错误**，不允许静默分叉。
 
 「导出名一致」的判据是**同一「模块 × 导出名」对**，不是"一个模块只能有一个组件"。一个上游模块导出多个组件是正常形态：
 
@@ -226,7 +226,7 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 ### 编译器物化
 
-**已定** 声明由编译器在使用点物化：
+声明由编译器在使用点物化：
 
 - 模块边 → 生成模块中的 `import`；
 - `[Style]` → 生成模块中的 side-effect `import`。
@@ -235,11 +235,11 @@ import "element-plus/es/components/affix/style/css.mjs";
 
 ### 生成器
 
-**已定** 生成的编目、registry 与 catalog 从声明派生，并且必须字段透明：声明面新增字段时自动透传。生成物不是第二处声明点。
+生成的编目、registry 与 catalog 从声明派生，并且必须字段透明：声明面新增字段时自动透传。生成物不是第二处声明点。
 
 ### 声明与派生证据的关系
 
-**已定** 声明面是运行时图的唯一真相；`manifest.json`、inventory、许可证与 hash 是派生证据，由声明生成、由门禁校验，不作为构建输入。`manifest.json` 中样式相关的字段随形态判别一起退役。license 由绑定包的 NuGet `licenses/**` 交付，不参与运行时图。
+声明面是运行时图的唯一真相；`manifest.json`、inventory、许可证与 hash 是派生证据，由声明生成、由门禁校验，不作为构建输入。`manifest.json` 中样式相关的字段随形态判别一起退役。license 由绑定包的 NuGet `licenses/**` 交付，不参与运行时图。
 
 ## 引用传递
 

@@ -16,16 +16,18 @@
 
 - `JazorAttribute` 与 `Op` 是仓库内部契约，通过 `InternalsVisibleTo` 共享，不扩展为宽泛公共 API。
 - `Op.Compile` 是编译器持有语义的保留入口；consumer 不应以它替代 `Alias`、`Inline` 或 `Import` 建模。
-- `ECMAScriptAttribute` 的 `Allow`、`Import`、`Component` 三类 `Transform` 分别表示环境宿主、普通 ESM binding 和组件 ESM binding；其第一个参数是最终 ESM import specifier，也是 binding package metadata 的入口 key。组件身份仍由对应框架 marker（例如 `ComponentBase + IVueComponent`）确认。成员级特性优先于类型级特性，用于声明细粒度入口；包名、版本、来源（npm、JSR 或明确声明的 embedded-mjs carrier）、integrity 和资源闭包由 package metadata 提供。
+- `[ECMAScript]` 声明环境宿主，`[ECMAScript("specifier")]` 声明外部 ESM；最多一个参数，没有 `Transform` 或组件专用参数。导出名由名称机制提供，组件身份由框架 marker 确认。成员级 specifier 优先于类型级声明，包身份与资源闭包来自对应 binding metadata。
 - SourceMap、宿主协议 DTO 与其他共享实现位于 `Jazor.Common`，Razor-to-Vue 行为位于其专属项目。
 
 ## 关键文件
 
-- `JazorAttribute.cs`：白名单 producer 声明特性。
+- `attribute/JazorAttribute.cs`：白名单 producer 声明特性。
 - `Op.cs`：共享操作枚举。
 - `IUIComponent.cs`：最小 UI 组件标记契约。
-- `attribute/ECMAScriptAttribute.cs`：统一 ECMAScript binding 元数据与 `Transform` 类别。
-- `PropsAttribute.cs`、`EmitsAttribute.cs`：authoring 推导元数据。
+- `attribute/ECMAScriptAttribute.cs`：环境宿主与外部 ESM 元数据。
+- `attribute/PropsAttribute.cs`、`attribute/EmitsAttribute.cs`：authoring 推导元数据。
+
+普通源码类型不依靠该特性取得编译许可；class、record 与宿主 union 的规则见[类型指南](../../docs/03-guides/type-semantics.md)。
 
 ## 相关文档
 

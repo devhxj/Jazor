@@ -4,6 +4,16 @@
 
 ## 2026-11-15
 
+### 未发布 | Unreleased
+
+#### 体验优化
+
+- 整理当前状态、类型与工具链指南，将已完成计划和旧验证数字归入历史；同步中英文首页、安装示例和宿主标注写法，补充 Markdown 文件及锚点检查命令。by @devhxj
+
+Improvements
+
+- Consolidate current status, type semantics and toolchain guides; archive completed plans and historical validation snapshots. Align installation examples and host attributes, and add a Markdown file/anchor verification command. by @devhxj
+
 ### Jazor 1.3.0
 
 中文 | English
@@ -73,7 +83,7 @@ Bug Fixes
 #### 体验优化
 
 - 工具链和 SSR 全局切换为进程内 Microsoft.JavaScript.NodeApi + LibNode + pnpm API：WebIDL、Emit、Vite/HMR、Vue SSR、运行时测试、浏览器驱动、脚本和 CI 使用同一执行路线，无需全局 Node/pnpm，不启动 JS 工具或 shell 子进程。固定 LibNode `20.1800.215`，仍属于 Node 20 系列；Windows 使用已接受的 `CETCompat=false` apphost。by @devhxj
-- **破坏性变更与迁移**：移除 `--deno` / `JazorDenoPath` 和 Vite/SSR `TaskName`，WebIDL `--deno-config` 改为 `--node-project`；审阅并清理旧安装结果，改用 `pnpm-lock.yaml`，将 shell 构建定制迁入 Vite 配置。共享 store 使用 `--pnpm-store` / `JazorPnpmStoreDirectory`。依赖不执行 lifecycle shell scripts；pnpm 取消须等待原生安装实际结束。完整步骤见[迁移方案](docs/04-roadmap/nodejs-pnpm-migration-plan.md)。不覆盖已发布的 1.0.0。by @devhxj
+- **破坏性变更与迁移**：移除 `--deno` / `JazorDenoPath` 和 Vite/SSR `TaskName`，WebIDL `--deno-config` 改为 `--node-project`；审阅并清理旧安装结果，改用 `pnpm-lock.yaml`，将 shell 构建定制迁入 Vite 配置。共享 store 使用 `--pnpm-store` / `JazorPnpmStoreDirectory`。依赖不执行 lifecycle shell scripts；pnpm 取消须等待原生安装实际结束。完整步骤见[迁移方案](docs/03-guides/toolchain-migration.md)。不覆盖已发布的 1.0.0。by @devhxj
 - NuGet 携带共享宿主、七个构建机 RID 的 libnode 和 Windows Emit apphost；工具按构建机选取，运行资产按目标 RID 解析。修复 Linux/macOS 包路径、Linux addon 符号加载和 Windows Rolldown 绑定选择；Vite CSS 固定为官方同版本 Lightning CSS WASM 并保持压缩。发布 SSR 从 bundle 与程序集资源加载，不在请求期间生成工具文件。by @devhxj
 - 保持 Vite/SSR 的取消与退出顺序，模块图检查不再打开 WebSocket；多个绑定共同声明相同外部包身份时正确合并，Pinia 恢复元数据对齐 Pinia 4.0.3 / Testing 2.0.1。四平台组合 CI、完整 48 项 Emit 消费者、Windows 23 包 SPA/SSR 浏览器发布、主线及默认覆盖率门禁通过。by @devhxj
 
@@ -82,7 +92,7 @@ Improvements
 > The maintainer selected a MINOR release for this infrastructure refactor. C# compiler and component authoring semantics are preserved; the documented host configuration migration is a specific versioning exception. Future breaking changes still require MAJOR.
 
 - Move WebIDL, Emit, Vite/HMR, Vue SSR, runtime tests, browser drivers, scripts, and CI to in-process Microsoft.JavaScript.NodeApi + LibNode + the pnpm API. No global Node/pnpm or JS-tool/shell child process is required. Pin LibNode `20.1800.215`, still in the Node 20 family, and use the accepted `CETCompat=false` apphost on Windows. by @devhxj
-- **Breaking changes and migration**: remove `--deno` / `JazorDenoPath` and Vite/SSR `TaskName`; replace WebIDL `--deno-config` with `--node-project`. Review old installation artifacts, adopt `pnpm-lock.yaml`, and move shell build customization into Vite config. Select the shared store with `--pnpm-store` / `JazorPnpmStoreDirectory`. Lifecycle shell scripts are disabled; cancellation waits for native pnpm installation to finish. Follow the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md); the published 1.0.0 remains unchanged. by @devhxj
+- **Breaking changes and migration**: remove `--deno` / `JazorDenoPath` and Vite/SSR `TaskName`; replace WebIDL `--deno-config` with `--node-project`. Review old installation artifacts, adopt `pnpm-lock.yaml`, and move shell build customization into Vite config. Select the shared store with `--pnpm-store` / `JazorPnpmStoreDirectory`. Lifecycle shell scripts are disabled; cancellation waits for native pnpm installation to finish. Follow the [migration plan](docs/03-guides/toolchain-migration.md); the published 1.0.0 remains unchanged. by @devhxj
 - Package the shared host, libnode for seven build-host RIDs, and Windows Emit apphosts. Select tooling for the build host and runtime assets for the target RID. Correct Linux/macOS package paths, Linux addon symbol visibility, and Windows Rolldown binding selection; pin the official same-version Lightning CSS WASM implementation with minification. Published SSR loads its bundle and assembly resources without writing per-request tool files. by @devhxj
 - Preserve Vite/SSR cancellation and shutdown ordering and keep module checks free of WebSocket listeners. Merge identical external package identities and align Pinia restore metadata with Pinia 4.0.3 / Testing 2.0.1. Four-platform CI, all 48 Emit consumers, Windows SPA/SSR browser gates from 23 packages, mainline tests, and default coverage gates pass. by @devhxj
 
@@ -210,7 +220,7 @@ Chores
 #### 其他变更
 
 - 开发者反馈回归纳入完整主线与覆盖率门禁；Release 包消费者验证运行闭包、PathBase、真实 Chrome 交互、Deno SSR 与 hydration，发布和 Wiki 验收同步新的目录与默认 source map 契约。by @devhxj
-- 更新公共 API 基线并通过 Release 程序集比较、绑定生成与 inventory、XML 文档检查及 23 个 lockstep 包验证；当前指标与复现入口见[反馈验收](docs/04-roadmap/preview8-developer-feedback.md)。by @devhxj
+- 更新公共 API 基线并通过 Release 程序集比较、绑定生成与 inventory、XML 文档检查及 23 个 lockstep 包验证；当前指标与复现入口见[反馈验收](docs/05-history/evolution.md#2026-10-09-preview8-开发者反馈验收)。by @devhxj
 
 #### New Features
 
@@ -240,7 +250,7 @@ Chores
 #### Chores
 
 - Include developer-feedback regressions in the complete mainline and coverage gates. Release consumers verify runnable closures, PathBase, real Chrome interaction, Deno SSR, and hydration; release and Wiki checks follow the current layout and default source-map contract. by @devhxj
-- Update the public API baseline and pass Release assembly comparison, binding generation/inventory, XML documentation, and 23 lockstep package checks. Current metrics and reproduction commands are in the [feedback validation](docs/04-roadmap/preview8-developer-feedback.md). by @devhxj
+- Update the public API baseline and pass Release assembly comparison, binding generation/inventory, XML documentation, and 23 lockstep package checks. Current metrics and reproduction commands are in the [feedback validation](docs/05-history/evolution.md#2026-10-09-preview8-开发者反馈验收). by @devhxj
 
 ## 2026-09-29
 
@@ -370,7 +380,7 @@ Chores
 
 #### 破坏性变更
 
-绑定声明面、产物布局与 Emit 写入语义在本轮统一收敛到「标准前端项目」契约（详见 `docs/02-architecture/library-artifact-contract.md` 与 `docs/04-roadmap/npm-jsr-binding-tree-shaking-plan.md`）。以下迁移在 `0.x` 阶段以 `MINOR` 交付，逐项给出迁移路径。
+绑定声明面、产物布局与 Emit 写入语义在本轮统一收敛到「标准前端项目」契约（详见 `docs/02-architecture/library-artifact-contract.md` 与 `docs/02-architecture/library-artifact-contract.md`）。以下迁移在 `0.x` 阶段以 `MINOR` 交付，逐项给出迁移路径。
 
 - **`[ECMAScript]` 从三参数收敛为单参数**：删除 `Transform` 枚举与 `ECMAScriptAttribute.Validate` 的组合规则，`[ECMAScript]` 只保留一个 import specifier 参数。**迁移**：`[ECMAScript("pkg", Transform.Component, "Export")]` → `[ECMAScript("<上游公开入口>")]` + `[ECMAScriptName("Export")]`；仅当导出名不等于类型名时才需要 `[ECMAScriptName]`（2294 处声明已迁移，232 处补名字，1 处 `default` 显式化）。`[ECMAScript]`（无参）与 `[ECMAScriptModule("path")]` 语义不变。
 - **绑定 specifier 改为上游公开入口**：`[ECMAScript("<specifier>")]` 逐字写进生成 import，不再经绑定私有的「逻辑名 → 真入口」别名表。**迁移**：把声明值与 `manifest.json` 的 `imports` 键一起改写为上游可解析路径，例如 `element-plus/affix/ElAffix` → `element-plus/es/components/affix/index.mjs`、`tdesign-vue-next/button/Button` → `tdesign-vue-next/es/button/index.mjs`、`monaco-editor` → `monaco-editor/editor/editor.api.js`。不迁移会在 Deno/NetPack 解析阶段直接失败（旧简写在上游并不存在）。
@@ -383,7 +393,7 @@ Chores
 
 #### Breaking Changes
 
-The binding declaration surface, artifact layout, and Emit write semantics now converge on the standard frontend project contract (see `docs/02-architecture/library-artifact-contract.md` and `docs/04-roadmap/npm-jsr-binding-tree-shaking-plan.md`). On `0.x` these land as `MINOR`, and each carries its migration path.
+The binding declaration surface, artifact layout, and Emit write semantics now converge on the standard frontend project contract (see `docs/02-architecture/library-artifact-contract.md` and `docs/02-architecture/library-artifact-contract.md`). On `0.x` these land as `MINOR`, and each carries its migration path.
 
 - **`[ECMAScript]` collapses from three parameters to one**: the `Transform` enum and `ECMAScriptAttribute.Validate` combination rules are removed; `[ECMAScript]` keeps a single import-specifier argument. **Migration**: `[ECMAScript("pkg", Transform.Component, "Export")]` becomes `[ECMAScript("<upstream entry>")]` plus `[ECMAScriptName("Export")]`, and the name attribute is only needed when the export name differs from the type name (2294 declarations migrated, 232 names added, 1 explicit `default`). Parameterless `[ECMAScript]` and `[ECMAScriptModule("path")]` keep their meaning.
 - **Binding specifiers now name the upstream public entry**: `[ECMAScript("<specifier>")]` is written verbatim into the generated import instead of being resolved through a binding-private alias table. **Migration**: rewrite the declaration and the `manifest.json` `imports` key together to the resolvable upstream path, for example `element-plus/affix/ElAffix` to `element-plus/es/components/affix/index.mjs`, `tdesign-vue-next/button/Button` to `tdesign-vue-next/es/button/index.mjs`, and `monaco-editor` to `monaco-editor/editor/editor.api.js`. The old shorthands do not exist upstream and fail at Deno/NetPack resolution.

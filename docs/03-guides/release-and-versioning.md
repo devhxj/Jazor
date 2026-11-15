@@ -14,7 +14,7 @@
 | `MINOR` | 新能力、新的支持面、公共 API 新增；`0.x` 阶段可包含破坏性变更，但必须在 CHANGELOG 标注迁移说明 | 新的 lowering 支持、新绑定组件、新包 |
 | `PATCH` | 仅限修复：错误行为纠正、诊断改进、文档、依赖缺陷修复 | 发射输出错误、精度回归、HMR 回归 |
 
-`PATCH` 明确不包含：新的 lowering 能力、新的绑定组件、新的公共 API、API 重命名。这些在 `0.x` 阶段归 `MINOR`，`1.0.0` 之后归 `MAJOR`（新能力仍归 `MINOR`）。判定原则是：消费者能否仅凭版本号判断升级风险——新能力改变了"能做什么"，必须进入 `MINOR` 通道。
+`PATCH` 不承载新的 lowering 能力、绑定组件或公共 API；这些新增进入 `MINOR`。删除、重命名或改变既有契约属于破坏性变更，`0.x` 阶段可进入带迁移说明的 `MINOR`，`1.0.0` 之后进入 `MAJOR`。版本号应让消费者能判断新增能力与升级风险。
 
 ## 1.0 正式版契约
 
@@ -43,10 +43,6 @@
 - 不跳号。若发生手工重置或跳号（例如历史上的 `v0.1.48` → `v0.3.0`），必须在 CHANGELOG 中留一句解释。
 
 ## 发版门禁
-
-### preview.8 验收
-
-preview.8 集中处理 Razor SG 开发者反馈、CLR/原生浏览器映射、Element Plus 强类型交互、ASP.NET Core `IApplicationBuilder` 宿主复用、RID-aware Emit 资产选择、子路径包身份、SSR bundle 和 publish closure。完整主线测试、Compiler/RazorVue/Vue binding coverage、绑定 XML 文档、API/绑定基线及本地 23 包的 Windows SPA/SSR 发布消费者门禁均已通过。验证入口与范围见[开发者反馈验收](../04-roadmap/preview8-developer-feedback.md)；公开上传仍由下述官方 tag workflow 执行，并在上传前再次验证发布 ref。
 
 打 tag 前按改动触及面执行对应门禁；覆盖率与场景数量的具体门槛以[当前状态](../04-roadmap/current-status.md)的门槛表为准：
 

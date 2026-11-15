@@ -64,13 +64,13 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 
 门槛是验证规则，不等同于任一历史报告中的固定通过数量。对当前结果的判断应运行相应脚本或测试命令。
 
-## Emit 阶段输出与取消（preview.9）
+## Emit 阶段输出与取消
 
 正常构建会显示 `[Jazor Emit]` 阶段的开始、完成和耗时，包括模块收集、项目写入、依赖 restore/check、浏览器 bundle 与 SSR bundle。NodeApi 中的工具进度即时输出；失败保留 JS 异常、工具诊断、阶段与项目目录。
 
 Emit 接收 Ctrl+C 后不再启动后续阶段。pnpm 原生 API 没有取消入口，恢复等待实际安装结束再传播取消；Vite/SSR/测试环境在 JS 线程可调度时终止事件循环并等待退出，不留下仍在执行的自有任务。同步无限循环尚不能强制打断。就地写入可能留下部分产物，再次构建会收敛，不承诺回滚。
 
-## 最终编译计时与长尾（preview.9）
+## 最终编译计时与长尾
 
 普通构建日志中的 `[Jazor.RazorVue] compilation timing` 覆盖 generators、generated-compilation、final-validation、component-discovery、render-binding、member-closures、inject-validation、artifact-emission、route-catalog、catalog-serialization 和 catalog-attach。`total` 包含各子阶段，不能与它们重复相加；并行 artifact 记录等待 worker 完成的墙钟时间，不累加 worker CPU。它只覆盖 final-compilation hook，完整 Csc 耗时仍需 MSBuild 诊断。
 

@@ -1,6 +1,6 @@
 # Jazor.RazorVue
 
-> 定位：官方 Razor Source Generator 到 Vue render-function `.js` 的当前集成实现。
+> 定位：官方 Razor Source Generator 到 Vue render-function ESM 模块的集成实现。
 
 `Jazor.RazorVue` 只消费 official Razor SG 完成后的 Roslyn `Compilation` 和 generated C#。它将 `BuildRenderTree` 相关 `IOperation` 通过 `Jazor.Compiler` 降低为 Vue render-function artifact，不将 Razor DR/IR、SFC 或中间 marker protocol 作为回退路径。
 
@@ -18,7 +18,7 @@ RazorVue 将所有进入组件 lowering 的类型统一视为 RazorVue 组件。
 
 - 可赋值给 `Microsoft.AspNetCore.Components.ComponentBase`，包括通过自定义基类间接继承；
 - 实现 `ECMAScript.Vue.IVueComponent` 或其派生接口；
-- 声明组件导入描述：本地/应用组件使用 `[ECMAScriptModule("...")]`，第三方库代理使用 `[ECMAScript("package", Transform.Component, "Export")]`。
+- 声明组件导入描述：本地/应用组件使用 `[ECMAScriptModule("...")]`，第三方库代理使用 `[ECMAScript("package")]` 加 `[ECMAScriptName("Export")]` 或等效名称声明。
 
 `IVueComponent<TProps>`、`IVueComponent<TProps, TSlots>` 和组件库自己的派生 marker 都满足第二项。两个导入描述同时出现时，`[ECMAScriptModule]` 优先。HTML 元素、`RenderFragment` 和普通 C# 类型不属于组件类型，不需要该 marker；Microsoft Blazor 内置 UI 组件即使继承 `ComponentBase`，因没有 `IVueComponent` 契约仍应稳定 Reject。
 
@@ -27,8 +27,8 @@ RazorVue 将所有进入组件 lowering 的类型统一视为 RazorVue 组件。
 - Razor 参数、必填参数和参数类型由 Razor/C# compiler 验证，本项目不重复实现这些检查。
 - C# 表达式、成员和函数语义必须经 `Jazor.Compiler` translation hook 处理；RazorVue 只可为 compiler 不拥有的 Vue artifact framing 直接构造 AST。
 - Razor 标记与手写 `BuildRenderTree` 都属于受约束的 direct-render 协议；`@code`/`.razor.cs` 的可达 helper、事件和生命周期成员属于 component logic。两者的完整 Support/constraint/reject 矩阵见 [RazorVue 作者指南](../../docs/03-guides/razorvue-authoring.md)。
-- `Jazor.Analyzer` 提供 Razor SG hook/bootstrap；本项目不拥有 authoring analyzer、SFC frontend 或宿主 RPC。
-- 第三方库组件使用框架中性的 `[ECMAScript(import, Transform.Component, exportName)]`；RazorVue 只在类型同时满足 `ComponentBase + IVueComponent` 时解释该 import，不把 JS interop 或其他框架包装器纳入 Vue render-function lowering。
+- 本项目的 `Generation/RazorVueGenerator.cs` 组织 Razor SG final Compilation 集成，兼容性诊断由本项目负责；`Jazor.Analyzer` 持有核心 ECMAScript 静态预诊断。
+- 第三方库组件使用框架中性的 `[ECMAScript("specifier")]` 与名称机制；RazorVue 只在类型同时满足 `ComponentBase + IVueComponent` 时解释该 import，不把 JS interop 或其他框架包装器纳入 Vue render-function lowering。
 - DOM `@bind`、`EventCallback`、slot、source-base lifecycle/Dispose、parameterless constructor replay 和 direct-render imperative loop 的支持范围以当前 official SG 输入与回归测试为准；不支持的协议必须给出可定位诊断。
 
 ## 代码结构

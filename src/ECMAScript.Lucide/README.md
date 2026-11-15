@@ -1,6 +1,6 @@
 # ECMAScript.Lucide
 
-Complete generated Blazor/RazorVue bindings for `lucide-vue-next`. The generator reads the upstream TypeScript declarations and emits one strongly typed component for every named icon export. Each icon remains a named export from the upstream npm ESM package, so Vite performs normal tree shaking after pnpm API restoration.
+Generated strongly typed RazorVue bindings for `lucide-vue-next`. The generator reads the upstream TypeScript declarations and emits one strongly typed component for every named icon export. Each icon remains a named export from the upstream npm ESM package, so Vite performs normal tree shaking after pnpm API restoration.
 
 Use the binding directly in a Razor component:
 
@@ -12,4 +12,4 @@ Use the binding directly in a Razor component:
 
 The generated XML documentation links each icon to its official Lucide page and records the upstream named export. Keep the generated source and XML together when packaging so IDE completion and Razor authoring retain the same guidance as the runtime binding.
 
-Regenerate with dotnet run --file scripts/csharp/generate-lucide.cs -- --version 1.0.0.
+Regenerate with `dotnet run --file scripts/csharp/generate-lucide.cs -- --version 1.0.0`. This argument selects the upstream `lucide-vue-next` version, independently of the Jazor/ECMAScript lockstep NuGet version.

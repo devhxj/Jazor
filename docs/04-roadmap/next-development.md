@@ -1,92 +1,57 @@
 # 下一阶段
 
-> 本页安排下一轮投入的优先次序。能力状态以[当前状态](./current-status.md)、源码和可复现验证为准。
+> 已交付能力以[当前状态](./current-status.md)为准。本页只安排尚需推进的工作，不把已完成的迁移或既有支持切片重复列为待开发能力。
 
 ## 投入准则
 
-下一阶段沿用编译产物、类库 carrier 和 Razor-to-Vue 主链路的既定设计。投入从高频页面和真实消费者出发，提升既有能力的作者体验、诊断质量和发布证据；C# 类型系统或浏览器语义出现明确缺口时，新增 runtime 协议。
+从真实消费者复现、高频作者写法和明确的行为缺口选择任务。每个切片先定义 C# 契约、责任层和验收，再实现、回归并更新指南；缺少需求或可复现收益时不增加运行时协议。
 
-每个条目必须遵守以下原则：
+## 作者体验与交付证据
 
-1. **C# 契约优先**：以明确参数、返回值、union 和 overload 表达作者面；运行时语义通过强类型契约进入模块。
-2. **责任清晰**：C# 语义归 `Jazor.Compiler`，CLR/browser 映射归 `Jazor.CLR`，组件 API 归对应 binding，SSR 与宿主协议归 `Jazor.AspNetCore` / `Jazor.Emit`。
-3. **显式语义路径**：原始 JavaScript、资源 carrier、组件协议和运行时行为均通过已声明契约进入产物。
-4. **证据先于声明**：官方 Razor SG、模块运行时、真实浏览器、隔离的 package consumer，以及适用的 SSR/hydration 必须共同证明新增能力。
+Golden Path、诊断矩阵、标准 `jazor/` 项目、NodeApi 工具链及发布门禁已经建立。后续在这些入口上持续验收：
 
-## P0：编写体验与交付闭环
-
-NodeApi 工具链已在 1.1.0 接入，完整验收范围见[迁移方案](./nodejs-pnpm-migration-plan.md)。旧稳定版本继续按其 tag 文档使用；1.1.0 经进程内 pnpm、Vite 与 SSR 执行，不保留旧运行时 fallback。四平台组合、Windows SPA/SSR、48 项发布消费者、主线与默认覆盖率门禁已通过；1.1.0 按维护者指定发布，正式上传由 tag workflow 负责。
-
-具体执行顺序、交付物、测量协议和 Definition of Done 见 [RazorVue P0 执行计划](./p0-plan.md)。
-
-优先处理已经进入真实页面、并直接影响作者体验和交付可信度的路径。
-
-| 优先级 | 目标 | 主要责任层 | 完成条件 |
-| --- | --- | --- | --- |
-| P0-1 | 收敛 RazorVue 的编写体验与组件绑定。优先解决 TDesign 表格列、slot、表单及回调等高频自然写法，使真实页面不依赖应用侧类型转换、手写 builder 或通用桥接。 | 对应 `ECMAScript.*` 绑定；必要时 `Jazor.RazorVue` | 至少一个独立的 authoring fixture 和一个真实消费者页面通过 Razor SG、Release package 与浏览器验证；公共 API 仍保持强类型。 |
-| P0-2 | 让边界明确呈现在作者源码中。继续完善 compatibility analyzer、final Compilation diagnostics、HelpLink 和最小替代路径，保证诊断路径维持完整 module、catalog 和 bundle。 | `Jazor.RazorVue`、指南与 Authoring sample | 正常写法保持 Razor SDK 诊断语义；缺少支持条件的形状具有稳定诊断 ID、源位置和替代说明；源码项目与 package consumer 表现一致。 |
-| P0-3 | 巩固已声明 framework primitive 与宿主交付的真实证据。覆盖 Debug、Release、HMR、PathBase、SSR/hydration 的一致性，以及新 binding 或 framework slice 的独立消费者回归。 | `Jazor.Emit`、`Jazor.AspNetCore`、`Jazor.CLR`、RazorVue | 产物闭包、source map、浏览器交互和适用 SSR 行为可复现；失败显式传播，不以静默 CSR 或旧产物回退。 |
-| P0-4 | 先测量，再优化 direct render 与 CLR runtime。性能候选必须先建立固定输入、warm-up、多轮测量、产物体积和行为基线，再决定是否实施。 | `Jazor.RazorVue`、`Jazor.Compiler`、`Jazor.CLR` | 改动前记录阈值和基线；优化在不改变求值顺序、值语义、导入稳定性和 source map 的前提下达到阈值，否则不实施。 |
-| P0-5 | 将 `jazor/` 固定为标准前端项目：ECMAScript MJS 作为项目源码，binding 以 npm/JSR identity 和标准 ESM specifier 接入；Emit 在 MSBuild 中生成入口与 `package.json`，pnpm API 恢复依赖，Vite 与 Vue SSR 在 NodeApi 中消费同一项目。 | `Jazor.Emit`、`Jazor.NodeHost`、各 `ECMAScript.*` binding | 通过[npm/JSR 绑定与标准 Jazor 项目计划](./npm-jsr-binding-tree-shaking-plan.md)的标准项目、frozen lock、细粒度 JS/CSS tree shaking、组件内部依赖、SSR 及源码/NuGet consumer 验收矩阵。 |
-
-## 编译器：标注职责与类型语义调整
-
-1.2.0 已完成 `[ECMAScript]` 标注职责与类型语义调整，并通过切片验收：普通源码类型按编译范围、实现归属与实际操作参与转换；class 保留构造与实例行为，record 承担结构化对象，源码和生成模板的冗余标注已清理。维护者指定本轮使用 MINOR 通道，class→record 的破坏性影响仍须按迁移说明处理。范围、兼容性与可复现验收入口见 [ECMAScript 标注与类型语义调整计划](./ecmascript-type-semantics-plan.md)。
-
-## P1：需要先确立协议的能力
-
-具体执行顺序、协议字段和 Definition of Done 见 [RazorVue P1 执行计划](./p1-plan.md)。
-
-这些方向会触及状态所有权、生命周期或 browser history 语义，因此首先需要完整的诊断协议与真实消费者证据。证据闭环完成后，条目进入 `Support` 评审；在此之前使用 `Guidance` 或 `Reject` 状态。
-
-| 方向 | 预期边界 | 前置条件 |
+| 任务 | 责任层 | 完成条件 |
 | --- | --- | --- |
-| 强类型认证状态 | 显式 typed browser provider 与版本化 endpoint envelope；服务端 endpoint 始终是授权事实来源。 | 匿名、登录、过期、登出、403、刷新、SSR 首屏和 hydration 的完整 browser/package 证据。 |
-| SSR bootstrap 与状态交接 | 版本化 payload，明确请求/组件所有权、反序列化结果、失配和一次性副作用。 | packaged SSR consumer 覆盖重复 hydration、错误传播和过期 payload 行为。 |
-| 构造函数注入与复杂 activation | 考虑有界的强类型子集，保持 base/derived、字段初始化、生命周期和 SSR/browser lifetime 的一致性。 | 至少两个真实消费者、完整 activation 矩阵与所有 profile 验证；selector 由 Roslyn 绑定符号提供。 |
-| 后退/前进与复杂 URI 状态 | 已发生的 `popstate`/`hashchange` 按独立事件协议处理。 | URL 恢复、竞态、注册释放与用户确认行为先由 reference 和真实浏览器定义。 |
+| 高频表格、slot、表单和回调自然写法 | 对应 binding、必要的 RazorVue compiler hooks | 独立 authoring fixture 与真实页面通过官方 SG、隔离 package 和浏览器验证；公共 API 保持强类型 |
+| 诊断与修改反馈 | RazorVue、作者指南、诊断工具 | 稳定 ID、作者源码位置、HelpLink、最小替代写法及源码/package 一致性回归 |
+| Debug/HMR/SPA/SSR 一致性 | Emit、ASP.NET Core、NodeHost | 同一资源闭包上的模块、source map、PathBase、浏览器交互和适用 hydration 行为可复现，错误明确传播 |
+| 真实应用联调 | 参考应用与消费者 | 补齐真实后端保存、插件启用后的业务流程和修改到可见的 HMR 长尾证据 |
+| 可测量优化 | Compiler、RazorVue、CLR、Emit | 固定机器、提交、输入、warm-up 和多轮参数；比较耗时、p50/p95、吞吐、原始/gzip 体积与行为，达到预先记录的收益门槛 |
 
-## P2：协议边界、评估与可测量优化
+使用[Golden Path](../03-guides/razorvue-golden-path.md)、[诊断矩阵](../03-guides/razorvue-diagnostic-matrix.md)和[开发与测试](../03-guides/development-and-testing.md)中的现有入口。测试仿真、真实浏览器和 package consumer 分别说明证明范围；产物不变不等于内部缓存命中。
 
-P2 的执行顺序、Definition of Done 和当前证据见 [RazorVue P2 执行计划](./p2-plan.md)。当前优先级如下：
+## 协议与支持范围扩展
 
-| 方向 | 预期边界 | 当前状态 |
+SSR state envelope、认证快照/browser provider、单一显式构造函数的普通引用服务参数，以及 history handler 的已验证子集已经实现。扩展必须在现有协议基础上明确新边界：
+
+| 方向 | 待证明的扩展 | 责任层与验收 |
 | --- | --- | --- |
-| SSR 状态与表单交接 | 继续使用显式 `jazor-ssr-state` envelope；表单使用应用自有 endpoint 协议。 | provider key、重复 hydration 和失败传播已硬化；表单协议使用 Guidance |
-| 高级渲染 | Microsoft Blazor 内置 UI 组件和 `StreamRendering` 使用 Reject；localization 和复杂 validation 使用 Guidance，等待独立 typed 语义证据。 | 当前 SDK 内置 UI 组件由 `JAZORVGA021` 覆盖，`StreamRendering` 由 `JAZORVCA012` 覆盖；localization 与复杂 validation 已给出应用自有/组件库 typed 替代路径 |
-| JS 互操作 | `IJSRuntime` 家族使用 Reject，JavaScript 能力通过 typed ECMAScript/WebIDL binding 表达。 | 已有稳定诊断与作者面回归 |
-| 性能与交付 | 以固定 benchmark 比较 render/update、gzip、clean/incremental/HMR/Release。 | 已完成运行时基线；主链路优化以可复现收益为准 |
+| SSR 状态交接 | 更复杂的请求/组件所有权、过期 payload、一次性副作用与 hydration identity | ASP.NET Core / Emit；独立 SSR/package/browser 场景验证失配、重复入口与失败传播 |
+| 认证与应用 bootstrap | 新 endpoint 状态和应用生命周期的组合 | 应用 endpoint / ASP.NET Core；服务端保持授权事实来源，typed consumer 验证匿名、刷新、403、过期、错误和竞态 |
+| 构造与 activation | 多构造、继承和更复杂服务生命周期 | RazorVue / Compiler；先定义 Roslyn 符号绑定的 selector、初始化顺序和 SSR/browser lifetime，再以独立消费者和完整矩阵验收 |
+| 复杂 browser history | 超出现有 handler、取消恢复和释放切片的完整历史语义 | CLR / 应用 route host；以真实浏览器和 reference 明确 URL、竞态、用户确认与释放协议 |
+| localization 与复杂 validation | 有明确需求的 typed 应用/组件协议 | 对应应用或 binding；当前保持 Guidance，取得独立作者面和运行时证据后再评审 |
 
-## P3：Vue 应用生态绑定扩展
+Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering` 和完整 CLR parity 是当前明确边界，不因出现在路线图中成为实现承诺。具体替代路径见[RazorVue 作者指南](../03-guides/razorvue-authoring.md)。
 
-P3 的分阶段顺序、每个绑定的固定交付物与验证门槛见 [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md)。
+## 编译器与普通类库
 
-| 阶段 | 目标 | 当前状态 |
-| --- | --- | --- |
-| P3-A | `ECMAScript.DateFns`、`ECMAScript.VueUse`、`ECMAScript.FloatingUi` | 源码、测试、主线 lane 与 preview.5 发布已完成；browser smoke 与真实 RazorVue consumer 待补 |
-| P3-B | `ECMAScript.VeeValidate`、`ECMAScript.VueI18n`、`ECMAScript.VueQuery` | 源码、测试、主线 lane 与 preview.5 发布已完成；browser smoke 与真实 RazorVue consumer 待补 |
-| P3-C | `ECMAScript.VueDraggable`、`ECMAScript.FilePond`、`ECMAScript.WangEditor` | 源码、测试、主线 lane 与 preview.5 发布已完成；browser smoke 与真实 RazorVue consumer 待补 |
-| P3-D | `ECMAScript.Monaco` | 实现、compiler/Emit 回归、主线 lane 与 preview.5 发布已完成；browser smoke 与真实 RazorVue consumer 待补 |
+35 个语法 bug 的运行行为和诊断修复已随 1.3.0 交付。下一步从[语法 issue 索引](./csharp-syntax-gap-audit.md)中的开放 enhancement 选择高频切片，例如构造链、参数绑定、源码运算符、接口分派和自定义解构/枚举；不把关闭 bug 等同于实现完整运行时协议。
 
-## 稳定边界
+普通 NuGet DLL 的实现恢复仍是[研究方案](./ordinary-nuget-compilation-research.md)，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。自动依赖闭包、原始/恢复符号对应、compiler hooks 与产物集成完成前，不声明安装任意普通 NuGet 后即可用于前端。
 
-P2 的具体执行顺序、Definition of Done 和证据门槛见 [RazorVue P2 执行计划](./p2-plan.md)。
+每个新增 lowering 先明确求值顺序、副作用、结果、使用点语义、确定性与失败边界，再由 Compiler / CLR / Analyzer 按职责实现。仅为擦除类型注解增加 blanket rejection 不属于实现路线。
 
-下列边界在本阶段保持稳定，确保整体契约清晰一致。
+## Vue 应用生态绑定
 
-- 浏览器运行时通过受支持的 C# 语义和显式宿主映射执行。
-- Microsoft/Blazor 内置 UI 组件、`IJSRuntime` 字符串互操作和服务器端服务使用各自的运行时模型。
-- C# binding 保持强类型契约。
-- 公共平台 API 以跨应用契约和验收证据定义。
+DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 均已有源码、测试 lane 和 lockstep 发布。当前待办是各绑定的 browser smoke、真实 RazorVue/package consumer、适用 SSR 与 worker/资源验证，完成前保持 Guidance。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
 ## 写入当前状态的门槛
 
-计划只有完成证据闭环，才可以成为读者能够依赖的当前能力。
+1. C# API 通过正常类型检查和官方 Razor SG 绑定。
+2. compiler lowering、CLR/runtime 或 binding 有针对性的行为回归与相邻失败诊断。
+3. 隔离 Release package consumer 与真实浏览器完成目标交互。
+4. 涉及 SSR、hydration、生命周期或宿主状态时，证明对应 profile 的所有权和错误传播。
+5. 同步架构、指南和适用发布说明，使用正式门禁保留提交与环境对应的报告。
 
-一个计划条目完成后，必须同步更新实现、测试、作者指南和[当前状态](./current-status.md)。写入“当前状态”前，至少满足：
-
-1. C# API 通过正常类型检查和官方 Razor SG 绑定，不依赖私有作者语法。
-2. compiler lowering、CLR/runtime 或 binding 行为具有针对性的回归测试。
-3. 最终模块在真实浏览器中完成目标交互，Release package consumer 可独立复现。
-4. 涉及 SSR、hydration 或宿主状态时，额外证明该 profile 的所有权、失败传播和资源闭包。
-5. 相邻形状具有明确 `Guidance` 或 `Reject` 状态与替代路径。
+已完成计划的过程和旧测试快照只保留在[历史演进](../05-history/evolution.md)，详细原始记录通过 Git 历史追溯。

@@ -4,6 +4,6 @@
 
 | 文档 | 说明 |
 | --- | --- |
-| [演进记录](./evolution.md) | 核心平台、Razor-to-Vue、Jolt 与 CSX 的历史定位 |
+| [演进记录](./evolution.md) | 核心平台、RazorVue 与工具链的关键决策、已完成计划、旧审计及带日期的验证快照 |
 
 版本级变更记录位于仓库根目录的 [CHANGELOG.md](../../CHANGELOG.md)。

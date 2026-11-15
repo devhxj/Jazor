@@ -1,103 +1,67 @@
 # 当前状态
 
-> 当前版本：[1.3.0（2026-11-15）](https://github.com/devhxj/Jazor/releases/tag/v1.3.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[1.3.0（2026-11-15）](https://github.com/devhxj/Jazor/releases/tag/v1.3.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
-> 本页给出今天可以被项目依赖的产品契约，以及可以重复执行的验证入口。计划、一次性实施过程和历史构建数字，不构成当前能力。
-
-当前源码已修复语法审计中的 [35 个 bug](./compiler-syntax-bug-fixes.md)：整数语义、默认值和模式 switch 控制流修正为可观察行为一致；未实现的运行时协议在源码使用点明确诊断。这些修正纳入 1.3.0，新增模式控制流支持面和宿主扩展接口按 MINOR 通道发布。
-
-1.1.0 工具链已切换为进程内 NodeApi + LibNode + pnpm API。Release 主测试、默认 Debug 覆盖率、完整 48 项 Emit 消费者、Windows NuGet SPA/SSR 浏览器发布和[四平台组合 CI](https://github.com/devhxj/Jazor/actions/runs/43030143205)已通过。迁移契约和限制见[迁移方案](./nodejs-pnpm-migration-plan.md)。维护者指定该底层重构以 1.1.0 发布，宿主配置迁移见 CHANGELOG；平台声明只覆盖实际证据，不由包内 RID 资产推断支持。
-
-1.2.0 完成[ECMAScript 标注与类型语义调整](./ecmascript-type-semantics-plan.md)：普通源码辅助类型沿编译根的依赖闭包生成实现，无需 `[ECMAScript]` 许可；class 保留构造和实例行为，record 承担对象字面量。Analyzer 覆盖前端辅助类型并保持后端范围隔离，纯数据声明和生成模板的冗余标注已清理。完整构建、主线测试、覆盖率、生成契约、本地 NuGet 与真实 Chrome 消费者通过；维护者指定本轮使用 MINOR 通道，class→record 的破坏性影响与版本例外见 CHANGELOG。
-
-preview.9 支持显式浏览器入口根、RazorVue 页面按导航加载、普通构建中的最终编译阶段计时，以及由声明生成的数值转换、属性提示和直接 union 标量投影。配置和验证入口分别见[安装与配置](../03-guides/installation-and-configuration.md)、[开发与测试](../03-guides/development-and-testing.md)、[数值/union 示例](../../samples/RazorVue.NumericUnion/README.md)。这些能力延续到 1.3.0；升级时所有 Jazor/ECMAScript 包必须统一到 `1.3.0`。
-
-本地发布门禁已通过，API 与绑定基线已复核；固定计数和消费者证明范围见[preview.9 验证快照](../05-history/evolution.md#2026-10-10-preview9-作者体验与发布准备)。官方 tag workflow 在上传前重新执行质量与 Windows SPA/SSR 消费者门禁。真实后端保存、插件启用后的业务流程与修改到可见的 HMR 长尾仍需继续验证。
-
-> **preview.8 状态：** 开发者反馈实现已通过完整主线、覆盖率、API/绑定与本地发布包的 SPA/SSR 消费者门禁。具体实现与证据见[开发者反馈验收](./preview8-developer-feedback.md)；DOM 事件扩展的 Happy DOM 回归与真实 Chrome 消费者验收分别限定其证明范围。
-
-审视这里的每项状态，只需要一个问题：今天能否据此设计、编写和交付。答案来自实现、测试与真实消费者证据；愿景、阶段性进展或一次成功的构建，都不足以作为依据。
+本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 
 ## 已交付的核心能力
 
-以下能力已经形成实现、验证与交付三者一致的产品契约。
-
-| 能力 | 当前范围 | 详细入口 |
+| 能力 | 当前范围 | 权威入口 |
 | --- | --- | --- |
-| C# 到 ECMAScript | 受支持的 Roslyn `IOperation` 经 `Jazor.Compiler` 降低为 ESTree 和确定性 ECMAScript 模块；导入、临时名、source origin、source map 与宿主映射由编译主线统一负责。 | [编译器](../02-architecture/compiler.md) |
-| 模块与资源交付 | 当前主线消费 `Jazor.Generated.ModuleCatalog` 与 schema 2 binding metadata，并生成 Debug、Release、SSR 或 HMR 产物。npm/JSR 标准项目与细粒度 JS/CSS tree shaking 已按 P0-5 验收矩阵完成。 | [类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)、[P0-5 计划](./npm-jsr-binding-tree-shaking-plan.md) |
-| Razor-to-Vue | 官方 Razor Source Generator 生成的最终 `Compilation` 经 `Jazor.RazorVue` 绑定为 Vue render-function `.mjs`；C# 表达式、成员和调用语义仍通过核心编译器 lowering。 | [Razor-to-Vue 架构](../02-architecture/razor-to-vue.md) |
-| CLR 与外部 API | CLR/ECMAScript 映射、白名单和 runtime helper 共同定义受支持的运行时语义。映射缺失的类型或成员在使用点提供明确诊断，原始 JavaScript 通过显式 host mapping 进入模块。 | [编译器](../02-architecture/compiler.md) |
+| C# 到 ECMAScript | Roslyn `IOperation` 经核心 Compiler 降低为 Acornima ESTree；导入、临时名、source origin 与 source map 保持确定性 | [编译器架构](../02-architecture/compiler.md)、[实现原则](../../src/Jazor.Compiler/ImplementationPrinciples.md) |
+| 普通源码与类型语义 | 可达的普通源码 helper 无需逐类型添加 `[ECMAScript]`；class 保留受支持的类行为，数据 record 表达结构化对象 | [类型与宿主标注](../03-guides/type-semantics.md) |
+| CLR 与宿主映射 | 白名单、runtime helper、强类型 ECMAScript/WebIDL binding 定义受支持的运行时语义；未实现语义在使用点明确诊断 | [Compiler](../../src/Jazor.Compiler/README.md)、[CLR](../../src/Jazor.CLR/README.md) |
+| Razor-to-Vue | 官方 Razor SG 的最终 `Compilation` 生成 Vue render-function ESM 模块；C# 表达式、成员与调用仍由核心 Compiler 翻译 | [Razor-to-Vue](../02-architecture/razor-to-vue.md) |
+| 模块与资源交付 | `ModuleCatalog`、ECMAScript 源码和 schema 2 binding metadata 接入标准 `jazor/` 项目，支持 npm/JSR identity、ESM specifier 和细粒度 JS/CSS tree shaking | [类库与产物契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md) |
+| 构建与 SSR 工具链 | 进程内 NodeApi + LibNode + 固定 pnpm API；Vite、Vue SSR 和依赖恢复共享显式资源闭包 | [工具链与迁移](../03-guides/toolchain-migration.md)、[NodeHost](../../src/Jazor.NodeHost/README.md) |
+
+1.3.0 的语法修复包括整数行为、数组和模块默认值、表达式包装及模式 switch 控制流。35 个审计 bug 中，11 项修正运行行为，24 项以源码位置诊断替代错误代码或内部异常；这些诊断不表示完整运行时协议已实现。范围与替代写法见[逐项修复记录](./compiler-syntax-bug-fixes.md)。
 
 ## RazorVue 作者面
 
-RazorVue 的作者体验以官方 Razor SG、强类型组件契约和最终浏览器行为共同界定。
+| 范围 | 当前契约 |
+| --- | --- |
+| 组件编写 | 自定义组件、已声明的第三方 binding、泛型组件、slot/fragment、`@bind`、事件、循环、生命周期、`@key`、`@ref`、可达的 `@code` / `.razor.cs` helper |
+| 参数与注入 | 已验证的 `ParameterView`、可写 `[Inject]`、typed/named/nested cascading value；单一显式构造函数的普通引用类型服务参数使用既有 provider key 与 Vue inject |
+| SSR 与认证状态 | `jazor-ssr-state` v1 props/providers envelope、显式认证状态快照与 `jazor-auth-state` v1 browser provider；重复 hydration、状态失配和错误传播具有明确行为 |
+| 导航 | 应用自有 route host、限定的同源内部导航，以及已验证的 history handler、取消恢复、竞态和释放协议 |
+| 浏览器事件 | Mouse、Keyboard、Focus、Change、Pointer、Wheel、Drag、Clipboard、Touch、Error、Progress 的已验证只读原生投影；原生 file/drop 与强类型 payload extension |
+| 诊断 | compatibility analyzer 和 final Compilation diagnostics 映射回 `.razor` / `.razor.cs`；稳定 ID、HelpLink 和最小替代路径由回归维护 |
 
-RazorVue 已覆盖自定义组件和已声明第三方组件 binding 的常用作者形态：组件组合、泛型组件、slot/fragment、`@bind`、事件、循环、生命周期、`@key`、`@ref`、可达的 `@code` / `.razor.cs` helper，以及 direct Vue render-function 产物。`ParameterView`、可写 `[Inject]` property、typed/named/nested cascading value、应用自有 route host 和限定的同源内部导航，只在已经证明的浏览器交互或首屏 SSR 子集内声明支持。
+具体 Support / Guidance / Reject 矩阵见[RazorVue 作者指南](../03-guides/razorvue-authoring.md)，原生事件和集合的精确边界见[浏览器互操作](../03-guides/browser-interop.md)。DOM 仿真、真实 Vue runtime、浏览器与 SSR/package consumer 各自证明对应场景，不相互替代。
 
-框架 primitive 的事件支持覆盖已验证的只读原生投影：核心 Mouse、Keyboard、Focus、Change，以及 Pointer、Wheel、Drag、Clipboard、Touch、Error、Progress 事件组；`ElementReference.FocusAsync` 覆盖已证明的浏览器交互子集。复杂 lifecycle、导航取消、参数和 cascade 的完整 reference parity、SSR/prerender identity 归属扩展范围。
+## 类型与产品边界
 
-作者诊断通过 source compatibility analyzer 或 final Compilation diagnostics 回到 `.razor` / `.razor.cs` 位置；生成路径维持完整 module、`ModuleCatalog` 和 bundle 状态。具体支持矩阵、诊断与替代写法见[RazorVue 作者指南](../03-guides/razorvue-authoring.md)。
+- 仅引用普通 NuGet / CLR DLL 不会自动获得 JavaScript 实现。源码闭包、已有 Jazor 模块产物或显式宿主映射提供实现；普通 DLL 的实现恢复仍是[研究方向](./ordinary-nuget-compilation-research.md)。
+- 泛型实参和数组元素等擦除位置与运行时构造、成员访问、默认值和类型检查分开验证。Analyzer 可以更早报告封闭具体外部类型，Compiler 保持使用点验证。
+- Microsoft/Blazor 内置 UI 组件与 `IJSRuntime` 字符串互操作使用明确的 Reject 边界；应用通过自定义组件、typed binding 和显式 endpoint 协议实现相应功能。
+- `StreamRendering` 使用 Reject；localization、复杂 validation、复杂 activation、完整 browser history、服务器 circuit 与完整 CLR/Blazor reference parity 不在当前已证明的支持范围内。
+- 编译器优先保证求值顺序、副作用次数、结果、使用点语义和确定性。测试覆盖率不表示任意 C#、任意 NuGet 库或任意浏览器场景都已受支持。
 
 ## 生态与参考应用
 
-生态绑定与参考应用服务于同一目标：让已声明的能力能够在真实项目中被自然地组合和验证。
+Vue、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vuetify、Element Plus 与 Style 提供各自 README 声明的绑定切片。P3 的 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 已进入 lockstep 发布集合，但仍保持 Guidance，等待各自 browser smoke 与真实 RazorVue consumer 证据。见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
-- Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vuetify、Element Plus 与 `ECMAScript.Style` 共同构成 Jazor 核心之上的生态层；P3-A/B/C 与 Monaco 的十个绑定已随 preview.5 发布，但仍等待 browser smoke 与真实 RazorVue consumer 后再进入 Support 矩阵。P3-B 的 `ECMAScript.VueI18n` 仍在维护。
-- `Jazor.Admin` 是 UI 库无关的管理壳库；`samples/JazorAdmin` 是它的生产级参考应用，以强类型 TDesign 组件实现当前 Starter 功能页面以及门户、IAM、运营场景。它验证编写体验、资源闭包与 Release browser 行为，不反向定义库 API。
-- ASP.NET Core 宿主支持 `JazorMode=debug` 的模块、source map、import map 输出，以及 `JazorMode=release` 的浏览器 bundle。启用 `JazorSSR=true` 后，已声明范围内的 Vue SSR 与 hydration 使用同一显式资源闭包。
+`Jazor.Admin` 是 UI 库无关的管理壳库，`samples/JazorAdmin` 是参考应用。`RazorVue.Authoring` 与 `RazorVue.TodoList` 分别验证作者体验、隔离包消费和适用的 SPA/SSR 交付。真实后端保存、插件启用后的业务流程与 HMR 长尾仍需按消费者场景验证。
 
-preview.8 增加 12 种 DOM 事件与既有 CLR 浏览器载荷的强类型 extension、可在 Startup/框架传入的 `IApplicationBuilder` 上复用前端宿主、目标 RID 资产选择、显式子路径包身份、独立 SSR bundle 和默认 publish closure 过滤。原生事件与 payload 的详细支持边界见[浏览器互操作](../03-guides/browser-interop.md)。
+## 正式版与兼容性
 
-## 产品边界
+1.0.0 已正式发布。公开作者 API 的冻结基线保持不变，每次候选从实际程序集重新生成快照并报告新增、删除和签名变化；不能把某次“0 新增/0 删除”当作永久状态。已批准删除仍在比较报告中保留，未审阅删除阻断发布。
 
-以下内容定义当前产品边界。新增实现与证据通过对应诊断、测试和验收流程更新契约：
-
-- Jazor 浏览器运行时通过受支持的 C# 语义、宿主映射和 runtime identity 规则执行。
-- Microsoft/Blazor 内置 UI 组件，例如 `Router`、`RouteView`、`EditForm`、`Input*`、`AuthorizeView` 和 `DynamicComponent`，通过应用自定义组件或已声明的第三方 binding 提供 UI 层。
-- `IJSRuntime` 字符串互操作、服务器端服务、认证状态、`PersistentComponentState`、`[PersistentState]` 与 enhanced form handoff 通过各自的宿主和版本化协议处理。
-- 当前 history 子集覆盖已验证的 `popstate`/`hashchange` handler、取消恢复、竞态和释放协议；完整 browser history 语义、SSR/prerender route identity 和 hydration 副作用 parity 归属扩展范围。
-
-后续目标、责任归属与升级门槛见[下一阶段](./next-development.md)。
-
-## 1.0 正式版契约
-
-公共 API 冻结审查和机器候选快照已建立，详见[1.0 公共 API 冻结审查](../03-guides/public-api-freeze.md)。`1.0.0-preview.1` 已作为首个冻结候选发布；当前包名、命名空间、`AddJazor*` / `UseJazor*` 扩展面和配置模型保持既定命名。`verify-release-candidate.cs` 与手动 `Release Candidate Verification` workflow 提供统一候选验收入口；API 兼容性检查、全部质量门禁、SPA/SSR 消费者门禁和 CHANGELOG 证据共同确认正式 `1.0.0` 发布状态。
-
-2026-10-09 的 API 快照覆盖所有 lockstep 作者程序集，共 `76564` 条（`9017` 个顶层声明、`67547` 个成员声明），最终 Release 程序集比较为 `76564` 对 `76564`、新增 `0`、删除 `0`。DOMTokenList 与 TableColumn scoped slot 的迁移见[冻结审查](../03-guides/public-api-freeze.md)和 CHANGELOG。P3-A/B/C 与 Monaco 的 browser smoke 与真实 RazorVue consumer 仍是进入 Support 矩阵的前置条件。
+新增能力使用 MINOR，修复使用 PATCH，正式版后的破坏性变更使用 MAJOR。1.1.0 工具链和 1.2.0 类型语义迁移有维护者批准的单次例外，迁移说明和证据要求继续适用。见[版本规则](../03-guides/release-and-versioning.md)和[API 兼容性](../03-guides/public-api-freeze.md)。
 
 ## 质量门槛与验证
 
-质量门槛让每一项产品声明都能回到可执行的验收路径。
-
-| 范围 | 门槛 | 入口 |
+| 门禁 | 当前最低要求 | 复现入口 |
 | --- | --- | --- |
-| 核心编译器 | 至少 10,000 个通过场景、98% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
-| Razor-to-Vue | 至少 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
-| Vue 绑定 | 每个目标至少 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| 仓库主线 | Compiler、CLR、Style、Devtools、Vue Data UI、Lucide、Pinia、Pinia.Testing、VueRoute、DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、Monaco、VueDraggable、FilePond、WangEditor、Razor SG、Emit 测试 lane | `dotnet run --file scripts/csharp/test-dotnet.cs` |
-| Emit package consumer | Debug package、Style、Core SDK/RazorVue、Release browser 四个独立 fixture lane；完整集合仍可一次执行 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer` |
-| Windows SPA 发布消费者 | 本地 NuGet 包、Release bundle、`/docs` PathBase 与真实浏览器交互 | `dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs` |
-| Windows SSR 发布消费者 | 本地 NuGet 包、`JazorSSR=true` Release publish、SSR HTML、部署资源解析与 hydration | `dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo` |
+| Compiler | 10,000 个通过场景；行覆盖率 98%，分支覆盖率 97% | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
+| RazorVue | 4,000 个通过场景；行覆盖率 90%，分支覆盖率 94% | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
+| Vue binding | 每个目标公共 binding contract 审计覆盖率 90% | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
+| 绑定一致性 | 生成检查、版本、上游 inventory/fingerprint 和 XML 文档满足既有基线 | `verify-vue-binding-contracts.cs`、`verify-binding-documentation.cs` |
+| 发布交付 | API 兼容性、包形状、隔离 SPA/SSR 消费者与真实浏览器通过 | `verify-release-candidate.cs`、官方 tag workflow |
 
-核心编译器、Razor-to-Vue、Vue 绑定覆盖率和绑定 XML 文档门禁由 `.github/workflows/quality-gates.yml` 在相关 pull request 和 main 分支变更中执行，并作为 tag 与手动 NuGet 发布的前置任务。工作流按门禁保存 TRX、Cobertura（适用时）、文本日志及 JSON/Markdown 报告；关键指标写入 GitHub Actions 摘要。复现方式与报告保留期见[发版与版本规则](../03-guides/release-and-versioning.md#发版门禁)。
+完整主测试入口为 `dotnet run --file scripts/csharp/test-dotnet.cs`。覆盖率对应 Debug 基线，发布消费者验证 Release 产物。平台声明以 [NodeApi workflow](../../.github/workflows/nodeapi-verify.yml)的实际运行矩阵为准，不从 RID 文件存在推断支持。
 
-这些门槛是对产品声明的验收规则。某次发布的实际结果应查看对应 CI、运行命令或[CHANGELOG.md](../../CHANGELOG.md)；本页不固化历史快照。
+[Quality Gates](../../.github/workflows/quality-gates.yml)与[正式发布工作流](../../.github/workflows/nuget-publish-ref.yml)保留版本对应的报告。GitHub Release、上传被接受与 NuGet 公共下载可用是不同交付状态；安装时核对所选版本的包可用性。具体命令、输出隔离和报告位置见[开发与测试](../03-guides/development-and-testing.md)。
 
-## P0/P1 已闭环切片
-
-截至 2026-09-14，以下范式工作已经有实现、回归和可重复入口：
-
-| 切片 | 当前证据 |
-| --- | --- |
-| P0：失败诊断与生成稳定性 | RazorVue SG 测试 `4982/4982` 通过（由 `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` 当前运行确认）；诊断路径排序具有 Ordinal tie-breaker；生成失败维持完整 artifact。RazorVue.Authoring 已通过 typed `TPrimaryTableColCell<TaskRow>`、typed `OnRowClick`、组合 `TopContent` slot 及 package/Release/Chrome smoke。 |
-| P0：质量门禁 | 2026-09-14 当前 HEAD 独立回归：Compiler `10711/10711`、Razor SG `4982/4982`、Emit `202/202`；覆盖率门禁基线仍为 Compiler 行/分支 `99.42%/97.15%`、Razor SG `97.53%/94.30%`。 |
-| P0：Debug/HMR/SPA/SSR 交付 | 2026-09-14 候选验证提交 `1fcde72e` 以 `v0.60.0` 参数完成完整 Release Candidate；随后仅追加了路线图、benchmark 采样策略和 authoring 样例验证提交，未改动 RC 主链路。RC 阶段包含 release notes、Release build、API 兼容性、Compiler/RazorVue/Vue binding coverage、binding baseline、diagnostics、typed bootstrap、主线测试、13 个 NuGet 包、package shape、`/docs` Chrome SPA 与 `/todo` Chrome SSR consumer；归档证据见 `.tmp/rc-95-full/report.md`（CI 会归档到 `artifacts/release-candidate/`）。长期 `wiki-verify` 与 `quality-gates` 额外上传 `toolchain-matrix.md`，关联实际 SDK、Node、Chrome、操作系统和 commit。Wiki browser 与 publish-browser 使用 Node 22（浏览器脚本依赖 Node 22 WebSocket 客户端）。 |
-| P1：响应式与生命周期 | 参数队列、异步 lifecycle、slot、`@key`、卸载竞态和 SSR 首屏等待由 `RazorSgOfficial*RuntimeTests`、`RazorSgComponentMemberClosureTests` 及消费端脚本覆盖；完整 CLR reference parity 仍是边界。P1-A 已补齐版本化 SSR state envelope（schema/version/props/providers）及错误校验；P1-B 已提供 `JazorAuthenticationState`、`JazorAuthenticationEnvelope` 和显式 browser provider，覆盖匿名、登录、刷新、过期、403、登出、错误保持及请求竞态；P1-C 已支持单一显式构造函数的普通引用类型服务参数（既有 provider key + Vue inject），其余复杂 activation 仍按 Guidance/Reject 处理。P1-D 已支持 history 事件的 handler 协议、取消恢复、竞态和 dispose；typed bootstrap 的应用自有 DTO、409 版本刷新、422 校验失败和草稿保留已纳入 `quality-gates` 的长期 consumer job，并上传可归档报告；不宣称服务器 circuit 或完整 Blazor UI parity。 |
-| P1：范式级调试 | `inspect-razorvue-chain.cs` 输出 source → generated → module → map 链路，支持文本、JSON、SARIF 2.1.0 和 schema `1.0` remediation 报告；`verify-razorvue-diagnostics.cs` 在 Quality Gates 中持续验证成功链路、source map 断链和 generated C# 缺失三条路径，并在两种机器输出中保留 `JAZORVGA020`/`JAZORVGA026`、HelpLink、作者源位置和最小替代建议。2026-09-11 使用 `RazorVue.TodoList/TodoApp.razor` 实际产物验证通过（generated C# 1095 行、module 86 行、source map 映射成功）。 |
-| P1：中型应用基线 | `scripts/csharp/benchmark-razorvue-g2.cs` 已建立 plain-text、counter、keyed-list-100、static-vnode 的 render/update 吞吐和 gzip 基线；`benchmark-razorvue-build.cs` 另记录 clean/incremental/HMR/Release 耗时，且对 clean/incremental 记录生成模块/source map 数量、原始与 gzip 体积及增量产物变化，并生成 JSON/Markdown 摘要；`verify-sample-regression-matrix.cs` 在定时/手动 Quality Gates 串行运行 `RazorVue.Authoring` 与 `JazorAdmin` Release smoke，归档逐场景状态、耗时、命令和提交上下文；2026-09-14 runtime 复核已完成，counter 与 keyed-list-100 的差异已量化；Quality Gates 已切换为每周 3 轮 clean/incremental 采样，后续优化使用同一参数重测并以结果说明收益。2026-09-14 提交 `07ff87db` 的完整 Chrome 矩阵再次通过：`RazorVue.Authoring` 与 `JazorAdmin` 均为 `passed`，浏览器验收使用 .NET SDK `11.0.100-rc.1.26425.128`、Node `v24.14.1`、Chrome `152.0.7977.83`。 |
-| P2：Element Plus typed binding 切片 | `elementplus --check` 通过（111 components、2 directives）；官方 Razor SG + NodeApi 回归覆盖 `ElButton`/`ElInput` 的 enum prop、click、双向绑定、slot、splat 和 import；Release package consumer 断言 Element Plus ESM/CSS 资源闭包，真实浏览器 smoke 可读取发布资源。当前切片沿用既有 wrapper-JS 与强类型协议。 |
-| P2：协议边界与评估 | `jazor-ssr-state` v1 对空白/重复 provider key 和认证保留 key 冲突提供显式诊断；浏览器 hydration 在首个异步导入前占用 mount，重复入口、导入和挂载错误保留可观察状态；真实浏览器覆盖无效 envelope、并发入口和组件导入/挂载错误，SSR hosting 共 23 项通过；`IJSRuntime` 家族使用 `JAZORVGA022` Reject 并有作者面回归；当前 SDK Microsoft Blazor 内置 UI 组件使用 `JAZORVGA021` Reject（包括 `CacheView`、`ConfigureBrowser`、`ImportMap`、`ResourcePreloader`、`AntiforgeryToken`、`FormMappingScope`、`DisplayName<T>`、`InputHidden`、`Label<T>`、`EnvironmentView`、`Virtualize`、`QuickGrid`、Section）；`StreamRendering` 使用 `JAZORVCA012` Reject；localization 与复杂 validation 已分别记录为 Guidance 及 typed 替代路径；运行时 benchmark 基线已记录，优化以可复现收益为准。 | [P2 执行计划](./p2-plan.md) |
-| P0：组件绑定统一门禁 | `dotnet run --file scripts/csharp/verify-vue-binding-contracts.cs` 依次执行 Element Plus、Vuetify、TDesign 的生成检查，并验证三套 manifest 与上游快照版本、README 原始注释来源保持一致；`--report` 生成 schema `1.0` JSON/Markdown 审阅证据，包含组件/export/prop/event/slot inventory、成员集合、类型/描述集合、fingerprint 和 baseline diff，Markdown 摘要展示受控成员明细，Quality Gates 与 release candidate 均归档并可阻断漂移。 |
-
-这些记录是当前实现的验收快照，不等同于扩大支持边界。新增能力仍须同时更新实现、测试、作者指南和适用 consumer 证据。
+下一轮投入、责任层与验收条件统一见[下一阶段](./next-development.md)。

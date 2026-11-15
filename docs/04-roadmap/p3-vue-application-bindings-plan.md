@@ -8,7 +8,7 @@
 
 每个交付物都是独立的 `ECMAScript.<Name>` binding，拥有自己的 C# contract、npm/JSR identity、许可证、README、版本快照和测试项目。运行时模块与样式由上游 package 提供，编译器保持通用 lowering 语义。
 
-## 当前候选选型
+## 当前绑定与上游选型
 
 以下是首选上游库。实现前允许根据 Vue 3 兼容性、TypeScript 类型质量、维护活跃度、资源许可和 Jazor 映射成本调整，但每次调整必须在本计划和对应 CHANGELOG 中记录原因。
 
@@ -37,7 +37,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 ## 分阶段顺序
 
-组件类绑定的策略见[npm/JSR 包绑定指南](../03-guides/js-resource-binding.md#组件绑定)：组件数少时使用手写代理与 descriptor，组件数多且上游有机器可读 metadata 时生成代理与导出目录。两种形式都映射到上游公开 ESM specifier。
+组件类绑定的策略见[npm/JSR 包绑定指南](../03-guides/js-resource-binding.md#c-契约)：组件数少时使用手写代理与 descriptor，组件数多且上游有机器可读 metadata 时生成代理与导出目录。两种形式都映射到上游公开 ESM specifier。
 
 ### P3-A：基础工具与确定性纯函数
 
@@ -91,26 +91,4 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 计划状态：**进行中（P3-A/B/C/D 已完成源码、验证与 preview.5 发布，消费证据补齐中）**。十个包已进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
 
-执行记录：
-
-| 日期 | 条目 | 状态 | 证据 |
-| --- | --- | --- | --- |
-| 2026-09-17 | `ECMAScript.DateFns`（date-fns 4.4.0） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.DateFns`（manifest schema 2、367 模块闭包、inventory fingerprint、MIT 许可证）、`ECMAScript.DateFns.Test` 16/16、`Jazor.EmitTest.Materialize_DateFnsClosure_IsSelfContainedAndResolvesBothEntries`、`test-dotnet.cs --project date-fns` |
-| 2026-09-17 | `ECMAScript.VueUse`（VueUse 15.0.0） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueUse`（`@vueuse/core` + `@vueuse/shared` 闭包、69 策展 composable、MIT 许可证）、`ECMAScript.VueUse.Test` 16/16、`Jazor.EmitTest.Materialize_VueUseClosure_ResolvesSharedFromTheCoreEntry`、`test-dotnet.cs --project vueuse` |
-| 2026-09-17 | `ECMAScript.FloatingUi`（`@floating-ui/vue` 2.0.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FloatingUi`（4 包跨包闭包 + 分包版本、`useFloating` 与 9 个中间件、MIT 许可证）、`ECMAScript.FloatingUi.Test` 13/13、`Jazor.EmitTest.Materialize_FloatingUiClosure_ResolvesSiblingPackagesFromTheAuthorEntry`、`test-dotnet.cs --project floating-ui` |
-| 2026-09-17 | `ECMAScript.VeeValidate`（vee-validate 4.15.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VeeValidate`（单模块闭包、泛型表单/字段返回、MIT）、`ECMAScript.VeeValidate.Test` 14/14、`test-dotnet.cs --project vee-validate` |
-| 2026-09-17 | `ECMAScript.VueI18n`（vue-i18n 11.4.12） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueI18n`（`@intlify/*` 三包闭包、Composer 表面、MIT）、`ECMAScript.VueI18n.Test` 8/8、`test-dotnet.cs --project vue-i18n` |
-| 2026-09-17 | `ECMAScript.VueQuery`（`@tanstack/vue-query` 5.103.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueQuery`（46 模块闭包含 `vue-demi`、query/mutation 返回、MIT）、`ECMAScript.VueQuery.Test` 9/9、`Jazor.EmitTest.Materialize_P3BClosures_ResolveTheirEntryGraphs`、`test-dotnet.cs --project vue-query` |
-| 2026-09-27 | `ECMAScript.Monaco`（monaco-editor 0.56.0） | 源码、测试、compiler/Emit 回归与发布接线已完成；下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.Monaco`（editor/model/language/marker API、6 个 ESM 入口、manifest schema 2）、`ECMAScript.Monaco.Test` 5/5、`Jazor.EmitTest.Materialize_MonacoClosure_ResolvesEditorAndWorkerEntries`、`test-dotnet.cs --project monaco` |
-
-| 2026-09-17 | `ECMAScript.VueDraggable`（vue-draggable-plus 0.6.1） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.VueDraggable`（单包闭包、泛型组件代理 `VueDraggableList<TItem>`、MIT）、`ECMAScript.VueDraggable.Test` 12/12、`test-dotnet.cs --project vue-draggable` |
-| 2026-09-17 | `ECMAScript.FilePond`（vue-filepond 8.0.0 + filepond 4.32.12） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.FilePond`（核心+适配器双入口闭包、默认导出工厂代理、`filepond.css`）、`ECMAScript.FilePond.Test` 13/13、`test-dotnet.cs --project file-pond` |
-| 2026-09-17 | `ECMAScript.WangEditor`（editor-for-vue 5.1.12 + editor 5.1.23） | 源码、测试与主线 lane 已完成；发布链路已接通，下一次 tag 默认发布；browser smoke 与真实 RazorVue consumer 待补 | `src/ECMAScript.WangEditor`（Vue 3 适配器+核心闭包、Editor/Toolbar 代理、编辑器样式）、`ECMAScript.WangEditor.Test` 11/11、`test-dotnet.cs --project wang-editor` |
-
-### 2026-09-28 当前复核快照
-
-当前源码中的十个 P3 lane 均在默认 `all` 集合中，复核结果为 `115/115`：DateFns 15、VueUse 16、FloatingUi 13、VeeValidate 15、VueI18n 8、VueQuery 9、Monaco 5、VueDraggable 11、FilePond 13、WangEditor 10。复核依据为 `scripts/csharp/test-dotnet.cs` 的 lane 定义与 `artifacts/quality/review-2026-09-28/p3-lanes/summary.md` 中的逐项输出。
-
-十个包已随 `1.0.0-preview.5` 首次进入 lockstep NuGet 发布目录。执行记录表中的旧计数是带日期的历史快照，保留原值以维持发布记录的可追溯性，不回填为本次复核数字。上述发布与当前快照不改变这些绑定在完成 browser smoke 和真实 RazorVue consumer 之前保持 Guidance 的支持边界。
-
-未通过对应测试、资源闭包和真实消费者验证的条目保持 Guidance，不进入当前 Support 矩阵。
+旧执行表、单轮测试计数和首次发布背景见[历史演进](../05-history/evolution.md#2026-09-28-api-与发布接线复核)。当前升级支持状态的依据是上述逐绑定验收，不是发布或生成成功。

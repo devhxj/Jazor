@@ -28,7 +28,7 @@
 
 > Jazor 1.3.0 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
 
-> Jazor 1.1.0 runs tooling and SSR through in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Four-platform CI and Windows SPA/SSR package/browser gates have passed. The maintainer selected 1.1.0 for this infrastructure refactor; review the documented host configuration migration before upgrading. See the [migration plan](docs/04-roadmap/nodejs-pnpm-migration-plan.md).
+> Jazor 1.1.0 runs tooling and SSR through in-process NodeApi, LibNode 20.1800.215, and the pnpm API. Four-platform CI and Windows SPA/SSR package/browser gates have passed. The maintainer selected 1.1.0 for this infrastructure refactor; review the documented host configuration migration before upgrading. See the [toolchain and migration guide](docs/03-guides/toolchain-migration.md).
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
@@ -46,7 +46,7 @@ Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://g
 
 ## Core Model
 
-Ordinary source types participate through the compilation root and its source dependencies without an `[ECMAScript]` permission marker. Classes retain construction and instance behavior; records describe structural objects. Host attributes declare actual JavaScript bindings and special value semantics. See the [type semantics change and migration plan](docs/04-roadmap/ecmascript-type-semantics-plan.md) for the 1.2.0 contract.
+Ordinary source types participate through the compilation root and its source dependencies without an `[ECMAScript]` permission marker. Classes retain construction and instance behavior; records describe structural objects. Host attributes declare actual JavaScript bindings and special value semantics. See the [type and host contract guide](docs/03-guides/type-semantics.md) for the 1.2.0 contract.
 
 ```mermaid
 flowchart LR
@@ -209,7 +209,7 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 - Preserve integer arithmetic, casts, array/field defaults and module initialization order.
 - Keep return, await, yield and loop transfers in pattern switches within their authored function.
-- Resolve 35 syntax bugs with correct output or source diagnostics for unsupported runtime protocols. See the [issue resolutions](docs/04-roadmap/compiler-syntax-bug-fixes.md) for supported forms and alternatives.
+- Resolve 35 syntax bugs: 11 correct runtime behavior and 24 establish source-located unsupported diagnostics. See the [issue resolutions](docs/04-roadmap/compiler-syntax-bug-fixes.md) for supported forms and alternatives.
 - Install all Jazor/ECMAScript packages at `1.3.0`.
 
 Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.3.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).

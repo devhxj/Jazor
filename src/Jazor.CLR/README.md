@@ -25,6 +25,8 @@ Jazor.CLR module/*.cs
 
 `out` / `ref` 映射使用数组返回协议：索引 `0` 是正常返回值，后续元素依声明顺序承载回写值。
 
+`doc/*.md` 是从 BCL 符号生成的签名与 XML 参考，包含尚未映射的成员；列在参考中不等于已支持。实际支持面由 `module/*.cs` 的映射、生成白名单与行为回归共同确定。
+
 ## 修改映射
 
 1. 通过 `Jazor.CLR.Generator` 从当前 BCL 符号生成模块骨架和参考文档；不要手写成员签名、哈希或 `doc/*.md`。
@@ -38,7 +40,7 @@ Jazor.CLR module/*.cs
 dotnet build src/Jazor.CLR/Jazor.CLR.csproj --no-restore -v minimal
 dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 1.0.0
+dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj -- --version 1.3.0
 ```
 
 需要生成或核对新模块骨架时：

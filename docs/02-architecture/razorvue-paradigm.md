@@ -94,22 +94,9 @@ Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件
 
 能够完整回答上述问题的形状进入 Support 评审。
 
-## P0/P1 完成状态与后续完善工作
+## 支持范围与持续验收
 
-后续工作聚焦范式的自然度与证据闭环，不以 Blazor API 数量为追求：
-
-| 优先级 | 工作 | 完成标准 | 状态 |
-| --- | --- | --- | --- |
-| P0 | 收敛组件库 authoring contract | TDesign/Vuetify/Element Plus 的参数、事件、union、slot 和 splat 命名保持一致；真实页面通过正常组件 authoring 形成 VNode。 | 已完成并由组件 binding/authoring 测试与 Release consumer 覆盖 |
-| P0 | 提升失败诊断和修改反馈 | 每个 Reject/Guidance 都有稳定 ID、原始源位置、原因和最小替代写法；源码项目与独立 package consumer 行为一致。 | 已完成；诊断排序、源位置和失败传播有 SG 回归 |
-| P0 | 固化真实开发闭环 | Debug、HMR、Release、PathBase、浏览器交互、SSR/hydration 的资源闭包和错误传播可重复验证。 | 已完成；命令与实跑结果见[验收证据入口](#p0p1-验收证据入口) |
-| P1 | 完善响应式与生命周期语义 | 继续验证参数替换、slot 捕获、`@key` identity、异步事件、异步 lifecycle、卸载竞态和 SSR side effect；明确 Vue 语义与 CLR parity 的适用范围。 | 当前声明子集已完成；完整 CLR reference parity 和复杂 SSR side effect 属于边界 |
-| P1 | 提供范式级调试工具 | 让作者能从 `.razor` 位置追踪到 generated C#、lowered module、source map 和最终组件边界，不要求阅读内部 AST。 | 已完成；使用 `inspect-razorvue-chain.cs` |
-| P1 | 建立中型应用体验基线 | 以 `samples/JazorAdmin` 真实应用和 `RazorVue.Authoring` Golden Path 测量多个组件、多层 slot、表单、路由和状态组合的首次构建、增量构建、HMR、产物体积和诊断耗时。 | 基线已完成；后续优化需保持同一 benchmark 参数 |
-| P2 | 扩展 typed 生态绑定 | **已完成本轮 Element Plus 切片**：`ElButton`/`ElInput` 覆盖枚举 prop、事件、`@bind-ModelValue`、default/prefix slot、class/style 与 attribute splat，并通过官方 SG、NodeApi 模块运行时、Release package consumer 和真实浏览器证据。后续组件仍按同一门槛逐切片加入。 |
-| P2 | 评估有限的协议扩展 | **本轮沿用既有协议**：现有 `ECMAScript` metadata、Razor SG 参数绑定、slot descriptor 与 Vue module pipeline 足以表达 Element Plus 切片；协议通过既有 metadata 与强类型 binding 表达。 |
-
-任何后续能力只有在实现、测试、作者指南和当前状态同步后，才能从 Guidance/Reject 升级为 Support。
+组件、生命周期、诊断和交付的当前支持切片统一在[当前状态](../04-roadmap/current-status.md)维护。后续作者体验、协议扩展与性能工作按[下一阶段](../04-roadmap/next-development.md)的责任层和验收条件推进。新增形状只有在实现、测试、指南与真实消费者证据同步后，才从 Guidance/Reject 进入 Support 评审。
 
 ## 相关文档
 
@@ -118,7 +105,7 @@ Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件
 - [当前状态](../04-roadmap/current-status.md)
 - [下一阶段](../04-roadmap/next-development.md)
 
-## P0/P1 验收证据入口
+## 验收证据入口
 
 以下命令是范式交付的可复现证据入口；命令成功后，结果应连同提交版本、SDK 与浏览器版本保存到 CI artifact 或发布记录中。
 

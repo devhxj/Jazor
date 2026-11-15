@@ -9,15 +9,13 @@
 | 判断某项能力是否已经可以使用 | [当前状态](./current-status.md) |
 | 核对语法审计中 35 个 bug 的实现与诊断边界 | [逐项修复记录](./compiler-syntax-bug-fixes.md)（1.3.0） |
 | 了解下一阶段的优先级、边界和完成条件 | [下一阶段](./next-development.md) |
-| 了解 ECMAScript 标注职责、普通类型准入与 class/record 迁移 | [ECMAScript 标注与类型语义调整计划](./ecmascript-type-semantics-plan.md)（纳入 1.2.0） |
-| 评估普通 C# / NuGet DLL 的实现恢复与转译路线 | [普通类库转译方案研究](./ordinary-nuget-compilation-research.md)（研究与本地可行性验证） |
-| 查看 C# 与 RazorVue 语法缺口、支持建议及逐项 GitHub issue | [语法支持审计](./csharp-syntax-gap-audit.md)（英文） |
-| 执行 RazorVue P0 | [P0 执行计划](./p0-plan.md) |
-| 执行 RazorVue P1 | [P1 执行计划](./p1-plan.md) |
-| 执行 RazorVue P2 | [P2 执行计划](./p2-plan.md) |
+| 理解普通源码、class/record 与宿主标注 | [类型指南](../03-guides/type-semantics.md) |
+| 评估普通 C# / NuGet DLL 的实现恢复与转译路线 | [普通类库转译研究](./ordinary-nuget-compilation-research.md)（尚未实现产品支持） |
+| 查看 C# 与 RazorVue 的具体支持边界及逐项 GitHub issue | [语法与 issue 索引](./csharp-syntax-gap-audit.md)（英文，区分已关闭 bug 与开放扩展） |
+| 推进作者体验和协议扩展 | [下一阶段](./next-development.md)中的责任层与验收条件 |
 | 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |
-| 执行 npm/JSR 绑定与标准项目改造 | [npm/JSR 绑定与标准 Jazor 项目计划](./npm-jsr-binding-tree-shaking-plan.md) |
-| 验收进程内 NodeApi/pnpm 工具链迁移 | [Node.js 与 pnpm 迁移方案](./nodejs-pnpm-migration-plan.md)（实施与验收中） |
+| 使用标准前端项目与已完成的工具链 | [类库产物契约](../02-architecture/library-artifact-contract.md)、[NodeApi 工具链指南](../03-guides/toolchain-migration.md) |
+| 追溯已完成计划、旧审计和测试数字 | [历史演进](../05-history/evolution.md)；详细记录由 Git 历史保留 |
 
 ## 维护准则
 

@@ -4,15 +4,15 @@
 >
 > 说明：ECMAScript 自有 MJS 与 `Jazor.Generated.ModuleCatalog` 提供项目源码，`ECMAScript.*` binding 提供 npm/JSR identity 与标准 ESM specifier。最终宿主在 MSBuild 中调用 `Jazor.Emit`，生成标准 `jazor/` 项目并恢复依赖。
 >
-> 从 1.1.0 起使用进程内 NodeApi/pnpm/Vite，该工具链已通过四平台组合与 Windows SPA/SSR 发布消费者验收。以下说明描述新工具链；1.0.0 的旧运行时说明应查看对应 tag。迁移步骤与限制见[迁移方案](../04-roadmap/nodejs-pnpm-migration-plan.md)。
+> 从 1.1.0 起使用进程内 NodeApi/pnpm/Vite，该工具链已通过四平台组合与 Windows SPA/SSR 发布消费者验收。以下说明描述新工具链；1.0.0 的旧运行时说明应查看对应 tag。迁移步骤与限制见[迁移方案](toolchain-migration.md)。
 
 ## 前置条件
 
-当前正式版本为 **1.2.0（2026-11-13）**。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.2.0)和对应 tag 为准。安装时显式指定版本，NuGet UI 无需启用“包括预发行版”。从预览版升级时，将全部 Jazor/ECMAScript 包统一更新到 `1.2.0`，并安装 .NET SDK `11.0.100` 或 `global.json` 允许的更新正式 SDK；普通源码无需 `[ECMAScript]` 许可，class 保留类语义、record 承担对象字面量；受影响的 class 声明、继承及宿主配置迁移见下文和 CHANGELOG。更早预览版的迁移路径见 [CHANGELOG](../../CHANGELOG.md)。
+当前正式版本为 **1.3.0（2026-11-15）**。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.3.0)和对应 tag 为准。安装时显式指定版本，NuGet UI 无需启用“包括预发行版”。从预览版升级时，将全部 Jazor/ECMAScript 包统一更新到 `1.3.0`，并安装 .NET SDK `11.0.100` 或 `global.json` 允许的更新正式 SDK；普通源码无需 `[ECMAScript]` 许可，class 保留类语义、record 承担对象字面量；受影响的 class 声明、继承及宿主配置迁移见下文和 CHANGELOG。更早预览版的迁移路径见 [CHANGELOG](../../CHANGELOG.md)。
 
-preview.5 的 NuGet 发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
+当前发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
 
-preview.8 的 live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
+live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前基线为 .NET SDK `11.0.100`，项目目标为 `net11.0`；使用原生 `union` 的项目仍须设置 `<LangVersion>preview</LangVersion>`。
 - 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
@@ -42,7 +42,7 @@ preview.8 的 live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.2.0" />
+  <PackageReference Include="Jazor" Version="1.3.0" />
 </ItemGroup>
 ```
 
@@ -55,8 +55,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.2.0" />
-    <PackageReference Include="Jazor.Vue" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.3.0" />
+    <PackageReference Include="Jazor.Vue" Version="1.3.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -65,31 +65,31 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.DateFns" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VueUse" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.Monaco" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.VueDraggable" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.FilePond" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.WangEditor" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.2.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.2.0" />
+  <PackageReference Include="ECMAScript.Style" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.DateFns" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueUse" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.Monaco" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.VueDraggable" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.FilePond" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.WangEditor" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.3.0" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.3.0" />
 </ItemGroup>
 ```
 
 ## 配置产物输出
 
-preview.9 允许最终宿主选择浏览器启动根：
+最终宿主可以选择浏览器启动根：
 
 ```xml
 <ItemGroup>
@@ -112,20 +112,20 @@ preview.9 允许最终宿主选择浏览器启动根：
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
-| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另调用 Vite build API；preview.8 将默认值延后至 targets，允许项目体用空值条件设置模式 |
-| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；preview.8 保留此目录中的作者 `.cs` / `.razor` 输入，只排除生成资源 |
+| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另调用 Vite build API；默认值在 targets 中设置，允许项目体用空值条件设置模式 |
+| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；保留此目录中的作者 `.cs` / `.razor` 输入，只排除生成资源 |
 | `JazorSSR` | `false` | 生成开发 SSR 入口；Release 另构建 `ssr/` 运行闭包 |
 | `JazorPnpmStoreDirectory` | 用户本地 Jazor store | 共享 pnpm store；不要求生产部署恢复依赖 |
-| `JazorPublishSourceMaps` | `false` | preview.8 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |
-| `RuntimeIdentifier` | 未设置 | preview.8 优先传入指定 RID，未设置时使用 SDK 当前 RID；同时传入 SDK runtime graph，先选择兼容 runtime asset 再对程序集身份去重 |
+| `JazorPublishSourceMaps` | `false` | 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |
+| `RuntimeIdentifier` | 未设置 | 优先传入指定 RID，未设置时使用 SDK 当前 RID；同时传入 SDK runtime graph，先选择兼容 runtime asset 再对程序集身份去重 |
 
 `debug` 与 `release` 是互斥输出模式。`release` 从 `jazor/` 入口调用 Vite build API；构建定制放入 Vite 配置。任意 shell scripts 不在进程内执行契约中。
 
 Folder Publish 使用 Release 构建运行闭包，发布后的 `jazor/` 包含 `dist/` 和可选 `ssr/`；源码、根 lock 和 `node_modules` 保留在本地生成项目中。
 
-## 一次性切换边界
+## 升级与开发输出
 
-资源契约采用一次性破坏性收敛。最终版本在一次 lockstep 构建中升级所有 Jazor/生态包，并使用清理后的 `JazorDir` 重新构建。历史 API 名称和旧目录说明归档于[历史演进](../05-history/evolution.md)。
+升级时统一所有 Jazor/生态包的版本，并审阅[工具链](./toolchain-migration.md)和[类型语义](./type-semantics.md)的迁移步骤。含作者配置的 `JazorDir` 应先保留和合并；确认可再生后再清理旧安装结果。历史 API 与目录布局见[演进记录](../05-history/evolution.md)。
 
 开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成资源不参与 MSBuild 作者输入，`JazorDir` 中的作者 `.cs` / `.razor` 文件保留；更新缺少安全热替换证据时，服务执行整页刷新。
 

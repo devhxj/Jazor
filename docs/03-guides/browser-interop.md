@@ -1,7 +1,6 @@
 # Browser Interop
 
-This guide describes the `1.1.0` browser authoring surface. Install all
-Jazor/ECMAScript packages at the same version (`1.1.0`); see [validation and scope](../04-roadmap/preview8-developer-feedback.md).
+This guide describes the current browser authoring surface. Install all Jazor/ECMAScript packages at the same version; see [installation](./installation-and-configuration.md) and [support scope](../04-roadmap/current-status.md).
 
 ## WebIDL and extension mappings
 
@@ -231,12 +230,7 @@ For a preview or download, create a URL with `URL.CreateObjectURL(blob)` and rev
 with `URL.RevokeObjectURL(url)` after the consumer finishes. For a persistent preview,
 also revoke the previous URL when it is replaced and release the final URL on unmount.
 
-The preview.8 mainline and release gates passed: compiler and RazorVue coverage,
-public API compatibility, binding generation/inventory, XML documentation, and
-23 lockstep package shapes. Packaged Windows SPA and SSR consumers verified real
-Chrome interaction, `/docs` and `/todo` PathBase assets, self-contained NodeApi SSR,
-and hydration. See [the validation record](../04-roadmap/preview8-developer-feedback.md)
-for commands, counts, and scope.
+Current acceptance uses compiler/RazorVue coverage, API compatibility, binding metadata/XML checks and isolated package consumers. Packaged SPA/SSR browser checks establish their own interaction, PathBase and hydration scenarios. See [current status](../04-roadmap/current-status.md) for maintained gates and the [historical validation](../05-history/evolution.md#2026-10-09-preview8-开发者反馈验收) for earlier results.
 
 The DOM event/payload extension regressions verify original event and payload
 identity, inherited properties, single evaluation, native collections, and the CLR

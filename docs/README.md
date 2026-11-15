@@ -45,6 +45,8 @@ Razor-to-Vue 建立在这条核心路径之上。它只接收官方 Razor Source
 | 读者与目标 | 建议入口 |
 | --- | --- |
 | 第一次评估 Jazor | [产品范围](./01-overview/product-scope.md) -> [系统架构](./01-overview/system-architecture.md) |
+| 理解普通源码、class/record、宿主标注和 DLL 边界 | [类型与宿主标注](./03-guides/type-semantics.md) |
+| 从旧运行时升级 | [NodeApi 工具链与迁移](./03-guides/toolchain-migration.md) |
 | 第一次使用 Jazor | [安装与配置](./03-guides/installation-and-configuration.md) -> [快速开始](./03-guides/quick-start.md) |
 | 在 Razor 项目中启用 Vue | [Razor-to-Vue 架构](./02-architecture/razor-to-vue.md) -> [包配置](./03-guides/installation-and-configuration.md) |
 | 理解 Jazor 核心 | [系统架构](./01-overview/system-architecture.md) -> [编译器](./02-architecture/compiler.md) -> [产物管线](./02-architecture/artifact-pipeline.md) |

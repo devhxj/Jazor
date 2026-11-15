@@ -1,6 +1,6 @@
 # 普通 C# / NuGet 类库转译方案研究
 
-> 研究日期：2026-11-14。基于 1.2.0 后的编译器实现。本文提出后续方案，未声明普通 NuGet DLL 已获得产品支持。
+> 状态：研究方案，尚未实现生产级普通 DLL 导入。本文定义候选结构与验收；早期探针结果见[历史演进](../05-history/evolution.md)。
 
 ## 建议
 
@@ -8,7 +8,7 @@
 
 这条路线可以让第三方包无需增加 `[ECMAScript]` 或修改源码，但只覆盖现有编译器与 CLR 映射能够表达的语义。DLL 中存在 IL、ILSpy 能反编译，以及最终能在 JS 中保持行为，是三个需要分别验证的条件。
 
-本次已完成两组本地可行性实验：普通无标注 DLL 的计算和实例方法可以经恢复后编译执行；真实 NuGet 包 `Fastenshtein 1.1.1` 的一个字符串算法在手工裁剪无关成员后，9 组输入与原 DLL 的结果一致。自动依赖闭包、原始符号到恢复符号的对应和正式产物集成仍未实现。
+早期探针只证明有界算法恢复的可行性。自动依赖闭包、原始符号到恢复符号的对应和正式产物集成仍未实现，不能将探针外推为可安装使用的能力。
 
 ## 当前缺口
 
@@ -72,7 +72,7 @@ Roslyn 引用的文件可能来自 NuGet `ref/<tfm>/`，其中没有可用方法
 
 原始业务代码和官方 Razor SG 的类型检查结果应保留。为目标程序集建立独立的恢复 compilation，用它的 `SemanticModel` 取得方法体，再把原始外部调用对应到生成模块的成员。
 
-本次实验确认：即便恢复 compilation 使用相同程序集名称与身份，原始 metadata 符号与新源码符号也不满足 `SymbolEqualityComparer.Default` 相等。因此不能仅凭同名 `ISymbol` 或直接拼入语法树解决对应关系。
+即便恢复 compilation 使用相同程序集名称与身份，原始 metadata 符号与新源码符号也不满足 `SymbolEqualityComparer.Default` 相等。因此不能仅凭同名 `ISymbol` 或直接拼入语法树解决对应关系。
 
 需要由编译器拥有稳定的程序集/成员对应信息；原始调用与恢复后的内部调用都落到同一个模块、类型和成员。引用与实现中的 token 不直接混用，重载、泛型参数位置、嵌套类型以及 `ref/out/in` 需要结构化匹配。该机制不改写现有持久化 whitelist key，也不通过模糊签名匹配扩大宿主能力。
 
@@ -110,50 +110,16 @@ Analyzer 需要识别同一份导入计划，避免把已安排编译的外部�
 
 存在可靠 PDB 时可研究关联原始源码；没有 PDB 时，source map 应明确指向可复现的恢复源码。不能将恢复代码的行号伪装成原始仓库行号，也不能在编译产物中记录依赖本机缓存位置的路径。
 
-## 本次可行性实验
-
-环境：Windows、.NET SDK 11.0.100、仓库当前 `Jazor.Compiler`、`ICSharpCode.Decompiler 11.2.0.10050`。JS 通过仓库现有 NodeApi/LibNode 宿主在进程内执行；真实包方法使用未修改的现有 CLR runtime 源码。
-
-### 无标注 DLL
-
-在隔离目录中，以 Release 优化、无 PDB 生成一个普通 DLL，包含：数组遍历与条件累加、带私有字段的 `Counter` 构造和实例方法，以及一个未使用的 `System.IO.File.Exists` 后端类型。
-
-| 验证 | 结果 | 含义 |
-| --- | --- | --- |
-| 原始 DLL 在 .NET 执行入口 | `14` | 建立结果基准 |
-| 消费者只引用 DLL，由当前 Jazor 编译 | 拒绝 `OrdinaryLibrary.Entry` 外部调用 | 当前产品缺口可复现 |
-| ILSpy 恢复 → Roslyn → 当前 Jazor | 成功生成 JS，执行结果 `14` | 现有 lowering 可复用 |
-| 未使用的后端类型 | 未进入 JS | 跨类型选择有作用 |
-| 将后端方法作为根编译 | 明确拒绝 `System.IO.File` | 恢复方法体不改变宿主边界 |
-| 相同程序集身份的原始/恢复符号 | 身份相同，Roslyn 符号不相等 | 正式实现需要符号对应 |
-
-该实验为验证 lowering，临时将恢复源码放入一个 compilation。它没有实现跨程序集身份保留，不能直接作为产品导入方案。
-
-### 真实 NuGet：Fastenshtein 1.1.1
-
-选择未修改的包中 `Fastenshtein.Levenshtein.Distance(string, string)`，从当前框架实际选择的实现 DLL 恢复代码。
-
-| 验证 | 结果 |
-| --- | --- |
-| DLL 计算 `kitten` 与 `sitting` | `3` |
-| 恢复整个 `Levenshtein` class 后编译 | 被另一个未调用的 `ReadOnlySpan<T>` 泛型重载阻断 |
-| 仅通过当前 `MemberFilter` 选择字符串重载 | 仍被辅助 class 的整类规则阻断 |
-| 在实验中手工删除无关成员，保持字符串方法体原样 | 成功编译；9/9 组 JS 结果与 DLL 一致 |
-
-9 组输入包含典型字符串、相等字符串、插入/替换/删除、空字符串、中文和 emoji。这个结果只证明该方法在这些输入上的可行性，不代表包内 Span 重载、实例 API 或所有边界输入已获支持。手工裁剪是实验步骤，自动依赖计算仍是待实现工作。
-
-本次 scratch 输入、恢复源码、JS 和日志保存在本地 `.tmp/nuget-library-research/`，未作为正式测试或发布门禁。复现命令为 `dotnet run --file .tmp/nuget-library-research/probe.cs`；该脚本是忽略目录内的一次性研究探针，不随 Git 分发。稳定结论和实验范围以本节为准。
-
 ## 建议实施切片与验收
 
 | 切片 | 目标 | 必须取得的证据 |
 | --- | --- | --- |
-| S0：本地可行性研究 | 验证 DLL 恢复后能复用当前 lowering | 本文两组实验已完成；没有产品支持变更 |
+| S0：本地可行性研究 | 验证 DLL 恢复后能复用当前 lowering | 早期探针已完成；范围与限制见历史演进，没有产品支持变更 |
 | S1：静态成员导入 | 实现资产解析、原始/恢复符号对应、静态直接调用的成员闭包 | 无 PDB 的 DLL、NuGet `ref/lib` 配对、重载、直接跨库调用；无关不支持成员不阻断；真实算法与 .NET 结果对照 |
 | S2：实例与共享归属 | 构造、私有字段、属性、必要初始化、共享模块 | 两个入口共享同一实例类型与静态状态；单次求值；支持的构造/继承行为；不支持的协议明确失败 |
 | S3：正式交付 | 接入生成器、Analyzer、Emit、增量缓存和 source map | 项目引用/真实 NuGet、Debug/Release、SPA/SSR、重建确定性；无变化构建复用；依赖变化正确失效 |
 
-S1 的实验可从手工构造 consumer 和导入 compilation 开始，但要完成 S3 才能宣布“安装普通 NuGet 后可直接用于 Jazor 前端”。每个切片同时保留不支持场景的明确诊断，不把本次两个成功样例外推为任意 .NET 库兼容。
+S1 的实验可从手工构造 consumer 和导入 compilation 开始，但要完成 S3 才能宣布“安装普通 NuGet 后可直接用于 Jazor 前端”。每个切片同时保留不支持场景的明确诊断，不把早期样例外推为任意 .NET 库兼容。
 
 如果实施阶段需要使用者选择导入程序集，应通过项目构建配置表达；普通 class/record 仍按声明语义处理，不重新要求类型增加 `[ECMAScript]`。具体配置名和公共 API 在切片设计时确定，本文不预设尚不存在的开关。
 
@@ -163,7 +129,7 @@ S1 的实验可从手工构造 consumer 和导入 compilation 开始，但要完
 
 1. [ILSpy 官方仓库](https://github.com/icsharpcode/ILSpy)：反编译至 C#、类型/成员与程序集浏览；MIT 许可。
 2. [ICSharpCode.Decompiler 官方入门](https://github.com/icsharpcode/ILSpy/wiki/Getting-Started-With-ICSharpCode.Decompiler)：`CSharpDecompiler`、`DecompileTypeAsString` 及按成员 token 恢复的库 API。
-3. [本次使用的 Decompiler NuGet 版本](https://www.nuget.org/packages/ICSharpCode.Decompiler/11.2.0.10050) 与 [Fastenshtein 1.1.1](https://www.nuget.org/packages/Fastenshtein/1.1.1)。版本固定用于复现实验，不代表推荐包清单。
+3. [早期探针使用的 Decompiler 版本](https://www.nuget.org/packages/ICSharpCode.Decompiler/11.2.0.10050) 与 [Fastenshtein 1.1.1](https://www.nuget.org/packages/Fastenshtein/1.1.1)。版本固定用于复现实验，不代表推荐包清单。
 4. [Microsoft：Reference assemblies](https://learn.microsoft.com/en-us/dotnet/standard/assembly/reference-assemblies)：引用程序集不包含成员实现，必须与实现程序集区分。
 5. [Microsoft：Source Link and .NET libraries](https://learn.microsoft.com/en-us/dotnet/standard/library-guidance/sourcelink)：Source Link 的调试用途及符号交付建议。
 6. [NuGet `.nuspec`：contentFiles](https://learn.microsoft.com/en-us/nuget/reference/nuspec#including-content-files)：源码文件可使用 `Compile` build action。

@@ -1,7 +1,6 @@
 # Jazor.Compiler 实现路线与决策原则
 
 > Status: Active
-> Updated: 2026-04-26
 > Positioning: 从现有实现反推编译器路线、价值排序、硬边界与扩展判据。
 
 ## 1. 为什么写这份文档

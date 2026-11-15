@@ -1,32 +1,17 @@
-# 1.0 公共 API 冻结审查
+# 公共 API 兼容性与冻结基线
 
-> 当前版本：[1.2.0（2026-11-13）](https://github.com/devhxj/Jazor/releases/tag/v1.2.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+1.0.0 的公开作者 API 已冻结，机器基线保存在 `public-api-baseline.snapshot.md`。每次发布从实际 Release 程序集生成当前快照，与冻结基线比较；新增、删除和签名改变保留在报告中。不能把过去刷新候选基线后的“0 diff”描述为当前发布结论。
 
-> preview.9 包含 `ElStringDatePicker`、`JazorFrontendUrls.GetStylesheets`、Pagination 的两个 `EventCallback<Number>`，以及数值转换和直接 union 标量投影。机器 snapshot 按本次预览 API 更新；回调与投影的迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+当前版本和升级入口见[安装与配置](./installation-and-configuration.md)。历史候选重置、preview.8/preview.9 的 API 数字与固定验证快照见[历史演进](../05-history/evolution.md)。基线文件不随普通文档整理改写。
 
-> 状态：`1.0.0` 公共作者 API 于 2026-11-11 冻结，机器基线为 `public-api-baseline.snapshot.md`。正式 .NET 11 Release 程序集与该基线比较新增 `0`、删除 `0`；全部质量与发布消费者门禁由正式发布 ref 的 [workflow](https://github.com/devhxj/Jazor/actions/workflows/nuget-publish-ref.yml)验证后才允许上传。后续新增遵循 MINOR，删除或签名改变遵循 MAJOR。
+## 稳定决策
 
-## 审查结论
+- 包名保持现状，公开包 lockstep；核心、Vue opt-in、管理壳与生态 binding 分别承担各自契约。
+- ASP.NET Core 生产宿主与开发宿主程序集继续随 `Jazor` 交付，不因模块分层增加宿主 NuGet 包。
+- 扩展入口保留 PascalCase 的 `AddJazor*` / `UseJazor*` 和既有 `Ssr` 拼写；配置保持明确类型、只读集合和显式委托。
+- 当前作者表面见[人工可读基线](./public-api-baseline.md)，权威比较范围和工具如下。历史签名及已批准移除仍由机器记录保存。
+- 新增进入 MINOR，修复进入 PATCH，正式版后的破坏性改变进入 MAJOR；1.1.0/1.2.0 的单次例外见[版本规则](./release-and-versioning.md)。
 
-frontend 宿主面在 preview.6 按新的单一契约重新收敛；preview.8 增补 Startup/framework 宿主重载、Element Plus 强类型交互和浏览器绑定修正，preview.9 补齐数值与 union 作者面，公开面与迁移说明见[1.0 公共 API 基线清单](./public-api-baseline.md)。正式 API 基线保存在 `public-api-baseline.snapshot.md`；每次发布均在目标 ref 上重新生成并通过兼容性检查，以及当前声明范围内的质量门禁和发布消费者门禁。
-
-本次审查采用以下稳定决策：
-
-preview.5 在 2026-09-28 发布时的机器快照为 `76105` 条（`8948` 个顶层声明、`67157` 个成员声明），当时比较新增 `0`、删除 `0`。该结果属于已发布候选的历史证据；当前 frontend API 的删除和新增是明确批准的候选重置。重置后的基线为 `76133` 条（`8950` 个顶层声明、`67183` 个成员声明），对该新基线重新生成的比较报告新增 `0`、删除 `0`。迁移说明和消费者门禁仍必须随下一候选一并保留。
-
-2026-10-09 的 preview.8 API 审查最终基线为 `76564` 条（`9017` 个顶层声明、`67547` 个成员声明），相对原 `76133` 条基线新增 `445` 个去重签名、改变 `14` 个去重签名。新增面来自 Element Plus typed variants/services、Number 转换、IWindow.LiveLocation、三个 frontend 宿主重载和既有 CLR 事件/载荷 extension；14 个改变签名为 WebIDL token 属性修正为 `DOMTokenList`。`DOMTokenList` 和 `ElTableColumn.ChildContent` scoped slot 的迁移已写入基线清单与 CHANGELOG。最终 Release 程序集比较为 `76564` 对 `76564`、新增 `0`、删除 `0`，完整质量与 23 包的 SPA/SSR 消费者门禁通过。
-
-preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审查的 frontend 候选基线只新增强类型数值隐式转换，没有删除既有签名。直接标量投影保留旧路径，投影不匹配返回 null；可赋值重叠或无法区分的结构化对象分支需要准确的显式宿主映射。API 计数与本地门禁快照保留在[演进记录](../05-history/evolution.md#2026-10-10-preview9-作者体验与发布准备)，正式发布 ref 继续由 tag workflow 验证。
-
-文件事件 extension 随 `Jazor.Vue` 的 `ECMAScript.Vue` 程序集交付，属于既有 C# 事件类型的额外宿主映射；`FileList` / `FileRef` 保持 WebIDL 生成。对应 CLR adapter 是编译映射实现，不增加独立公共作者 API。
-
-同一隔离构建通过 Element Plus、Vuetify 与 TDesign 的五项生成检查；三套 upstream inventory 与 `binding-contract-baseline.json` 的 fingerprint 均保持一致，因此未刷新绑定 inventory 基线。作者侧的 typed projections/services 由公共 API 快照记录，不作为上游组件 inventory 新增项。
-
-- NuGet 包名保持现状，所有发布包继续 lockstep 版本；`Jazor` 是核心宿主包，`Jazor.Vue` 是 Razor-to-Vue opt-in 包，`Jazor.Admin` 是管理壳包。
-- ASP.NET Core 底层静态资源与 SSR 位于 `Jazor.AspNetCore`；统一 frontend orchestration 与 reload 位于 `Jazor.AspNetCore.Dev`。两套程序集继续随同一个 `Jazor` 包交付，不新增宿主 NuGet 包。
-- 扩展方法采用 PascalCase 的 `AddJazor*` / `UseJazor*` 形式，缩写按现有语义固定为 `Ssr`；迁移文档使用 `AddJazorSsr`。
-- 配置模型保持 `Jazor*Options` 命名，并以只读集合、强类型路径和显式委托表达扩展点；不新增 `object` 或字符串字典式总配置入口。
-- `JazorWebApplication.CreateBuilder`、`IJazorSsrRenderer`、SSR 请求/结果记录类型属于宿主集成契约，必须纳入 API 兼容性检查，不视为内部实现。
 
 ## 包名与命名空间基线
 
@@ -71,12 +56,12 @@ preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审�
 - `JazorSpaFallbackOptions`：排除前缀、允许后缀和 HTML Accept 约束。
 - `JazorSsrOptions`：artifact root、request path、mount element 和 worker 数量。
 - `JazorFrontendOptions`：request path、PathBase、项目根、Development/Release 入口和 `Vite` 子配置。
-- `JazorViteServerOptions`：server origin、Deno task、是否启动、启动与停止超时。
+- `JazorViteServerOptions`：server origin、Vite API 配置、是否启动、启动与停止超时。
 - `JazorReloadOptions`：client/WebSocket path、观察路径、HMR mapping、节流/轮询/心跳与 HTML 注入开关。
 
 以上记录 1.0.0 的冻结表面。1.1.0 直接调用 Vite 与 SSR API，移除 Vite/SSR 的 `TaskName`；维护者指定该底层重构使用 MINOR，迁移步骤见 CHANGELOG。已审阅签名由 `public-api-reviewed-removals.snapshot.md` 显式列出，既有稳定 tag 和冻结快照保持不变。
 
-1.2.0 类型语义调整将 `ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 从 class 迁移为 record，并清理许可用途的标注。维护者明确指定本轮使用 MINOR 通道；该单次例外仍保留破坏性迁移说明与发布门禁，冻结快照继续用于报告差异。迁移路径见[类型语义调整计划](../04-roadmap/ecmascript-type-semantics-plan.md)、[版本规则例外](./release-and-versioning.md#120-类型语义调整例外)与 CHANGELOG。
+1.2.0 类型语义调整将 `ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 从 class 迁移为 record，并清理许可用途的标注。该版本按维护者批准的 MINOR 例外交付；破坏性迁移说明与发布门禁仍适用，冻结快照继续报告差异。迁移路径见[类型指南](./type-semantics.md)、[版本规则例外](./release-and-versioning.md#120-类型语义调整例外)与 CHANGELOG。
 
 当前候选的机器签名比较沿用既有已审阅删除记录后通过；该检查没有完整表达 class→record 的继承和对象模型变化，因此仍按上述破坏性迁移处理。
 
@@ -93,24 +78,24 @@ preview.9 的机器候选快照按 Release 程序集刷新；本轮相对已审�
 
 SSR envelope 的 schema/version、provider key、认证保留 key、错误传播、hydration 占位和资源闭包必须与 `jazor-ssr-state` v1 证据保持一致。任何字段删除、类型收窄或序列化名称改变都视为破坏性变更。
 
-## 冻结前必做清单
+## 每次发布的兼容性验证
 
-1. 在发布候选 ref 上生成公共 API 基线，覆盖上述两个 ASP.NET Core 命名空间、`Jazor.Admin` 和所有 lockstep 包的新增/删除/签名变更。
+1. 在发布候选 ref 上生成当前 API 快照，与保留的正式冻结基线比较，覆盖上述两个 ASP.NET Core 命名空间、`Jazor.Admin` 和所有受审查 lockstep 作者程序集。
 2. 对每个 `AddJazor*` / `UseJazor*` 入口保留至少一个源码消费者测试，并验证默认配置、链式返回值、异常/ no-op 行为。
 3. 运行当前状态页列出的主线测试、编译器/RazorVue/Vue binding 覆盖率门禁，以及 Windows SPA/SSR 发布消费者门禁。
 4. 检查 README、安装指南、示例、路线图和 CHANGELOG 使用的包名、命名空间、扩展方法拼写完全一致。
-5. 在 CHANGELOG 的 `1.0.0` 条目中写明冻结日期、迁移说明（如无迁移则明确写“无已知迁移”）和全部门禁链接。
-6. 只有以上证据全部成功，本文状态才改为“已冻结”，再决定是否创建 `v1.0.0` tag。
+5. 在 CHANGELOG 的目标版本条目中记录变更与迁移；保留 API 差异、批准记录和门禁证据。
+6. 所有候选检查通过后，创建目标版本 tag，由正式工作流重新验证并上传。
 
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.1.0
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.3.0
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。
 
-preview.8 本地完整主线验证包括 Compiler `10728/10728`、CLR `5092/5092`、RazorVue SG `5035/5035`、Emit `221/221`，覆盖率、绑定文档与 23 包的 SPA/SSR 消费者矩阵均已通过；复现入口和范围见[反馈验收](../04-roadmap/preview8-developer-feedback.md)。tag workflow 在上传 NuGet 前会针对发布 ref 再次执行门禁。
+发布候选和正式 tag workflow 均针对被测 ref 执行当前质量与消费者门禁。固定历史结果见[演进记录](../05-history/evolution.md)。
 
 机器快照可在构建后生成：
 
@@ -118,12 +103,12 @@ preview.8 本地完整主线验证包括 Compiler `10728/10728`、CLR `5092/5092
 dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api/public-api.md
 ```
 
-发布候选应保存该文件，并与上一候选快照进行稳定排序后的差异比较。
+发布候选应保存该文件，并与正式冻结基线进行稳定排序后的差异比较；不通过重置基线隐藏删除或签名变化。
 
 机器比较使用：
 
 ```bash
-dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline artifacts/api/public-api-baseline.md --output artifacts/api/public-api-compatibility.md
+dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline docs/03-guides/public-api-baseline.snapshot.md --approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md --output artifacts/api/public-api-compatibility.md
 ```
 
 首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，未审阅的删除或签名变化会使命令失败。1.1.0 的 TaskName 删除通过显式 `--approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md` 放行，报告仍保留差异。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及 P3-A/B/C、Monaco 和其他 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。

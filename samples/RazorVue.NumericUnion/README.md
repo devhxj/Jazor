@@ -13,7 +13,7 @@ nullable/nested union 和数组分支，以及 `ElTypedSelect<string>` 的原始
 [BindingMatrix.razor](./BindingMatrix.razor) / [code-behind](./BindingMatrix.razor.cs) 增加
 Vuetify `Rounded` 和 TDesign `MaxWidth` 的 Number union、整数变量与 float；工程需同时直接引用
 同版本 `ECMAScript.Vuetify` / `ECMAScript.TDesign`，并在 `_Imports.razor` 设置与 code-behind
-一致的 `@namespace Demo.Pages`。这些作者改善随 preview.9 交付，所有引用包须使用同一版本。
+一致的 `@namespace Demo.Pages`。所有引用包须使用同一版本，当前安装入口见[安装指南](../../docs/03-guides/installation-and-configuration.md)。
 
 在仓库中运行以下聚焦回归，直接读取这两份源码，由官方 Razor SG 编译，经 RazorVue 生成 Vue 模块，
 再使用真实 Element Plus 2.14.5、Vue 3.5.42 与 happy-dom 验证交互：

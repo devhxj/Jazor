@@ -2,7 +2,7 @@
 
 > 本指南描述当前 RazorVue 的作者面（authoring surface）。Razor SDK/Roslyn 负责 Razor 绑定、C# 类型检查和语法诊断；RazorVue 消费 official Razor Source Generator 完成后的最终 `Compilation`，分别降低 VNode-producing `BuildRenderTree` 和其可达的组件 C# 成员，产出 Vue render-function `.mjs`。
 
-版本边界：本文描述 `1.1.0` 的作者面（延续 1.0.0 的组件与编译语义），包括组件身份诊断、Vue 参数名冲突诊断、外部 wrapper 常量默认 props 和 Element Plus typed 交互。安装与升级统一使用对应 lockstep 版本；验收范围见[当前状态](../04-roadmap/current-status.md)。
+本文描述当前 RazorVue 作者面。安装与升级统一使用[安装指南](./installation-and-configuration.md)中的 lockstep 版本；Support、Guidance 与 Reject 按具体场景区分，版本与证明范围见[当前状态](../04-roadmap/current-status.md)。
 
 ## 先判断代码位置
 
@@ -187,7 +187,7 @@ RazorVue 按 Roslyn 的真实 override/interface 关系识别入口，同名普�
 | `StateHasChanged` | 仅当前组件 receiver 的调用有 runtime 支持；unmount 后调用会失败。 |
 | `InvokeAsync(Action)` / `InvokeAsync(Func<Task>)` | 仅当前组件 receiver 的窄调用面有支持；unmount 后返回 rejected Promise。 |
 
-preview.8回归进一步验证了在 `.razor.cs` 的 `OnInitialized` 或受支持 constructor 中注册 `Vue.OnMounted` / `OnUnmounted` 的形状。真实 Vue scheduler/DOM renderer 与 happy-dom 的 3 个用例覆盖重复 mount/unmount 后资源归零，以及每次挂载 90 次 loading/empty/data 切换时 raw markup、条件分支和 DOM range 保持正确。这些用例证明对应 DOM 执行场景；完整发布门禁另已通过真实 Chrome SPA/SSR 与 hydration 消费者验证，具体范围见[反馈验收](../04-roadmap/preview8-developer-feedback.md)。
+回归验证了在 `.razor.cs` 的 `OnInitialized` 或受支持 constructor 中注册 `Vue.OnMounted` / `OnUnmounted` 的形状。真实 Vue scheduler/DOM renderer 与 happy-dom 回归覆盖重复 mount/unmount 后的资源释放，以及 loading/empty/data 切换时的 raw markup、条件分支和 DOM range。这些用例证明对应 DOM 执行场景；完整发布门禁另已通过真实 Chrome SPA/SSR 与 hydration 消费者验证，具体范围见[反馈验收](../05-history/evolution.md#2026-10-09-preview8-开发者反馈验收)。
 
 ### 标准 API 的环境边界
 
@@ -204,7 +204,7 @@ Razor SDK 提供 C# 与 Razor 编译能力；浏览器运行时通过已注册�
 
 本地化保持应用所有权：使用应用自有 typed resource/locale contract 或 ECMAScript `Intl` binding；request-culture middleware、`IStringLocalizer` 注入、satellite-resource discovery 和 SSR locale handoff 由应用宿主协议提供。复杂校验使用 TDesign/Vuetify/Element Plus 的 typed rules/callbacks 或应用自有 validation contract；`EditContext`、`InputBase`、`DataAnnotationsValidator` 和完整服务器校验 parity 归属应用侧模型。
 
-对于需要 SSR 首屏数据的页面，使用显式、强类型 endpoint 返回 bootstrap DTO，并在 `JazorSsrRequest.Props` 或 `Providers` 中交接；服务端是授权和数据事实来源。重复提交、过期 payload、状态失配和表单防伪由 endpoint/host 处理。认证状态使用显式 typed provider 与 `JazorAuthenticationEnvelope` endpoint 结果。单一显式构造函数的普通引用类型服务参数和已验证的 browser history 取消恢复属于当前有界 Support；复杂 activation、服务器 circuit、完整 history parity 和 hydration identity 按 [P1 执行计划](../04-roadmap/p1-plan.md) 使用 Guidance/Reject。
+对于需要 SSR 首屏数据的页面，使用显式、强类型 endpoint 返回 bootstrap DTO，并在 `JazorSsrRequest.Props` 或 `Providers` 中交接；服务端是授权和数据事实来源。重复提交、过期 payload、状态失配和表单防伪由 endpoint/host 处理。认证状态使用显式 typed provider 与 `JazorAuthenticationEnvelope` endpoint 结果。单一显式构造函数的普通引用类型服务参数和已验证的 browser history 取消恢复属于当前有界 Support；复杂 activation、服务器 circuit、完整 history parity 和 hydration identity 按[协议扩展边界](../04-roadmap/next-development.md#协议与支持范围扩展)使用 Guidance/Reject。
 
 <a id="direct-render"></a>
 ## Direct Render
@@ -251,7 +251,7 @@ official Razor SG 支持代码块中的同行 sibling 标签和显式插值表�
 }
 ```
 
-代码块中的裸文本必须使用 `@:` 或 `<text>`。直接写 `@Value → @Next` 会由 Razor/C# 报告 `RZ****` 或 `CS****`；先修正 `.razor` 源码，再检查 lowering。native file input 可通过 `InputFileChangeEventArgs.Files` extension 读取原生 `FileList`；BigInt JSON、DOM null 判断和文件事件示例见 [Browser interop](./browser-interop.md)。syntax/file、BigInt JSON 与增量 source map 回归已纳入通过的完整 RazorVue 套件；发布门禁见[反馈验收](../04-roadmap/preview8-developer-feedback.md)。
+代码块中的裸文本必须使用 `@:` 或 `<text>`。直接写 `@Value → @Next` 会由 Razor/C# 报告 `RZ****` 或 `CS****`；先修正 `.razor` 源码，再检查 lowering。native file input 可通过 `InputFileChangeEventArgs.Files` extension 读取原生 `FileList`；BigInt JSON、DOM null 判断和文件事件示例见 [Browser interop](./browser-interop.md)。syntax/file、BigInt JSON 与增量 source map 回归已纳入通过的完整 RazorVue 套件；发布门禁见[反馈验收](../05-history/evolution.md#2026-10-09-preview8-开发者反馈验收)。
 
 ### 常见替代
 

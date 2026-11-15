@@ -1,6 +1,6 @@
 # 产物管线
 
-> 适用范围：当前源码候选的编译模块、ECMAScript 源码、npm/JSR 绑定、Emit、进程内 NodeApi、Vite、SSR 与 HMR。完整迁移与平台验收状态见[迁移方案](../04-roadmap/nodejs-pnpm-migration-plan.md)，类库边界见[类库与标准前端项目契约](./library-artifact-contract.md)。
+> 适用范围：当前编译模块、ECMAScript 源码、npm/JSR 绑定、Emit、进程内 NodeApi、Vite、SSR 与 HMR。运行条件与升级步骤见[工具链指南](../03-guides/toolchain-migration.md)，类库边界见[类库与标准前端项目契约](./library-artifact-contract.md)。
 
 ## 一个项目根
 

@@ -2,6 +2,34 @@
 
 > 本页解释当前分层为何形成；当前实现与路线图以现行架构和状态文档为依据。
 
+## 2026-11-15 1.3.0 语法修复与发布
+
+11 月 14 日的语法审计以 `9f0bb79c` 为基线，检查核心与 RazorVue lowering，并创建 133 个独立英文 issue：35 个 bug、82 个 enhancement 和 16 个 documentation。探针包括核心 C#、隔离 render-body 与选定程序的 CLR/NodeApi 对照；它们不代表所有 C# 组合或生产 profile 均已验证。
+
+1.3.0 将 11 项 bug 修正为受支持的运行行为，将其余 24 项收口为源码位置明确的不支持诊断。修复涵盖整数宽度、溢出和零除、默认初始化、表达式包装、模式 switch 控制流，以及动态、引用、接口、枚举器和 awaiter 的协议边界。宿主 Number/BigInt 按 JavaScript 值域判定，CLR 装箱身份仍需可证明。逐项结果保留在[修复记录](../04-roadmap/compiler-syntax-bug-fixes.md)。
+
+本轮本地 Compiler 为 10,876/10,876，行/分支覆盖率 99.38%/97.02%；RazorVue 为 5,056/5,056，覆盖率 97.54%/94.01%；CLR 为 5,092/5,092。Emit 完整套件为 292 项，主测试 lane 按既有分类运行其中 244 项；独立发布消费者继续验证其余相关交付路径。Release build、API、binding、样例与 SPA/SSR 包消费者门禁通过。候选 API 比较为基线 78,224、当前 78,241，新增 20、删除 3；删除均为已审阅的 TaskName 签名，未批准删除为 0。
+
+[官方 v1.3.0 工作流](https://github.com/devhxj/Jazor/actions/runs/43657840445)完成质量检查、23 包上传与 GitHub Release；35 个 bug 均以独立英文说明关闭。上传成功与 NuGet 公共索引/下载可用性分别核实，不将服务端后续处理状态写成永久产品能力。
+
+## 2026-11-14 普通 NuGet 实现恢复探针
+
+本地研究分别恢复了无宿主标注 DLL 的计算/实例方法，以及真实 `Fastenshtein 1.1.1` 的一个字符串算法。后者手工裁剪无关成员后，9 组输入与原 DLL 结果一致，使用 `ICSharpCode.Decompiler 11.2.0.10050`。这只证明所选方法和输入的可行性，不覆盖 Span 重载、整个包或自动消费者集成。
+
+探针确认原 metadata 符号与重新绑定的源码符号不能仅靠同名程序集身份视为相等，生产路线仍需成员依赖计算、原始/恢复符号对应和共享模块归属。scratch 与日志位于忽略目录，没有作为正式测试分发；不将它们列为可复现发布门禁。后续建议与验收保留在[普通类库研究](../04-roadmap/ordinary-nuget-compilation-research.md)。
+
+## 2026-11-13 1.2.0 类型与标注职责调整
+
+普通源码类型改由编译根与依赖闭包决定实现归属，不再逐类型要求 `[ECMAScript]`。标注保留环境宿主、外部 ESM 与特殊宿主值语义。class 保留类行为，record 表达结构化对象；原 options/callback literal class 的迁移需审查继承和初始化。维护者批准本轮使用 MINOR 作为版本规则例外，破坏性影响仍记入 CHANGELOG。
+
+源码、Analyzer、生成模板和 RazorVue 共享符号绑定同步调整。当前规则与迁移步骤保留在[类型指南](../03-guides/type-semantics.md)，原实施表与探针通过 Git 历史追溯。
+
+## 2026-11-12 NodeApi 工具链迁移
+
+1.1.0 将维护中的依赖恢复、WebIDL、Vite 和 SSR 迁至进程内 NodeApi + LibNode + 固定 pnpm API，移除 DenoHost/CLI fallback。固定组合、Windows CET 条件、pnpm 布局、取消等待和原生 addon 生命周期由真实工具与发布闭包验证。
+
+四平台组合 CI、Windows SPA/SSR 包消费者和既有 Emit 消费者通过。Vite/SSR TaskName、旧 runtime 路径、WebIDL 参数与锁文件迁移按维护者批准的版本例外交付。稳定运行条件和升级步骤保留在[工具链指南](../03-guides/toolchain-migration.md)，候选版本比较、选型背景、试点和阶段 WBS 通过 Git 历史追溯。
+
 ## 2026-10-10 preview.9 作者体验与发布准备
 
 本轮将入口分包、最终编译阶段计时和 N4 数值/union 作者体验整理到 `1.0.0-preview.9`。通用 lowering 使用 Roslyn 分支与返回类型；绑定维护生成器按声明提供 1,665 条参数提示和 22 个嵌套 union 的直接标量投影。官方 Razor SG、跨库矩阵、真实 Vue/Element Plus 运行与消费者写法共同验证这些边界。
@@ -11,6 +39,22 @@
 Release API 快照包含 78,224 个去重签名（9,018 个顶层声明、69,206 个成员声明），相对已审查的 frontend 候选基线 76,566 项新增 1,658 个数值隐式转换签名、删除 0。该候选基线已经包含本轮此前审查的 Number 分页回调与字符串日期组件；它不代表相对公开 preview.8 没有破坏性变化，迁移以 CHANGELOG 为准。刷新机器快照后再比较新增 0、删除 0；上游 binding inventory 未漂移。本地日志与报告位于忽略目录 `.tmp/preview9-release/`、`artifacts/preview9/`，正式发布 ref 由官方 tag workflow 继续验证。
 
 Zero/Jero 的 `.8.12` 本地候选完成 33 个作者文件迁移、0 警告/错误构建、N4 浏览器 4/4 与插件回归 5/5，pageErrors 为 0；业务 API、auth 与 WebSocket 使用 mock。真实后端保存及插件启用后业务仍待联调。本轮不把隔离首次构建、阶段计时或历史 `.8.11` 的 Release 首屏数据当作新的 HMR 或首屏性能样本。
+
+## 2026-10-09 preview.8 开发者反馈验收
+
+Zero/Jero 的迁移反馈推动了组件诊断、wrapper 默认值、lifecycle/fragment、Element Plus typed interaction、原生事件与 payload、Startup 宿主、RID 选择、子路径身份及发布闭包修正。反馈 G1–G34 的逐项复现和早期验收表通过 Git 历史追溯；当前边界由作者指南、Browser Interop 与各 binding README 定义。
+
+当时完整主线为 Compiler 10,728、CLR 5,092、RazorVue 5,035、Emit 221，Compiler 覆盖率 99.41%/97.02%，RazorVue 97.53%/94.01%。API 基线为 76,564 项，相对前候选新增 445、改变 14；刷新基线后的 0 diff 只说明该次比较。23 包、绑定/XML、typed bootstrap、诊断、参考应用和 Deno 时代的 SPA/SSR 消费者通过，不外推为当前 NodeApi 的证明。
+
+DOM 仿真使用真实 Vue 与 Happy DOM，部分 FileList/TouchList 字段由夹具补齐；真实 Chrome 消费者证明各自目标场景。Element Plus command/sort/service 的部分成功路径使用 stub，不把仿真结果表述为每个事件或服务均已完成真实浏览器验收。
+
+## 2026-09-14 P0/P1/P2 与标准前端项目收口
+
+P0 建立 Golden Path、诊断矩阵、构建/runtime benchmark、binding drift 与完整候选门禁；复杂表格列、typed callback 和组合 slot 由 Authoring 的 source/package/browser 场景验证。clean/incremental/HMR 的早期单轮与多轮计时受预览 SDK 和机器负载影响，只作为当时测量记录，不作为当前性能承诺。
+
+P1 逐步交付版本化 SSR state envelope、typed 认证状态、单一显式构造函数的普通引用服务注入，以及 history handler 的取消、竞态和释放切片。P2 固定内置 UI、IJSRuntime 和 StreamRendering 的 Reject 边界，localization 与复杂 validation 保持 Guidance。完成这些切片不意味着完整 Blazor 或 CLR parity。
+
+标准前端项目收口统一了 `jazor/`、npm/JSR identity、标准 ESM specifier、pnpm lock、Vite/Vue SSR 与细粒度 JS/CSS tree shaking。当前交付规则保留在[类库产物契约](../02-architecture/library-artifact-contract.md)，后续投入统一列在[下一阶段](../04-roadmap/next-development.md)。
 
 ## 核心方向的确立
 
