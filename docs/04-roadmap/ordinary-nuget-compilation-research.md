@@ -2,6 +2,8 @@
 
 > 状态：研究方案，尚未实现生产级普通 DLL 导入。本文定义候选结构与验收；早期探针结果见[历史演进](../05-history/evolution.md)。
 
+> 优先级：**P0**，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。在普通类库导入、LibNode LTS 和 `.jazor` 三项提案中首先推进；首个静态成员切片可使用当前宿主验证。实施顺序与交付门槛见[下一阶段](./next-development.md#三项提案的实施优先级)。
+
 ## 建议
 
 保留现有的生产者预编译路线，并为未接入 Jazor 的类库研究独立的 DLL 按需导入能力：从匹配的实现程序集恢复被使用的 C# 方法，通过 Roslyn 重新绑定，继续使用 `Jazor.Compiler` 生成 JavaScript。优先验证静态计算方法及其直接依赖，再推进实例类型和跨程序集调用。

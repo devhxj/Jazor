@@ -6,6 +6,18 @@
 
 从真实消费者复现、高频作者写法和明确的行为缺口选择任务。每个切片先定义 C# 契约、责任层和验收，再实现、回归并更新指南；缺少需求或可复现收益时不增加运行时协议。
 
+## 三项提案的实施优先级
+
+以下 P0/P1/P2 表示三项提案的主线投入顺序；已发布能力的回归缺陷仍按实际影响处理。
+
+| 优先级 | 提案 | 排序依据 | 首个交付门槛 |
+| --- | --- | --- | --- |
+| **P0：首先推进** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；已有有界算法探针证据 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
+| **P1：其次推进** | [#139：Jazor.LibNode LTS 原生包](https://github.com/devhxj/Jazor/issues/139) | 掌握 LTS 原生构建与更新，验证现有 pnpm/Vite/SSR 和后续 npm 类型工具的兼容性 | 移植匹配微软托管层的 C ABI，复用上游测试，通过已声明平台的原生包与现有工具链门禁 |
+| **P2：随后推进** | [#138：.jazor 组件文件与语义智能感知](https://github.com/devhxj/Jazor/issues/138) | 改善组件作者体验、接入 npm Vue 组件；现有 RazorVue 可继续承担组件编写 | 确认 `<template>` + `@code`，验证 Razor/Roslyn 与 Vue 类型工具的复用；可构建组件、真实语义编辑器和直接 npm consumer 分阶段交付 |
+
+这不是三项提案之间的强制技术依赖。ILSpy 首个切片使用现有宿主验证，无需等待 LibNode 升级；后续 `.jazor` 的 npm 工具如需要更高 Node 版本，由 LibNode 切片提供已验证环境。优先完成每项有界切片及其交付证据，再扩大下一条主线的投入，不以“支持任意 NuGet”作为开始后续工作的门槛。
+
 ## 作者体验与交付证据
 
 Golden Path、诊断矩阵、标准 `jazor/` 项目、NodeApi 工具链及发布门禁已经建立。后续在这些入口上持续验收：
@@ -36,7 +48,7 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 ## 编译器与普通类库
 
-35 个语法 bug 的运行行为和诊断修复已随 1.3.0 交付。下一步从[语法 issue 索引](./csharp-syntax-gap-audit.md)中的开放 enhancement 选择高频切片，例如构造链、参数绑定、源码运算符、接口分派和自定义解构/枚举；不把关闭 bug 等同于实现完整运行时协议。
+35 个语法 bug 的运行行为和诊断修复已随 1.3.0 交付。[语法 issue 索引](./csharp-syntax-gap-audit.md)中的开放 enhancement 优先选择真实消费者及 P0 普通类库导入所需的切片，再扩展构造链、参数绑定、源码运算符、接口分派和自定义解构/枚举；不把关闭 bug 等同于实现完整运行时协议。
 
 普通 NuGet DLL 的实现恢复仍是[研究方案](./ordinary-nuget-compilation-research.md)，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。自动依赖闭包、原始/恢复符号对应、compiler hooks 与产物集成完成前，不声明安装任意普通 NuGet 后即可用于前端。
 
@@ -46,6 +58,12 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 均已有源码、测试 lane 和 lockstep 发布。当前待办是各绑定的 browser smoke、真实 RazorVue/package consumer、适用 SSR 与 worker/资源验证，完成前保持 Guidance。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
+## LibNode LTS 原生包提案
+
+[Issue #139](https://github.com/devhxj/Jazor/issues/139)提出自行构建 `Jazor.LibNode` 总包及 RID 原生包：以实施时最新 Node.js LTS 为基线，参考微软 LibNode 的分包方式，移植与所选 `Microsoft.JavaScript.NodeApi` 匹配的 `node_embedding_*` C API，继续复用微软托管互操作层。2026-11-15 查询官方索引的首个候选为 Node `v26.13.1`；当前实际依赖仍是微软 LibNode `20.1800.215`，本提案不代表已经升级。
+
+验收要求复用微软现有嵌入、GC 与适用互操作测试，以及对应原生 C embedding 测试，保留断言与夹具，仅适配包选择、路径及运行入口；报告记录上游修订和实际加载的候选库，区分真实原生运行与 mock 覆盖。先验证 C ABI、已有四个平台组合和隔离 NuGet consumer，再通过现有 NodeApi、pnpm、Vite、WebIDL 与 SSR 发布闭包门禁。额外 RID、旧宿主 workaround 的移除及新 addon 兼容性必须分别取得证据；发布沿用 lockstep 版本与官方工作流。
+
 ## .jazor 作者格式提案
 
 [Issue #138](https://github.com/devhxj/Jazor/issues/138)提出 `.jazor` 组件文件：顶层 `<template>...</template>` 与同级 `@code { ... }`，文件隐式定义组件，作者无需声明静态类、`Setup()` 或模块特性。模板以 Razor 的 C# 表达式和控制流为起点，同时要求直接导入有类型声明的 npm Vue 组件及语义智能感知。这是待设计与实现的作者入口；当前已实现的 RazorVue 仍使用官方 Razor SG。
@@ -53,12 +71,6 @@ DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable�
 优先验证薄适配层复用微软 Razor 的解析、官方 SG 及源码映射，C# 语义复用 Roslyn 与核心编译器；Vue 组件类型提取对比官方 `vue-component-meta` 和 Verter 的公开接口。微软 Razor 持续开发已迁到 [`dotnet/roslyn`](https://github.com/dotnet/roslyn/tree/main/src/Razor)。先证明公开 API、投影/生成顺序、编辑器接入与嵌入宿主兼容性，再决定依赖；Razor 编辑器内部实现和 Verter 的 TypeScript 投影不自动成为 `.jazor` 的 C# 语言服务。
 
 提案按复用验证、可构建组件、语义编辑器、npm 组件组合和发布消费者分阶段验收。首个导入器聚焦 npm，JSR 专用接入不在初始范围；运行时复用现有 NodeApi、pnpm、Vue ESM 与 Emit 链路。智能感知覆盖 C# 与组件参数补全、上下文类型、导航、诊断、重命名和不完整语法恢复；具体导入指令、组件参数/生命周期规则及编辑器范围需验证后确定，尚不构成可安装的支持声明。
-
-## LibNode LTS 原生包提案
-
-[Issue #139](https://github.com/devhxj/Jazor/issues/139)提出自行构建 `Jazor.LibNode` 总包及 RID 原生包：以实施时最新 Node.js LTS 为基线，参考微软 LibNode 的分包方式，移植与所选 `Microsoft.JavaScript.NodeApi` 匹配的 `node_embedding_*` C API，继续复用微软托管互操作层。2026-11-15 查询官方索引的首个候选为 Node `v26.13.1`；当前实际依赖仍是微软 LibNode `20.1800.215`，本提案不代表已经升级。
-
-验收要求复用微软现有嵌入、GC 与适用互操作测试，以及对应原生 C embedding 测试，保留断言与夹具，仅适配包选择、路径及运行入口；报告记录上游修订和实际加载的候选库，区分真实原生运行与 mock 覆盖。先验证 C ABI、已有四个平台组合和隔离 NuGet consumer，再通过现有 NodeApi、pnpm、Vite、WebIDL 与 SSR 发布闭包门禁。额外 RID、旧宿主 workaround 的移除及新 addon 兼容性必须分别取得证据；发布沿用 lockstep 版本与官方工作流。
 
 ## 写入当前状态的门槛
 
