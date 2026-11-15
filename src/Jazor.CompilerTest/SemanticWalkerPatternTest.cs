@@ -7936,7 +7936,7 @@ line2"";
     AssertScriptEqual(@"{
   let n;
   let obj = 42;
-  if (false && (n = obj, true)) {
+  if (typeof obj === ""number"" && (n = obj, true)) {
     console.log(n);
   }
 }", script);
