@@ -1200,7 +1200,10 @@ public partial class SemanticWalker
 
 		var source = ResolveIsTypeSourceOperation(operation);
 		var sourceStaticType = source?.Type ?? (operation as IPatternOperation)?.InputType;
-		if (GetMapperType(typeSymbol).Mapper is TypeMapper.Number or TypeMapper.BigInt &&
+		// Explicit host scalars describe JS value domains, not CLR boxing identities.
+		// In particular, erased host unions must still project Number/BigInt by typeof.
+		if (!Util.HasECMAScriptSupportMarker(typeSymbol) &&
+			GetMapperType(typeSymbol).Mapper is TypeMapper.Number or TypeMapper.BigInt &&
 			sourceStaticType is { } sourceType && (sourceType.SpecialType == SpecialType.System_Object ||
 				sourceType.TypeKind is TypeKind.Dynamic or TypeKind.Interface))
 		{

@@ -165,6 +165,27 @@ public sealed class SyntaxAuditRegressionTests
             """, null, Expected: "1"));
 
     [TestMethod]
+    [DataRow("[3]", "15")]
+    [DataRow("[4n]", "102")]
+    [DataRow("[\"text\"]", "2")]
+    [DataRow("[null]", "2")]
+    public Task HostNumericPatterns_UseDeclaredJavaScriptDomains(string arguments, string expected)
+        => Convert_AuditedBug_PreservesBehaviorOrRejectsUnsupportedProtocol(new AuditCase(107, """
+            public static class M
+            {
+                private static int reads;
+                private static object Read(object value) { reads++; return value; }
+                public static int Run(object value)
+                {
+                    var number = Read(value) is ECMAScript.Number n ? (int)n : 0;
+                    var big = Read(value) is ECMAScript.BigInt ? 100 : 0;
+                    var nested = new { Value = value } is { Value: ECMAScript.Number };
+                    return number + big + reads + (nested ? 10 : 0);
+                }
+            }
+            """, null, arguments, expected));
+
+    [TestMethod]
     public Task StructuredPatternSwitch_PreservesBindingsContinueAndSingleEvaluation()
         => Convert_AuditedBug_PreservesBehaviorOrRejectsUnsupportedProtocol(new AuditCase(136, """
             public static class M
@@ -337,7 +358,8 @@ public sealed class SyntaxAuditRegressionTests
     private static async Task<string> Compile(string source)
     {
         var tree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions, "syntax-audit.cs");
-        var compilation = CSharpCompilation.Create("SyntaxAudit", [tree], TestMetadataReferences.Net11,
+        var compilation = CSharpCompilation.Create("SyntaxAudit", [tree], TestMetadataReferences.Net11
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Number).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
         var errors = compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors.Select(error => error.ToString())));
