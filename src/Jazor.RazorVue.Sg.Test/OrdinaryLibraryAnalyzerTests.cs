@@ -11,6 +11,39 @@ namespace Jazor.RazorVue.Sg.Test;
 public sealed class OrdinaryLibraryAnalyzerTests
 {
     [TestMethod]
+    public void FinalGeneratorHook_ExistingSourceModuleWithoutImportManifest_PreservesCatalog()
+    {
+        Assert.IsTrue(Jazor.RazorVue.Generation.InitializeHookInstaller.TryInstall());
+        var compilation = CSharpCompilation.Create("SourceOnly", [CSharpSyntaxTree.ParseText("""
+            using ECMAScript;
+            [ECMAScriptModule("source.mjs")]
+            public static class SourceOnly { public static int Read() => 7; }
+            """, new CSharpParseOptions(LanguageVersion.Preview))], RazorSgTestHost.CreateMetadataReferences(),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new ESGenerator().AsSourceGenerator()],
+            parseOptions: new CSharpParseOptions(LanguageVersion.Preview));
+        driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var diagnostics);
+        Assert.IsEmpty(diagnostics);
+        Assert.IsNotNull(output.Assembly.GetTypeByMetadataName("Jazor.Generated.ModuleCatalog"));
+        Assert.IsNull(LibraryImportContext.ForCompilation(output));
+        Assert.IsEmpty(RazorSgTestHost.GetCompilationErrors(output));
+    }
+
+    [TestMethod]
+    [DataRow("namespace Backend; public class Service { public int Value; }")]
+    [DataRow("namespace Backend; public class Container { public class Child { public int Value; } }")]
+    [DataRow("namespace Jazor.Generated { internal class ModuleCatalog {} }")]
+    public void FinalCompilationWithoutFrontendRoots_ProducesNoCatalog(string source)
+    {
+        var compilation = CSharpCompilation.Create("NoFrontend", [CSharpSyntaxTree.ParseText(source)],
+            RazorSgTestHost.CreateMetadataReferences(), new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        Assert.IsTrue(Jazor.RazorVue.Generation.RazorTailOutput.TryBuildFinalCompilationCatalog(compilation,
+            CancellationToken.None, out var catalog, out var diagnostics));
+        Assert.IsNull(catalog);
+        Assert.IsEmpty(diagnostics);
+    }
+
+    [TestMethod]
     public void FinalCompilationWithoutComponents_EmitsSelectedOrdinaryModuleAndReportsLoweringFailure()
     {
         var root = RazorSgTestHost.CreateTestArtifactDirectory("ordinary-tail");

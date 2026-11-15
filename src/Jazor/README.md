@@ -21,7 +21,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.1" />
+  <PackageReference Include="Jazor" Version="1.4.2" />
 </ItemGroup>
 ```
 
@@ -33,7 +33,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 定义 module 的类库应隔离这项工具引用：
 
 ```xml
-<PackageReference Include="Jazor" Version="1.4.1" PrivateAssets="all" />
+<PackageReference Include="Jazor" Version="1.4.2" PrivateAssets="all" />
 ```
 
 最终 `Exe`/`WinExe` 宿主需要 Emit 时直接引用 `Jazor`，不设置 `PrivateAssets`。包内
@@ -80,11 +80,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.4.1" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.4.1" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.1" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.4.1" />
-  <PackageReference Include="ECMAScript.Style" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.4.2" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.4.2" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.2" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.4.2" />
+  <PackageReference Include="ECMAScript.Style" Version="1.4.2" />
 </ItemGroup>
 ```
 
@@ -121,8 +121,8 @@ ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SS
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.1" />
-  <PackageReference Include="Jazor.Vue" Version="1.4.1" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.4.2" />
+  <PackageReference Include="Jazor.Vue" Version="1.4.2" PrivateAssets="all" />
 </ItemGroup>
 ```
 

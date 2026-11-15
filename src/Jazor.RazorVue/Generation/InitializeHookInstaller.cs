@@ -133,11 +133,9 @@ internal static class InitializeHookInstaller
             cancellationToken);
         outputCompilation = compilation.AddSyntaxTrees(
             runResult.GeneratedTrees.Where(static tree => !RazorSourceTextRegistry.IsCarrierTree(tree) &&
-                !Jazor.Compiler.LibraryImportContext.IsCarrierTree(tree)));
-        Jazor.Compiler.LibraryImportContext.Transfer(compilation, outputCompilation);
-        var libraryInputs = Jazor.Compiler.LibraryImportContext.ReadCarrierInputs(runResult.GeneratedTrees, cancellationToken);
-        if (!libraryInputs.IsDefaultOrEmpty)
-            Jazor.Compiler.LibraryImportContext.Configure(outputCompilation, libraryInputs);
+                !IsLibraryInputCarrier(tree)));
+        if (runResult.GeneratedTrees.Any(IsLibraryInputCarrier) || ContainsModuleCatalog(outputCompilation))
+            ConfigureLibraryInputs(compilation, outputCompilation, runResult.GeneratedTrees, cancellationToken);
         diagnostics = runResult.Diagnostics;
         if (ContainsRazorModuleCatalog(outputCompilation))
             return result;
@@ -188,6 +186,20 @@ internal static class InitializeHookInstaller
         timing.Write(timingPath, outputCompilation.AssemblyName ?? "Jazor.RazorVue", succeeded: true);
 
         return result;
+    }
+
+    private static bool IsLibraryInputCarrier(SyntaxTree tree)
+        => tree.FilePath.Replace('\\', '/').EndsWith("Jazor.Generated.LibraryImportInputs.g.cs", StringComparison.Ordinal);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ConfigureLibraryInputs(Compilation source, Compilation destination,
+        IEnumerable<SyntaxTree> generatedTrees, CancellationToken cancellationToken)
+    {
+        // A Vue-only package intentionally excludes core tooling. Keep optional core calls
+        // outside the hook's JIT body so a project with no compiler can still complete Razor SG.
+        Jazor.Compiler.LibraryImportContext.Transfer(source, destination);
+        var inputs = Jazor.Compiler.LibraryImportContext.ReadCarrierInputs(generatedTrees, cancellationToken);
+        if (!inputs.IsDefaultOrEmpty) Jazor.Compiler.LibraryImportContext.Configure(destination, inputs);
     }
 
     private static bool ContainsModuleCatalog(Compilation compilation)

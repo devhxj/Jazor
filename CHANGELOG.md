@@ -4,6 +4,20 @@
 
 ## 2026-11-15
 
+### Jazor 1.4.2
+
+中文 | English
+
+#### 问题修复
+
+- 类库恢复跳过官方 Razor SG 的 `nameof` 参数名表达式，避免把 Vue Data UI 等组件的编译期属性名称误当作运行时依赖；仅引用 `Jazor.Vue` 且未启用核心工具链的项目继续按原引用边界构建。by @devhxj
+- `v1.4.0`、`v1.4.1` 均在上传前被消费者门禁拦截，未公开发布包。本补丁保留两个标签及失败记录，交付其普通 NuGet / ProjectReference 自动按需导入；不要求额外导入配置或生产者标注，不增加新的 lowering 支持面。by @devhxj
+
+Bug Fixes
+
+- Skip compile-time `nameof` parameter expressions from official Razor SG during library recovery, avoiding false runtime dependencies on component properties such as Vue Data UI. Preserve the tooling boundary for Vue-only projects that do not activate the core compiler. by @devhxj
+- Both `v1.4.0` and `v1.4.1` were stopped by consumer gates before package upload. Retain their tags and failure records and deliver their automatic ordinary NuGet/ProjectReference imports in this patch, without extra import configuration, producer annotations or additional lowering surface. by @devhxj
+
 ### Jazor 1.4.1
 
 中文 | English

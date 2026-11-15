@@ -14,6 +14,17 @@ namespace Jazor.CompilerTest;
 public sealed class OrdinaryLibraryImportTests
 {
     [TestMethod]
+    public void Import_NameofMetadata_DoesNotRecoverExternalComponentBaseProperties()
+    {
+        using var fixture = new Fixture("""
+            namespace Ordinary;
+            public abstract class Base { public string Value { get; set; } }
+            public class Component : Base { }
+            """);
+        Assert.IsEmpty(fixture.Plan("public static string Run() => nameof(Ordinary.Component.Value);").BuildModules());
+    }
+
+    [TestMethod]
     public async Task Import_DelegateInvocation_UsesExistingErasedCallableProtocol()
     {
         using var fixture = new Fixture("""

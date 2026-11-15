@@ -12,7 +12,7 @@
 
 | 优先级 | 提案 | 排序依据 | 首个交付门槛 |
 | --- | --- | --- | --- |
-| **P0：首批切片已交付** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；1.4.1 已实现普通 DLL/NuGet 自动导入、成员闭包与共享模块 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
+| **P0：首批切片已交付** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；1.4.2 已实现普通 DLL/NuGet 自动导入、成员闭包与共享模块 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
 | **P1：其次推进** | [#139：Jazor.LibNode LTS 原生包](https://github.com/devhxj/Jazor/issues/139) | 掌握 LTS 原生构建与更新，验证现有 pnpm/Vite/SSR 和后续 npm 类型工具的兼容性 | 移植匹配微软托管层的 C ABI，复用上游测试，通过已声明平台的原生包与现有工具链门禁 |
 | **P2：随后推进** | [#138：.jazor 组件文件与语义智能感知](https://github.com/devhxj/Jazor/issues/138) | 改善组件作者体验、接入 npm Vue 组件；现有 RazorVue 可继续承担组件编写 | 确认 `<template>` + `@code`，验证 Razor/Roslyn 与 Vue 类型工具的复用；可构建组件、真实语义编辑器和直接 npm consumer 分阶段交付 |
 

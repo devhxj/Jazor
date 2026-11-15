@@ -57,9 +57,10 @@ internal static class RazorTailOutput
 
         // The product supplies its final SG roots and Proxy storage contract. Core recovery
         // remains framework-neutral and does not discover ComponentBase or Vue protocols.
-        Jazor.Compiler.LibraryImportContext.AddRoots(compilation, components,
-            components.IsDefaultOrEmpty ? Jazor.Compiler.RuntimeClassPrivateStorage.JavaScriptPrivateFields :
-                Jazor.Compiler.RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+        if (components.IsDefaultOrEmpty && compilation.Assembly.GetTypeByMetadataName("Jazor.Generated.ModuleCatalog") is null &&
+            !ContainsSourceModule(compilation.Assembly.GlobalNamespace))
+            return true;
+        ConfigureLibraryRoots(compilation, components);
 
         if (components.IsDefaultOrEmpty)
         {
@@ -104,6 +105,18 @@ internal static class RazorTailOutput
         timing?.CompleteStage("catalog-serialization");
         return true;
     }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private static void ConfigureLibraryRoots(Compilation compilation, ImmutableArray<INamedTypeSymbol> components)
+        => Jazor.Compiler.LibraryImportContext.AddRoots(compilation, components,
+            components.IsDefaultOrEmpty ? Jazor.Compiler.RuntimeClassPrivateStorage.JavaScriptPrivateFields :
+                Jazor.Compiler.RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+
+    private static bool ContainsSourceModule(INamespaceOrTypeSymbol owner)
+        => owner.GetMembers().Any(member =>
+            member is INamedTypeSymbol type && type.GetAttributes().Any(attribute =>
+                attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptModuleAttribute") ||
+            member is INamespaceOrTypeSymbol container && ContainsSourceModule(container));
 
     private static bool TryBuildVueRenderArtifacts(
         CancellationToken cancellationToken,

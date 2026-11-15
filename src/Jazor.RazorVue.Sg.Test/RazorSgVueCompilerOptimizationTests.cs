@@ -360,7 +360,7 @@ public sealed class RazorSgVueCompilerOptimizationTests
             """
             @foreach (var entry in Entries)
             {
-                <button class="fixed" @onclick="() => Select(entry)">@entry</button>
+                <button class="fixed" @onclick="@(() => Select(entry))">@entry</button>
             }
             """,
             codeBehindSource:
