@@ -14,6 +14,7 @@
 | 查看 C# 与 RazorVue 的具体支持边界及逐项 GitHub issue | [语法与 issue 索引](./csharp-syntax-gap-audit.md)（英文，区分已关闭 bug 与开放扩展） |
 | 推进作者体验和协议扩展 | [下一阶段](./next-development.md)中的责任层与验收条件 |
 | 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |
+| 讨论 C# + TSX 风格作者格式与智能感知 | [.jazor 提案 #138](https://github.com/devhxj/Jazor/issues/138)（待设计与实现） |
 | 使用标准前端项目与已完成的工具链 | [类库产物契约](../02-architecture/library-artifact-contract.md)、[NodeApi 工具链指南](../03-guides/toolchain-migration.md) |
 | 追溯已完成计划、旧审计和测试数字 | [历史演进](../05-history/evolution.md)；详细记录由 Git 历史保留 |
 

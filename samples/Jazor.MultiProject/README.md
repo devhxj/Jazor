@@ -28,7 +28,7 @@ dotnet run --file samples/Jazor.MultiProject/build-local.cs
 
 ## 输出模式
 
-`JazorMode=debug` 输出标准项目入口；`JazorMode=release` 执行项目自己的标准构建脚本。构建 release bundle：
+`JazorMode=debug` 输出标准项目入口；`JazorMode=release` 通过进程内 Vite API 使用项目配置生成 bundle。构建 release bundle：
 
 ```bash
 dotnet run --file samples/Jazor.MultiProject/build-local.cs -- --bundle

@@ -2,7 +2,7 @@
 
 > 定位：`element-plus` 的强类型 C# host binding 与 Razor-to-Vue authoring 接口。
 
-该包提供 Element Plus runtime 导入、组件代理和强类型 props/slot 契约。本文描述 `1.1.0`；完整质量与发布消费者门禁见[当前状态](../../docs/04-roadmap/current-status.md)，具体交互/服务的验证范围见下文。
+该包提供 Element Plus runtime 导入、组件代理和强类型 props/slot 契约。当前安装版本见[安装指南](../../docs/03-guides/installation-and-configuration.md)；完整质量与发布消费者门禁见[当前状态](../../docs/04-roadmap/current-status.md)，具体交互/服务的验证范围见下文。
 
 本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Element Plus
 npm package、入口、样式和依赖元数据；Emit 生成标准 `jazor/package.json`，pnpm API 将运行时恢复
@@ -22,7 +22,7 @@ ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完
 - 管理壳常用组件：config provider、container layout、menu、button、card、link、space 与 divider。
 - 遵循 Element Plus 命名的公开类型，例如 `ElButtonType`、`ElUploadFile` 与 `ElComponents`；根 host 保留 `ElementPlus` 名称。
 
-## 下一轮分页与日期绑定（尚未公开发布）
+## 分页与日期绑定
 
 以下能力属于当前声明的支持切片。
 

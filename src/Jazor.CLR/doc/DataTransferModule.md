@@ -1,6 +1,6 @@
 # DataTransferModule.cs
 
-preview.8 保留 CLR `DataTransfer` 到 WebIDL `ECMAScript.DataTransfer` 的 Alias，
+保留 CLR `DataTransfer` 到 WebIDL `ECMAScript.DataTransfer` 的 Alias，
 并在 `Jazor.Vue` 中提供 extension：`NativeDataTransfer` 暴露同一个对象的完整
 WebIDL 契约，`NativeFiles` 返回 `FileList`，`NativeItems` 返回
 `DataTransferItemList`。引入 `ECMAScript` 后即可使用这些属性。

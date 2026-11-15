@@ -1,6 +1,6 @@
-# 1.0 公共 API 基线清单
+# 公共作者 API 与冻结基线
 
-本文是冻结审查的人工可读基线。它覆盖 1.0 最容易被应用直接引用的宿主、SSR、开发 reload 和 `Jazor.Admin` 类型；编译器与生态绑定的完整签名仍以发布候选程序集的 API 兼容性工具结果为准。机器快照会排除 Razor 生成的下划线前缀辅助类型，例如 `_Imports`。
+本文是当前公开作者面的人工可读索引，覆盖宿主、SSR、开发 reload、`Jazor.Admin` 与重点绑定契约。正式冻结基线保存在机器快照中，当前完整签名和差异以实际发布候选程序集的 API 兼容性工具结果为准。机器快照会排除 Razor 生成的下划线前缀辅助类型，例如 `_Imports`。
 
 ## 包与命名空间
 
@@ -55,7 +55,7 @@
 - `JazorReloadOptions`
 - `JazorHmrMapping`
 
-1.1.0 的 frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。1.0.0 冻结快照仍保留为兼容性比较基线；Vite/SSR `TaskName` 删除按维护者指定的 1.1.0 工具链重构例外发布，迁移步骤见[发版规则](./release-and-versioning.md)。`public-api-reviewed-removals.snapshot.md` 只放行已确认签名，报告仍列出删除，旧冻结快照保持不变。
+frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。1.0.0 冻结快照仍保留为兼容性比较基线；Vite/SSR `TaskName` 删除按维护者指定的 1.1.0 工具链重构例外发布，迁移步骤见[发版规则](./release-and-versioning.md)。`public-api-reviewed-removals.snapshot.md` 只放行已确认签名，报告仍列出删除，旧冻结快照保持不变。
 
 ## `Jazor.Vue` 原生事件与载荷扩展
 

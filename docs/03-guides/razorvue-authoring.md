@@ -35,8 +35,8 @@ RazorVue 的最终管线顺序是：组件发现 -> final Compilation binding ->
 | `JAZORVGA024` | member closure | `#member-closure` | 检查可达成员、constructor activation、lifecycle dispatch 和导出名；按本指南的 Support/Reject 子集调整源码。 |
 | `JAZORVGA025` | `[VueInject]` declaration | `#vue-inject` | 修正 container/implementation contract 和重复声明。 |
 | `JAZORVGA026` | Vue module/import/framing | `#vue-module` | 修正模块路径、导出名、import collision 或 runtime helper contract。 |
-| `JAZORVGA027` | component candidate identity（preview.8） | `#component-identity` | 补齐 `ComponentBase`、`IVueComponent` 和生成模块/外部 binding 描述。 |
-| `JAZORVGA028` | attribute/runtime parameter name collision（preview.8） | `#parameter-runtime-names` | 将 `Class` 改为声明的 `CssClass`，或精确的小写 Vue attribute `class`。 |
+| `JAZORVGA027` | component candidate identity | `#component-identity` | 补齐 `ComponentBase`、`IVueComponent` 和生成模块/外部 binding 描述。 |
+| `JAZORVGA028` | attribute/runtime parameter name collision | `#parameter-runtime-names` | 将 `Class` 改为声明的 `CssClass`，或精确的小写 Vue attribute `class`。 |
 | `JAZORVCA001` | authored `[Inject]`/`@inject` 使用了 `DbContext` | `#browser-services` | 数据访问移到 typed endpoint；组件继续注入 browser client。 |
 | `JAZORVCA002` | authored `[Inject]`/`@inject` 使用了 server-only ASP.NET/Identity service | `#browser-services` | request/identity 操作移到 server endpoint。 |
 | `JAZORVCA003`-`005` | authored `ParameterView` 的未物化枚举/查找操作 | `#parameter-lifecycle` | 使用声明的 typed `[Parameter]` 属性。 |
@@ -127,7 +127,7 @@ Element Plus 组件按普通 Razor 组件使用：`ElButtonType` 等 enum 保持
 
 ### 推荐的复杂逻辑形状
 
-preview.8的原生上传回调可使用 `InputFileChangeEventArgs` + `args.Files`，drop 回调使用 `DragEventArgs` + `args.Files`；这些 extension 由 `Jazor.Vue` 的 opt-in 作者程序集提供。返回值直接是 WebIDL `FileList`/`FileRef`，可读取文件 metadata 并构造 `FormData`。普通 `@onchange` 的标量 `ChangeEventArgs.Value` 不承担文件协议；原生 file input 使用显式 typed `onchange` callback，完整示例见 [Browser Interop](browser-interop.md#native-file-and-drop-events)。
+原生上传回调可使用 `InputFileChangeEventArgs` + `args.Files`，drop 回调使用 `DragEventArgs` + `args.Files`；这些 extension 由 `Jazor.Vue` 的 opt-in 作者程序集提供。返回值直接是 WebIDL `FileList`/`FileRef`，可读取文件 metadata 并构造 `FormData`。普通 `@onchange` 的标量 `ChangeEventArgs.Value` 不承担文件协议；原生 file input 使用显式 typed `onchange` callback，完整示例见 [Browser Interop](browser-interop.md#native-file-and-drop-events)。
 
 同类扩展覆盖 12 种 DOM 事件及 `DataTransfer`、`DataTransferItem`、`TouchPoint`、`ElementReference`：导入 `ECMAScript` 后可读取 `args.Target`、`args.CurrentTarget`、`args.NativeEvent`，以及剪贴板 `ClipboardData`、焦点/鼠标 `RelatedTarget`、pointer 的缺失属性。`NativeEvent` 保留精确的 WebIDL 事件类型；原生列表通过 `NativeFiles`、`NativeItems`、`NativeTouches` 访问，保留既有 CLR 数组属性的行为与边界。`CurrentTarget` 和 clipboard/drag 载荷应在 callback 内、首次 `await` 前读取。完整类型和属性列表见[原生事件与载荷扩展](browser-interop.md#native-dom-event-and-payload-extensions)。
 
@@ -239,7 +239,7 @@ direct render 中普通 `break`/`continue` 绑定当前 loop 的结构化目标�
 
 ### Razor 标记与浏览器值
 
-official Razor SG 支持代码块中的同行 sibling 标签和显式插值表达式；preview.8回归覆盖下列写法，无需为 RazorVue 拆行或移除 interpolation：
+official Razor SG 支持代码块中的同行 sibling 标签和显式插值表达式；回归覆盖下列写法，无需为 RazorVue 拆行或移除 interpolation：
 
 ```razor
 @if (Show)
@@ -280,7 +280,7 @@ RazorVue 在 direct-render 层使用 `Jazor.Compiler`/`SemanticWalker` 的 C# �
 组件模块使用稳定的 `[ECMAScriptModule("...")]` 或 `[ECMAScript("<specifier>")]`。组件引用、parameter 名称和 child content 与编译期 symbol 对齐；组件入口通过 `IVueComponent` marker 和导入描述确定。
 
 <a id="component-identity"></a>
-### 组件身份：JAZORVGA027（preview.8）
+### 组件身份：JAZORVGA027
 
 当前 compilation 中的具体 RazorVue candidate 在选择输出前检查身份：继承 `ComponentBase`、实现 `ECMAScript.Vue.IVueComponent`，并声明生成模块的 `[ECMAScriptModule]` 或外部 binding 的 `[ECMAScript]`。`.razor` 页面/可复用组件、已声明模块的组件和带 `IVueComponent` marker 的类型都可能成为 candidate；缺失声明会报告 `JAZORVGA027`，即使组件尚未被其他页面引用。`@page` 本身不提供模块身份。
 
@@ -302,7 +302,7 @@ public partial class Orders : ComponentBase, IVueComponent
 若消息指出缺少 `IVueComponent`，补齐 marker；若指出缺少导入描述，为本地组件声明稳定的模块路径。抽象源码共用基类不需要单独生成模块；已有 `[ECMAScript("package")]` 的外部 binding 保持其导入身份。
 
 <a id="parameter-runtime-names"></a>
-### 参数与 Vue 名称：JAZORVGA028（preview.8）
+### 参数与 Vue 名称：JAZORVGA028
 
 binding 的 C# 参数名与 Vue runtime 名称可以不同。例如 Element Plus 的 `CssClass` 映射到 Vue `class`。未声明的 `Class` 与该 runtime 名称只有大小写差异，会报告 `JAZORVGA028`，消息同时给出原属性、目标参数和替代写法，位置映射到 `.razor`：
 
@@ -315,7 +315,7 @@ binding 的 C# 参数名与 Vue runtime 名称可以不同。例如 Element Plus
 优先使用 binding 声明的 `CssClass` 参数；精确的小写 `class` 保留 Vue attribute/fallthrough 语义。普通 HTML 的 `<div class="panel">` 继续按原生 attribute 处理。未知参数、required parameter 和参数类型仍由 official Razor SG/C# 检查。
 
 <a id="external-wrapper-defaults"></a>
-### 外部 wrapper 的常量默认 props（preview.8）
+### 外部 wrapper 的常量默认 props
 
 带 `[ECMAScript("...")]` 的 wrapper 是外部 Vue 组件契约。RazorVue 将当前 compilation 可读取的 wrapper 及基类 `[Parameter]` 常量 initializer 投影为默认 props，包括字符串、布尔值、数值和受支持的 erased union 常量。派生 `[Parameter]` 接管同名参数；`RenderFragment` 与 `CaptureUnmatchedValues` 参数不作为默认 prop 投影。
 
@@ -348,7 +348,7 @@ public sealed class DefaultTable : TableContract { }
 
 未被无条件显式参数覆盖的 `MaxHeight = GetHeight()` 等非恒定 initializer 报告 `JAZORVGA021`，位置指向 initializer。可移除动态 initializer，或在调用处显式传入该参数；被覆盖的默认值不会求值或产生诊断。运行时 `@attributes` 不能证明每次都提供该参数，故不能豁免动态默认值；需要每实例初始化时，使用 `[ECMAScriptModule]` 生成组件的普通 state/lifecycle。
 
-### Element Plus typed 交互与 slot 迁移（preview.8）
+### Element Plus typed 交互与 slot 迁移
 
 `ElTypedSelect<TValue>` / `ElTypedOption<TValue>` 保留选中值类型，`ElTypedTable<TRow>` / `ElTypedTableColumn<TRow>` 保留行类型，`ElTypedDropdown<TCommand>` / `ElTypedDropdownItem<TCommand>` 保留 command 类型。使用 Razor 的 `TValue`、`TRow` 或 `TCommand` 参数与对应 typed callbacks，无需把值转成字典。
 
@@ -399,7 +399,7 @@ union 是 authoring/compile-time contract，运行时按其分支值擦除；保
 <a id="numeric-union-authoring"></a>
 ### N4：数值、nullable union 与 typed 选择
 
-当前源码允许普通整数和数值变量直接绑定：`Size="@(32)"`、`CurrentPage="@page"`（`int page = 1`）。`double` 分支使用普通 C# 数值转换；`Number` 分支的 union 由绑定生成器根据 `ECMAScript.Number` 已声明的隐式输入生成强类型转换，解决 C# 不允许连续两次用户转换的问题。`Number` 与 `double` 的声明类型仍有区别，handler 保持组件声明的参数类型。这些改进随 preview.9 交付，所有 Jazor/ECMAScript 包应使用同一版本。
+当前源码允许普通整数和数值变量直接绑定：`Size="@(32)"`、`CurrentPage="@page"`（`int page = 1`）。`double` 分支使用普通 C# 数值转换；`Number` 分支的 union 由绑定生成器根据 `ECMAScript.Number` 已声明的隐式输入生成强类型转换，解决 C# 不允许连续两次用户转换的问题。`Number` 与 `double` 的声明类型仍有区别，handler 保持组件声明的参数类型。所有 Jazor/ECMAScript 包应使用同一版本，安装入口见[安装指南](./installation-and-configuration.md)。
 
 | 作者场景 | 实际参数/回调类型 | 推荐写法与运行时结果 |
 | --- | --- | --- |

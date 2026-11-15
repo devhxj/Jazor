@@ -40,7 +40,7 @@
 
 提交前确认：目录和文件名符合命名规则；链接指向现有权威文档；新内容归入相应权威位置；涉及公共行为的改动已同步到相应架构或使用指南；`git diff --check` 通过。
 
-运行 `dotnet run --file scripts/csharp/verify-documentation.cs`，检查 Git 管理和未忽略新增 Markdown 的本地文件、图片与标题锚点。检查器解析 Markdown，代码示例中的伪链接不参与导航检查；上游文档、许可证和机器签名快照保留原文。报告默认写入 `artifacts/documentation/report.json`。
+运行 `dotnet run --file scripts/csharp/verify-documentation.cs`，检查 Git 管理和未忽略新增 Markdown 的本地文件、图片与标题锚点，并按当前状态页的发布 tag 校验安装命令、包引用和中英文首页的版本。检查器解析 Markdown，代码示例中的伪链接不参与导航检查；上游版本、迁移历史、许可证和机器签名快照保留原文。报告默认写入 `artifacts/documentation/report.json`，Wiki Verify 持续运行此检查。
 
 版本说明区分正式 SDK 与 preview 语言模式；安装示例使用当前 lockstep 版本。支持声明区分源码实现、映射/契约测试、真实浏览器和发布消费者证据。已完成的计划归档后，将稳定规则移入指南或架构，并同步所有入口链接。
 

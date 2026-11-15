@@ -4,7 +4,7 @@
 DOM `EventRef` carrier. `FileCount` reads `event.target.files.length`; the CLR module
 does not construct a Blazor event payload or register a runtime helper import.
 
-preview.8 also exposes `NativeEvent` and the common DOM event properties through
+The binding also exposes `NativeEvent` and the common DOM event properties through
 extensions on the existing C# type. `NativeEvent` preserves the same WebIDL
 `EventRef` identity. See [Browser Interop](../../../docs/03-guides/browser-interop.md)
 for the event and native payload surface.

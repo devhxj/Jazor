@@ -28,13 +28,13 @@
 
 > Jazor 1.3.0 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
 
-> 1.1.0 的工具链与 SSR 已切换为进程内 NodeApi、LibNode 20.1800.215 与 pnpm API，四平台 CI 和 Windows SPA/SSR 包/浏览器门禁已通过。维护者指定本次底层工具链重构以 1.1.0 发布，升级前需审阅宿主配置迁移，见[工具链迁移指南](docs/03-guides/toolchain-migration.md)。
+> 工具链与 SSR 使用进程内 NodeApi、LibNode 和固定 pnpm API。运行条件与升级步骤见[工具链指南](docs/03-guides/toolchain-migration.md)，支持边界与验证入口见[当前状态](docs/04-roadmap/current-status.md)。
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
 
-普通源码类型沿编译入口及源码依赖参与转换，无需逐类型添加 `[ECMAScript]` 许可标注。class 保留构造与实例行为，record 表达结构化对象；宿主标注仅声明实际 JavaScript 绑定和特殊值语义。1.2.0 的具体边界见[类型与宿主标注指南](docs/03-guides/type-semantics.md)。
+普通源码类型沿编译入口及源码依赖参与转换，无需逐类型添加 `[ECMAScript]` 许可标注。class 保留构造与实例行为，record 表达结构化对象；宿主标注仅声明实际 JavaScript 绑定和特殊值语义。具体规则与迁移步骤见[类型与宿主标注指南](docs/03-guides/type-semantics.md)。
 
 ## AI 协作开发
 

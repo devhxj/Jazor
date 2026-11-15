@@ -52,7 +52,7 @@
 ## 命名约定
 
 - `Jazor.Admin` 的公共组件统一使用简短的 `J` 前缀，例如 `JLayout`、`JSidebar` 和 `JPage`，以便在同时使用 TDesign、Vuetify 或其他组件库时避免标签名冲突。
-- 本次版本是破坏性命名迁移：旧的 `AdminLayout`、`SidebarMenu`、`PageContainer` 等组件名称不再导出，调用方必须使用新的 `JLayout`、`JSidebar`、`JPage` 等名称。
+- 从旧组件名称迁移时：旧的 `AdminLayout`、`SidebarMenu`、`PageContainer` 等组件名称不再导出，调用方必须使用新的 `JLayout`、`JSidebar`、`JPage` 等名称。
 - `J` 前缀只用于公共组件类型；`AdminNavItem`、`AdminRouteDefinition` 等模型和内部 helper 保持现有命名，避免无意义的缩写扩散。
 
 ## 边界

@@ -2,7 +2,7 @@
 
 1.0.0 的公开作者 API 已冻结，机器基线保存在 `public-api-baseline.snapshot.md`。每次发布从实际 Release 程序集生成当前快照，与冻结基线比较；新增、删除和签名改变保留在报告中。不能把过去刷新候选基线后的“0 diff”描述为当前发布结论。
 
-当前版本和升级入口见[安装与配置](./installation-and-configuration.md)。历史候选重置、preview.8/preview.9 的 API 数字与固定验证快照见[历史演进](../05-history/evolution.md)。基线文件不随普通文档整理改写。
+当前版本和升级入口见[安装与配置](./installation-and-configuration.md)。历史候选重置、预览版 API 数字与固定验证快照见[历史演进](../05-history/evolution.md)。基线文件不随普通文档整理改写。
 
 ## 稳定决策
 

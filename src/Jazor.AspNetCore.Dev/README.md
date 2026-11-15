@@ -1,6 +1,6 @@
 # Jazor.AspNetCore.Dev
 
-统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。1.1.0 在 Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。四平台宿主/包组合和 Windows x64 本地 NuGet/MSBuild 发布消费者已通过验收；1.1.0 按维护者指定交付该底层重构。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
+统一管理标准前端项目的开发启动、Vite 代理和发布产物托管。程序集与 XML 文档随 **Jazor** 包交付，不需要额外 NuGet 包。Development 环境通过 NodeApi 进程内调用 Vite；其他环境直接托管 Release 产物。运行条件与旧配置迁移见[工具链指南](../../docs/03-guides/toolchain-migration.md)。完整 SPA/SSR 接入见 [Jazor.AspNetCore](../Jazor.AspNetCore/README.md)。
 
 ## 标准前端宿主
 
@@ -70,15 +70,15 @@ Development 启动顺序如下：
 
 HTML shell 使用 `JazorFrontendUrls.GetDevelopmentClient(context)` 和 `JazorFrontendUrls.GetBrowserEntry(context)` 生成 URL，避免重复拼接 PathBase、`/jazor`、Vite client 和 Release bundle 路径。Vite 的 `base`、启动参数、代理目标和浏览器 URL 均来自同一份 options。
 
-### 下一轮 Release 样式契约（尚未公开发布）
+### Release 样式契约
 
-当前源码与配套本地候选包的标准 Vite build 使用相对 `base: './'`，分包和资源从入口 URL 所在目录解析。默认入口仍是 `/jazor/dist/bundle.js`，其资源使用 `/jazor/dist/assets/**`；非空 PathBase 或自定义 `RequestPath` 无需再次构建或添加静态别名。Development 继续使用配置的公共 base 与 Vite/HMR 代理。
+标准 Vite build 使用相对 `base: './'`，分包和资源从入口 URL 所在目录解析。默认入口是 `/jazor/dist/bundle.js`，其资源使用 `/jazor/dist/assets/**`；非空 PathBase 或自定义 `RequestPath` 无需再次构建或添加静态别名。Development 使用配置的公共 base 与 Vite/HMR 代理。
 
 `JazorFrontendUrls.GetStylesheets(context)` 返回 Release 入口静态依赖的 CSS URL，按依赖优先顺序去重。Development 返回空列表，样式由 Vite 提供。HTML shell 可逐个生成 `<link rel="stylesheet">`，不再扫描 `dist/assets`；dynamic imports 的 CSS 在加载模块时由 Vite 加载，不提前注入。
 
 标准 build 在 Release 入口旁写 `manifest.json`，其中的 `file`、`imports` 与 `css` 是样式 helper 的唯一事实源，随 `dist/**` 一起 publish。元数据每个宿主只读取一次；部署后重启宿主。缺失或格式错误直接传播，不能退回目录扫描。
 
-从 preview.8 升级时，Emit 保留既有作者配置。若 `vite.config.js` 是未修改的旧 SDK 默认文件，先移出生成目录，再由新 SDK 重新生成；若有作者改动，合并相对 build base 和 `build.manifest: 'manifest.json'`，保留自己的配置。替代 bundler 也应输出上述 manifest 契约。删除消费者的旧 `dist` 别名与 CSS 扫描后验证 entry、chunks、CSS、HEAD 和 PathBase。
+升级旧构建布局时，Emit 保留既有作者配置。若 `vite.config.js` 是未修改的旧 SDK 默认文件，先移出生成目录，再由新 SDK 重新生成；若有作者改动，合并相对 build base 和 `build.manifest: 'manifest.json'`，保留自己的配置。构建定制使用 Vite 配置和上述 manifest 契约。删除消费者的旧 `dist` 别名与 CSS 扫描后验证 entry、chunks、CSS、HEAD 和 PathBase。
 
 如需连接由其他工具管理的 Vite：
 

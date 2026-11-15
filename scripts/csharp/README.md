@@ -19,7 +19,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | 脚本 | 用途 |
 | --- | --- |
 | `test-dotnet.cs` | 构建一次并运行当前主测试 lane，支持 `--project <name>` 聚焦项目（例如 `dataui`、`lucide`） |
-| `verify-documentation.cs` | 解析仓库 Markdown，检查本地文件、图片和标题锚点；保留上游与机器快照原文，报告默认写入 `artifacts/documentation/report.json`，支持 `--report <path>` |
+| `verify-documentation.cs` | 解析仓库 Markdown，检查本地文件、图片、标题锚点及安装/首页发布版本一致性；保留上游与历史版本，报告默认写入 `artifacts/documentation/report.json`，支持 `--report <path>`；Wiki Verify 同步检查 |
 | `restore-node-project.cs` | 使用固定 pnpm API 在进程内恢复一个或多个工具项目，无需全局 Node/npm/pnpm；参数为项目目录 |
 | `verify-webidl-nodeapi.cs`、`verify-vite-nodeapi.cs`、`verify-nodeapi-pipeline.cs` | 验证 WebIDL、Vite 生命周期、浏览器/SSR 构建和 runtime 部署的 NodeApi 技术栈 |
 | `clean-workspace.cs` | 默认预览忽略目录中的临时输出和 `src/`、`samples/` 下的构建产物占用；传 `--apply` 执行清理，保留 Git 管理的文件、未忽略的新文件、NuGet 缓存、worktree 与 IDE 设置 |

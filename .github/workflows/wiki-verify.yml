@@ -27,7 +27,7 @@ on:
       - 'Jazor.slnx'
       - 'global.json'
       - 'scripts/csharp/**'
-      - 'docs/04-roadmap/**'
+      - '**/*.md'
   pull_request:
     branches: [main]
     paths:
@@ -50,7 +50,7 @@ on:
       - 'Jazor.slnx'
       - 'global.json'
       - 'scripts/csharp/**'
-      - 'docs/04-roadmap/**'
+      - '**/*.md'
 env:
   TEMP: '${{ github.workspace }}\.tmp\agent-temp'
   TMP: '${{ github.workspace }}\.tmp\agent-temp'
@@ -85,11 +85,18 @@ jobs:
         shell: pwsh
         run: dotnet run --file .\scripts\csharp\write-toolchain-matrix.cs -- artifacts/quality/toolchain-matrix.md
 
-      - name: Upload toolchain matrix
+      - name: Verify documentation links and release versions
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-documentation.cs -- --report artifacts/quality/documentation/report.json
+
+      - name: Upload toolchain and documentation evidence
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: wiki-toolchain-matrix-${{ github.run_attempt }}
-          path: artifacts/quality/toolchain-matrix.md
+          path: |
+            artifacts/quality/toolchain-matrix.md
+            artifacts/quality/documentation/report.json
           if-no-files-found: error
 
   smoke:

@@ -9,10 +9,12 @@
 #### 体验优化
 
 - 整理当前状态、类型与工具链指南，将已完成计划和旧验证数字归入历史；同步中英文首页、安装示例和宿主标注写法，补充 Markdown 文件及锚点检查命令。by @devhxj
+- 当前能力说明去除旧预览版和“尚未发布”标签；文档检查同时校验安装示例与首页发布版本，并接入 Wiki Verify。记录 `.jazor` 的 C# + TSX 风格及语义智能感知提案，尚未实现该格式。by @devhxj
 
 Improvements
 
 - Consolidate current status, type semantics and toolchain guides; archive completed plans and historical validation snapshots. Align installation examples and host attributes, and add a Markdown file/anchor verification command. by @devhxj
+- Describe current capabilities without stale preview/unreleased labels. Verify installation and README release versions in Wiki Verify. Track the proposed `.jazor` C# JSX-style format and semantic IntelliSense; the format is not implemented. by @devhxj
 
 ### Jazor 1.3.0
 

@@ -1,6 +1,6 @@
 # Vue 应用生态绑定扩展计划
 
-> 本计划定义 Jazor 在现有 Vue、Vue Router、Pinia、UI、图表和图标绑定之上的下一批应用级生态绑定。每个条目以标准 npm/JSR 入口、强类型契约和真实消费者证据完成交付。
+> 本计划定义十个已发布应用级绑定进入 Support 所需的后续消费者验收。每个条目以标准 npm/JSR 入口、强类型契约和真实消费者证据完成交付。
 
 ## 目标
 
@@ -10,9 +10,9 @@
 
 ## 当前绑定与上游选型
 
-以下是首选上游库。实现前允许根据 Vue 3 兼容性、TypeScript 类型质量、维护活跃度、资源许可和 Jazor 映射成本调整，但每次调整必须在本计划和对应 CHANGELOG 中记录原因。
+以下绑定已有源码、测试 lane 和 lockstep 发布。当前上游版本以各包 manifest/README 为准；后续调整需说明 Vue 兼容性、类型、维护、许可和映射成本，并同步迁移与消费者证据。
 
-| 交付物 | C# 包建议 | 上游 npm 包 | 首期范围 |
+| 交付物 | C# 包 | 上游 npm 包 | 验收范围 |
 | --- | --- | --- | --- |
 | 响应式与浏览器工具 | `ECMAScript.VueUse` | `@vueuse/core` | 常用 composable、ref/computed 投影、浏览器事件、媒体查询、存储、剪贴板、网络状态 |
 | 表单验证 | `ECMAScript.VeeValidate` | `vee-validate` | `useForm`、`useField`、字段状态、提交状态、错误消息、schema/规则适配 |
@@ -59,7 +59,7 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 ### P3-D：重量级编辑器
 
-`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；该绑定已随 preview.5 进入默认发布集合，browser smoke 与真实 RazorVue consumer 证据仍待补。
+`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；该绑定已进入默认发布集合，browser smoke 与真实 RazorVue consumer 证据仍待补。
 
 退出条件：编辑器可在独立 package consumer 中创建、更新、销毁；model 变更、language、theme、marker 和 layout 的事件/调用顺序有浏览器证据；SSR 明确拒绝直接创建浏览器 editor。
 
@@ -89,6 +89,6 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 本计划只有在十个包均满足以下条件后才算完成：独立包和测试项目已加入 solution；每个包都有锁定版本、manifest、许可证、README、inventory/fingerprint；核心 C# contract、compiler/SG/Emit 回归和真实 browser/package consumer 证据齐全；公共边界、SSR 约束、选型变更和已知限制已同步到架构文档、作者指南、current status 与 CHANGELOG；全量质量门禁通过。
 
-计划状态：**进行中（P3-A/B/C/D 已完成源码、验证与 preview.5 发布，消费证据补齐中）**。十个包已进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
+计划状态：**进行中（十个绑定已有源码、回归与正式发布，消费者证据仍待补齐）**。十个包已进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
 
 旧执行表、单轮测试计数和首次发布背景见[历史演进](../05-history/evolution.md#2026-09-28-api-与发布接线复核)。当前升级支持状态的依据是上述逐绑定验收，不是发布或生成成功。

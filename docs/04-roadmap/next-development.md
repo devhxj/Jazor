@@ -46,6 +46,12 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 均已有源码、测试 lane 和 lockstep 发布。当前待办是各绑定的 browser smoke、真实 RazorVue/package consumer、适用 SSR 与 worker/资源验证，完成前保持 Guidance。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
+## .jazor 作者格式提案
+
+[Issue #138](https://github.com/devhxj/Jazor/issues/138)提出在 C# 中使用类似 TSX 的标记表达式，并交付语义智能感知。这是待设计与实现的独立作者入口；当前已实现的 RazorVue 仍使用官方 Razor SG。
+
+提案按语法与类型投影、MSBuild/Compiler 接入、语言服务与编辑器、组件组合、发布消费者分阶段验收。C# 语义复用核心编译器；首个 UI 目标建议 Vue ESM。智能感知覆盖 C# 与组件参数补全、上下文类型、导航、诊断、重命名和不完整语法恢复；编辑器范围与组件 setup/render 发现规则需先经设计验证，尚不构成可安装的支持声明。
+
 ## 写入当前状态的门槛
 
 1. C# API 通过正常类型检查和官方 Razor SG 绑定。

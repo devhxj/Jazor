@@ -21,7 +21,7 @@ npm package、组件入口、全局样式和依赖元数据；Emit 生成标准 
 
 ## Razor 使用
 
-> 下列 `Vd*` 示例适用于 1.0.0-preview.4 及后续版本；从 preview.2 或更早版本升级时需迁移旧前缀，详见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前公开类型使用 `Vd*` 前缀；从旧 `VueUi*` / `VueDataUi*` 名称升级时按下文迁移，版本历史见 [CHANGELOG](../../CHANGELOG.md)。
 
 组件和配套公开类型统一使用 `Vd` 前缀，例如 `VdDonut`、`VdDonutConfig`、`VdDonutDatasetItem` 和 `VdTheme`。
 从旧版迁移时，将 Razor 标签与 C# 类型引用中的 `VueUi*` 改为 `Vd*`，公共基础类型中的 `VueDataUi*` 也改为 `Vd*`

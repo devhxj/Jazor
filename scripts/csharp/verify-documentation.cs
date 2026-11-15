@@ -28,10 +28,14 @@ var pipeline = new MarkdownPipelineBuilder().UsePipeTables().UseGenericAttribute
     .UseAutoIdentifiers(AutoIdentifierOptions.GitHub).Build();
 var documents = new Dictionary<string, (MarkdownDocument Document, HashSet<string> Anchors)>(StringComparer.OrdinalIgnoreCase);
 var failures = new List<LinkFailure>();
+var versionMatch = Regex.Match(File.ReadAllText("docs/04-roadmap/current-status.md"), @"releases/tag/v(?<version>[^\)\s]+)");
+if (!versionMatch.Success) throw new InvalidOperationException("Current status must identify the published release tag.");
+var currentVersion = versionMatch.Groups["version"].Value;
 var links = 0;
 var excluded = paths.Where(IsPreserved).ToArray();
 foreach (var path in paths.Where(path => !IsPreserved(path)))
 {
+    CheckVersions(path);
     var document = ReadDocument(path).Document;
     foreach (var link in document.Descendants<LinkInline>())
         Check(path, link.Line + 1, link.Url);
@@ -43,18 +47,48 @@ foreach (var path in paths.Where(path => !IsPreserved(path)))
 Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
 await File.WriteAllTextAsync(reportPath, JsonSerializer.Serialize(new
 {
-    Documents = paths.Length, Checked = paths.Length - excluded.Length, PreservedDocuments = excluded,
+    CurrentVersion = currentVersion, Documents = paths.Length, Checked = paths.Length - excluded.Length, PreservedDocuments = excluded,
     LocalLinks = links, Failures = failures
 }, new JsonSerializerOptions { WriteIndented = true }));
 Console.WriteLine($"Documentation: {paths.Length} Markdown files; {paths.Length - excluded.Length} checked; {excluded.Length} generated/upstream files preserved; {links} local links.");
 foreach (var failure in failures) Console.WriteLine($"{failure.File}:{failure.Line}: {failure.Message}: {failure.Target}");
-Console.WriteLine($"Result: {failures.Count} broken links. Report: {reportPath}");
+Console.WriteLine($"Result: {failures.Count} documentation errors. Current release: {currentVersion}. Report: {reportPath}");
 return failures.Count == 0 ? 0 : 1;
 
 bool IsPreserved(string path) => path.EndsWith(".snapshot.md", StringComparison.Ordinal)
     || path.StartsWith("src/ECMAScript.Vue.Generator/documentation/", StringComparison.Ordinal)
     || path.StartsWith("src/ECMAScript.VueDataUi/licenses/", StringComparison.Ordinal)
     || path.StartsWith("src/ECMAScript.Vuetify/licenses/", StringComparison.Ordinal);
+
+void CheckVersions(string path)
+{
+    // Migration/history and analyzer release tables intentionally retain authored versions.
+    // Upstream npm, SDK, LibNode and tool versions are independent of the NuGet release.
+    if (path == "CHANGELOG.md" || path.StartsWith("docs/05-history/", StringComparison.Ordinal)
+        || Path.GetFileName(path).StartsWith("AnalyzerReleases.", StringComparison.Ordinal)) return;
+    var number = 0;
+    foreach (var line in File.ReadLines(path))
+    {
+        number++;
+        foreach (Match reference in Regex.Matches(line, "<PackageReference\\s+Include=\"(?:Jazor|ECMAScript)(?:\\.[^\"]+)?\"[^>]*\\bVersion=\"([^\"]+)\""))
+            RequireCurrent(reference.Groups[1].Value, "Stale Jazor/ECMAScript installation version");
+        foreach (Match command in Regex.Matches(line, @"\bdotnet add(?:\s+\S+)?\s+package\s+(?:Jazor|ECMAScript)(?:\.[\w.]+)?\s+--version\s+([\w.+-]+)"))
+            RequireCurrent(command.Groups[1].Value, "Stale package install command");
+        if (path is "README.md" or "README_CN.md")
+        {
+            foreach (Match intro in Regex.Matches(line, @"\bJazor\s+(\d+\.\d+\.\d+(?:-[\w.-]+)?)\b"))
+                RequireCurrent(intro.Groups[1].Value, "Stale release description in README");
+            foreach (Match badge in Regex.Matches(line, @"releases/tag/v([^\s\""\)]+)|[?&]tag=v([^&\""\s]+)"))
+                RequireCurrent(badge.Groups[1].Success ? badge.Groups[1].Value : badge.Groups[2].Value, "Stale README release link/badge");
+        }
+
+        void RequireCurrent(string version, string message)
+        {
+            if (version != currentVersion)
+                failures.Add(new(path, number, version, message + $"; expected {currentVersion}"));
+        }
+    }
+}
 
 (MarkdownDocument Document, HashSet<string> Anchors) ReadDocument(string path)
 {

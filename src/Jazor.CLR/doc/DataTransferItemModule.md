@@ -5,7 +5,7 @@ WebIDL 生成的 `ECMAScript.DataTransferItem`。`Kind` 和 `Type` getter 分别
 Inline 读取原生 `kind` 和 `type`；构造器和 setter 保持 `Op.Discard`，不创建
 或修改 Blazor DTO。
 
-preview.8 在 `Jazor.Vue` 的作者程序集提供 `NativeItem` extension 属性。
+在 `Jazor.Vue` 的作者程序集提供 `NativeItem` extension 属性。
 引入 `ECMAScript` 后，`item.NativeItem` 返回同一个浏览器对象并暴露完整
 WebIDL 契约，例如 `GetAsFile()` 返回 `FileRef?`，`GetAsString(...)` 读取文本。
 此投影不复制对象，也不添加 CLR 文件或 Stream 包装。
