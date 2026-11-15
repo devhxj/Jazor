@@ -73,6 +73,8 @@
                 Condition="Exists('$(_AuthoringCommonAnalyzerPath)')" />
       <Analyzer Include="$(_AuthoringContractAnalyzerPath)"
                 Condition="Exists('$(_AuthoringContractAnalyzerPath)')" />
+      <Analyzer Include="$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll"
+                Condition="Exists('$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll"
                 Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll"

@@ -68,6 +68,8 @@
           BeforeTargets="CoreCompile"
           Condition="'$(WikiUsePackages)' != 'true'">
     <ItemGroup>
+      <Analyzer Include="$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll"
+                Condition="Exists('$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
       <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />

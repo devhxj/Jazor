@@ -4,6 +4,20 @@
 
 ## 2026-11-15
 
+### Jazor 1.4.1
+
+中文 | English
+
+#### 问题修复
+
+- 修复普通类库自动恢复对委托调用和结构化 record 的误识别，保持 Pinia callback 与 WebIDL options 等现有协议；补齐仓库源码 sample 的 ILSpy analyzer 依赖。by @devhxj
+- `v1.4.0` 在上传前被消费者门禁拦截，未公开发布包；本补丁保留该标签并交付其普通 NuGet / ProjectReference 自动导入能力与文档，未增加新的 lowering 支持面。by @devhxj
+
+Bug Fixes
+
+- Preserve existing callable and structural-value protocols when recovery encounters delegates or records, including Pinia callbacks and WebIDL options. Supply ILSpy analyzer dependencies for source-built repository samples. by @devhxj
+- The `v1.4.0` consumer gate failed before package upload, so no public packages were released. Retain that tag and deliver its ordinary NuGet/ProjectReference automatic imports and documentation in this patch, with no additional lowering surface. by @devhxj
+
 ### Jazor 1.4.0
 
 中文 | English

@@ -1,6 +1,6 @@
 # 普通 C# / NuGet 类库导入
 
-> 1.4.0 交付说明，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。本页记录实现、用法和边界；早期探针仅保留在[历史演进](../05-history/evolution.md)。
+> 1.4.1 交付说明，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。本页记录实现、用法和边界；早期探针仅保留在[历史演进](../05-history/evolution.md)。
 
 ## 使用方式
 
@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.0" />
+  <PackageReference Include="Jazor" Version="1.4.1" />
   <PackageReference Include="Fastenshtein" Version="1.1.1" />
 </ItemGroup>
 ```

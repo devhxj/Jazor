@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-当前正式版本为 **1.4.0（2026-11-15）**。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.4.0)和对应 tag 为准。安装时显式指定版本，NuGet UI 无需启用“包括预发行版”。安装或升级时，将全部 Jazor/ECMAScript 包统一更新到 `1.4.0`，并安装 .NET SDK `11.0.100` 或 `global.json` 允许的更新正式 SDK；普通源码无需 `[ECMAScript]` 许可，class 保留类语义、record 承担对象字面量；受影响的 class 声明、继承及宿主配置迁移见下文和 CHANGELOG。更早预览版的迁移路径见 [CHANGELOG](../../CHANGELOG.md)。
+当前正式版本为 **1.4.1（2026-11-15）**。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v1.4.1)和对应 tag 为准。安装时显式指定版本，NuGet UI 无需启用“包括预发行版”。安装或升级时，将全部 Jazor/ECMAScript 包统一更新到 `1.4.1`，并安装 .NET SDK `11.0.100` 或 `global.json` 允许的更新正式 SDK；普通源码无需 `[ECMAScript]` 许可，class 保留类语义、record 承担对象字面量；受影响的 class 声明、继承及宿主配置迁移见下文和 CHANGELOG。更早预览版的迁移路径见 [CHANGELOG](../../CHANGELOG.md)。
 
 当前发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
 
@@ -43,7 +43,7 @@ live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.0" />
+  <PackageReference Include="Jazor" Version="1.4.1" />
 </ItemGroup>
 ```
 
@@ -56,8 +56,8 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="1.4.0" />
-    <PackageReference Include="Jazor.Vue" Version="1.4.0" PrivateAssets="all" />
+    <PackageReference Include="Jazor" Version="1.4.1" />
+    <PackageReference Include="Jazor.Vue" Version="1.4.1" PrivateAssets="all" />
   </ItemGroup>
 </Project>
 ```
@@ -66,25 +66,25 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.Lucide" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.DateFns" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VueUse" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.Monaco" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.VueDraggable" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.FilePond" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.WangEditor" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="1.4.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="1.4.0" />
+  <PackageReference Include="ECMAScript.Style" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.Lucide" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.Pinia" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.DateFns" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueUse" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.Monaco" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.VueDraggable" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.FilePond" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.WangEditor" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.ElementPlus" Version="1.4.1" />
+  <PackageReference Include="ECMAScript.TDesign" Version="1.4.1" />
 </ItemGroup>
 ```
 

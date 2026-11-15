@@ -14,6 +14,21 @@ namespace Jazor.CompilerTest;
 public sealed class OrdinaryLibraryImportTests
 {
     [TestMethod]
+    public async Task Import_DelegateInvocation_UsesExistingErasedCallableProtocol()
+    {
+        using var fixture = new Fixture("""
+            namespace Ordinary;
+            public delegate int Transform(int value);
+            public static class Entry
+            {
+                public static int Apply(Transform action, int value) => action(value);
+            }
+            """);
+        await fixture.Compile("public static int Run() { Ordinary.Transform action = value => value + 3; return Ordinary.Entry.Apply(action, 4); }");
+        await fixture.AssertRun(7);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void Import_HostContractsKeepPrecedenceIncludingInheritedMarkers(bool inherited)
@@ -511,10 +526,11 @@ public sealed class OrdinaryLibraryImportTests
     }
 
     [TestMethod]
-    public void Import_RecordRuntime_RejectsUnimplementedReconstructionProtocol()
+    public async Task Import_RecordRuntime_UsesExistingStructuralBoundaryInsteadOfRecoveringRuntimeMembers()
     {
-        using var fixture = new Fixture("namespace Ordinary; public record Value(int Number);");
-        Assert.Throws<NotSupportedException>(() => fixture.Plan("public static int Run() => new Ordinary.Value(1).Number;"));
+        using var fixture = new Fixture("namespace Ordinary; public record Value(int Number) { public int Read() => Number; }");
+        Assert.IsEmpty(fixture.Plan("public static int Run() => new Ordinary.Value(1).Number;").BuildModules());
+        await Assert.ThrowsAsync<OperationTransformationException>(() => fixture.Compile("public static int Run() => new Ordinary.Value(1).Read();"));
     }
 
     [TestMethod]

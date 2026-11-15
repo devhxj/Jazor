@@ -140,6 +140,7 @@ public sealed class OrdinaryLibraryImportPlan
     private void Add(ISymbol? member)
     {
         if (member is null || member.ContainingType is null ||
+            member.ContainingType.TypeKind == TypeKind.Delegate || member.ContainingType.IsRecord ||
             !_inputs.ContainsKey(member.ContainingAssembly.Name) || HasExistingImplementation(member))
             return;
         member = member.OriginalDefinition;

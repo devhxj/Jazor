@@ -75,6 +75,8 @@
       <Analyzer Include="$(_JazorAdminCompilerAnalyzerPath)" Condition="Exists('$(_JazorAdminCompilerAnalyzerPath)')" />
       <Analyzer Include="$(_JazorAdminCommonAnalyzerPath)" Condition="Exists('$(_JazorAdminCommonAnalyzerPath)')" />
       <Analyzer Include="$(_JazorAdminContractAnalyzerPath)" Condition="Exists('$(_JazorAdminContractAnalyzerPath)')" />
+      <Analyzer Include="$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll"
+                Condition="Exists('$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima/$(AcornimaVersion)/lib/netstandard2.0/Acornima.dll"
                 Condition="Exists('$(NuGetPackageRoot)acornima/$(AcornimaVersion)/lib/netstandard2.0/Acornima.dll')" />
       <Analyzer Include="$(NuGetPackageRoot)acornima.extras/$(AcornimaVersion)/lib/netstandard2.0/Acornima.Extras.dll"
