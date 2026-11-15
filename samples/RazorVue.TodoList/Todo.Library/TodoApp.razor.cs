@@ -77,16 +77,8 @@ public partial class TodoApp : ComponentBase, IVueComponent
     // reactive() proxy functional for the checkbox bind. A class with auto-properties would
     // lower to private backing fields, and JS proxies cannot dispatch private field brands.
     // record 降级为普通对象字面量；deep reactive 代理可正常跟踪 IsDone 变更。
-    private sealed record TodoTask
+    private sealed record TodoTask(string Title, bool IsDone)
     {
-        public TodoTask(string title, bool isDone)
-        {
-            Title = title;
-            IsDone = isDone;
-        }
-
-        public string Title { get; }
-
-        public bool IsDone { get; set; }
+        public bool IsDone { get; set; } = IsDone;
     }
 }

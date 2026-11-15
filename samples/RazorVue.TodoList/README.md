@@ -3,6 +3,7 @@
 `RazorVue.TodoList` exercises the generated standard JavaScript project through the unified ASP.NET Core frontend host:
 
 - `Todo.Library` contains a native RazorVue component with Razor bindings, events, loops, and conditional state.
+- Task data uses a positional record with a mutable `IsDone` property. Structural records emit object literals; executable constructor bodies require a class.
 - `TodoStyleSheet` owns every visual rule through `ECMAScript.Style`; there is no authored CSS under `wwwroot`.
 - `Todo.Host` emits to its project-root `jazor/` directory. In Development, the host starts Vite through the in-process NodeApi API and forwards `/jazor` HTTP and WebSocket requests. Other environments serve the Release artifact graph directly.
 - SSR directly loads the generated entry inside a bounded NodeApi environment pool. Source and dependency changes retire the generation so transitive module edits become visible without a tool child process.
