@@ -1,6 +1,6 @@
 # 当前状态
 
-> 当前版本：[1.4.2（2026-11-15）](https://github.com/devhxj/Jazor/releases/tag/v1.4.2)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[1.4.3（2026-11-16）](https://github.com/devhxj/Jazor/releases/tag/v1.4.3)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 

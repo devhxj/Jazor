@@ -2,6 +2,32 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-16
+
+### Jazor 1.4.3
+
+中文 | English
+
+#### 问题修复
+
+- 修复包含多语言资源的 NuGet / ProjectReference 阻断普通类库导入的问题：本地化卫星程序集不再被误认为重复实现，正常构建输出仍保留这些资源。by @devhxj
+- 将 Acornima 与 Acornima.Extras 升级至 `1.9.2`，采用上游 JavaScript 解析、诊断位置与浮点数 JSON 序列化修复；将 AngleSharp 升级至 `1.10.3`，同步文档采集脚本。by @devhxj
+
+#### 其他变更
+
+- 统一仓库和示例的 MSTest SDK / Framework / Adapter 至 `4.5.3`，升级 Microsoft.NET.Test.Sdk 至 `18.12.0`、Coverlet 至 `10.1.1`、MinVer 至 `8.0.0`，并修正 Test SDK 集中版本设置被覆盖的问题。Roslyn 继续匹配 .NET 11 GA SDK，NodeApi、LibNode 与 ILSpy 保持已核查的稳定版。by @devhxj
+- 补充 Jazor.LibNode LTS 实施计划，明确复用微软 NodeApi 与测试、原生 ABI 移植、RID 迁移及发布门禁；该计划尚未交付新的原生包。by @devhxj
+
+Bug Fixes
+
+- Fix ordinary library imports when NuGet or ProjectReference dependencies include localized resources. Satellite assemblies no longer count as duplicate implementations, while normal build outputs retain those resources. by @devhxj
+- Upgrade Acornima and Acornima.Extras to `1.9.2` for upstream JavaScript parsing, diagnostic-location and floating-point JSON serialization fixes. Upgrade AngleSharp to `1.10.3` and align the documentation collection script. by @devhxj
+
+Chores
+
+- Align repository and sample MSTest SDK / Framework / Adapter versions at `4.5.3`. Upgrade Microsoft.NET.Test.Sdk to `18.12.0`, Coverlet to `10.1.1`, and MinVer to `8.0.0`, and prevent the Test SDK from overriding the centralized version. Keep Roslyn aligned with the .NET 11 GA SDK and retain the verified stable NodeApi, LibNode and ILSpy versions. by @devhxj
+- Document the Jazor.LibNode LTS implementation plan, including reuse of Microsoft's NodeApi and tests, native ABI porting, RID migration and release gates. The plan does not deliver a new native package. by @devhxj
+
 ## 2026-11-15
 
 ### Jazor 1.4.2

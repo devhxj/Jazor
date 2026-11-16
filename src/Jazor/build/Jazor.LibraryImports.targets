@@ -9,13 +9,17 @@
     </PropertyGroup>
     <ItemGroup>
       <!-- Copy-local also contains native DLLs for multiple host RIDs (for example LibNode).
-           NuGet marks these as native assets; they have no managed implementation identity. -->
+           NuGet marks these as native assets; they have no managed implementation identity.
+           NuGet satellites carry Culture; project satellites are selected by RAR in
+           ReferenceSatellitePaths. Neither contains an ordinary library implementation. -->
       <_JazorImplementationAsset Include="@(ReferenceCopyLocalPaths)"
-                                 Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native'" />
+                                 Exclude="@(ReferenceSatellitePaths)"
+                                 Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll' and '%(ReferenceCopyLocalPaths.AssetType)' != 'native' and '%(ReferenceCopyLocalPaths.Culture)' == ''" />
       <!-- Library projects need runtime assets too, even when CopyLocalLockFileAssemblies is
            false. ResolvePackageAssets already selected their implementation TFM/RID. -->
       <_JazorImplementationAsset Include="@(RuntimeCopyLocalItems)"
-                                 Condition="'%(RuntimeCopyLocalItems.Extension)' == '.dll'" />
+                                 Exclude="@(ReferenceSatellitePaths)"
+                                 Condition="'%(RuntimeCopyLocalItems.Extension)' == '.dll' and '%(RuntimeCopyLocalItems.Culture)' == ''" />
     </ItemGroup>
     <GetFileHash Files="@(_JazorImplementationAsset)" Algorithm="SHA256">
       <Output TaskParameter="Items" ItemName="_JazorHashedImplementationAsset" />

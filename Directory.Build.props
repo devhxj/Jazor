@@ -1,8 +1,8 @@
 <Project>
   <PropertyGroup>
-    <AcornimaVersion>1.8.0</AcornimaVersion>
+    <AcornimaVersion>1.9.2</AcornimaVersion>
     <DecompilerVersion>11.2.0.10050</DecompilerVersion>
-    <AngleSharpVersion>1.7.2</AngleSharpVersion>
+    <AngleSharpVersion>1.10.3</AngleSharpVersion>
     <NodeApiVersion>0.9.36</NodeApiVersion>
     <LibNodeVersion>20.1800.215</LibNodeVersion>
     <PnpmEngineVersion>12.5.1</PnpmEngineVersion>
@@ -18,8 +18,11 @@
     <CodeAnalysisVersion>5.12.0-1.26529.118</CodeAnalysisVersion>
     <!-- 1.8.15 contains the .NET 11 GA reference assemblies. -->
     <Net110AssembliesVersion>1.8.15</Net110AssembliesVersion>
-    <CoverletVersion>10.0.1</CoverletVersion>
-    <MinVerPackageVersion>7.0.0</MinVerPackageVersion>
+    <CoverletVersion>10.1.1</CoverletVersion>
+    <!-- MSTest.Sdk adds its test SDK reference after project items; its version
+         property must be set too, or PackageReference Update is overwritten. -->
+    <MicrosoftNETTestSdkVersion>18.12.0</MicrosoftNETTestSdkVersion>
+    <MinVerPackageVersion>8.0.0</MinVerPackageVersion>
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
 

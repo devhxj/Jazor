@@ -16,9 +16,9 @@ C# 程序集只提供映射和组件 authoring contract。消费方编写的 Raz
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.2" />
-  <PackageReference Include="Jazor.Vue" Version="1.4.2" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.2" />
+  <PackageReference Include="Jazor" Version="1.4.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.4.3" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.Vuetify" Version="1.4.3" />
 </ItemGroup>
 ```
 

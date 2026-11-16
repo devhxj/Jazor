@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.4.2"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.4.2&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.4.3"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.4.3&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.4.2 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
+> Jazor 1.4.3 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
 
 > 工具链与 SSR 使用进程内 NodeApi、LibNode 和固定 pnpm API。运行条件与升级步骤见[工具链指南](docs/03-guides/toolchain-migration.md)，支持边界与验证入口见[当前状态](docs/04-roadmap/current-status.md)。
 
@@ -115,15 +115,15 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 1.4.2
+dotnet add package Jazor --version 1.4.3
 ```
 
 编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.2" />
-  <PackageReference Include="Jazor.Vue" Version="1.4.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.4.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.4.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -205,14 +205,14 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 最新更新
 
-### Jazor 1.4.2 · 2026-11-15
+### Jazor 1.4.3 · 2026-11-16
 
-- 普通 NuGet 与 ProjectReference 按实际使用点自动编译受支持实现，无需额外导入配置或生产者标注。
-- 多入口共享导入类与静态状态，适用于 RazorVue 和 SSR；未实现运行时语义继续明确诊断。
-- 内容哈希跟踪实现变化，source map 明确标识恢复源码；范围见[类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
-- 全部 Jazor/ECMAScript 包统一安装 `1.4.2`；从旧版本升级前审阅类型与宿主配置迁移说明。
+- 修复含多语言资源的 NuGet / ProjectReference 阻断普通类库导入的问题，正常构建输出继续保留本地化资源。
+- 升级 Acornima / Extras 至 `1.9.2`、AngleSharp 至 `1.10.3`，同步更新测试与构建依赖。
+- 补齐 [LibNode LTS 实施计划](docs/04-roadmap/libnode-lts-implementation-plan.md)，当前继续使用已交付的原生运行时。
+- 全部 Jazor/ECMAScript 包统一安装 `1.4.3`；从旧版本升级前审阅类型与宿主配置迁移说明。
 
-版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.4.2)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
+版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v1.4.3)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 

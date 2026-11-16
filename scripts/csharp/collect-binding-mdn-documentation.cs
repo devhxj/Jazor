@@ -1,5 +1,5 @@
 #!/usr/bin/env dotnet run
-#:package AngleSharp@1.3.0
+#:package AngleSharp@1.10.3
 #:package Microsoft.CodeAnalysis.CSharp@5.12.0-1.26529.118
 #:property PublishAot=false
 

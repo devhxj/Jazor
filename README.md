@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.4.2"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.4.2&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v1.4.3"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v1.4.3&amp;display_name=tag&amp;label=release" /></a>
   <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
@@ -26,7 +26,7 @@
 
 </div>
 
-> Jazor 1.4.2 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
+> Jazor 1.4.3 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
 
 > Tooling and SSR run through in-process NodeApi, LibNode and the fixed pnpm API. The [toolchain guide](docs/03-guides/toolchain-migration.md) defines runtime conditions and upgrade steps; [current status](docs/04-roadmap/current-status.md) identifies support boundaries and verification commands.
 
@@ -116,7 +116,7 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 1.4.2
+dotnet add package Jazor --version 1.4.3
 ```
 
 For a Razor SDK project that authors RazorVue components, add both packages directly and keep
@@ -124,8 +124,8 @@ their versions aligned:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.2" />
-  <PackageReference Include="Jazor.Vue" Version="1.4.2" PrivateAssets="all" />
+  <PackageReference Include="Jazor" Version="1.4.3" />
+  <PackageReference Include="Jazor.Vue" Version="1.4.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 
@@ -207,14 +207,14 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
-### Jazor 1.4.2 · 2026-11-15
+### Jazor 1.4.3 · 2026-11-16
 
-- Automatically compile reachable supported implementations from ordinary NuGet and ProjectReference libraries without extra import configuration or producer annotations.
-- Share imported classes and static state across modules, including RazorVue and SSR; retain unsupported-runtime diagnostics.
-- Track implementation changes by content hash and debug against clearly identified recovered source. See [library import boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
-- Install all Jazor/ECMAScript packages at `1.4.2`.
+- Fix ordinary NuGet and ProjectReference imports when dependencies include resources for multiple languages; preserve those resources in normal build outputs.
+- Update Acornima / Extras to `1.9.2` and AngleSharp to `1.10.3`, and refresh the test and build dependencies.
+- Add the [LibNode LTS implementation plan](docs/04-roadmap/libnode-lts-implementation-plan.md); the existing native runtime remains in use.
+- Install all Jazor/ECMAScript packages at `1.4.3`.
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.4.2) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v1.4.3) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

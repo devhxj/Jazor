@@ -25,6 +25,16 @@ public sealed partial class SdkIntegrationTests
               <PropertyGroup><TargetFramework>net11.0</TargetFramework><ProduceReferenceAssembly>true</ProduceReferenceAssembly></PropertyGroup>
             </Project>
             """);
+        // A single library can ship several satellite assemblies with the same simple name.
+        // Their cultures must stay outside the implementation manifest used by ILSpy.
+        foreach (var culture in new[] { "fr", "de" })
+            WriteFile(Path.Combine(library, "Messages." + culture + ".resx"), """
+                <root>
+                  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+                  <resheader name="version"><value>2.0</value></resheader>
+                  <data name="Greeting" xml:space="preserve"><value>Localized resource</value></data>
+                </root>
+                """);
         WriteFile(Path.Combine(library, "State.cs"), """
             namespace Plain;
             public sealed class Counter
@@ -90,6 +100,14 @@ public sealed partial class SdkIntegrationTests
             "-p:RestorePackagesPath=" + workspace.RestorePackagesPath };
         var build = await RunDotNetAsync(core.RepoRoot, arguments);
         Assert.AreEqual(0, build.ExitCode, build.ToString());
+        foreach (var culture in new[] { "fr", "de" })
+            Assert.IsTrue(File.Exists(Path.Combine(host, "bin", configuration, "net11.0", culture, "Plain.resources.dll")),
+                "The consumer must still receive the library's satellite assemblies.");
+        var importManifest = Directory.GetFiles(Path.Combine(host, "obj"), "*.jazorimports", SearchOption.AllDirectories).Single();
+        var importInputs = await File.ReadAllTextAsync(importManifest);
+        StringAssert.Contains(importInputs, "asset|Plain|");
+        Assert.IsFalse(importInputs.Contains("asset|Plain.resources|", StringComparison.Ordinal),
+            "Localized resource assemblies are not ordinary library implementations.");
         var output = Path.Combine(host, "jazor");
         var modules = Directory.GetFiles(Path.Combine(output, "_jazor", "libraries"), "*.mjs");
         Assert.HasCount(2, modules);

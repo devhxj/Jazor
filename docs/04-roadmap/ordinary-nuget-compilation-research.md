@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.2" />
+  <PackageReference Include="Jazor" Version="1.4.3" />
   <PackageReference Include="Fastenshtein" Version="1.1.1" />
 </ItemGroup>
 ```
@@ -43,7 +43,7 @@ flowchart TD
     I --> J[标准 jazor 项目 / Vite / Vue SSR]
 ```
 
-`Jazor.LibraryImports.targets` 从 `ResolveReferences` 的 `ReferenceCopyLocalPaths` 和 `RuntimeCopyLocalItems` 生成 `.jazorimports` AdditionalFile，排除 NuGet native 资产。类库关闭 CopyLocal 时仍使用已解析的托管 runtime 资产；manifest 记录当前 TFM/RID 的实现输出和内容哈希，保留原有编译引用。缺少实现、只有 reference assembly、身份不匹配或准备后的文件改变时明确失败。
+`Jazor.LibraryImports.targets` 从 `ResolveReferences` 的 `ReferenceCopyLocalPaths` 和 `RuntimeCopyLocalItems` 生成 `.jazorimports` AdditionalFile，排除 NuGet native 资产。1.4.3 起，同时按 `ReferenceSatellitePaths` 与 `Culture` 元数据排除本地化卫星程序集；这些资源继续进入正常构建输出，不参与 ILSpy 实现恢复。类库关闭 CopyLocal 时仍使用已解析的托管 runtime 资产；manifest 记录当前 TFM/RID 的实现输出和内容哈希，保留原有编译引用。缺少实现、只有 reference assembly、身份不匹配或准备后的文件改变时明确失败。
 
 `OrdinaryLibraryImportPlan` 使用固定版本 `ICSharpCode.Decompiler 11.2.0.10050` 的库 API；不启动 `ilspycmd`，不联网查找实现，不递归恢复 BCL。恢复 C# 在独立 Roslyn compilation 中绑定，保留程序集版本和 public key。原始/恢复符号按程序集身份、metadata 类型名、成员种类、泛型参数位置、参数和返回引用种类结构匹配，不改变消费者及 Razor SG 的绑定。
 
