@@ -60,6 +60,8 @@ DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable�
 
 ## LibNode LTS 原生包提案
 
+具体切片、已核查的源码/测试提交、ABI、RID 迁移、包布局与验收见 [Jazor.LibNode LTS 实施计划](./libnode-lts-implementation-plan.md)。先交付 Windows x64 候选及复用上游测试，验证通过后再扩展四平台并替换产品依赖。当前只是计划，尚未提供新的 native 包。
+
 [Issue #139](https://github.com/devhxj/Jazor/issues/139)提出自行构建 `Jazor.LibNode` 总包及 RID 原生包：以实施时最新 Node.js LTS 为基线，参考微软 LibNode 的分包方式，移植与所选 `Microsoft.JavaScript.NodeApi` 匹配的 `node_embedding_*` C API，继续复用微软托管互操作层。2026-11-15 查询官方索引的首个候选为 Node `v26.13.1`；当前实际依赖仍是微软 LibNode `20.1800.215`，本提案不代表已经升级。
 
 验收要求复用微软现有嵌入、GC 与适用互操作测试，以及对应原生 C embedding 测试，保留断言与夹具，仅适配包选择、路径及运行入口；报告记录上游修订和实际加载的候选库，区分真实原生运行与 mock 覆盖。先验证 C ABI、已有四个平台组合和隔离 NuGet consumer，再通过现有 NodeApi、pnpm、Vite、WebIDL 与 SSR 发布闭包门禁。额外 RID、旧宿主 workaround 的移除及新 addon 兼容性必须分别取得证据；发布沿用 lockstep 版本与官方工作流。
