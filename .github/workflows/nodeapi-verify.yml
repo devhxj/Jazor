@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main, feature/webidl-node-pnpm]
-    paths:
+    paths: &nodeapi-paths
       - .github/workflows/nodeapi-verify.yml
       - Directory.Build.props
       - src/Jazor.NodeHost/**
@@ -12,9 +12,13 @@ on:
       - src/Jazor/**
       - src/Jazor.EmitTest/**
       - src/Jazor.AspNetCore/**
+      - src/Jazor.AspNetCore.Dev/**
       - src/ECMAScript.WebIDL.Generator/**
       - scripts/csharp/verify-*-nodeapi.cs
       - scripts/csharp/verify-nodeapi-pipeline.cs
+  pull_request:
+    branches: [main]
+    paths: *nodeapi-paths
 
 permissions:
   contents: read
@@ -27,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-15-intel, macos-15]
+        os: [windows-latest, windows-11-arm, ubuntu-24.04, ubuntu-24.04-arm]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4

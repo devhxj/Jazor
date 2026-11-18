@@ -2,6 +2,11 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## Unreleased
+
+- 构建工具链和 SSR 切换至 `Jazor.LibNode 0.2.0`（Node.js 26.13.1），支持 Windows 和 glibc Linux 的 x64、ARM64。使用 macOS 或 Windows x86 的项目需将 Emit 和 SSR 移到受支持的平台，或继续使用迁移前的 Jazor 版本。
+- Switch build tooling and SSR to `Jazor.LibNode 0.2.0` (Node.js 26.13.1) on Windows and glibc Linux x64 and ARM64. For macOS or Windows x86, move Emit and SSR to a supported platform or stay on a Jazor release before the migration.
+
 ## 2026-11-16
 
 ### Jazor 1.4.3

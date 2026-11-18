@@ -5,9 +5,6 @@
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <!-- Libnode 20's V8 stack switching is incompatible with Windows CET shadow stacks.
-         Keep this local to the experimental WebIDL embedding host. -->
-    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <ItemGroup>

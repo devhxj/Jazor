@@ -46,7 +46,7 @@ Emit 在 MSBuild 阶段将 carrier 物化为标准项目，再经共享 `Jazor.N
 
 ## 恢复与检查
 
-NodeApi、LibNode、pnpm 引擎版本集中在 `Directory.Build.props`。当前固定组合为 NodeApi 0.9.36、LibNode 20.1800.215、`@pnpm/napi` 12.5.1；Windows apphost 使用已接受的 `CETCompat=false`。LibNode 仍属于 Node 20 系列。
+NodeApi、LibNode、pnpm 引擎版本集中在 `Directory.Build.props`。当前源码固定使用 NodeApi 0.9.36、Jazor.LibNode 0.2.0（Node.js 26.13.1）和 `@pnpm/napi` 12.5.1。Emit 按构建机 RID 加载包内原生资产，运行时资产由 NuGet 按部署目标 RID 解析。两条路径都覆盖 Windows 与 glibc Linux 的 x64、ARM64。Windows apphost 使用 `CETCompat=false`。
 
 原生 pnpm 引擎由宿主引导，并校验包 integrity。恢复通过其发布 API 读取 registry、认证、代理和 TLS 配置；安装固定使用 hoisted linker、自动 peer 安装和 `ignoreScripts=true`。不执行生命周期 shell scripts，不自动回退到 CLI。当前契约不承诺 pnpm CLI 的全部配置、workspace 或 lifecycle 行为。
 

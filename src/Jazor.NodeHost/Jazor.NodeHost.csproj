@@ -9,6 +9,6 @@
     <AssemblyMetadata Include="PnpmEngineVersion" Value="$(PnpmEngineVersion)" />
     <AssemblyMetadata Include="LightningCssWasmVersion" Value="$(LightningCssWasmVersion)" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
-    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
+    <PackageReference Include="Jazor.LibNode" Version="[$(LibNodeVersion)]" />
   </ItemGroup>
 </Project>

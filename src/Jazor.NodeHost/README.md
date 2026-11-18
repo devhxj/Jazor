@@ -6,9 +6,9 @@
 
 `NodeModuleRunner` 在独立 environment 中加载测试模块，按顺序等待注册的异步断言，并把异常传回 MSTest。测试专用 ESM loader 只映射 fixture 的本地替身；真实包由 pnpm 恢复。原生 pnpm 引擎位于调用者提供的共享 store，避免删除临时项目时遭遇 Windows 原生模块文件锁；当前 environment 销毁不会卸载进程级原生 addon。
 
-并行 environment 关闭各自的 inspector 和 debug signal handler，避免旧 libnode 重复初始化进程级 inspector 状态。当前 CLR Half 切片需要 `Math.f16round`，宿主使用 .NET `Half` 转换补齐旧 Node 缺失的 binary16 运算；相关 CLR 运行时场景验证舍入、NaN、无穷大与有符号零。
+并行 environment 关闭各自的 inspector 和 debug signal handler，避免重复初始化进程级 inspector 状态。Node.js 26 提供 CLR Half 切片所需的 `Math.f16round`，相关 CLR 运行时场景验证舍入、NaN、无穷大与有符号零。
 
-第三方版本集中在仓库 `Directory.Build.props`，当前 LibNode 为 `20.1800.215`。技术栈固定使用 `CETCompat=false` 的 apphost，仓库宿主和 NuGet 消费者由构建配置统一设置；此项是已接受的运行条件。该 LibNode 仍基于旧 Node 20 系列，升级此包不代表已经升级到新的 Node 主版本，版本升级仍须重新验证原生 addon、环境退出与发布闭包；不能把已有四平台结果外推到其他 RID 或 musl。
+第三方版本集中在仓库 `Directory.Build.props`。当前使用 `Jazor.LibNode 0.2.0`（Node.js 26.13.1），原生资产覆盖 Windows 和 glibc Linux 的 x64、ARM64。Windows 宿主和 NuGet 消费者使用 `CETCompat=false` 的 apphost。平台前置条件见[工具链指南](../../docs/03-guides/toolchain-migration.md)。
 
 宿主直接拥有 NodeApi runtime 与 JS 线程。SSR、测试模块与 Vite 生命周期取消通过 JS 线程调用 `TerminateEventLoop`，等待线程退出后才返回；已验证取消后定时器不再写文件、SSR 容量恢复和应用释放。它不能中断占满 JS 线程的同步无限循环。pnpm 原生安装 API 没有取消接口，恢复阶段等待安装实际结束后再传播取消，不能强行中止仍可能写 store 的 Rust 原生任务。
 

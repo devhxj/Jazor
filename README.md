@@ -30,6 +30,8 @@
 
 > Tooling and SSR run through in-process NodeApi, LibNode and the fixed pnpm API. The [toolchain guide](docs/03-guides/toolchain-migration.md) defines runtime conditions and upgrade steps; [current status](docs/04-roadmap/current-status.md) identifies support boundaries and verification commands.
 
+The next release switches Emit and SSR to Node.js 26 via `Jazor.LibNode` on Windows and glibc Linux x64 and ARM64. See the [platform requirements and migration steps](docs/03-guides/toolchain-migration.md) before upgrading from macOS or Windows x86.
+
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.

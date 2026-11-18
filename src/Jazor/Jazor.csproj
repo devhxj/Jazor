@@ -34,8 +34,13 @@
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
     <None Include="licenses\ilspy\LICENSE.txt" Pack="true" PackagePath="licenses/ilspy/LICENSE.txt" />
-    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\LICENSE" Pack="true" PackagePath="licenses/libnode/%(Filename)%(Extension)" />
-    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\NOTICE.txt" Pack="true" PackagePath="licenses/libnode/%(Filename)%(Extension)" />
+    <!-- The native packages share the license texts, but their notices can differ by RID. -->
+    <None Include="$(NuGetPackageRoot)jazor.libnode.win-x64\$(LibNodeVersion)\LICENSE.txt;$(NuGetPackageRoot)jazor.libnode.win-x64\$(LibNodeVersion)\NODE-LICENSE;$(NuGetPackageRoot)jazor.libnode.win-x64\$(LibNodeVersion)\EMBEDDING-LICENSE"
+          Pack="true" PackagePath="licenses/libnode/" />
+    <None Include="$(NuGetPackageRoot)jazor.libnode.win-x64\$(LibNodeVersion)\NOTICE" Pack="true" PackagePath="licenses/libnode/win-x64/" />
+    <None Include="$(NuGetPackageRoot)jazor.libnode.win-arm64\$(LibNodeVersion)\NOTICE" Pack="true" PackagePath="licenses/libnode/win-arm64/" />
+    <None Include="$(NuGetPackageRoot)jazor.libnode.linux-x64\$(LibNodeVersion)\NOTICE" Pack="true" PackagePath="licenses/libnode/linux-x64/" />
+    <None Include="$(NuGetPackageRoot)jazor.libnode.linux-arm64\$(LibNodeVersion)\NOTICE" Pack="true" PackagePath="licenses/libnode/linux-arm64/" />
     <!-- Tooling is a direct-reference capability. Only resource manifest location propagates. -->
     <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
@@ -60,7 +65,7 @@
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ICSharpCode.Decompiler" Version="$(DecompilerVersion)" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
-    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
+    <PackageReference Include="Jazor.LibNode" Version="[$(LibNodeVersion)]" />
     <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
     <PackageReference Include="Microsoft.NETCore.App.Host.win-arm64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
@@ -170,26 +175,17 @@
       </TfmSpecificPackageFile>
       <!-- Use literal filenames here: unqualified metadata inside this target
            batches against existing tool items and duplicates native payloads. -->
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x64\$(LibNodeVersion)\runtimes\win-x64\native\libnode.dll">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)jazor.libnode.win-x64\$(LibNodeVersion)\runtimes\win-x64\native\libnode.dll">
         <PackagePath>tools/net11.0/runtimes/win-x64/native/libnode.dll</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-arm64\$(LibNodeVersion)\runtimes\win-arm64\native\libnode.dll">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)jazor.libnode.win-arm64\$(LibNodeVersion)\runtimes\win-arm64\native\libnode.dll">
         <PackagePath>tools/net11.0/runtimes/win-arm64/native/libnode.dll</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x86\$(LibNodeVersion)\runtimes\win-x86\native\libnode.dll">
-        <PackagePath>tools/net11.0/runtimes/win-x86/native/libnode.dll</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.linux-x64\$(LibNodeVersion)\runtimes\linux-x64\native\libnode.so">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)jazor.libnode.linux-x64\$(LibNodeVersion)\runtimes\linux-x64\native\libnode.so">
         <PackagePath>tools/net11.0/runtimes/linux-x64/native/libnode.so</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.linux-arm64\$(LibNodeVersion)\runtimes\linux-arm64\native\libnode.so">
+      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)jazor.libnode.linux-arm64\$(LibNodeVersion)\runtimes\linux-arm64\native\libnode.so">
         <PackagePath>tools/net11.0/runtimes/linux-arm64/native/libnode.so</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.osx-x64\$(LibNodeVersion)\runtimes\osx-x64\native\libnode.dylib">
-        <PackagePath>tools/net11.0/runtimes/osx-x64/native/libnode.dylib</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.osx-arm64\$(LibNodeVersion)\runtimes\osx-arm64\native\libnode.dylib">
-        <PackagePath>tools/net11.0/runtimes/osx-arm64/native/libnode.dylib</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

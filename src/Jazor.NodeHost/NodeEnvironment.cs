@@ -98,13 +98,6 @@ internal sealed class NodeEnvironment : IDisposable
                 }
                 var completion = new JSThreadSafeFunction(maxQueueSize: 0, initialThreadCount: 1,
                     asyncResourceName: (JSValue)nameof(NodeEnvironment));
-                var math = JSValue.Global["Math"];
-                if (math["f16round"].IsUndefined())
-                {
-                    // This libnode predates ES2025 f16round. .NET Half provides
-                    // the required binary16 ties, signed zero, infinity and NaN.
-                    math["f16round"] = JSValue.CreateFunction("f16round", args => (double)(Half)(double)args[0]);
-                }
                 ready.SetResult(new(runtime, context.SynchronizationContext, completion));
                 try
                 {

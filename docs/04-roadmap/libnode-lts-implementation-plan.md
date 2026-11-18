@@ -1,6 +1,6 @@
 # Jazor.LibNode LTS 实施计划
 
-> 状态：方案评估与实施计划，尚未开始原生移植，未发布 `Jazor.LibNode`。核查日期：2026-11-16。对应 [issue #139](https://github.com/devhxj/Jazor/issues/139)，顺序为普通类库导入 #4 → 本计划 → `.jazor` #138。当前产品仍使用微软 LibNode；支持声明以[当前状态](./current-status.md)为准。
+> 2026-11-18 更新：[Libnode 0.2.0](https://github.com/devhxj/Libnode/releases/tag/v0.2.0) 已发布。Jazor 源码接入 Node.js 26.13.1，验收目标为 Windows 和 glibc Linux 的 x64、ARM64。macOS 暂缓，Windows x86 退出原生资产范围。下文保留 2026-11-16 的方案和原始基线，当前平台与迁移路径见[工具链指南](../03-guides/toolchain-migration.md)。
 
 ## 结论与首个交付
 

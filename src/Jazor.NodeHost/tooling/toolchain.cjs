@@ -144,7 +144,7 @@ async function rootMatchesLock(pnpm, root, manifest) {
 async function loadVite(projectDirectory) {
         const requireFromProject = createRequire(path.join(projectDirectory, 'package.json'));
         if (process.platform === 'win32' && process.arch === 'x64' && process.config.variables.node_target_type === 'shared_library') {
-            // napi-rs mistakes Microsoft's MSVC libnode shared_library for MinGW.
+            // Rolldown's x64 loader mistakes the MSVC libnode shared_library for MinGW.
             // Use its explicit native-binding contract only while loading rolldown.
             // Replacing this environment's env object avoids writing the OS-wide
             // environment through Node's special process.env setter properties.

@@ -30,6 +30,8 @@
 
 > 工具链与 SSR 使用进程内 NodeApi、LibNode 和固定 pnpm API。运行条件与升级步骤见[工具链指南](docs/03-guides/toolchain-migration.md)，支持边界与验证入口见[当前状态](docs/04-roadmap/current-status.md)。
 
+下一版本的 Emit 和 SSR 将通过 `Jazor.LibNode` 使用 Node.js 26，覆盖 Windows 和 glibc Linux 的 x64、ARM64。从 macOS 或 Windows x86 升级前，请查阅[平台要求和迁移步骤](docs/03-guides/toolchain-migration.md)。
+
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
 Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
