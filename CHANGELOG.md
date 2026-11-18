@@ -4,6 +4,12 @@
 
 ## 2026-11-18
 
+### Jazor 2.1.0-preview.3
+
+Jolt CLI 和 VS Code 扩展使用相同的语言服务。修复 Windows 上通过 .NET 工具的 `jolt.cmd` 启动入口运行编辑器与安装验收的问题。前两个预览标签均在上传前被门禁拦截。
+
+Install `Jazor.Jolt` version `2.1.0-preview.3` from NuGet and the matching VSIX from this release. The Windows editor client now starts the SDK-installed command shim.
+
 ### Jazor 2.1.0-preview.2
 
 提供 Jolt CLI 和 VS Code 预览扩展。通过 NuGet 安装 `Jazor.Jolt`，从本次 GitHub Release 下载同版本的 VSIX。修复了发布清单回归测试；首个预览标签在上传前被该检查拦截。

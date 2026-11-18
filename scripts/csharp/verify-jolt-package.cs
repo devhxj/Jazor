@@ -67,21 +67,25 @@ try
         new XElement("packageSources", new XElement("clear"), new XElement("add", new XAttribute("key", "jolt"), new XAttribute("value", feed)))))
         .Save(config);
     await RunAsync("dotnet", consumer, "tool", "install", packageId, "--version", version, "--tool-path", tools, "--configfile", config, "--no-cache");
-    var commandPath = Path.Combine(tools, OperatingSystem.IsWindows() ? "jolt.exe" : "jolt");
+    // RID tools use an SDK-generated .cmd launcher on Windows.
+    var commandPath = OperatingSystem.IsWindows() ? "cmd.exe" : Path.Combine(tools, "jolt");
     var output = Path.Combine(consumer, ".jolt");
     var npmStore = Path.Combine(scratch.FullName, "npm-store");
-    await RunProcessAsync(commandPath, consumer, npmStore, ["build", ".", "--output", output]);
+    await RunInstalledAsync("build");
     var app = await File.ReadAllTextAsync(Path.Combine(output, "App.mjs"));
     if (!app.Contains("reka-ui", StringComparison.Ordinal)
         || !File.Exists(Path.Combine(output, "App.mjs.map"))
         || !File.Exists(Path.Combine(output, "CounterButton.mjs")))
         throw new InvalidOperationException("Installed Jolt did not emit the npm import, author source map and local child module.");
 
-    await RunProcessAsync(commandPath, consumer, npmStore, ["bundle", "."]);
+    await RunInstalledAsync("bundle");
     if (!File.Exists(Path.Combine(consumer, "dist", "index.html")))
         throw new InvalidOperationException("Installed Jolt did not produce the Vite release bundle.");
 
     Console.WriteLine($"Verified {packageId} {version} for {rid} and inspected the four RID packages.");
+
+    Task RunInstalledAsync(string verb) => RunProcessAsync(commandPath, consumer, npmStore,
+        OperatingSystem.IsWindows() ? ["/d", "/c", "jolt.cmd", verb, "."] : [verb, "."], tools);
 }
 finally
 {
@@ -91,9 +95,11 @@ finally
 static Task RunAsync(string program, string workingDirectory, params string[] arguments)
     => RunProcessAsync(program, workingDirectory, null, arguments);
 
-static async Task RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments)
+static async Task RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments, string? toolDirectory = null)
 {
     var start = new ProcessStartInfo(program) { WorkingDirectory = workingDirectory, UseShellExecute = false };
+    if (toolDirectory is not null)
+        start.Environment["PATH"] = toolDirectory + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
     if (npmStore is not null)
         start.Environment["JazorPnpmStoreDirectory"] = npmStore;
     foreach (var argument in arguments)

@@ -5,7 +5,10 @@ let client;
 
 async function activate(context) {
     const server = vscode.workspace.getConfiguration('jolt').get('serverPath');
-    const command = !server ? { command: 'jolt', args: ['lsp'] }
+    const installed = process.platform === 'win32'
+        ? { command: process.env.ComSpec || 'cmd.exe', args: ['/d', '/c', 'jolt.cmd', 'lsp'] }
+        : { command: 'jolt', args: ['lsp'] };
+    const command = !server ? installed
         : server.endsWith('.dll') ? { command: 'dotnet', args: [server] } : { command: server };
     const watcher = vscode.workspace.createFileSystemWatcher('**/{*.jazor,package.json,pnpm-lock.yaml}');
     context.subscriptions.push(watcher);
