@@ -4,10 +4,10 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 
 ## 运行示例
 
-预览版通过 NuGet 分发 CLI，VS Code 扩展通过同一 GitHub 预发布的 `.vsix` 附件分发。安装 CLI 后在 VS Code 执行 **Extensions: Install from VSIX**，选择对应版本的附件。 [Jolt 预览版](https://github.com/devhxj/Jazor/releases/tag/v2.1.0-preview.1)
+预览版通过 NuGet 分发 CLI，VS Code 扩展通过同一 GitHub 预发布的 `.vsix` 附件分发。安装 CLI 后在 VS Code 执行 **Extensions: Install from VSIX**，选择对应版本的附件。 [Jolt 预览版](https://github.com/devhxj/Jazor/releases/tag/v2.1.0-preview.2)
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.1.0-preview.1
+dotnet tool install --global Jazor.Jolt --version 2.1.0-preview.2
 ```
 
 在仓库根目录用 `global.json` 指定的 SDK 执行以下命令，打开终端打印的网址。首次运行会还原 NuGet 和 npm 依赖。

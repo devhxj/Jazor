@@ -4,6 +4,12 @@
 
 ## 2026-11-18
 
+### Jazor 2.1.0-preview.2
+
+提供 Jolt CLI 和 VS Code 预览扩展。通过 NuGet 安装 `Jazor.Jolt`，从本次 GitHub Release 下载同版本的 VSIX。修复了发布清单回归测试；首个预览标签在上传前被该检查拦截。
+
+Install `Jazor.Jolt` version `2.1.0-preview.2` from NuGet and the matching VSIX from this GitHub release. The initial preview tag stopped at the package catalog check before upload.
+
 ### Jazor 2.1.0-preview.1
 
 中文 | English
