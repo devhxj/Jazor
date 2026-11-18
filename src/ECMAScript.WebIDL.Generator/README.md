@@ -11,7 +11,7 @@
 
 ## 运行
 
-本工具使用共享 NodeApi 宿主。固定组合为 `Microsoft.JavaScript.NodeApi 0.9.36`、`Jazor.LibNode 0.2.0`、`@pnpm/napi 12.5.1` 和 `TypeScript 5.9.3`。Windows 与 glibc Linux 的 x64、ARM64 采集及生成基线由 [CI](https://github.com/devhxj/Jazor/actions/workflows/nodeapi-verify.yml) 检查。平台条件见[工具链指南](../../docs/03-guides/toolchain-migration.md)。
+本工具使用共享 NodeApi 宿主。固定组合为 `Microsoft.JavaScript.NodeApi 0.9.39`、`Microsoft.JavaScript.LibNode 26.0.18`、`@pnpm/napi 12.5.1` 和 `TypeScript 5.9.3`。Windows 与 glibc Linux 的 x64、ARM64 采集及生成基线由 [CI](https://github.com/devhxj/Jazor/actions/workflows/nodeapi-verify.yml) 检查。平台条件见[工具链指南](../../docs/03-guides/toolchain-migration.md)。
 
 首次采集时，C# 从 npm registry 引导下载固定版本的 pnpm loader 与当前平台原生包，并校验 registry 提供的 SHA-512。引擎缓存位于 `node/obj/pnpm-engine/`；随后在内嵌 Node 中直接调用 pnpm `install` API，从 `node/package.json` 恢复应用依赖。`node/pnpm-lock.yaml` 是权威锁文件，有 lock 时必须 frozen，失败不自动重新解析。共享 store 位于仓库 `.tmp/webidl-pnpm-store/`。
 

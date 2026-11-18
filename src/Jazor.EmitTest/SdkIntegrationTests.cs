@@ -172,8 +172,15 @@ public sealed partial class SdkIntegrationTests
             .ToArray();
 
         StringAssert.Contains(nuspec, "id=\"Microsoft.JavaScript.NodeApi\"", StringComparison.Ordinal);
-        StringAssert.Contains(nuspec, "id=\"Jazor.LibNode\"", StringComparison.Ordinal);
-        Assert.IsFalse(nuspec.Contains("Microsoft.JavaScript.LibNode", StringComparison.OrdinalIgnoreCase));
+        var nativeDependencies = XDocument.Parse(nuspec).Descendants()
+            .Where(element => element.Name.LocalName == "dependency")
+            .Select(element => (string?)element.Attribute("id"))
+            .Where(id => id?.Contains("LibNode", StringComparison.OrdinalIgnoreCase) == true)
+            .ToArray();
+        CollectionAssert.AreEquivalent(new[] {
+            "Microsoft.JavaScript.LibNode.win-x64", "Microsoft.JavaScript.LibNode.win-arm64",
+            "Microsoft.JavaScript.LibNode.linux-x64", "Microsoft.JavaScript.LibNode.linux-arm64"
+        }, nativeDependencies);
         Assert.IsFalse(nuspec.Contains("DenoHost", StringComparison.Ordinal));
         Assert.IsFalse(entryNames.Any(path => path.Contains("DenoHost", StringComparison.OrdinalIgnoreCase) ||
             path.EndsWith("/deno.exe", StringComparison.OrdinalIgnoreCase) || path.EndsWith("/deno", StringComparison.OrdinalIgnoreCase)));
@@ -205,8 +212,7 @@ public sealed partial class SdkIntegrationTests
         };
         CollectionAssert.AreEquivalent(nativePaths, entryNames
             .Where(path => path.StartsWith("tools/net11.0/runtimes/", StringComparison.Ordinal)).ToArray());
-        foreach (var file in new[] { "LICENSE.txt", "NODE-LICENSE", "EMBEDDING-LICENSE",
-            "win-x64/NOTICE", "win-arm64/NOTICE", "linux-x64/NOTICE", "linux-arm64/NOTICE" })
+        foreach (var file in new[] { "LICENSE", "NOTICE.txt" })
         {
             Assert.IsNotNull(archive.GetEntry($"licenses/libnode/{file}"), file);
         }

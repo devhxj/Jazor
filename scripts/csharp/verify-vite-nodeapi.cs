@@ -20,8 +20,13 @@ if (args.Length == 0)
     await File.WriteAllTextAsync(Path.Combine(projectDirectory, "entry.js"), "import './probe.css'; import { ref } from 'vue'; globalThis.probe = ref(42).value;");
     await File.WriteAllTextAsync(Path.Combine(projectDirectory, "probe.css"), ".probe { color: rgb(255, 0, 0); padding: 0px 0px 0px 0px; }");
 }
-await NodeToolchain.RestoreAsync(projectDirectory, Path.Combine(projectDirectory, ".store"), CancellationToken.None, Console.Out);
 using var environment = new NodeEnvironment(projectDirectory);
+// Initialize libnode before the first managed TLS request so system OpenSSL
+// resolves its own symbols even when the embedded runtime loads first.
+using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+using var registry = await client.GetAsync("https://registry.npmjs.org/-/ping");
+registry.EnsureSuccessStatusCode();
+await NodeToolchain.RestoreAsync(projectDirectory, Path.Combine(projectDirectory, ".store"), CancellationToken.None, Console.Out);
 var result = await environment.InvokeAsync(NodeToolchain.MaterializeBridge(projectDirectory), "verifyVite", projectDirectory);
 using var document = JsonDocument.Parse(result);
 if (document.RootElement.GetProperty("pid").GetInt32() != Environment.ProcessId)

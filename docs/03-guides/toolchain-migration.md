@@ -8,11 +8,11 @@
 - Windows 必须运行当前输出中 `CETCompat=false` 的 apphost。仓库和 NuGet 消费者的构建配置负责设置，不修改系统设置。
 - Jazor 维护的安装、转译、开发服务器和 SSR 路径直接调用 API，不启动 Node、npm、pnpm、tsc 或 Deno CLI，也不在 API 失败时切换到命令行。
 - `pnpm-lock.yaml` 是依赖锁；共享 store 由 `JazorPnpmStoreDirectory` 或 Emit `--pnpm-store` 指定。应用配置和锁文件保持作者所有权。
-- 源码中的 `Jazor.LibNode 0.2.0` 使用 Node.js 26.13.1，提供 `win-x64`、`win-arm64`、`linux-x64` 和 `linux-arm64`。Windows 需要对应架构的 Microsoft Visual C++ 2015–2022 Redistributable。Linux 需要 glibc 2.39 和提供 `GLIBCXX_3.4.32` 的 libstdc++。
+- Jazor 使用微软 LibNode `26.0.18`（Node.js 26.13.1）的 `win-x64`、`win-arm64`、`linux-x64` 和 `linux-arm64` 原生资产。Linux 需要 glibc 2.35 或更新版本。
 
-## 从微软 LibNode 迁移
+## 升级至 LibNode 26
 
-按 lockstep 升级 Jazor 系列包。如果项目直接引用 `Microsoft.JavaScript.LibNode` 或其 RID 子包，移除此引用，由 `Jazor` 统一引入新的原生运行库。用切换后的版本重新构建并发布到干净目录。
+按 lockstep 升级 Jazor 系列包。如果项目直接引用旧版 `Microsoft.JavaScript.LibNode` 或其 RID 子包，移除此引用，由 `Jazor` 统一选择原生资产。用切换后的版本重新构建并发布到干净目录。
 
 使用 macOS 或 Windows x86 的项目，可以把 Emit 和 SSR 迁至上述平台，或继续使用迁移前的 Jazor 版本。静态浏览器产物仍可部署到任意能托管静态文件的平台。
 

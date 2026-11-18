@@ -1,6 +1,6 @@
 # Jazor.LibNode LTS 实施计划
 
-> 2026-11-18 更新：[Libnode 0.2.0](https://github.com/devhxj/Libnode/releases/tag/v0.2.0) 已发布。Jazor 源码接入 Node.js 26.13.1，验收目标为 Windows 和 glibc Linux 的 x64、ARM64。macOS 暂缓，Windows x86 退出原生资产范围。下文保留 2026-11-16 的方案和原始基线，当前平台与迁移路径见[工具链指南](../03-guides/toolchain-migration.md)。
+> 2026-11-18 更新：[自建 Libnode 0.2.0](https://github.com/devhxj/Libnode/releases/tag/v0.2.0) 已发布。Jazor 2.0.0 选用微软 LibNode 26.0.18 和 NodeApi 0.9.39，原生资产覆盖 Windows 和 glibc Linux 的 x64、ARM64。自建包的 Linux OpenSSL 共存问题由 [Libnode #1](https://github.com/devhxj/Libnode/issues/1) 跟踪。下文保留原始方案和基线，平台与迁移路径见[工具链指南](../03-guides/toolchain-migration.md)。
 
 ## 结论与首个交付
 

@@ -60,7 +60,7 @@ DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable�
 
 ## LibNode LTS 集成
 
-原生移植由 [Libnode](https://github.com/devhxj/Libnode) 交付。Jazor 源码使用 `Jazor.LibNode 0.2.0` 和现有的微软托管 NodeApi，构建宿主与 SSR 目标覆盖 Windows 和 glibc Linux 的 x64、ARM64。macOS 暂缓，Windows x86 退出原生资产范围。
+Jazor 采用微软 LibNode 26.0.18 和 NodeApi 0.9.39，构建宿主与 SSR 目标覆盖 Windows 和 glibc Linux 的 x64、ARM64。macOS 暂缓，Windows x86 退出原生资产范围。自建原生库研究由 [Libnode](https://github.com/devhxj/Libnode) 维护。
 
 原生 ABI 和上游测试的设计见 [实施计划](./libnode-lts-implementation-plan.md)。Jazor 侧通过 NodeApi、pnpm、Vite、WebIDL 和 NuGet/SSR 消费者门禁验证集成，发布沿用 lockstep 版本和官方工作流。平台要求与迁移步骤见[工具链指南](../03-guides/toolchain-migration.md)。
 
