@@ -18,11 +18,15 @@ internal sealed class Projection(JoltDocument document, string name, string comp
     internal string Name { get; } = name;
     internal string Namespace { get; } = componentNamespace;
     internal string StateName => "__State" + Name;
+    internal JoltTypeParameter? TypeParameter { get; } = document.Nodes.OfType<JoltTypeParameter>().FirstOrDefault();
+    internal string StateMetadataName => TypeParameter is null ? StateName : StateName + "`1";
+    private string StateType => TypeParameter is null ? StateName : $"{StateName}<{TypeParameter.Name}>";
     internal string ModuleName => "__Module" + Name;
     internal JoltDocument Document { get; } = document;
     internal SourceText Source { get; } = SourceText.From(document.Source);
     internal SourceText? GeneratedText { get; private set; }
     internal List<JoltProjectionSpan> Spans { get; } = [];
+    internal List<JoltMarkupBinding> MarkupBindings { get; } = [];
     internal Dictionary<string, Intrinsic> Intrinsics { get; } = new(StringComparer.Ordinal);
     internal IEnumerable<ComponentContract> Dependencies => Intrinsics.Values.Select(intrinsic => intrinsic.Component)
         .OfType<ComponentContract>().Distinct();
@@ -31,20 +35,26 @@ internal sealed class Projection(JoltDocument document, string name, string comp
     private readonly List<string> _scopes = [];
     private readonly List<(TextSpan Generated, TextSpan Source)> _anchors = [];
     private readonly List<(TextSpan Generated, JoltExpression Source, ComponentProperty Property)> _literalChecks = [];
+    private readonly List<(TextSpan Generated, JoltElement Element, ComponentContract Component)> _typeProbes = [];
     private IReadOnlyList<ComponentContract> _components = [];
+    private IReadOnlyDictionary<int, string?>? _typeArguments;
     private int _nextLocal;
 
-    internal SyntaxTree Build(IReadOnlyList<ComponentContract>? components, CSharpParseOptions parseOptions)
+    internal SyntaxTree Build(IReadOnlyList<ComponentContract>? components, CSharpParseOptions parseOptions,
+        IReadOnlyDictionary<int, string?>? typeArguments = null)
     {
         Spans.Clear();
+        MarkupBindings.Clear();
         _code.Clear();
         Intrinsics.Clear();
         _methods.Clear();
         _scopes.Clear();
         _anchors.Clear();
         _literalChecks.Clear();
+        _typeProbes.Clear();
         _nextLocal = 0;
         _components = components ?? [];
+        _typeArguments = typeArguments;
         Write("#nullable enable\nusing System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing JoltAuthoring;\n");
         foreach (var import in Document.Nodes.OfType<JoltUsing>().Where(import => !import.Code.Trim().StartsWith("Npm.", StringComparison.Ordinal)))
         {
@@ -54,19 +64,29 @@ internal sealed class Projection(JoltDocument document, string name, string comp
                 Write(";");
             Write("\n");
         }
-        Write($"namespace {Namespace};\npublic static class {ModuleName} {{\npublic sealed class {StateName} {{\n");
-        foreach (var code in Document.Nodes.OfType<JoltCode>())
-        {
-            Copy(code.CodeSpan);
-            Write("\n");
-        }
+        Write($"namespace {Namespace};\npublic static class {ModuleName} {{\n");
+        EmitAuthorCode(parseOptions);
 
         if (components is not null)
         {
             Write($"public object {Render}() {{\n");
-            var nodes = BeginNodes();
-            EmitNodes(Document.Nodes, nodes);
-            Write($"return {nodes};\n}}\n");
+            var content = Document.Nodes.Where(node => node is not (JoltUsing or JoltCode or JoltTypeParameter or JoltScopedStyle))
+                .Where(node => node is not JoltText text || !string.IsNullOrWhiteSpace(text.Text)).ToArray();
+            if (content is [JoltElement { Name.Length: > 0 } element])
+            {
+                // Vue applies the parent's scope ID to a child root VNode. Author
+                // whitespace framing the document must not turn it into a fragment.
+                Write("return ");
+                EmitElement(element);
+                Write(";\n");
+            }
+            else
+            {
+                var nodes = BeginNodes();
+                EmitNodes(Document.Nodes, nodes);
+                Write($"return {nodes};\n");
+            }
+            Write("}\n");
             foreach (var method in _methods)
                 Write(method);
             foreach (var scope in _scopes)
@@ -77,6 +97,52 @@ internal sealed class Projection(JoltDocument document, string name, string comp
         GeneratedText = SourceText.From(_code.ToString());
         return CSharpSyntaxTree.ParseText(GeneratedText, parseOptions, Document.Path + ".g.cs");
     }
+
+    private void EmitAuthorCode(CSharpParseOptions parseOptions)
+    {
+        var instanceSpans = new List<TextSpan>();
+        foreach (var code in Document.Nodes.OfType<JoltCode>())
+        {
+            const string prefix = "class Component {\n";
+            var parsed = SyntaxFactory.ParseCompilationUnit(prefix + code.Code + "\n}", options: parseOptions);
+            var declaration = (ClassDeclarationSyntax)parsed.Members[0];
+            int cursor = code.CodeSpan.Start;
+            foreach (var member in declaration.Members.Where(IsModuleMember))
+            {
+                // 外围条件编译指令留在原块以维持配对。Roslyn 已选择当前生效的声明。
+                var lastDirective = member.GetLeadingTrivia().LastOrDefault(trivia => trivia.IsDirective);
+                var nextDirective = member.GetTrailingTrivia().FirstOrDefault(trivia => trivia.IsDirective);
+                int start = code.CodeSpan.Start + (lastDirective.IsDirective ? lastDirective.FullSpan.End : member.FullSpan.Start) - prefix.Length;
+                int end = Math.Min(code.CodeSpan.Start + (nextDirective.IsDirective ? nextDirective.FullSpan.Start : member.FullSpan.End) - prefix.Length,
+                    code.CodeSpan.End);
+                if (start > cursor)
+                    instanceSpans.Add(TextSpan.FromBounds(cursor, start));
+                Copy(TextSpan.FromBounds(start, end));
+                Write("\n");
+                cursor = end;
+            }
+            if (cursor <= code.CodeSpan.End)
+                instanceSpans.Add(TextSpan.FromBounds(cursor, code.CodeSpan.End));
+        }
+        // 将模块成员交给 AstConverter 生成具名导出，组件实例仍持有自己的状态。
+        Write($"private sealed class {StateName}");
+        if (TypeParameter is { } parameter)
+        {
+            Write("<");
+            Copy(parameter.NameSpan);
+            Write(">");
+        }
+        Write(" {\n");
+        foreach (var span in instanceSpans)
+        {
+            Copy(span);
+            Write("\n");
+        }
+    }
+
+    private static bool IsModuleMember(MemberDeclarationSyntax member) =>
+        member is MethodDeclarationSyntax or FieldDeclarationSyntax &&
+        member.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.StaticKeyword) || modifier.IsKind(SyntaxKind.ConstKeyword));
 
     internal string? GetExpressionType(JoltExpression expression, SemanticModel model)
     {
@@ -102,6 +168,30 @@ internal sealed class Projection(JoltDocument document, string name, string comp
                 continue;
             Report("JOLT1006", check.Source.CodeSpan, $"Prop '{check.Property.Name}' expects a constant from {string.Join(", ", check.Property.Literals!)}.");
         }
+    }
+
+    internal IReadOnlyDictionary<int, string?> BindTypeArguments(SemanticModel model)
+    {
+        var root = model.SyntaxTree.GetRoot();
+        return _typeProbes.ToDictionary(probe => probe.Element.NameSpan.Start, probe =>
+        {
+            var call = root.FindNode(probe.Generated, getInnermostNodeForTie: true);
+            var method = model.GetSymbolInfo(call).Symbol as IMethodSymbol;
+            var argument = method?.TypeArguments.Single();
+            if (argument is null || argument.TypeKind == TypeKind.Error || argument.IsAnonymousType)
+                return null;
+            var constraint = probe.Component.TypeParameter!.NpmConstraint;
+            if (constraint is not null && !constraint.Contains(argument.SpecialType switch
+                {
+                    SpecialType.System_String => "string",
+                    SpecialType.System_Byte or SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_UInt16
+                        or SpecialType.System_Int32 or SpecialType.System_UInt32 or SpecialType.System_Single or SpecialType.System_Double => "number",
+                    SpecialType.System_Boolean => "boolean",
+                    _ => "",
+                }, StringComparer.Ordinal))
+                return null;
+            return argument.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        });
     }
 
     internal Location Location(TextSpan span) => Microsoft.CodeAnalysis.Location.Create(Document.Path, span, Source.Lines.GetLinePositionSpan(span));
@@ -153,6 +243,10 @@ internal sealed class Projection(JoltDocument document, string name, string comp
                     EmitNodes(loop.Children, target);
                     Write("}\n");
                     break;
+                case JoltElement { Name.Length: 0 } incomplete:
+                    // Razor can produce an unnamed element while the author has typed only '<'.
+                    Report("JOLT1017", incomplete.NameSpan, "Expected an element name.");
+                    break;
                 case JoltElement element:
                     Append(target, node, () => EmitElement(element));
                     break;
@@ -164,8 +258,11 @@ internal sealed class Projection(JoltDocument document, string name, string comp
     {
         if (element.Name == "slot")
         {
-            string name = ComponentContract.Text(element.Attributes.FirstOrDefault(attribute => attribute.Name == "name")) ?? "default";
-            Call(new(IntrinsicKind.Outlet, element.Span, name), "object", $"{StateName} state, object[] props, global::System.Func<object> fallback");
+            var nameAttribute = element.Attributes.FirstOrDefault(attribute => attribute.Name == "name");
+            string name = ComponentContract.Text(nameAttribute) ?? "default";
+            if (nameAttribute?.Value is [JoltText outlet] && outlet.Span.Length > 0)
+                MarkupBindings.Add(new(new(Document.Path, JoltMarkupKind.Slot, name), outlet.Span, IsDeclaration: true));
+            Call(new(IntrinsicKind.Outlet, element.Span, name), "object", $"{StateType} state, object[] props, global::System.Func<object> fallback");
             Write("this, ");
             EmitProperties(element.Attributes.Where(attribute => attribute.Name != "name"), null, element);
             Write(", ");
@@ -175,20 +272,79 @@ internal sealed class Projection(JoltDocument document, string name, string comp
         }
 
         var candidates = _components.Where(component => component.Name == element.Name).ToArray();
-        var component = candidates.FirstOrDefault();
+        var component = candidates.Length == 1 ? candidates[0] : null;
         if (candidates.Length > 1)
             Report("JOLT1002", element.NameSpan, $"Component '{element.Name}' is ambiguous.");
         else if (component is null && char.IsUpper(element.Name[0]))
             Report("JOLT1001", element.NameSpan, $"Component '{element.Name}' was not found.");
 
+        if (component is { Npm: null })
+        {
+            var symbol = new JoltMarkupSymbol(component.Path, JoltMarkupKind.Component);
+            MarkupBindings.Add(new(symbol, element.NameSpan));
+            if (element.ClosingNameSpan is { } closing)
+                MarkupBindings.Add(new(symbol, closing));
+        }
+
+        var bound = component;
+        var attributes = element.Attributes.AsEnumerable();
+        bool typeProbe = false;
+        if (component?.TypeParameter is { } parameter)
+        {
+            var explicitType = element.Attributes.FirstOrDefault(attribute => attribute.Name == parameter.Name);
+            attributes = attributes.Where(attribute => attribute != explicitType);
+            if (_typeArguments is null)
+                typeProbe = EmitTypeProbe(element, component, parameter, explicitType);
+            var argument = _typeArguments?.GetValueOrDefault(element.NameSpan.Start);
+            if (_typeArguments is not null && argument is null)
+                Report("JOLT1021", explicitType?.NameSpan ?? element.NameSpan,
+                    $"Cannot bind type parameter '{parameter.Name}' of '{element.Name}'. Supply a supported type or a typed collection.");
+            // The probe only binds input expressions. A failed final binding already
+            // has a type-parameter diagnostic at its author span.
+            bound = component.Specialize(argument ?? "object");
+        }
         Call(new(IntrinsicKind.Element, element.NameSpan, element.Name, component), "object", "object[] props, object children");
-        EmitProperties(element.Attributes, component, element);
+        EmitProperties(attributes, bound, element);
         Write(", ");
         if (component is null)
             EmitSlotBody(element.Children, invoke: true);
         else
-            EmitSlots(component, element);
+            EmitSlots(bound!, element);
+        Write(typeProbe ? "))" : ")");
+    }
+
+    private bool EmitTypeProbe(JoltElement element, ComponentContract component, ComponentTypeParameter parameter, JoltAttribute? explicitType)
+    {
+        var method = IntrinsicPrefix + "Infer" + _typeProbes.Count;
+        var witness = component.Properties.FirstOrDefault(property => property.Type is { } type &&
+            (type == parameter.Name + "[]" || type == $"global::System.Collections.Generic.IReadOnlyList<{parameter.Name}>"));
+        var attribute = element.Attributes.FirstOrDefault(attribute => witness is not null &&
+            string.Equals(attribute.Name, witness.Name, StringComparison.OrdinalIgnoreCase));
+        bool explicitArgument = explicitType?.Value is [JoltText explicitText] &&
+            SyntaxFactory.ParseTypeName(explicitText.Text) is { ContainsDiagnostics: false } parsed && parsed.FullSpan.Length == explicitText.Text.Length;
+        if (explicitType is not null && !explicitArgument || !explicitArgument && attribute?.Value is not [JoltExpression])
+            return false;
+        // The probe is a separate expression in a well-formed call. Only its
+        // constructed Roslyn symbol is read, and no probe reaches lowering.
+        if (_typeProbes.Count == 0)
+            _methods.Add("private static object __JoltBindType(object witness, object element) => element;\n");
+        Write("__JoltBindType(");
+        var start = _code.Length;
+        Write(method);
+        if (explicitArgument)
+        {
+            Write("<");
+            Copy(((JoltText)explicitType!.Value[0]).Span);
+            Write(">");
+        }
+        Write("(");
+        if (!explicitArgument)
+            Copy(((JoltExpression)attribute!.Value[0]).CodeSpan);
         Write(")");
+        _typeProbes.Add((TextSpan.FromBounds(start, _code.Length), element, component));
+        Write(", ");
+        _methods.Add($"private static object {method}<{parameter.Name}>({(explicitArgument ? "" : witness!.Type + " value")}) => throw new global::System.NotSupportedException();\n");
+        return true;
     }
 
     private void EmitProperties(IEnumerable<JoltAttribute> attributes, ComponentContract? component, JoltElement element)
@@ -211,6 +367,8 @@ internal sealed class Projection(JoltDocument document, string name, string comp
             if (component?.Npm is { } npm && property is { Type: null })
                 Report("JOLT1014", attribute.NameSpan,
                     $"npm component '{npm.ModuleSpecifier}/{npm.ExportName}' member '{property.Name}' has an unsupported type ({property.Unsupported}).");
+            if (component is { Npm: null } && property is not null)
+                MarkupBindings.Add(new(new(component.Path, JoltMarkupKind.Property, property.Name), attribute.NameSpan));
 
             var span = attribute.Value.OfType<JoltExpression>().FirstOrDefault()?.CodeSpan ??
                 attribute.Value.OfType<JoltText>().FirstOrDefault()?.Span ?? attribute.NameSpan;
@@ -292,6 +450,9 @@ internal sealed class Projection(JoltDocument document, string name, string comp
         {
             var directive = template.Attributes.First(attribute => attribute.Name.StartsWith('#'));
             string slot = directive.Name[1..];
+            if (component.Npm is null && component.Slots.Any(candidate => candidate.Name == slot))
+                MarkupBindings.Add(new(new(component.Path, JoltMarkupKind.Slot, slot),
+                    TextSpan.FromBounds(directive.NameSpan.Start + 1, directive.NameSpan.End)));
             var context = template.Attributes.FirstOrDefault(attribute => attribute.Name == "context");
             EmitSlot(template.Children, slot, directive.NameSpan, context, component, seen);
         }

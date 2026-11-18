@@ -2,7 +2,7 @@
 
 Install the matching `Jazor.Jolt` .NET tool, then download the `.vsix` from the [GitHub release](https://github.com/devhxj/Jazor/releases) and select **Extensions → Install from VSIX** in VS Code.
 
-The client opens `.jazor` files as Jolt documents and starts the Jolt language server over stdio. It starts `jolt lsp` from PATH by default. Set `jolt.serverPath` to a standalone language-server executable or `Jolt.LanguageServer.dll` when developing from checkout.
+The client opens `.jazor` files as Jolt documents and starts the Jolt language server over stdio. On Windows it looks in the .NET global tool directory for `jolt.cmd`, then on PATH. Set `jolt.serverPath` to the packaged Jolt CLI executable or `Jolt.LanguageServer.dll` when developing from checkout. Use the packaged apphost to exercise npm tooling on Windows.
 
 Restore client dependencies with the repository Node host and build the language server from the repository root.
 
@@ -20,4 +20,4 @@ The stdio regression can run without an editor.
 dotnet run --file src/Jolt.LanguageServer/verify.cs
 ```
 
-To exercise activation and completion in a separate VS Code extension host, pass `--extensionTestsPath` with the absolute path to `editors/jolt/verify.cjs`. The test workspace needs a `Counter.jazor` containing `<p>@Count</p>` on the first line and `@code { private int Count = 1; }` on the second. Use a separate `--user-data-dir` and `--extensions-dir` for the test host.
+To exercise completion, references, rename, undo and formatting in a separate VS Code extension host, pass `--extensionTestsPath` with the absolute path to `editors/jolt/verify.cjs`. The test workspace needs a `Counter.jazor` containing `<p>@Count</p>` on the first line and `@code { private int Count = 1; }` on the second. Use a separate `--user-data-dir` and `--extensions-dir` for the test host. Set `JOLT_TEST_INSTALLED=1` to exercise discovery of an installed CLI, or `JOLT_TEST_SERVER` to select a candidate apphost.

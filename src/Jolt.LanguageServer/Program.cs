@@ -6,4 +6,4 @@ Console.CancelKeyPress += (_, args) =>
     args.Cancel = true;
     shutdown.Cancel();
 };
-await new Server(Console.OpenStandardInput(), Console.OpenStandardOutput()).RunAsync(shutdown.Token);
+await Server.RunStdioAsync(shutdown.Token);

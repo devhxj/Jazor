@@ -1,7 +1,10 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Acornima;
 using Acornima.Ast;
 using Jazor.Compiler;
+using Jolt.Syntax;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -68,6 +71,10 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
     {
         string path = ModulePath(contract.Path);
         var statements = new List<Statement>();
+        var styles = projection.Document.Nodes.OfType<JoltScopedStyle>().ToArray();
+        var scope = styles.Length == 0 ? null : ScopedStyleId(path);
+        if (scope is not null)
+            statements.Add(ImportDeclarationFactory.CreateSideEffect("./" + Path.GetFileNameWithoutExtension(path) + ".jolt.css"));
         statements.AddRange(ImportDeclarationFactory.Create("vue",
         [
             Import("defineComponent", "$joltDefine"),
@@ -111,7 +118,6 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         }
         var state = Id("$joltState");
         var stateClass = compilerModule.Body.OfType<ClassDeclaration>()
-            .Concat(compilerModule.Body.OfType<ExportNamedDeclaration>().Select(declaration => declaration.Declaration).OfType<ClassDeclaration>())
             .Single(declaration => declaration.Id?.Name == projection.StateName);
         var setup = new ArrowFunctionExpression(
             NodeList.From<Node>(Id("$joltProps"), Id("$joltContext")),
@@ -123,10 +129,15 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
                 new ReturnStatement(new ArrowFunctionExpression(NodeList.Empty<Node>(), Call(Member(state, renderName)), expression: true, async: false))), strict: true),
             expression: false, async: false);
 
-        var definition = Call(Id("$joltDefine"), Object(
+        var definitionProperties = new List<ObjectProperty>
+        {
             Property("name", String(contract.Name)),
             Property("props", Array(contract.Properties.Select(property => (Expression)String(property.Name)).ToArray())),
-            Property("setup", setup)));
+            Property("setup", setup),
+        };
+        if (scope is not null)
+            definitionProperties.Add(Property("__scopeId", String(scope)));
+        var definition = Call(Id("$joltDefine"), Object(definitionProperties.ToArray()));
         var self = _aliases.FirstOrDefault(pair => pair.Key.Npm is null && pair.Key.Path == contract.Path).Value;
         if (self is null)
             statements.Add(new ExportDefaultDeclaration(definition));
@@ -141,10 +152,14 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         return new JoltModule(contract.Name, path, artifact.Content + "\n//# sourceMappingURL=" + Path.GetFileName(path) + ".map\n", artifact.SourceMapContent!)
         {
             ClrImports = clrImports.Count == 0 ? [] : clrImports.ToArray(),
+            ScopedCss = scope is null ? null : $"/* {scope} */\n" + string.Join("\n", styles.Select(style => style.Css)),
         };
     }
 
     private static string ModulePath(string source) => Path.ChangeExtension(source.Replace('\\', '/'), ".mjs");
+
+    private static string ScopedStyleId(string modulePath) =>
+        "data-v-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(modulePath)).AsSpan(0, 6));
 
     private void RemapOrigins(Node node)
     {

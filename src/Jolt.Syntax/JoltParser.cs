@@ -92,6 +92,19 @@ public static class JoltParser
 
             if (document.FindPrimaryClass() is { } classNode)
             {
+                foreach (var parameter in classNode.TypeParameters)
+                {
+                    if (parameter.Name.Source is not { } raw)
+                        continue;
+                    var name = Span(raw);
+                    var lineStart = source.LastIndexOf('\n', Math.Max(0, name.Start - 1)) + 1;
+                    var start = source.IndexOf('@', lineStart, name.Start - lineStart);
+                    var span = TextSpan.FromBounds(start >= 0 ? start : name.Start, name.End);
+                    if (parameter.Constraints is not null || !SyntaxFacts.IsValidIdentifier(parameter.Name.Content))
+                        _diagnostics.Add(new("JOLT1020", "Use @typeparam followed by one type parameter name.", DiagnosticSeverity.Error, span));
+                    else
+                        nodes.Add(new JoltTypeParameter(parameter.Name.Content, name, span));
+                }
                 foreach (var code in classNode.Children.OfType<CSharpCodeIntermediateNode>())
                 {
                     if (code.Source is not { } raw)
@@ -114,7 +127,23 @@ public static class JoltParser
 
             if (document.FindPrimaryMethod() is { } method)
                 nodes.AddRange(ConvertBody(method.Children));
-            return new JoltDocument(source, path, nodes.OrderBy(node => node.Span.Start).ToImmutableArray(), _diagnostics.ToImmutable());
+            return new JoltDocument(source, path, nodes.Select(ScopedStyle).OrderBy(node => node.Span.Start).ToImmutableArray(), _diagnostics.ToImmutable());
+        }
+
+        private JoltNode ScopedStyle(JoltNode node)
+        {
+            if (node is not JoltElement { Name: "style", ClosingNameSpan: { } closing } element ||
+                !element.Attributes.Any(attribute => attribute.Name == "scoped"))
+                return node;
+            if (element.Attributes is not [{ Name: "scoped", Value.Length: 0 }])
+            {
+                _diagnostics.Add(new("JOLT1019", "Use a plain stylesheet inside <style scoped>.", DiagnosticSeverity.Error, element.NameSpan));
+                return node;
+            }
+            var cssStart = source.IndexOf('>', element.Attributes[0].Span.End) + 1;
+            var css = TextSpan.FromBounds(cssStart, closing.Start - 2);
+            // Slice the raw author text so CSS retains comments, escapes and entities.
+            return new JoltScopedStyle(Slice(css), css, element.Span);
         }
 
         private ImmutableArray<JoltNode> ConvertBody(IEnumerable<IntermediateNode> body, bool decodeEntities = true)
@@ -131,7 +160,10 @@ public static class JoltParser
                         var name = new TextSpan(span.Start + 1, element.TagName.Length);
                         parts.Add(new BodyPart(new JoltElement(element.TagName, name,
                             element.Attributes.Select(ConvertAttribute).ToImmutableArray(),
-                            ConvertBody(element.Body, !IsRawTextElement(element.TagName)), span)));
+                            ConvertBody(element.Body, !IsRawTextElement(element.TagName)), span)
+                        {
+                            ClosingNameSpan = ClosingName(span, element.TagName),
+                        }));
                         break;
                     case HtmlContentIntermediateNode html:
                         var value = string.Concat(html.Children.OfType<IntermediateToken>().Select(token => token.Content));
@@ -154,6 +186,22 @@ public static class JoltParser
 
         private static bool IsRawTextElement(string tagName)
             => tagName.ToLowerInvariant() is "script" or "style" or "iframe" or "xmp" or "noembed" or "noframes";
+
+        private TextSpan? ClosingName(TextSpan element, string tag)
+        {
+            // The IR carries the complete element span. Match its trailing end tag,
+            // including optional whitespace before '>', without inspecting child text.
+            var end = element.End - 1;
+            if (tag.Length == 0 || end <= element.Start || source[end] != '>')
+                return null;
+            while (end > element.Start && char.IsWhiteSpace(source[end - 1]))
+                end--;
+            var start = end - tag.Length;
+            return start > element.Start + 2 && source.AsSpan(start - 2, 2).SequenceEqual("</") &&
+                source.AsSpan(start, tag.Length).Equals(tag, StringComparison.OrdinalIgnoreCase)
+                ? new TextSpan(start, tag.Length)
+                : null;
+        }
 
         private JoltAttribute ConvertAttribute(HtmlAttributeIntermediateNode attribute)
         {

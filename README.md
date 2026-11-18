@@ -36,6 +36,8 @@ Jazor is a typed .NET toolchain for compiling supported C# semantics into determ
 
 Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
 
+Jolt uses the same core to compile typed `.jazor` Vue components. The current candidate includes semantic editing in VS Code and Visual Studio, cross-file rename, scoped CSS, and selected generic component contracts. [Jolt authoring guide](docs/03-guides/jolt-authoring.md)
+
 Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules, including RazorVue consumers. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
 
 ## AI-assisted development

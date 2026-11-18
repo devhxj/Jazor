@@ -1,0 +1,16 @@
+<button type="button" id="increment" class="tone" @onclick="@Click"><slot /><small id="child-label"> one</small></button>
+
+@code {
+    [Parameter]
+    public int Count { get; set; }
+
+    [Parameter]
+    public Action<int>? OnIncrement { get; set; }
+
+    private void Click() => OnIncrement?.Invoke(Count + 1);
+}
+
+<style scoped>
+.tone { color: rgb(20, 30, 190); }
+:slotted(.slotted) { font-weight: 700; }
+</style>

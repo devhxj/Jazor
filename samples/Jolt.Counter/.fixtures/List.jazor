@@ -1,0 +1,11 @@
+@typeparam T
+<div>
+@foreach (var item in Items) {
+    <slot name="item" value="@item"><p>@item</p></slot>
+    <button @onclick="() => Select(item)">Select</button>
+}
+</div>
+@code {
+    [Parameter, EditorRequired] public T[] Items { get; set; } = [];
+    [Parameter, EditorRequired] public Action<T> Select { get; set; } = default!;
+}

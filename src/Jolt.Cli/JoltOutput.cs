@@ -22,6 +22,12 @@ internal static class JoltOutput
         foreach (var module in modules)
         {
             current.Add(module.Path);
+            if (module.ScopedCss is { } css)
+            {
+                var cssPath = Path.ChangeExtension(module.Path, ".jolt.css");
+                current.Add(cssPath);
+                await WriteChanged(cssPath, css);
+            }
             // Write the map before its module so Vite sees consistent debugger data.
             await WriteChanged(module.Path + ".map", module.SourceMap);
             await WriteChanged(module.Path, module.Content);
@@ -33,7 +39,8 @@ internal static class JoltOutput
                 File.Delete(Resolve(obsolete));
                 File.Delete(Resolve(obsolete + ".map"));
             }
-            else if (obsolete.StartsWith("clr/", StringComparison.Ordinal) && obsolete.EndsWith(".js", StringComparison.Ordinal))
+            else if (obsolete.EndsWith(".jolt.css", StringComparison.Ordinal) ||
+                obsolete.StartsWith("clr/", StringComparison.Ordinal) && obsolete.EndsWith(".js", StringComparison.Ordinal))
             {
                 File.Delete(Resolve(obsolete));
             }

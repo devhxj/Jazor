@@ -24,12 +24,28 @@ public static class JoltProjectLoader
     public static async Task<JoltWorkspace> LoadAsync(string projectDirectory,
         IReadOnlyDictionary<string, string>? overlays = null, CancellationToken cancellationToken = default)
     {
+        var workspace = await LoadSourcesAsync(projectDirectory, overlays, cancellationToken);
+        return await LoadNpmAsync(projectDirectory, workspace, cancellationToken);
+    }
+
+    public static async Task<JoltWorkspace> LoadSourcesAsync(string projectDirectory,
+        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken)
+    {
         var root = Path.GetFullPath(projectDirectory);
         var sources = new SortedDictionary<string, JoltSource>(StringComparer.Ordinal);
         foreach (var path in Discover(root))
         {
             var name = Relative(path);
-            sources[name] = new(name, await File.ReadAllTextAsync(path, cancellationToken));
+            if (overlays?.ContainsKey(path) == true)
+                continue;
+            try
+            {
+                sources[name] = new(name, await File.ReadAllTextAsync(path, cancellationToken));
+            }
+            catch (FileNotFoundException)
+            {
+                // A rename can remove the enumerated path before the editor reports the new one.
+            }
         }
         if (overlays != null)
             foreach (var (path, content) in overlays)
@@ -54,10 +70,19 @@ public static class JoltProjectLoader
                         packages.Add(dep.Name);
         }
 
+        return new(sources.Values.ToArray(), new(rootNamespace), [], packages.ToArray(),
+            new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal));
+
+        string Relative(string path) => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+    }
+
+    public static async Task<JoltWorkspace> LoadNpmAsync(string projectDirectory, JoltWorkspace workspace, CancellationToken cancellationToken)
+    {
+        var root = Path.GetFullPath(projectDirectory);
         var exports = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
         var metadata = new Dictionary<(string Module, string Export), NpmVueComponent>();
         var diagnostics = new List<Diagnostic>();
-        foreach (var file in sources.Values)
+        foreach (var file in workspace.Sources)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var parsed = JoltParser.Parse(file.Content, file.Path);
@@ -68,7 +93,7 @@ public static class JoltProjectLoader
                 try
                 {
                     var matches = new List<string>();
-                    foreach (var package in packages)
+                    foreach (var package in workspace.Packages)
                     {
                         var ns = NpmNames.NamespaceFor(package);
                         if (ns == directive.Code)
@@ -115,9 +140,12 @@ public static class JoltProjectLoader
                 diagnostics.Add(Diagnostic.Create(ImportError, location, message));
             }
         }
-        return new(sources.Values.ToArray(), new(rootNamespace, metadata.Values.ToArray()), diagnostics, packages.ToArray(), exports);
-
-        string Relative(string path) => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+        return workspace with
+        {
+            Options = workspace.Options with { NpmComponents = metadata.Values.ToArray() },
+            Diagnostics = diagnostics,
+            Exports = exports,
+        };
     }
 
     private static IEnumerable<string> Discover(string root)

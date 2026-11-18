@@ -6,8 +6,10 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
 const string packageId = "Jazor.Jolt";
+var editorFeatures = args.Contains("--editor-features", StringComparer.Ordinal);
+args = args.Where(argument => argument != "--editor-features").ToArray();
 if (args.Length != 0 && args is not ["--package-source", _])
-    throw new ArgumentException("Usage: verify-jolt-package.cs [--package-source directory]");
+    throw new ArgumentException("Usage: verify-jolt-package.cs [--package-source directory] [--editor-features]");
 var repository = new DirectoryInfo(Directory.GetCurrentDirectory());
 while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "Jazor.slnx")))
     repository = repository.Parent;
@@ -28,8 +30,11 @@ try
     var consumer = Path.Combine(scratch.FullName, "consumer");
     Directory.CreateDirectory(consumer);
     var sample = Path.Combine(root, "samples", "Jolt.Counter");
-    foreach (var name in new[] { "App.jazor", "CounterButton.jazor", "package.json", "pnpm-lock.yaml", "vite.config.js", "index.html", "main.js" })
-        File.Copy(Path.Combine(sample, name), Path.Combine(consumer, name));
+    if (editorFeatures)
+        await RunAsync("dotnet", root, "run", "--file", Path.Combine(sample, "verify-browser.cs"), "--", "--prepare", consumer);
+    else
+        foreach (var name in new[] { "App.jazor", "CounterButton.jazor", "package.json", "pnpm-lock.yaml", "vite.config.js", "index.html", "main.js" })
+            File.Copy(Path.Combine(sample, name), Path.Combine(consumer, name));
 
     if (args.Length == 0)
         await RunAsync("dotnet", root, "pack", "src/Jolt.Cli/Jolt.Cli.csproj", "-c", "Release", "-o", feed);
@@ -81,6 +86,24 @@ try
     await RunInstalledAsync("bundle");
     if (!File.Exists(Path.Combine(consumer, "dist", "index.html")))
         throw new InvalidOperationException("Installed Jolt did not produce the Vite release bundle.");
+    if (editorFeatures && (!File.Exists(Path.Combine(output, "App.jolt.css")) ||
+        !Directory.EnumerateFiles(Path.Combine(consumer, "dist"), "*.css", SearchOption.AllDirectories)
+            .Any(path => File.ReadAllText(path).Contains("data-v-", StringComparison.Ordinal))))
+        throw new InvalidOperationException("Installed Jolt did not emit and bundle scoped component styles.");
+    if (editorFeatures)
+    {
+        var oldCss = Path.Combine(output, "CounterButton.jolt.css");
+        var oldScope = (await File.ReadAllLinesAsync(oldCss))[0];
+        File.Move(Path.Combine(consumer, "CounterButton.jazor"), Path.Combine(consumer, "StyledButton.jazor"));
+        var appSource = Path.Combine(consumer, "App.jazor");
+        await File.WriteAllTextAsync(appSource, (await File.ReadAllTextAsync(appSource))
+            .Replace("CounterButton", "StyledButton", StringComparison.Ordinal));
+        await RunInstalledAsync("build");
+        var newCss = Path.Combine(output, "StyledButton.jolt.css");
+        if (File.Exists(oldCss) || File.Exists(Path.Combine(output, "CounterButton.mjs")) ||
+            !File.Exists(newCss) || (await File.ReadAllLinesAsync(newCss))[0] == oldScope)
+            throw new InvalidOperationException("A renamed component did not replace its module and scoped stylesheet.");
+    }
 
     Console.WriteLine($"Verified {packageId} {version} for {rid} and inspected the four RID packages.");
 

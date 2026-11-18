@@ -1,7 +1,8 @@
 #:property CETCompat=false
 #:property PublishAot=false
-#:project Jolt.Npm.csproj
+#:project ../Jolt.Compiler/Jolt.Compiler.csproj
 
+using Jolt.Compiler;
 using Jolt.Npm;
 
 var root = Path.GetFullPath("samples/JazorComponentProbe/Npm");
@@ -23,6 +24,35 @@ Check(ReferenceEquals(collapsible, await provider.ReadAsync(current, "reka-ui", 
 var generic = await provider.ReadAsync(current, "reka-ui", "SwitchRoot");
 Check(generic.Props["disabled"].Type == "boolean" && generic.Events.ContainsKey("update:modelValue")
     && generic.Slots.ContainsKey("default"), "generic Vue callable component metadata");
+var virtualizer = await provider.ReadAsync(current, "reka-ui", "ListboxVirtualizer");
+Check(virtualizer.TypeParameter is { Name: "T" } typeParameter && typeParameter.PrimitiveKinds.Contains("string") &&
+    virtualizer.Props["options"] is { Type: "T[]", Required: true } &&
+    virtualizer.Props["textContent"].Type == "(option: T) => string" &&
+    virtualizer.Slots["default"].Signatures[0][0].Properties?["option"] == "T",
+    "published generic collection, callback and slot preserve the declared type parameter");
+const string virtualizerSource = """
+    @using Npm.RekaUi
+    <ListboxVirtualizer Options="@Names" TextContent="@Label">
+        <template #default context="row"><span>@row.option.Length</span></template>
+    </ListboxVirtualizer>
+    @code {
+        private string[] Names = ["One"];
+        private string Label(string item) => item;
+    }
+    """;
+var virtualizerOptions = new JoltCompileOptions(NpmComponents: [virtualizer]);
+var typed = await JoltProjectCompiler.CompileAsync([new("App.jazor", virtualizerSource)], virtualizerOptions);
+Check(typed.Diagnostics.Count == 0 && typed.Modules.Single().Content.Contains("row[\"option\"].length"), "generic npm lowering");
+foreach (var (invalid, diagnostic) in new[]
+{
+    (virtualizerSource.Replace("Label(string item) => item", "Label(bool item) => \"bad\""), "CS1503"),
+    (virtualizerSource.Replace("row.option.Length", "row.option.Missing"), "CS1061"),
+    (virtualizerSource.Replace("string[] Names = [\"One\"]", "bool[] Names = [true]"), "JOLT1021"),
+})
+{
+    var invalidOutput = await JoltProjectCompiler.CompileAsync([new("App.jazor", invalid)], virtualizerOptions);
+    Check(invalidOutput.Modules.Count == 0 && invalidOutput.Diagnostics.Any(item => item.Id == diagnostic), $"generic npm diagnostic {diagnostic}");
+}
 var number = await provider.ReadAsync(current, "reka-ui", "NumberFieldRoot");
 Check(number.Version == "2.11.0" && number.Props.ContainsKey("allowInvalid"), "new package declaration");
 var oldNumber = await provider.ReadAsync(previous, "reka-ui", "NumberFieldRoot");

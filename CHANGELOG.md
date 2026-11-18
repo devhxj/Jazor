@@ -2,6 +2,11 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 未发布
+
+- Jolt 在等待 npm 声明时即可提供本地补全和导航。新增 Visual Studio 2026 扩展、跨文件引用和改名、格式化及快捷修复。
+- `.jazor` 支持顶层 `<style scoped>` 和从数组输入推断单个类型参数，支持把类型传给回调和具名插槽。npm 探针覆盖 Reka UI `ListboxVirtualizer`。 [作者指南](docs/03-guides/jolt-authoring.md)
+
 ## 2026-11-18
 
 ### Jazor 2.1.0-preview.4

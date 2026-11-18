@@ -112,6 +112,35 @@ if (exportName === undefined) {
 function readComponent(exportSymbol) {
     const types = Object.fromEntries(source.statements.filter(ts.isTypeAliasDeclaration)
         .map(alias => [alias.name.text, checker.getTypeAtLocation(alias.type)]));
+    // Conditional inference through Shape widens generic parameters to their
+    // bounds. Read the declaration's own call signature for the array-inferred
+    // slice so props, callbacks and scoped slots retain the same type identity.
+    let typeParameter;
+    const [call] = typeOf(exportSymbol).getCallSignatures();
+    if (call?.typeParameters?.length === 1) {
+        const [parameter] = call.typeParameters;
+        const context = call.getReturnType().getProperty('__ctx');
+        const authoredProps = typeOf(call.parameters[0]);
+        const isCollection = prop => {
+            const type = typeOf(prop);
+            return checker.isArrayType(type) && checker.getTypeArguments(type)[0] === parameter;
+        };
+        if (context && authoredProps.getProperties().some(prop => !optional(prop) && isCollection(prop))) {
+            const publicContext = checker.getNonNullableType(typeOf(context));
+            types.Props = authoredProps;
+            types.Slots = typeOf(publicContext.getProperty('slots'));
+            types.Emit = typeOf(publicContext.getProperty('emit'));
+            const constraint = checker.getBaseConstraintOfType(parameter);
+            const branches = constraint ? constraint.isUnion() ? constraint.types : [constraint] : [];
+            const primitiveKinds = constraint ? [
+                [ts.TypeFlags.String, 'string'],
+                [ts.TypeFlags.Number, 'number'],
+                [ts.TypeFlags.Boolean, 'boolean'],
+            ].filter(([flag]) => branches.some(type => type.flags & flag)).map(([, name]) => name)
+                : ['string', 'number', 'boolean'];
+            typeParameter = { name: display(parameter), constraint: constraint ? display(constraint) : null, primitiveKinds };
+        }
+    }
     const describeParameter = (name, type) => {
         const members = type.flags & ts.TypeFlags.Object && !checker.isArrayType(type) && !checker.isTupleType(type)
             ? type.getProperties()
@@ -148,10 +177,13 @@ function readComponent(exportSymbol) {
         }
     }
     const listeners = new Set(Object.keys(events).map(listenerName));
+    const vueProps = types.VueProps.isUnion() ? types.VueProps.types.map(type => type.value) : [types.VueProps.value];
     const props = Object.fromEntries(types.Props.getProperties()
-        .filter(prop => !listeners.has(prop.name))
+        .filter(prop => !listeners.has(prop.name) && !vueProps.includes(prop.name))
         .map(prop => {
-            const type = checker.getTypeOfPropertyOfType(types.PropValues, prop.name);
+            const type = typeParameter
+                ? checker.getNonNullableType(typeOf(prop))
+                : checker.getTypeOfPropertyOfType(types.PropValues, prop.name);
             const branches = type.isUnion() ? type.types : [type];
             const values = branches.filter(branch => branch.isStringLiteral()).map(branch => branch.value);
             return [prop.name, {
@@ -177,7 +209,7 @@ function readComponent(exportSymbol) {
         moduleSpecifier, exportName, packageName: packageId.name, version: packageId.version,
         modulePath, declarationPath: path.resolve(resolution.resolvedFileName),
         definition: definition(exportSymbol.valueDeclaration ?? exportSymbol.declarations?.[0]),
-        props, events, slots,
+        props, events, slots, typeParameter,
     };
 }
 

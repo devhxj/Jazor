@@ -161,11 +161,25 @@ async function loadVite(projectDirectory) {
 
 function joltVitePlugin(projectDirectory, development) {
     const modules = path.resolve(projectDirectory, '.jolt');
+    const requireFromProject = createRequire(path.join(projectDirectory, 'package.json'));
     return {
         name: 'jolt-components',
+        enforce: 'pre',
         async load(id) {
             const relative = path.relative(modules, id);
-            if (relative.startsWith('..' + path.sep) || path.isAbsolute(relative) || !relative.endsWith('.mjs'))
+            if (relative.startsWith('..' + path.sep) || path.isAbsolute(relative))
+                return;
+            if (relative.endsWith('.jolt.css')) {
+                const stylesheet = await fs.readFile(id, 'utf8');
+                const header = /^\/\* (data-v-[0-9a-f]+) \*\/\n/.exec(stylesheet);
+                if (!header) this.error('Missing Jolt scope ID in ' + id);
+                const { compileStyle } = requireFromProject('vue/compiler-sfc');
+                const filename = path.join(projectDirectory, relative.replace(/\.jolt\.css$/, '.jazor'));
+                const result = compileStyle({ source: stylesheet.slice(header[0].length), filename, id: header[1], scoped: true });
+                if (result.errors.length > 0) this.error(result.errors.map(error => error.message ?? error).join('\n'));
+                return result.code;
+            }
+            if (!relative.endsWith('.mjs'))
                 return;
             let [code, map] = await Promise.all([fs.readFile(id, 'utf8'), fs.readFile(id + '.map', 'utf8')]);
             const sourceMap = JSON.parse(map);

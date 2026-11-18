@@ -8,6 +8,104 @@ namespace Jolt.Compiler.Test;
 public sealed class ProjectCompilerTests
 {
     [TestMethod]
+    public async Task Compile_BindsGenericArrayCallbackAndSlotToTheSameType()
+    {
+        const string list = """
+            @typeparam T
+            <div>
+                @foreach (var item in Items) {
+                    <slot name="item" value="@item" />
+                    <button @onclick="() => Choose(item)">Select</button>
+                }
+            </div>
+            @code {
+                [Parameter, EditorRequired] public T[] Items { get; set; } = [];
+                [Parameter, EditorRequired] public Action<T> Choose { get; set; } = default!;
+            }
+            """;
+        const string app = """
+            <TypedList Items="@Items" Choose="@Pick">
+                <template #item context="row"><p>@row.value.Length</p></template>
+            </TypedList>
+            @code { private string[] Items = ["one"]; private void Pick(string item) { } }
+            """;
+        foreach (var source in new[] { app, app.Replace("<TypedList ", "<TypedList T=\"string\" ") })
+        {
+            var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source), new("TypedList.jazor", list)]);
+            Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+            StringAssert.Contains(result.Modules[0].Content, "row[\"value\"].length");
+            StringAssert.Contains(result.Modules[1].Content, "new __StateTypedList");
+            Assert.IsFalse(result.Modules[0].Content.Contains("__JoltBindType", StringComparison.Ordinal));
+        }
+        foreach (var (source, expected) in new[]
+        {
+            (app.Replace("Pick(string", "Pick(bool"), "CS1503"),
+            (app.Replace("value.Length", "value.Missing"), "CS1061"),
+            (app.Replace("Items=\"@Items\"", "Items=\"42\""), "JOLT1021"),
+            (app.Replace("<TypedList ", "<TypedList T=\"bool\" "), "CS1503"),
+        })
+        {
+            var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source), new("TypedList.jazor", list)]);
+            Assert.IsEmpty(result.Modules);
+            Assert.IsTrue(result.Diagnostics.Any(diagnostic => diagnostic.Id == expected && diagnostic.Location.SourceSpan.Length > 0),
+                string.Join(Environment.NewLine, result.Diagnostics));
+        }
+    }
+
+    [TestMethod]
+    public async Task Compile_ScopedCssUsesAStablePerModuleIdAndSideEffectImport()
+    {
+        const string source = "<p class=\"label\">Text</p>\n<style scoped>\n@media (width > 4px) { .label { color: red; } }\n</style>";
+        var result = await JoltProjectCompiler.CompileAsync([new("Panel.jazor", source), new("Other/Panel.jazor", source)]);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        foreach (var module in result.Modules)
+        {
+            var css = module.ScopedCss!;
+            var scope = css.Split(' ')[1];
+            StringAssert.Contains(module.Content, $"\"__scopeId\": \"{scope}\"");
+            StringAssert.Contains(module.Content, "import \"./Panel.jolt.css\";");
+            StringAssert.Contains(css, "@media (width > 4px)");
+            Assert.IsFalse(module.Content.Contains("$joltH(\"style\"", StringComparison.Ordinal));
+        }
+        Assert.AreNotEqual(result.Modules[0].ScopedCss, result.Modules[1].ScopedCss);
+    }
+
+    [TestMethod]
+    public async Task Compile_ExportsStaticMembersAndKeepsComponentStatePrivate()
+    {
+        var result = await JoltProjectCompiler.CompileAsync([new("Counter.jazor", """
+            <button @onclick="@Increment">@Count</button>
+            @code {
+                public static int Step = 2;
+                private int Count;
+                private static int Double(int value) => value * 2;
+                public const int Initial = 3;
+                private void Increment() => Count = Advance(Count);
+                public static int Advance(int value) => Double(value) + Step + Initial;
+            }
+            """)]);
+        Assert.AreEqual(0, result.Diagnostics.Count, string.Join(Environment.NewLine, result.Diagnostics));
+        var module = result.Modules.Single().Content;
+        StringAssert.Contains(module, "export let Step = 2");
+        StringAssert.Contains(module, "export const Initial = 3");
+        StringAssert.Contains(module, "export function Advance(");
+        StringAssert.Contains(module, "function Double(");
+        Assert.IsFalse(module.Contains("export function Double", StringComparison.Ordinal));
+        Assert.IsFalse(module.Contains("export class __StateCounter", StringComparison.Ordinal));
+        StringAssert.Contains(module, "export default");
+        StringAssert.Contains(module, "$joltReactive(new __StateCounter");
+        StringAssert.Contains(module, "Advance(");
+    }
+
+    [TestMethod]
+    public async Task Compile_UnnamedElement_ReportsDiagnosticDuringEditing()
+    {
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", "<\n@code { private int Count = 1; }")]);
+        Assert.IsTrue(result.Diagnostics.Any(diagnostic => diagnostic.Id == "JOLT1017"));
+        Assert.IsEmpty(result.Modules);
+    }
+
+    [TestMethod]
     public async Task Compile_LongProp_PreservesExactIntegerBeyondDoublePrecision()
     {
         var result = await JoltProjectCompiler.CompileAsync([

@@ -1,0 +1,6 @@
+[$RootKey$\TextMate\Repositories]
+"Jolt"="$PackageFolder$\Grammars"
+
+// Use the built-in TextMate editor so .jazor gets its grammar even when it starts with a tag.
+[$RootKey$\Editors\{3B902123-F8A7-4915-9F01-361F908088D0}\Extensions]
+"jazor"=dword:0000002a

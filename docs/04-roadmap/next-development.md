@@ -66,6 +66,8 @@ Jazor 采用微软 LibNode 26.0.18 和 NodeApi 0.9.39，构建宿主与 SSR 目�
 
 ## Jolt 组件
 
+当前源码候选已实现后台 npm 初始化、跨文件引用与改名、格式化和快捷修复，以及选定的泛型组件和 `.jazor` 样式隔离场景。平台、编辑器版本和复现入口见候选验收。 [Jolt 编辑器与组件能力实施计划](./jolt-editor-implementation-plan.md#候选验收)
+
 `.jazor` 与 RazorVue 是平行的技术路线。一个文件定义一个 Vue 组件，HTML 与组件标签直接写在顶层，`@using` 引入命名空间，`@code` 提供 C# 实例成员。作者直接使用已发布 npm 包的 Vue 组件，构建从公开类型声明检查调用，从公开 ESM 入口导入运行时组件。首发目标包括同项目组件组合、npm 组件消费和语义编辑，本地 `.vue` 源文件互引在范围之外。 [Issue #138](https://github.com/devhxj/Jazor/issues/138)
 
 Jolt 在 Razor 语言层取得带原文位置的标记与 C# 片段，通过 Roslyn 和 Jazor.Compiler 生成 Vue 渲染模块。项目加载器读取 npm 锁文件和声明，构建与编辑器共用相同的输入。现有 RazorVue 继续消费官方 SG 生成的 C#。 [Jolt 作者指南](../03-guides/jolt-authoring.md)

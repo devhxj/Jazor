@@ -19,6 +19,8 @@ public sealed record NpmVueSlot(
     IReadOnlyList<IReadOnlyList<NpmVueParameter>> Signatures,
     NpmDefinition? Definition);
 
+public sealed record NpmVueTypeParameter(string Name, string? Constraint, IReadOnlyList<string> PrimitiveKinds);
+
 public sealed record NpmVueComponent(
     string ModuleSpecifier,
     string ExportName,
@@ -29,4 +31,7 @@ public sealed record NpmVueComponent(
     NpmDefinition Definition,
     IReadOnlyDictionary<string, NpmVueProp> Props,
     IReadOnlyDictionary<string, NpmVueEvent> Events,
-    IReadOnlyDictionary<string, NpmVueSlot> Slots);
+    IReadOnlyDictionary<string, NpmVueSlot> Slots)
+{
+    public NpmVueTypeParameter? TypeParameter { get; init; }
+}

@@ -1,0 +1,38 @@
+@using Npm.RekaUi
+
+<main>
+    <h1 id="heading">Jolt counter</h1>
+    <output id="count" class="tone">@Count</output>
+    <CounterButton Count="@Count" OnIncrement="@Increment"><span class="slotted">Increment</span></CounterButton>
+    <div id="indicator">
+        <CollapsibleRoot Open="@(Count > 0)" @onupdate:open="@ObserveOpen">
+            <template #default context="scope"><span id="scope">@(scope.open ? "open" : "closed")</span></template>
+        </CollapsibleRoot>
+    </div>
+    <List Items="@Names" Select="@OnPick"><template #item context="row"><p class="typed-item">@row.value.Length</p></template></List>
+    <div class="virtual">
+        <ListboxRoot><ListboxContent>
+            <ListboxVirtualizer Options="@Names" TextContent="@Title">
+                <template #default context="row"><span class="npm-item">@row.option.Length</span></template>
+            </ListboxVirtualizer>
+        </ListboxContent></ListboxRoot>
+    </div>
+</main>
+
+@code {
+    public static int Step = 1;
+    public static int Advance(int value) => value + Step;
+    private string[] Names = ["One", "Four"];
+    private string Title(string name) => name;
+    private void OnPick(string name) => Count = name.Length;
+    private int Count;
+    private void Increment(int next) => Count = next;
+    private void ObserveOpen(bool open) { }
+}
+
+<style scoped>
+.tone { color: rgb(190, 20, 30); }
+#increment { border-top: 7px solid; }
+.virtual li { display: block; }
+.virtual { height: 100px; overflow: auto; }
+</style>

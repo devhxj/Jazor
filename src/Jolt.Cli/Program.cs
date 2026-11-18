@@ -11,7 +11,7 @@ try
 {
     if (args is ["lsp"])
     {
-        await new Server(Console.OpenStandardInput(), Console.OpenStandardOutput()).RunAsync(stop.Token);
+        await Server.RunStdioAsync(stop.Token);
         return 0;
     }
     if (args is [] or ["--help"] or ["-h"])
