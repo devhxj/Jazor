@@ -46,7 +46,7 @@ public sealed class JoltLanguageClient : ILanguageClient
             ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         string toolsDirectory = Path.Combine(cliHome, ".dotnet", "tools");
         if (!File.Exists(Path.Combine(toolsDirectory, "jolt.cmd")))
-            throw new FileNotFoundException("Install the Jolt CLI with 'dotnet tool install --global Jazor.Jolt --version 2.1.0-preview.4'.");
+            throw new FileNotFoundException("Install the Jolt CLI with 'dotnet tool install --global Jazor.Jolt --version 2.1.0-preview.5'.");
 
         // The .NET SDK writes a .cmd shim for RID tools. It launches the packaged CET-disabled apphost.
         var startInfo = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), @"/d /c .\jolt.cmd lsp")

@@ -108,7 +108,7 @@ jobs:
 
       - name: Verify packaged Jolt consumer
         shell: pwsh
-        run: dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source artifacts/packages
+        run: dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source artifacts/packages --editor-features
 
       - name: Verify packaged Windows SPA release consumer
         shell: pwsh
@@ -124,6 +124,14 @@ jobs:
         if: steps.release_ref.outputs.create_release == 'true'
         shell: pwsh
         run: dotnet run --file ./scripts/csharp/pack-jolt-vsix.cs -- '${{ steps.release_ref.outputs.package_version }}' 'artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix'
+
+      - name: Package Jolt Visual Studio extension
+        if: steps.release_ref.outputs.create_release == 'true'
+        shell: pwsh
+        run: |
+          dotnet build editors/jolt-visual-studio/Jolt.VisualStudio.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item -LiteralPath 'editors/jolt-visual-studio/bin/Release/net472/Jolt.VisualStudio.vsix' -Destination 'artifacts/Jolt.VisualStudio.vsix'
 
       - name: Verify packaged Windows SSR release consumer
         shell: pwsh
@@ -238,4 +246,4 @@ jobs:
             gh @releaseArguments
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          gh release upload $tag "artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix" --clobber --repo '${{ github.repository }}'
+          gh release upload $tag "artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix" 'artifacts/Jolt.VisualStudio.vsix' --clobber --repo '${{ github.repository }}'

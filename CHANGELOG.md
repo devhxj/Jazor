@@ -2,10 +2,37 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## 未发布
+## 2026-11-19
 
-- Jolt 在等待 npm 声明时即可提供本地补全和导航。新增 Visual Studio 2026 扩展、跨文件引用和改名、格式化及快捷修复。
-- `.jazor` 支持顶层 `<style scoped>` 和从数组输入推断单个类型参数，支持把类型传给回调和具名插槽。npm 探针覆盖 Reka UI `ListboxVirtualizer`。 [作者指南](docs/03-guides/jolt-authoring.md)
+### Jazor 2.1.0-preview.5
+
+中文 | English
+
+#### 新增功能
+
+- `.jazor` 新增语义高亮、跨文件引用与改名、格式化和导入快捷修复。Visual Studio 2026 使用独立的 `Jolt.VisualStudio.vsix`，VS Code 使用带 CLI 版本号的 VSIX。by @devhxj
+- `.jazor` 支持顶层 `<style scoped>`、从集合参数推断泛型组件的回调与插槽类型，以及将公开静态方法、字段和常量作为 ESM 具名导出。泛型 npm 场景已覆盖 Reka UI 的 `ListboxVirtualizer`。by @devhxj
+
+#### 体验优化
+
+- 首次还原 npm 依赖期间可继续使用本地 C# 和组件的补全与导航。声明就绪后，编辑窗口自动刷新诊断和语义高亮。by @devhxj
+
+#### 问题修复
+
+- 修复 Windows 上语言服务与进程内 npm 首次还原同时运行时的阻塞，以及 VS Code 找不到已安装的 `jolt.cmd` 或无法启动手动指定的 CLI 的问题。by @devhxj
+
+New Features
+
+- Added semantic highlighting, cross-file references and rename, formatting, and import quick fixes for `.jazor`. Install `Jolt.VisualStudio.vsix` in Visual Studio 2026 and the versioned VSIX in VS Code. by @devhxj
+- `.jazor` supports top-level `<style scoped>`, generic component callbacks and slots inferred from a collection parameter, and ESM named exports for public static methods, fields, and constants. The npm generic component scenario covers Reka UI's `ListboxVirtualizer`. by @devhxj
+
+Improvements
+
+- Local C# and component completion and navigation work during the first npm restore. Diagnostics and semantic highlighting refresh when npm declarations are ready. by @devhxj
+
+Bug Fixes
+
+- Fixed a Windows stall during the first npm restore in the language server. VS Code now finds the installed `jolt.cmd` and starts a manually configured CLI executable. by @devhxj
 
 ## 2026-11-18
 
