@@ -48,7 +48,11 @@ jobs:
       - name: Capture native test host exit
         if: failure() && runner.os == 'Linux'
         run: |
-          gdb -batch -ex 'set follow-fork-mode child' -ex 'set breakpoint pending on' -ex 'handle SIGPIPE nostop print pass' -ex 'break exit' -ex 'run' -ex 'thread apply all bt 16' --args dotnet "$DOTNET_ROOT/sdk/$(dotnet --version)/vstest.console.dll" src/Jazor.EmitTest/bin/Debug/net11.0/Jazor.EmitTest.dll --TestCaseFilter:"FullyQualifiedName~EmitProgressTests|FullyQualifiedName~JazorSsrHostingTests"
+          if ! command -v gdb; then
+            sudo apt-get update
+            sudo apt-get install -y gdb
+          fi
+          gdb -batch -ex 'set follow-fork-mode child' -ex 'set breakpoint pending on' -ex 'handle SIGPIPE nostop print pass' -ex 'handle SIG34 nostop noprint pass' -ex 'break exit' -ex 'run' -ex 'thread apply all bt 12' --args dotnet "$DOTNET_ROOT/sdk/$(dotnet --version)/vstest.console.dll" src/Jazor.EmitTest/bin/Debug/net11.0/Jazor.EmitTest.dll --TestCaseFilter:"FullyQualifiedName~EmitProgressTests|FullyQualifiedName~JazorSsrHostingTests"
       - name: NuGet runtime and build-host asset closure
         run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-build --filter FullyQualifiedName~CreateLocalPackage_CarriesNodeApiRuntimeAndFrontendHost --nologo -v minimal
       - name: WebIDL collector and generated output parity
