@@ -13,8 +13,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.3" />
-  <PackageReference Include="ECMAScript.Style" Version="1.4.3" />
+  <PackageReference Include="Jazor" Version="2.0.0" />
+  <PackageReference Include="ECMAScript.Style" Version="2.0.0" />
 </ItemGroup>
 ```
 

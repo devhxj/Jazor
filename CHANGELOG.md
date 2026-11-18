@@ -2,10 +2,21 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## Unreleased
+## 2026-11-18
 
-- 构建工具链和 SSR 切换至 `Jazor.LibNode 0.2.0`（Node.js 26.13.1），支持 Windows 和 glibc Linux 的 x64、ARM64。使用 macOS 或 Windows x86 的项目需将 Emit 和 SSR 移到受支持的平台，或继续使用迁移前的 Jazor 版本。
-- Switch build tooling and SSR to `Jazor.LibNode 0.2.0` (Node.js 26.13.1) on Windows and glibc Linux x64 and ARM64. For macOS or Windows x86, move Emit and SSR to a supported platform or stay on a Jazor release before the migration.
+### Jazor 2.0.0
+
+中文 | English
+
+#### 改进
+
+- 构建工具链和 SSR 切换至 `Jazor.LibNode 0.2.0`（Node.js 26.13.1）。原生资产覆盖 Windows 和 glibc Linux 的 x64、ARM64。Linux 需要 glibc 2.39 和提供 `GLIBCXX_3.4.32` 的 libstdc++。by @devhxj
+- 移除 macOS 和 Windows x86 原生资产。将 Emit 和 SSR 移到受支持的平台，或使用 1.4.3。统一升级所有 Jazor 与 ECMAScript 包，并移除应用直接引用的微软 LibNode 包。by @devhxj
+
+Improvements
+
+- Switch the build toolchain and SSR to `Jazor.LibNode 0.2.0` (Node.js 26.13.1). Native assets cover Windows and glibc Linux on x64 and ARM64. Linux requires glibc 2.39 and a libstdc++ providing `GLIBCXX_3.4.32`. by @devhxj
+- Remove macOS and Windows x86 native assets. Move Emit and SSR to a supported platform or use 1.4.3. Upgrade all Jazor and ECMAScript packages together and remove direct application references to the Microsoft LibNode packages. by @devhxj
 
 ## 2026-11-16
 
