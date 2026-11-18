@@ -58,9 +58,12 @@ host.readFile = file => {
     return result;
 };
 const getSourceFile = host.getSourceFile.bind(host);
-host.getSourceFile = (file, ...args) => file === entry ? source : getSourceFile(file, ...args);
+// TypeScript passes normalized slashes even when the host constructs a Windows path.
+const entryKey = host.getCanonicalFileName(path.normalize(entry));
+const isEntry = file => host.getCanonicalFileName(path.normalize(file)) === entryKey;
+host.getSourceFile = (file, ...args) => isEntry(file) ? source : getSourceFile(file, ...args);
 const fileExists = host.fileExists.bind(host);
-host.fileExists = file => file === entry || fileExists(file);
+host.fileExists = file => isEntry(file) || fileExists(file);
 const program = ts.createProgram([entry], options, host);
 const diagnostics = ts.getPreEmitDiagnostics(program);
 if (diagnostics.length)

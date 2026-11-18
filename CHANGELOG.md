@@ -4,6 +4,12 @@
 
 ## 2026-11-18
 
+### Jazor 2.1.0-preview.4
+
+Jolt CLI 和 VS Code 扩展提供 C# Vue 组件编译、编辑、打包与热更新。修复 Windows 读取 npm Vue 类型时虚拟 TypeScript 声明入口的路径匹配。此前三个标签均在上传前被发布检查拦截。
+
+Install `Jazor.Jolt` version `2.1.0-preview.4` from NuGet and the matching VSIX from this release. This preview fixes Windows path normalization for the TypeScript host used in direct npm imports.
+
 ### Jazor 2.1.0-preview.3
 
 Jolt CLI 和 VS Code 扩展使用相同的语言服务。修复 Windows 上通过 .NET 工具的 `jolt.cmd` 启动入口运行编辑器与安装验收的问题。前两个预览标签均在上传前被门禁拦截。
