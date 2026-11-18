@@ -11,9 +11,9 @@ npm package、组件入口、全局样式和依赖元数据；Emit 生成标准 
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="1.4.3" />
-  <PackageReference Include="Jazor.Vue" Version="1.4.3" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="1.4.3" />
+  <PackageReference Include="Jazor" Version="2.0.0" />
+  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
+  <PackageReference Include="ECMAScript.VueDataUi" Version="2.0.0" />
 </ItemGroup>
 ```
 

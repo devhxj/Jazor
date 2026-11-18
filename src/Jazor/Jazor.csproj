@@ -34,8 +34,9 @@
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\NOTICE.txt" Pack="true" PackagePath="" />
     <None Include="licenses\ilspy\LICENSE.txt" Pack="true" PackagePath="licenses/ilspy/LICENSE.txt" />
-    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\LICENSE" Pack="true" PackagePath="licenses/libnode/%(Filename)%(Extension)" />
-    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode\$(LibNodeVersion)\NOTICE.txt" Pack="true" PackagePath="licenses/libnode/%(Filename)%(Extension)" />
+    <!-- The selected Microsoft LibNode RID packages share these license and notice texts. -->
+    <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x64\$(LibNodeVersion)\LICENSE;$(NuGetPackageRoot)microsoft.javascript.libnode.win-x64\$(LibNodeVersion)\NOTICE.txt"
+          Pack="true" PackagePath="licenses/libnode/" />
     <!-- Tooling is a direct-reference capability. Only resource manifest location propagates. -->
     <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
@@ -60,7 +61,11 @@
     <PackageReference Include="Acornima.Extras" Version="$(AcornimaVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="ICSharpCode.Decompiler" Version="$(DecompilerVersion)" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
-    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
+    <!-- Keep the NuGet runtime closure aligned with the supported tool hosts. -->
+    <PackageReference Include="Microsoft.JavaScript.LibNode.win-x64" Version="[$(LibNodeVersion)]" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode.win-arm64" Version="[$(LibNodeVersion)]" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode.linux-x64" Version="[$(LibNodeVersion)]" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode.linux-arm64" Version="[$(LibNodeVersion)]" />
     <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
     <PackageReference Include="Microsoft.NETCore.App.Host.win-arm64" Version="$(NodeToolAppHostVersion)" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
@@ -176,20 +181,11 @@
       <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-arm64\$(LibNodeVersion)\runtimes\win-arm64\native\libnode.dll">
         <PackagePath>tools/net11.0/runtimes/win-arm64/native/libnode.dll</PackagePath>
       </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x86\$(LibNodeVersion)\runtimes\win-x86\native\libnode.dll">
-        <PackagePath>tools/net11.0/runtimes/win-x86/native/libnode.dll</PackagePath>
-      </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.linux-x64\$(LibNodeVersion)\runtimes\linux-x64\native\libnode.so">
         <PackagePath>tools/net11.0/runtimes/linux-x64/native/libnode.so</PackagePath>
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.linux-arm64\$(LibNodeVersion)\runtimes\linux-arm64\native\libnode.so">
         <PackagePath>tools/net11.0/runtimes/linux-arm64/native/libnode.so</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.osx-x64\$(LibNodeVersion)\runtimes\osx-x64\native\libnode.dylib">
-        <PackagePath>tools/net11.0/runtimes/osx-x64/native/libnode.dylib</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(NuGetPackageRoot)microsoft.javascript.libnode.osx-arm64\$(LibNodeVersion)\runtimes\osx-arm64\native\libnode.dylib">
-        <PackagePath>tools/net11.0/runtimes/osx-arm64/native/libnode.dylib</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>

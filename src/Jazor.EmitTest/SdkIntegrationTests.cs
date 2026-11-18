@@ -172,7 +172,15 @@ public sealed partial class SdkIntegrationTests
             .ToArray();
 
         StringAssert.Contains(nuspec, "id=\"Microsoft.JavaScript.NodeApi\"", StringComparison.Ordinal);
-        StringAssert.Contains(nuspec, "id=\"Microsoft.JavaScript.LibNode\"", StringComparison.Ordinal);
+        var nativeDependencies = XDocument.Parse(nuspec).Descendants()
+            .Where(element => element.Name.LocalName == "dependency")
+            .Select(element => (string?)element.Attribute("id"))
+            .Where(id => id?.Contains("LibNode", StringComparison.OrdinalIgnoreCase) == true)
+            .ToArray();
+        CollectionAssert.AreEquivalent(new[] {
+            "Microsoft.JavaScript.LibNode.win-x64", "Microsoft.JavaScript.LibNode.win-arm64",
+            "Microsoft.JavaScript.LibNode.linux-x64", "Microsoft.JavaScript.LibNode.linux-arm64"
+        }, nativeDependencies);
         Assert.IsFalse(nuspec.Contains("DenoHost", StringComparison.Ordinal));
         Assert.IsFalse(entryNames.Any(path => path.Contains("DenoHost", StringComparison.OrdinalIgnoreCase) ||
             path.EndsWith("/deno.exe", StringComparison.OrdinalIgnoreCase) || path.EndsWith("/deno", StringComparison.OrdinalIgnoreCase)));
@@ -195,14 +203,18 @@ public sealed partial class SdkIntegrationTests
             "The package must not carry SpaProxy hosting-startup configuration.");
         // The build host selects libnode independently of the consumer target
         // RID. All tool-native assets must survive packing on a single platform.
-        foreach (var rid in new[] { "win-x64", "win-arm64", "win-x86", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" })
+        var nativePaths = new[]
         {
-            var binaryName = rid.StartsWith("win", StringComparison.Ordinal) ? "libnode.dll"
-                : rid.StartsWith("osx", StringComparison.Ordinal) ? "libnode.dylib" : "libnode.so";
-            var nativePrefix = $"tools/net11.0/runtimes/{rid}/native/";
-            Assert.IsTrue(entryNames.Contains(nativePrefix + binaryName, StringComparer.OrdinalIgnoreCase), nativePrefix + binaryName);
-            Assert.HasCount(1, entryNames.Where(path => path.StartsWith(nativePrefix, StringComparison.Ordinal)),
-                "Each build-host RID must contain exactly its libnode binary.");
+            "tools/net11.0/runtimes/win-x64/native/libnode.dll",
+            "tools/net11.0/runtimes/win-arm64/native/libnode.dll",
+            "tools/net11.0/runtimes/linux-x64/native/libnode.so",
+            "tools/net11.0/runtimes/linux-arm64/native/libnode.so"
+        };
+        CollectionAssert.AreEquivalent(nativePaths, entryNames
+            .Where(path => path.StartsWith("tools/net11.0/runtimes/", StringComparison.Ordinal)).ToArray());
+        foreach (var file in new[] { "LICENSE", "NOTICE.txt" })
+        {
+            Assert.IsNotNull(archive.GetEntry($"licenses/libnode/{file}"), file);
         }
 
         StringAssert.Contains(

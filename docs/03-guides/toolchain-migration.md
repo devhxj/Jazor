@@ -8,7 +8,15 @@
 - Windows 必须运行当前输出中 `CETCompat=false` 的 apphost。仓库和 NuGet 消费者的构建配置负责设置，不修改系统设置。
 - Jazor 维护的安装、转译、开发服务器和 SSR 路径直接调用 API，不启动 Node、npm、pnpm、tsc 或 Deno CLI，也不在 API 失败时切换到命令行。
 - `pnpm-lock.yaml` 是依赖锁；共享 store 由 `JazorPnpmStoreDirectory` 或 Emit `--pnpm-store` 指定。应用配置和锁文件保持作者所有权。
-- LibNode 的 Node 主版本、原生 addon、CET 条件与布局限制以宿主 README 和实际平台门禁为准，不从包内 RID 资产推导额外平台支持。
+- Jazor 使用微软 LibNode `26.0.18`（Node.js 26.13.1）的 `win-x64`、`win-arm64`、`linux-x64` 和 `linux-arm64` 原生资产。Linux 需要 glibc 2.35 或更新版本和系统 OpenSSL 3。
+
+## 升级至 LibNode 26
+
+按 lockstep 升级 Jazor 系列包。如果项目直接引用旧版 `Microsoft.JavaScript.LibNode` 或其 RID 子包，移除此引用，由 `Jazor` 统一选择原生资产。用切换后的版本重新构建并发布到干净目录。
+
+使用 macOS 或 Windows x86 的项目，可以把 Emit 和 SSR 迁至上述平台，或继续使用迁移前的 Jazor 版本。静态浏览器产物仍可部署到任意能托管静态文件的平台。
+
+交叉发布时，Emit 选用构建机的原生库，NuGet 选用部署目标的原生库。跨 CPU 架构发布时，使用 `PlatformTarget=AnyCPU` 干净重建，确保 Emit 可以加载应用的托管程序集。
 
 pnpm 安装 API 不提供即时终止：进入原生安装后，取消会等待实际操作完成再传播。依赖恢复不执行 lifecycle shell scripts。`package.json` 中的标准 scripts 可描述前端项目用途，但 Jazor 不把任意 shell script 解释为可执行的内嵌 API。
 

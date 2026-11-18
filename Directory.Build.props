@@ -3,8 +3,8 @@
     <AcornimaVersion>1.9.2</AcornimaVersion>
     <DecompilerVersion>11.2.0.10050</DecompilerVersion>
     <AngleSharpVersion>1.10.3</AngleSharpVersion>
-    <NodeApiVersion>0.9.36</NodeApiVersion>
-    <LibNodeVersion>20.1800.215</LibNodeVersion>
+    <NodeApiVersion>0.9.39</NodeApiVersion>
+    <LibNodeVersion>26.0.18</LibNodeVersion>
     <PnpmEngineVersion>12.5.1</PnpmEngineVersion>
     <LightningCssWasmVersion>1.33.0</LightningCssWasmVersion>
     <NodeToolAppHostVersion>11.0.0</NodeToolAppHostVersion>

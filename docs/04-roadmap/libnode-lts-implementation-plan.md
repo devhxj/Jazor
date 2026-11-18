@@ -1,6 +1,6 @@
 # Jazor.LibNode LTS 实施计划
 
-> 状态：方案评估与实施计划，尚未开始原生移植，未发布 `Jazor.LibNode`。核查日期：2026-11-16。对应 [issue #139](https://github.com/devhxj/Jazor/issues/139)，顺序为普通类库导入 #4 → 本计划 → `.jazor` #138。当前产品仍使用微软 LibNode；支持声明以[当前状态](./current-status.md)为准。
+> 2026-11-18 更新：[自建 Libnode 0.2.0](https://github.com/devhxj/Libnode/releases/tag/v0.2.0) 已发布。Jazor 2.0.0 选用微软 LibNode 26.0.18 和 NodeApi 0.9.39，原生资产覆盖 Windows 和 glibc Linux 的 x64、ARM64。自建包的 Linux OpenSSL 共存问题由 [Libnode #1](https://github.com/devhxj/Libnode/issues/1) 跟踪。下文保留原始方案和基线，平台与迁移路径见[工具链指南](../03-guides/toolchain-migration.md)。
 
 ## 结论与首个交付
 

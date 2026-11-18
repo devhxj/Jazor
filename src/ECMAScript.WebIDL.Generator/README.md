@@ -11,7 +11,7 @@
 
 ## 运行
 
-本工具使用共享 NodeApi 宿主，已在 Windows x64、Linux x64 与 macOS x64/ARM64 的 .NET 11 环境验证固定采集和生成基线，见 [CI](https://github.com/devhxj/Jazor/actions/workflows/nodeapi-verify.yml)。固定组合为 `Microsoft.JavaScript.NodeApi 0.9.36`、`Microsoft.JavaScript.LibNode 20.1800.215`、`@pnpm/napi 12.5.1` 和 `TypeScript 5.9.3`；不依赖本机全局 Node 或 pnpm。产品迁移与完整发布门禁状态见[迁移方案](../../docs/03-guides/toolchain-migration.md)。
+本工具使用共享 NodeApi 宿主。固定组合为 `Microsoft.JavaScript.NodeApi 0.9.39`、`Microsoft.JavaScript.LibNode 26.0.18`、`@pnpm/napi 12.5.1` 和 `TypeScript 5.9.3`。Windows 与 glibc Linux 的 x64、ARM64 采集及生成基线由 [CI](https://github.com/devhxj/Jazor/actions/workflows/nodeapi-verify.yml) 检查。平台条件见[工具链指南](../../docs/03-guides/toolchain-migration.md)。
 
 首次采集时，C# 从 npm registry 引导下载固定版本的 pnpm loader 与当前平台原生包，并校验 registry 提供的 SHA-512。引擎缓存位于 `node/obj/pnpm-engine/`；随后在内嵌 Node 中直接调用 pnpm `install` API，从 `node/package.json` 恢复应用依赖。`node/pnpm-lock.yaml` 是权威锁文件，有 lock 时必须 frozen，失败不自动重新解析。共享 store 位于仓库 `.tmp/webidl-pnpm-store/`。
 
@@ -49,12 +49,11 @@ dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs
 
 ## 已验证组合的限制
 
-- Libnode 20 的 V8 栈切换与 Windows .NET 9+ 默认 CET 设置不兼容。仓库宿主、验证脚本与 NuGet 消费者统一使用已接受的 `CETCompat=false` apphost，不修改机器设置。
+- Windows 使用构建生成的 `CETCompat=false` apphost，以满足进程内 NodeApi 宿主条件。
 - 该 libnode 对 pnpm Rust 引擎生成的 Windows junction 解析失败，试点采用 pnpm 官方 `hoisted` 布局。不能据此宣称默认 `isolated` 已通过验证。
 - 工具使用已验证的固定 pnpm API 版本；其他候选版本须重新验证安装、store、原生绑定与退出，不将早期受限环境的试点结果当作通用平台限制。版本来源为 `Directory.Build.props`，选型背景见[历史演进](../../docs/05-history/evolution.md)。
 - NodeApi 的 JS 线程亲和性和 callback scope 生命周期分别处理：宿主通过 `RunAsync` 调度，并以 `JSReference` 跨 `await` 保持模块引用。
 - pnpm 安装 API 没有取消参数。取消 token 在 bootstrap 网络阶段生效；进入安装/采集后等待实际工作完成，再观察取消，不把取消等待当作终止原生操作。本工具暂未承诺即时中断正在运行的安装。
-- 上游提供的 LibNode 仍为 Node 20 系列；升级到 `.215` 不代表升级 Node 主版本。未来升级仍须验证原生 addon、退出和固定生成基线。
 
 ## 边界
 

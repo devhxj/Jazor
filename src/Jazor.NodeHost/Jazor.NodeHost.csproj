@@ -9,6 +9,10 @@
     <AssemblyMetadata Include="PnpmEngineVersion" Value="$(PnpmEngineVersion)" />
     <AssemblyMetadata Include="LightningCssWasmVersion" Value="$(LightningCssWasmVersion)" />
     <PackageReference Include="Microsoft.JavaScript.NodeApi" Version="$(NodeApiVersion)" />
-    <PackageReference Include="Microsoft.JavaScript.LibNode" Version="$(LibNodeVersion)" />
+    <!-- Keep the NuGet runtime closure aligned with the supported tool hosts. -->
+    <PackageReference Include="Microsoft.JavaScript.LibNode.win-x64" Version="[$(LibNodeVersion)]" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode.win-arm64" Version="[$(LibNodeVersion)]" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode.linux-x64" Version="[$(LibNodeVersion)]" />
+    <PackageReference Include="Microsoft.JavaScript.LibNode.linux-arm64" Version="[$(LibNodeVersion)]" />
   </ItemGroup>
 </Project>

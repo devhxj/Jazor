@@ -58,13 +58,11 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 均已有源码、测试 lane 和 lockstep 发布。当前待办是各绑定的 browser smoke、真实 RazorVue/package consumer、适用 SSR 与 worker/资源验证，完成前保持 Guidance。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
-## LibNode LTS 原生包提案
+## LibNode LTS 集成
 
-具体切片、已核查的源码/测试提交、ABI、RID 迁移、包布局与验收见 [Jazor.LibNode LTS 实施计划](./libnode-lts-implementation-plan.md)。先交付 Windows x64 候选及复用上游测试，验证通过后再扩展四平台并替换产品依赖。当前只是计划，尚未提供新的 native 包。
+Jazor 采用微软 LibNode 26.0.18 和 NodeApi 0.9.39，构建宿主与 SSR 目标覆盖 Windows 和 glibc Linux 的 x64、ARM64。macOS 暂缓，Windows x86 退出原生资产范围。自建原生库研究由 [Libnode](https://github.com/devhxj/Libnode) 维护。
 
-[Issue #139](https://github.com/devhxj/Jazor/issues/139)提出自行构建 `Jazor.LibNode` 总包及 RID 原生包：以实施时最新 Node.js LTS 为基线，参考微软 LibNode 的分包方式，移植与所选 `Microsoft.JavaScript.NodeApi` 匹配的 `node_embedding_*` C API，继续复用微软托管互操作层。2026-11-15 查询官方索引的首个候选为 Node `v26.13.1`；当前实际依赖仍是微软 LibNode `20.1800.215`，本提案不代表已经升级。
-
-验收要求复用微软现有嵌入、GC 与适用互操作测试，以及对应原生 C embedding 测试，保留断言与夹具，仅适配包选择、路径及运行入口；报告记录上游修订和实际加载的候选库，区分真实原生运行与 mock 覆盖。先验证 C ABI、已有四个平台组合和隔离 NuGet consumer，再通过现有 NodeApi、pnpm、Vite、WebIDL 与 SSR 发布闭包门禁。额外 RID、旧宿主 workaround 的移除及新 addon 兼容性必须分别取得证据；发布沿用 lockstep 版本与官方工作流。
+原生 ABI 和上游测试的设计见 [实施计划](./libnode-lts-implementation-plan.md)。Jazor 侧通过 NodeApi、pnpm、Vite、WebIDL 和 NuGet/SSR 消费者门禁验证集成，发布沿用 lockstep 版本和官方工作流。平台要求与迁移步骤见[工具链指南](../03-guides/toolchain-migration.md)。
 
 ## .jazor 作者格式提案
 

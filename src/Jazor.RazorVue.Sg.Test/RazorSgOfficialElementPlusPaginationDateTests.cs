@@ -68,8 +68,10 @@ public sealed class RazorSgOfficialElementPlusPaginationDateTests
             import assert from "node:assert/strict";
             import { Window } from "happy-dom";
             const window = new Window({ url: "http://localhost/" });
-            for (const name of ["document", "Node", "Element", "HTMLElement", "SVGElement", "HTMLInputElement", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver", "ResizeObserver", "DOMException", "navigator"])
+            for (const name of ["document", "Node", "Element", "HTMLElement", "SVGElement", "HTMLInputElement", "Event", "MouseEvent", "KeyboardEvent", "MutationObserver", "ResizeObserver", "DOMException"])
                 globalThis[name] = window[name];
+            // Node's navigator is a configurable getter. Use the simulated browser's navigator.
+            Object.defineProperty(globalThis, "navigator", { value: window.navigator, configurable: true });
             globalThis.window = window;
             globalThis.getComputedStyle = window.getComputedStyle.bind(window);
             globalThis.requestAnimationFrame = window.requestAnimationFrame.bind(window);

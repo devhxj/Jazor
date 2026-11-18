@@ -90,7 +90,7 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 候选 ref 可通过手动 `Release Candidate Verification` workflow，或本地运行以下单一入口完成同一顺序的验收：
 
 ```bash
-dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v1.4.3
+dotnet run --file scripts/csharp/verify-release-candidate.cs -- --tag v2.0.0
 ```
 
 脚本会在 `artifacts/release-candidate/<tag>/` 归档每阶段日志、API 快照、兼容性报告、typed bootstrap 报告、包文件和最终 `report.md`；任一阶段失败都会以非零退出码结束。`--only build,public-api-compatibility` 这类按实际阶段名的筛选只适用于局部复核，正式候选必须运行完整序列。

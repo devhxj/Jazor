@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main, feature/webidl-node-pnpm]
-    paths:
+    paths: &nodeapi-paths
       - .github/workflows/nodeapi-verify.yml
       - Directory.Build.props
       - src/Jazor.NodeHost/**
@@ -12,9 +12,13 @@ on:
       - src/Jazor/**
       - src/Jazor.EmitTest/**
       - src/Jazor.AspNetCore/**
+      - src/Jazor.AspNetCore.Dev/**
       - src/ECMAScript.WebIDL.Generator/**
       - scripts/csharp/verify-*-nodeapi.cs
       - scripts/csharp/verify-nodeapi-pipeline.cs
+  pull_request:
+    branches: [main]
+    paths: *nodeapi-paths
 
 permissions:
   contents: read
@@ -27,7 +31,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-15-intel, macos-15]
+        os: [windows-latest, windows-11-arm, ubuntu-24.04, ubuntu-24.04-arm]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -40,15 +44,25 @@ jobs:
       - name: Async failure propagation and environment cancellation
         run: dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQualifiedName~NodeModuleRunnerTests --nologo -v minimal
       - name: ASP.NET Core Vite proxy, SSR pool and tool cancellation
-        run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "(FullyQualifiedName~JazorViteProxyTests|FullyQualifiedName~JazorSsrHostingTests|FullyQualifiedName~EmitProgressTests|FullyQualifiedName~StandardPackageProjectTests)&TestCategory!=Browser" --nologo -v minimal
+        run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "(FullyQualifiedName~JazorViteProxyTests|FullyQualifiedName~JazorSsrHostingTests|FullyQualifiedName~EmitProgressTests|FullyQualifiedName~StandardPackageProjectTests)&TestCategory!=Browser" --nologo -v minimal --logger "console;verbosity=normal" --blame-crash --blame-crash-dump-type mini --results-directory artifacts/nodeapi-test-results
+      - name: Capture native test host exit
+        if: failure() && runner.os == 'Linux'
+        run: |
+          if ! command -v gdb; then
+            sudo apt-get update
+            sudo apt-get install -y gdb
+          fi
+          gdb -batch -ex 'set follow-fork-mode child' -ex 'set breakpoint pending on' -ex 'handle SIGPIPE nostop print pass' -ex 'handle SIG34 nostop noprint pass' -ex 'break exit' -ex 'run' -ex 'thread apply all bt 12' --args dotnet "$DOTNET_ROOT/sdk/$(dotnet --version)/vstest.console.dll" src/Jazor.EmitTest/bin/Debug/net11.0/Jazor.EmitTest.dll --TestCaseFilter:"FullyQualifiedName~EmitProgressTests|FullyQualifiedName~JazorSsrHostingTests"
       - name: NuGet runtime and build-host asset closure
         run: dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-build --filter FullyQualifiedName~CreateLocalPackage_CarriesNodeApiRuntimeAndFrontendHost --nologo -v minimal
       - name: WebIDL collector and generated output parity
         run: dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs
-      - name: Preserve failed package closure
+      - name: Preserve failed package and crash evidence
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: nodeapi-packages-${{ matrix.os }}
-          path: .tmp/Jazor.EmitTest/debug-core-nupkg/**/*.nupkg
+          path: |
+            .tmp/Jazor.EmitTest/debug-core-nupkg/**/*.nupkg
+            artifacts/nodeapi-test-results/**
           retention-days: 3
