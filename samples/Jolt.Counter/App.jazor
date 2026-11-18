@@ -1,0 +1,18 @@
+@using Npm.RekaUi
+
+<main>
+    <h1 id="heading">Jolt counter</h1>
+    <output id="count">@Count</output>
+    <CounterButton Count="@Count" OnIncrement="@Increment">Increment</CounterButton>
+    <div id="indicator">
+        <CollapsibleRoot Open="@(Count > 0)" @onupdate:open="@ObserveOpen">
+            <template #default context="scope"><span id="scope">@(scope.open ? "open" : "closed")</span></template>
+        </CollapsibleRoot>
+    </div>
+</main>
+
+@code {
+    private int Count;
+    private void Increment(int next) => Count = next;
+    private void ObserveOpen(bool open) { }
+}

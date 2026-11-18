@@ -12,6 +12,8 @@
     <Project Path="src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="src/Jolt.Syntax.Test/Jolt.Syntax.Test.csproj" />
+    <Project Path="src/Jolt.Compiler.Test/Jolt.Compiler.Test.csproj" />
     <Project Path="src/ECMAScript.Vue.Devtools.Test/ECMAScript.Vue.Devtools.Test.csproj" />
   <Project Path="src/ECMAScript.VueDataUi.Test/ECMAScript.VueDataUi.Test.csproj" />
   <Project Path="src/ECMAScript.Lucide.Test/ECMAScript.Lucide.Test.csproj" />
@@ -35,6 +37,15 @@
     <Project Path="src/Jazor.EmitTest/Jazor.EmitTest.csproj" />
     <Project Path="src/Jazor.Admin.Test/Jazor.Admin.Test.csproj" />
     <Project Path="src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj" />
+  </Folder>
+  <Folder Name="/jolt/">
+    <Project Path="src/Jolt.Syntax/Jolt.Syntax.csproj" />
+    <Project Path="src/Jolt.Npm/Jolt.Npm.csproj" />
+    <Project Path="src/Jolt.Compiler/Jolt.Compiler.csproj" />
+    <Project Path="src/Jolt.Project/Jolt.Project.csproj" />
+    <Project Path="src/Jolt.LanguageServer/Jolt.LanguageServer.csproj" />
+    <Project Path="src/Jolt.Vite/Jolt.Vite.csproj" />
+    <Project Path="src/Jolt.Cli/Jolt.Cli.csproj" />
   </Folder>
   <Project Path="src/ECMAScript.Contract/ECMAScript.Contract.csproj" />
   <Project Path="src/ECMAScript.DateFns/ECMAScript.DateFns.csproj" />

@@ -498,8 +498,8 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <jazor|jazor-vue|style|admin|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("  --package <jazor|jazor-vue|jolt|style|admin|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|vuetify|tdesign|elementplus|PackageId>");
+        Console.WriteLine("    Default package set: Jazor, Jazor.Vue, Jazor.Jolt, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -528,6 +528,7 @@ internal static class PackageCatalog
     [
         "Jazor",
         "Jazor.Vue",
+        "Jazor.Jolt",
         "ECMAScript.Style",
         "Jazor.Admin",
         "ECMAScript.Vue.Devtools",
@@ -556,6 +557,8 @@ internal static class PackageCatalog
         ["jazor"] = "Jazor",
         ["Jazor"] = "Jazor",
         ["jazor-vue"] = "Jazor.Vue",
+        ["jolt"] = "Jazor.Jolt",
+        ["Jazor.Jolt"] = "Jazor.Jolt",
         ["jazor.vue"] = "Jazor.Vue",
         ["Jazor.Vue"] = "Jazor.Vue",
         ["style"] = "ECMAScript.Style",
@@ -652,13 +655,18 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, jazor-vue, style, admin, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vueuse, floating-ui, vee-validate, vue-i18n, vue-query, monaco, vue-draggable, file-pond, wang-editor, vuetify, elementplus, tdesign.");
+            "jazor, jazor-vue, jolt, style, admin, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vueuse, floating-ui, vee-validate, vue-i18n, vue-query, monaco, vue-draggable, file-pond, wang-editor, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
     {
         return new Dictionary<string, PackageDefinition>(StringComparer.OrdinalIgnoreCase)
         {
+            ["Jazor.Jolt"] = new(
+                "Jazor.Jolt",
+                Path.Combine(repoRoot, "src", "Jolt.Cli", "Jolt.Cli.csproj"),
+                RequiresJazorEmitPublishOutput: false,
+                DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["Jazor"] = new(
                 "Jazor",
                 Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"),

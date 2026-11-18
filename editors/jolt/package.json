@@ -1,0 +1,25 @@
+{
+    "name": "jolt",
+    "displayName": "Jolt",
+    "description": "Language support for .jazor Vue components",
+    "version": "0.1.0",
+    "publisher": "jazor",
+    "engines": { "vscode": "^1.85.0" },
+    "main": "./extension.cjs",
+    "activationEvents": ["onLanguage:jazor"],
+    "dependencies": { "vscode-languageclient": "9.0.1" },
+    "contributes": {
+        "languages": [{ "id": "jazor", "aliases": ["Jolt"], "extensions": [".jazor"] }],
+        "grammars": [{ "language": "jazor", "scopeName": "text.html.jazor", "path": "./jazor.tmLanguage.json" }],
+        "configuration": {
+            "title": "Jolt",
+            "properties": {
+                "jolt.serverPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to a Jolt.LanguageServer DLL or executable."
+                }
+            }
+        }
+    }
+}

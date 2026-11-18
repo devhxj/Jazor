@@ -1,0 +1,7 @@
+@using Npm.RekaUi
+
+<CollapsibleRoot Open="@(Count > 0)" />
+
+@code {
+    private int Count = 1;
+}

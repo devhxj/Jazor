@@ -495,3 +495,4 @@ src/ECMAScript.Monaco/dist/
 src/ECMAScript.TDesign/dist/
 src/ECMAScript.Vuetify/dist/
 src/ECMAScript.VueDataUi/dist/
+.jolt/

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Remove="verify.cs" />
+        <ProjectReference Include="../Jazor.NodeHost/Jazor.NodeHost.csproj" />
+        <EmbeddedResource Include="metadata.mjs" LogicalName="Jolt.Npm.metadata.mjs" />
+        <EmbeddedResource Include="tooling/package.json" LogicalName="Jolt.Npm.package.json" />
+        <EmbeddedResource Include="tooling/pnpm-lock.yaml" LogicalName="Jolt.Npm.pnpm-lock.yaml" />
+    </ItemGroup>
+</Project>

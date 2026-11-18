@@ -14,7 +14,7 @@
 | --- | --- | --- | --- |
 | **P0：首批切片已交付** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；1.4.2 已实现普通 DLL/NuGet 自动导入、成员闭包与共享模块 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
 | **P1：其次推进** | [#139：Jazor.LibNode LTS 原生包](https://github.com/devhxj/Jazor/issues/139) | 掌握 LTS 原生构建与更新，验证现有 pnpm/Vite/SSR 和后续 npm 类型工具的兼容性 | 移植匹配微软托管层的 C ABI，复用上游测试，通过已声明平台的原生包与现有工具链门禁 |
-| **P2：随后推进** | [#138：.jazor 组件文件与语义智能感知](https://github.com/devhxj/Jazor/issues/138) | 改善组件作者体验、接入 npm Vue 组件；现有 RazorVue 可继续承担组件编写 | 确认 `<template>` + `@code`，验证 Razor/Roslyn 与 Vue 类型工具的复用；可构建组件、真实语义编辑器和直接 npm consumer 分阶段交付 |
+| **P2：源码实现** | [#138：Jolt 组件和语义编辑](../03-guides/jolt-authoring.md) | 以顶层标记和 C# 编写 Vue 组件，直接使用项目依赖中的 npm 组件 | 用同一应用验证组件组合、编辑器、浏览器和隔离工具包消费者 |
 
 这不是三项提案之间的强制技术依赖。ILSpy 首个切片使用现有宿主验证，无需等待 LibNode 升级；后续 `.jazor` 的 npm 工具如需要更高 Node 版本，由 LibNode 切片提供已验证环境。优先完成每项有界切片及其交付证据，再扩大下一条主线的投入，不以“支持任意 NuGet”作为开始后续工作的门槛。
 
@@ -64,13 +64,13 @@ Jazor 采用微软 LibNode 26.0.18 和 NodeApi 0.9.39，构建宿主与 SSR 目�
 
 原生 ABI 和上游测试的设计见 [实施计划](./libnode-lts-implementation-plan.md)。Jazor 侧通过 NodeApi、pnpm、Vite、WebIDL 和 NuGet/SSR 消费者门禁验证集成，发布沿用 lockstep 版本和官方工作流。平台要求与迁移步骤见[工具链指南](../03-guides/toolchain-migration.md)。
 
-## .jazor 作者格式提案
+## Jolt 组件
 
-[Issue #138](https://github.com/devhxj/Jazor/issues/138)提出 `.jazor` 组件文件：顶层 `<template>...</template>` 与同级 `@code { ... }`，文件隐式定义组件，作者无需声明静态类、`Setup()` 或模块特性。模板以 Razor 的 C# 表达式和控制流为起点，同时要求直接导入有类型声明的 npm Vue 组件及语义智能感知。这是待设计与实现的作者入口；当前已实现的 RazorVue 仍使用官方 Razor SG。
+`.jazor` 与 RazorVue 是平行的技术路线。一个文件定义一个 Vue 组件，HTML 与组件标签直接写在顶层，`@using` 引入命名空间，`@code` 提供 C# 实例成员。作者直接使用已发布 npm 包的 Vue 组件，构建从公开类型声明检查调用，从公开 ESM 入口导入运行时组件。首发目标包括同项目组件组合、npm 组件消费和语义编辑，本地 `.vue` 源文件互引在范围之外。 [Issue #138](https://github.com/devhxj/Jazor/issues/138)
 
-优先验证薄适配层复用微软 Razor 的解析、官方 SG 及源码映射，C# 语义复用 Roslyn 与核心编译器；Vue 组件类型提取对比官方 `vue-component-meta` 和 Verter 的公开接口。微软 Razor 持续开发已迁到 [`dotnet/roslyn`](https://github.com/dotnet/roslyn/tree/main/src/Razor)。先证明公开 API、投影/生成顺序、编辑器接入与嵌入宿主兼容性，再决定依赖；Razor 编辑器内部实现和 Verter 的 TypeScript 投影不自动成为 `.jazor` 的 C# 语言服务。
+Jolt 在 Razor 语言层取得带原文位置的标记与 C# 片段，通过 Roslyn 和 Jazor.Compiler 生成 Vue 渲染模块。项目加载器读取 npm 锁文件和声明，构建与编辑器共用相同的输入。现有 RazorVue 继续消费官方 SG 生成的 C#。 [Jolt 作者指南](../03-guides/jolt-authoring.md)
 
-提案按复用验证、可构建组件、语义编辑器、npm 组件组合和发布消费者分阶段验收。首个导入器聚焦 npm，JSR 专用接入不在初始范围；运行时复用现有 NodeApi、pnpm、Vue ESM 与 Emit 链路。智能感知覆盖 C# 与组件参数补全、上下文类型、导航、诊断、重命名和不完整语法恢复；具体导入指令、组件参数/生命周期规则及编辑器范围需验证后确定，尚不构成可安装的支持声明。
+验收应用通过父子回调驱动 Reka UI 更新，开发服务器与生产资源均使用浏览器验证。编辑器验证涵盖作者文件诊断和跳转到 npm 声明。本地打包验证检查安装后的 CLI 在隔离项目中构建与打包。正式发布以版本发行记录为准。 [浏览器样例](../../samples/Jolt.Counter/README.md) · [工具包验收](../../scripts/csharp/verify-jolt-package.cs)
 
 ## 写入当前状态的门槛
 

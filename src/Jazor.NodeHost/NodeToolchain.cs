@@ -43,12 +43,12 @@ internal static class NodeToolchain
             "render", cancellationToken, request);
 
     public static async Task<string> BuildAsync(string projectDirectory, bool ssr,
-        CancellationToken cancellationToken, TextWriter? progress = null)
+        CancellationToken cancellationToken, TextWriter? progress = null, bool jolt = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory, progress);
         var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "build", cancellationToken,
-            JsonSerializer.Serialize(new { projectDirectory, ssr }));
+            JsonSerializer.Serialize(new { projectDirectory, ssr, jolt }));
         progress?.WriteLine("[Jazor NodeApi] " + result);
         cancellationToken.ThrowIfCancellationRequested();
         return result;

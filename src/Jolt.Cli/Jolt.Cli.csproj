@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Jolt.Project/Jolt.Project.csproj" />
+    <ProjectReference Include="../Jolt.LanguageServer/Jolt.LanguageServer.csproj" />
+    <ProjectReference Include="../Jolt.Vite/Jolt.Vite.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../ECMAScript/manifest.json" LogicalName="Jolt.Clr.manifest.json" />
+    <EmbeddedResource Include="../ECMAScript/clr/**/*.js" LogicalName="Jolt.Clr/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  <Import Project="Packaging.targets" />
+</Project>

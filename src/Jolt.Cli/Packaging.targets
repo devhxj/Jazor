@@ -1,0 +1,34 @@
+<Project>
+    <PropertyGroup>
+        <PackAsTool>true</PackAsTool>
+        <PackageId>Jazor.Jolt</PackageId>
+        <ToolCommandName>jolt</ToolCommandName>
+        <Authors>hanxj</Authors>
+        <Description>Build and edit Jolt .jazor Vue components written in C#.</Description>
+        <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <!-- RID packages keep the apphost configured by Directory.Build.props.
+             A generic tool would use a CLI-generated shim on Windows. -->
+        <RuntimeIdentifiers>linux-x64;linux-arm64;win-x64;win-arm64</RuntimeIdentifiers>
+        <UseAppHost>true</UseAppHost>
+        <SelfContained>false</SelfContained>
+        <PublishTrimmed>false</PublishTrimmed>
+        <_JoltSdkRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildSDKsPath)', '..', '..', '..'))</_JoltSdkRoot>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The LSP entry point is invoked in-process. Reuse its portable
+             assembly while the CLI itself is published for each RID. -->
+        <ProjectReference Update="../Jolt.LanguageServer/Jolt.LanguageServer.csproj"
+                          GlobalPropertiesToRemove="RuntimeIdentifier" />
+        <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="all" />
+        <None Include="$(MSBuildThisFileDirectory)../../LICENSE.txt;$(MSBuildThisFileDirectory)../../NOTICE.txt" Pack="true" PackagePath="" />
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="" />
+        <None Include="$(MSBuildThisFileDirectory)../Jazor/licenses/ilspy/LICENSE.txt" Pack="true" PackagePath="licenses/ilspy/" />
+        <None Include="$(NuGetPackageRoot)microsoft.javascript.libnode.win-x64/$(LibNodeVersion)/LICENSE;$(NuGetPackageRoot)microsoft.javascript.libnode.win-x64/$(LibNodeVersion)/NOTICE.txt" Pack="true" PackagePath="licenses/libnode/" />
+        <None Include="$(_JoltSdkRoot)LICENSE.txt;$(_JoltSdkRoot)ThirdPartyNotices.txt" Pack="true" PackagePath="licenses/dotnet-sdk/" />
+    </ItemGroup>
+</Project>

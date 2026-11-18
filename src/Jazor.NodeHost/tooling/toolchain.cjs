@@ -119,7 +119,7 @@ exports.restore = async (requestJson) => {
         frozenLockfile: frozen,
         ignoreScripts: true,
         reporter: { appendOnly: true },
-    });
+    }, undefined, undefined, chunk => process.stderr.write(chunk));
     if (!local) await fs.writeFile(statePath, identity + '\n' + hash(await fs.readFile(lockPath, 'utf8')));
     return JSON.stringify({ operation: 'restore', status: 'completed', pid: process.pid, frozen, ...result });
 };
@@ -159,10 +159,46 @@ async function loadVite(projectDirectory) {
         return import(pathToFileURL(requireFromProject.resolve('vite')).href);
 }
 
+function joltVitePlugin(projectDirectory, development) {
+    const modules = path.resolve(projectDirectory, '.jolt');
+    return {
+        name: 'jolt-components',
+        async load(id) {
+            const relative = path.relative(modules, id);
+            if (relative.startsWith('..' + path.sep) || path.isAbsolute(relative) || !relative.endsWith('.mjs'))
+                return;
+            let [code, map] = await Promise.all([fs.readFile(id, 'utf8'), fs.readFile(id + '.map', 'utf8')]);
+            const sourceMap = JSON.parse(map);
+            sourceMap.sources = sourceMap.sources.map(source => path.resolve(projectDirectory, source).replaceAll('\\', '/'));
+            if (development) {
+                const exported = this.parse(code).body.find(node => node.type === 'ExportDefaultDeclaration');
+                if (exported) {
+                    // Replace only the export prefix, keeping mapped offsets intact.
+                    const prefix = code.slice(exported.start, exported.declaration.start);
+                    const component = '$jCmp';
+                    const binding = ('const ' + component + '=').padEnd(prefix.length);
+                    const hmrId = JSON.stringify('jolt:' + relative.replaceAll('\\', '/'));
+                    code = code.slice(0, exported.start) + binding + code.slice(exported.declaration.start);
+                    code += `\nexport default ${component};
+if (import.meta.hot) {
+    ${component}.__hmrId = ${hmrId};
+    globalThis.__VUE_HMR_RUNTIME__?.createRecord(${hmrId}, ${component});
+    import.meta.hot.accept(updated => {
+        if (updated) globalThis.__VUE_HMR_RUNTIME__?.reload(${hmrId}, updated.default);
+    });
+}\n`;
+                }
+            }
+            return { code, map: sourceMap };
+        },
+    };
+}
+
 exports.build = async (requestJson) => {
-    const { projectDirectory, ssr } = JSON.parse(requestJson);
+    const { projectDirectory, ssr, jolt } = JSON.parse(requestJson);
     const vite = await loadVite(projectDirectory);
-    await vite.build({ root: projectDirectory, configFile: path.join(projectDirectory, ssr ? 'ssr.vite.config.js' : 'vite.config.js') });
+    await vite.build({ root: projectDirectory, configFile: path.join(projectDirectory, ssr ? 'ssr.vite.config.js' : 'vite.config.js'),
+        plugins: jolt ? [joltVitePlugin(projectDirectory, false)] : [] });
     return JSON.stringify({ operation: 'build', ssr, status: 'completed', pid: process.pid });
 };
 
@@ -200,9 +236,10 @@ exports.check = async (requestJson) => {
 
 let ownedViteServer;
 exports.startVite = async (requestJson) => {
-    const { projectDirectory, host, port, base } = JSON.parse(requestJson);
+    const { projectDirectory, host, port, base, jolt } = JSON.parse(requestJson);
     const vite = await loadVite(projectDirectory);
-    ownedViteServer = await vite.createServer({ root: projectDirectory, base, server: { host, port, strictPort: true, open: false } });
+    ownedViteServer = await vite.createServer({ root: projectDirectory, base, server: { host, port, strictPort: true, open: false },
+        plugins: jolt ? [joltVitePlugin(projectDirectory, true)] : [] });
     try {
         await ownedViteServer.listen();
         return JSON.stringify({ operation: 'vite', status: 'listening', pid: process.pid, origin: ownedViteServer.resolvedUrls.local[0] });

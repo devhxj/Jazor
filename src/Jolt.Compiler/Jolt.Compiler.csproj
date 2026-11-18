@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../Jazor.Compiler/Jazor.Compiler.csproj" />
+        <ProjectReference Include="../Jolt.Syntax/Jolt.Syntax.csproj" />
+        <ProjectReference Include="../Jolt.Npm/Jolt.Npm.csproj" />
+    </ItemGroup>
+</Project>

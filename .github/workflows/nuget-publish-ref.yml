@@ -106,6 +106,10 @@ jobs:
             --package-version '${{ steps.release_ref.outputs.package_version }}' `
             --skip-push
 
+      - name: Verify packaged Jolt consumer
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source artifacts/packages
+
       - name: Verify packaged Windows SPA release consumer
         shell: pwsh
         run: |
@@ -115,6 +119,11 @@ jobs:
             --path-base /docs `
             --startup-timeout-seconds 60 `
             --browser-startup-timeout-seconds 20
+
+      - name: Package Jolt VS Code extension
+        if: steps.release_ref.outputs.create_release == 'true'
+        shell: pwsh
+        run: dotnet run --file ./scripts/csharp/pack-jolt-vsix.cs -- '${{ steps.release_ref.outputs.package_version }}' 'artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix'
 
       - name: Verify packaged Windows SSR release consumer
         shell: pwsh
@@ -228,3 +237,5 @@ jobs:
             }
             gh @releaseArguments
           }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh release upload $tag "artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix" --clobber --repo '${{ github.repository }}'

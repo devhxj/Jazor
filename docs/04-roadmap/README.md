@@ -15,7 +15,7 @@
 | 推进作者体验和协议扩展 | [下一阶段](./next-development.md)中的责任层与验收条件 |
 | 执行 Vue 应用生态绑定扩展 | [P3 Vue 应用生态绑定扩展计划](./p3-vue-application-bindings-plan.md) |
 | 实施最新 LTS 的自有 LibNode 原生包 | [Jazor.LibNode LTS 实施计划](./libnode-lts-implementation-plan.md)（#139，待实施） |
-| 讨论 C# + TSX 风格作者格式与智能感知 | [.jazor 提案 #138](https://github.com/devhxj/Jazor/issues/138)（待设计与实现） |
+| 编写 Jolt `.jazor` 组件并直接使用 npm 包 | [Jolt 作者指南](../03-guides/jolt-authoring.md)（#138，源码与本地工具包） |
 | 使用标准前端项目与已完成的工具链 | [类库产物契约](../02-architecture/library-artifact-contract.md)、[NodeApi 工具链指南](../03-guides/toolchain-migration.md) |
 | 追溯已完成计划、旧审计和测试数字 | [历史演进](../05-history/evolution.md)；详细记录由 Git 历史保留 |
 

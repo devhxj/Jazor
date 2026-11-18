@@ -4,6 +4,18 @@
 
 ## 2026-11-18
 
+### Jazor 2.1.0-preview.1
+
+中文 | English
+
+#### 新增功能
+
+- Jolt 预览版支持用顶层 HTML、`@using` 和 `@code` 编写 Vue 组件，直接使用 npm 发布的组件及其类型声明。使用 `dotnet tool install --global Jazor.Jolt --version 2.1.0-preview.1` 安装，再用 `jolt dev` 运行项目。包含语言服务、Vite 热更新和源码映射。见 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)。
+
+Features
+
+- Author Vue components in C# with Jolt, import typed Vue components from npm, and use the CLI to build, serve or bundle the project. The preview includes a language server, hot reload and source maps.
+
 ### Jazor 2.0.0
 
 中文 | English

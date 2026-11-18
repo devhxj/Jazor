@@ -1,0 +1,7 @@
+{
+    "scopeName": "text.html.jazor",
+    "patterns": [
+        { "match": "@(?:using|code|if|else|foreach)\\b", "name": "keyword.control.jazor" },
+        { "include": "text.html.basic" }
+    ]
+}
