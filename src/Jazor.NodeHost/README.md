@@ -14,7 +14,7 @@
 
 Rolldown 的 napi-rs loader 将 Windows `shared_library` 误判为 GNU 构建。当前桥接使用其显式 native library path，在该 environment 的私有 `process.env` 对象上选择已安装的 MSVC 绑定，加载完成立即恢复；不会修改 OS 环境或启动 CLI。此限制具有真实失败场景，不能机械套用到其他库。
 
-Linux 上通过 Vite 探针验证 .NET HTTPS 证书校验与 pnpm、Rolldown 原生 addon 在同一进程中工作。
+Linux 上先加载系统 OpenSSL 3，再全局加载 LibNode，供原生 addon 解析 `napi_*`。LibNode 使用 `RTLD_DEEPBIND` 优先绑定内置 OpenSSL，系统库优先服务 .NET 的 TLS 调用。Vite 探针验证这两条路径在同一进程中工作。
 
 Vite 的 CSS 压缩固定使用官方 `lightningcss-wasm`，版本与原生 Lightning CSS 一致，集中于 `Directory.Build.props`。其旧版 napi-rs Windows addon 只从主 executable 查找 Node-API，遇到真实 TDesign CSS 图会终止进程。恢复时将 `vite>lightningcss` 的固定 override 写入根 `package.json`，传给 pnpm API 并纳入 lock/增量身份；所有平台使用相同实现，不在失败后切换执行路线。
 

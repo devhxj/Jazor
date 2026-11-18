@@ -10,7 +10,9 @@ internal sealed class NodeEnvironment : IDisposable
 {
     private static readonly Lazy<NodeEmbeddingPlatform> Platform = new(() =>
     {
-        var platform = new NodeEmbeddingPlatform(null);
+        var platform = new NodeEmbeddingPlatform(OperatingSystem.IsLinux()
+            ? new NodeEmbeddingPlatformSettings { LibNodePath = LinuxLibNodeLoader.Load() }
+            : null);
         AppDomain.CurrentDomain.ProcessExit += (_, _) => platform.Dispose();
         return platform;
     });

@@ -10,12 +10,12 @@
 
 #### 改进
 
-- 构建工具链和 SSR 升级至微软 LibNode `26.0.18`（Node.js 26.13.1）和 NodeApi `0.9.39`。原生资产覆盖 Windows 和 glibc Linux 的 x64、ARM64。Linux 需要 glibc 2.35 或更新版本。by @devhxj
+- 构建工具链和 SSR 升级至微软 LibNode `26.0.18`（Node.js 26.13.1）和 NodeApi `0.9.39`。原生资产覆盖 Windows 和 glibc Linux 的 x64、ARM64。Linux 需要 glibc 2.35 或更新版本和系统 OpenSSL 3。by @devhxj
 - 移除 macOS 和 Windows x86 原生资产。将 Emit 和 SSR 移到受支持的平台，或使用 1.4.3。统一升级所有 Jazor 与 ECMAScript 包，并移除应用对旧版 LibNode 的直接引用。by @devhxj
 
 Improvements
 
-- Upgrade the build toolchain and SSR to Microsoft's LibNode `26.0.18` (Node.js 26.13.1) and NodeApi `0.9.39`. Native assets cover Windows and glibc Linux on x64 and ARM64. Linux requires glibc 2.35 or later. by @devhxj
+- Upgrade the build toolchain and SSR to Microsoft's LibNode `26.0.18` (Node.js 26.13.1) and NodeApi `0.9.39`. Native assets cover Windows and glibc Linux on x64 and ARM64. Linux requires glibc 2.35 or later and system OpenSSL 3. by @devhxj
 - Remove macOS and Windows x86 native assets. Move Emit and SSR to a supported platform or use 1.4.3. Upgrade all Jazor and ECMAScript packages together and remove direct application references to older LibNode packages. by @devhxj
 
 ## 2026-11-16

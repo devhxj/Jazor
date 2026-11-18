@@ -8,7 +8,7 @@
 - Windows 必须运行当前输出中 `CETCompat=false` 的 apphost。仓库和 NuGet 消费者的构建配置负责设置，不修改系统设置。
 - Jazor 维护的安装、转译、开发服务器和 SSR 路径直接调用 API，不启动 Node、npm、pnpm、tsc 或 Deno CLI，也不在 API 失败时切换到命令行。
 - `pnpm-lock.yaml` 是依赖锁；共享 store 由 `JazorPnpmStoreDirectory` 或 Emit `--pnpm-store` 指定。应用配置和锁文件保持作者所有权。
-- Jazor 使用微软 LibNode `26.0.18`（Node.js 26.13.1）的 `win-x64`、`win-arm64`、`linux-x64` 和 `linux-arm64` 原生资产。Linux 需要 glibc 2.35 或更新版本。
+- Jazor 使用微软 LibNode `26.0.18`（Node.js 26.13.1）的 `win-x64`、`win-arm64`、`linux-x64` 和 `linux-arm64` 原生资产。Linux 需要 glibc 2.35 或更新版本和系统 OpenSSL 3。
 
 ## 升级至 LibNode 26
 
