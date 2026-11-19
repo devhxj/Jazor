@@ -1,6 +1,6 @@
 # 安装与配置
 
-> 面向：使用 Jazor 核心平台、当前 Razor-to-Vue 集成或可选生态绑定的应用开发者。
+> 面向：使用 Jazor 核心平台、Jolt 或共享生态绑定的应用开发者。
 >
 > 说明：ECMAScript 自有 MJS 与 `Jazor.Generated.ModuleCatalog` 提供项目源码，`ECMAScript.*` binding 提供 npm/JSR identity 与标准 ESM specifier。最终宿主在 MSBuild 中调用 `Jazor.Emit`，生成标准 `jazor/` 项目并恢复依赖。
 >
@@ -20,24 +20,22 @@ live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器�
 
 ## 选择包
 
+下表中的独立 Vue 绑定组合适用于 `2.1.0-preview.6` 及后续版本。使用 `2.0.0` 时，按对应版本的文档选择依赖。
+
 | 需求 | 必需包 | 可选包 |
 | --- | --- | --- |
 | C# -> ECMAScript 模块 | `Jazor` | 对应的 `ECMAScript.*` 绑定 |
 | 普通 C# -> ECMAScript 类库 | `Jazor` | 不需要 Vue 依赖 |
 | 复用普通 NuGet / ProjectReference | `Jazor` 和原本的库引用 | 按实际使用点自动恢复受支持实现，无需额外导入项；范围见[类库导入](../04-roadmap/ordinary-nuget-compilation-research.md) |
-| 当前 Razor-to-Vue 集成 | `Jazor`、`Jazor.Vue` | Vue authoring、Razor hook、Vue runtime 与基础 Vue bindings |
-| RazorVue 的 Blazor framework CLR mapping | `Jazor`、`Jazor.Vue` | mapping 由 `Jazor.CLR.Generator` 生成；核心运行时由 `ECMAScript` manifest 与 `src/ECMAScript/clr/**` 提供，Vue bridge 由 `Jazor.Vue/runtime/vue/**` 提供 |
-| Vue Router | `Jazor`、`Jazor.Vue`、`ECMAScript.VueRoute` | `ECMAScript.VueRoute` 显式提供 Router bindings |
-| Pinia | `Jazor`、`Jazor.Vue`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
-| Vue Devtools 自定义插件 | `Jazor`、`Jazor.Vue`、`ECMAScript.Vue.Devtools` | `Jazor.Vue` 提供 Vue runtime 闭包 |
-| Vue Data UI 图表 | `Jazor`、`Jazor.Vue`、`ECMAScript.VueDataUi` | 无 |
-| Lucide 图标 | `Jazor`、`Jazor.Vue`、`ECMAScript.Lucide` | 无 |
-| 日期、浏览器工具与浮动定位 | `Jazor`、`Jazor.Vue`、`ECMAScript.DateFns` / `ECMAScript.VueUse` / `ECMAScript.FloatingUi` | 按应用选择 |
-| 表单、国际化与服务端状态 | `Jazor`、`Jazor.Vue`、`ECMAScript.VeeValidate` / `ECMAScript.VueI18n` / `ECMAScript.VueQuery` | 按应用选择 |
-| 拖拽、文件上传与富文本 | `Jazor`、`Jazor.Vue`、`ECMAScript.VueDraggable` / `ECMAScript.FilePond` / `ECMAScript.WangEditor` | 按应用选择 |
-| Monaco 编辑器 | `Jazor`、`Jazor.Vue`、`ECMAScript.Monaco` | bundler/worker 配置按应用提供 |
-| UI 组件库 | `Jazor`、`Jazor.Vue`、对应 `ECMAScript.*` 包 | `ECMAScript.Style` |
-| 管理壳 | `Jazor`、`Jazor.Vue`、`Jazor.Admin` | 路由、样式和应用选择的 UI 绑定 |
+| `.jazor` 组件 | `Jazor.Jolt`，按 [Jolt 作者指南](./jolt-authoring.md) 安装 | 项目选用的 npm 组件与编辑器扩展 |
+| `.razor` 组件与管理壳 | 见 [RazorVue 的兼容性表](https://github.com/devhxj/RazorVue#compatibility) | 按应用选择 Razor 组件包 |
+| Vue Router | `Jazor`、`ECMAScript.VueRoute` | |
+| Pinia | `Jazor`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
+| Vue Devtools 自定义插件 | `Jazor`、`ECMAScript.Vue.Devtools` | |
+| 日期、浏览器工具与浮动定位 | `Jazor`、`ECMAScript.DateFns` / `ECMAScript.VueUse` / `ECMAScript.FloatingUi` | 按应用选择 |
+| 表单、国际化与服务端状态 | `Jazor`、`ECMAScript.VeeValidate` / `ECMAScript.VueI18n` / `ECMAScript.VueQuery` | 按应用选择 |
+| 拖拽、文件上传与富文本 | `Jazor`、`ECMAScript.VueDraggable` / `ECMAScript.FilePond` / `ECMAScript.WangEditor` | 按应用选择 |
+| Monaco 编辑器 | `Jazor`、`ECMAScript.Monaco` | bundler/worker 配置按应用提供 |
 
 核心包示例：
 
@@ -47,22 +45,9 @@ live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器�
 </ItemGroup>
 ```
 
-Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
+Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定通过包依赖引入它。
 
-```xml
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Jazor" Version="2.0.0" />
-    <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-  </ItemGroup>
-</Project>
-```
-
-按需添加生态包，并通过强类型 binding 声明 JavaScript import：
+按需添加与 Jazor 版本相同的生态包，再通过强类型 binding 声明 JavaScript import：
 
 ```xml
 <ItemGroup>
@@ -203,7 +188,7 @@ ASP.NET Core 负责路由、静态文件与响应。`Jazor.AspNetCore` 在开发
 ## 后续阅读
 
 - 核心语义与支持边界：[编译器](../02-architecture/compiler.md)
-- Razor 应用方向：[Razor-to-Vue](../02-architecture/razor-to-vue.md)
+- 应用开发：[Jolt 作者指南](./jolt-authoring.md)
 - 产物归属：[产物管线](../02-architecture/artifact-pipeline.md)
 - 多项目类库、直接引用与源码/绑定传播：[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)
-- 管理壳库：[管理壳](../02-architecture/admin-shell.md)
+- `.razor` 集成与管理壳：[RazorVue](https://github.com/devhxj/RazorVue)

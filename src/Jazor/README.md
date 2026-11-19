@@ -86,7 +86,7 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 </ItemGroup>
 ```
 
-`ECMAScript.Vue` 随 `Jazor.Vue` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。RazorVue、管理组件和五个 UI 绑定的版本组合见 [RazorVue](https://github.com/devhxj/RazorVue#compatibility)。
+从 `2.1.0-preview.6` 起，Vue Router、Pinia 等共享绑定通过包依赖引入 `ECMAScript.Vue`。`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。
 
 Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有；其 runtime
 JavaScript 由 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` embedded carrier 提供。
@@ -113,22 +113,12 @@ app.UseJazorSsr("components/app.mjs", new { Title = "Jazor" });
 
 ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SSR 与 Vite API。pnpm API 恢复项目的 `node_modules` 和 `pnpm-lock.yaml`，无需全局 Node、pnpm 或 CDN。Windows 宿主配置 `CETCompat=false`，随包 Emit apphost 按构建机 RID 选择，部署运行库按目标 RID 解析；原生 pnpm 安装期间的取消需等待引擎实际结束。运行条件与升级步骤见[工具链指南](../../docs/03-guides/toolchain-migration.md)，当前支持范围与门禁见[当前状态](../../docs/04-roadmap/current-status.md)。
 
-## Razor-to-Vue
+## 组件开发
 
-编写 RazorVue 组件的 Razor SDK 项目必须直接引用两个包：
-
-```xml
-<ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-</ItemGroup>
-```
-
-该集成直接消费官方 Razor Source Generator 完成后的最终 `Compilation`，不需要 `EnableRazorHostOutputs`、Razor IR、`RazorCodeDocument` 或二次解析生成 C#。
+编写 `.jazor` 并使用 npm 组件，见 [Jolt 作者指南](../../docs/03-guides/jolt-authoring.md)。现有 `.razor` 项目的配置、组件包和版本组合由 [RazorVue](https://github.com/devhxj/RazorVue#compatibility) 维护。
 
 ## 相关文档
 
 - [安装与配置](../../docs/03-guides/installation-and-configuration.md)
 - [快速开始](../../docs/03-guides/quick-start.md)
 - [产物管线](../../docs/02-architecture/artifact-pipeline.md)
-- [Razor-to-Vue](../../docs/02-architecture/razor-to-vue.md)

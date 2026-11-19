@@ -50,7 +50,6 @@
 
 ```bash
 dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter "FullyQualifiedName~RazorVueAnalyzerScopeTests|FullyQualifiedName~RazorVueCompatibilityAnalyzerTests"
 ```
 
 ## 相关文档

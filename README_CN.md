@@ -166,7 +166,7 @@ ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设
 | 产品总览 | [docs/README.md](docs/README.md) |
 | 核心编译器架构 | [编译器](docs/02-architecture/compiler.md) |
 | 框架集成规则 | [框架集成层](docs/02-architecture/framework-integrations.md) |
-| 当前 Razor-to-Vue 实现 | [Razor-to-Vue](docs/02-architecture/razor-to-vue.md) |
+| 独立维护的 .razor 集成 | [RazorVue](https://github.com/devhxj/RazorVue) |
 | 安装、配置与编写 | [使用指南](docs/03-guides/README.md) |
 | 示例 | [示例](docs/03-guides/examples.md) |
 | 当前范围 | [路线图](docs/04-roadmap/current-status.md) |

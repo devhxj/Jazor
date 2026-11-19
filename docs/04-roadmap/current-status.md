@@ -12,7 +12,6 @@
 | 普通源码与类型语义 | 可达的普通源码 helper 无需逐类型添加 `[ECMAScript]`；class 保留受支持的类行为，数据 record 表达结构化对象 | [类型与宿主标注](../03-guides/type-semantics.md) |
 | 普通 DLL 与 NuGet 导入 | ILSpy 恢复、独立 Roslyn 绑定、成员闭包、共享模块/状态、恢复源码映射；普通模块与 RazorVue 消费 | [类库导入](./ordinary-nuget-compilation-research.md) |
 | CLR 与宿主映射 | 白名单、runtime helper、强类型 ECMAScript/WebIDL binding 定义受支持的运行时语义；未实现语义在使用点明确诊断 | [Compiler](../../src/Jazor.Compiler/README.md)、[CLR](../../src/Jazor.CLR/README.md) |
-| Razor-to-Vue | 官方 Razor SG 的最终 `Compilation` 生成 Vue render-function ESM 模块；C# 表达式、成员与调用仍由核心 Compiler 翻译 | [Razor-to-Vue](../02-architecture/razor-to-vue.md) |
 | 模块与资源交付 | `ModuleCatalog`、ECMAScript 源码和 schema 2 binding metadata 接入标准 `jazor/` 项目，支持 npm/JSR identity、ESM specifier 和细粒度 JS/CSS tree shaking | [类库与产物契约](../02-architecture/library-artifact-contract.md)、[产物管线](../02-architecture/artifact-pipeline.md) |
 | 构建与 SSR 工具链 | 进程内 NodeApi + LibNode + 固定 pnpm API；Vite、Vue SSR 和依赖恢复共享显式资源闭包 | [工具链与迁移](../03-guides/toolchain-migration.md)、[NodeHost](../../src/Jazor.NodeHost/README.md) |
 
@@ -21,6 +20,7 @@
 ## Jolt 作者面
 
 Jolt 是应用主线，覆盖 .jazor 模板、C# 语义、npm 组件声明、VS Code 与 Visual Studio 编辑体验。已发布范围和示例见 [Jolt 作者指南](../03-guides/jolt-authoring.md)。RazorVue 的 .razor 作者面、SPA 与 SSR 验收由 [RazorVue 仓库](https://github.com/devhxj/RazorVue) 维护。
+
 ## 类型与产品边界
 
 - 普通 NuGet / ProjectReference 按实际使用点自动导入已解析的本地实现程序集，恢复并编译可达的受支持 class 成员；无需生产者标注。缺少实现或超出支持切片的外部运行时操作继续拒绝，见[类库导入](./ordinary-nuget-compilation-research.md)。
@@ -33,7 +33,7 @@ Jolt 是应用主线，覆盖 .jazor 模板、C# 语义、npm 组件声明、VS 
 
 Vue、Vue Router、Pinia、Vue Devtools 与 Style 提供各自 README 声明的绑定切片。P3 的 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 已进入 lockstep 发布集合，但仍保持 Guidance，等待各自 browser smoke 与真实 RazorVue consumer 证据。五个 Razor 组件库见 [RazorVue](https://github.com/devhxj/RazorVue)。见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
-`Jazor.Admin` 是 UI 库无关的管理壳库，`samples/JazorAdmin` 是参考应用。`RazorVue.Authoring` 与 `RazorVue.TodoList` 分别验证作者体验、隔离包消费和适用的 SPA/SSR 交付。真实后端保存、插件启用后的业务流程与 HMR 长尾仍需按消费者场景验证。
+[Jolt Counter](../../samples/Jolt.Counter/README.md) 验证 npm 组件、父子组件回调、开发服务和生产构建。
 
 ## 正式版与兼容性
 
@@ -46,7 +46,7 @@ Vue、Vue Router、Pinia、Vue Devtools 与 Style 提供各自 README 声明的�
 | 门禁 | 当前最低要求 | 复现入口 |
 | --- | --- | --- |
 | Compiler | 10,000 个通过场景；行覆盖率 98%，分支覆盖率 97% | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
-| Jolt | 语法和编译回归、隔离包消费、语言服务与浏览器交互 | dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt |
+| Jolt | 语法和编译回归、隔离包消费、语言服务与浏览器交互 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt` |
 | Vue binding | 每个目标公共 binding contract 审计覆盖率 90% | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | 绑定一致性 | 共享绑定的公开 API 保留 XML 文档 | `verify-binding-documentation.cs` |
 | 发布交付 | API 兼容性、包形状、隔离 SPA/SSR 消费者与真实浏览器通过 | `verify-release-candidate.cs`、官方 tag workflow |

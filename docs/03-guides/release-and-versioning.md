@@ -50,13 +50,13 @@
 | --- | --- |
 | 所有发布 | `dotnet run --file scripts/csharp/test-dotnet.cs` |
 | 编译器、CLR 白名单 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
-| RazorVue | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
+| Jolt | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt` |
 | Vue 生态绑定包 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | 绑定 XML 文档 | `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --configuration Release` |
 
 相关 PR 与 main 分支变更由 `Quality Gates` 工作流自动执行覆盖率、绑定 contract 和绑定 XML 文档门禁。标签发布和 `workflow_dispatch` 手动发布均对指定发布 ref 执行同一工作流，全部门禁成功后才进入打包流程；任一失败、取消或跳过都会阻止发布任务。覆盖率使用与本地默认命令一致的 Debug 配置，绑定文档门禁在 Release solution build 后检查生成的 XML；各门禁在独立 runner 上运行，失败时其他门禁仍继续采集证据。
 
-每个门禁的 TRX、Cobertura（编译器与 RazorVue）、日志和 JSON/Markdown 摘要（适用时）作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标用于公共契约审计。本地使用上表的单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `razorvue` / `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，并从指定发布 ref 读取被测源码；手动验证旧标签以该 ref 的交付内容为准。
+每个门禁的 TRX、Cobertura（编译器）、日志和 JSON/Markdown 摘要（适用时）作为 Actions artifact 保留 14 天，关键指标同时写入 job summary。Vue 绑定指标用于公共契约审计。本地使用上表的单文件 C# 命令复现；需要相同日志和摘要时，在仓库根目录运行 `dotnet run --file scripts/csharp/run-quality-gate.cs -- compiler`（或 `vue-bindings`），证据写入 `artifacts/quality/`。CI 从工作流提交读取报告入口，并从指定发布 ref 读取被测源码；手动验证旧标签以该 ref 的交付内容为准。
 
 SPA 与 SSR 发布消费者门禁由发布工作流在上传 NuGet 之前自动执行，本地无需重复运行；工作流门禁失败时不产生公开包。
 

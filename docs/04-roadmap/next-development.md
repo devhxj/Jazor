@@ -15,17 +15,15 @@
 
 ## 作者体验与交付证据
 
-Golden Path、诊断矩阵、标准 `jazor/` 项目、NodeApi 工具链及发布门禁已经建立。后续在这些入口上持续验收：
-
 | 任务 | 责任层 | 完成条件 |
 | --- | --- | --- |
-| 高频表格、slot、表单和回调自然写法 | 对应 binding、必要的 RazorVue compiler hooks | 独立 authoring fixture 与真实页面通过官方 SG、隔离 package 和浏览器验证；公共 API 保持强类型 |
-| 诊断与修改反馈 | RazorVue、作者指南、诊断工具 | 稳定 ID、作者源码位置、HelpLink、最小替代写法及源码/package 一致性回归 |
+| npm 组件组合、插槽和回调 | Jolt.Compiler、Jolt.Npm | 真实组件包的类型检查、渲染和浏览器交互一致 |
+| 诊断与修改反馈 | Jolt.LanguageServer、编辑器扩展 | 构建和编辑器定位一致，补全和导航使用同一份组件声明 |
 | Debug/HMR/SPA/SSR 一致性 | Emit、ASP.NET Core、NodeHost | 同一资源闭包上的模块、source map、PathBase、浏览器交互和适用 hydration 行为可复现，错误明确传播 |
 | 真实应用联调 | 参考应用与消费者 | 补齐真实后端保存、插件启用后的业务流程和修改到可见的 HMR 长尾证据 |
-| 可测量优化 | Compiler、RazorVue、CLR、Emit | 固定机器、提交、输入、warm-up 和多轮参数；比较耗时、p50/p95、吞吐、原始/gzip 体积与行为，达到预先记录的收益门槛 |
+| 可测量优化 | Compiler、Jolt、CLR、Emit | 固定机器、提交、输入、warm-up 和多轮参数；比较耗时、p50/p95、吞吐、原始/gzip 体积与行为 |
 
-使用[Golden Path](../03-guides/razorvue-golden-path.md)、[诊断矩阵](../03-guides/razorvue-diagnostic-matrix.md)和[开发与测试](../03-guides/development-and-testing.md)中的现有入口。测试仿真、真实浏览器和 package consumer 分别说明证明范围；产物不变不等于内部缓存命中。
+复现入口见 [Jolt 作者指南](../03-guides/jolt-authoring.md) 和 [开发与测试](../03-guides/development-and-testing.md)。
 
 ## 协议与支持范围扩展
 
@@ -35,7 +33,7 @@ SSR state envelope、认证快照/browser provider、单一显式构造函数的
 | --- | --- | --- |
 | SSR 状态交接 | 更复杂的请求/组件所有权、过期 payload、一次性副作用与 hydration identity | ASP.NET Core / Emit；独立 SSR/package/browser 场景验证失配、重复入口与失败传播 |
 | 认证与应用 bootstrap | 新 endpoint 状态和应用生命周期的组合 | 应用 endpoint / ASP.NET Core；服务端保持授权事实来源，typed consumer 验证匿名、刷新、403、过期、错误和竞态 |
-| 构造与 activation | 多构造、继承和更复杂服务生命周期 | RazorVue / Compiler；先定义 Roslyn 符号绑定的 selector、初始化顺序和 SSR/browser lifetime，再以独立消费者和完整矩阵验收 |
+| 构造与 activation | 多构造、继承和更复杂服务生命周期 | Compiler、应用集成；验证 Roslyn 绑定、初始化顺序和 SSR/browser lifetime |
 | 复杂 browser history | 超出现有 handler、取消恢复和释放切片的完整历史语义 | CLR / 应用 route host；以真实浏览器和 reference 明确 URL、竞态、用户确认与释放协议 |
 | localization 与复杂 validation | 有明确需求的 typed 应用/组件协议 | 对应应用或 binding；当前保持 Guidance，取得独立作者面和运行时证据后再评审 |
 
@@ -45,7 +43,7 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 35 个语法 bug 的运行行为和诊断修复已随 1.3.0 交付。[语法 issue 索引](./csharp-syntax-gap-audit.md)中的开放 enhancement 优先选择真实消费者及 P0 普通类库导入所需的切片，再扩展构造链、参数绑定、源码运算符、接口分派和自定义解构/枚举；不把关闭 bug 等同于实现完整运行时协议。
 
-普通 NuGet DLL 的自动实现恢复已形成[有界交付切片](./ordinary-nuget-compilation-research.md)，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。后续按真实库需求扩展初始化、运行时类型和分派协议；不承诺任意 NuGet/CLR 兼容。下一条主线为 LibNode LTS，随后推进 `.jazor`。
+普通 NuGet DLL 的自动实现恢复已形成[有界交付切片](./ordinary-nuget-compilation-research.md)，对应 [issue #4](https://github.com/devhxj/Jazor/issues/4)。后续按真实库需求扩展初始化、运行时类型和分派协议。
 
 每个新增 lowering 先明确求值顺序、副作用、结果、使用点语义、确定性与失败边界，再由 Compiler / CLR / Analyzer 按职责实现。仅为擦除类型注解增加 blanket rejection 不属于实现路线。
 
@@ -57,15 +55,15 @@ DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable�
 
 当前源码候选已实现后台 npm 初始化、跨文件引用与改名、格式化和快捷修复，以及选定的泛型组件和 `.jazor` 样式隔离场景。平台、编辑器版本和复现入口见候选验收。 [Jolt 编辑器与组件能力实施计划](./jolt-editor-implementation-plan.md#候选验收)
 
-`.jazor` 与 RazorVue 是平行的技术路线。一个文件定义一个 Vue 组件，HTML 与组件标签直接写在顶层，`@using` 引入命名空间，`@code` 提供 C# 实例成员。作者直接使用已发布 npm 包的 Vue 组件，构建从公开类型声明检查调用，从公开 ESM 入口导入运行时组件。首发目标包括同项目组件组合、npm 组件消费和语义编辑，本地 `.vue` 源文件互引在范围之外。 [Issue #138](https://github.com/devhxj/Jazor/issues/138)
+一个 `.jazor` 文件定义一个 Vue 组件，HTML 与组件标签直接写在顶层，`@using` 引入命名空间，`@code` 声明 C# 成员。构建从 npm 包的公开类型声明检查调用，从公开 ESM 入口导入组件。 [Issue #138](https://github.com/devhxj/Jazor/issues/138)
 
-Jolt 在 Razor 语言层取得带原文位置的标记与 C# 片段，通过 Roslyn 和 Jazor.Compiler 生成 Vue 渲染模块。项目加载器读取 npm 锁文件和声明，构建与编辑器共用相同的输入。现有 RazorVue 继续消费官方 SG 生成的 C#。 [Jolt 作者指南](../03-guides/jolt-authoring.md)
+Jolt 在 Razor 语言层取得带原文位置的标记与 C# 片段，通过 Roslyn 和 Jazor.Compiler 生成 Vue 渲染模块。项目加载器读取 npm 锁文件和声明，构建与编辑器共用相同的输入。 [Jolt 作者指南](../03-guides/jolt-authoring.md)
 
 验收应用通过父子回调驱动 Reka UI 更新，开发服务器与生产资源均使用浏览器验证。编辑器验证涵盖作者文件诊断和跳转到 npm 声明。本地打包验证检查安装后的 CLI 在隔离项目中构建与打包。正式发布以版本发行记录为准。 [浏览器样例](../../samples/Jolt.Counter/README.md) · [工具包验收](../../scripts/csharp/verify-jolt-package.cs)
 
 ## 写入当前状态的门槛
 
-1. C# API 通过正常类型检查和官方 Razor SG 绑定。
+1. C# API 通过正常类型检查，组件绑定通过 Jolt 编译。
 2. compiler lowering、CLR/runtime 或 binding 有针对性的行为回归与相邻失败诊断。
 3. 隔离 Release package consumer 与真实浏览器完成目标交互。
 4. 涉及 SSR、hydration、生命周期或宿主状态时，证明对应 profile 的所有权和错误传播。

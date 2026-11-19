@@ -62,22 +62,15 @@ dotnet build Sample.Host
 
 诊断 manifest 仅保存在 `obj`，不参与运行时解析。发布只复制 `dist/**` 和启用后的 `ssr/**`，源码、根 lock 与 `node_modules` 留在构建项目中。source map 默认不发布，需要时设置 `JazorPublishSourceMaps=true`。从 1.0.0 升级的运行时迁移步骤见[安装与配置](./installation-and-configuration.md)。
 
-## 4. 可选：加入 Razor-to-Vue
+## 4. 编写组件
 
-当宿主是 Razor SDK 项目且需要当前 Vue 组件集成时，额外引用 `Jazor.Vue`：
+编写 `.jazor` 组件、引入 npm 组件或配置编辑器，见 [Jolt 作者指南](./jolt-authoring.md)。
 
-```xml
-<ItemGroup>
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-</ItemGroup>
-```
-
-此时 Razor-to-Vue 在官方 Razor SG 的最终 compilation 上工作，并复用上述核心编译路径；普通 C# 模块沿用相同转换语义。详细边界见 [Razor-to-Vue](../02-architecture/razor-to-vue.md)。
+现有 `.razor` 项目的安装与版本兼容表由 [RazorVue](https://github.com/devhxj/RazorVue#compatibility) 维护。
 
 ## 常见检查
 
 - 产物位置：确认最终宿主配置了 `JazorMode`；模块类库通过 `ModuleCatalog` 传递生成内容。
-- Razor 组件转换：确认项目显式引用 `Jazor.Vue`，并采用支持 Razor Source Generator 的 Razor SDK。
 - 外部成员诊断：确认该成员已声明 Jazor 宿主映射，并通过强类型 binding 表达运行时语义。
 
 更多包配置见 [安装与配置](./installation-and-configuration.md)，真实项目组合见 [示例](./examples.md)。

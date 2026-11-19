@@ -8,13 +8,9 @@
 | [快速开始](./quick-start.md) | 初次使用者 | 从 C# 模块到本地 `.mjs` 产物的最小路径 |
 | [类型、宿主标注与迁移](./type-semantics.md) | 应用与类库作者 | 普通源码、class/record、宿主 union、外部 DLL 和 Analyzer/Compiler 的边界 |
 | [NodeApi 工具链与旧项目迁移](./toolchain-migration.md) | 应用开发者与维护者 | 当前运行条件、旧配置与锁文件迁移、平台和发布验证 |
-| [RazorVue 快速开始](./razorvue-quickstart.md) | RazorVue 应用开发者 | 从 typed CRUD 页面、TDesign 表单和应用自有 route host 开始，并附作者诊断与验证入口 |
-| [RazorVue Golden Path](./razorvue-golden-path.md) | RazorVue 应用开发者 | 从推荐样本到独立 package consumer、Release 和浏览器验收的可复制路径 |
-| [RazorVue 作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md) | RazorVue 应用开发者 | 完整组件 C# 边界、`@code`/`.razor.cs`、direct-render 限制、JAZORVGA 诊断、Proxy-safe class 与升级门禁 |
-| [浏览器互操作](./browser-interop.md) | RazorVue 与 ECMAScript 应用开发者 | live DOM、精度安全 JSON、原生文件/拖放与 Razor 语法边界 |
-| [RazorVue 诊断矩阵](./razorvue-diagnostic-matrix.md) | RazorVue 应用开发者与维护者 | 按作者场景查找稳定诊断、最小替代写法和验收规则 |
-| [RazorVue 开发范式](../02-architecture/razorvue-paradigm.md) | RazorVue 应用开发者与架构设计者 | Razor/C# JSX-like 规则、支持决策等级、明确边界与持续验收 |
-| [RazorVue 范式调试](./razorvue-debugging.md) | RazorVue 应用开发者 | 从 `.razor` 追踪到 generated C#、render module 与 source map |
+| [Jolt 作者指南](./jolt-authoring.md) | Jolt 应用开发者 | `.jazor` 组件、npm 组件和编辑器 |
+| [浏览器互操作](./browser-interop.md) | ECMAScript 应用开发者 | live DOM、精度安全 JSON 和原生文件/拖放 |
+| [RazorVue 作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md) | RazorVue 应用开发者 | 独立仓库维护的 `.razor` 指南 |
 | [开发与测试](./development-and-testing.md) | 仓库维护者 | 构建、测试、覆盖率门槛与脚本约定 |
 | [JS 资源库绑定](./js-resource-binding.md) | 仓库维护者 | 为上游 JS 库新建 `ECMAScript.*` 绑定的上游锁定、入口设计、生成器、C# 契约、测试与门禁接线全流程 |
 | [发版与版本规则](./release-and-versioning.md) | 仓库维护者 | 正式版版本通道、兼容性、发版门禁与 CHANGELOG 规则 |

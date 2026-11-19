@@ -34,7 +34,7 @@ ECMAScript ecosystem layer:
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
 | `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |
-| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `VueDraggable`, `FilePond`, `WangEditor`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real RazorVue consumer evidence |
+| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `VueDraggable`, `FilePond`, `WangEditor`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real package consumer evidence |
 
 ASP.NET Core integration layer:
 
@@ -182,7 +182,7 @@ Compiler implementation route rule:
 
 ## Testing Guidelines
 
-Tests use `MSTest.Sdk` v4 with `coverlet.collector`. Add compiler regressions under `src/Jazor.CompilerTest`, CLR-specific tests under `src/Jazor.CLR.Test`, RazorVue SG regressions under `src/Jazor.RazorVue.Sg.Test`, emit regressions under `src/Jazor.EmitTest`, and WebIDL generator coverage under `src/ECMAScript.WebIDL.GeneratorTest`. Use explicit names like `Convert_ClassWithMethod_GeneratesFunctionDeclaration` or the existing `JazorVue*` naming in the relevant suite. Coverage settings target at least 85% line coverage and 80% branch coverage; keep new work covered before opening a PR.
+Tests use `MSTest.Sdk` v4 with `coverlet.collector`. Add compiler regressions under `src/Jazor.CompilerTest`, CLR-specific tests under `src/Jazor.CLR.Test`, Jolt regressions in the corresponding `src/Jolt.*.Test` project, emit regressions under `src/Jazor.EmitTest`, and WebIDL generator coverage under `src/ECMAScript.WebIDL.GeneratorTest`. Use explicit names like `Convert_ClassWithMethod_GeneratesFunctionDeclaration` following the existing naming in the relevant suite. Coverage settings target at least 85% line coverage and 80% branch coverage; keep new work covered before opening a PR.
 
 Parallel test stability rules:
 - Treat `[DoNotParallelize]` as a last-resort temporary escape hatch, not a normal fix. When parallel execution exposes a failure, prefer removing shared mutable state or isolating resources instead of disabling concurrency.

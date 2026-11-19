@@ -79,7 +79,6 @@ flowchart TD
 
 ```text
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter FullyQualifiedName~OrdinaryLibraryImportTests
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter FullyQualifiedName~OrdinaryLibraryAnalyzerTests
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter FullyQualifiedName~Build_LocalJazorPackage_OrdinaryLibraryImports
 ```
 

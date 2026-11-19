@@ -26,4 +26,4 @@ dotnet run --file scripts/csharp/verify-vite-nodeapi.cs
 dotnet run --file scripts/csharp/verify-nodeapi-pipeline.cs
 ```
 
-Vite 探针验证 pnpm 恢复、原生绑定加载、开发服务启动/HTTP 响应/关闭和生产构建，并断言 JS PID 与 C# PID 一致。管线探针验证源码 SSR、浏览器/SSR Vite 构建及只复制 SSR runtime 的部署。WebIDL 默认比较固定 Deno 对照指纹和生成文件；EmitTest 覆盖代理、PathBase、WebSocket HMR 与 hydration。完整 Windows 发布消费者使用 `verify-windows-spa-release.cs` / `verify-windows-ssr-release.cs`，跨平台组合使用 `nodeapi-verify.yml`。
+Vite 探针验证 pnpm 恢复、原生绑定加载、开发服务启动/HTTP 响应/关闭和生产构建，并断言 JS PID 与 C# PID 一致。管线探针验证源码 SSR、浏览器/SSR Vite 构建及只复制 SSR runtime 的部署。WebIDL 默认比较固定 Deno 对照指纹和生成文件；EmitTest 覆盖代理、PathBase、WebSocket HMR 与 hydration。跨平台验证见 [NodeApi workflow](../../.github/workflows/nodeapi-verify.yml)。

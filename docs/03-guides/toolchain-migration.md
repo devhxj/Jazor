@@ -47,8 +47,7 @@ pnpm 安装 API 不提供即时终止：进入原生安装后，取消会等待�
 ```bash
 dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs
 dotnet run --file scripts/csharp/verify-nodeapi-pipeline.cs
-dotnet run --file scripts/csharp/verify-windows-spa-release.cs -- --path-base /docs
-dotnet run --file scripts/csharp/verify-windows-ssr-release.cs -- --path-base /todo
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-release
 ```
 
 仓库工具项目通过 `dotnet run --file scripts/csharp/restore-node-project.cs -- <directory>` 恢复依赖。跨平台验证由 [NodeApi workflow](../../.github/workflows/nodeapi-verify.yml)记录实际组合，Windows 发布消费者由[官方发布工作流](../../.github/workflows/nuget-publish-ref.yml)在上传前执行。

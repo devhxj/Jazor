@@ -72,11 +72,11 @@ Razor-to-Vue 被确立为建立在核心平台之上的框架集成方向。其�
 
 ## 已退役的 Jolt 路线
 
-Jolt 曾覆盖开发宿主、语言服务、调试、DevServer 和相关协议探索。当前项目图以 RazorVue 主链路组织产品实现、构建和验证；Jolt 记录作为历史背景。
+早期 Jolt 覆盖开发宿主、语言服务、调试、DevServer 和相关协议探索，随后项目曾集中于 RazorVue。自 2.1.0-preview.6 起，Jolt 成为 Jazor 的应用开发主线，RazorVue 在独立仓库维护。
 
 ## 未落地的 CSX 提案
 
-CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.jsx` 的独立前端路线。当前产品范围以 RazorVue 主链路为准；CSX 作为已归档提案保留。未来评估该方向时，按框架集成层的规则提出新的设计与验收。
+CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.jsx`。该提案已归档，历史详情见 Git 提交记录。
 
 ## 路线图的收口
 

@@ -166,7 +166,7 @@ Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core applicatio
 | Product overview | [docs/README.md](docs/README.md) |
 | Core compiler architecture | [Compiler](docs/02-architecture/compiler.md) |
 | Framework integration rules | [Framework Integrations](docs/02-architecture/framework-integrations.md) |
-| Current Razor-to-Vue implementation | [Razor-to-Vue](docs/02-architecture/razor-to-vue.md) |
+| Standalone .razor integration | [RazorVue](https://github.com/devhxj/RazorVue) |
 | Install, configure, and author | [Guides](docs/03-guides/README.md) |
 | Examples | [Examples](docs/03-guides/examples.md) |
 | Current scope | [Roadmap](docs/04-roadmap/current-status.md) |
