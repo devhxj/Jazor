@@ -417,7 +417,7 @@ union 是 authoring/compile-time contract，运行时按其分支值擦除；保
 
 数组元素类型仍为编译期约束；运行时只判断数组，不扫描元素来猜分支。两个无法区分的对象分支，以及 File/Blob 这类可相互赋值、需要精确标签的 fallback 分支，不能从擦除后的 JS 值恢复标签；相关投影在使用点报错，使用明确的宿主映射或非重叠模型。`Value` 保持原值；已声明的 whitelist/Inline 等映射优先于自动投影。
 
-完整可编译示例为 [NumericUnionAuthoring.razor](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor) / [code-behind](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor.cs)，覆盖真实 Element Plus 的分页、单/多选、清空、数值尺寸和原始字符串 ID。跨库示例为 [BindingMatrix.razor](../../samples/RazorVue.NumericUnion/BindingMatrix.razor) / [code-behind](../../samples/RazorVue.NumericUnion/BindingMatrix.razor.cs)，增加 Vuetify 和 TDesign。将文件放入已配置对应绑定的 RazorVue 工程，并对齐 namespace 与包版本；详细接入见[示例说明](../../samples/RazorVue.NumericUnion/README.md)。
+完整可编译示例为 [NumericUnionAuthoring.razor](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor) / [code-behind](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor.cs)，覆盖真实 Element Plus 的分页、单/多选、清空、数值尺寸和原始字符串 ID。跨库示例为 [BindingMatrix.razor](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/BindingMatrix.razor) / [code-behind](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/BindingMatrix.razor.cs)，增加 Vuetify 和 TDesign。将文件放入已配置对应绑定的 RazorVue 工程，并对齐 namespace 与包版本；详细接入见[示例说明](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/README.md)。
 
 ```razor
 <ElAvatar Size="@(32)" />

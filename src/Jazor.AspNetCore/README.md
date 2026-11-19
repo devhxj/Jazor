@@ -109,7 +109,7 @@ SSR 复用 SPA 的导航筛选规则。GET 创建请求并渲染，HEAD 只设�
 
 固定 request/props 重载会跨请求共享对象；请求相关数据应由工厂创建。Props/providers 使用 `System.Text.Json` 序列化，同一快照交给浏览器 hydration，默认保留 CLR 属性名。Provider 键必须非空且唯一（区分大小写）。`Authentication` 自动占用 `jazor:auth-state`；不要同时手动提供该键。`FromPrincipal` 会复制全部 claims；它是快照转换，不执行认证或授权。
 
-完整运行示例见 [Todo 宿主](../../samples/RazorVue.TodoList/Todo.Host/Program.cs)。
+完整运行示例见 [Todo 宿主](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.TodoList/Todo.Host/Program.cs)。
 
 ## 文档验证
 

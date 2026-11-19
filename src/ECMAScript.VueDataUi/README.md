@@ -80,7 +80,7 @@ Dataset 与稳定 config 字段都有具体 C# 类型。对于 upstream 仍在�
 
 ## 验证与示例
 
-- [Vue Data UI dashboard sample](../../samples/ECMAScript.VueDataUi.Dashboard/README.md)
+- [Vue Data UI dashboard sample](https://github.com/devhxj/RazorVue/tree/main/samples/ECMAScript.VueDataUi.Dashboard/README.md)
 - `dotnet run --file scripts/csharp/test-dotnet.cs -- --project dataui`
 - `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs`
 

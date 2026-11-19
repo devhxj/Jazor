@@ -4,7 +4,7 @@
 
 ## 1. 建立页面
 
-先运行仓库里的 [RazorVue.Authoring](../../samples/RazorVue.Authoring/README.md) sample，或从它的 [TaskBoard.razor](../../samples/RazorVue.Authoring/TaskBoard.razor) 和 [TaskBoard.razor.cs](../../samples/RazorVue.Authoring/TaskBoard.razor.cs) 开始复制。下面的片段保持已验证 sample 的作者面；`TaskDraft`、`TaskRow` 和 `TaskTable` 的完整定义也在该 sample 中。TDesign 的泛型组件由 official Razor Source Generator 正常绑定：
+先运行仓库里的 [RazorVue.Authoring](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.Authoring/README.md) sample，或从它的 [TaskBoard.razor](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.Authoring/TaskBoard.razor) 和 [TaskBoard.razor.cs](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.Authoring/TaskBoard.razor.cs) 开始复制。下面的片段保持已验证 sample 的作者面；`TaskDraft`、`TaskRow` 和 `TaskTable` 的完整定义也在该 sample 中。TDesign 的泛型组件由 official Razor Source Generator 正常绑定：
 
 ```razor
 @page "/tasks"
@@ -77,7 +77,7 @@ private async Task SubmitForm(TSubmitContext<TaskDraft> context)
         @bind-Value:event="OnChange" />
 ```
 
-提交处理器可以用 `Saving` 防止重复提交，并在 `try/finally` 中恢复状态；模型不应改成 `object`，错误也不应转换成字符串 JavaScript 调度。需要从服务端获取数据时，注入强类型的 browser client，让 endpoint 返回明确的 DTO。完整的 `SaveDraftAsync`、状态字段和生命周期代码见 sample 的 [TaskBoard.razor.cs](../../samples/RazorVue.Authoring/TaskBoard.razor.cs)。
+提交处理器可以用 `Saving` 防止重复提交，并在 `try/finally` 中恢复状态；模型不应改成 `object`，错误也不应转换成字符串 JavaScript 调度。需要从服务端获取数据时，注入强类型的 browser client，让 endpoint 返回明确的 DTO。完整的 `SaveDraftAsync`、状态字段和生命周期代码见 sample 的 [TaskBoard.razor.cs](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.Authoring/TaskBoard.razor.cs)。
 
 ## 3. 路由和导航
 
@@ -134,4 +134,4 @@ dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --w
 
 第二条命令检查 source authoring、official Razor SG 生成物、Debug module/source map、Release package consumer、资源闭包和 HTTP-origin 浏览器 journey。具备 Chrome/Chromium 的环境执行完整浏览器验收；`--skip-browser` 用于静态产物探查。
 
-更细的边界和诊断 ID 见 [RazorVue 作者指南](./razorvue-authoring.md)；样例中的完整页面见 [RazorVue.Authoring README](../../samples/RazorVue.Authoring/README.md)。
+更细的边界和诊断 ID 见 [RazorVue 作者指南](./razorvue-authoring.md)；样例中的完整页面见 [RazorVue.Authoring README](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.Authoring/README.md)。

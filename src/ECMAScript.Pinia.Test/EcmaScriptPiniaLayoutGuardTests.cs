@@ -88,16 +88,15 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
 		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
-		StringAssert.Contains(source, "Default package set: Jazor, Jazor.Vue, Jazor.Jolt, ECMAScript.Style, Jazor.Admin, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+		StringAssert.Contains(source, "Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
 		StringAssert.Contains(source, "Selected packages: ");
 		StringAssert.Contains(source, "case \"--package\"");
 		StringAssert.Contains(source, "case \"--package-version\"");
 		StringAssert.Contains(source, "-p:MinVerVersionOverride=");
 		StringAssert.Contains(source, "-p:JazorPackageVersion=");
 		StringAssert.Contains(source, "PackageAliases");
-		StringAssert.Contains(source, "[\"jazor-vue\"] = \"Jazor.Vue\"");
+		StringAssert.Contains(source, "[\"vue\"] = \"ECMAScript.Vue\"");
 		StringAssert.Contains(source, "[\"style\"] = \"ECMAScript.Style\"");
-		StringAssert.Contains(source, "[\"admin\"] = \"Jazor.Admin\"");
 		StringAssert.Contains(source, "[\"devtools\"] = \"ECMAScript.Vue.Devtools\"");
 		StringAssert.Contains(source, "[\"dataui\"] = \"ECMAScript.VueDataUi\"");
 		StringAssert.Contains(source, "[\"lucide\"] = \"ECMAScript.Lucide\"");
@@ -169,7 +168,6 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "--project dataui `");
 		StringAssert.Contains(source, "--project lucide `");
 		StringAssert.Contains(source, "dotnet run --file ./samples/ECMAScript.Pinia.Counter/verify-smoke.cs");
-		StringAssert.Contains(source, "dotnet run --file ./samples/ECMAScript.VueDataUi.Dashboard/build-local.cs");
 		StringAssert.Contains(source, "dotnet run --file ./scripts/csharp/publish-nuget.cs -- `");
 		StringAssert.Contains(source, "--output-directory artifacts/packages `");
 		StringAssert.Contains(source, "--output-directory artifacts/packages-nobuild `");

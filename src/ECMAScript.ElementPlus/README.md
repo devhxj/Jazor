@@ -47,7 +47,7 @@ ESM 入口、共享 chunk 和组件样式。`element-plus` 根入口保留给完
 
 ## N4 数值与 union 作者体验
 
-[RazorVue 作者指南的 N4 矩阵与完整示例](../../docs/03-guides/razorvue-authoring.md#numeric-union-authoring) 对应 [NumericUnionAuthoring.razor](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor) / [NumericUnionAuthoring.razor.cs](../../samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor.cs)，涵盖 Avatar 数值/字符串尺寸、分页带值回调、nullable 单/多值选择与 typed string 选择。
+[RazorVue 作者指南的 N4 矩阵与完整示例](../../docs/03-guides/razorvue-authoring.md#numeric-union-authoring) 对应 [NumericUnionAuthoring.razor](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor) / [NumericUnionAuthoring.razor.cs](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.NumericUnion/NumericUnionAuthoring.razor.cs)，涵盖 Avatar 数值/字符串尺寸、分页带值回调、nullable 单/多值选择与 typed string 选择。
 
 `ElSelect.ModelValue` / `ModelValueChanged` 的实际类型是 `VueBooleanStringNumberObjectArrayableValue?` / `EventCallback<VueBooleanStringNumberObjectArrayableValue?>`。数值单选读取 `value?.AsNumber`（`double?`），字符串单选读取 `value?.AsString`（`string?`）；多选读取 `value?.AsMultiple ?? []`（`VueBooleanStringNumberObjectValue[]`）。类型同时允许 bool 和 `VueProps`，并不是 `VueStringNumberArrayableValue`。
 

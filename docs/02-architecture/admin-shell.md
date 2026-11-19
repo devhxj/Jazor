@@ -16,4 +16,4 @@
 
 ## 使用方式
 
-应用在已有 RazorVue 基础上显式引用 `Jazor.Admin`。版本应与 `Jazor` 和 `Jazor.Vue` 保持一致，具体包配置见 [安装与配置](../03-guides/installation-and-configuration.md)。库的完整 public surface 与组件说明见 [Jazor.Admin README](../../src/Jazor.Admin/README.md)。
+应用在已有 RazorVue 基础上显式引用 `Jazor.Admin`。版本应与 `Jazor` 和 `Jazor.Vue` 保持一致，具体包配置见 [安装与配置](../03-guides/installation-and-configuration.md)。库的完整 public surface 与组件说明见 [Jazor.Admin README](https://github.com/devhxj/RazorVue/tree/main/src/Jazor.Admin/README.md)。

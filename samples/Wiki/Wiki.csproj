@@ -30,4 +30,10 @@
     <PackageReference Include="Jazor.Vue" Version="2.1.0-preview.5" PrivateAssets="all" />
     <PackageReference Include="ECMAScript.Style" Version="2.1.0-preview.5" />
   </ItemGroup>
+  <Target Name="ImportWikiDocsCatalog"
+          BeforeTargets="BeforeBuild"
+          Inputs="$(MSBuildProjectDirectory)\..\..\docs\**\*.md;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs"
+          Outputs="$(WikiDocsGeneratedFile)">
+    <Exec Command="dotnet run --file &quot;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs&quot;" />
+  </Target>
 </Project>

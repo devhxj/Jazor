@@ -53,4 +53,4 @@ Razor 已负责校验未知参数、必需参数和参数类型不匹配；Razor
 - `debug` 模式提供可调试模块和源映射；`release` 模式通过进程内 Vite API 消费标准项目与作者 Vite 配置，不执行任意 shell 构建脚本。
 - 组件的开发期 HMR 与 SSR 是上层交付能力，官方 Razor SG 输入边界因此保持稳定。
 
-实现级说明与聚焦测试位于 [Jazor.RazorVue README](../../src/Jazor.RazorVue/README.md)。
+实现级说明与聚焦测试位于 [Jazor.RazorVue README](https://github.com/devhxj/RazorVue/tree/main/src/Jazor.RazorVue/README.md)。

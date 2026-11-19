@@ -35,7 +35,7 @@ public sealed record JsOptions(string Title)
 var options = new JsOptions("release");
 ```
 
-需要 Vue 深层响应式跟踪的数据仍可保留可写属性，写法见 [TodoList 样例](../../samples/RazorVue.TodoList/README.md)。这不扩展为任意 CLR 结构体复制或 record 构造协议。
+需要 Vue 深层响应式跟踪的数据仍可保留可写属性，写法见 [TodoList 样例](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.TodoList/README.md)。这不扩展为任意 CLR 结构体复制或 record 构造协议。
 
 ## 宿主标注
 

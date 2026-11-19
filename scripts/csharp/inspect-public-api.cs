@@ -25,7 +25,7 @@ var assemblyPaths = new Dictionary<string, string>(StringComparer.Ordinal)
     ["ECMAScript.VeeValidate"] = "net11.0", ["ECMAScript.VueI18n"] = "net11.0", ["ECMAScript.VueQuery"] = "net11.0",
     ["ECMAScript.VueDraggable"] = "net11.0", ["ECMAScript.FilePond"] = "net11.0", ["ECMAScript.WangEditor"] = "net11.0",
     ["ECMAScript.Monaco"] = "net11.0",
-    ["Jazor"] = "net11.0", ["Jazor.Vue"] = "net11.0"
+    ["Jazor"] = "net11.0"
 };
 var assemblies = assemblyPaths.Select(pair => Path.Combine(repoRoot, "src", pair.Key, "bin", configuration, pair.Value, pair.Key + ".dll"));
 var preferredPaths = assemblyPaths.ToDictionary(pair => pair.Key, pair => Path.Combine(repoRoot, "src", pair.Key, "bin", configuration, pair.Value, pair.Key + ".dll"), StringComparer.Ordinal);

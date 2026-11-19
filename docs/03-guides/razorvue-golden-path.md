@@ -4,7 +4,7 @@
 
 ## 从哪个样本开始
 
-先阅读并运行 [RazorVue.Authoring](../../samples/RazorVue.Authoring/README.md)。它是最小的完整样本，包含 TDesign 表单、表格、typed slot、`@bind`、路由、query、`NavigationManager` 以及 package Release/browser smoke。需要参考更大规模管理应用时，再阅读 [JazorAdmin](../../samples/JazorAdmin/README.md)。
+先阅读并运行 [RazorVue.Authoring](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.Authoring/README.md)。它是最小的完整样本，包含 TDesign 表单、表格、typed slot、`@bind`、路由、query、`NavigationManager` 以及 package Release/browser smoke。需要参考更大规模管理应用时，再阅读 [JazorAdmin](https://github.com/devhxj/RazorVue/tree/main/samples/JazorAdmin/README.md)。
 
 样本中的 `TaskBoard`、`TaskDetails` 和 `TaskTable` 展示了推荐的组件拆分方式：页面负责状态和业务流程，表格负责展示与用户操作，API client 负责 endpoint 边界，组件库负责控件行为。
 

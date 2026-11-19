@@ -133195,7 +133195,5 @@
 - type Jazor.AspNetCore.JazorWebApplication
   - Microsoft.AspNetCore.Builder.WebApplicationBuilder CreateBuilder(System.String[], System.String)
 
-## Jazor.Vue
-
 ## Jazor
 

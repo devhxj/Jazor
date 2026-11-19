@@ -56,5 +56,5 @@ dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter "F
 ## 相关文档
 
 - [Jazor.Compiler](../Jazor.Compiler/README.md)
-- [Jazor.RazorVue](../Jazor.RazorVue/README.md)
+- [Jazor.RazorVue](https://github.com/devhxj/RazorVue/tree/main/src/Jazor.RazorVue/README.md)
 - [编译器架构](../../docs/02-architecture/compiler.md)
