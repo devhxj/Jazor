@@ -5,7 +5,7 @@
     <description>$packageDescription$</description><readme>$packageReadmeFile$</readme>
     <dependencies><group targetFramework="net11.0">
       <dependency id="Jazor" version="$dependencyVersion$" exclude="Build,Analyzers" />
-      <dependency id="Jazor.Vue" version="$dependencyVersion$" exclude="Build,Analyzers" />
+      <dependency id="ECMAScript.Vue" version="$dependencyVersion$" />
     </group></dependencies>
   </metadata>
   <files>

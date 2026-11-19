@@ -1,36 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
-    <!-- Vue authoring is delivered by Jazor.Vue; this source project is a payload input, not a public package. -->
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>ECMAScript.Vue</PackageId>
+    <NuspecFile>ECMAScript.Vue.nuspec</NuspecFile>
     <RootNamespace>ECMAScript</RootNamespace>
-    <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Vue 3 host bindings for ECMAScript runtime authoring.</Description>
+    <Description>Shared Vue 3 type bindings, component contracts and runtime resource metadata for Jazor.</Description>
+    <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
+    <JazorPackageBuildOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorPackageBuildOutputRoot>
+    <JazorPackageBuildOutputRoot Condition="'$(JazorPackageBuildOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorPackageBuildOutputRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- RazorVue event extensions live in its opt-in authoring payload, keeping the core
-         ECMAScript/CLR runtime free from ASP.NET Core authoring dependencies. -->
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="buildTransitive\ECMAScript.Vue.targets" Pack="true" PackagePath="buildTransitive\ECMAScript.Vue.targets" />
-    <None Include="manifest.json" Pack="true" PackagePath="jazor\vue3\manifest.json" />
-    <None Include="licenses\LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
-    <None Include="licenses\VUE-DEVTOOLS-API-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
-    <None Include="licenses\PERFECT-DEBOUNCE-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
-    <None Include="licenses\VUE-SERVER-RENDERER-LICENSE" Pack="true" PackagePath="jazor\vue3\licenses" />
-  </ItemGroup>
+  <Import Project="..\Packaging\JazorPackage.targets" />
 </Project>

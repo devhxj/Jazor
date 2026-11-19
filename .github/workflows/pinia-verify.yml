@@ -23,8 +23,6 @@ on:
       - 'src/Jazor.Common/**'
       - 'src/Jazor.Compiler/**'
       - 'src/Jazor.Emit/**'
-      - 'src/Jazor.RazorVue/**'
-      - 'src/Jazor.Vue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
       - 'samples/ECMAScript.Vue.Devtools.Plugin/**'
       - 'samples/ECMAScript.VueDataUi.Dashboard/**'
@@ -54,8 +52,6 @@ on:
       - 'src/Jazor.Common/**'
       - 'src/Jazor.Compiler/**'
       - 'src/Jazor.Emit/**'
-      - 'src/Jazor.RazorVue/**'
-      - 'src/Jazor.Vue/**'
       - 'samples/ECMAScript.Pinia.Counter/**'
       - 'samples/ECMAScript.Vue.Devtools.Plugin/**'
       - 'samples/ECMAScript.VueDataUi.Dashboard/**'
@@ -170,12 +166,6 @@ jobs:
         shell: pwsh
         run: |
           dotnet run --file ./samples/ECMAScript.Vue.Devtools.Plugin/build-local.cs -- `
-            --configuration Release
-
-      - name: Verify Vue Data UI NuGet consumer smoke
-        shell: pwsh
-        run: |
-          dotnet run --file ./samples/ECMAScript.VueDataUi.Dashboard/build-local.cs -- `
             --configuration Release
 
   package-dry-run:

@@ -10,7 +10,6 @@
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
   <a href="https://github.com/devhxj/Jazor/releases/tag/v2.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.0.0&amp;display_name=tag&amp;label=release" /></a>
-  <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -34,7 +33,9 @@ Emit 和 SSR 通过微软 LibNode 使用 Node.js 26，覆盖 Windows 和 glibc L
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
-Razor-to-Vue 是建立在该核心之上的一个应用方向。`Jazor.RazorVue` 绑定官方 Razor Source Generator 的最终输出，再将所有 C# 表达式和成员语义交给同一套 Jazor 编译器，最后组装 Vue render-function 模块。
+**Jolt 是 Jazor 的应用开发主线。** 用 .jazor 编写强类型 Vue 组件，接入 npm 包，在 VS Code 或 Visual Studio 中编辑。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
+
+[RazorVue](https://github.com/devhxj/RazorVue) 独立维护 .razor 路径与 Jazor.Vue、Jazor.Admin 包。
 
 普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块，适用于普通模块与 RazorVue。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 
@@ -62,38 +63,35 @@ flowchart LR
         Emit --> Artifacts["标准 JS 项目、.mjs、源映射与构建输出"]
     end
 
-    subgraph Integrations["框架集成层"]
-        Razor["Razor 组件"] --> RazorSG["官方 Razor SG"] --> Compilation["最终 Compilation"]
-        Compilation --> RazorVue["Jazor.RazorVue"]
-        RazorVue -. 调用核心翻译钩子 .-> Compiler
-        RazorVue --> Emit
+    subgraph Jolt["Jolt .jazor 开发"]
+        Jazor[".jazor 和 npm 声明"] --> Roslyn
+        Compiler --> Vue["Vue 组件与源映射"]
+        Vue --> Vite["Vite 应用产物"]
     end
 ```
 
-`Jazor.RazorVue` 是当前已实现的框架集成。未来的 `Jazor.React`、`Jazor.RazorReact` 等方向可以复用同一核心，但目前不是已支持的 API。
 
 ## 质量门槛
 
 顶部徽标展示持续适用的验收门槛，而非会过期的单次构建结果。仓库通过可复现脚本验证以下最低要求：
 
 - 核心编译器：至少 10,000 个通过的 `IOperation` 场景、98% 行覆盖率和 97% 分支覆盖率。
-- 当前 Razor-to-Vue 集成：至少 4,000 个通过场景、90% 行覆盖率和 94% 分支覆盖率；该门槛会在集成完善后再提高。
+- Jolt：隔离 CLI 安装、语言服务协议、两套 VSIX 打包及浏览器交互。
 - Vue 生态绑定：每个目标至少 90% 的已审计公共绑定契约覆盖率。
 
-可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs`、`verify-razorvue-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。运行 `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` 可验证公共 ECMAScript 和绑定声明保留了 XML 文档、上游源元数据和包 XML 交付。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。
+可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。运行 `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` 可验证公共 ECMAScript 和绑定声明保留了 XML 文档、上游源元数据和包 XML 交付。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。
 
 ## 包组成
 
 | 包 | 职责 |
 | --- | --- |
 | `Jazor` | 框架无关的编译器、CLR 契约、分析器、emit 工具、MSBuild 与 ASP.NET Core 集成，可用于普通 ECMAScript 类库 |
-| `Jazor.Vue` | Vue authoring、Razor-to-Vue opt-in、Vue runtime 资源，以及 `ECMAScript.Vue`、`ECMAScript.VueContract` payload |
+| Jazor.Jolt | .jazor CLI 与语言服务器 |
+| ECMAScript.Vue | 共享的 Vue 3 类型、组件契约与运行时元数据 |
 | `ECMAScript.*` | 框架无关 ECMAScript 绑定、可选 Vue 生态绑定与 CSS-in-JS 类库 |
 | `ECMAScript.VueDataUi` | `Vd*` 强类型 RazorVue 图表与按组件本地 ESM 物化；[前缀迁移](src/ECMAScript.VueDataUi/README.md#razor-使用) |
 | `ECMAScript.Lucide` | `Lucide / lucide-vue-next` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
-| `Jazor.Admin` | UI 库无关的管理壳库与 RazorVue 组件 |
 
-[`samples/JazorAdmin`](samples/JazorAdmin) 是消费 [`Jazor.Admin`](src/Jazor.Admin/README.md) 的生产级管理参考应用，不属于该库的公共契约。
 
 ### 类库形式与直接引用
 
@@ -198,7 +196,6 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 ```bash
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 ```

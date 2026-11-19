@@ -36,20 +36,15 @@ var stageDefinitions = new (string Name, string[] Arguments)[]
     ("public-api", ["run", "--file", "scripts/csharp/inspect-public-api.cs", "--", "--configuration", "Release", "--output", Path.Combine(candidateRoot, "public-api.md")]),
     ("public-api-compatibility", ["run", "--file", "scripts/csharp/compare-public-api.cs", "--", "--current", Path.Combine(candidateRoot, "public-api.md"), "--baseline", "docs/03-guides/public-api-baseline.snapshot.md", "--approved-removals", "docs/03-guides/public-api-reviewed-removals.snapshot.md", "--output", Path.Combine(candidateRoot, "public-api-compatibility.md")]),
     ("compiler-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "compiler", "--output-directory", Path.Combine(candidateRoot, "coverage", "compiler")]),
-    ("razorvue-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "razorvue", "--output-directory", Path.Combine(candidateRoot, "coverage", "razorvue")]),
     ("vue-binding-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "vue-bindings", "--output-directory", Path.Combine(candidateRoot, "coverage", "vue-bindings")]),
     ("binding-contracts", ["run", "--file", "scripts/csharp/verify-vue-binding-contracts.cs", "--", "--report", Path.Combine(candidateRoot, "binding-contracts", "report.json"), "--baseline", Path.Combine(repoRoot, "docs", "04-roadmap", "binding-contract-baseline.json"), "--fail-on-baseline-drift"]),
     ("binding-documentation", ["run", "--file", "scripts/csharp/verify-binding-documentation.cs", "--", "--no-build", "--configuration", "Release", "--output-directory", Path.Combine(candidateRoot, "binding-documentation")]),
-    ("razorvue-diagnostics", ["run", "--file", "scripts/csharp/verify-razorvue-diagnostics.cs", "--", "--output", Path.Combine(candidateRoot, "diagnostics")]),
     ("typed-bootstrap", ["run", "--file", "scripts/csharp/verify-typed-bootstrap.cs", "--", "--report", Path.Combine(candidateRoot, "typed-bootstrap.md")]),
-    ("sample-regression", ["run", "--file", "scripts/csharp/verify-sample-regression-matrix.cs", "--", "--configuration", "Release", "--report", Path.Combine(candidateRoot, "sample-regression", "report.json")]),
     ("mainline", ["run", "--file", "scripts/csharp/test-dotnet.cs", "--", "--configuration", "Release", "--base-output-path", Path.Combine(candidateRoot, "out"), "--base-intermediate-output-path", Path.Combine(candidateRoot, "obj")]),
     // The publish script's default set is the single catalog for public packages. Keeping this
     // stage selector-free prevents a newly shipped binding from being silently omitted here.
     ("packages", ["run", "--file", "scripts/csharp/publish-nuget.cs", "--", "--configuration", "Release", "--output-directory", packageRoot, "--package-version", version, "--skip-push"]),
-    ("package-shape", ["run", "--file", "scripts/csharp/verify-nuget-package.cs", "--", "--configuration", "Release", "--output-directory", Path.Combine(candidateRoot, "package-shape"), "--package-version", version, "--package", "Jazor", "--package", "Jazor.Vue"]),
-    ("spa-consumer", ["run", "--file", "scripts/csharp/verify-windows-spa-release.cs", "--", "--package-source", packageRoot, "--skip-pack", "--path-base", "/docs", "--startup-timeout-seconds", "60", "--browser-startup-timeout-seconds", "20"]),
-    ("ssr-consumer", ["run", "--file", "scripts/csharp/verify-windows-ssr-release.cs", "--", "--package-source", packageRoot, "--skip-pack", "--path-base", "/todo", "--startup-timeout-seconds", "90", "--browser-startup-timeout-seconds", "20"])
+    ("package-shape", ["run", "--file", "scripts/csharp/verify-nuget-package.cs", "--", "--configuration", "Release", "--output-directory", Path.Combine(candidateRoot, "package-shape"), "--package-version", version, "--package", "Jazor", "--package", "ECMAScript.Vue"]),
 };
 if (options.Only is not null)
 {

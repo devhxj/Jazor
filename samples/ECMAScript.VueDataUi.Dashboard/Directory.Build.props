@@ -1,5 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <JazorPackageVersion Condition="'$(JazorPackageVersion)' == ''">0.14.0</JazorPackageVersion>
-  </PropertyGroup>
-</Project>

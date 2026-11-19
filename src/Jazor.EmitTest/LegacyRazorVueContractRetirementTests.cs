@@ -107,7 +107,7 @@ public sealed class LegacyRazorVueContractRetirementTests
         var repositoryRoot = FindRepositoryRoot();
         var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
         var resourceTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "buildTransitive", "Jazor.Resources.targets"));
-        var vueTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor.Vue", "buildTransitive", "Jazor.Vue.targets"));
+        var vueTargets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "ECMAScript.Vue", "buildTransitive", "ECMAScript.Vue.targets"));
         Assert.IsFalse(targets.Contains("JazorArtifactProviderAssembly", StringComparison.Ordinal), targets);
         Assert.IsFalse(resourceTargets.Contains("RuntimeProviderCatalog", StringComparison.Ordinal), resourceTargets);
         StringAssert.Contains(targets, "Jazor.Resources.targets", StringComparison.Ordinal);

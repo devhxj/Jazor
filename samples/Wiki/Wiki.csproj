@@ -1,83 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <JazorMode>debug</JazorMode>
-    <!-- Source references stay the default for repository development. Set WikiUsePackages=true
-         to verify the same Wiki as an isolated NuGet consumer. -->
-    <WikiUsePackages Condition="'$(WikiUsePackages)' == ''">false</WikiUsePackages>
     <TargetFramework>net11.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <Import Project="..\..\src\Jazor\build\Jazor.props"
-          Condition="'$(WikiUsePackages)' != 'true'" />
-
   <ItemGroup>
     <Compile Remove="jazor\**" />
     <Content Remove="jazor\**" />
     <EmbeddedResource Remove="jazor\**" />
     <None Remove="jazor\**" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="host\index.template.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
-
   <!-- docs/ markdown 是官网内容单一事实来源：docs 变化时重新生成纯数据路由目录。 -->
   <PropertyGroup>
     <WikiDocsGeneratedFile>$(MSBuildProjectDirectory)\obj\wiki\WikiDocsContent.g.cs</WikiDocsGeneratedFile>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="$(WikiDocsGeneratedFile)" Visible="false" />
   </ItemGroup>
-
-  <Target Name="ImportWikiDocsCatalog"
-          BeforeTargets="BeforeBuild"
-          Condition="'$(WikiUsePackages)' != 'true'"
-          Inputs="$(MSBuildProjectDirectory)\..\..\docs\**\*.md;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs"
-          Outputs="$(WikiDocsGeneratedFile)">
-    <Exec Command="dotnet run --file &quot;$(MSBuildProjectDirectory)\..\..\scripts\csharp\wiki-import-docs.cs&quot;" />
-  </Target>
-
-  <ItemGroup Condition="'$(WikiUsePackages)' != 'true'">
-    <!-- Source builds do not import ECMAScript.Vue's packaged buildTransitive target. -->
-    <JazorLibraryManifest Include="..\..\src\ECMAScript.Vue\manifest.json" />
-    <ProjectReference Include="..\..\src\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\..\src\ECMAScript.Vue\ECMAScript.Vue.csproj" />
-    <ProjectReference Include="..\..\src\ECMAScript.Style\ECMAScript.Style.csproj" />
-    <ProjectReference Include="..\..\src\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
-    <ProjectReference Include="..\..\src\Jazor.CLR\Jazor.CLR.csproj" />
-    <ProjectReference Include="..\..\src\Jazor.Emit\Jazor.Emit.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
-    <ProjectReference Include="..\..\src\Jazor.Compiler\Jazor.Compiler.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\..\src\Jazor.Analyzer\Jazor.Analyzer.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  <ItemGroup>
+    <PackageReference Include="Jazor" Version="2.1.0-preview.5" />
+    <PackageReference Include="Jazor.Vue" Version="2.1.0-preview.5" PrivateAssets="all" />
+    <PackageReference Include="ECMAScript.Style" Version="2.1.0-preview.5" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(WikiUsePackages)' == 'true'">
-    <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-    <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
-    <PackageReference Include="ECMAScript.Style" Version="$(JazorPackageVersion)" />
-  </ItemGroup>
-
-  <Target Name="AddLocalJazorAnalyzerDependencies"
-          BeforeTargets="CoreCompile"
-          Condition="'$(WikiUsePackages)' != 'true'">
-    <ItemGroup>
-      <Analyzer Include="$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll"
-                Condition="Exists('$(NuGetPackageRoot)icsharpcode.decompiler/$(DecompilerVersion)/lib/netstandard2.0/ICSharpCode.Decompiler.dll')" />
-      <Analyzer Include="$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll" Condition="Exists('$(NuGetPackageRoot)acornima\$(AcornimaVersion)\lib\netstandard2.0\Acornima.dll')" />
-      <Analyzer Include="$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll" Condition="Exists('$(NuGetPackageRoot)acornima.extras\$(AcornimaVersion)\lib\netstandard2.0\Acornima.Extras.dll')" />
-      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll')" />
-      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\ECMAScript.VueContract\bin\$(Configuration)\netstandard2.0\ECMAScript.VueContract.dll')" />
-      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\Jazor.Common\bin\$(Configuration)\netstandard2.0\Jazor.Common.dll')" />
-      <Analyzer Include="$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll" Condition="Exists('$(MSBuildProjectDirectory)\..\..\src\Jazor.RazorVue\bin\$(Configuration)\netstandard2.0\Jazor.RazorVue.dll')" />
-    </ItemGroup>
-  </Target>
-  <Import Project="..\..\src\Jazor\build\Jazor.targets"
-          Condition="'$(WikiUsePackages)' != 'true'" />
 </Project>

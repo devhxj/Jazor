@@ -26,7 +26,6 @@ var monacoTestProject = Path.Combine(repoRoot, "src", "ECMAScript.Monaco.Test", 
 var vueDraggableTestProject = Path.Combine(repoRoot, "src", "ECMAScript.VueDraggable.Test", "ECMAScript.VueDraggable.Test.csproj");
 var filePondTestProject = Path.Combine(repoRoot, "src", "ECMAScript.FilePond.Test", "ECMAScript.FilePond.Test.csproj");
 var wangEditorTestProject = Path.Combine(repoRoot, "src", "ECMAScript.WangEditor.Test", "ECMAScript.WangEditor.Test.csproj");
-var razorSgTestProject = Path.Combine(repoRoot, "src", "Jazor.RazorVue.Sg.Test", "Jazor.RazorVue.Sg.Test.csproj");
 var emitTestProject = Path.Combine(repoRoot, "src", "Jazor.EmitTest", "Jazor.EmitTest.csproj");
 var joltSyntaxTestProject = Path.Combine(repoRoot, "src", "Jolt.Syntax.Test", "Jolt.Syntax.Test.csproj");
 var joltCompilerTestProject = Path.Combine(repoRoot, "src", "Jolt.Compiler.Test", "Jolt.Compiler.Test.csproj");
@@ -105,7 +104,6 @@ var testTargets = options.Project switch
     "vue-draggable" => new[] { vueDraggableTestProject },
     "file-pond" => new[] { filePondTestProject },
     "wang-editor" => new[] { wangEditorTestProject },
-    "razor-sg" => new[] { razorSgTestProject },
     "jolt" => new[] { joltSyntaxTestProject, joltCompilerTestProject },
     "emit" => new[] { emitTestProject },
     "emit-consumer" => new[] { emitTestProject },
@@ -134,7 +132,6 @@ var testTargets = options.Project switch
         vueDraggableTestProject,
         filePondTestProject,
         wangEditorTestProject,
-        razorSgTestProject,
         joltSyntaxTestProject,
         joltCompilerTestProject,
         emitTestProject
@@ -255,7 +252,7 @@ internal sealed record ScriptArguments
         var normalized = project.Trim().ToLowerInvariant();
         var supported = new HashSet<string>(StringComparer.Ordinal)
         {
-            "all", "compiler", "clr", "style", "devtools", "dataui", "lucide", "pinia", "pinia-testing", "vueroute", "date-fns", "vueuse", "floating-ui", "vee-validate", "vue-i18n", "vue-query", "monaco", "vue-draggable", "file-pond", "wang-editor", "razor-sg", "jolt",
+            "all", "compiler", "clr", "style", "devtools", "dataui", "lucide", "pinia", "pinia-testing", "vueroute", "date-fns", "vueuse", "floating-ui", "vee-validate", "vue-i18n", "vue-query", "monaco", "vue-draggable", "file-pond", "wang-editor", "jolt",
             "emit", "emit-consumer", "emit-consumer-packages", "emit-consumer-style", "emit-consumer-core", "emit-consumer-release",
             "style-browser", "wiki", "wiki-publish", "wiki-browser", "wiki-browser-publish"
         };
@@ -283,7 +280,7 @@ internal sealed record ScriptArguments
     {
         Console.WriteLine("Usage: dotnet run --file scripts/csharp/test-dotnet.cs -- [options]");
         Console.WriteLine("Options:");
-        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|razor-sg|jolt|emit|emit-consumer|emit-consumer-packages|emit-consumer-style|emit-consumer-core|emit-consumer-release|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
+        Console.WriteLine("  --project <all|compiler|clr|style|style-browser|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|jolt|emit|emit-consumer|emit-consumer-packages|emit-consumer-style|emit-consumer-core|emit-consumer-release|wiki|wiki-publish|wiki-browser|wiki-browser-publish>");
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --filter <expression>");
         Console.WriteLine("  --base-output-path <path>");

@@ -108,17 +108,9 @@ jobs:
 
       - name: Verify packaged Jolt consumer
         shell: pwsh
-        run: dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source artifacts/packages --editor-features
-
-      - name: Verify packaged Windows SPA release consumer
-        shell: pwsh
         run: |
-          dotnet run --file ./scripts/csharp/verify-windows-spa-release.cs -- `
-            --package-source 'artifacts/packages' `
-            --skip-pack `
-            --path-base /docs `
-            --startup-timeout-seconds 60 `
-            --browser-startup-timeout-seconds 20
+          $chrome = Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'
+          dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source artifacts/packages --editor-features --browser $chrome
 
       - name: Package Jolt VS Code extension
         if: steps.release_ref.outputs.create_release == 'true'
@@ -132,16 +124,6 @@ jobs:
           dotnet build editors/jolt-visual-studio/Jolt.VisualStudio.csproj -c Release
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item -LiteralPath 'editors/jolt-visual-studio/bin/Release/net472/Jolt.VisualStudio.vsix' -Destination 'artifacts/Jolt.VisualStudio.vsix'
-
-      - name: Verify packaged Windows SSR release consumer
-        shell: pwsh
-        run: |
-          dotnet run --file ./scripts/csharp/verify-windows-ssr-release.cs -- `
-            --package-source 'artifacts/packages' `
-            --skip-pack `
-            --path-base /todo `
-            --startup-timeout-seconds 90 `
-            --browser-startup-timeout-seconds 20
 
       - name: Discover package version
         id: package

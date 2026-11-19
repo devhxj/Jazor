@@ -2,11 +2,11 @@
 
 ## Project Structure & Module Organization
 
-`Jazor.slnx` is the entry point for the .NET solution. The transformation branch has one active Razor-to-Vue direction:
+`Jazor.slnx` is the entry point for the .NET solution. Jolt is the primary application authoring path. RazorVue maintains the optional .razor integration at https://github.com/devhxj/RazorVue.
 
 | Line | Mode | Key Projects | Description |
 |------|------|-------------|-------------|
-| **Razor-to-Vue transformation** | Active | `Jazor.RazorVue`, `Jazor.Analyzer`, `Jazor.Compiler`, `Jazor.Emit` | Official Razor SG generated C# -> Roslyn `IOperation` -> Vue render-function `.mjs` |
+| **Jolt** | Primary | Jolt.Syntax, Jolt.Compiler, Jolt.LanguageServer, Jolt.Cli | Typed .jazor components, npm metadata, Vue render functions and Vite |
 
 Shared infrastructure used by the active line:
 
@@ -45,7 +45,7 @@ ASP.NET Core integration layer:
 | `src/Jazor.AspNetCore` | ASP.NET Core runtime integration |
 | `src/Jazor.AspNetCore.Dev` | Development-time integration (HMR, DevServer bridging) |
 
-Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.RazorVue.Sg.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.Style.Test`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `samples/Wiki` and other projects under `samples/`.
+Test projects live under `src/Jazor.CompilerTest`, `src/Jazor.CLR.Test`, `src/Jazor.EmitTest`, `src/ECMAScript.Style.Test`, `src/ECMAScript.WebIDL.GeneratorTest`, `src/ECMAScript.VueRoute.Test`, `src/ECMAScript.Pinia.Test`, and `src/ECMAScript.Pinia.Testing.Test`. Auxiliary tooling outside the main solution includes `samples/Wiki` and other projects under `samples/`.
 
 Documentation is organized under `docs/` in five categories:
 - `docs/01-overview/` — product scope, reading map, and system overview
@@ -58,7 +58,7 @@ Documentation interpretation rule:
 - Historical exploration, old audits, and fixed test snapshots belong only to `docs/05-history/evolution.md`; Git history retains the detailed record.
 - For current compiler semantics, lowering direction, and support boundaries, prefer `src/Jazor.Compiler/ImplementationPrinciples.md`, `docs/02-architecture/compiler.md`, `docs/04-roadmap/current-status.md`, and the current `src/Jazor.Compiler/README.md` / `src/Jazor.CompilerTest/README.md`.
 
-RazorVue artifact and lowering boundary rule:
+RazorVue artifact and lowering boundary rule (maintained in devhxj/RazorVue):
 - The production input is official Razor SG generated C#, and the output contract is a Vue render-function `.mjs` artifact. Razor DR/IR, generated SFC output, and Jolt protocols are not fallback paths.
 - Razor/C# compiler already validates Razor-side unknown parameters, required parameters, and parameter type mismatches. RazorVue lowering should directly translate official SG generated C# and must not duplicate those checks.
 - Do not introduce intermediate wrapper-JS marker protocols for RazorVue slot/template transport when the same behavior can be expressed as the final Vue render-function shape directly.
@@ -71,10 +71,8 @@ Run from the repository root unless noted:
 
 - `dotnet restore Jazor.slnx` restores NuGet packages for the solution projects.
 - `dotnet build Jazor.slnx` builds the full solution using the .NET 11 GA SDK selected by `global.json`; native unions still require C# preview language mode.
-- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Lucide, Pinia, Pinia.Testing, VueRoute, P3/Monaco binding, Razor SG, and Emit suites.
-- `dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg` runs the focused Razor SG suite.
+- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Lucide, Pinia, Pinia.Testing, VueRoute, P3/Monaco binding, Jolt, and Emit suites.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` runs the compiler regression suite.
-- `dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj` runs the Razor SG integration suite.
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj` runs the emit and bundle regression suite.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` runs one compiler test class.
 - `dotnet run --file scripts/csharp/verify-webidl-nodeapi.cs` verifies the maintained WebIDL collector; `src/ECMAScript.WebIDL` is archived.

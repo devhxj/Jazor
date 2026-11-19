@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>$packageId$</id>
+    <version>$version$</version>
+    <authors>$packageAuthors$</authors>
+    <description>$packageDescription$</description>
+    <projectUrl>$repositoryUrl$</projectUrl>
+    <repository type="$repositoryType$" url="$repositoryUrl$" />
+    <license type="file">LICENSE.txt</license>
+    <readme>$packageReadmeFile$</readme>
+    <dependencies>
+      <group targetFramework="net11.0">
+        <dependency id="Jazor" version="$dependencyVersion$" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net11.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="$projectDir$..\..\LICENSE.txt" target="LICENSE.txt" />
+    <file src="$projectDir$..\..\NOTICE.txt" target="NOTICE.txt" />
+    <file src="$projectDir$$packageReadmeFile$" target="" />
+    <file src="$buildOutputDir$ECMAScript.Vue.dll" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Vue.pdb" target="lib/net11.0" />
+    <file src="$buildOutputDir$ECMAScript.Vue.xml" target="lib/net11.0" />
+    <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.dll" target="lib/net11.0" />
+    <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.pdb" target="lib/net11.0" />
+    <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.xml" target="lib/net11.0" />
+    <file src="$projectDir$buildTransitive\ECMAScript.Vue.targets" target="buildTransitive" />
+    <file src="$projectDir$manifest.json" target="jazor/vue3" />
+    <file src="$projectDir$licenses\**\*" target="jazor/vue3/licenses" />
+  </files>
+</package>

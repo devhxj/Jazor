@@ -31,7 +31,7 @@ var packArguments = new List<string>
     "--output-directory", packageOutput,
     "--skip-push",
     "--package", "jazor",
-    "--package", "jazor-vue",
+    "--package", "vue",
     "--package", "pinia",
     "--package", "pinia-testing"
 };

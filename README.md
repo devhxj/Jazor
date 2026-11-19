@@ -10,7 +10,6 @@
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
   <a href="https://github.com/devhxj/Jazor/releases/tag/v2.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.0.0&amp;display_name=tag&amp;label=release" /></a>
-  <a href="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml"><img alt="Razor-to-Vue CI" src="https://github.com/devhxj/Jazor/actions/workflows/razorvue-ci.yml/badge.svg?branch=main" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -34,10 +33,9 @@ Emit and SSR use Node.js 26 via Microsoft's LibNode on Windows and glibc Linux x
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
-Razor-to-Vue is a separate application direction built on that core. `Jazor.RazorVue` binds the final output of the official Razor Source Generator, then delegates all C# expression and member semantics to the same Jazor compiler before it frames Vue render-function modules.
+**Jolt is Jazor's primary app authoring path.** Write typed Vue components in .jazor, consume npm packages, and use the VS Code or Visual Studio extension. [Start with Jolt](docs/03-guides/jolt-authoring.md)
 
-Jolt uses the same core to compile typed `.jazor` Vue components. Preview 5 adds semantic editing in VS Code and Visual Studio, cross-file rename, scoped CSS, and selected generic component contracts. [Jolt authoring guide](docs/03-guides/jolt-authoring.md) · [Changelog](CHANGELOG.md#jazor-210-preview5)
-
+[RazorVue](https://github.com/devhxj/RazorVue) maintains the optional .razor integration and the Jazor.Vue and Jazor.Admin NuGet packages.
 Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules, including RazorVue consumers. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
 
 ## AI-assisted development
@@ -64,38 +62,35 @@ flowchart LR
         Emit --> Artifacts["Standard JS project, .mjs, source maps, build output"]
     end
 
-    subgraph Integrations["Framework integration layer"]
-        Razor["Razor components"] --> RazorSG["Official Razor SG"] --> Compilation["Final Compilation"]
-        Compilation --> RazorVue["Jazor.RazorVue"]
-        RazorVue -. uses core translation hooks .-> Compiler
-        RazorVue --> Emit
+    subgraph Jolt["Jolt .jazor authoring"]
+        Jazor[".jazor + npm declarations"] --> Roslyn
+        Compiler --> Vue["Vue components and source maps"]
+        Vue --> Vite["Vite application bundle"]
     end
 ```
 
-`Jazor.RazorVue` is the current framework integration. Future directions such as `Jazor.React` or `Jazor.RazorReact` may reuse the same core, but they are not current supported APIs.
 
 ## Quality Gates
 
 The badges above show maintained acceptance thresholds rather than a stale one-off result. The repository verifies the following minimums through repeatable scripts:
 
 - Core compiler: at least 10,000 passing `IOperation` scenarios, 98% line coverage, and 97% branch coverage.
-- Current Razor-to-Vue integration: at least 4,000 passing scenarios, 90% line coverage, and 94% branch coverage while the integration work continues.
+- Jolt: isolated CLI install, language-server protocol, both VSIX packages, and a browser interaction smoke test.
 - Vue ecosystem bindings: at least 90% audited public binding-contract coverage per target.
 
-Run `verify-compiler-coverage.cs`, `verify-razorvue-coverage.cs`, or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. Run `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` to verify that public ECMAScript and binding declarations retain XML documentation, upstream source metadata, and package XML delivery. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).
+Run `verify-compiler-coverage.cs` or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. Run `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` to verify that public ECMAScript and binding declarations retain XML documentation, upstream source metadata, and package XML delivery. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).
 
 ## Packages
 
 | Package | Responsibility |
 | --- | --- |
 | `Jazor` | Framework-neutral compiler, CLR contracts, analyzer, emit tooling, MSBuild and ASP.NET Core integration; suitable for ordinary ECMAScript libraries |
-| `Jazor.Vue` | Vue authoring, Razor-to-Vue opt-in, Vue runtime assets, `ECMAScript.Vue` and `ECMAScript.VueContract` payload |
+| `Jazor.Jolt` | CLI and language server for .jazor projects |
+| `ECMAScript.Vue` | Shared Vue 3 types, component contracts, and runtime metadata |
 | `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
 | `ECMAScript.VueDataUi` | Typed `Vd*` RazorVue charts with per-component local ESM materialization; [prefix migration](src/ECMAScript.VueDataUi/README.md#razor-使用) |
 | `ECMAScript.Lucide` | Typed `Lucide / lucide-vue-next` RazorVue icons with static per-icon and dynamic catalog paths |
-| `Jazor.Admin` | UI-library-neutral admin-shell library and RazorVue components |
 
-[`samples/JazorAdmin`](samples/JazorAdmin) is the production-grade admin reference application that consumes [`Jazor.Admin`](src/Jazor.Admin/README.md); it is not part of the library's public contract.
 
 ### Library forms and direct references
 
@@ -123,15 +118,7 @@ directly:
 dotnet add package Jazor --version 2.0.0
 ```
 
-For a Razor SDK project that authors RazorVue components, add both packages directly and keep
-their versions aligned:
-
-```xml
-<ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-</ItemGroup>
-```
+For .razor projects, see the compatibility table in [RazorVue](https://github.com/devhxj/RazorVue).
 
 Detailed package selection, output settings, SSR configuration, and ecosystem bindings are in [Installation and Configuration](docs/03-guides/installation-and-configuration.md).
 
@@ -202,7 +189,6 @@ Focused suites include:
 
 ```bash
 dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 ```

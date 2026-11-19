@@ -132,7 +132,7 @@ if (Option("--packages") is { } packages)
         var packageId = library switch
         {
             "ECMAScript" or "ECMAScript.Contract" or "Jazor.AspNetCore" or "Jazor.AspNetCore.Dev" => "Jazor",
-            "ECMAScript.Vue" or "ECMAScript.VueContract" => "Jazor.Vue",
+            "ECMAScript.Vue" or "ECMAScript.VueContract" => "ECMAScript.Vue",
             _ => library
         };
         var candidates = archives.Where(p => p.Id == packageId).ToArray();

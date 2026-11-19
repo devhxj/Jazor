@@ -45,7 +45,7 @@ if (!options.FrontendOnly || options.BuildLocal)
         "--output-directory", packageOutput,
         "--skip-push",
         "--package", "jazor",
-        "--package", "jazor-vue",
+        "--package", "vue",
         "--package", "pinia",
         "--package", "pinia-testing"
     };

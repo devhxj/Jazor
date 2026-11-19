@@ -6,13 +6,11 @@ namespace Jazor.EmitTest;
 public sealed partial class SdkIntegrationTests
 {
     [TestMethod]
-    [DataRow("Debug", false)]
-    [DataRow("Release", false)]
-    [DataRow("Debug", true)]
-    [DataRow("Release", true)]
+    [DataRow("Debug")]
+    [DataRow("Release")]
     [TestCategory("Consumer")]
     [TestCategory("Consumer.Core")]
-    public async Task Build_LocalJazorPackage_OrdinaryLibraryImports_UsesImplementationAssets(string configuration, bool useRazor)
+    public async Task Build_LocalJazorPackage_OrdinaryLibraryImports_UsesImplementationAssets(string configuration)
     {
         var core = await LocalCorePackage.Value;
         var feed = core.PackageOutputDirectory;
@@ -52,35 +50,18 @@ public sealed partial class SdkIntegrationTests
             }
             """);
         WriteFile(Path.Combine(host, "Host.csproj"), $$"""
-            <Project Sdk="{{(useRazor ? "Microsoft.NET.Sdk.Razor" : "Microsoft.NET.Sdk")}}">
+            <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
                 <TargetFramework>net11.0</TargetFramework><OutputType>Exe</OutputType>
-                <JazorMode>debug</JazorMode><JazorPublishSourceMaps>true</JazorPublishSourceMaps><JazorSSR>{{useRazor.ToString().ToLowerInvariant()}}</JazorSSR>
+                <JazorMode>debug</JazorMode><JazorPublishSourceMaps>true</JazorPublishSourceMaps>
               </PropertyGroup>
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="{{core.PackageVersion}}" />
-                {{(useRazor ? "<PackageReference Include=\"Jazor.Vue\" Version=\"" + core.PackageVersion + "\" />" : "")}}
                 <PackageReference Include="Fastenshtein" Version="1.1.1" />
                 <ProjectReference Include="../Plain/Plain.csproj" />
               </ItemGroup>
             </Project>
             """);
-        if (useRazor)
-            WriteFile(Path.Combine(host, "OrdinaryComponent.razor"), """
-                @using ECMAScript
-                @using static ECMAScript.Vue
-                @using Microsoft.AspNetCore.Components
-                @using Microsoft.AspNetCore.Components.Web
-                @using Plain
-                @implements IVueComponent
-                @attribute [ECMAScriptModule("components/ordinary.js")]
-                <p>@counter.Add(0)</p>
-                <button @onclick="Increment">+</button>
-                @code {
-                    private readonly Counter counter = new(4);
-                    private void Increment() => counter.Add(1);
-                }
-                """);
         WriteFile(Path.Combine(host, "Program.cs"), """
             using ECMAScript;
             public static class Program { public static void Main() { } }
@@ -132,25 +113,6 @@ public sealed partial class SdkIntegrationTests
             """);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(40));
         await NodeModuleRunner.RunAsync(output, test, cancellationToken: timeout.Token);
-        if (useRazor)
-        {
-            var component = Path.Combine(output, "components", "ordinary.js");
-            Assert.IsTrue(File.Exists(component), "Official Razor component module was not materialized.");
-            var componentSpecifier = "./" + Path.GetRelativePath(output, component).Replace('\\', '/');
-            var ssrTest = Path.Combine(output, "ordinary-razor-ssr.test.mjs");
-            WriteFile(ssrTest, $$"""
-                import { createSSRApp } from 'vue';
-                import { renderToString } from '@vue/server-renderer';
-                import component from {{JsonSerializer.Serialize(componentSpecifier)}};
-                globalThis.__jazorTest('packaged official Razor component imports an ordinary class during SSR', async () => {
-                    const html = await renderToString(createSSRApp(component));
-                    if (!html.includes('<p>4</p>')) throw new Error(`Unexpected SSR output: ${html}`);
-                });
-                """);
-            await NodeModuleRunner.RunAsync(output, ssrTest, cancellationToken: timeout.Token);
-            if (configuration == "Release")
-                await AssertOrdinaryLibraryBrowserAsync(output, workspace.RootPath);
-        }
 
         var before = modules.ToDictionary(path => path, File.ReadAllText, StringComparer.Ordinal);
         var incremental = await RunDotNetAsync(core.RepoRoot, arguments);

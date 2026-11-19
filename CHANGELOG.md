@@ -4,6 +4,16 @@
 
 ## 2026-11-19
 
+### Jazor 2.1.0-preview.6
+
+- Jolt 成为 Jazor 的应用开发主线。发布验收覆盖已安装的 CLI、语言服务、浏览器和两套编辑器扩展。by @devhxj
+- Vue 类型、组件契约和资源元数据由 ECMAScript.Vue 交付。使用 Vue Router、Pinia 等绑定的项目可通过传递依赖获得共享包。by @devhxj
+- .razor 用户按 RazorVue 仓库列出的版本组合升级 Jazor 与 Jazor.Vue。Jazor.Admin 后续由同一个仓库发布。by @devhxj
+
+- Jolt is the primary application authoring path. Release verification covers the installed CLI, language server, browser and both editor packages.
+- ECMAScript.Vue provides the shared Vue types, component contracts and resource metadata. Vue ecosystem bindings acquire this package transitively.
+- Existing .razor projects can upgrade Jazor and Jazor.Vue together using the compatibility table in the RazorVue repository. RazorVue also owns Jazor.Admin releases.
+
 ### Jazor 2.1.0-preview.5
 
 中文 | English

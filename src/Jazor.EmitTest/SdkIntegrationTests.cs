@@ -18,7 +18,6 @@ public sealed partial class SdkIntegrationTests
     private static readonly Lazy<Task<LocalCorePackageFixture>> LocalCorePackage = new(CreateLocalCorePackageAsync);
     private static readonly Lazy<Task<LocalPackageFixture>> LocalPackage = new(CreateLocalPackageAsync);
     private static readonly Lazy<Task<LocalReleasePackageFixture>> LocalReleasePackage = new(CreateLocalReleasePackageAsync);
-    private static readonly Lazy<Task<LocalReleaseBrowserPackageFixture>> LocalReleaseBrowserPackage = new(CreateLocalReleaseBrowserPackageAsync);
     private static readonly Lazy<Task<LocalStylePackageFixture>> LocalStylePackage = new(CreateLocalStylePackageAsync);
     private static readonly SemaphoreSlim DotNetProcessGate = new(4, 4);
 
@@ -68,37 +67,11 @@ public sealed partial class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Blazor.pdb");
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Vue.dll");
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
-        CollectionAssert.Contains(vueEntryNames, "buildTransitive/Jazor.Vue.targets");
-        var vueBuildEntries = vueEntryNames
-            .Where(static path => path.StartsWith("build/", StringComparison.OrdinalIgnoreCase) ||
-                                  path.StartsWith("buildTransitive/", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        CollectionAssert.AreEqual(
-            new[] { "buildTransitive/Jazor.CompilationTiming.targets", "buildTransitive/Jazor.Vue.targets" },
-            vueBuildEntries,
-            "Jazor.Vue retains its stable NuGet entry target and imports the shared compilation-local timing target.");
-        var vueNuspec = ReadPackageEntryText(package.VuePackagePath, "Jazor.Vue.nuspec");
-        StringAssert.Contains(vueNuspec, "<dependency id=\"Jazor\" version=\"", StringComparison.Ordinal);
-        StringAssert.Contains(vueNuspec, "exclude=\"Build,Analyzers\"", StringComparison.Ordinal);
-        StringAssert.Contains(vueNuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />", StringComparison.Ordinal);
-        var vueAnalyzerEntries = vueEntryNames
-            .Where(static path => path.StartsWith("tools/net11.0/analyzers/", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        CollectionAssert.AreEqual(
-            new[]
-            {
-                "tools/net11.0/analyzers/AngleSharp.dll",
-                "tools/net11.0/analyzers/Jazor.RazorVue.dll",
-                "tools/net11.0/analyzers/Jazor.RazorVue.pdb"
-            },
-            vueAnalyzerEntries,
-            "Jazor.Vue must install the RazorVue analyzer and its static-markup parser, while relying on Jazor for shared compiler dependencies.");
-        Assert.IsFalse(
-            vueEntryNames.Any(static path => path.StartsWith("analyzers/dotnet/cs/", StringComparison.OrdinalIgnoreCase)),
-            "NuGet automatic analyzer assets would incorrectly activate RazorVue for transitive package consumers.");
-
+        CollectionAssert.Contains(vueEntryNames, "buildTransitive/ECMAScript.Vue.targets");
+        CollectionAssert.DoesNotContain(vueEntryNames, "tools/net11.0/analyzers/Jazor.RazorVue.dll");
+        Assert.IsFalse(vueEntryNames.Any(static path =>
+            path.StartsWith("tools/", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWith("analyzers/", StringComparison.OrdinalIgnoreCase)));
         var directJazorTarget = ReadPackageEntryText(package.PackagePath, "build/Jazor.targets");
         var transitiveJazorTarget = ReadPackageEntryText(package.PackagePath, "buildTransitive/Jazor.Resources.targets");
         StringAssert.Contains(directJazorTarget, "analyzers\\*.dll", StringComparison.Ordinal);
@@ -113,19 +86,9 @@ public sealed partial class SdkIntegrationTests
         Assert.IsFalse(transitiveJazorTarget.Contains("JazorDebug", StringComparison.Ordinal), transitiveJazorTarget);
         Assert.IsFalse(transitiveJazorTarget.Contains("<Analyzer", StringComparison.Ordinal), transitiveJazorTarget);
 
-        var transitiveVueTarget = ReadPackageEntryText(package.VuePackagePath, "buildTransitive/Jazor.Vue.targets");
-        StringAssert.Contains(transitiveVueTarget, "JazorLibraryManifest", StringComparison.Ordinal);
-        StringAssert.Contains(transitiveVueTarget, "WithMetadataValue('Identity', 'Jazor.Vue')", StringComparison.Ordinal);
-        StringAssert.Contains(transitiveVueTarget, "<Analyzer", StringComparison.Ordinal);
-        Assert.IsFalse(
-            transitiveVueTarget.Contains("RegisterJazorVueSharedAnalyzerDependencies", StringComparison.Ordinal),
-            "Jazor.Vue must not infer or compensate for the core Jazor analyzer closure.");
-        Assert.IsFalse(
-            transitiveVueTarget.Contains("_JazorVueSharedAnalyzer", StringComparison.Ordinal),
-            "Jazor.Vue must not carry a second shared-analyzer registration path.");
-        Assert.IsFalse(
-            transitiveVueTarget.Contains("ReferencePath", StringComparison.Ordinal),
-            "Jazor.Vue must not infer tooling from transitive compile/reference items.");
+        var transitiveVueTarget = ReadPackageEntryText(package.VuePackagePath, "buildTransitive/ECMAScript.Vue.targets");
+        StringAssert.Contains(transitiveVueTarget, "JazorLibraryManifest");
+        Assert.IsFalse(transitiveVueTarget.Contains("<Analyzer ", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -148,9 +111,7 @@ public sealed partial class SdkIntegrationTests
             var nuspec = ReadPackageEntryText(packagePath, entryName);
             foreach (var dependencyLine in nuspec
                          .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries)
-                         .Where(static line =>
-                             line.Contains("<dependency id=\"Jazor\"", StringComparison.Ordinal) ||
-                             line.Contains("<dependency id=\"Jazor.Vue\"", StringComparison.Ordinal)))
+                         .Where(static line => line.Contains("<dependency id=\"Jazor\"", StringComparison.Ordinal)))
             {
                 Assert.IsTrue(
                     dependencyLine.Contains("exclude=\"Build,Analyzers\"", StringComparison.Ordinal),
@@ -244,7 +205,7 @@ public sealed partial class SdkIntegrationTests
 
         var coreAssets = ReadProjectAssetsText(coreRoot);
         Assert.IsFalse(coreAssets.Contains("ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase), coreAssets);
-        Assert.IsFalse(coreAssets.Contains("Jazor.Vue", StringComparison.OrdinalIgnoreCase), coreAssets);
+        Assert.IsFalse(coreAssets.Contains("ECMAScript.Vue", StringComparison.OrdinalIgnoreCase), coreAssets);
         Assert.IsFalse(coreAssets.Contains("Microsoft.AspNetCore.App", StringComparison.Ordinal), coreAssets);
         var coreOutput = Path.Combine(coreRoot, "bin", "Release", "net11.0");
         Assert.IsFalse(
@@ -267,31 +228,6 @@ public sealed partial class SdkIntegrationTests
     }
 
     [TestMethod]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackage_VueConsumer_IncludesRazorVueWithoutBlazorAssembly()
-    {
-        var package = await LocalReleasePackage.Value;
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var vueRoot = Path.Combine(workspace.RootPath, "ReleaseVuePackageConsumer");
-        var vueProject = CreateReleaseVuePackageConsumerProject(vueRoot);
-        var vueBuild = await RunDotNetAsync(
-            package.RepoRoot,
-            ["build", vueProject, .. GetReleaseConsumerBuildArguments(package, workspace.RestorePackagesPath)]);
-        Assert.AreEqual(0, vueBuild.ExitCode, vueBuild.ToString());
-
-        var vueAssets = ReadProjectAssetsText(vueRoot);
-        Assert.IsFalse(vueAssets.Contains("ECMAScript.Blazor.dll", StringComparison.OrdinalIgnoreCase), vueAssets);
-        StringAssert.Contains(vueAssets, "ECMAScript.Vue.dll", StringComparison.Ordinal);
-        StringAssert.Contains(vueAssets, "ECMAScript.VueContract.dll", StringComparison.Ordinal);
-        StringAssert.Contains(vueAssets, "Jazor.RazorVue.dll", StringComparison.Ordinal);
-        StringAssert.Contains(vueAssets, "Microsoft.AspNetCore.App", StringComparison.Ordinal);
-        Assert.IsTrue(
-            File.Exists(Path.Combine(vueRoot, "obj", "Release", "net11.0", "ReleaseVuePackageConsumer.GlobalUsings.g.cs")) ||
-            Directory.EnumerateFiles(Path.Combine(vueRoot, "obj"), "*.razor.g.cs", SearchOption.AllDirectories).Any(),
-            "The Jazor.Vue package consumer must compile through the official Razor source generator.");
-    }
-
-    [TestMethod]
     [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesVuetifyAuthoringPackage()
     {
@@ -306,7 +242,7 @@ public sealed partial class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Vuetify.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.Vuetify.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor.Vue\"");
+        StringAssert.Contains(nuspec, "<dependency id=\"ECMAScript.Vue\"");
     }
 
     [TestMethod]
@@ -324,7 +260,7 @@ public sealed partial class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.VueRoute.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.VueRoute.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor.Vue\"");
+        StringAssert.Contains(nuspec, "<dependency id=\"ECMAScript.Vue\"");
     }
 
     [TestMethod]
@@ -346,7 +282,7 @@ public sealed partial class SdkIntegrationTests
             "Pinia runtime modules belong to the restored npm package, not the binding archive.");
         CollectionAssert.Contains(piniaEntryNames, "jazor/pinia/licenses/NOSTICS-LICENSE");
         StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor\"");
-        StringAssert.Contains(piniaNuspec, "<dependency id=\"Jazor.Vue\"");
+        StringAssert.Contains(piniaNuspec, "<dependency id=\"ECMAScript.Vue\"");
 
         using var piniaTestingArchive = ZipFile.OpenRead(package.PiniaTestingPackagePath);
         var piniaTestingEntryNames = piniaTestingArchive.Entries
@@ -362,7 +298,7 @@ public sealed partial class SdkIntegrationTests
             "Pinia Testing runtime modules belong to the restored npm package, not the binding archive.");
         CollectionAssert.Contains(piniaTestingEntryNames, "jazor/pinia-testing/licenses/LICENSE");
         StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"ECMAScript.Pinia\"");
-        StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"Jazor.Vue\"");
+        StringAssert.Contains(piniaTestingNuspec, "<dependency id=\"ECMAScript.Vue\"");
     }
 
     [TestMethod]
@@ -380,7 +316,7 @@ public sealed partial class SdkIntegrationTests
         CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.TDesign.dll");
         CollectionAssert.Contains(entryNames, "ECMAScript.TDesign.nuspec");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor.Vue\"");
+        StringAssert.Contains(nuspec, "<dependency id=\"ECMAScript.Vue\"");
         StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
     }
 
@@ -424,20 +360,12 @@ public sealed partial class SdkIntegrationTests
             "jazor/vue3/licenses/LICENSE",
             "jazor/vue3/licenses/VUE-DEVTOOLS-API-LICENSE",
             "jazor/vue3/licenses/PERFECT-DEBOUNCE-LICENSE",
-            "jazor/vue3/licenses/VUE-SERVER-RENDERER-LICENSE",
-            "tools/net11.0/tooling/vue/compiler-sfc.esm-browser.js",
-            "tools/net11.0/tooling/vue/licenses/LICENSE");
+            "jazor/vue3/licenses/VUE-SERVER-RENDERER-LICENSE");
         AssertPackageEntries(
             package.PackagePath,
             "jazor/ecmascript/manifest.json",
             "jazor/ecmascript/clr/System/RuntimeModule.js",
             "jazor/ecmascript/clr/System/StringModule.js");
-        AssertPackageEntries(
-            package.VuePackagePath,
-            "jazor/vue-runtime/manifest.json",
-            "jazor/vue-runtime/runtime/vue/blazor-routing.js",
-            "jazor/vue-runtime/runtime/vue/cascading.js",
-            "jazor/vue-runtime/runtime/vue/raw-markup.js");
         AssertPackageEntries(
             package.VuetifyPackagePath,
             "lib/net11.0/ECMAScript.Vuetify.dll",
@@ -1769,219 +1697,6 @@ public sealed partial class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Core")]
-    public async Task Build_LocalJazorPackage_DirectVueAndCoreReferencesRespectToolingBoundary()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var feedRoot = Path.Combine(workspace.RootPath, "feed");
-        Directory.CreateDirectory(feedRoot);
-        File.Copy(package.PackagePath, Path.Combine(feedRoot, Path.GetFileName(package.PackagePath)));
-        File.Copy(package.VuePackagePath, Path.Combine(feedRoot, Path.GetFileName(package.VuePackagePath)));
-
-        var commonArguments = new[]
-        {
-            "-t:Rebuild",
-            "/m:1",
-            "/p:BuildInParallel=false",
-            $"-p:RestoreSources={feedRoot}",
-            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-            $"-p:JazorPackageVersion={package.PackageVersion}"
-        };
-
-        // A direct Vue-only consumer receives Vue resources and its opt-in analyzer, but the
-        // transitive Jazor dependency is explicitly excluded from core tooling and resources.
-        var vueOnlyRoot = Path.Combine(workspace.RootPath, "VueOnlyConsumer");
-        Directory.CreateDirectory(vueOnlyRoot);
-        var vueOnlyProject = Path.Combine(vueOnlyRoot, "VueOnlyConsumer.csproj");
-        WriteFile(
-            vueOnlyProject,
-            """
-            <Project Sdk="Microsoft.NET.Sdk.Razor">
-              <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>net11.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings>
-                <Nullable>enable</Nullable>
-                <RazorLangVersion>11.0</RazorLangVersion>
-                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-                <JazorMode>debug</JazorMode>
-              </PropertyGroup>
-
-              <ItemGroup>
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" />
-                <FrameworkReference Include="Microsoft.AspNetCore.App" />
-              </ItemGroup>
-
-              <Target Name="CaptureJazorBoundary" BeforeTargets="CoreCompile">
-                <WriteLinesToFile File="$(BaseIntermediateOutputPath)tooling-state.txt"
-                                  Lines="@(Analyzer->'%(Filename)')"
-                                  Overwrite="true" />
-                <WriteLinesToFile File="$(BaseIntermediateOutputPath)manifest-state.txt"
-                                  Lines="@(JazorLibraryManifest)"
-                                  Overwrite="true" />
-              </Target>
-            </Project>
-            """);
-        WriteFile(
-            Path.Combine(vueOnlyRoot, "Program.cs"),
-            """
-            internal static class Program
-            {
-                private static void Main()
-                {
-                }
-            }
-            """);
-
-        var vueOnlyBuild = await RunDotNetAsync(
-            package.RepoRoot,
-            ["build", vueOnlyProject, .. commonArguments, "-p:JazorMode=debug"]);
-        Assert.AreEqual(0, vueOnlyBuild.ExitCode, vueOnlyBuild.ToString());
-
-        var vueOnlyTargetsPath = Path.Combine(vueOnlyRoot, "obj", "VueOnlyConsumer.csproj.nuget.g.targets");
-        Assert.IsTrue(File.Exists(vueOnlyTargetsPath), vueOnlyTargetsPath);
-        var vueOnlyTargets = File.ReadAllText(vueOnlyTargetsPath).Replace('\\', '/');
-        Assert.IsTrue(
-            vueOnlyTargets.Contains("buildTransitive/Jazor.Vue.targets", StringComparison.OrdinalIgnoreCase),
-            vueOnlyTargets);
-        Assert.IsFalse(
-            vueOnlyTargets.Contains("build/Jazor.targets", StringComparison.OrdinalIgnoreCase),
-            "A Vue-only project must not import the direct Jazor target.");
-
-        var vueOnlyAnalyzers = File.ReadAllLines(Path.Combine(vueOnlyRoot, "obj", "tooling-state.txt"));
-        CollectionAssert.Contains(vueOnlyAnalyzers, "Jazor.RazorVue");
-        Assert.IsFalse(vueOnlyAnalyzers.Any(static name =>
-            string.Equals(name, "Jazor.Analyzer", StringComparison.Ordinal) ||
-            string.Equals(name, "Jazor.Compiler", StringComparison.Ordinal) ||
-            string.Equals(name, "ECMAScript", StringComparison.Ordinal)));
-
-        var vueOnlyManifestPaths = File.ReadAllLines(Path.Combine(vueOnlyRoot, "obj", "manifest-state.txt"))
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .Select(Path.GetFullPath)
-            .Select(static path => path.Replace('\\', '/'))
-            .ToArray();
-        Assert.IsTrue(
-            vueOnlyManifestPaths.Any(static path => path.EndsWith("/jazor/vue3/manifest.json", StringComparison.OrdinalIgnoreCase)),
-            string.Join(Environment.NewLine, vueOnlyManifestPaths));
-        Assert.IsTrue(
-            vueOnlyManifestPaths.Any(static path => path.EndsWith("/jazor/vue-runtime/manifest.json", StringComparison.OrdinalIgnoreCase)),
-            string.Join(Environment.NewLine, vueOnlyManifestPaths));
-        Assert.IsFalse(
-            vueOnlyManifestPaths.Any(static path => path.EndsWith("/jazor/ecmascript/manifest.json", StringComparison.OrdinalIgnoreCase)),
-            "The excluded Jazor dependency must not add the core ECMAScript resource locator.");
-        Assert.IsFalse(
-            Directory.EnumerateFiles(Path.Combine(vueOnlyRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs", SearchOption.AllDirectories).Any(),
-            "A Vue-only project must not activate the core ModuleCatalog generator.");
-        Assert.IsFalse(Directory.Exists(Path.Combine(vueOnlyRoot, "jazor")));
-
-        // A project that directly names both packages gets the complete core/Vue tooling set. The
-        // none profile still compiles the catalog but must not materialize a host output.
-        var dualRoot = Path.Combine(workspace.RootPath, "DualVueConsumer");
-        Directory.CreateDirectory(dualRoot);
-        var dualProject = Path.Combine(dualRoot, "DualVueConsumer.csproj");
-        WriteFile(
-            dualProject,
-            """
-            <Project Sdk="Microsoft.NET.Sdk.Razor">
-              <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>net11.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings>
-                <Nullable>enable</Nullable>
-                <RazorLangVersion>11.0</RazorLangVersion>
-                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-                <JazorMode>none</JazorMode>
-              </PropertyGroup>
-
-              <ItemGroup>
-                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" />
-                <FrameworkReference Include="Microsoft.AspNetCore.App" />
-              </ItemGroup>
-
-              <Target Name="CaptureJazorBoundary" BeforeTargets="CoreCompile">
-                <WriteLinesToFile File="$(BaseIntermediateOutputPath)tooling-state.txt"
-                                  Lines="@(Analyzer->'%(Filename)')"
-                                  Overwrite="true" />
-                <WriteLinesToFile File="$(BaseIntermediateOutputPath)manifest-state.txt"
-                                  Lines="@(JazorLibraryManifest)"
-                                  Overwrite="true" />
-              </Target>
-            </Project>
-            """);
-        WriteFile(
-            Path.Combine(dualRoot, "Program.cs"),
-            """
-            internal static class Program
-            {
-                private static void Main()
-                {
-                }
-            }
-            """);
-        WriteFile(
-            Path.Combine(dualRoot, "AppModule.cs"),
-            """
-            using ECMAScript;
-
-            namespace DualVueConsumer;
-
-            [ECMAScriptModule("host/dual-vue.mjs")]
-            public static class AppModule
-            {
-                public static int Boot() => 1;
-            }
-            """);
-
-        var dualNoneBuild = await RunDotNetAsync(
-            package.RepoRoot,
-            ["build", dualProject, .. commonArguments, "-p:JazorMode=none"]);
-        Assert.AreEqual(0, dualNoneBuild.ExitCode, dualNoneBuild.ToString());
-        Assert.IsFalse(Directory.Exists(Path.Combine(dualRoot, "jazor")),
-            "JazorMode=none must not materialize output even when both packages are direct.");
-
-        var dualTargetsPath = Path.Combine(dualRoot, "obj", "DualVueConsumer.csproj.nuget.g.targets");
-        Assert.IsTrue(File.Exists(dualTargetsPath), dualTargetsPath);
-        var dualTargets = File.ReadAllText(dualTargetsPath).Replace('\\', '/');
-        Assert.IsTrue(dualTargets.Contains("build/Jazor.targets", StringComparison.OrdinalIgnoreCase), dualTargets);
-        Assert.IsTrue(dualTargets.Contains("buildTransitive/Jazor.Vue.targets", StringComparison.OrdinalIgnoreCase), dualTargets);
-
-        var dualAnalyzers = File.ReadAllLines(Path.Combine(dualRoot, "obj", "tooling-state.txt"));
-        foreach (var analyzer in new[] { "Jazor.Analyzer", "Jazor.Compiler", "ECMAScript", "Jazor.RazorVue" })
-            CollectionAssert.Contains(dualAnalyzers, analyzer);
-
-        var dualManifestPaths = File.ReadAllLines(Path.Combine(dualRoot, "obj", "manifest-state.txt"))
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .Select(Path.GetFullPath)
-            .Select(static path => path.Replace('\\', '/'))
-            .ToArray();
-        Assert.IsTrue(
-            dualManifestPaths.Any(static path => path.EndsWith("/jazor/ecmascript/manifest.json", StringComparison.OrdinalIgnoreCase)),
-            string.Join(Environment.NewLine, dualManifestPaths));
-        Assert.IsTrue(
-            dualManifestPaths.Any(static path => path.EndsWith("/jazor/vue3/manifest.json", StringComparison.OrdinalIgnoreCase)),
-            string.Join(Environment.NewLine, dualManifestPaths));
-        Assert.IsTrue(
-            dualManifestPaths.Any(static path => path.EndsWith("/jazor/vue-runtime/manifest.json", StringComparison.OrdinalIgnoreCase)),
-            string.Join(Environment.NewLine, dualManifestPaths));
-
-        var dualDebugBuild = await RunDotNetAsync(
-            package.RepoRoot,
-            ["build", dualProject, .. commonArguments, "-p:JazorMode=debug"]);
-        Assert.AreEqual(0, dualDebugBuild.ExitCode, dualDebugBuild.ToString());
-        Assert.IsFalse(File.Exists(Path.Combine(dualRoot, "jazor", "jazor-manifest.json")));
-        Assert.IsTrue(File.Exists(Path.Combine(dualRoot, "jazor", "host", "dual-vue.mjs")));
-        _ = ReadSingleGeneratedSource(Path.Combine(dualRoot, "obj"), "Jazor.Generated.ModuleCatalog.g.cs");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
     public async Task Build_LocalJazorPackage_ProjectReferenceChain_OnlyFinalHostMaterializesTransitiveModuleCatalog()
     {
         var package = await LocalCorePackage.Value;
@@ -2874,1536 +2589,6 @@ public sealed partial class SdkIntegrationTests
             "Bundle source map should preserve authored module provenance.");
     }
 
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgG0Consumer_ReconcilesFinalDocumentsAcrossIncrementalBuilds()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgG0Consumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = workspace.RestorePackagesPath;
-        var commonArguments = new[]
-        {
-            "/m:1",
-            "/p:BuildInParallel=false",
-            $"-p:RestoreSources={package.PackageOutputDirectory}",
-            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={restorePackagesPath}",
-            $"-p:JazorPackageVersion={package.PackageVersion}"
-        };
-
-        var restore = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["restore", projectPath, .. commonArguments]);
-        Assert.AreEqual(0, restore.ExitCode, restore.ToString());
-
-        var firstBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "--no-restore", .. commonArguments]);
-        Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
-
-        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
-        var firstCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
-        var counterModulePath = Path.Combine(projectRoot, "jazor", "components", "counter.js");
-        var firstCounterModule = await File.ReadAllTextAsync(counterModulePath);
-        Assert.IsFalse(
-            firstCounterModule.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
-            "The generated Vue module must not contain the external consumer's absolute path.");
-
-        var incrementalBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "--no-restore", .. commonArguments]);
-        Assert.AreEqual(0, incrementalBuild.ExitCode, incrementalBuild.ToString());
-
-        var incrementalCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
-        var incrementalCounterModule = await File.ReadAllTextAsync(counterModulePath);
-        Assert.AreEqual(firstCounterSource, incrementalCounterSource);
-        Assert.AreEqual(firstCounterModule, incrementalCounterModule);
-
-        await File.WriteAllTextAsync(
-            Path.Combine(projectRoot, "Counter.razor"),
-            """
-            <button @onclick="Increment">Clicks: @count</button>
-            @if (count > 0)
-            {
-                <span>Counter changed</span>
-            }
-            """);
-
-        var changedBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "--no-restore", .. commonArguments]);
-        Assert.AreEqual(0, changedBuild.ExitCode, changedBuild.ToString());
-
-        var changedCounterSource = ReadCounterRazorSgGeneratedSource(generatedRoot);
-        var changedCounterModule = await File.ReadAllTextAsync(counterModulePath);
-        Assert.AreNotEqual(firstCounterSource, changedCounterSource);
-        Assert.AreNotEqual(firstCounterModule, changedCounterModule);
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_EmitsVueRenderArtifactsAndManifest()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgEmitConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = workspace.RestorePackagesPath;
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
-        _ = ReadCounterRazorSgGeneratedSource(generatedRoot);
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = FindBuildState(outputRoot);
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
-        var componentMapPath = Path.Combine(outputRoot, "components", "counter.js.map");
-
-        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
-        Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
-        Assert.IsTrue(File.Exists(componentMapPath), $"RazorVue component source map was not generated: {componentMapPath}");
-
-        var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(componentModule, "import { defineComponent, h, reactive } from \"vue\";");
-        Assert.IsFalse(componentModule.Contains("watch", StringComparison.Ordinal), componentModule);
-        Assert.IsFalse(componentModule.Contains("onMounted", StringComparison.Ordinal), componentModule);
-        Assert.IsFalse(componentModule.Contains("onUpdated", StringComparison.Ordinal), componentModule);
-        Assert.IsFalse(componentModule.Contains("onUnmounted", StringComparison.Ordinal), componentModule);
-        StringAssert.Contains(componentModule, "const __jazorComponent = defineComponent({");
-        StringAssert.Contains(componentModule, "export default __jazorComponent;");
-        StringAssert.Contains(componentModule, "sourceMappingURL=counter.js.map");
-
-        var componentMap = await File.ReadAllTextAsync(componentMapPath);
-        StringAssert.Contains(componentMap, "\"file\": \"components/counter.js\"");
-        StringAssert.Contains(componentMap, "Counter.razor");
-        var sourceMap = new SourceMapReader().Read(componentMap);
-        var razorSource = sourceMap.Sources.Single(static source => source.Path == "Counter.razor");
-        Assert.IsNotNull(razorSource.Content);
-        StringAssert.Contains(razorSource.Content!, "Clicks: @count", StringComparison.Ordinal);
-        Assert.IsFalse(
-            componentMap.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
-            "RazorVue component source map must not persist the external consumer's absolute project path.");
-
-        var manifest = LoadManifest(manifestPath);
-        Assert.AreEqual(1, manifest.SchemaVersion);
-        Assert.AreEqual(1, manifest.RuntimeProtocolVersion);
-        Assert.AreEqual("ExternalRazorSgG0Consumer", manifest.RootAssemblyName);
-
-        var emittedRelativePaths = manifest.Modules
-            .Select(static moduleEntry => moduleEntry.RelativePath)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .ToArray();
-        CollectionAssert.Contains(emittedRelativePaths, "components/counter.js");
-
-        var counterEntry = manifest.Modules.Single(static moduleEntry => moduleEntry.RelativePath == "components/counter.js");
-        Assert.AreEqual("components/counter.js.map", counterEntry.SourceMapPath);
-        Assert.HasCount(64, counterEntry.Hash);
-        Assert.IsTrue(counterEntry.Hash!.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
-        Assert.HasCount(64, counterEntry.MapHash!);
-        Assert.IsTrue(counterEntry.MapHash!.All(static value => value is >= '0' and <= '9' or >= 'a' and <= 'f'));
-
-        var manifestText = (await File.ReadAllTextAsync(manifestPath)).ReplaceLineEndings("\n");
-        Assert.IsFalse(manifestText.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), manifestText);
-        Assert.IsFalse(manifestText.Contains("rootAssemblyPath", StringComparison.OrdinalIgnoreCase), manifestText);
-        Assert.IsFalse(
-            manifestText.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
-            "Canonical manifest must not persist the external consumer's absolute project path.");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_RazorAuthoringError_DoesNotAddSecondaryRazorVueDiagnostic()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgInvalidBindingConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot);
-        WriteFile(
-            Path.Combine(projectRoot, "Counter.razor"),
-            "<input @bind:get=\"Note\" @bind:set=\"SetNoteAsync\" @bind:after=\"PersistNoteAsync\" />");
-        WriteFile(
-            Path.Combine(projectRoot, "Counter.razor.cs"),
-            """
-            using System.Threading.Tasks;
-            using ECMAScript;
-            using static ECMAScript.Vue;
-            using Microsoft.AspNetCore.Components;
-
-            namespace ExternalRazorSgG0Consumer;
-
-            [ECMAScriptModule("./components/counter")]
-            public partial class Counter : ComponentBase, IVueComponent
-            {
-                private string Note { get; set; } = string.Empty;
-
-                private Task SetNoteAsync(string value)
-                {
-                    Note = value;
-                    return Task.CompletedTask;
-                }
-
-                private Task PersistNoteAsync()
-                    => Task.CompletedTask;
-            }
-            """);
-
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}"
-            ]);
-
-        Assert.AreNotEqual(0, build.ExitCode, build.ToString());
-        StringAssert.Contains(build.ToString(), "RZ10019", StringComparison.Ordinal);
-        Assert.IsFalse(build.ToString().Contains("JAZORVGA020", StringComparison.Ordinal), build.ToString());
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_ExecutesMaterializedComponentBindingAndCounterOnNodeApi()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgNodeApiConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        WriteFile(
-            Path.Combine(projectRoot, "Counter.razor"),
-            """
-            <input @bind:get="Note" @bind:set="SetNoteAsync" @bind:event="oninput" data-saved="@SavedNote" data-persisted="@PersistedNote" />
-            <ReleaseEditor @bind-Value:get="Note" @bind-Value:set="SetNoteAsync" />
-            <button @onclick="IncrementAsync">Clicks: @count</button>
-            @if (count > 0)
-            {
-                <span>Counter changed</span>
-            }
-            """);
-        WriteFile(
-            Path.Combine(projectRoot, "Counter.razor.cs"),
-            """
-            using System.Threading.Tasks;
-            using ECMAScript;
-            using static ECMAScript.Vue;
-            using Microsoft.AspNetCore.Components;
-
-            namespace ExternalRazorSgG0Consumer;
-
-            [ECMAScriptModule("./components/counter")]
-            public partial class Counter : ComponentBase, IVueComponent
-            {
-                private int count;
-
-                private string Note { get; set; } = "Draft note";
-
-                private string SavedNote { get; set; } = "none";
-
-                private string PersistedNote { get; set; } = "none";
-
-                private void SetNote(string value)
-                {
-                    Note = value.Trim();
-                    SavedNote = "saved:" + Note;
-                }
-
-                // Razor forbids combining @bind:set with @bind:after. The setter owns
-                // the ordered state update and follow-up task so both bind targets share it.
-                private Task SetNoteAsync(string value)
-                {
-                    SetNote(value);
-                    return PersistNoteAsync();
-                }
-
-                private Task PersistNoteAsync()
-                {
-                    PersistedNote = "persisted:" + Note;
-                    return Task.CompletedTask;
-                }
-
-                private async Task IncrementAsync()
-                {
-                    await InvokeAsync(IncrementCoreAsync);
-                }
-
-                private async Task IncrementCoreAsync()
-                {
-                    count++;
-                    StateHasChanged();
-                }
-            }
-            """);
-        WriteFile(
-            Path.Combine(projectRoot, "ReleaseEditor.razor"),
-            """
-            <span>Release editor</span>
-            """);
-        WriteFile(
-            Path.Combine(projectRoot, "ReleaseEditor.razor.cs"),
-            """
-            using ECMAScript;
-            using ECMAScript.VueContract;
-            using static ECMAScript.Vue;
-            using Microsoft.AspNetCore.Components;
-
-            namespace ExternalRazorSgG0Consumer;
-
-            [ECMAScriptModule("./components/release-editor")]
-            public partial class ReleaseEditor : ComponentBase, IVueComponent
-            {
-                [Parameter]
-                [ECMAScriptName("modelValue")]
-                public string Value { get; set; } = "";
-
-                [Parameter]
-                [ECMAScriptName("onUpdate:modelValue")]
-                public EventCallback<string> ValueChanged { get; set; }
-            }
-            """);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
-        var releaseEditorModulePath = Path.Combine(outputRoot, "components", "release-editor.js");
-        Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue Counter module was not materialized: {componentModulePath}");
-        Assert.IsTrue(File.Exists(releaseEditorModulePath), $"RazorVue ReleaseEditor module was not materialized: {releaseEditorModulePath}");
-        var componentModule = (await File.ReadAllTextAsync(componentModulePath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(componentModule, "invokeAsync", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "stateHasChanged", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "SetNoteAsync(__value)", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "from \"./release-editor.js\"", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "modelValue: state.Note", StringComparison.Ordinal);
-        StringAssert.Contains(componentModule, "onUpdate:modelValue", StringComparison.Ordinal);
-        Assert.IsFalse(componentModule.Contains("this.", StringComparison.Ordinal), componentModule);
-        var generatedModules = Directory
-            .EnumerateFiles(outputRoot, "*.mjs", SearchOption.AllDirectories)
-            .OrderBy(static path => path, StringComparer.Ordinal)
-            .ToArray();
-        Assert.IsNotEmpty(generatedModules, "External Razor SG consumer did not materialize any ECMAScript modules.");
-        foreach (var modulePath in generatedModules)
-        {
-            var moduleText = (await File.ReadAllTextAsync(modulePath)).ReplaceLineEndings("\n");
-            Assert.IsFalse(moduleText.Contains("scope.buildRenderTree(builder)", StringComparison.Ordinal), modulePath);
-            Assert.IsFalse(moduleText.Contains("builder.finish()", StringComparison.Ordinal), modulePath);
-            Assert.IsFalse(moduleText.Contains(".vue", StringComparison.OrdinalIgnoreCase), modulePath);
-        }
-
-        WriteFile(
-            Path.Combine(outputRoot, "vue-test-runtime.mjs"),
-            """
-            export const Fragment = Symbol("Fragment");
-
-            export function createStaticVNode(html, count) {
-                return { kind: "static", html, count };
-            }
-
-            // Direct RazorVue modules import Vue's compiler-oriented helpers when a vnode has
-            // a proven patch surface. Keep this local NodeApi fixture shape-compatible with Vue so
-            // the external-package test exercises the same generated import contract.
-            // block helper 是 direct artifact 的正式 import，不是 runtime bridge fallback。
-            export function openBlock() {
-                return null;
-            }
-
-            export function createElementBlock(name, props, children, patchFlag, dynamicProps) {
-                return { name, props, children, patchFlag, dynamicProps, block: "element" };
-            }
-
-            export function createBlock(name, props, children, patchFlag, dynamicProps) {
-                return { name, props, children, patchFlag, dynamicProps, block: "component" };
-            }
-
-            export function defineComponent(options) {
-                return options;
-            }
-
-            export function reactive(value) {
-                return value;
-            }
-
-            export function h(name, props, children) {
-                return { name, props, children };
-            }
-            """);
-
-        var testFile = Path.Combine(outputRoot, "materialized-counter.test.mjs");
-        WriteFile(
-            testFile,
-            """
-            import component from "./components/counter.js";
-            import releaseEditor from "./components/release-editor.js";
-
-            function assertEqual(actual, expected, message) {
-                if (!Object.is(actual, expected))
-                    throw new Error(`${message}: expected ${String(expected)}, got ${String(actual)}`);
-            }
-
-            function renderedText(vnode) {
-                if (vnode == null)
-                    return "";
-                if (Array.isArray(vnode))
-                    return vnode.map(renderedText).join("");
-                if (typeof vnode === "object")
-                    return renderedText(vnode.children);
-                return String(vnode);
-            }
-
-            function findElement(vnode, name) {
-                if (Array.isArray(vnode))
-                    return vnode.map(value => findElement(value, name)).find(Boolean);
-                if (vnode != null && typeof vnode === "object")
-                    return vnode.name === name
-                        ? vnode
-                        : findElement(vnode.children, name);
-                return undefined;
-            }
-
-            function findComponent(vnode, component) {
-                if (Array.isArray(vnode))
-                    return vnode.map(value => findComponent(value, component)).find(Boolean);
-                if (vnode != null && typeof vnode === "object")
-                    return vnode.name === component
-                        ? vnode
-                        : findComponent(vnode.children, component);
-                return undefined;
-            }
-
-            function hasStaticHtml(vnode, expectedHtml) {
-                if (Array.isArray(vnode))
-                    return vnode.some(value => hasStaticHtml(value, expectedHtml));
-                if (vnode != null && typeof vnode === "object")
-                    return vnode.kind === "static"
-                        ? vnode.html === expectedHtml
-                        : hasStaticHtml(vnode.children, expectedHtml);
-                return false;
-            }
-
-            globalThis.__jazorTest("materialized RazorVue consumer preserves bind:set and async event state", async () => {
-                const render = component.setup({}, { slots: {} });
-                const initial = render();
-                const initialInput = findElement(initial, "input");
-                const initialEditor = findComponent(initial, releaseEditor);
-                const initialButton = findElement(initial, "button");
-                assertEqual(initialInput?.name, "input", "initial input element");
-                assertEqual(initialEditor?.name, releaseEditor, "initial release editor component");
-                assertEqual(initialButton?.name, "button", "initial vnode element");
-                assertEqual(initialInput?.props.value, "Draft note", "initial bound input value");
-                assertEqual(initialInput?.props["data-saved"], "none", "initial saved note");
-                assertEqual(typeof initialInput?.props.onInput, "function", "input handler");
-                assertEqual(initialEditor?.props.modelValue, "Draft note", "initial component model value");
-                assertEqual(typeof initialEditor?.props["onUpdate:modelValue"], "function", "component model update handler");
-                assertEqual(renderedText(initial), "Clicks: 0", "initial rendered text");
-                assertEqual(hasStaticHtml(initial, "<span>Counter changed</span>"), false, "initial conditional content");
-                assertEqual(typeof initialButton?.props.onClick, "function", "click handler");
-
-                await Promise.resolve(initialInput.props.onInput({ target: { value: "  package consumer  " } }));
-
-                const bound = render();
-                const boundInput = findElement(bound, "input");
-                const boundEditor = findComponent(bound, releaseEditor);
-                assertEqual(boundInput?.props.value, "package consumer", "bound input value");
-                assertEqual(boundInput?.props["data-saved"], "saved:package consumer", "bound saved note");
-                assertEqual(boundInput?.props["data-persisted"], "persisted:package consumer", "DOM async bind setter persists the normalized value");
-                assertEqual(boundEditor?.props.modelValue, "package consumer", "bound component model value");
-
-                await Promise.resolve(boundEditor.props["onUpdate:modelValue"]("  component update  "));
-
-                const componentBound = render();
-                const componentBoundInput = findElement(componentBound, "input");
-                const componentBoundEditor = findComponent(componentBound, releaseEditor);
-                assertEqual(componentBoundInput?.props.value, "component update", "component-updated input value");
-                assertEqual(componentBoundInput?.props["data-saved"], "saved:component update", "component update uses the explicit setter");
-                assertEqual(componentBoundInput?.props["data-persisted"], "persisted:component update", "component async bind setter persists the normalized value");
-                assertEqual(componentBoundEditor?.props.modelValue, "component update", "component-updated model value");
-
-                const boundButton = findElement(componentBound, "button");
-                await Promise.resolve(boundButton.props.onClick());
-
-                const updated = render();
-                assertEqual(renderedText(updated), "Clicks: 1", "updated rendered text");
-                assertEqual(hasStaticHtml(updated, "<span>Counter changed</span>"), true, "updated conditional content");
-            });
-            """);
-
-        await RunNodeTestAsync( testFile, outputRoot);
-        Assert.IsTrue(
-            Directory.Exists(Path.Combine(outputRoot, "node_modules")),
-            "The materialized RazorVue consumer test must resolve Vue from the Emit-owned jazor/node_modules graph.");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_BuildsStandardProjectInConfiguredDirectory()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgProjectConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-
-        var restorePackagesPath = workspace.RestorePackagesPath;
-        var bundleRoot = Path.Combine(projectRoot, "frontend");
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release",
-                $"-p:JazorDir={bundleRoot}"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = FindBuildState(outputRoot);
-        var counterModulePath = Path.Combine(outputRoot, "components", "counter.js");
-        var bundlePath = Path.Combine(bundleRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(bundleRoot, "dist", "bundle.js.map");
-
-        Assert.IsTrue(File.Exists(manifestPath), $"Build state was not written under obj: {manifestPath}");
-        Assert.IsFalse(File.Exists(counterModulePath), $"Release must not materialize modules: {counterModulePath}");
-        Assert.IsTrue(File.Exists(bundlePath), $"Project build bundle was not generated by package consumer: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Project build bundle source map was not generated: {bundleMapPath}");
-
-        var bundle = (await File.ReadAllTextAsync(bundlePath)).ReplaceLineEndings("\n");
-        StringAssert.Contains(bundle, "Clicks:");
-        StringAssert.Contains(bundle, "sourceMappingURL=bundle.js.map");
-        Assert.DoesNotContain(
-            "deno:",
-            bundle,
-            StringComparison.OrdinalIgnoreCase);
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "Project build package consumer must use the standard jazor dependency graph.");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_CleanBuildsVueRenderArtifactsByteForByte()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDeterministicConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = workspace.RestorePackagesPath;
-        var commonArguments = new[]
-        {
-            "/m:1",
-            "/p:BuildInParallel=false",
-            $"-p:RestoreSources={package.PackageOutputDirectory}",
-            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={restorePackagesPath}",
-            $"-p:JazorPackageVersion={package.PackageVersion}"
-        };
-
-        var firstBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "-t:Rebuild", .. commonArguments]);
-        Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var firstArtifacts = ReadArtifactHashes(outputRoot);
-        CollectionAssert.DoesNotContain(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "jazor-manifest.json");
-        CollectionAssert.Contains(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/counter.js");
-        CollectionAssert.Contains(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/counter.js.map");
-        CollectionAssert.Contains(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/plain-text.js");
-        CollectionAssert.Contains(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/plain-text.js.map");
-        CollectionAssert.Contains(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/keyed-list-100.js");
-        CollectionAssert.Contains(
-            firstArtifacts.Select(static artifact => artifact.RelativePath).ToArray(),
-            "components/keyed-list-100.js.map");
-
-        var firstManifestText = await File.ReadAllTextAsync(FindBuildState(outputRoot));
-        Assert.IsFalse(firstManifestText.Contains("generatedAtUtc", StringComparison.OrdinalIgnoreCase), firstManifestText);
-        Assert.IsFalse(firstManifestText.Contains("rootAssemblyPath", StringComparison.OrdinalIgnoreCase), firstManifestText);
-        Assert.IsFalse(
-            firstManifestText.Contains(projectRoot, StringComparison.OrdinalIgnoreCase),
-            "Canonical manifest must not persist the external consumer's absolute project path.");
-        AssertArtifactsDoNotContain(outputRoot, projectRoot);
-
-        Directory.Delete(outputRoot, recursive: true);
-
-        var secondBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "-t:Rebuild", .. commonArguments]);
-        Assert.AreEqual(0, secondBuild.ExitCode, secondBuild.ToString());
-
-        var secondArtifacts = ReadArtifactHashes(outputRoot);
-        CollectionAssert.AreEqual(
-            firstArtifacts.Select(static artifact => artifact.ToString()).ToArray(),
-            secondArtifacts.Select(static artifact => artifact.ToString()).ToArray(),
-            "Repeated clean builds of the same external Razor SG multi-fixture consumer must produce the same relative-path/SHA256 Vue render artifact manifest.");
-        AssertArtifactsDoNotContain(outputRoot, projectRoot);
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_CleanEmitRemovesDeletedComponentArtifacts()
-    {
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgDeletedComponentConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var restorePackagesPath = workspace.RestorePackagesPath;
-        var commonArguments = new[]
-        {
-            "/m:1",
-            "/p:BuildInParallel=false",
-            $"-p:RestoreSources={package.PackageOutputDirectory}",
-            "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-            $"-p:RestorePackagesPath={restorePackagesPath}",
-            $"-p:JazorPackageVersion={package.PackageVersion}"
-        };
-
-        var firstBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "-t:Rebuild", .. commonArguments]);
-        Assert.AreEqual(0, firstBuild.ExitCode, firstBuild.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = FindBuildState(outputRoot);
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
-        var componentMapPath = Path.Combine(outputRoot, "components", "counter.js.map");
-
-        Assert.IsTrue(File.Exists(componentModulePath), $"Initial component module was not generated: {componentModulePath}");
-        Assert.IsTrue(File.Exists(componentMapPath), $"Initial component source map was not generated: {componentMapPath}");
-        CollectionAssert.Contains(
-            LoadManifest(manifestPath).Modules.Select(static module => module.RelativePath).ToArray(),
-            "components/counter.js");
-
-        File.Delete(Path.Combine(projectRoot, "Counter.razor"));
-        File.Delete(Path.Combine(projectRoot, "Counter.razor.cs"));
-
-        var secondBuild = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            ["build", projectPath, "--no-restore", .. commonArguments]);
-        Assert.AreEqual(0, secondBuild.ExitCode, secondBuild.ToString());
-
-        Assert.IsFalse(File.Exists(componentModulePath), "Clean emit must delete the removed RazorVue component module.");
-        Assert.IsFalse(File.Exists(componentMapPath), "Clean emit must delete the removed RazorVue component source map.");
-
-        var currentManifest = LoadManifest(manifestPath);
-        var currentPaths = currentManifest.Modules
-            .Select(static module => module.RelativePath)
-            .ToArray();
-        CollectionAssert.DoesNotContain(currentPaths, "components/counter.js");
-        CollectionAssert.DoesNotContain(
-            currentManifest.Modules
-                .Select(static module => module.SourceMapPath)
-                .Where(static path => !string.IsNullOrWhiteSpace(path))
-                .Cast<string>()
-                .ToArray(),
-            "components/counter.js.map");
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Core")]
-    public async Task Build_LocalPackages_WithExternalRazorSgConsumer_RunsCounterInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Real browser Counter smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalCorePackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalRazorSgBrowserCounterConsumer");
-        var projectPath = CreateExternalRazorSgG0ConsumerProject(projectRoot, enableEmit: true);
-        var counterSourcePath = Path.Combine(projectRoot, "Counter.razor.cs");
-        var counterSource = (await File.ReadAllTextAsync(counterSourcePath))
-            .Replace("count++;", "count = CounterMath.Increment(count);", StringComparison.Ordinal);
-        WriteFile(counterSourcePath, counterSource + """
-
-            internal static class CounterMath
-            {
-                public static int Increment(int value) => value + new CounterStep(1).Value;
-            }
-            internal sealed record CounterStep(int Value);
-            """);
-        var restorePackagesPath = workspace.RestorePackagesPath;
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={restorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var manifestPath = FindBuildState(outputRoot);
-        var componentModulePath = Path.Combine(outputRoot, "components", "counter.js");
-        Assert.IsTrue(File.Exists(manifestPath), $"Manifest was not generated: {manifestPath}");
-        Assert.IsTrue(File.Exists(componentModulePath), $"RazorVue component module was not generated: {componentModulePath}");
-
-        StringAssert.Contains(await File.ReadAllTextAsync(componentModulePath), "class CounterMath", StringComparison.Ordinal);
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "browser-harness");
-        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
-        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
-        CreateCounterBrowserHarness(harnessJazorRoot);
-        WriteFile(Path.Combine(harnessJazorRoot, "vite.config.js"), """
-
-            import { defineConfig } from 'vite';
-            export default defineConfig({ base: './', define: {
-              __VUE_OPTIONS_API__: false,
-              __VUE_PROD_DEVTOOLS__: false,
-              __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false
-            }, build: {
-              target: 'esnext', sourcemap: true,
-              rolldownOptions: { input: 'client-entry.mjs', output: { entryFileNames: 'client-entry.js' } }
-            }});
-            """);
-        var bundle = await new JavaScriptProjectBuilder().BuildAsync(harnessJazorRoot);
-        Assert.IsTrue(bundle.IsSuccess, bundle.Diagnostic?.Message);
-        var indexPath = Path.Combine(harnessJazorRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Browser Counter smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "initialText", "Clicks: 0");
-        AssertJsonTextContains(smoke, "firstClickText", "Clicks: 1");
-        AssertJsonTextContains(smoke, "thirdClickText", "Clicks: 3");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalNativeTDesignRazorConsumer_MountsAndInteractsInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Native TDesign browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalNativeTDesignReleaseConsumer");
-        var projectPath = CreateExternalNativeTDesignRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release TDesign bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release TDesign bundle source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated TDesign package consumer must not use frontend node_modules.");
-        Assert.IsTrue(
-            File.Exists(Path.Combine(outputRoot, "package.json")),
-            "The Release consumer did not emit the standard jazor package project.");
-        Assert.IsTrue(
-            File.Exists(Path.Combine(outputRoot, "pnpm-lock.yaml")),
-            "The Release consumer did not freeze the restored pnpm package graph.");
-        Assert.IsTrue(
-            File.Exists(Path.Combine(outputRoot, "node_modules", "tdesign-vue-next", "package.json")),
-            "The Release consumer did not restore the selected TDesign npm package.");
-        Assert.IsTrue(
-            Directory.EnumerateFiles(Path.Combine(outputRoot, "dist"), "*.css", SearchOption.AllDirectories).Any(),
-            "The Release consumer did not emit the selected TDesign stylesheet closure.");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "tdesign-browser-harness");
-        CreateReleaseTDesignBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 8000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "native TDesign RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Native TDesign browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "initialStatus", "Draft task:0");
-        AssertJsonTextContains(smoke, "boundStatus", "Release package task:0");
-        AssertJsonTextContains(smoke, "savedStatus", "Release package task:1");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalNativeElementPlusRazorConsumer_MaterializesAssetsInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Native Element Plus browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalNativeElementPlusReleaseConsumer");
-        var projectPath = CreateExternalNativeElementPlusRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build", projectPath, "-c", "Release", "-t:Rebuild", "/m:1", "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}", "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "bundle.js")), "Release Element Plus bundle was not generated.");
-        Assert.IsTrue(File.Exists(Path.Combine(outputRoot, "dist", "bundle.js.map")), "Release Element Plus source map was not generated.");
-        Assert.IsFalse(Directory.Exists(Path.Combine(projectRoot, "node_modules")), "The isolated Element Plus consumer must not use frontend node_modules.");
-        Assert.IsTrue(Directory.EnumerateFiles(outputRoot, "index.full.min.mjs", SearchOption.AllDirectories).Any(), "Element Plus ESM entry was not materialized.");
-        Assert.IsTrue(Directory.EnumerateFiles(outputRoot, "index.css", SearchOption.AllDirectories).Any(), "Element Plus stylesheet was not materialized.");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "element-plus-browser-harness");
-        CreateReleaseElementPlusBrowserHarness(outputRoot, harnessRoot);
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
-            browserPath,
-            Path.Combine(harnessRoot, "index.html"),
-            virtualTimeBudgetMilliseconds: 8000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "native Element Plus RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(smoke.GetProperty("ok").GetBoolean(), "Native Element Plus browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "initialStatus", "Initial:0");
-        AssertJsonTextContains(smoke, "boundStatus", "Edited:0");
-        AssertJsonTextContains(smoke, "savedStatus", "Edited:1");
-        var failures = smoke.GetProperty("failures").EnumerateArray().Select(static failure => failure.GetString() ?? "").Where(static failure => !string.IsNullOrWhiteSpace(failure)).ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalElementReferenceRazorConsumer_FocusesAndHandlesUnmountInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "ElementReference browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalElementReferenceReleaseConsumer");
-        var projectPath = CreateExternalElementReferenceRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release ElementReference bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release ElementReference bundle source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated ElementReference package consumer must not use frontend node_modules.");
-
-        var bundleText = await File.ReadAllTextAsync(bundlePath);
-        // NetPack may inline a CLR import module into the release bundle or keep it as a
-        // materialized ESM asset. In either layout, assert the helper's observable contract.
-        var focusHelperPaths = Directory
-            .EnumerateFiles(outputRoot, "ElementReferenceExtensionsModule.js", SearchOption.AllDirectories)
-            .ToArray();
-        var focusHelperTexts = focusHelperPaths
-            .Select(File.ReadAllText)
-            .Append(bundleText)
-            .ToArray();
-        Assert.IsTrue(
-            focusHelperTexts.Any(static text =>
-                text.Contains("ElementReference has not been configured correctly.", StringComparison.Ordinal) &&
-                text.Contains("preventScroll", StringComparison.Ordinal)),
-            "The Release consumer did not retain the ElementReference focus helper contract.");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "element-reference-browser-harness");
-        CreateReleaseElementReferenceBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 8000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "ElementReference RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "ElementReference browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "focusedStatus", "focused");
-        AssertJsonTextContains(
-            smoke,
-            "unmountedStatus",
-            "InvalidOperationException: ElementReference has not been configured correctly.");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalCoreDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Core DOM event browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalCoreDomEventsReleaseConsumer");
-        var projectPath = CreateExternalCoreDomEventsRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release core DOM event bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release core DOM event bundle source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated core DOM event package consumer must not use frontend node_modules.");
-
-        var bundleText = await File.ReadAllTextAsync(bundlePath);
-
-        // NetPack may inline a CLR Import helper or keep it as a separate ESM asset. In either
-        // layout, the capture bridge must retain its event-value and per-event identity contract.
-        var changeHelperPaths = Directory
-            .EnumerateFiles(outputRoot, "ChangeEventArgsModule.js", SearchOption.AllDirectories)
-            .ToArray();
-        var changeHelperTexts = changeHelperPaths
-            .Select(File.ReadAllText)
-            .Append(bundleText)
-            .ToArray();
-        Assert.IsTrue(
-            changeHelperTexts.Any(static text =>
-                text.Contains("captureChangeEvent", StringComparison.Ordinal) &&
-                text.Contains("getChangeEventValue", StringComparison.Ordinal) &&
-                text.Contains("WeakMap", StringComparison.Ordinal)),
-            "The Release consumer did not retain the ChangeEventArgs capture bridge contract.");
-
-        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
-        var mappedSources = bundleSourceMap.RootElement
-            .GetProperty("sources")
-            .EnumerateArray()
-            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
-            .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/core-dom-events.js");
-        var mappedSourceContents = bundleSourceMap.RootElement
-            .GetProperty("sourcesContent")
-            .EnumerateArray()
-            .Select(static source => source.GetString() ?? "")
-            .ToArray();
-        Assert.IsTrue(
-            mappedSourceContents.Any(static source =>
-                source.Contains("captureChangeEvent(event)", StringComparison.Ordinal) &&
-                source.Contains("getChangeEventValue", StringComparison.Ordinal)),
-            "The Release bundle source map did not retain the typed ChangeEventArgs capture bridge.");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "core-dom-events-browser-harness");
-        CreateReleaseCoreDomEventsBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 10000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "core DOM events RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Core DOM event browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "mouseStatus", "click:37");
-        AssertJsonTextContains(smoke, "keyboardStatus", "Enter:Enter");
-        AssertJsonTextContains(smoke, "focusStatus", "focus");
-        AssertJsonTextContains(smoke, "boundStatus", "bound");
-        AssertJsonTextContains(smoke, "changeStatus", "first/first");
-        AssertJsonTextContains(smoke, "checkboxStatus", "true");
-        AssertJsonTextContains(smoke, "multipleStatus", "2:one,two");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalFrameworkPrimitivesRazorConsumer_ProvesInjectionCascadingAndParameterViewInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Framework primitive browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalFrameworkPrimitivesReleaseConsumer");
-        var projectPath = CreateExternalFrameworkPrimitivesRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release framework primitive bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release framework primitive source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated framework primitive package consumer must not use frontend node_modules.");
-
-        var bundleText = await File.ReadAllTextAsync(bundlePath);
-        StringAssert.Contains(bundleText, "jazor:service:ExternalFrameworkPrimitivesReleaseConsumer.BrowserProbe", StringComparison.Ordinal);
-        var namespaceImportAliases = Regex.Matches(
-                bundleText,
-                "^import \\* as (?<alias>[A-Za-z0-9_$]+) from ",
-                RegexOptions.Multiline)
-            .Select(static match => match.Groups["alias"].Value)
-            .ToArray();
-        Assert.AreEqual(
-            namespaceImportAliases.Length,
-            namespaceImportAliases.Distinct(StringComparer.Ordinal).Count(),
-            "Project build emitted duplicate namespace import bindings in the Release bundle.");
-
-        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
-        Assert.IsTrue(
-            Directory.Exists(generatedRoot) &&
-            Directory.EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories).Any(),
-            "The external framework primitive consumer did not compile through the official Razor source generator.");
-
-        var cascadingRuntimePaths = Directory
-            .EnumerateFiles(outputRoot, "cascading.mjs", SearchOption.AllDirectories)
-            .Where(static path => path.Replace('\\', '/').Contains("runtime/vue/", StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-        Assert.IsTrue(
-            cascadingRuntimePaths.Length == 1 ||
-            (bundleText.Contains("JazorCascadingValue", StringComparison.Ordinal) &&
-             bundleText.Contains("jazor:cascade:", StringComparison.Ordinal)),
-            "The Release consumer did not retain the cascading runtime contract.");
-
-        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
-        var mappedSources = bundleSourceMap.RootElement
-            .GetProperty("sources")
-            .EnumerateArray()
-            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
-            .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/framework-primitives.js");
-        CollectionAssert.Contains(mappedSources, "components/parameter-child.js");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "framework-primitives-browser-harness");
-        CreateReleaseFrameworkPrimitivesBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 12000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "framework primitives RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Framework primitive browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "initialInjection", "root:release-provider");
-        AssertJsonTextContains(smoke, "nestedInjection", "first:release-provider|second:release-provider");
-        AssertJsonTextContains(smoke, "outerCascade", "outer:outer-next:fixed-fallback:2");
-        AssertJsonTextContains(smoke, "innerCascade", "inner:inner-next:fixed-fallback:2");
-        AssertJsonTextContains(smoke, "fixedCascade", "fixed:outer-next:fixed:2");
-        AssertJsonTextContains(smoke, "disposedCascade", "1");
-        AssertJsonTextContains(smoke, "recreatedCascade", "inner:inner-next:fixed-fallback:1");
-        AssertJsonTextContains(smoke, "parameterLog", "before:one|parameters:two|after:two|");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalNavigationLocationChangingRazorConsumer_ProvesInternalCancellationInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Navigation LocationChanging browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalNavigationLocationChangingReleaseConsumer");
-        var projectPath = CreateExternalNavigationLocationChangingRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release navigation bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release navigation bundle source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated navigation package consumer must not use frontend node_modules.");
-
-        var generatedRoot = Path.Combine(projectRoot, "obj", "Generated");
-        Assert.IsTrue(
-            Directory.Exists(generatedRoot) &&
-            Directory.EnumerateFiles(generatedRoot, "*_razor.g.cs", SearchOption.AllDirectories).Any(),
-            "The external navigation consumer did not compile through the official Razor source generator.");
-
-        var generatedNavigationSource = Directory
-            .EnumerateFiles(generatedRoot, "NavigationLocationChanging_razor.g.cs", SearchOption.AllDirectories)
-            .Single();
-        var generatedNavigationText = await File.ReadAllTextAsync(generatedNavigationSource);
-        StringAssert.Contains(
-            generatedNavigationText,
-            "\"onclick\", global::Microsoft.AspNetCore.Components.EventCallback.Factory.Create",
-            StringComparison.Ordinal);
-
-        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
-        var mappedSources = bundleSourceMap.RootElement
-            .GetProperty("sources")
-            .EnumerateArray()
-            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
-            .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/navigation-location-changing.js");
-
-        // ECMAScript 自有源码 carrier 按声明路径写入项目源码树（clr/**），
-        // 不再经 node_modules/ 包投影物化。
-        var navigationModulePaths = Directory
-            .EnumerateFiles(Path.Combine(outputRoot, "clr"), "NavigationManagerModule.js", SearchOption.AllDirectories)
-            .ToArray();
-        Assert.HasCount(1, navigationModulePaths, "The Release consumer did not materialize exactly one NavigationManager runtime module.");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "navigation-location-changing-browser-harness");
-        CreateReleaseNavigationLocationChangingBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomFromHttpAsync(
-            browserPath,
-            indexPath,
-            virtualTimeBudgetMilliseconds: 15000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "navigation LocationChanging RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Navigation LocationChanging browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "blockedTarget", "/app/blocked?reason=test#blocked");
-        AssertJsonTextContains(smoke, "allowedLocation", "/app/allowed?state=ok#done");
-        AssertJsonTextContains(smoke, "historyState", "release-state");
-        AssertJsonTextContains(smoke, "supersededLocation", "/app/second");
-        AssertJsonTextContains(smoke, "log", "prevented");
-        AssertJsonTextContains(smoke, "log", "canceled:");
-        AssertJsonTextContains(smoke, "log", "disposed");
-        Assert.AreEqual("4", smoke.GetProperty("visits").GetString());
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalComplexLifecycleRazorConsumer_ProvesAsyncRacesInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Complex lifecycle browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalComplexLifecycleReleaseConsumer");
-        var projectPath = CreateExternalComplexLifecycleRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release complex lifecycle bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release complex lifecycle bundle source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated complex lifecycle package consumer must not use frontend node_modules.");
-
-        var bundleText = await File.ReadAllTextAsync(bundlePath);
-        StringAssert.Contains(bundleText, "complex-lifecycle.js", StringComparison.Ordinal);
-
-        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
-        var mappedSources = bundleSourceMap.RootElement
-            .GetProperty("sources")
-            .EnumerateArray()
-            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
-            .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/complex-lifecycle.js");
-        CollectionAssert.Contains(mappedSources, "components/async-initialization-failure.js");
-        CollectionAssert.Contains(mappedSources, "components/queued-parameter-lifecycle.js");
-        CollectionAssert.Contains(mappedSources, "components/stale-parameter-failure.js");
-        CollectionAssert.Contains(mappedSources, "components/async-unmount-race.js");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "complex-lifecycle-browser-harness");
-        CreateReleaseComplexLifecycleBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(
-            browserPath,
-            indexPath,
-            virtualTimeBudgetMilliseconds: 12000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "complex lifecycle RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Complex lifecycle browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "failureCount", "2");
-        AssertJsonTextContains(smoke, "failureLog", "failure-start|");
-        var afterRenderCount = smoke.GetProperty("afterRenderCount").GetString() ?? "";
-        Assert.IsTrue(
-            int.TryParse(afterRenderCount, out var parsedAfterRenderCount) && parsedAfterRenderCount is >= 2 and <= 20,
-            $"Browser smoke payload property 'afterRenderCount' was outside the expected range [2, 20]: '{afterRenderCount}'.");
-        AssertJsonTextContains(smoke, "queueLog", "queue-first-start|");
-        AssertJsonTextContains(smoke, "queueLog", "queue-dispose|");
-        AssertJsonTextContains(smoke, "queueLog", "queue-first-done|");
-        AssertJsonTextNotContains(smoke, "queueLog", "queue-second-start|");
-        AssertJsonTextContains(smoke, "staleLog", "stale-first-start|");
-        AssertJsonTextContains(smoke, "staleLog", "stale-second-start|");
-        AssertJsonTextContains(smoke, "raceLog", "race-init-done|");
-        AssertJsonTextContains(smoke, "raceLog", "race-dispose-start|");
-        AssertJsonTextContains(smoke, "raceLog", "race-dispose-done|");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
-    [TestMethod]
-    [TestCategory("Browser")]
-    [TestCategory("Consumer.Release")]
-    public async Task Build_LocalReleasePackages_WithExternalExtendedDomEventsRazorConsumer_HandlesNativeEventsInRealBrowser()
-    {
-        var browserPath = BrowserSmokeTestHelper.ResolveBrowserExecutable();
-        if (browserPath is null)
-        {
-            Assert.Inconclusive(
-                "Extended DOM event browser smoke requires Google Chrome or Chromium. " +
-                "Set RAZORVUE_BROWSER_EXE to the browser executable path.");
-            return;
-        }
-
-        var package = await LocalReleaseBrowserPackage.Value;
-
-        using var workspace = new TestWorkspace(package.RepoRoot);
-        var projectRoot = Path.Combine(workspace.RootPath, "ExternalExtendedDomEventsReleaseConsumer");
-        var projectPath = CreateExternalExtendedDomEventsRazorConsumerProject(projectRoot);
-        var build = await RunIsolatedConsumerBuildAsync(
-            package.RepoRoot,
-            [
-                "build",
-                projectPath,
-                "-c",
-                "Release",
-                "-t:Rebuild",
-                "/m:1",
-                "/p:BuildInParallel=false",
-                $"-p:RestoreSources={package.PackageOutputDirectory}",
-                "-p:RestoreAdditionalProjectSources=https://api.nuget.org/v3/index.json",
-                $"-p:RestorePackagesPath={workspace.RestorePackagesPath}",
-                $"-p:JazorPackageVersion={package.PackageVersion}",
-                "-p:JazorMode=release"
-            ]);
-
-        Assert.AreEqual(0, build.ExitCode, build.ToString());
-
-        var outputRoot = Path.Combine(projectRoot, "jazor");
-        var bundlePath = Path.Combine(outputRoot, "dist", "bundle.js");
-        var bundleMapPath = Path.Combine(outputRoot, "dist", "bundle.js.map");
-        Assert.IsTrue(File.Exists(bundlePath), $"Release extended event bundle was not generated: {bundlePath}");
-        Assert.IsTrue(File.Exists(bundleMapPath), $"Release extended event source map was not generated: {bundleMapPath}");
-        Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "jazor-manifest.json")), "Release must not retain debug RazorVue artifacts.");
-        Assert.IsFalse(
-            Directory.Exists(Path.Combine(projectRoot, "node_modules")),
-            "The isolated extended event package consumer must not use frontend node_modules.");
-
-        var bundleText = await File.ReadAllTextAsync(bundlePath);
-        foreach (var property in new[]
-                 {
-                     "pointerId", "pointerType", "isPrimary", "deltaX", "deltaMode", "dataTransfer",
-                     "dropEffect", "effectAllowed", "changedTouches", "clientX", "lineno", "colno",
-                     "lengthComputable", "loaded", "total"
-                 })
-        {
-            StringAssert.Contains(bundleText, property, StringComparison.Ordinal);
-        }
-
-        using var bundleSourceMap = JsonDocument.Parse(await File.ReadAllTextAsync(bundleMapPath));
-        var mappedSources = bundleSourceMap.RootElement
-            .GetProperty("sources")
-            .EnumerateArray()
-            .Select(static source => NormalizeBundleSourcePath(source.GetString() ?? ""))
-            .ToArray();
-        CollectionAssert.Contains(mappedSources, "components/extended-dom-events.js");
-
-        var harnessRoot = Path.Combine(workspace.RootPath, "extended-dom-events-browser-harness");
-        CreateReleaseExtendedDomEventsBrowserHarness(outputRoot, harnessRoot);
-
-        var indexPath = Path.Combine(harnessRoot, "index.html");
-        var browser = await BrowserSmokeTestHelper.RunBrowserDumpDomAsync(browserPath, indexPath, virtualTimeBudgetMilliseconds: 12000);
-        Assert.AreEqual(0, browser.ExitCode, browser.ToString());
-
-        using var smokePayload = BrowserSmokeTestHelper.ReadBrowserSmokePayload(browser, "extended DOM events RazorVue");
-        var smoke = smokePayload.RootElement;
-        Assert.IsTrue(
-            smoke.GetProperty("ok").GetBoolean(),
-            "Extended DOM event browser smoke failed." + Environment.NewLine + smoke.GetRawText() + Environment.NewLine + browser);
-        AssertJsonTextContains(smoke, "pointerStatus", "17:pen:true");
-        AssertJsonTextContains(smoke, "wheelStatus", "2.5:1");
-        AssertJsonTextContains(smoke, "dragStatus", "copy:copyMove");
-        AssertJsonTextContains(smoke, "clipboardStatus", "paste");
-        AssertJsonTextContains(smoke, "touchStatus", "3:12.5:true");
-        AssertJsonTextContains(smoke, "errorStatus", "boom:7:2:app.js:error");
-        AssertJsonTextContains(smoke, "progressStatus", "true:42:100:progress");
-
-        var failures = smoke.GetProperty("failures").EnumerateArray()
-            .Select(static failure => failure.GetString() ?? "")
-            .Where(static failure => !string.IsNullOrWhiteSpace(failure))
-            .ToArray();
-        Assert.HasCount(0, failures, "Browser console/runtime failures were observed:" + Environment.NewLine + string.Join(Environment.NewLine, failures));
-    }
-
     private static async Task<LocalStylePackageFixture> CreateLocalStylePackageAsync()
     {
         var core = await LocalCorePackage.Value;
@@ -4488,8 +2673,7 @@ public sealed partial class SdkIntegrationTests
         AssertPackageEntries(
             vuePackagePath,
             "lib/net11.0/ECMAScript.Vue.dll",
-            "lib/net11.0/ECMAScript.VueContract.dll",
-            "tools/net11.0/analyzers/Jazor.RazorVue.dll");
+            "lib/net11.0/ECMAScript.VueContract.dll");
         AssertPackageDoesNotContain(
             vuePackagePath,
             "lib/net11.0/ECMAScript.Blazor.dll",
@@ -4503,16 +2687,16 @@ public sealed partial class SdkIntegrationTests
         var packageVersion = await ResolvePackageVersionAsync(repoRoot);
         var buildWorkspace = new PackageBuildWorkspace(repoRoot, "Release", packageVersion, "release-packages");
 
-        foreach (var projectName in new[] { "Jazor", "Jazor.Vue" })
+        foreach (var projectName in new[] { "Jazor", "ECMAScript.Vue" })
         {
             var result = await buildWorkspace.PackAsync(projectName, packageOutputDirectory);
             Assert.AreEqual(0, result.ExitCode, result.ToString());
         }
 
         Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor"));
-        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor.Vue"));
+        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "ECMAScript.Vue"));
         var jazorPackagePath = GetPackagePath(packageOutputDirectory, packageVersion);
-        var vuePackagePath = GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion);
+        var vuePackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.Vue", packageVersion);
         AssertReleaseCorePackages(jazorPackagePath, vuePackagePath);
 
         return new LocalReleasePackageFixture(
@@ -4520,36 +2704,6 @@ public sealed partial class SdkIntegrationTests
             packageVersion,
             packageOutputDirectory,
             buildWorkspace);
-    }
-
-    private static async Task<LocalReleaseBrowserPackageFixture> CreateLocalReleaseBrowserPackageAsync()
-    {
-        var core = await LocalReleasePackage.Value;
-        var packageOutputDirectory = CreateFixtureDirectory(core.RepoRoot, "release-browser-nupkg");
-
-        CopyPackageFeed(core.PackageOutputDirectory, packageOutputDirectory);
-
-        foreach (var projectName in new[] { "ECMAScript.TDesign", "ECMAScript.VueRoute", "ECMAScript.ElementPlus" })
-        {
-            var result = await core.BuildWorkspace.PackAsync(projectName, packageOutputDirectory);
-            Assert.AreEqual(0, result.ExitCode, result.ToString());
-        }
-
-        var tdesignPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", core.PackageVersion);
-        var elementPlusPackagePath = GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", core.PackageVersion);
-        AssertPackageEntries(
-            tdesignPackagePath,
-            "lib/net11.0/ECMAScript.TDesign.dll",
-            "jazor/tdesign-vue-next/manifest.json");
-        AssertPackageEntries(
-            elementPlusPackagePath,
-            "lib/net11.0/ECMAScript.ElementPlus.dll",
-            "jazor/element-plus/manifest.json");
-
-        return new LocalReleaseBrowserPackageFixture(
-            core.RepoRoot,
-            core.PackageVersion,
-            packageOutputDirectory);
     }
 
     private static async Task<LocalCorePackageFixture> CreateLocalCorePackageAsync()
@@ -4564,24 +2718,21 @@ public sealed partial class SdkIntegrationTests
         Assert.IsFalse(
             jazorPack.ToString().Contains("NU5118", StringComparison.OrdinalIgnoreCase),
             "Jazor package emitted duplicate pack warnings." + Environment.NewLine + jazorPack);
-        var vuePack = await buildWorkspace.PackAsync("Jazor.Vue", packageOutputDirectory);
+        var vuePack = await buildWorkspace.PackAsync("ECMAScript.Vue", packageOutputDirectory);
         Assert.AreEqual(0, vuePack.ExitCode, vuePack.ToString());
         AssertPackageArtifactOutputs(
             buildWorkspace.OutputRoot,
             Path.Combine(buildWorkspace.OutputRoot, "Jazor.Emit", "bin", "Debug", "net11.0", "publish"));
-        Assert.IsTrue(
-            File.Exists(Path.Combine(buildWorkspace.OutputRoot, "Jazor.RazorVue", "bin", "Debug", "netstandard2.0", "Jazor.RazorVue.dll")),
-            "Jazor.Vue package preparation did not build Jazor.RazorVue.");
 
         Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor"));
-        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "Jazor.Vue"));
+        Assert.AreEqual(packageVersion, DiscoverPackageVersion(packageOutputDirectory, "ECMAScript.Vue"));
 
         return new LocalCorePackageFixture(
             repoRoot,
             packageVersion,
             packageOutputDirectory,
             GetPackagePath(packageOutputDirectory, packageVersion),
-            GetPackagePath(packageOutputDirectory, "Jazor.Vue", packageVersion),
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Vue", packageVersion),
             buildWorkspace);
     }
 
@@ -5018,7 +3169,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
                 <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
               </ItemGroup>
 
@@ -5160,7 +3311,7 @@ public sealed partial class SdkIntegrationTests
               </PropertyGroup>
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
                 <PackageReference Include="ECMAScript.ElementPlus" Version="$(JazorPackageVersion)" />
               </ItemGroup>
               <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup>
@@ -5273,7 +3424,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -5412,7 +3563,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -5593,7 +3744,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -5903,7 +4054,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -6100,7 +4251,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -6452,7 +4603,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -8112,7 +6263,7 @@ public sealed partial class SdkIntegrationTests
         Directory.CreateDirectory(projectRoot);
         var projectPath = Path.Combine(projectRoot, "StaticHostDefaultOutput.csproj");
         var vuePackageReference = includeVue
-            ? "    <PackageReference Include=\"Jazor.Vue\" Version=\"$(JazorPackageVersion)\" PrivateAssets=\"all\" />"
+            ? "    <PackageReference Include=\"ECMAScript.Vue\" Version=\"$(JazorPackageVersion)\" PrivateAssets=\"all\" />"
             : "";
 
         WriteFile(
@@ -8244,7 +6395,7 @@ public sealed partial class SdkIntegrationTests
         Directory.CreateDirectory(projectRoot);
         var projectPath = Path.Combine(projectRoot, "WebHostDefaultOutput.csproj");
         var vuePackageReference = includeVue
-            ? "    <PackageReference Include=\"Jazor.Vue\" Version=\"$(JazorPackageVersion)\" PrivateAssets=\"all\" />"
+            ? "    <PackageReference Include=\"ECMAScript.Vue\" Version=\"$(JazorPackageVersion)\" PrivateAssets=\"all\" />"
             : "";
 
         WriteFile(
@@ -8366,7 +6517,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
 
               <ItemGroup>
@@ -8569,7 +6720,7 @@ public sealed partial class SdkIntegrationTests
 
               <ItemGroup>
                 <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="Jazor.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
+                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
               </ItemGroup>
             </Project>
             """);
@@ -8724,11 +6875,6 @@ public sealed partial class SdkIntegrationTests
         string PackageVersion,
         string PackageOutputDirectory,
         PackageBuildWorkspace BuildWorkspace);
-
-    private sealed record LocalReleaseBrowserPackageFixture(
-        string RepoRoot,
-        string PackageVersion,
-        string PackageOutputDirectory);
 
     private sealed record LocalStylePackageFixture(
         string RepoRoot,

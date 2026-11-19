@@ -2,14 +2,21 @@
 
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Xml.Linq;
 
 const string packageId = "Jazor.Jolt";
 var editorFeatures = args.Contains("--editor-features", StringComparer.Ordinal);
-args = args.Where(argument => argument != "--editor-features").ToArray();
+var browserIndex = Array.IndexOf(args, "--browser");
+var browserPath = browserIndex < 0 ? null :
+    browserIndex + 1 < args.Length ? Path.GetFullPath(args[browserIndex + 1]) :
+    throw new ArgumentException("--browser requires a browser executable path.");
+args = args.Where((argument, index) => argument != "--editor-features" &&
+    (browserIndex < 0 || index != browserIndex && index != browserIndex + 1)).ToArray();
 if (args.Length != 0 && args is not ["--package-source", _])
-    throw new ArgumentException("Usage: verify-jolt-package.cs [--package-source directory] [--editor-features]");
+    throw new ArgumentException("Usage: verify-jolt-package.cs [--package-source directory] [--editor-features] [--browser executable]");
 var repository = new DirectoryInfo(Directory.GetCurrentDirectory());
 while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "Jazor.slnx")))
     repository = repository.Parent;
@@ -90,6 +97,40 @@ try
         !Directory.EnumerateFiles(Path.Combine(consumer, "dist"), "*.css", SearchOption.AllDirectories)
             .Any(path => File.ReadAllText(path).Contains("data-v-", StringComparison.Ordinal))))
         throw new InvalidOperationException("Installed Jolt did not emit and bundle scoped component styles.");
+    var appHost = Directory.EnumerateFiles(Path.Combine(tools, ".store"),
+        OperatingSystem.IsWindows() ? "Jolt.Cli.exe" : "Jolt.Cli", SearchOption.AllDirectories).Single();
+    if (editorFeatures)
+        await RunProcessAsync("dotnet", root, npmStore,
+            ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", appHost]);
+    if (browserPath is not null)
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        var start = new ProcessStartInfo(appHost) { WorkingDirectory = consumer, UseShellExecute = false };
+        start.Environment["JazorPnpmStoreDirectory"] = npmStore;
+        foreach (var argument in new[] { "dev", ".", "--port", port.ToString() })
+            start.ArgumentList.Add(argument);
+        using var server = Process.Start(start) ?? throw new InvalidOperationException("Could not start the packaged Jolt dev server.");
+        try
+        {
+            var browserArguments = new List<string>
+            {
+                "run", "--file", Path.Combine(sample, "verify-browser.cs"), "--",
+                browserPath, $"http://127.0.0.1:{port}/"
+            };
+            if (editorFeatures)
+                browserArguments.Add("--features");
+            await RunProcessAsync("dotnet", root, npmStore, browserArguments.ToArray());
+        }
+        finally
+        {
+            if (!server.HasExited)
+                server.Kill(entireProcessTree: true);
+            await server.WaitForExitAsync();
+        }
+    }
     if (editorFeatures)
     {
         var oldCss = Path.Combine(output, "CounterButton.jolt.css");

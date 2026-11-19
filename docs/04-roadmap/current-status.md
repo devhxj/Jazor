@@ -18,19 +18,9 @@
 
 1.3.0 的语法修复包括整数行为、数组和模块默认值、表达式包装及模式 switch 控制流。35 个审计 bug 中，11 项修正运行行为，24 项以源码位置诊断替代错误代码或内部异常；这些诊断不表示完整运行时协议已实现。范围与替代写法见[逐项修复记录](./compiler-syntax-bug-fixes.md)。
 
-## RazorVue 作者面
+## Jolt 作者面
 
-| 范围 | 当前契约 |
-| --- | --- |
-| 组件编写 | 自定义组件、已声明的第三方 binding、泛型组件、slot/fragment、`@bind`、事件、循环、生命周期、`@key`、`@ref`、可达的 `@code` / `.razor.cs` helper |
-| 参数与注入 | 已验证的 `ParameterView`、可写 `[Inject]`、typed/named/nested cascading value；单一显式构造函数的普通引用类型服务参数使用既有 provider key 与 Vue inject |
-| SSR 与认证状态 | `jazor-ssr-state` v1 props/providers envelope、显式认证状态快照与 `jazor-auth-state` v1 browser provider；重复 hydration、状态失配和错误传播具有明确行为 |
-| 导航 | 应用自有 route host、限定的同源内部导航，以及已验证的 history handler、取消恢复、竞态和释放协议 |
-| 浏览器事件 | Mouse、Keyboard、Focus、Change、Pointer、Wheel、Drag、Clipboard、Touch、Error、Progress 的已验证只读原生投影；原生 file/drop 与强类型 payload extension |
-| 诊断 | compatibility analyzer 和 final Compilation diagnostics 映射回 `.razor` / `.razor.cs`；稳定 ID、HelpLink 和最小替代路径由回归维护 |
-
-具体 Support / Guidance / Reject 矩阵见[RazorVue 作者指南](../03-guides/razorvue-authoring.md)，原生事件和集合的精确边界见[浏览器互操作](../03-guides/browser-interop.md)。DOM 仿真、真实 Vue runtime、浏览器与 SSR/package consumer 各自证明对应场景，不相互替代。
-
+Jolt 是应用主线，覆盖 .jazor 模板、C# 语义、npm 组件声明、VS Code 与 Visual Studio 编辑体验。已发布范围和示例见 [Jolt 作者指南](../03-guides/jolt-authoring.md)。RazorVue 的 .razor 作者面、SPA 与 SSR 验收由 [RazorVue 仓库](https://github.com/devhxj/RazorVue) 维护。
 ## 类型与产品边界
 
 - 普通 NuGet / ProjectReference 按实际使用点自动导入已解析的本地实现程序集，恢复并编译可达的受支持 class 成员；无需生产者标注。缺少实现或超出支持切片的外部运行时操作继续拒绝，见[类库导入](./ordinary-nuget-compilation-research.md)。
@@ -56,7 +46,7 @@ Vue、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vueti
 | 门禁 | 当前最低要求 | 复现入口 |
 | --- | --- | --- |
 | Compiler | 10,000 个通过场景；行覆盖率 98%，分支覆盖率 97% | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
-| RazorVue | 4,000 个通过场景；行覆盖率 90%，分支覆盖率 94% | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
+| Jolt | 语法和编译回归、隔离包消费、语言服务与浏览器交互 | dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt |
 | Vue binding | 每个目标公共 binding contract 审计覆盖率 90% | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | 绑定一致性 | 生成检查、版本、上游 inventory/fingerprint 和 XML 文档满足既有基线 | `verify-vue-binding-contracts.cs`、`verify-binding-documentation.cs` |
 | 发布交付 | API 兼容性、包形状、隔离 SPA/SSR 消费者与真实浏览器通过 | `verify-release-candidate.cs`、官方 tag workflow |

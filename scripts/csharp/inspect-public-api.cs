@@ -16,7 +16,7 @@ var configuration = GetOption("--configuration") ?? "Debug";
 var outputPath = GetOption("--output");
 var assemblyPaths = new Dictionary<string, string>(StringComparer.Ordinal)
 {
-    ["Jazor.AspNetCore"] = "net11.0", ["Jazor.AspNetCore.Dev"] = "net11.0", ["Jazor.Admin"] = "net11.0",
+    ["Jazor.AspNetCore"] = "net11.0", ["Jazor.AspNetCore.Dev"] = "net11.0",
     ["ECMAScript"] = "net11.0", ["ECMAScript.ElementPlus"] = "net11.0", ["ECMAScript.Pinia"] = "net11.0",
     ["ECMAScript.Pinia.Testing"] = "net11.0", ["ECMAScript.Style"] = "net11.0", ["ECMAScript.TDesign"] = "net11.0",
     ["ECMAScript.Vue"] = "net11.0", ["ECMAScript.Vue.Devtools"] = "net11.0", ["ECMAScript.VueDataUi"] = "net11.0",

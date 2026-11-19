@@ -24,7 +24,7 @@ await ScriptHelpers.RunDotNetAsync(
         "--output-directory", packageOutput,
         "--skip-push",
         "--package", "jazor",
-        "--package", "jazor-vue",
+        "--package", "vue",
         "--package", "devtools"
     ],
     repoRoot,

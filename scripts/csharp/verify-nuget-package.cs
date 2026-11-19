@@ -166,10 +166,10 @@ static IReadOnlyList<string> GetRequiredPaths(string packageId)
             Path.Combine("tools", "net11.0", "Jazor.Emit.dll"),
             Path.Combine("tools", "net11.0", "Jazor.Emit.runtimeconfig.json")
         ]).ToArray(),
-        "Jazor.Vue" => commonPaths.Concat(
+        "ECMAScript.Vue" => commonPaths.Concat(
         [
-            Path.Combine("buildTransitive", "Jazor.Vue.targets"),
-            Path.Combine("tools", "net11.0", "analyzers", "Jazor.RazorVue.dll")
+            Path.Combine("buildTransitive", "ECMAScript.Vue.targets"),
+            Path.Combine("lib", "net11.0", "ECMAScript.VueContract.dll")
         ]).ToArray(),
         _ => throw new InvalidOperationException("Package verification is not defined for: " + packageId)
     };
@@ -185,7 +185,7 @@ static IReadOnlyList<string> GetForbiddenPaths(string packageId)
             Path.Combine("buildTransitive", "Jazor.targets"),
             Path.Combine("analyzers", "dotnet", "cs", "Jazor.Analyzer.dll")
         ],
-        "Jazor.Vue" =>
+        "ECMAScript.Vue" =>
         [
             Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll")
         ],
@@ -253,9 +253,9 @@ internal sealed record VerifyNuGetPackageOptions(
     {
         if (packageId.Equals("Jazor", StringComparison.OrdinalIgnoreCase))
             return "Jazor";
-        if (packageId.Equals("Jazor.Vue", StringComparison.OrdinalIgnoreCase) ||
+        if (packageId.Equals("ECMAScript.Vue", StringComparison.OrdinalIgnoreCase) ||
             packageId.Equals("jazor-vue", StringComparison.OrdinalIgnoreCase))
-            return "Jazor.Vue";
+            return "ECMAScript.Vue";
 
         throw new InvalidOperationException("Package verification is not defined for: " + packageId);
     }
@@ -279,7 +279,7 @@ internal sealed record VerifyNuGetPackageOptions(
         Console.WriteLine("  --configuration <Debug|Release>");
         Console.WriteLine("  --output-directory <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <Jazor|Jazor.Vue>");
+        Console.WriteLine("  --package <Jazor|ECMAScript.Vue>");
     }
 }
 

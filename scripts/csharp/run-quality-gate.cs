@@ -3,9 +3,9 @@
 using System.Diagnostics;
 using System.Text;
 
-if (args.Length < 1 || args[0] is not ("compiler" or "razorvue" or "vue-bindings"))
+if (args.Length < 1 || args[0] is not ("compiler" or "vue-bindings"))
 {
-    Console.Error.WriteLine("Usage: dotnet run --file scripts/csharp/run-quality-gate.cs -- <compiler|razorvue|vue-bindings> [--output-directory DIR]");
+    Console.Error.WriteLine("Usage: dotnet run --file scripts/csharp/run-quality-gate.cs -- <compiler|vue-bindings> [--output-directory DIR]");
     return 1;
 }
 
