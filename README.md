@@ -35,7 +35,7 @@ Jazor is a typed .NET toolchain for compiling supported C# semantics into determ
 
 **Jolt is Jazor's primary app authoring path.** Write typed Vue components in .jazor, consume npm packages, and use the VS Code or Visual Studio extension. [Start with Jolt](docs/03-guides/jolt-authoring.md)
 
-[RazorVue](https://github.com/devhxj/RazorVue) maintains the optional .razor integration, Jazor.Vue, Jazor.Admin, and the Vuetify, TDesign, Element Plus, Vue Data UI, and Lucide component packages.
+[RazorVue](https://github.com/devhxj/RazorVue) maintains the optional .razor integration, Jazor.Vue, Jazor.Admin, and the Vuetify, TDesign, Element Plus, Vue Data UI, Lucide, FilePond, VueDraggable, and WangEditor bindings.
 Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules, including RazorVue consumers. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
 
 ## AI-assisted development

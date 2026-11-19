@@ -1,10 +1,10 @@
 # Vue 应用生态绑定扩展计划
 
-> 本计划定义十个已发布应用级绑定进入 Support 所需的后续消费者验收。每个条目以标准 npm/JSR 入口、强类型契约和真实消费者证据完成交付。
+> 本计划定义 Jazor 七个已发布应用级绑定进入 Support 所需的后续消费者验收。FilePond、VueDraggable 和 WangEditor 的源码、测试和版本兼容表由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。
 
 ## 目标
 
-为 RazorVue 应用提供一组可组合的、强类型的 Vue 应用基础库绑定，覆盖响应式工具、表单、国际化、日期、拖拽、编辑器、文件上传、服务端状态和浮动定位。
+提供可组合的强类型绑定，覆盖响应式工具、表单、国际化、日期、代码编辑器、服务端状态和浮动定位。
 
 每个交付物都是独立的 `ECMAScript.<Name>` binding，拥有自己的 C# contract、npm/JSR identity、许可证、README、版本快照和测试项目。运行时模块与样式由上游 package 提供，编译器保持通用 lowering 语义。
 
@@ -18,14 +18,11 @@
 | 表单验证 | `ECMAScript.VeeValidate` | `vee-validate` | `useForm`、`useField`、字段状态、提交状态、错误消息、schema/规则适配 |
 | 国际化 | `ECMAScript.VueI18n` | `vue-i18n` | `createI18n`、`useI18n`、消息查找、locale 切换、日期/数字格式化入口 |
 | 日期时间 | `ECMAScript.DateFns` | `date-fns` | 解析、格式化、加减、比较、区间和 locale；保持纯函数导入 |
-| 拖拽排序 | `ECMAScript.VueDraggable` | `vue-draggable-plus` | `VueDraggable`、列表绑定、拖拽事件、group/sort/filter 配置 |
 | 代码编辑器 | `ECMAScript.Monaco` | `monaco-editor` | editor/model、language、theme、markers、布局、生命周期与变更事件 |
-| 富文本编辑器 | `ECMAScript.WangEditor` | `@wangeditor/editor-for-vue`（含 `@wangeditor/editor`） | Vue editor 组件、HTML/value、toolbar/config、change/focus/blur、destroy |
-| 文件上传 | `ECMAScript.FilePond` | `vue-filepond`（含 `filepond`） | FilePond Vue 组件、server/process、files、上传进度、成功/失败、移除与取消 |
 | 服务端状态 | `ECMAScript.VueQuery` | `@tanstack/vue-query` | `VueQueryPlugin`、query/mutation、query key、缓存、失效、分页和加载/错误状态 |
 | 浮动定位 | `ECMAScript.FloatingUi` | `@floating-ui/vue`（必要时补 `@floating-ui/dom`） | `useFloating`、middleware、placement、autoUpdate、箭头、工具提示/弹层定位 |
 
-Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-editor`；WangEditor 使用官方 Vue 适配器，并在根 `package.json` 声明编辑器核心依赖。Floating UI 以 `@floating-ui/vue` 为作者入口，DOM 层函数按实际 authoring contract 补充。
+Monaco 直接绑定核心 `monaco-editor`。Floating UI 以 `@floating-ui/vue` 为作者入口，DOM 层函数按实际 authoring contract 补充。
 
 ## 共同边界
 
@@ -50,12 +47,6 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 实现 `ECMAScript.VeeValidate`、`ECMAScript.VueI18n` 和 `ECMAScript.VueQuery`。表单验证只负责浏览器侧字段/提交状态，服务端验证仍由 endpoint contract 负责；i18n 只负责 Vue locale/message runtime，不取代 ASP.NET request culture；Vue Query 只负责客户端 server-state，不取代 Pinia 的本地领域状态。
 
 退出条件：覆盖校验成功/失败、locale 切换、query loading/error/cache invalidation/mutation 竞态，并有 Release package consumer 证据。
-
-### P3-C：交互组件与媒体资源
-
-实现 `ECMAScript.VueDraggable`、`ECMAScript.FilePond` 和 `ECMAScript.WangEditor`。这些库包含 DOM 生命周期、事件序列和资源上传/编辑状态，必须先固定 dispose、取消、错误和 SSR 边界，再扩充选项。
-
-退出条件：拖拽排序保持 key 和列表顺序；上传覆盖进度、取消、失败和移除；富文本覆盖 HTML 双向更新、焦点事件、销毁和重复挂载。
 
 ### P3-D：重量级编辑器
 
@@ -87,8 +78,8 @@ Monaco 与 WangEditor 是两个独立包。Monaco 直接绑定核心 `monaco-edi
 
 ## Definition of Done
 
-本计划只有在十个包均满足以下条件后才算完成：独立包和测试项目已加入 solution；每个包都有锁定版本、manifest、许可证、README、inventory/fingerprint；核心 C# contract、compiler/SG/Emit 回归和真实 browser/package consumer 证据齐全；公共边界、SSR 约束、选型变更和已知限制已同步到架构文档、作者指南、current status 与 CHANGELOG；全量质量门禁通过。
+每个包的完成条件包括：独立包和测试项目进入 solution；提供锁定版本、manifest、许可证、README 和 inventory；通过编译器、Razor SG、Emit 回归及真实浏览器和独立包消费者验证；同步公开边界、SSR 约束与已知限制。
 
-计划状态：**进行中（十个绑定已有源码、回归与正式发布，消费者证据仍待补齐）**。十个包已进入默认发布集合；browser smoke 与真实 RazorVue/package consumer 仍未完成，因此继续保持 Guidance。已存在的 TDesign、Element Plus、Vuetify、图表、图标、Pinia、Vue Router 和 Fetch binding 不计入本计划交付物，也不因本计划改变其公共 API。
+七个绑定已进入默认发布集合，当前保持 Guidance，等待浏览器和独立包消费者验收。
 
 旧执行表、单轮测试计数和首次发布背景见[历史演进](../05-history/evolution.md#2026-09-28-api-与发布接线复核)。当前升级支持状态的依据是上述逐绑定验收，不是发布或生成成功。

@@ -189,10 +189,6 @@ public sealed class StandardPackageProjectTests
         var cases = new[]
         {
             (
-                Manifest: "ECMAScript.FilePond",
-                Specifier: "vue-filepond",
-                Source: "import vueFilePond from 'vue-filepond'; console.log(Boolean(vueFilePond));"),
-            (
                 Manifest: "ECMAScript.FloatingUi",
                 Specifier: "@floating-ui/vue",
                 Source: "import { useFloating } from '@floating-ui/vue'; console.log(Boolean(useFloating));"),

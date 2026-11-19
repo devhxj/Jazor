@@ -498,8 +498,8 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <jazor|vue|jolt|style|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor");
+        Console.WriteLine("  --package <jazor|vue|jolt|style|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vuetify|tdesign|elementplus|PackageId>");
+        Console.WriteLine("    Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -541,9 +541,6 @@ internal static class PackageCatalog
         "ECMAScript.VueI18n",
         "ECMAScript.VueQuery",
         "ECMAScript.Monaco",
-        "ECMAScript.VueDraggable",
-        "ECMAScript.FilePond",
-        "ECMAScript.WangEditor",
     ];
 
     private static readonly Dictionary<string, string> PackageAliases = new(StringComparer.OrdinalIgnoreCase)
@@ -585,14 +582,6 @@ internal static class PackageCatalog
         ["ECMAScript.VueQuery"] = "ECMAScript.VueQuery",
         ["monaco"] = "ECMAScript.Monaco",
         ["ECMAScript.Monaco"] = "ECMAScript.Monaco",
-        ["vue-draggable"] = "ECMAScript.VueDraggable",
-        ["ECMAScript.VueDraggable"] = "ECMAScript.VueDraggable",
-        ["file-pond"] = "ECMAScript.FilePond",
-        ["filepond"] = "ECMAScript.FilePond",
-        ["ECMAScript.FilePond"] = "ECMAScript.FilePond",
-        ["wang-editor"] = "ECMAScript.WangEditor",
-        ["wangeditor"] = "ECMAScript.WangEditor",
-        ["ECMAScript.WangEditor"] = "ECMAScript.WangEditor",
     };
 
     public static IReadOnlyList<PackageDefinition> ResolveSelectedPackages(string repoRoot, IReadOnlyList<string> packageSelectors)
@@ -633,7 +622,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, vue, jolt, style, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vueuse, floating-ui, vee-validate, vue-i18n, vue-query, monaco, vue-draggable, file-pond, wang-editor, vuetify, elementplus, tdesign.");
+            "jazor, vue, jolt, style, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vueuse, floating-ui, vee-validate, vue-i18n, vue-query, monaco, vuetify, elementplus, tdesign.");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)
@@ -713,21 +702,6 @@ internal static class PackageCatalog
             ["ECMAScript.Monaco"] = new(
                 "ECMAScript.Monaco",
                 Path.Combine(repoRoot, "src", "ECMAScript.Monaco", "ECMAScript.Monaco.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.VueDraggable"] = new(
-                "ECMAScript.VueDraggable",
-                Path.Combine(repoRoot, "src", "ECMAScript.VueDraggable", "ECMAScript.VueDraggable.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.FilePond"] = new(
-                "ECMAScript.FilePond",
-                Path.Combine(repoRoot, "src", "ECMAScript.FilePond", "ECMAScript.FilePond.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.WangEditor"] = new(
-                "ECMAScript.WangEditor",
-                Path.Combine(repoRoot, "src", "ECMAScript.WangEditor", "ECMAScript.WangEditor.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
         };

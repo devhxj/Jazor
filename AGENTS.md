@@ -34,7 +34,7 @@ ECMAScript ecosystem layer:
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
 | `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |
-| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `VueDraggable`, `FilePond`, `WangEditor`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real package consumer evidence |
+| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real package consumer evidence |
 
 ASP.NET Core integration layer:
 

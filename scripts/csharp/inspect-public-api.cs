@@ -23,7 +23,6 @@ var assemblyPaths = new Dictionary<string, string>(StringComparer.Ordinal)
     ["ECMAScript.VueRoute"] = "net11.0",
     ["ECMAScript.DateFns"] = "net11.0", ["ECMAScript.VueUse"] = "net11.0", ["ECMAScript.FloatingUi"] = "net11.0",
     ["ECMAScript.VeeValidate"] = "net11.0", ["ECMAScript.VueI18n"] = "net11.0", ["ECMAScript.VueQuery"] = "net11.0",
-    ["ECMAScript.VueDraggable"] = "net11.0", ["ECMAScript.FilePond"] = "net11.0", ["ECMAScript.WangEditor"] = "net11.0",
     ["ECMAScript.Monaco"] = "net11.0",
     ["Jazor"] = "net11.0"
 };

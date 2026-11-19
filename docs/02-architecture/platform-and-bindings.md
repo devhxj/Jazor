@@ -38,4 +38,4 @@ Razor 组件的参数、事件、双向绑定和 slot 由正常 C# 与 Razor 类
 
 项目级 API 和示例位于各绑定项目的 README；包选择与配置见 [安装与配置](../03-guides/installation-and-configuration.md)。
 
-Vuetify、TDesign、Element Plus、Vue Data UI 和 Lucide 的 Razor 组件绑定由 [RazorVue](https://github.com/devhxj/RazorVue) 维护和发布。
+Vuetify、TDesign、Element Plus、Vue Data UI、Lucide、FilePond、VueDraggable 和 WangEditor 的 Razor 组件绑定由 [RazorVue](https://github.com/devhxj/RazorVue) 维护和发布。

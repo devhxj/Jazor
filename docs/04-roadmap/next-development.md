@@ -49,7 +49,7 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 
 ## Vue 应用生态绑定
 
-DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 均已有源码、测试 lane 和 lockstep 发布。当前待办是各绑定的 browser smoke、真实 RazorVue/package consumer、适用 SSR 与 worker/资源验证，完成前保持 Guidance。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
+DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 已有源码、测试 lane 和 lockstep 发布。各绑定需要补齐浏览器交互、真实包消费者，以及适用的 SSR、worker 和资源验证。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
 ## Jolt 组件
 

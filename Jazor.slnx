@@ -24,9 +24,6 @@
     <Project Path="src/ECMAScript.VueI18n.Test/ECMAScript.VueI18n.Test.csproj" />
     <Project Path="src/ECMAScript.VueQuery.Test/ECMAScript.VueQuery.Test.csproj" />
     <Project Path="src/ECMAScript.Monaco.Test/ECMAScript.Monaco.Test.csproj" />
-    <Project Path="src/ECMAScript.VueDraggable.Test/ECMAScript.VueDraggable.Test.csproj" />
-    <Project Path="src/ECMAScript.FilePond.Test/ECMAScript.FilePond.Test.csproj" />
-    <Project Path="src/ECMAScript.WangEditor.Test/ECMAScript.WangEditor.Test.csproj" />
     <Project Path="src/ECMAScript.VueRoute.Test/ECMAScript.VueRoute.Test.csproj" />
     <Project Path="src/ECMAScript.WebIDL.GeneratorTest/ECMAScript.WebIDL.GeneratorTest.csproj" />
     <Project Path="src/Jazor.CLR.Test/Jazor.CLR.Test.csproj" />
@@ -50,9 +47,6 @@
   <Project Path="src/ECMAScript.VeeValidate/ECMAScript.VeeValidate.csproj" />
   <Project Path="src/ECMAScript.VueI18n/ECMAScript.VueI18n.csproj" />
   <Project Path="src/ECMAScript.VueQuery/ECMAScript.VueQuery.csproj" />
-  <Project Path="src/ECMAScript.VueDraggable/ECMAScript.VueDraggable.csproj" />
-  <Project Path="src/ECMAScript.FilePond/ECMAScript.FilePond.csproj" />
-  <Project Path="src/ECMAScript.WangEditor/ECMAScript.WangEditor.csproj" />
   <Project Path="src/ECMAScript.Monaco/ECMAScript.Monaco.csproj" />
   <Project Path="src/ECMAScript.Vue.Devtools/ECMAScript.Vue.Devtools.csproj" />
   <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />

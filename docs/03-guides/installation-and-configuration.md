@@ -34,7 +34,7 @@ live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器�
 | Vue Devtools 自定义插件 | `Jazor`、`ECMAScript.Vue.Devtools` | |
 | 日期、浏览器工具与浮动定位 | `Jazor`、`ECMAScript.DateFns` / `ECMAScript.VueUse` / `ECMAScript.FloatingUi` | 按应用选择 |
 | 表单、国际化与服务端状态 | `Jazor`、`ECMAScript.VeeValidate` / `ECMAScript.VueI18n` / `ECMAScript.VueQuery` | 按应用选择 |
-| 拖拽、文件上传与富文本 | `Jazor`、`ECMAScript.VueDraggable` / `ECMAScript.FilePond` / `ECMAScript.WangEditor` | 按应用选择 |
+| Razor 拖拽、文件上传与富文本 | 按 [RazorVue 的兼容性表](https://github.com/devhxj/RazorVue#compatibility) 选择 `ECMAScript.VueDraggable`、`ECMAScript.FilePond` 或 `ECMAScript.WangEditor` | 按应用选择 |
 | Monaco 编辑器 | `Jazor`、`ECMAScript.Monaco` | bundler/worker 配置按应用提供 |
 
 核心包示例：
@@ -62,9 +62,6 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
   <PackageReference Include="ECMAScript.VueI18n" Version="2.0.0" />
   <PackageReference Include="ECMAScript.VueQuery" Version="2.0.0" />
   <PackageReference Include="ECMAScript.Monaco" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VueDraggable" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.FilePond" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.WangEditor" Version="2.0.0" />
 </ItemGroup>
 ```
 

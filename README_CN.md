@@ -35,7 +35,7 @@ Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强�
 
 **Jolt 是 Jazor 的应用开发主线。** 用 .jazor 编写强类型 Vue 组件，接入 npm 包，在 VS Code 或 Visual Studio 中编辑。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
 
-[RazorVue](https://github.com/devhxj/RazorVue) 独立维护 .razor 集成、Jazor.Vue、Jazor.Admin，以及 Vuetify、TDesign、Element Plus、Vue Data UI 和 Lucide 组件包。
+[RazorVue](https://github.com/devhxj/RazorVue) 独立维护 .razor 集成、Jazor.Vue、Jazor.Admin，以及 Vuetify、TDesign、Element Plus、Vue Data UI、Lucide、FilePond、VueDraggable 和 WangEditor 绑定。
 
 普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块，适用于普通模块与 RazorVue。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 

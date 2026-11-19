@@ -24,7 +24,7 @@ var libraries = new[]
 {
     "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue", "ECMAScript.VueContract",
     "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute",
-    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.Monaco", "ECMAScript.VueDraggable", "ECMAScript.FilePond", "ECMAScript.WangEditor", "ECMAScript.Vue.Devtools",
+    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.Monaco", "ECMAScript.Vue.Devtools",
     "ECMAScript.Style",
     "Jazor.AspNetCore", "Jazor.AspNetCore.Dev"
 };

@@ -31,7 +31,7 @@ Jolt 是应用主线，覆盖 .jazor 模板、C# 语义、npm 组件声明、VS 
 
 ## 生态与参考应用
 
-Vue、Vue Router、Pinia、Vue Devtools 与 Style 提供各自 README 声明的绑定切片。P3 的 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 已进入 lockstep 发布集合，但仍保持 Guidance，等待各自 browser smoke 与真实 RazorVue consumer 证据。五个 Razor 组件库见 [RazorVue](https://github.com/devhxj/RazorVue)。见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
+Vue、Vue Router、Pinia、Vue Devtools 与 Style 提供各自 README 声明的绑定切片。Jazor 发布的 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 仍保持 Guidance，等待浏览器和独立包消费者验收。组件封装及其兼容版本见 [RazorVue](https://github.com/devhxj/RazorVue)。共享绑定的验收范围见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
 [Jolt Counter](../../samples/Jolt.Counter/README.md) 验证 npm 组件、父子组件回调、开发服务和生产构建。
 

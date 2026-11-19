@@ -543,58 +543,6 @@ public sealed class LibraryMaterializerTests
     }
 
     [TestMethod]
-    public void Materialize_P3CComponentClosures_ResolveTheirEntryGraphs()
-    {
-        // vue-draggable-plus、filepond 与 wangeditor 各自 vendor 一个多包闭包。选择作者入口必须
-        // 物化整图；FilePond/WangEditor 的样式由生成模块 side-effect import 交给标准构建器。
-        // The P3-C packages each vendor a multi-package closure; selecting the author entry must
-        // materialize the whole graph; FilePond/WangEditor styles stay in the generated ESM graph.
-        var cases = new[]
-        {
-            (Manifest: "ECMAScript.VueDraggable", Id: "vue-draggable", Specifier: "vue-draggable-plus"),
-            (Manifest: "ECMAScript.FilePond", Id: "file-pond", Specifier: "vue-filepond"),
-            (Manifest: "ECMAScript.WangEditor", Id: "wang-editor", Specifier: "@wangeditor/editor")
-        };
-        var vueManifestPath = FindLibraryManifest("ECMAScript.Vue");
-
-        foreach (var (manifestName, libraryId, specifier) in cases)
-        {
-            var manifestPath = FindLibraryManifest(manifestName);
-            using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
-            var version = manifest.RootElement.GetProperty("version").GetString()!;
-            var outputRoot = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", libraryId, Guid.NewGuid().ToString("N"));
-            try
-            {
-                var result = new LibraryMaterializer().Materialize(
-                    [manifestPath, vueManifestPath],
-                    outputRoot,
-                    BuildMode.Production,
-                    requiredImports: [specifier]);
-
-                Assert.AreEqual(specifier, result.ImportPaths[specifier]);
-
-                // 请求入口必须连同其 package 依赖链一起被选中（含闭包内的核心包）。
-                var requested = manifest.RootElement.GetProperty("imports").GetProperty(specifier);
-                foreach (var dependency in requested.GetProperty("dependencies").EnumerateArray()
-                             .Select(static value => value.GetString()!)
-                             .Where(static value => value != "vue"))
-                    Assert.IsTrue(result.ImportPaths.ContainsKey(dependency), $"{libraryId}: dependency '{dependency}' was not selected.");
-
-                if (requested.GetProperty("dependencies").EnumerateArray()
-                    .Any(static value => value.GetString() == "vue"))
-                    Assert.IsTrue(result.ImportPaths.ContainsKey("vue"), $"{libraryId}: the vue peer was not resolved.");
-
-                // Styles are declared on the binding entry and emitted with the consuming module.
-                Assert.AreEqual(0, result.StylePaths.Count, $"{libraryId}: external styles must not be copied from binding output.");
-            }
-            finally
-            {
-                Directory.Delete(outputRoot, recursive: true);
-            }
-        }
-    }
-
-    [TestMethod]
     public void Materialize_MonacoClosure_ResolvesEditorAndWorkerEntries()
     {
         // Monaco is an external npm resource. Materialization preserves its declared export paths

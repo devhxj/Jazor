@@ -6,9 +6,11 @@
 
 - Vuetify、TDesign、Element Plus、Vue Data UI 和 Lucide 的组件包迁至 [RazorVue](https://github.com/devhxj/RazorVue#compatibility)。NuGet 包 ID 和 C# 命名空间保持原样。升级时按 RazorVue 兼容性表选择 SDK 和组件包版本。
 - Jazor 的应用指南和验证命令已更新为 Jolt 工作流。`.razor` 作者指南、组件示例和版本兼容表见 [RazorVue](https://github.com/devhxj/RazorVue)。
+- `ECMAScript.FilePond`、`ECMAScript.VueDraggable`、`ECMAScript.WangEditor` 的后续版本由 [RazorVue](https://github.com/devhxj/RazorVue#compatibility) 维护。NuGet 包 ID、C# 命名空间及现有调用方式保持原样。
 
 - The five Razor component binding packages are maintained and released by [RazorVue](https://github.com/devhxj/RazorVue#compatibility). Use the SDK and component versions listed in its compatibility table.
 - Jazor's application guides and verification commands now describe the Jolt workflow. See [RazorVue](https://github.com/devhxj/RazorVue) for `.razor` authoring, component samples, and compatible versions.
+- [RazorVue](https://github.com/devhxj/RazorVue#compatibility) owns future releases of `ECMAScript.FilePond`, `ECMAScript.VueDraggable`, and `ECMAScript.WangEditor` under their existing NuGet IDs, C# namespaces, and APIs.
 
 ## 2026-11-19
 

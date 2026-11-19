@@ -1,5 +1,0 @@
-<Project>
-  <ItemGroup>
-    <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue-draggable\manifest.json" />
-  </ItemGroup>
-</Project>
