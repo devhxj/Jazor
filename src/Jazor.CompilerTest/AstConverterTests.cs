@@ -333,6 +333,49 @@ export function Method() { }
     }
 
     [TestMethod]
+    public async Task Convert_StyledExternalBinding_EmitsSharedStylesheetOnce()
+    {
+        var code = """
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Widgets
+            {
+                [ECMAScript("widgets")]
+                [Style("widgets/styles.css")]
+                public static extern string Button { get; }
+
+                [ECMAScript("widgets")]
+                [Style("widgets/styles.css")]
+                public static extern string Input { get; }
+            }
+
+            [ECMAScriptModule("app/controls.mjs")]
+            public static class Controls
+            {
+                public static string GetButton() => Widgets.Button;
+                public static string GetInput() => Widgets.Input;
+            }
+            """;
+
+        var (symbol, model) = CompileAndGetSymbol(code, "Controls");
+        var script = (await new AstConverter(symbol, model).Convert())?.ToKnRECMAScript();
+
+        AssertScriptEqual(
+            """
+            import "widgets/styles.css";
+            import { get_Button, get_Input } from "widgets";
+            export function GetButton() {
+              return get_Button();
+            }
+            export function GetInput() {
+              return get_Input();
+            }
+
+            """, script);
+    }
+
+    [TestMethod]
     public async Task Convert_DeclarationWithoutStyle_EmitsNoSideEffectImport()
     {
         var code = """
@@ -7748,6 +7791,41 @@ export function ReadValue(value) {
   return Array.isArray(values) ? values : null;
 }
 ", script);
+    }
+
+    [TestMethod]
+    [DataRow("FileRef", "AsFile")]
+    [DataRow("Blob", "AsBlob")]
+    public async Task Convert_TaggedUnionProjectionWithAssignableBranches_ReportsLostTag(string type, string projection)
+    {
+        var code = $$"""
+            using System.Runtime.CompilerServices;
+            using ECMAScript;
+
+            [ECMAScript]
+            [Union]
+            public readonly struct FileOrBlob : IUnion
+            {
+                public FileOrBlob(bool value) { }
+                public FileOrBlob(FileRef value) { }
+                public FileOrBlob(Blob value) { }
+
+                public object? Value => default;
+                public FileRef? AsFile => default;
+                public Blob? AsBlob => default;
+            }
+
+            [ECMAScriptModule("app/tagged-projection.mjs")]
+            public static class TaggedProjection
+            {
+                public static {{type}}? Read(FileOrBlob value) => value.{{projection}};
+            }
+            """;
+
+        var (symbol, model) = CompileAndGetSymbol(code, "TaggedProjection",
+            MetadataReference.CreateFromFile(typeof(ECMAScript.FileRef).Assembly.Location));
+        var error = await Assert.ThrowsAsync<OperationTransformationException>(new AstConverter(symbol, model).Convert);
+        StringAssert.Contains(error.Message, "exact branch tag", StringComparison.Ordinal);
     }
 
     [TestMethod]
