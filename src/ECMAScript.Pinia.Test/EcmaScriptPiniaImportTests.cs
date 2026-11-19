@@ -26,7 +26,6 @@ public sealed class EcmaScriptPiniaImportTests
 			[
 				MetadataReference.CreateFromFile(typeof(ECMAScriptModuleAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Contract.IUIComponent).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(Vue).Assembly.Location),
 				MetadataReference.CreateFromFile(typeof(Pinia).Assembly.Location)
@@ -56,7 +55,6 @@ public sealed class EcmaScriptPiniaImportTests
 	{
 		var code = """
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 
 			namespace Demo
@@ -104,7 +102,6 @@ public sealed class EcmaScriptPiniaImportTests
 	{
 		var code = """
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 
 			namespace Demo
@@ -150,7 +147,6 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using System;
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -220,7 +216,6 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using System;
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -291,7 +286,6 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using System;
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -367,7 +361,6 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using System;
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -448,7 +441,6 @@ public sealed class EcmaScriptPiniaImportTests
 	{
 		var code = """
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -508,7 +500,6 @@ public sealed class EcmaScriptPiniaImportTests
 		var code = """
 			using System;
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -1631,7 +1622,6 @@ public sealed class EcmaScriptPiniaImportTests
 	{
 		var code = """
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -1712,7 +1702,6 @@ public sealed class EcmaScriptPiniaImportTests
 	{
 		var code = """
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 
@@ -1797,7 +1786,6 @@ public sealed class EcmaScriptPiniaImportTests
 	{
 		var code = """
 			using ECMAScript;
-			using ECMAScript.VueContract;
 			using static ECMAScript.Pinia;
 			using static ECMAScript.Vue;
 

@@ -169,7 +169,7 @@ static IReadOnlyList<string> GetRequiredPaths(string packageId)
         "ECMAScript.Vue" => commonPaths.Concat(
         [
             Path.Combine("buildTransitive", "ECMAScript.Vue.targets"),
-            Path.Combine("lib", "net11.0", "ECMAScript.VueContract.dll")
+            Path.Combine("lib", "net11.0", "ECMAScript.Vue.dll")
         ]).ToArray(),
         _ => throw new InvalidOperationException("Package verification is not defined for: " + packageId)
     };
@@ -187,7 +187,8 @@ static IReadOnlyList<string> GetForbiddenPaths(string packageId)
         ],
         "ECMAScript.Vue" =>
         [
-            Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll")
+            Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll"),
+            Path.Combine("lib", "net11.0", "ECMAScript.VueContract.dll")
         ],
         _ => []
     };

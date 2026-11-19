@@ -13,7 +13,6 @@
 | 包 | 用途 |
 | --- | --- |
 | `ECMAScript.Vue` | Vue 3 核心类型、响应式 API、组件与 render-function authoring |
-| `ECMAScript.VueContract` | 组件、props、事件、slot 与注入契约 |
 | `ECMAScript.VueRoute` | Vue Router 类型绑定 |
 | `ECMAScript.Pinia` | Pinia 状态管理绑定 |
 | `ECMAScript.Pinia.Testing` | `@pinia/testing` 绑定：测试期 Pinia root、spy 与 initial-state 的 authoring contract |
@@ -39,3 +38,5 @@ Razor 组件的参数、事件、双向绑定和 slot 由正常 C# 与 Razor 类
 项目级 API 和示例位于各绑定项目的 README；包选择与配置见 [安装与配置](../03-guides/installation-and-configuration.md)。
 
 Vuetify、TDesign、Element Plus、Vue Data UI、Lucide、FilePond、VueDraggable 和 WangEditor 的 Razor 组件绑定由 [RazorVue](https://github.com/devhxj/RazorVue) 维护和发布。
+
+从 2.2 起，RazorVue 的 `Jazor.Vue` 包还交付 Router 组件代理、Blazor 事件扩展和 `ECMAScript.VueContract.dll`。共享 Vue 和 Router API 分别由 `ECMAScript.Vue` 与 `ECMAScript.VueRoute` 提供。

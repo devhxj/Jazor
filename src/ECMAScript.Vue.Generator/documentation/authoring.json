@@ -89,8 +89,6 @@
   "ECMAScript.Vue|Vue.VueTransitionType.Animation": "监听 CSS animationend 判断过渡结束。",
   "ECMAScript.Vue|Vue.VueTransitionType.Transition": "监听 CSS transitionend 判断过渡结束。",
   "ECMAScript.Vue|VueRenderHost.Invoke": "调用渲染宿主创建 HTML 元素或 Vue 组件的 VNode；传入属性、子节点或插槽以构造本次渲染内容。",
-  "ECMAScript.VueContract|VueInjectAttribute.ContractComponentType": "注入位置声明的组件契约类型，编译器以此确定消费端的强类型接口。",
-  "ECMAScript.VueContract|VueInjectAttribute.ImplementationComponentType": "实际提供注入值的组件类型，用于将契约绑定到具体组件实现。",
   "ECMAScript.VueRoute|RouterScrollResult.RouterScrollResult": "保存滚动行为的同步结果或异步 Promise；支持坐标、目标元素和禁用滚动的分支。",
   "ECMAScript.VueRoute|VueRoute": "Vue Router 入口；创建 history 和 router，声明路由记录，并通过导航守卫管理异步导航。",
   "ECMAScript.VueRoute|VueRouterLink.AdditionalAttributes": "传给 RouterLink/RouterView 的其他宿主属性；键使用 Vue/HTML 实际属性名。",

@@ -7,7 +7,7 @@
     <NuspecFile>ECMAScript.Vue.nuspec</NuspecFile>
     <RootNamespace>ECMAScript</RootNamespace>
     <Authors>hanxj</Authors>
-    <Description>Shared Vue 3 type bindings, component contracts and runtime resource metadata for Jazor.</Description>
+    <Description>Shared Vue 3 type bindings and runtime resource metadata for Jazor.</Description>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -15,15 +15,11 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS0626,CS0824,IDE0130,CA1822,IDE0060,IDE1006</NoWarn>
-    <JazorPackageBuildOutputRoot Condition="'$(JazorIsolatedBaseOutputRoot)' != ''">$([MSBuild]::EnsureTrailingSlash('$(JazorIsolatedBaseOutputRoot)'))</JazorPackageBuildOutputRoot>
-    <JazorPackageBuildOutputRoot Condition="'$(JazorPackageBuildOutputRoot)' == ''">$(MSBuildThisFileDirectory)..\</JazorPackageBuildOutputRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
-    <ProjectReference Include="..\ECMAScript.VueContract\ECMAScript.VueContract.csproj" />
   </ItemGroup>
 
   <Import Project="..\Packaging\JazorPackage.targets" />

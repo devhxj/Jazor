@@ -82,9 +82,7 @@ internal sealed class BindingUpstreamDocumentation
                     if (_summaries.TryGetValue(library + "|" + componentName + "." + property.Identifier.ValueText, out var summary))
                         _summaries.TryAdd(library + "|" + typeName + "." + property.Identifier.ValueText, summary);
             }
-            foreach (var (target, source) in new[] {
-                ("VueTransitionGroupProps", "VueTransitionProps"),
-                ("VueRouterLink", "RouterLinkProps"), ("VueRouterLink", "RouterLinkOptions"), ("VueRouterView", "RouterViewProps") })
+            foreach (var (target, source) in new[] { ("VueTransitionGroupProps", "VueTransitionProps") })
                 foreach (var property in declarations.OfType<PropertyDeclarationSyntax>()
                     .Where(p => p.Ancestors().OfType<BaseTypeDeclarationSyntax>().FirstOrDefault()?.Identifier.ValueText == target))
                     if (_summaries.TryGetValue(library + "|" + source + "." + property.Identifier.ValueText, out var summary))

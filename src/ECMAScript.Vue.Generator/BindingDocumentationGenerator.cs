@@ -17,7 +17,7 @@ internal static class BindingDocumentationGenerator
     [
         "ECMAScript.Contract",
         "ECMAScript",
-        "ECMAScript.Vue", "ECMAScript.VueContract", "ECMAScript.Pinia", "ECMAScript.Pinia.Testing",
+        "ECMAScript.Vue", "ECMAScript.Pinia", "ECMAScript.Pinia.Testing",
         "ECMAScript.VueRoute", "ECMAScript.Vue.Devtools", "ECMAScript.Style"
     ];
 

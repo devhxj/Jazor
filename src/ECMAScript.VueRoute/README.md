@@ -17,13 +17,13 @@ npm package、入口和依赖元数据；Emit 生成标准 `jazor/package.json`�
 </ItemGroup>
 ```
 
-`ECMAScript.VueRoute` 是独立生态包，不由 `Jazor` 主包默认携带。Razor 组件项目仍需按需引用 `Jazor.Vue`。
+`ECMAScript.VueRoute` 是独立的路由 API 包。2.2 起，Razor 项目通过 `Jazor.Vue` 获取 `VueRouterLink` 和 `VueRouterView`，以及配套的路由依赖。 [RazorVue 兼容性表](https://github.com/devhxj/RazorVue#compatibility)
 
 ## 当前支持范围
 
 - router 与 history：`createRouter()`、`createWebHistory()`、`createWebHashHistory()`、`createMemoryHistory()`。
 - composition API：`useRouter()`、`useRoute()`、`useLink()` 与公开 injection key。
-- 组件：`RouterLink`、`RouterView` 及 `VueRouterLink` / `VueRouterView` Razor authoring proxies，支持强类型参数和作用域插槽。
+- Vue 绑定：`RouterLink`、`RouterView` 及其强类型 props 和作用域插槽。
 - 路由记录、`RouteLocationRaw`、query/params、`push`、`replace`、`resolve` 与常用导航 guard。
 
 ## authoring 规则

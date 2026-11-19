@@ -1,8 +1,5 @@
 using System.Text.RegularExpressions;
-using System.Reflection;
 using ECMAScript;
-using ECMAScript.VueContract;
-using Microsoft.AspNetCore.Components;
 
 namespace ECMAScriptVueRouteTest;
 
@@ -75,64 +72,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         StringAssert.Contains(source, "<RootNamespace>ECMAScript</RootNamespace>");
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript\\ECMAScript.csproj\" />");
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue\\ECMAScript.Vue.csproj\" />");
-        StringAssert.Contains(source, "<FrameworkReference Include=\"Microsoft.AspNetCore.App\" />");
-    }
-
-    [TestMethod]
-    public void VueRoute_RouterLinkProxy_ExposesStronglyTypedRazorContract()
-    {
-        var componentType = typeof(ECMAScript.VueRouterLink);
-        Assert.IsTrue(typeof(ComponentBase).IsAssignableFrom(componentType));
-
-        var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
-        Assert.IsNotNull(component);
-        Assert.AreEqual("vue-router", component!.Import);
-        Assert.AreEqual("RouterLink", componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
-
-        Assert.AreEqual(
-            "class",
-            componentType.GetProperty(nameof(ECMAScript.VueRouterLink.CssClass))!
-                .GetCustomAttribute<ECMAScript.ECMAScriptNameAttribute>()?.Name);
-        Assert.AreEqual(
-            "style",
-            componentType.GetProperty(nameof(ECMAScript.VueRouterLink.CssStyle))!
-                .GetCustomAttribute<ECMAScript.ECMAScriptNameAttribute>()?.Name);
-
-        var to = componentType.GetProperty(nameof(ECMAScript.VueRouterLink.To));
-        Assert.IsNotNull(to);
-        Assert.AreEqual(typeof(ECMAScript.RouteLocationRaw), to!.PropertyType);
-        Assert.IsNotNull(to.GetCustomAttribute<ParameterAttribute>());
-        Assert.IsNotNull(to.GetCustomAttribute<EditorRequiredAttribute>());
-
-        Assert.AreEqual(
-            typeof(EventCallback<ECMAScript.MouseEvent>),
-            componentType.GetProperty(nameof(ECMAScript.VueRouterLink.OnClick))!.PropertyType);
-        Assert.AreEqual(
-            typeof(RenderFragment<ECMAScript.RouterLinkSlotScope>),
-            componentType.GetProperty(nameof(ECMAScript.VueRouterLink.ChildContent))!.PropertyType);
-
-        var additionalAttributes = componentType.GetProperty(nameof(ECMAScript.VueRouterLink.AdditionalAttributes));
-        Assert.IsNotNull(additionalAttributes);
-        Assert.AreEqual(
-            typeof(IReadOnlyDictionary<string, object?>),
-            additionalAttributes!.PropertyType);
-        Assert.IsTrue(additionalAttributes.GetCustomAttribute<ParameterAttribute>()!.CaptureUnmatchedValues);
-    }
-
-    [TestMethod]
-    public void VueRoute_RouterViewProxy_ExposesTypedPropsAndScopedSlot()
-    {
-        var componentType = typeof(ECMAScript.VueRouterView);
-        Assert.IsTrue(typeof(ComponentBase).IsAssignableFrom(componentType));
-
-        var component = componentType.GetCustomAttribute<ECMAScriptAttribute>();
-        Assert.IsNotNull(component);
-        Assert.AreEqual("vue-router", component!.Import);
-        Assert.AreEqual("RouterView", componentType.GetCustomAttribute<ECMAScriptNameAttribute>()?.Name);
-        Assert.AreEqual(typeof(string), componentType.GetProperty(nameof(ECMAScript.VueRouterView.Name))!.PropertyType);
-        Assert.AreEqual(typeof(ECMAScript.RouteLocationNormalized), componentType.GetProperty(nameof(ECMAScript.VueRouterView.Route))!.PropertyType);
-        Assert.AreEqual(typeof(RenderFragment<ECMAScript.RouterViewSlotScope>), componentType.GetProperty(nameof(ECMAScript.VueRouterView.ChildContent))!.PropertyType);
-        Assert.IsTrue(componentType.GetProperty(nameof(ECMAScript.VueRouterView.AdditionalAttributes))!.GetCustomAttribute<ParameterAttribute>()!.CaptureUnmatchedValues);
+        Assert.IsFalse(source.Contains("Microsoft.AspNetCore.App", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -162,7 +102,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         StringAssert.Contains(source, "<ProjectReference Include=\"..\\ECMAScript.Vue\\ECMAScript.Vue.csproj\" />");
         StringAssert.Contains(source, "<NuspecFile>ECMAScript.VueRoute.nuspec</NuspecFile>");
         StringAssert.Contains(nuspec, "<dependency id=\"Jazor\" version=\"$dependencyVersion$\" exclude=\"Build,Analyzers\" />");
-        StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
+        Assert.IsFalse(nuspec.Contains("Microsoft.AspNetCore.App", StringComparison.Ordinal));
 
         var jazorPackageProject = System.IO.File.ReadAllText(System.IO.Path.Combine(repoRoot, "src", "Jazor", "Jazor.csproj"));
         Assert.IsFalse(

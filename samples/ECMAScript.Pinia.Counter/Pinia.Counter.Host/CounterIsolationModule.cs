@@ -1,6 +1,5 @@
 using System;
 using ECMAScript;
-using ECMAScript.VueContract;
 using static ECMAScript.Pinia;
 using static ECMAScript.Vue;
 

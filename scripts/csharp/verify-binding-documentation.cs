@@ -22,7 +22,7 @@ if (!File.Exists(Path.Combine(root, "Jazor.slnx")))
 ConfigureRepositoryEnvironment(root);
 var libraries = new[]
 {
-    "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue", "ECMAScript.VueContract",
+    "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue",
     "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute",
     "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.Monaco", "ECMAScript.Vue.Devtools",
     "ECMAScript.Style",
@@ -132,7 +132,7 @@ if (Option("--packages") is { } packages)
         var packageId = library switch
         {
             "ECMAScript" or "ECMAScript.Contract" or "Jazor.AspNetCore" or "Jazor.AspNetCore.Dev" => "Jazor",
-            "ECMAScript.Vue" or "ECMAScript.VueContract" => "ECMAScript.Vue",
+            "ECMAScript.Vue" => "ECMAScript.Vue",
             _ => library
         };
         var candidates = archives.Where(p => p.Id == packageId).ToArray();

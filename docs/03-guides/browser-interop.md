@@ -167,9 +167,8 @@ the explicitly mapped browser types.
 ## Native file and drop events
 
 The CLR mapping aliases `InputFileChangeEventArgs` to the native `EventRef` and inlines
-`FileCount` as `target.files.length`. `NativeFileEventExtensions` in the
-`ECMAScript.Vue` assembly supplies the strongly typed `InputFileChangeEventArgs.Files`
-and `DragEventArgs.Files` extensions through the opt-in `Jazor.Vue` authoring payload.
+`FileCount` as `target.files.length`. In 2.2, `Jazor.Vue` supplies the strongly typed
+`InputFileChangeEventArgs.Files` and `DragEventArgs.Files` extensions.
 The input extension reads `target.files`; the drop extension reads
 `dataTransfer?.files`. Browser `FileList` and `FileRef` retain their WebIDL contracts.
 Import `ECMAScript` for the extensions and Razor web event directives for modifiers:

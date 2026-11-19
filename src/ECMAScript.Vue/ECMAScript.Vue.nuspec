@@ -14,11 +14,6 @@
         <dependency id="Jazor" version="$dependencyVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
-    <frameworkReferences>
-      <group targetFramework="net11.0">
-        <frameworkReference name="Microsoft.AspNetCore.App" />
-      </group>
-    </frameworkReferences>
   </metadata>
   <files>
     <file src="$projectDir$..\..\LICENSE.txt" target="LICENSE.txt" />
@@ -27,9 +22,6 @@
     <file src="$buildOutputDir$ECMAScript.Vue.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Vue.pdb" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Vue.xml" target="lib/net11.0" />
-    <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.dll" target="lib/net11.0" />
-    <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.pdb" target="lib/net11.0" />
-    <file src="$buildOutputRoot$ECMAScript.VueContract\bin\$configuration$\netstandard2.0\ECMAScript.VueContract.xml" target="lib/net11.0" />
     <file src="$projectDir$buildTransitive\ECMAScript.Vue.targets" target="buildTransitive" />
     <file src="$projectDir$manifest.json" target="jazor/vue3" />
     <file src="$projectDir$licenses\**\*" target="jazor/vue3/licenses" />

@@ -14,11 +14,6 @@
         <dependency id="ECMAScript.Vue" version="$dependencyVersion$" />
       </group>
     </dependencies>
-    <frameworkReferences>
-      <group targetFramework="net11.0">
-        <frameworkReference name="Microsoft.AspNetCore.App" />
-      </group>
-    </frameworkReferences>
   </metadata>
   <files>
     <file src="$buildOutputDir$ECMAScript.VueRoute.dll" target="lib/net11.0" />

@@ -65,12 +65,6 @@ public sealed class AstConverterTests
         }
 
         if (ContainsVueReference(references) &&
-            !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
-        {
-            references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.VueContract.VueInjectAttribute).Assembly.Location));
-        }
-
-        if (ContainsVueReference(references) &&
             !references.Any(static reference => string.Equals(reference.Display, typeof(ECMAScript.Vue.IVueComponent).Assembly.Location, StringComparison.OrdinalIgnoreCase)))
         {
             references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue.IVueComponent).Assembly.Location));
@@ -79,38 +73,14 @@ public sealed class AstConverterTests
         return references.ToArray();
     }
 
-    private static SyntaxTree[] BuildSyntaxTrees(string code, IEnumerable<MetadataReference>? additionalReferences = null)
-    {
-        var syntaxTrees = new List<SyntaxTree>();
-        if (additionalReferences is not null && ContainsVueReference(additionalReferences))
-        {
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText(
-                "global using ECMAScript.VueContract;",
-                TestMetadataReferences.PreviewParseOptions,
-                path: "__TestGlobalUsings.cs"));
-        }
+    private static SyntaxTree[] BuildSyntaxTrees(string code)
+        => [CSharpSyntaxTree.ParseText(code, TestMetadataReferences.PreviewParseOptions)];
 
-        syntaxTrees.Add(CSharpSyntaxTree.ParseText(code, TestMetadataReferences.PreviewParseOptions));
-        return syntaxTrees.ToArray();
-    }
-
-    private static SyntaxTree[] BuildSyntaxTrees((string Path, string Text)[] sources, IEnumerable<MetadataReference>? additionalReferences = null)
-    {
-        var syntaxTrees = new List<SyntaxTree>();
-        if (additionalReferences is not null && ContainsVueReference(additionalReferences))
-        {
-            syntaxTrees.Add(CSharpSyntaxTree.ParseText(
-                "global using ECMAScript.VueContract;",
-                TestMetadataReferences.PreviewParseOptions,
-                path: "__TestGlobalUsings.cs"));
-        }
-
-        syntaxTrees.AddRange(sources.Select(static source => CSharpSyntaxTree.ParseText(
+    private static SyntaxTree[] BuildSyntaxTrees((string Path, string Text)[] sources)
+        => sources.Select(static source => CSharpSyntaxTree.ParseText(
             source.Text,
             TestMetadataReferences.PreviewParseOptions,
-            path: source.Path)));
-        return syntaxTrees.ToArray();
-    }
+            path: source.Path)).ToArray();
 
     private static (INamedTypeSymbol, SemanticModel) CompileAndGetSymbol(string code)
     {
@@ -156,7 +126,7 @@ public sealed class AstConverterTests
     {
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            BuildSyntaxTrees(code, additionalReferences),
+            BuildSyntaxTrees(code),
             BuildCompilationReferences(additionalReferences),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var diagnostics = compilation.GetDiagnostics()
@@ -188,7 +158,7 @@ public sealed class AstConverterTests
         string className,
         params MetadataReference[] additionalReferences)
     {
-        var syntaxTrees = BuildSyntaxTrees(sources, additionalReferences);
+        var syntaxTrees = BuildSyntaxTrees(sources);
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees,

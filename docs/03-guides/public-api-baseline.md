@@ -59,7 +59,7 @@ frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HT
 
 ## `Jazor.Vue` 原生事件与载荷扩展
 
-`Jazor.Vue` 通过 `ECMAScript.Vue` 程序集交付 `ECMAScript.NativeFileEventExtensions`。引入 `ECMAScript` 命名空间后，既有 Blazor 事件类型可直接访问以下 extension 属性：
+`ECMAScript.NativeFileEventExtensions` 自 2.2 起由 `Jazor.Vue` 程序集交付。引入 `ECMAScript` 命名空间后，既有 Blazor 事件类型可直接访问以下 extension 属性：
 
 | C# 事件类型 | 扩展属性 | 返回类型 |
 | --- | --- | --- |

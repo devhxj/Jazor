@@ -30,7 +30,6 @@ ECMAScript ecosystem layer:
 | Project | Role |
 |---------|------|
 | `src/ECMAScript.Vue` | Vue 3 core type bindings |
-| `src/ECMAScript.VueContract` | Vue component contracts, descriptors, and slot metadata attributes |
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
 | `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |

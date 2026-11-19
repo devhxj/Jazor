@@ -52,7 +52,6 @@
   <Project Path="src/ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
   <Project Path="src/ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
   <Project Path="src/ECMAScript.Vue/ECMAScript.Vue.csproj" />
-  <Project Path="src/ECMAScript.VueContract/ECMAScript.VueContract.csproj" />
   <Project Path="src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
   <Project Path="src/ECMAScript/ECMAScript.csproj" />
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />

@@ -7,7 +7,7 @@
     <RootNamespace>ECMAScript</RootNamespace>
     <Version Condition="'$(Version)' == ''">0.1.0</Version>
     <Authors>hanxj</Authors>
-    <Description>Vue Router 5 C# bindings and RazorVue contracts backed by package metadata and the restored npm package.</Description>
+    <Description>Vue Router 5 C# bindings backed by package metadata and the restored npm package.</Description>
     <PackageProjectUrl>https://github.com/devhxj/Jazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/devhxj/Jazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="MinVer" Version="$(MinVerPackageVersion)" PrivateAssets="All" />
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
   </ItemGroup>

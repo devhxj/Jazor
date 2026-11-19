@@ -66,7 +66,7 @@ public sealed partial class SdkIntegrationTests
             "lib/net11.0/ECMAScript.Blazor.dll",
             "lib/net11.0/ECMAScript.Blazor.pdb");
         CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.Vue.dll");
-        CollectionAssert.Contains(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
+        CollectionAssert.DoesNotContain(vueEntryNames, "lib/net11.0/ECMAScript.VueContract.dll");
         CollectionAssert.Contains(vueEntryNames, "buildTransitive/ECMAScript.Vue.targets");
         CollectionAssert.DoesNotContain(vueEntryNames, "tools/net11.0/analyzers/Jazor.RazorVue.dll");
         Assert.IsFalse(vueEntryNames.Any(static path =>
@@ -296,7 +296,6 @@ public sealed partial class SdkIntegrationTests
         AssertPackageEntries(
             package.VuePackagePath,
             "lib/net11.0/ECMAScript.Vue.dll",
-            "lib/net11.0/ECMAScript.VueContract.dll",
             "jazor/vue3/manifest.json",
             "jazor/vue3/licenses/LICENSE",
             "jazor/vue3/licenses/VUE-DEVTOOLS-API-LICENSE",
@@ -2564,10 +2563,10 @@ public sealed partial class SdkIntegrationTests
             "tools/net11.0/Jazor.Emit.dll");
         AssertPackageEntries(
             vuePackagePath,
-            "lib/net11.0/ECMAScript.Vue.dll",
-            "lib/net11.0/ECMAScript.VueContract.dll");
+            "lib/net11.0/ECMAScript.Vue.dll");
         AssertPackageDoesNotContain(
             vuePackagePath,
+            "lib/net11.0/ECMAScript.VueContract.dll",
             "lib/net11.0/ECMAScript.Blazor.dll",
             "lib/net11.0/ECMAScript.Blazor.pdb");
     }
