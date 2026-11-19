@@ -445,7 +445,6 @@ public static class Util
 
         var metadataName = attributeClass.ToDisplayString();
         // [ECMAScriptModule] 标注生成模块，[ECMAScript] 标注宿主契约与外部绑定；两者都是 support marker。
-        // 组件身份不再由特性表达（改由 ComponentBase + Vue marker 约定判定），因此这里不做组件排除。
         return metadataName is ECMAScriptModuleAttributeMetadataName or ECMAScriptAttributeMetadataName;
     }
 
@@ -464,8 +463,6 @@ public static class Util
             var metadataName = attribute.AttributeClass?.ToDisplayString();
             if (metadataName == ECMAScriptAttributeMetadataName)
             {
-                // [ECMAScript] 只有一个 import 参数。组件身份由 ComponentBase + Vue marker 约定判定，
-                // 因此这里不再需要按 transform 跳过组件声明。
                 if (attribute.ConstructorArguments.Length == 0 ||
                     attribute.ConstructorArguments[0].Value is not string externalPath ||
                     string.IsNullOrWhiteSpace(externalPath))

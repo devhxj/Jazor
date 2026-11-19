@@ -416,7 +416,7 @@ public static partial class Vue
 	/// Slots accepted by Vue built-ins whose child content is the default slot.
 	/// </summary>
 	/// <remarks>
-	/// <c>default</c> 是 Vue runtime ABI，不由 RazorVue 根据成员名或组件类型推断。
+	/// <c>default</c> 是 Vue runtime ABI，其名称固定。
 	/// This explicit metadata keeps direct <c>h(..., child)</c> lowering deterministic.
 	/// </remarks>
 	public record VueDefaultSlots : VueSlots

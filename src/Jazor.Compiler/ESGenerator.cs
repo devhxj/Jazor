@@ -68,19 +68,15 @@ public sealed class ESGenerator : IIncrementalGenerator
             transform: static (syntaxContext, _) => CreateCandidate(syntaxContext));
 
         var inputs = context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith(".jazorimports", StringComparison.OrdinalIgnoreCase)).Collect();
-        var finalOwner = context.AnalyzerConfigOptionsProvider.Select(static (options, _) =>
-            options.GlobalOptions.TryGetValue("build_property.JazorRazorVue", out var value) && value == "true");
-        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect()).Combine(inputs).Combine(finalOwner);
+        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect()).Combine(inputs);
         context.RegisterSourceOutput(combined, static (outputContext, source) =>
         {
-            var (((compilation, candidates), files), razorOwnsFinalOutput) = source;
+            var ((compilation, candidates), files) = source;
             try
             {
                 var implementationInputs = LibraryImportContext.ReadInputs(files, outputContext.CancellationToken);
                 LibraryImportContext.Configure(compilation, implementationInputs);
-                if (razorOwnsFinalOutput && !implementationInputs.IsDefaultOrEmpty)
-                    outputContext.AddSource(LibraryImportContext.CarrierHintName, LibraryImportContext.BuildCarrierSource(implementationInputs));
-                EmitCatalogs(outputContext, compilation, candidates, razorOwnsFinalOutput);
+                EmitCatalogs(outputContext, compilation, candidates);
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception exception)
@@ -100,8 +96,7 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static void EmitCatalogs(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<ModuleCandidate> candidates,
-        bool razorOwnsFinalOutput)
+        ImmutableArray<ModuleCandidate> candidates)
     {
         if (candidates.IsDefaultOrEmpty)
             return;
@@ -116,15 +111,14 @@ public sealed class ESGenerator : IIncrementalGenerator
             moduleCatalogCandidates.Add(candidate);
         }
 
-        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates, razorOwnsFinalOutput);
+        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates);
     }
 
     private static void EmitModuleCatalog(
         SourceProductionContext context,
         Compilation compilation,
         string assemblyName,
-        IReadOnlyList<ModuleCandidate> candidates,
-        bool razorOwnsFinalOutput)
+        IReadOnlyList<ModuleCandidate> candidates)
     {
         if (candidates.Count == 0)
             return;
@@ -171,7 +165,7 @@ public sealed class ESGenerator : IIncrementalGenerator
             validPlans.Select(static plan => ECMAScriptModulePath.NormalizeRelativePath(plan.RelativePath)),
             StringComparer.OrdinalIgnoreCase);
         var imports = LibraryImportContext.ForCompilation(compilation);
-        if (imports is not null && !razorOwnsFinalOutput)
+        if (imports is not null)
         {
             foreach (var imported in imports.BuildModules(context.CancellationToken))
             {

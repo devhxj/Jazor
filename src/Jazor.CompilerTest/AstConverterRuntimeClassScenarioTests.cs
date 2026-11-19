@@ -2754,7 +2754,7 @@ public sealed class AstConverterRuntimeClassScenarioTests
     [TestMethod]
     public async Task Convert_ModulePolicy_PredeclaredNestedHelperIsFlattenedToArtifactScope()
     {
-        const string scenarioId = "ast-converter-runtime-class.razorvue-predeclared-nested-helper";
+        const string scenarioId = "ast-converter-runtime-class.predeclared-nested-helper";
         var fixture = CompileModule(
             """
             public static class TestModule

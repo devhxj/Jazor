@@ -154,12 +154,12 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
-    public async Task UseJazorArtifacts_DoesNotTreatLegacyRazorVueManifestNameAsDefaultProbe()
+    public async Task UseJazorArtifacts_DoesNotTreatAlternateManifestNameAsDefaultProbe()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
         Directory.CreateDirectory(jazorRoot);
-        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "jazor-manifest-razorvue.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(jazorRoot, "jazor-manifest-custom.json"), "{}");
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
 
         using var host = await CreateHostAsync(workspace.RootPath, app =>
@@ -656,7 +656,7 @@ public sealed class JazorAspNetCoreHostingTests
     }
 
     [TestMethod]
-    public async Task UseJazorHost_DefaultContract_DoesNotTreatLegacyRazorVueManifestNameAsDevelopmentProbe()
+    public async Task UseJazorHost_DefaultContract_DoesNotTreatAlternateManifestNameAsDevelopmentProbe()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
@@ -666,7 +666,7 @@ public sealed class JazorAspNetCoreHostingTests
         await File.WriteAllTextAsync(
             Path.Combine(webRoot, "index.html"),
             "<!doctype html><html><body><div id=\"app\">default host shell</div></body></html>");
-        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "jazor-manifest-razorvue.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(artifactRoot, "jazor-manifest-custom.json"), "{}");
         await File.WriteAllTextAsync(Path.Combine(artifactRoot, "feature.mjs"), "export const legacy = true;\n");
 
         using var host = await CreateHostAsync(workspace.RootPath, app =>

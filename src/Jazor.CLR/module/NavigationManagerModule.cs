@@ -22,7 +22,6 @@ public static class NavigationManagerModule
 
 	/// <summary>
 	/// Creates the service object consumed by ordinary [Inject] NavigationManager properties.
-	/// Router lifecycle remains in RazorVue, while all navigation semantics stay here.
 	/// </summary>
 	internal static object CreateNavigationManager(Action? refresh)
 	{
@@ -460,7 +459,7 @@ public static class NavigationManagerModule
 			return;
 		}
 
-		// RazorVue has no enhanced-navigation transport. A replacement full navigation is
+		// Without an enhanced-navigation transport, a replacement full navigation is
 		// the supported browser equivalent and retains the current history position.
 		NavigateTo(instance, GetUri(), true, true);
 	}

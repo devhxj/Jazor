@@ -123,9 +123,9 @@ internal static class ClrRuntimeStringBuilderScenarios
         Success("string-builder.ctor.capacity", "System.Text.StringBuilder.StringBuilder(int)", [Number(8)], Array()),
         Failure("string-builder.ctor.capacity.rejects-negative", "System.Text.StringBuilder.StringBuilder(int)", [Number(-1)], "ArgumentOutOfRangeException"),
         Success("string-builder.ctor.text-capacity", "System.Text.StringBuilder.StringBuilder(string, int)", [Text("Vue"), Number(1)], Characters("Vue")),
-        Success("string-builder.ctor.range", "System.Text.StringBuilder.StringBuilder(string, int, int, int)", [Text("RazorVue"), Number(5), Number(3), Number(0)], Characters("Vue")),
+        Success("string-builder.ctor.range", "System.Text.StringBuilder.StringBuilder(string, int, int, int)", [Text("FrontVue"), Number(5), Number(3), Number(0)], Characters("Vue")),
 
-        Success("string-builder.to-string.range", "System.Text.StringBuilder.ToString(int, int)", [Characters("RazorVue"), Number(5), Number(3)], Text("Vue")),
+        Success("string-builder.to-string.range", "System.Text.StringBuilder.ToString(int, int)", [Characters("FrontVue"), Number(5), Number(3)], Text("Vue")),
         Mutation(
             "string-builder.length.expand-with-nul",
             "System.Text.StringBuilder.Length.set",

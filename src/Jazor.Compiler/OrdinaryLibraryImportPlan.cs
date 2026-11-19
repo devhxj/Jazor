@@ -208,7 +208,7 @@ public sealed class OrdinaryLibraryImportPlan
         foreach (var node in syntax.DescendantNodesAndSelf())
         {
             _cancellationToken.ThrowIfCancellationRequested();
-            // Official Razor SG uses nameof(ComponentBaseProperty) for parameter names. Those
+            // A nameof expression binds its operands for metadata only. Those
             // symbols are compile-time metadata, not calls into the component's CLR body.
             if (node.AncestorsAndSelf().Any(static ancestor => ancestor is AttributeSyntax or
                 InvocationExpressionSyntax { Expression: IdentifierNameSyntax { Identifier.ValueText: "nameof" } })) continue;

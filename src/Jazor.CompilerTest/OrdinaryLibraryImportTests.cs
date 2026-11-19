@@ -54,24 +54,6 @@ public sealed class OrdinaryLibraryImportTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void Generator_RazorOwnsFinalOutput_OnlyCarriesResolvedInputsWhenPresent(bool hasInputs)
-    {
-        var compilation = CSharpCompilation.Create("Consumer", [CSharpSyntaxTree.ParseText("public class Placeholder {}",
-            TestMetadataReferences.PreviewParseOptions)], TestMetadataReferences.Net11,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        GeneratorDriver driver = CSharpGeneratorDriver.Create([new ESGenerator().AsSourceGenerator()],
-            additionalTexts: hasInputs ? [new ImportManifest("asset|Unused|not-opened.dll|ABC")] : [],
-            parseOptions: TestMetadataReferences.PreviewParseOptions, optionsProvider: new RazorOwnerOptions());
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out var diagnostics);
-        Assert.IsEmpty(diagnostics);
-        var inputs = LibraryImportContext.ReadCarrierInputs(driver.GetRunResult().GeneratedTrees);
-        Assert.HasCount(hasInputs ? 1 : 0, inputs);
-        if (hasInputs) Assert.AreEqual("ABC", inputs[0].ContentHash);
-    }
-
-    [TestMethod]
     public async Task Import_ExplicitStaticConstructor_RejectsUnsupportedInitializationProtocol()
     {
         using var fixture = new Fixture("""
@@ -159,24 +141,6 @@ public sealed class OrdinaryLibraryImportTests
         var plan = OrdinaryLibraryImportPlan.Create(consumer, [new("Ordinary", fixture.LibraryPath)],
             [consumer.GetTypeByMetadataName("App")!]);
         Assert.IsTrue(plan.BuildModules().Single().PackageImports.Contains("vue"));
-    }
-
-    [TestMethod]
-    public void ImportCarrier_RoundTripsQuotedPathsAndContentIdentityAcrossCompilationClones()
-    {
-        var inputs = new LibraryImplementationReference[]
-        {
-            new("First", "C:\\packages\\quoted \"path\"\\first.dll") { ContentHash = "ABCDEF" },
-            new("Second", "/packages/中文/second.dll")
-        };
-        var tree = CSharpSyntaxTree.ParseText(LibraryImportContext.BuildCarrierSource(inputs),
-            path: "generator/" + LibraryImportContext.CarrierHintName);
-        Assert.IsEmpty(tree.GetDiagnostics());
-        CollectionAssert.AreEqual(inputs, LibraryImportContext.ReadCarrierInputs([
-            CSharpSyntaxTree.ParseText("class Other {}", path: "other.cs"), tree]).ToArray());
-        Assert.IsEmpty(LibraryImportContext.ReadCarrierInputs([]));
-        Assert.IsTrue(LibraryImportContext.IsCarrierTree(CSharpSyntaxTree.ParseText("",
-            path: "generator\\" + LibraryImportContext.CarrierHintName)));
     }
 
     [TestMethod]
@@ -963,21 +927,6 @@ public sealed class OrdinaryLibraryImportTests
     }
 
     private sealed record GeneratedModule(string RelativePath, string Content, string? SourceMapContent);
-
-    private sealed class RazorOwnerOptions : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptionsProvider
-    {
-        private sealed class Options : Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions
-        {
-            public override bool TryGetValue(string key, out string value)
-            {
-                value = "true";
-                return key == "build_property.JazorRazorVue";
-            }
-        }
-        public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GlobalOptions { get; } = new Options();
-        public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GetOptions(SyntaxTree tree) => GlobalOptions;
-        public override Microsoft.CodeAnalysis.Diagnostics.AnalyzerConfigOptions GetOptions(AdditionalText textFile) => GlobalOptions;
-    }
 
     private sealed class ImportManifest(string content) : AdditionalText
     {

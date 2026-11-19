@@ -529,7 +529,7 @@ static class HmrBrowser
                 _environment = new NodeEnvironment(root);
             }
             var output = await _environment.InvokeAsync(_module!, "run",
-                JsonSerializer.Serialize(new { command, arguments, executablePath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE") }));
+                JsonSerializer.Serialize(new { command, arguments, executablePath = Environment.GetEnvironmentVariable("JAZOR_BROWSER_EXE") }));
             return new ProcessResult(0, output, "");
         }
         catch (Exception exception)

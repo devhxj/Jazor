@@ -1044,9 +1044,9 @@ public sealed partial class SemanticWalker : OperationVisitor<SenseArgument, Nod
 
     private readonly IReadOnlyDictionary<ISymbol, string>? _moduleDeclaredNames;
 
-    // Runtime-class private storage is normally a JavaScript #field. RazorVue may place an
-    // instance behind Vue's Proxy, where that receiver fails the #field brand check; the option
-    // changes only compiler-emitted storage names, never authored member visibility rules.
+    // Runtime-class private storage is normally a JavaScript #field. A host may wrap an
+    // instance in a JavaScript Proxy, whose receiver fails the #field brand check. This
+    // option changes only emitted storage names and preserves authored visibility.
     private readonly RuntimeClassPrivateStorage _runtimeClassPrivateStorage;
 
     private readonly Action<string>? _registerStyleSpecifier;

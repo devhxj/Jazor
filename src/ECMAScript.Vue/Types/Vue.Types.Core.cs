@@ -5,12 +5,10 @@ using ECMAScript.Contract;
 namespace ECMAScript;
 
 /// <summary>Vue 组件、VNode、props/slots 等核心类型 contract。</summary>
-/// <remarks>本分片描述运行时形状，组件实际发射由 RazorVue/compiler framing 负责。</remarks>
 public static partial class Vue
 {
 	/// <summary>
-	/// RazorVue/Vue 组件创作契约。
-	/// Components are expected to inherit <c>ComponentBase</c> and implement this marker.
+	/// Vue 组件运行时契约。
 	/// </summary>
 	public interface IVueComponent : IUIComponent
 	{

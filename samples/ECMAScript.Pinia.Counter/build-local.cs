@@ -234,7 +234,7 @@ internal static class ScriptHelpers
         var packageFile = new DirectoryInfo(packageOutput)
             .EnumerateFiles("Jazor.*.nupkg", SearchOption.TopDirectoryOnly)
             .Where(static file => !file.Name.EndsWith(".snupkg", StringComparison.OrdinalIgnoreCase))
-            // Jazor.Vue shares the Jazor.* prefix; only a numeric suffix is the core package version.
+            // Other packages can share the Jazor.* prefix. The core package version starts with a digit.
             .Where(static file => file.Name.Length > "Jazor.".Length && char.IsDigit(file.Name["Jazor.".Length]))
             .OrderByDescending(static file => file.LastWriteTimeUtc)
             .FirstOrDefault();

@@ -26,9 +26,9 @@
     <Compile Include="$(WikiDocsGeneratedFile)" Visible="false" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Jazor" Version="2.1.0-preview.5" />
-    <PackageReference Include="Jazor.Vue" Version="2.1.0-preview.5" PrivateAssets="all" />
-    <PackageReference Include="ECMAScript.Style" Version="2.1.0-preview.5" />
+    <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+    <PackageReference Include="ECMAScript.Vue" Version="2.2.0-preview.1" />
+    <PackageReference Include="ECMAScript.Style" Version="2.2.0-preview.1" />
   </ItemGroup>
   <Target Name="ImportWikiDocsCatalog"
           BeforeTargets="BeforeBuild"

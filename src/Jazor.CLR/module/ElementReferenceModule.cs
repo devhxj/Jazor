@@ -1,6 +1,6 @@
 namespace Jazor.CLR;
 
-// RazorVue's @ref lifecycle produces the native HTMLElement carrier directly.
+// The browser carrier for an element reference is the native HTMLElement.
 [Jazor(Op.Alias, "Microsoft.AspNetCore.Components.ElementReference", "HTMLElement")]
 public static class ElementReferenceModule
 {

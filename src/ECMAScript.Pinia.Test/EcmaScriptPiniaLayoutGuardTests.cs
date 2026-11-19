@@ -207,7 +207,6 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "id: release_ref");
 		StringAssert.Contains(source, "$releaseRef = '${{ github.ref_name }}'");
 		Assert.IsFalse(source.Contains("--package jazor ", StringComparison.Ordinal));
-		Assert.IsFalse(source.Contains("--package jazor-vue ", StringComparison.Ordinal));
 		Assert.IsFalse(source.Contains("--package style ", StringComparison.Ordinal));
 		StringAssert.Contains(source, "--package-version '${{ steps.release_ref.outputs.package_version }}'");
 		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg'");
@@ -215,7 +214,7 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "$nupkg.BaseName.Substring('Jazor.'.Length)");
 		Assert.IsFalse(
 			source.Contains("Get-ChildItem 'artifacts/packages/Jazor.*.nupkg'", StringComparison.Ordinal),
-			"Version discovery must not confuse Jazor.Admin or Jazor.Vue with the core Jazor package.");
+			"Version discovery must not confuse other Jazor-prefixed packages with the core Jazor package.");
 		StringAssert.Contains(source, "NuGet trusted publishing login");
 		StringAssert.Contains(source, "Push to GitHub Packages");
 		StringAssert.Contains(source, "Create GitHub Release");
@@ -233,7 +232,6 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "ref: ${{ inputs.ref || github.ref }}");
 		StringAssert.Contains(source, "--skip-push");
 		Assert.IsFalse(source.Contains("--package jazor ", StringComparison.Ordinal));
-		Assert.IsFalse(source.Contains("--package jazor-vue ", StringComparison.Ordinal));
 		Assert.IsFalse(source.Contains("--package style ", StringComparison.Ordinal));
 		StringAssert.Contains(source, "--output-directory 'artifacts/packages'");
 		StringAssert.Contains(source, "Where-Object { $_.BaseName -match '^Jazor\\.[0-9]' }");

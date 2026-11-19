@@ -40,7 +40,6 @@
     <!-- Tooling is a direct-reference capability. Only resource manifest location propagates. -->
     <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
-    <None Include="build\Jazor.CompilationTiming.targets" Pack="true" PackagePath="build\Jazor.CompilationTiming.targets" />
     <None Include="build\Jazor.LibraryImports.targets" Pack="true" PackagePath="build\Jazor.LibraryImports.targets" />
     <None Include="buildTransitive\Jazor.Resources.targets"
           Pack="true"

@@ -1,52 +1,8 @@
-using Jazor.Emit;
-
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class LegacyRazorVueContractRetirementTests
+public sealed class SdkTargetsTests
 {
-    [TestMethod]
-    public void EmitAssembly_DoesNotExposeLegacyRazorVueCatalogOrConsumerContracts()
-    {
-        var assembly = typeof(ModuleCollector).Assembly;
-
-        foreach (var typeName in new[]
-                 {
-                     "Jazor.Emit.RazorVueCatalogReader",
-                     "Jazor.Emit.RazorVueModuleWriter",
-                     "Jazor.Emit.RazorVueSfcCatalogReader",
-                     "Jazor.Emit.RazorVueSfcModuleWriter",
-                     "Jazor.Emit.RazorVueSfcBridgeCompiler",
-                     "Jazor.Emit.RazorVueConsumerEntryCompiler",
-                     "Jazor.Emit.RazorVueHostRequirementsModuleWriter",
-                     "Jazor.Emit.RazorVueHostAssetWriter",
-                     "Jazor.Emit.RazorVueUpdatePlanWriter"
-                 })
-        {
-            Assert.IsNull(assembly.GetType(typeName, throwOnError: false, ignoreCase: false), typeName);
-        }
-    }
-
-    [TestMethod]
-    public void SdkTargets_DoNotDefineLegacyRazorVueConsumerOrHostContracts()
-    {
-        var repositoryRoot = FindRepositoryRoot();
-        var targets = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.targets"));
-        var props = File.ReadAllText(Path.Combine(repositoryRoot, "src", "Jazor", "build", "Jazor.props"));
-
-        foreach (var legacyContract in new[]
-                 {
-                     "JazorConsumer",
-                     "JazorRazorVueHostRequirementsModulePath",
-                     "JazorBundleRazorVue",
-                     "write-razorvue-update-plan"
-                 })
-        {
-            Assert.IsFalse(targets.Contains(legacyContract, StringComparison.Ordinal), legacyContract);
-            Assert.IsFalse(props.Contains(legacyContract, StringComparison.Ordinal), legacyContract);
-        }
-    }
-
     [TestMethod]
     public void SdkTargets_InvokeSingleEmitContractForDebugAndRelease()
     {
@@ -116,7 +72,6 @@ public sealed class LegacyRazorVueContractRetirementTests
         Assert.IsFalse(resourceTargets.Contains("<Analyzer", StringComparison.Ordinal), resourceTargets);
         StringAssert.Contains(vueTargets, "JazorLibraryManifest", StringComparison.Ordinal);
         StringAssert.Contains(vueTargets, "manifest.json", StringComparison.Ordinal);
-        Assert.IsFalse(vueTargets.Contains("RegisterJazorVueArtifactProvider", StringComparison.Ordinal), vueTargets);
         Assert.IsFalse(vueTargets.Contains("%(Analyzer.Filename)", StringComparison.Ordinal), vueTargets);
         Assert.IsFalse(vueTargets.Contains("%(Analyzer.Extension)", StringComparison.Ordinal), vueTargets);
     }

@@ -8,8 +8,6 @@
 .worktrees/
 src/.vscode/
 src/ECMAScript.WebIDL/.vscode/
-/jazoradmin.db
-/samples/JazorAdmin/jazoradmin.db
 *.db-shm
 *.db-wal
 /output/
@@ -205,7 +203,6 @@ publish/
 # Note: Comment the next line if you want to checkin your web deploy settings,
 # but database connection strings (with potential passwords) will be unencrypted
 *.pubxml
-!samples/JazorAdmin/Properties/PublishProfiles/FolderProfile.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
@@ -465,25 +462,6 @@ jazor/
 !.agent/
 !.agent/jazor/
 !.agent/jazor/**
-# The TodoList source is a development-host fixture. Keep its generated graph and
-# build output ignored while retaining the authored Host and Library projects.
-!samples/RazorVue.TodoList/
-samples/RazorVue.TodoList/**
-!samples/RazorVue.TodoList/Directory.Build.props
-!samples/RazorVue.TodoList/README.md
-!samples/RazorVue.TodoList/Todo.Library/
-!samples/RazorVue.TodoList/Todo.Library/*.csproj
-!samples/RazorVue.TodoList/Todo.Library/*.cs
-!samples/RazorVue.TodoList/Todo.Library/*.razor
-!samples/RazorVue.TodoList/Todo.Host/
-!samples/RazorVue.TodoList/Todo.Host/*.csproj
-!samples/RazorVue.TodoList/Todo.Host/*.cs
-# The SSR release consumer gate ships with its own Edge/CDP browser driver, mirroring Wiki's
-# sample-owned verify-browser.mjs contract.
-!samples/RazorVue.TodoList/verify-ssr-browser.mjs
-# Browser gates clone this source fixture under samples/ so its ../../../src project
-# references remain valid. The disposable clones must never appear as untracked work.
-samples/.todolist-hmr-*/
 src/vben/
 .golutra
 dist-prod-optimized/

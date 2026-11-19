@@ -42,7 +42,7 @@ internal static class ClrRuntimeStringScenarios
         Success("string.index-of.character-bounded-range", "string.IndexOf(char, int, int)", [Text("abcabc"), Text("a"), Number(1), Number(3)], Number(3)),
         Success("string.index-of-any.character-array", "string.IndexOfAny(char[])", [Text("compiler"), Array(Text("x"), Text("p"))], Number(3)),
         Success("string.index-of.substring-bounded-range", "string.IndexOf(string, int, int)", [Text("abc--abc"), Text("abc"), Number(1), Number(5)], Number(-1)),
-        Success("string.index-of.substring-ignore-case", "string.IndexOf(string, System.StringComparison)", [Text("RazorVue"), Text("vue"), Number(OrdinalIgnoreCase)], Number(5)),
+        Success("string.index-of.substring-ignore-case", "string.IndexOf(string, System.StringComparison)", [Text("FrontVue"), Text("vue"), Number(OrdinalIgnoreCase)], Number(5)),
         Success("string.last-index-of-any.character-array", "string.LastIndexOfAny(char[])", [Text("compiler"), Array(Text("c"), Text("e"))], Number(6)),
         Success("string.last-index-of.substring-ignore-case", "string.LastIndexOf(string, System.StringComparison)", [Text("one TWO two"), Text("TWO"), Number(OrdinalIgnoreCase)], Number(8))
     ];

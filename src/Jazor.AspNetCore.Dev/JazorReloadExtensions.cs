@@ -14,7 +14,7 @@ public static class JazorReloadExtensions
     private const string MiddlewareRegisteredKey = "__JazorReloadMiddlewareRegistered";
 
     /// <summary>Registers the development reload endpoints and HTML injection middleware.</summary>
-    /// <remarks>仅 Development 生效；该环境必须先 AddJazorReload。放在 UsePathBase 之后、静态文件/SPA/SSR 之前，以便注入客户端脚本。同一管线重复调用不重复注册。只观察构建产物，不执行 C#/Razor 编译。</remarks>
+    /// <remarks>仅 Development 生效；该环境必须先 AddJazorReload。放在 UsePathBase 之后、静态文件/SPA/SSR 之前，以便注入客户端脚本。同一管线重复调用不重复注册。只观察构建产物，不执行 C# 编译。</remarks>
     /// <param name="app">要注册中间件的应用管线。</param>
     /// <returns>原应用管线，供继续注册中间件。</returns>
     public static IApplicationBuilder UseJazorReload(this IApplicationBuilder app)

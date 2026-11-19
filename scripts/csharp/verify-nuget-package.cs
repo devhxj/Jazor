@@ -187,7 +187,6 @@ static IReadOnlyList<string> GetForbiddenPaths(string packageId)
         ],
         "ECMAScript.Vue" =>
         [
-            Path.Combine("analyzers", "dotnet", "cs", "Jazor.RazorVue.dll"),
             Path.Combine("lib", "net11.0", "ECMAScript.VueContract.dll")
         ],
         _ => []

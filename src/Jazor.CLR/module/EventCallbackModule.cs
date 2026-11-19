@@ -1,7 +1,6 @@
 namespace Jazor.CLR;
 
-// EventCallback dispatch is a RazorVue product protocol. Keep the canonical CLR
-// keys here without pretending that EventCallback has a standalone JS object model.
+// EventCallback dispatch is supplied by the host. These declarations register the CLR keys.
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.EventCallback")]
 public static class EventCallbackModule
 {

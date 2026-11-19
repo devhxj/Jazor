@@ -11,7 +11,7 @@ public static class ElementReferenceExtensionsModule
 	/// </summary>
 	/// <remarks>
 	/// Inline focus calls cannot distinguish a missing ref from a browser TypeError. Keep this
-	/// check in the CLR runtime so all RazorVue consumers receive the same actionable contract.
+	/// check in the runtime helper so all callers receive the same error.
 	/// 未挂载的 @ref 必须保留 framework 的明确错误，而不是泄漏浏览器的 null.focus() TypeError。
 	/// </remarks>
 	[Jazor(Op.Import, "static Microsoft.AspNetCore.Components.ElementReferenceExtensions.FocusAsync(Microsoft.AspNetCore.Components.ElementReference)", "focusAsync")]

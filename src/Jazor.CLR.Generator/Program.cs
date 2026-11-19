@@ -78,8 +78,7 @@ var outTypes = new Type[]{
 	typeof(Microsoft.AspNetCore.Components.Routing.LocationChangingContext),
 	typeof(NavigationManagerExtensions),
 
-	// RazorVue product hooks own final Vue lowering, but their accepted CLR symbols
-	// still enter the compiler only through generated Jazor.CLR modules.
+	// Framework symbols whose host behavior is supplied by compilation hooks.
 	typeof(ComponentBase),
 	typeof(EventCallback),
 	typeof(EventCallback<>),

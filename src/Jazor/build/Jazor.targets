@@ -1,8 +1,5 @@
 <Project>
-  <!-- Set while the direct Jazor package target is imported. Opt-in packages can use this
-       marker to avoid registering the same shared analyzer closure a second time. -->
   <PropertyGroup>
-    <_JazorDirectToolingActive>true</_JazorDirectToolingActive>
     <!-- Defaults belong after the project body so conditional consumer settings can opt in. -->
     <JazorMode Condition="'$(JazorMode)' == ''">none</JazorMode>
     <JazorPublishSourceMaps Condition="'$(JazorPublishSourceMaps)' == ''">false</JazorPublishSourceMaps>
@@ -14,8 +11,6 @@
     limited to resource-manifest locators, so an assembly reference cannot grant Emit/analyzer use.
   -->
   <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Jazor.Resources.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)Jazor.CompilationTiming.targets"
-          Condition="'$(_JazorCompilationTimingTargetsImported)' != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)Jazor.LibraryImports.targets" />
 
   <ItemGroup>
@@ -26,12 +21,11 @@
   </ItemGroup>
 
   <!--
-    Exclude the actual generated root, including relative/custom roots. C# and Razor source
-    remain authored inputs even when a case-insensitive filesystem places them in Jazor/.
+    Exclude the actual generated root, including relative/custom roots. Authored source files
+    remain inputs even when a case-insensitive filesystem places them in Jazor/.
   -->
   <ItemGroup Condition="'$(JazorDir)' != ''">
-    <!-- Glob by generated artifact extensions. Keeping source extensions (.cs/.razor/.resx)
-         in the SDK item graph prevents a case-insensitive Jazor/ author directory from vanishing. -->
+    <!-- Glob by generated artifact extensions. Keeping source files in the SDK item graph prevents a case-insensitive Jazor/ author directory from vanishing. -->
     <Content Remove="$(_JazorGeneratedRoot)**\*.js;$(_JazorGeneratedRoot)**\*.mjs;$(_JazorGeneratedRoot)**\*.map;$(_JazorGeneratedRoot)**\*.json;$(_JazorGeneratedRoot)**\*.lock;$(_JazorGeneratedRoot)**\*.css;$(_JazorGeneratedRoot)**\*.html" />
     <None Remove="$(_JazorGeneratedRoot)**\*.js;$(_JazorGeneratedRoot)**\*.mjs;$(_JazorGeneratedRoot)**\*.map;$(_JazorGeneratedRoot)**\*.json;$(_JazorGeneratedRoot)**\*.lock;$(_JazorGeneratedRoot)**\*.css;$(_JazorGeneratedRoot)**\*.html" />
   </ItemGroup>

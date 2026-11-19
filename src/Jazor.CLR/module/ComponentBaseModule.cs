@@ -1,8 +1,6 @@
 namespace Jazor.CLR;
 
-// Vue-specific behavior for these members remains in RazorVue's current-component
-// hook. This module owns only the Roslyn-derived whitelist surface, so it must not
-// create an otherwise empty CLR runtime artifact.
+// Whitelist metadata for host-provided component behavior.
 [Jazor(Op.Allowed, "Microsoft.AspNetCore.Components.ComponentBase")]
 public static class ComponentBaseModule
 {

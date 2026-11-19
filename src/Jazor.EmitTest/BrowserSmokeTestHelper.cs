@@ -92,9 +92,9 @@ internal static class BrowserSmokeTestHelper
 
     public static string? ResolveBrowserExecutable()
     {
-        var explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_EXE")?.Trim();
+        var explicitPath = Environment.GetEnvironmentVariable("JAZOR_BROWSER_EXE")?.Trim();
         if (string.IsNullOrWhiteSpace(explicitPath))
-            explicitPath = Environment.GetEnvironmentVariable("RAZORVUE_BROWSER_PATH")?.Trim();
+            explicitPath = Environment.GetEnvironmentVariable("JAZOR_BROWSER_PATH")?.Trim();
 
         if (!string.IsNullOrWhiteSpace(explicitPath))
             return File.Exists(explicitPath) ? explicitPath : null;

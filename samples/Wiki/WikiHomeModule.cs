@@ -1,6 +1,6 @@
 // WikiHomeModule.cs - Wiki 主模块：路由、导航、状态管理和事件处理 / Main Wiki module: routing, navigation, state management and event handling
 // 外壳使用 Sober (Material 3 Web Components)：s-page 主题容器 + s-appbar + s-drawer（含移动端覆盖式抽屉）。
-// s-drawer 的 show/close 是自定义元素方法，通过 Reflect 通道调用（与 JazorAdmin ApiClient 同模式）。
+// s-drawer 的 show/close 是自定义元素方法，通过 Reflect 通道调用。
 using System.Collections.Generic;
 using ECMAScript;
 using static ECMAScript.Vue;
@@ -830,7 +830,7 @@ public static partial class WikiHomeModule
                 H("div", new VueObject { Class = "footer-brand" },
                 [
                     H("p", new VueObject { Class = "footer-brand-name" }, "Jazor"),
-                    H("p", new VueObject { Class = "footer-brand-summary" }, "将受支持的 C# 语义编译为确定性 ECMAScript 模块，并把官方 Razor SG 产物转换为 Vue render function。")
+                    H("p", new VueObject { Class = "footer-brand-summary" }, "用 Jolt 编写 .jazor 组件，直接接入 npm 包，并通过 Jazor 编译 C#。")
                 ]),
                 H("nav", new VueObject
                 {

@@ -14,9 +14,6 @@ namespace ECMAScript;
 /// 普通源码类型不需要此标注来获得编译许可；纯数据对象应使用 record。
 /// Ordinary source types need no host marker to compile; record declarations describe plain objects.
 ///
-/// 组件身份不由该特性表达。派生自 <c>Microsoft.AspNetCore.Components.ComponentBase</c>
-/// 且实现 Vue marker 的类型即组件，声明面与普通绑定相同。
-///
 /// 导出名由名字机制给出（<c>ECMAScriptName</c> / <c>Description("@#...")</c>），不是该特性的参数。
 ///
 /// 当特性标在具体成员上时，该成员的 specifier 优先于宿主类型上的 specifier。这样一个

@@ -11,8 +11,8 @@ public static partial class WikiHomeModule
     private static readonly string[] FeaturedSearchTags =
     [
         "compiler",
-        "razor-sg",
-        "razorvue",
+        "jolt",
+        ".jazor",
         "vueroute",
         "runtime",
         "catalog",
@@ -38,7 +38,7 @@ public static partial class WikiHomeModule
             [
                 H("p", "当你知道关注点但不知道确切页面标题时，使用标签。"),
                 SearchTagRow(FeaturedSearchTags),
-                RouteCardGrid(["/architecture/compiler", "/architecture/razor-to-vue", "/guides/razorvue-authoring", "/guides/installation-and-configuration", "/guides/examples", "/history/evolution"])
+                RouteCardGrid(["/architecture/compiler", "/architecture/framework-integrations", "/guides/jolt-authoring", "/guides/installation-and-configuration", "/guides/examples", "/history/evolution"])
             ]),
             PageSection("query-sharing", "可分享查询",
             [
@@ -59,7 +59,7 @@ public static partial class WikiHomeModule
                     Id = SearchInputId,
                     Class = "search-input",
                     Type = "text",
-                    Placeholder = "搜索编译器、运行时、Razor SG、RazorVue、验证...",
+                    Placeholder = "搜索编译器、运行时、Jolt、.jazor、验证...",
                     Value = query,
                     Raw = new VueDictionary
                     {
@@ -99,7 +99,7 @@ public static partial class WikiHomeModule
             return H("div", new VueObject { Class = "search-empty-state" },
             [
                 H("p", new VueObject { Class = "search-empty-title" }, "从路由或子系统名称开始。"),
-                H("p", new VueObject { Class = "search-empty-summary" }, "有用的起点包括 `compiler`、`razor-sg`、`razorvue`、`vueroute`、`runtime`、`catalog` 和 `smoke`。"),
+                H("p", new VueObject { Class = "search-empty-summary" }, "有用的起点包括 `compiler`、`jolt`、`jazor`、`vueroute`、`runtime`、`catalog` 和 `smoke`。"),
                 RouteCardGrid(["/guides/quick-start", "/guides/installation-and-configuration", "/architecture/compiler", "/overview/system-architecture"])
             ]);
         }
