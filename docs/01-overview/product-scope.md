@@ -21,7 +21,7 @@ Jolt 是应用开发主线。它将 .jazor 中的模板与 C# 语义投影到 Vu
 | 应用主线 | Jolt | .jazor 与 npm 声明 | Vue render-function 模块、源映射与 Vite 应用 | 安装 Jazor.Jolt |
 | 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSSR` 并注册 SSR 服务 |
 
-Vue 3、Vue Router、Pinia、Vue Devtools、Vue Data UI、Vuetify、Element Plus、TDesign、CSS-in-JS 与管理壳，均以强类型绑定或可选库形态服务于 Jazor 核心平台，框架集成沿用统一编译路线。
+Jazor 维护 Vue、Vue Router、Pinia、Vue Devtools 和 CSS-in-JS 等共享绑定。Razor 组件库和管理壳由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。
 
 ## 范围边界
 

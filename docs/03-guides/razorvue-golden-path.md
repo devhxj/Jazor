@@ -52,7 +52,7 @@ dotnet run --file samples/RazorVue.Authoring/verify-smoke.cs -- --skip-build --w
 正式提交前，再运行适用的完整门禁：
 
 ```text
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project razor-sg
+dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj
 dotnet run --file scripts/csharp/verify-razorvue-coverage.cs
 dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs
 ```
@@ -67,4 +67,4 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --work-root .tmp
 
 这条路径支持“使用 Blazor/Razor 语法表达 Vue 组件”的开发范式。它不承诺完整 Blazor Server/WebAssembly 或 CLR parity。Microsoft 内置 UI 组件、`IJSRuntime` 字符串互操作、未映射外部成员、server-only service、未经版本化的 SSR state handoff 和复杂 `popstate`/`hashchange` cancellation 仍按作者指南报告为 Guidance/Reject。
 
-遇到限制时，先查看 [RazorVue 诊断矩阵](./razorvue-diagnostic-matrix.md)，再回到 [作者指南](./razorvue-authoring.md) 的对应章节；不要通过弱化 C# 类型或拼接 JavaScript 绕过诊断。
+遇到限制时，先查看 [RazorVue 诊断矩阵](./razorvue-diagnostic-matrix.md)，再回到 [作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md) 的对应章节；不要通过弱化 C# 类型或拼接 JavaScript 绕过诊断。

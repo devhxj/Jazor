@@ -8,7 +8,7 @@ The remaining enhancement and documentation issues require individual product de
 
 ## Scope and prioritization
 
-The inventory separates C# syntax from unavailable .NET APIs and does not establish support for every language-feature combination. Source compilation, analyzer diagnostics, Razor direct-render lowering and package integration have distinct validation layers. Use the [compiler contract](../../src/Jazor.Compiler/README.md), [RazorVue authoring guide](../03-guides/razorvue-authoring.md) and targeted regressions to assess a concrete form.
+The inventory separates C# syntax from unavailable .NET APIs and does not establish support for every language-feature combination. Source compilation, analyzer diagnostics, Razor direct-render lowering and package integration have distinct validation layers. Use the [compiler contract](../../src/Jazor.Compiler/README.md), [RazorVue authoring guide](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md) and targeted regressions to assess a concrete form.
 
 Prioritize high-frequency source/library features with real reproducers, then rendering composition through compiler hooks. Representation changes such as generic reification, value/location carriers, handlers and stack buffers require separate protocol decisions. Keep dynamic binding, unmanaged addresses, finalizers and erased nominal identity within explicit boundaries unless requirements justify expansion.
 

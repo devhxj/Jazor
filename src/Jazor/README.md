@@ -82,13 +82,11 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 <ItemGroup>
   <PackageReference Include="ECMAScript.VueRoute" Version="2.0.0" />
   <PackageReference Include="ECMAScript.Pinia" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="2.0.0" />
   <PackageReference Include="ECMAScript.Style" Version="2.0.0" />
 </ItemGroup>
 ```
 
-`ECMAScript.Vue` 随 `Jazor.Vue` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。所有 Jazor、`Jazor.Vue` 与 Vue 生态包应保持相同版本。
+`ECMAScript.Vue` 随 `Jazor.Vue` 提供；`ECMAScript.Pinia.Testing` 是叠加在 `ECMAScript.Pinia` 之上的测试期 opt-in 包。RazorVue、管理组件和五个 UI 绑定的版本组合见 [RazorVue](https://github.com/devhxj/RazorVue#compatibility)。
 
 Blazor framework CLR mapping 由 `Jazor.CLR.Generator` 生成并由 `Jazor.CLR` 唯一持有；其 runtime
 JavaScript 由 `ECMAScript` 的 manifest 与 `src/ECMAScript/clr/**` embedded carrier 提供。

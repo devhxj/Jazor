@@ -66,7 +66,7 @@ Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件
 - TDesign、Vuetify、Element Plus 等已声明的 typed Vue component contracts；
 - Debug 模块、Release bundle，以及已声明范围内的 SSR/hydration 交付。
 
-这些能力的具体限制以[作者指南](../03-guides/razorvue-authoring.md)和[当前状态](../04-roadmap/current-status.md)为准；本页只定义共同范式，不复制逐项测试矩阵。
+这些能力的具体限制以[作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md)和[当前状态](../04-roadmap/current-status.md)为准；本页只定义共同范式，不复制逐项测试矩阵。
 
 ## 明确不属于范式的内容
 
@@ -101,7 +101,7 @@ Blazor 名称出现在作者代码中，仅表示沿用熟悉的 Razor/C# 组件
 ## 相关文档
 
 - [Razor-to-Vue 架构](./razor-to-vue.md)
-- [RazorVue 作者指南](../03-guides/razorvue-authoring.md)
+- [RazorVue 作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md)
 - [当前状态](../04-roadmap/current-status.md)
 - [下一阶段](../04-roadmap/next-development.md)
 

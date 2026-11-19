@@ -10,12 +10,12 @@
 
 当前正式版本为 **2.0.0（2026-11-18）**。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v2.0.0)和对应 tag 为准。安装时显式指定版本，NuGet UI 无需启用“包括预发行版”。安装或升级时，将全部 Jazor/ECMAScript 包统一更新到 `2.0.0`，并安装 .NET SDK `11.0.100` 或 `global.json` 允许的更新正式 SDK；普通源码无需 `[ECMAScript]` 许可，class 保留类语义、record 承担对象字面量；受影响的 class 声明、继承及宿主配置迁移见下文和 CHANGELOG。更早预览版的迁移路径见 [CHANGELOG](../../CHANGELOG.md)。
 
-当前发布目录包含 23 个 lockstep 公共包。P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
+P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
 
 live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前基线为 .NET SDK `11.0.100`，项目目标为 `net11.0`；使用原生 `union` 的项目仍须设置 `<LangVersion>preview</LangVersion>`。
-- 所有 Jazor 与 `ECMAScript.*` 包应使用同一版本。
+- Jazor 主仓库发布的 SDK 和共享绑定使用同一版本。RazorVue 及其组件包使用[独立兼容性表](https://github.com/devhxj/RazorVue#compatibility)。
 - ECMAScript 源码库通过 NuGet carrier 写入项目源码，绑定库通过 npm/JSR dependency 接入项目。
 
 ## 选择包
@@ -68,8 +68,6 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
 <ItemGroup>
   <PackageReference Include="ECMAScript.Style" Version="2.0.0" />
   <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VueDataUi" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Lucide" Version="2.0.0" />
   <PackageReference Include="ECMAScript.Pinia" Version="2.0.0" />
   <PackageReference Include="ECMAScript.VueRoute" Version="2.0.0" />
   <PackageReference Include="ECMAScript.DateFns" Version="2.0.0" />
@@ -82,9 +80,6 @@ Razor-to-Vue 通过显式引用 `Jazor.Vue` 启用：
   <PackageReference Include="ECMAScript.VueDraggable" Version="2.0.0" />
   <PackageReference Include="ECMAScript.FilePond" Version="2.0.0" />
   <PackageReference Include="ECMAScript.WangEditor" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Vuetify" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.ElementPlus" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.TDesign" Version="2.0.0" />
 </ItemGroup>
 ```
 

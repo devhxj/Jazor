@@ -140,7 +140,7 @@ Element Plus 新增 `ElTypedSelect<TValue>`、`ElTypedOption<TValue>`、`ElTyped
 
 `ElStringDatePicker` 以字符串格式表达日期；Pagination 的 `OnCurrentChange` / `OnSizeChange` 使用 `EventCallback<Number>`，handler 可通过 `(int)value` 转成业务整数。Release HTML shell 使用 `JazorFrontendUrls.GetStylesheets` 读取 manifest 样式。
 
-Union 投影在不匹配时返回 null，并只求值一次。无法恢复精确标签的可赋值分支、无法区分的结构化对象分支明确失败；原始路由需要已解析路径时使用 `router.Resolve(raw).Path`。完整写法与限制见[作者指南](./razorvue-authoring.md)及 [CHANGELOG](../../CHANGELOG.md)。
+Union 投影在不匹配时返回 null，并只求值一次。无法恢复精确标签的可赋值分支、无法区分的结构化对象分支明确失败；原始路由需要已解析路径时使用 `router.Resolve(raw).Path`。完整写法与限制见[作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md)及 [CHANGELOG](../../CHANGELOG.md)。
 
 ## 冻结规则
 

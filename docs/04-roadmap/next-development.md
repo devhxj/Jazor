@@ -44,7 +44,7 @@ SSR state envelope、认证快照/browser provider、单一显式构造函数的
 | 复杂 browser history | 超出现有 handler、取消恢复和释放切片的完整历史语义 | CLR / 应用 route host；以真实浏览器和 reference 明确 URL、竞态、用户确认与释放协议 |
 | localization 与复杂 validation | 有明确需求的 typed 应用/组件协议 | 对应应用或 binding；当前保持 Guidance，取得独立作者面和运行时证据后再评审 |
 
-Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering` 和完整 CLR parity 是当前明确边界，不因出现在路线图中成为实现承诺。具体替代路径见[RazorVue 作者指南](../03-guides/razorvue-authoring.md)。
+Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering` 和完整 CLR parity 是当前明确边界，不因出现在路线图中成为实现承诺。具体替代路径见[RazorVue 作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md)。
 
 ## 编译器与普通类库
 
