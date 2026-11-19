@@ -76,6 +76,19 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
     }
 
     [TestMethod]
+    public void VueRoute_AssemblyContainsOnlySharedRouterBindings()
+    {
+        var bindings = typeof(ECMAScript.VueRoute);
+        var assembly = bindings.Assembly;
+        Assert.IsNull(assembly.GetType("ECMAScript.VueRouterLink"));
+        Assert.IsNull(assembly.GetType("ECMAScript.VueRouterView"));
+        Assert.IsFalse(assembly.GetReferencedAssemblies().Any(static reference =>
+            reference.Name?.StartsWith("Microsoft.AspNetCore.", StringComparison.Ordinal) == true));
+        Assert.IsNotNull(bindings.GetProperty(nameof(ECMAScript.VueRoute.RouterLink)));
+        Assert.IsNotNull(bindings.GetProperty(nameof(ECMAScript.VueRoute.RouterView)));
+    }
+
+    [TestMethod]
     public void VueRoute_StandardTestScript_IncludesDedicatedTargetAndDefaultLane()
     {
         var repoRoot = ResolveRepositoryRoot();
