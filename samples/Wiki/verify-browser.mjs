@@ -13,7 +13,7 @@ const isDevelopmentVerification = verificationMode === "development";
 const pathBase = configuredPathBase && configuredPathBase !== "/"
   ? (configuredPathBase.endsWith("/") ? configuredPathBase.slice(0, -1) : configuredPathBase)
   : "";
-const expectedHomeBriefTitles = ["Jazor 是什么", "它解决什么", "适用边界"];
+const expectedHomeBriefTitles = ["开始使用", "编译 C# 模块", "文档目录"];
 
 function externalPath(logicalPath) {
   if (!logicalPath.startsWith("/")) {

@@ -430,10 +430,10 @@ BrowserVerificationRoutes ReadBrowserVerificationRoutes(string generatedCatalogP
     }
 
     var homeIndex = paths.FindIndex(path => path == "/");
-    var primaryIndex = paths.FindIndex(path => path == "/guides/quick-start");
+    var primaryIndex = paths.FindIndex(path => path == "/guides/jolt-authoring");
     if (homeIndex < 0 || primaryIndex < 0 || groups[primaryIndex] != "Guides")
     {
-        throw new InvalidOperationException("WikiDocsContent must contain the root page and the Guides quick-start browser fixture.");
+        throw new InvalidOperationException("WikiDocsContent must contain the root page and the Jolt authoring guide.");
     }
 
     // importer 的 RelatedPaths 契约是同组相邻页面；从排序后的目录推导相邻页，文档新增时自动保持正确。

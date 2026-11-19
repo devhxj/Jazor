@@ -731,7 +731,7 @@ public static partial class WikiHomeModule
                     H("a", new VueObject
                     {
                         Class = "hero-action-link",
-                        Href = BuildBrowserUrl("/guides/quick-start", "", ""),
+                        Href = BuildBrowserUrl("/guides/jolt-authoring", "", ""),
                         Events = CreateRouteClickEvents()
                     }, "打开快速开始")
                 ])
@@ -1998,7 +1998,7 @@ public static partial class WikiHomeModule
     private static void OpenQuickStart(MouseEvent mouseEvent)
     {
         mouseEvent.PreventDefault();
-        NavigateTo("/guides/quick-start", "", "", updateHistory: true, resetScroll: true);
+        NavigateTo("/guides/jolt-authoring", "", "", updateHistory: true, resetScroll: true);
     }
 
     private static void OnPageFeedbackClick(MouseEvent mouseEvent)

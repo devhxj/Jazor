@@ -4,16 +4,27 @@
 
 ## 开始使用
 
+安装 Jolt CLI 和对应的编辑器扩展，在计数器示例中试用 `.jazor` 和 npm 组件。
+
 | 我想做什么 | 从这里开始 |
 | --- | --- |
 | 运行第一个 `.jazor` 应用 | [Jolt 作者指南](./03-guides/jolt-authoring.md) · [计数器示例](../samples/Jolt.Counter/README.md) |
 | 配置语义高亮、补全和导航 | [VS Code](../editors/jolt/README.md) · [Visual Studio 2026](../editors/jolt-visual-studio/README.md) |
+| 核对当前能力和验证命令 | [当前状态](./04-roadmap/current-status.md) · [开发与测试](./03-guides/development-and-testing.md) |
+
+## 编译 C# 模块
+
+在 .NET 项目中引用 Jazor SDK，将带 `[ECMAScriptModule]` 的 C# 类编译成 ECMAScript 模块。
+
+| 我想做什么 | 从这里开始 |
+| --- | --- |
 | 编译独立 C# 模块 | [C# 模块快速开始](./03-guides/quick-start.md) |
 | 配置 MSBuild 输出、绑定包或 ASP.NET Core SSR | [安装与配置](./03-guides/installation-and-configuration.md) |
-| 核对当前能力和验证命令 | [当前状态](./04-roadmap/current-status.md) · [开发与测试](./03-guides/development-and-testing.md) |
 | 升级旧项目或查看版本变更 | [NodeApi 工具链与迁移](./03-guides/toolchain-migration.md) · [更新日志](../CHANGELOG.md) |
 
 ## 文档目录
+
+查阅产品范围、编译器与宿主架构，以及仓库的测试和发布流程。
 
 | 目录 | 内容 |
 | --- | --- |
