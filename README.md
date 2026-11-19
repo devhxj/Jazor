@@ -195,6 +195,8 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
+The [2.2 preview migration](CHANGELOG.md#jazor-220-preview1) moves the Razor Router proxies and Blazor event extensions to `Jazor.Vue`. Upgrade the shared SDK and RazorVue packages together and rebuild projects using the moved types.
+
 ### Jazor 2.0.0 · 2026-11-18
 
 - Emit and SSR use Node.js 26.13.1 on Windows and glibc Linux x64 and ARM64.

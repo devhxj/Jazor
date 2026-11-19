@@ -2,19 +2,29 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## Unreleased
-
-- Vuetify、TDesign、Element Plus、Vue Data UI 和 Lucide 的组件包迁至 [RazorVue](https://github.com/devhxj/RazorVue#compatibility)。NuGet 包 ID 和 C# 命名空间保持原样。升级时按 RazorVue 兼容性表选择 SDK 和组件包版本。
-- Jazor 的应用指南和验证命令已更新为 Jolt 工作流。`.razor` 作者指南、组件示例和版本兼容表见 [RazorVue](https://github.com/devhxj/RazorVue)。
-- `ECMAScript.FilePond`、`ECMAScript.VueDraggable`、`ECMAScript.WangEditor` 的后续版本由 [RazorVue](https://github.com/devhxj/RazorVue#compatibility) 维护。NuGet 包 ID、C# 命名空间及现有调用方式保持原样。
-- 2.2 升级：`Jazor.Vue` 交付 Router 的 Razor 组件、Blazor 事件扩展和原程序集身份的 `ECMAScript.VueContract.dll`。使用迁移类型的项目请将共享包和 RazorVue 包升级到匹配版本，直接引用 `Jazor.Vue` 后重新编译。
-
-- The five Razor component binding packages are maintained and released by [RazorVue](https://github.com/devhxj/RazorVue#compatibility). Use the SDK and component versions listed in its compatibility table.
-- Jazor's application guides and verification commands now describe the Jolt workflow. See [RazorVue](https://github.com/devhxj/RazorVue) for `.razor` authoring, component samples, and compatible versions.
-- [RazorVue](https://github.com/devhxj/RazorVue#compatibility) owns future releases of `ECMAScript.FilePond`, `ECMAScript.VueDraggable`, and `ECMAScript.WangEditor` under their existing NuGet IDs, C# namespaces, and APIs.
-- 2.2 upgrade: `Jazor.Vue` supplies the Razor Router components, Blazor event extensions, and `ECMAScript.VueContract.dll` with its original assembly identity. Upgrade the shared and RazorVue packages together, reference `Jazor.Vue` directly, and recompile projects that use the moved types.
-
 ## 2026-11-19
+
+### Jazor 2.2.0-preview.1
+
+中文 | English
+
+#### 体验优化
+
+- Jazor 的应用指南与验证命令以 Jolt 为主线。`.razor` 作者指南、样例和版本组合由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。by @devhxj
+
+#### 其他变更
+
+- Vuetify、TDesign、Element Plus、Vue Data UI、Lucide、FilePond、VueDraggable 和 WangEditor 的 C# 绑定由 [RazorVue](https://github.com/devhxj/RazorVue#compatibility) 发布，保留原 NuGet 包 ID 和命名空间。by @devhxj
+- Router 的 Razor 组件、Blazor 原生事件扩展和 `ECMAScript.VueContract.dll` 改由 `Jazor.Vue` 交付。使用 Router 代理或事件扩展的项目需对齐共享 SDK 与 RazorVue 版本，直接引用 `Jazor.Vue` 并重编译使用这些类型的程序集。`VueContract` 保留原程序集身份。by @devhxj
+
+Improvements
+
+- Jazor's application guides and verification commands describe the Jolt workflow. [RazorVue](https://github.com/devhxj/RazorVue) maintains the `.razor` guides, samples, and compatible versions. by @devhxj
+
+Chores
+
+- [RazorVue](https://github.com/devhxj/RazorVue#compatibility) publishes the Vuetify, TDesign, Element Plus, Vue Data UI, Lucide, FilePond, VueDraggable, and WangEditor bindings under their existing NuGet IDs and C# namespaces. by @devhxj
+- `Jazor.Vue` now ships the Razor Router components, Blazor native event extensions, and `ECMAScript.VueContract.dll`. Align the shared SDK and RazorVue versions, reference `Jazor.Vue` directly, and rebuild assemblies using the Router proxies or event extensions. `VueContract` keeps its original assembly identity. by @devhxj
 
 ### Jazor 2.1.0-preview.6
 

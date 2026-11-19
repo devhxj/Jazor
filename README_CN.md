@@ -195,6 +195,8 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 最新更新
 
+[2.2 预览版迁移](CHANGELOG.md#jazor-220-preview1)将 Router 的 Razor 代理组件和 Blazor 事件扩展移入 `Jazor.Vue`。升级时请对齐共享 SDK 和 RazorVue 包的版本，并重编译使用这些类型的项目。
+
 ### Jazor 2.0.0 · 2026-11-18
 
 - Emit 和 SSR 使用 Node.js 26.13.1，覆盖 Windows 和 glibc Linux 的 x64、ARM64。
