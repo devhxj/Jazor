@@ -10,7 +10,7 @@ RepositoryEnvironment.Configure(repoRoot);
 var version = NormalizeVersion(options.Tag);
 var candidateRoot = ResolveInsideRepository(repoRoot, options.OutputDirectory ?? Path.Combine("artifacts", "release-candidate", SafeName(options.Tag)));
 Directory.CreateDirectory(candidateRoot);
-foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-contracts", "binding-documentation", "sample-regression", "out", "obj" })
+foreach (var directoryName in new[] { "logs", "packages", "coverage", "package-shape", "diagnostics", "binding-documentation", "sample-regression", "out", "obj" })
 {
     var directory = Path.Combine(candidateRoot, directoryName);
     if (Directory.Exists(directory))
@@ -37,7 +37,6 @@ var stageDefinitions = new (string Name, string[] Arguments)[]
     ("public-api-compatibility", ["run", "--file", "scripts/csharp/compare-public-api.cs", "--", "--current", Path.Combine(candidateRoot, "public-api.md"), "--baseline", "docs/03-guides/public-api-baseline.snapshot.md", "--approved-removals", "docs/03-guides/public-api-reviewed-removals.snapshot.md", "--output", Path.Combine(candidateRoot, "public-api-compatibility.md")]),
     ("compiler-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "compiler", "--output-directory", Path.Combine(candidateRoot, "coverage", "compiler")]),
     ("vue-binding-coverage", ["run", "--file", "scripts/csharp/run-quality-gate.cs", "--", "vue-bindings", "--output-directory", Path.Combine(candidateRoot, "coverage", "vue-bindings")]),
-    ("binding-contracts", ["run", "--file", "scripts/csharp/verify-vue-binding-contracts.cs", "--", "--report", Path.Combine(candidateRoot, "binding-contracts", "report.json"), "--baseline", Path.Combine(repoRoot, "docs", "04-roadmap", "binding-contract-baseline.json"), "--fail-on-baseline-drift"]),
     ("binding-documentation", ["run", "--file", "scripts/csharp/verify-binding-documentation.cs", "--", "--no-build", "--configuration", "Release", "--output-directory", Path.Combine(candidateRoot, "binding-documentation")]),
     ("typed-bootstrap", ["run", "--file", "scripts/csharp/verify-typed-bootstrap.cs", "--", "--report", Path.Combine(candidateRoot, "typed-bootstrap.md")]),
     ("mainline", ["run", "--file", "scripts/csharp/test-dotnet.cs", "--", "--configuration", "Release", "--base-output-path", Path.Combine(candidateRoot, "out"), "--base-intermediate-output-path", Path.Combine(candidateRoot, "obj")]),

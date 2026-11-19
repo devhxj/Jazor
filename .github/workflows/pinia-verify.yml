@@ -11,10 +11,6 @@ on:
       - 'src/ECMAScript.Pinia.Testing.Test/**'
       - 'src/ECMAScript.Vue.Devtools/**'
       - 'src/ECMAScript.Vue.Devtools.Test/**'
-      - 'src/ECMAScript.VueDataUi/**'
-      - 'src/ECMAScript.VueDataUi.Test/**'
-      - 'src/ECMAScript.Lucide/**'
-      - 'src/ECMAScript.Lucide.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -39,10 +35,6 @@ on:
       - 'src/ECMAScript.Pinia.Testing.Test/**'
       - 'src/ECMAScript.Vue.Devtools/**'
       - 'src/ECMAScript.Vue.Devtools.Test/**'
-      - 'src/ECMAScript.VueDataUi/**'
-      - 'src/ECMAScript.VueDataUi.Test/**'
-      - 'src/ECMAScript.Lucide/**'
-      - 'src/ECMAScript.Lucide.Test/**'
       - 'src/ECMAScript.Vue/**'
       - 'src/ECMAScript.VueRoute/**'
       - 'src/ECMAScript/**'
@@ -116,24 +108,6 @@ jobs:
             --configuration Release `
             --base-output-path 'artifacts/out/devtools/' `
             --base-intermediate-output-path 'artifacts/obj/devtools/'
-
-      - name: Verify ECMAScript.VueDataUi
-        shell: pwsh
-        run: |
-          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
-            --project dataui `
-            --configuration Release `
-            --base-output-path 'artifacts/out/dataui/' `
-            --base-intermediate-output-path 'artifacts/obj/dataui/'
-
-      - name: Verify ECMAScript.Lucide
-        shell: pwsh
-        run: |
-          dotnet run --file ./scripts/csharp/test-dotnet.cs -- `
-            --project lucide `
-            --configuration Release `
-            --base-output-path 'artifacts/out/lucide/' `
-            --base-intermediate-output-path 'artifacts/obj/lucide/'
 
   sample-smoke:
     runs-on: windows-latest

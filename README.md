@@ -35,7 +35,7 @@ Jazor is a typed .NET toolchain for compiling supported C# semantics into determ
 
 **Jolt is Jazor's primary app authoring path.** Write typed Vue components in .jazor, consume npm packages, and use the VS Code or Visual Studio extension. [Start with Jolt](docs/03-guides/jolt-authoring.md)
 
-[RazorVue](https://github.com/devhxj/RazorVue) maintains the optional .razor integration and the Jazor.Vue and Jazor.Admin NuGet packages.
+[RazorVue](https://github.com/devhxj/RazorVue) maintains the optional .razor integration, Jazor.Vue, Jazor.Admin, and the Vuetify, TDesign, Element Plus, Vue Data UI, and Lucide component packages.
 Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules, including RazorVue consumers. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
 
 ## AI-assisted development
@@ -88,8 +88,6 @@ Run `verify-compiler-coverage.cs` or `verify-vue-binding-coverage.cs` under `scr
 | `Jazor.Jolt` | CLI and language server for .jazor projects |
 | `ECMAScript.Vue` | Shared Vue 3 types, component contracts, and runtime metadata |
 | `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
-| `ECMAScript.VueDataUi` | Typed `Vd*` RazorVue charts with per-component local ESM materialization; [prefix migration](src/ECMAScript.VueDataUi/README.md#razor-使用) |
-| `ECMAScript.Lucide` | Typed `Lucide / lucide-vue-next` RazorVue icons with static per-icon and dynamic catalog paths |
 
 
 ### Library forms and direct references
@@ -99,7 +97,7 @@ pure Jazor form, not a third carrier.
 
 | Library form | Carrier | Direct reference rule |
 | --- | --- | --- |
-| JS resource library (`ECMAScript`, Vue, Vuetify, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `pnpm-lock.yaml`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
+| JS resource library (`ECMAScript`, Vue, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `pnpm-lock.yaml`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
 | Pure Jazor library (`ECMAScript.Style`, `Jazor.Admin`, or other developer-authored C# and RazorVue) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | A pure Jazor authoring project directly references `Jazor`; a RazorVue authoring project directly references both `Jazor` and `Jazor.Vue`. |
 
 The final executable or web host directly references `Jazor` when it runs Emit. It collects the

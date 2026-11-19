@@ -69,13 +69,12 @@ public sealed class ErasedUnionProjectionTests
                 public static EmptyStatus? ReadEmptyStatus(EmptyState value) => value.AsStatus;
                 public static VueProps? ReadObjectLike(ObjectLike value) => value.AsProps;
                 public static T? ReadAnnotation<T>(Envelope<T> value) => value.AsPayload;
-                public static ECMAScript.Vuetify.VuetifyBorderValue NumericBridge(int value) => value;
+                public static Scalar NumericBridge(int value) => (double)value;
             }
             """, TestMetadataReferences.PreviewParseOptions);
         var compilation = CSharpCompilation.Create("GenericUnionProjection", [tree],
             TestMetadataReferences.Net11
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vuetify.VAvatar).Assembly.Location))
                 .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).ToArray();

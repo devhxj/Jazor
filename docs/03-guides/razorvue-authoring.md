@@ -362,7 +362,7 @@ public sealed class DefaultTable : TableContract { }
 </ElTypedTable>
 ```
 
-纯标记 child content 可保留；需要单元格数据时声明 `Context="cell"`，通过 `cell.Row`、`cell.Column`、`cell.Index` 读取真实 slot payload。`ElMessage.Service`、`ElMessageBox.Service` 和 `ElNotification.Service` 提供新的 typed 服务入口，完整交互/服务示例与迁移说明见 [Element Plus README](../../src/ECMAScript.ElementPlus/README.md)。
+纯标记 child content 可保留；需要单元格数据时声明 `Context="cell"`，通过 `cell.Row`、`cell.Column`、`cell.Index` 读取真实 slot payload。`ElMessage.Service`、`ElMessageBox.Service` 和 `ElNotification.Service` 提供新的 typed 服务入口，完整交互/服务示例与迁移说明见 [Element Plus README](https://github.com/devhxj/RazorVue/tree/main/src/ECMAScript.ElementPlus)。
 
 <a id="member-closure"></a>
 ## Member Closure 与 Reactive Class

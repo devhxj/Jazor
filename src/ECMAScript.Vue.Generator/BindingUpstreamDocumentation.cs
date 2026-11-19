@@ -13,9 +13,6 @@ internal sealed class BindingUpstreamDocumentation
 
     public BindingUpstreamDocumentation(string repository)
     {
-        var upstream = Path.Combine(repository, "src", "ECMAScript.Vue.Generator", "upstream");
-        ReadWebTypes("ECMAScript.ElementPlus", Path.Combine(upstream, "element-plus", "2.14.5", "web-types.json"));
-        ReadWebTypes("ECMAScript.Vuetify", Path.Combine(upstream, "vuetify", "4.2.1", "web-types.json"));
         ReadOriginals(Path.Combine(repository, "src", "ECMAScript.Vue.Generator", "documentation", "originals.json"));
         var mdnPath = Path.Combine(repository, "src", "ECMAScript.WebIDL.Generator", "documentation", "mdn.json");
         using (var mdn = JsonDocument.Parse(File.ReadAllText(mdnPath)))
@@ -87,10 +84,7 @@ internal sealed class BindingUpstreamDocumentation
             }
             foreach (var (target, source) in new[] {
                 ("VueTransitionGroupProps", "VueTransitionProps"),
-                ("VueRouterLink", "RouterLinkProps"), ("VueRouterLink", "RouterLinkOptions"), ("VueRouterView", "RouterViewProps"),
-                ("ElInstallOptions", "ElConfigProvider"), ("ElLoadingOptions", "ElLoading"),
-                ("ElTagTooltipProps", "ElTooltip"), ("ElColSizeProps", "ElCol"),
-                ("ElMessageConfig", "ElMessage"), ("ElTableV2Column", "ElColumn") })
+                ("VueRouterLink", "RouterLinkProps"), ("VueRouterLink", "RouterLinkOptions"), ("VueRouterView", "RouterViewProps") })
                 foreach (var property in declarations.OfType<PropertyDeclarationSyntax>()
                     .Where(p => p.Ancestors().OfType<BaseTypeDeclarationSyntax>().FirstOrDefault()?.Identifier.ValueText == target))
                     if (_summaries.TryGetValue(library + "|" + source + "." + property.Identifier.ValueText, out var summary))
@@ -163,26 +157,7 @@ internal sealed class BindingUpstreamDocumentation
             var entry = row.Deserialize<BindingDocumentationSnapshot.Entry>()!;
             var scope = entry.Scope;
             var member = entry.Member;
-            if (entry.Library == "ECMAScript.ElementPlus")
-            {
-                // Attribute tables describe a component; named helper tables retain
-                // their own scope, so e.g. CascaderProps.value is not Cascader.value.
-                scope = Regex.Replace(scope, @"\s+(Attributes|Props|Exposes|Events|Slots)$", "", RegexOptions.IgnoreCase);
-                if (scope == "Options") scope = Path.GetFileNameWithoutExtension(entry.Source) + "-options";
-                if (scope is "Attributes" or "Props" or "Exposes" or "Events" or "Slots")
-                    scope = Path.GetFileNameWithoutExtension(entry.Source);
-                scope = "El" + Pascal(scope);
-                if (entry.Scope.EndsWith("Events")) member = "On" + Pascal(member);
-                else if (entry.Scope.EndsWith("Slots")) member = Pascal(member) + "Slot";
-                else member = Pascal(member);
-            }
-            else if (entry.Library == "ECMAScript.Vuetify")
-            {
-                var parts = member.Split(':', 2);
-                if (parts.Length == 2)
-                    member = parts[0] switch { "events" => "On" + Pascal(parts[1]), "slots" => Pascal(parts[1]) + "Slot", _ => Pascal(parts[1]) };
-            }
-            else if (entry.Library == "ECMAScript.Vue")
+            if (entry.Library == "ECMAScript.Vue")
             {
                 scope = scope switch { "AppConfig" => "VueAppConfig", "CompilerOptions" => "VueAppCompilerOptions", _ => "Vue" + scope };
                 member = Pascal(member);
@@ -194,30 +169,6 @@ internal sealed class BindingUpstreamDocumentation
     private static string Pascal(string value)
         => string.Concat(Regex.Split(value, @"[^A-Za-z0-9]+").Where(part => part.Length > 0)
             .Select(part => char.ToUpperInvariant(part[0]) + part[1..]));
-
-    private void ReadWebTypes(string library, string path)
-    {
-        using var document = JsonDocument.Parse(File.ReadAllText(path));
-        var elementPlus = library == "ECMAScript.ElementPlus";
-        foreach (var tag in document.RootElement.GetProperty("contributions").GetProperty("html")
-            .GetProperty(elementPlus ? "vue-components" : "tags").EnumerateArray())
-        {
-            var sourceName = tag.GetProperty("name").GetString()!;
-            var name = sourceName.Contains('-') ? string.Concat(sourceName.Split('-').Select(static part => char.ToUpperInvariant(part[0]) + part[1..])) : sourceName;
-            if (tag.TryGetProperty("description", out var description) && description.ValueKind == JsonValueKind.String &&
-                !string.IsNullOrWhiteSpace(description.GetString()))
-                _summaries[library + "|" + name] = description.GetString()!;
-            if (!tag.TryGetProperty(elementPlus ? "props" : "attributes", out var attributes)) continue;
-            foreach (var property in attributes.EnumerateArray())
-            {
-                if (!property.TryGetProperty("description", out description) || description.ValueKind != JsonValueKind.String ||
-                    string.IsNullOrWhiteSpace(description.GetString())) continue;
-                var propertyName = property.GetProperty("name").GetString()!;
-                propertyName = string.Concat(propertyName.Split('-').Select(static part => char.ToUpperInvariant(part[0]) + part[1..]));
-                _summaries[library + "|" + name + "." + propertyName] = description.GetString()!;
-            }
-        }
-    }
 
     private static string? ReadSummary(MemberDeclarationSyntax member)
         => member.GetLeadingTrivia().Select(static trivia => trivia.GetStructure()).OfType<DocumentationCommentTriviaSyntax>()

@@ -15,6 +15,5 @@
   <ItemGroup>
     <ProjectReference Include="..\ECMAScript\ECMAScript.csproj" />
     <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
-    <ProjectReference Include="..\ECMAScript.ElementPlus\ECMAScript.ElementPlus.csproj" />
   </ItemGroup>
 </Project>

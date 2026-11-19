@@ -9,31 +9,6 @@ namespace Jazor.EmitTest;
 public sealed class Preview8SubpathImportTests
 {
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void Materialize_DeclaredElementPlusLocale_ReusesPinnedIdentityWithoutSelectingUnusedEntries(bool production)
-    {
-        using var workspace = new Workspace();
-        const string locale = "element-plus/es/locale/lang/zh-cn";
-        var consumer = workspace.WriteManifest("consumer", "1.0.0", [locale]);
-        var binding = Path.Combine(FindRepositoryRoot(), "src", "ECMAScript.ElementPlus", "manifest.json");
-
-        var result = new LibraryMaterializer().Materialize(
-            [consumer, binding], workspace.Output, production ? BuildMode.Production : BuildMode.Development, [locale]);
-
-        Assert.AreEqual(LibraryManifest.LoadMetadata(binding).Packages["element-plus"], result.PackageReferences[locale]);
-        Assert.AreEqual(locale, result.ImportPaths[locale]);
-        CollectionAssert.AreEqual(new[] { locale }, result.ImportPaths.Keys.ToArray());
-        CollectionAssert.AreEqual(new[] { consumer }, result.ManifestPaths.ToArray());
-        LibraryPackageWriter.WritePackageProject(workspace.Output, result);
-        using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(workspace.Output, "package.json")));
-        Assert.AreEqual("2.14.5", package.RootElement.GetProperty("dependencies").GetProperty("element-plus").GetString());
-        Assert.AreEqual(
-            result.PackageReferences[locale].Integrity,
-            package.RootElement.GetProperty("jazor").GetProperty("packages").GetProperty("element-plus").GetProperty("integrity").GetString());
-    }
-
-    [TestMethod]
     public void Materialize_UndeclaredSubpath_StillFailsWhenPackageIdentityExists()
     {
         using var workspace = new Workspace();

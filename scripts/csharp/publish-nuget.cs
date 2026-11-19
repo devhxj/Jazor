@@ -499,7 +499,7 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
         Console.WriteLine("  --package <jazor|vue|jolt|style|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vue-draggable|file-pond|wang-editor|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.VueDataUi, ECMAScript.Lucide, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor, ECMAScript.Vuetify, ECMAScript.ElementPlus, ECMAScript.TDesign");
+        Console.WriteLine("    Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco, ECMAScript.VueDraggable, ECMAScript.FilePond, ECMAScript.WangEditor");
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -531,8 +531,6 @@ internal static class PackageCatalog
         "Jazor.Jolt",
         "ECMAScript.Style",
         "ECMAScript.Vue.Devtools",
-        "ECMAScript.VueDataUi",
-        "ECMAScript.Lucide",
         "ECMAScript.Pinia",
         "ECMAScript.Pinia.Testing",
         "ECMAScript.VueRoute",
@@ -546,9 +544,6 @@ internal static class PackageCatalog
         "ECMAScript.VueDraggable",
         "ECMAScript.FilePond",
         "ECMAScript.WangEditor",
-        "ECMAScript.Vuetify",
-        "ECMAScript.ElementPlus",
-        "ECMAScript.TDesign"
     ];
 
     private static readonly Dictionary<string, string> PackageAliases = new(StringComparer.OrdinalIgnoreCase)
@@ -565,13 +560,6 @@ internal static class PackageCatalog
         ["devtools"] = "ECMAScript.Vue.Devtools",
         ["ecmascript.vue.devtools"] = "ECMAScript.Vue.Devtools",
         ["ECMAScript.Vue.Devtools"] = "ECMAScript.Vue.Devtools",
-        ["dataui"] = "ECMAScript.VueDataUi",
-        ["vue-data-ui"] = "ECMAScript.VueDataUi",
-        ["ecmascript.vuedataui"] = "ECMAScript.VueDataUi",
-        ["ECMAScript.VueDataUi"] = "ECMAScript.VueDataUi",
-        ["lucide"] = "ECMAScript.Lucide",
-        ["ecmascript.lucide"] = "ECMAScript.Lucide",
-        ["ECMAScript.Lucide"] = "ECMAScript.Lucide",
         ["pinia"] = "ECMAScript.Pinia",
         ["ECMAScript.Pinia"] = "ECMAScript.Pinia",
         ["pinia-testing"] = "ECMAScript.Pinia.Testing",
@@ -605,12 +593,6 @@ internal static class PackageCatalog
         ["wang-editor"] = "ECMAScript.WangEditor",
         ["wangeditor"] = "ECMAScript.WangEditor",
         ["ECMAScript.WangEditor"] = "ECMAScript.WangEditor",
-        ["vuetify"] = "ECMAScript.Vuetify",
-        ["ECMAScript.Vuetify"] = "ECMAScript.Vuetify",
-        ["elementplus"] = "ECMAScript.ElementPlus",
-        ["ECMAScript.ElementPlus"] = "ECMAScript.ElementPlus",
-        ["tdesign"] = "ECMAScript.TDesign",
-        ["ECMAScript.TDesign"] = "ECMAScript.TDesign"
     };
 
     public static IReadOnlyList<PackageDefinition> ResolveSelectedPackages(string repoRoot, IReadOnlyList<string> packageSelectors)
@@ -683,16 +665,6 @@ internal static class PackageCatalog
                 Path.Combine(repoRoot, "src", "ECMAScript.Vue.Devtools", "ECMAScript.Vue.Devtools.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.VueDataUi"] = new(
-                "ECMAScript.VueDataUi",
-                Path.Combine(repoRoot, "src", "ECMAScript.VueDataUi", "ECMAScript.VueDataUi.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.Lucide"] = new(
-                "ECMAScript.Lucide",
-                Path.Combine(repoRoot, "src", "ECMAScript.Lucide", "ECMAScript.Lucide.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
             ["ECMAScript.Pinia"] = new(
                 "ECMAScript.Pinia",
                 Path.Combine(repoRoot, "src", "ECMAScript.Pinia", "ECMAScript.Pinia.csproj"),
@@ -758,21 +730,6 @@ internal static class PackageCatalog
                 Path.Combine(repoRoot, "src", "ECMAScript.WangEditor", "ECMAScript.WangEditor.csproj"),
                 RequiresJazorEmitPublishOutput: false,
                 DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.Vuetify"] = new(
-                "ECMAScript.Vuetify",
-                Path.Combine(repoRoot, "src", "ECMAScript.Vuetify", "ECMAScript.Vuetify.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.ElementPlus"] = new(
-                "ECMAScript.ElementPlus",
-                Path.Combine(repoRoot, "src", "ECMAScript.ElementPlus", "ECMAScript.ElementPlus.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false),
-            ["ECMAScript.TDesign"] = new(
-                "ECMAScript.TDesign",
-                Path.Combine(repoRoot, "src", "ECMAScript.TDesign", "ECMAScript.TDesign.csproj"),
-                RequiresJazorEmitPublishOutput: false,
-                DisableJazorPreparePackageArtifactsOnNoBuild: false)
         };
     }
 }

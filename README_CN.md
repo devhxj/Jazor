@@ -35,7 +35,7 @@ Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强�
 
 **Jolt 是 Jazor 的应用开发主线。** 用 .jazor 编写强类型 Vue 组件，接入 npm 包，在 VS Code 或 Visual Studio 中编辑。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
 
-[RazorVue](https://github.com/devhxj/RazorVue) 独立维护 .razor 路径与 Jazor.Vue、Jazor.Admin 包。
+[RazorVue](https://github.com/devhxj/RazorVue) 独立维护 .razor 集成、Jazor.Vue、Jazor.Admin，以及 Vuetify、TDesign、Element Plus、Vue Data UI 和 Lucide 组件包。
 
 普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块，适用于普通模块与 RazorVue。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 
@@ -89,8 +89,6 @@ flowchart LR
 | Jazor.Jolt | .jazor CLI 与语言服务器 |
 | ECMAScript.Vue | 共享的 Vue 3 类型、组件契约与运行时元数据 |
 | `ECMAScript.*` | 框架无关 ECMAScript 绑定、可选 Vue 生态绑定与 CSS-in-JS 类库 |
-| `ECMAScript.VueDataUi` | `Vd*` 强类型 RazorVue 图表与按组件本地 ESM 物化；[前缀迁移](src/ECMAScript.VueDataUi/README.md#razor-使用) |
-| `ECMAScript.Lucide` | `Lucide / lucide-vue-next` 的强类型 RazorVue 图标，支持静态单图标与动态 catalog 路径 |
 
 
 ### 类库形式与直接引用
@@ -100,7 +98,7 @@ flowchart LR
 
 | 类库形式 | carrier | 直接引用规则 |
 | --- | --- | --- |
-| JS resource library（`ECMAScript`、Vue、Vuetify、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`pnpm-lock.yaml`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
+| JS resource library（`ECMAScript`、Vue、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`pnpm-lock.yaml`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
 | 纯 Jazor 类库（`ECMAScript.Style`、`Jazor.Admin` 或其他开发者编写的 C# 和 RazorVue） | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 编写纯 Jazor 模块的项目直接引用 `Jazor`；编写 RazorVue 组件的项目直接引用 `Jazor` 和 `Jazor.Vue`。 |
 
 最终可执行或 Web 宿主运行 Emit 时必须直接引用 `Jazor`。宿主一次收集选中的
@@ -118,14 +116,7 @@ C#；它不是遗留兼容载体。
 dotnet add package Jazor --version 2.0.0
 ```
 
-编写 RazorVue 组件的 Razor SDK 项目必须直接添加两个包，并保持版本一致：
-
-```xml
-<ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-</ItemGroup>
-```
+编写 RazorVue 组件的 Razor SDK 项目需要直接引用 Jazor 和 Jazor.Vue。对应版本见 [RazorVue 兼容性表](https://github.com/devhxj/RazorVue#compatibility)。
 
 完整的包选择、输出设置、SSR 配置与生态绑定见[安装与配置](docs/03-guides/installation-and-configuration.md)。
 

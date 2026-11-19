@@ -11,7 +11,7 @@
 | `samples/RazorVue.Authoring/` | 独立 Blazor-first 自然 Razor CRUD 页面 | TDesign typed table/form/dialog、slot、`@bind`、DI、route；local package 与 Release browser smoke |
 | `samples/ECMAScript.Pinia.Counter/` | Vue 3 与 Pinia 状态管理 | Pinia 绑定与浏览器运行时 |
 | `samples/ECMAScript.Vue.Devtools.Plugin/` | Vue Devtools plugin authoring | custom inspector、timeline 和 typed settings |
-| `samples/ECMAScript.VueDataUi.Dashboard/` | Vue Data UI Razor dashboard | typed dataset/config、per-chart ESM import 与本地 NuGet consumer 验证 |
+| [Vue Data UI Dashboard](https://github.com/devhxj/RazorVue/tree/main/samples/ECMAScript.VueDataUi.Dashboard) | Vue Data UI Razor dashboard | typed dataset/config、per-chart ESM import 与本地 NuGet consumer 验证 |
 | `samples/ECMAScript.VueRoute.MemorySmoke/` | Vue Router 模块与浏览器验证 | Router 绑定与导航运行时 |
 | `samples/Wiki/` | 端到端示例应用 | 使用与验证参考 |
 | `samples/JazorAdmin/` | 生产级管理应用参考（门户/IAM/运营） | 消费 `Jazor.Admin`，不定义库 API |

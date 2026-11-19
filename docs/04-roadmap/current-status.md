@@ -31,7 +31,7 @@ Jolt 是应用主线，覆盖 .jazor 模板、C# 语义、npm 组件声明、VS 
 
 ## 生态与参考应用
 
-Vue、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vuetify、Element Plus 与 Style 提供各自 README 声明的绑定切片。P3 的 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 已进入 lockstep 发布集合，但仍保持 Guidance，等待各自 browser smoke 与真实 RazorVue consumer 证据。见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
+Vue、Vue Router、Pinia、Vue Devtools 与 Style 提供各自 README 声明的绑定切片。P3 的 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 已进入 lockstep 发布集合，但仍保持 Guidance，等待各自 browser smoke 与真实 RazorVue consumer 证据。五个 Razor 组件库见 [RazorVue](https://github.com/devhxj/RazorVue)。见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
 `Jazor.Admin` 是 UI 库无关的管理壳库，`samples/JazorAdmin` 是参考应用。`RazorVue.Authoring` 与 `RazorVue.TodoList` 分别验证作者体验、隔离包消费和适用的 SPA/SSR 交付。真实后端保存、插件启用后的业务流程与 HMR 长尾仍需按消费者场景验证。
 
@@ -48,7 +48,7 @@ Vue、Vue Router、Pinia、Vue Devtools、Vue Data UI、Lucide、TDesign、Vueti
 | Compiler | 10,000 个通过场景；行覆盖率 98%，分支覆盖率 97% | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | Jolt | 语法和编译回归、隔离包消费、语言服务与浏览器交互 | dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt |
 | Vue binding | 每个目标公共 binding contract 审计覆盖率 90% | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| 绑定一致性 | 生成检查、版本、上游 inventory/fingerprint 和 XML 文档满足既有基线 | `verify-vue-binding-contracts.cs`、`verify-binding-documentation.cs` |
+| 绑定一致性 | 共享绑定的公开 API 保留 XML 文档 | `verify-binding-documentation.cs` |
 | 发布交付 | API 兼容性、包形状、隔离 SPA/SSR 消费者与真实浏览器通过 | `verify-release-candidate.cs`、官方 tag workflow |
 
 完整主测试入口为 `dotnet run --file scripts/csharp/test-dotnet.cs`。覆盖率对应 Debug 基线，发布消费者验证 Release 产物。平台声明以 [NodeApi workflow](../../.github/workflows/nodeapi-verify.yml)的实际运行矩阵为准，不从 RID 文件存在推断支持。

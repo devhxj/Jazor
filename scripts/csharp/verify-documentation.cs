@@ -56,9 +56,7 @@ Console.WriteLine($"Result: {failures.Count} documentation errors. Current relea
 return failures.Count == 0 ? 0 : 1;
 
 bool IsPreserved(string path) => path.EndsWith(".snapshot.md", StringComparison.Ordinal)
-    || path.StartsWith("src/ECMAScript.Vue.Generator/documentation/", StringComparison.Ordinal)
-    || path.StartsWith("src/ECMAScript.VueDataUi/licenses/", StringComparison.Ordinal)
-    || path.StartsWith("src/ECMAScript.Vuetify/licenses/", StringComparison.Ordinal);
+    || path.StartsWith("src/ECMAScript.Vue.Generator/documentation/", StringComparison.Ordinal);
 
 void CheckVersions(string path)
 {

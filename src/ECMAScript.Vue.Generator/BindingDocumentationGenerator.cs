@@ -18,8 +18,7 @@ internal static class BindingDocumentationGenerator
         "ECMAScript.Contract",
         "ECMAScript",
         "ECMAScript.Vue", "ECMAScript.VueContract", "ECMAScript.Pinia", "ECMAScript.Pinia.Testing",
-        "ECMAScript.VueRoute", "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi",
-        "ECMAScript.ElementPlus", "ECMAScript.Vuetify", "ECMAScript.TDesign", "ECMAScript.Lucide", "ECMAScript.Style"
+        "ECMAScript.VueRoute", "ECMAScript.Vue.Devtools", "ECMAScript.Style"
     ];
 
     public static void Run(string[] args)

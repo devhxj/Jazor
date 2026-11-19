@@ -32,10 +32,8 @@ ECMAScript ecosystem layer:
 | `src/ECMAScript.Vue` | Vue 3 core type bindings |
 | `src/ECMAScript.VueContract` | Vue component contracts, descriptors, and slot metadata attributes |
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
-| `src/ECMAScript.Vuetify` | Vuetify component wrappers (props, events, slots, value types) |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
 | `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |
-| `src/ECMAScript.Lucide` | Supported tree-shakeable Lucide icon bindings |
 | `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `VueDraggable`, `FilePond`, `WangEditor`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real RazorVue consumer evidence |
 
 ASP.NET Core integration layer:
@@ -71,7 +69,7 @@ Run from the repository root unless noted:
 
 - `dotnet restore Jazor.slnx` restores NuGet packages for the solution projects.
 - `dotnet build Jazor.slnx` builds the full solution using the .NET 11 GA SDK selected by `global.json`; native unions still require C# preview language mode.
-- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Vue Data UI, Lucide, Pinia, Pinia.Testing, VueRoute, P3/Monaco binding, Jolt, and Emit suites.
+- `dotnet run --file scripts/csharp/test-dotnet.cs` builds once and runs the current compiler, CLR, Style, Devtools, Pinia, Pinia.Testing, VueRoute, P3/Monaco binding, Jolt, and Emit suites.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` runs the compiler regression suite.
 - `dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj` runs the emit and bundle regression suite.
 - `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` runs one compiler test class.

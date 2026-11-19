@@ -98,12 +98,9 @@ public sealed partial class SdkIntegrationTests
         var package = await LocalPackage.Value;
         var packageNuspecs = new[]
         {
-            (package.VuetifyPackagePath, "ECMAScript.Vuetify.nuspec"),
             (package.VueRoutePackagePath, "ECMAScript.VueRoute.nuspec"),
             (package.PiniaPackagePath, "ECMAScript.Pinia.nuspec"),
             (package.PiniaTestingPackagePath, "ECMAScript.Pinia.Testing.nuspec"),
-            (package.TDesignPackagePath, "ECMAScript.TDesign.nuspec"),
-            (package.ElementPlusPackagePath, "ECMAScript.ElementPlus.nuspec")
         };
 
         foreach (var (packagePath, entryName) in packageNuspecs)
@@ -229,24 +226,6 @@ public sealed partial class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Packages")]
-    public async Task CreateLocalPackage_IncludesVuetifyAuthoringPackage()
-    {
-        var package = await LocalPackage.Value;
-
-        using var archive = ZipFile.OpenRead(package.VuetifyPackagePath);
-        var entryNames = archive.Entries
-            .Select(static entry => entry.FullName.Replace('\\', '/'))
-            .ToArray();
-        var nuspec = ReadPackageEntryText(package.VuetifyPackagePath, "ECMAScript.Vuetify.nuspec");
-
-        CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.Vuetify.dll");
-        CollectionAssert.Contains(entryNames, "ECMAScript.Vuetify.nuspec");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
-        StringAssert.Contains(nuspec, "<dependency id=\"ECMAScript.Vue\"");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesVueRouteAuthoringPackage()
     {
         var package = await LocalPackage.Value;
@@ -303,44 +282,6 @@ public sealed partial class SdkIntegrationTests
 
     [TestMethod]
     [TestCategory("Consumer.Packages")]
-    public async Task CreateLocalPackage_IncludesTDesignAuthoringPackage()
-    {
-        var package = await LocalPackage.Value;
-
-        using var archive = ZipFile.OpenRead(package.TDesignPackagePath);
-        var entryNames = archive.Entries
-            .Select(static entry => entry.FullName.Replace('\\', '/'))
-            .ToArray();
-        var nuspec = ReadPackageEntryText(package.TDesignPackagePath, "ECMAScript.TDesign.nuspec");
-
-        CollectionAssert.Contains(entryNames, "lib/net11.0/ECMAScript.TDesign.dll");
-        CollectionAssert.Contains(entryNames, "ECMAScript.TDesign.nuspec");
-        StringAssert.Contains(nuspec, "<dependency id=\"Jazor\"");
-        StringAssert.Contains(nuspec, "<dependency id=\"ECMAScript.Vue\"");
-        StringAssert.Contains(nuspec, "<frameworkReference name=\"Microsoft.AspNetCore.App\" />");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Packages")]
-    public async Task CreateLocalPackage_ElementPlusDeclaresPublicAssemblyDependencies()
-    {
-        var package = await LocalPackage.Value;
-        var nuspec = ReadPackageEntryText(package.ElementPlusPackagePath, "ECMAScript.ElementPlus.nuspec");
-
-        StringAssert.Contains(
-            nuspec,
-            "<dependency id=\"ECMAScript.VueRoute\" version=\"",
-            "ElementPlus exposes Vue Router types and must carry the matching package dependency.");
-        Assert.IsFalse(
-            Regex.IsMatch(
-                nuspec,
-                "<dependency id=\"ECMAScript\\.VueRoute\"[^>]*exclude=",
-                RegexOptions.CultureInvariant),
-            "VueRoute's resource locator must remain transitive for ElementPlus consumers.");
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Packages")]
     public async Task CreateLocalPackage_IncludesSelfContainedBrowserAssets()
     {
         var package = await LocalPackage.Value;
@@ -367,12 +308,6 @@ public sealed partial class SdkIntegrationTests
             "jazor/ecmascript/clr/System/RuntimeModule.js",
             "jazor/ecmascript/clr/System/StringModule.js");
         AssertPackageEntries(
-            package.VuetifyPackagePath,
-            "lib/net11.0/ECMAScript.Vuetify.dll",
-            "buildTransitive/ECMAScript.Vuetify.targets",
-            "jazor/vuetify/manifest.json",
-            "jazor/vuetify/licenses/LICENSE.md");
-        AssertPackageEntries(
             package.VueRoutePackagePath,
             "lib/net11.0/ECMAScript.VueRoute.dll",
             "buildTransitive/ECMAScript.VueRoute.targets",
@@ -392,28 +327,13 @@ public sealed partial class SdkIntegrationTests
             "buildTransitive/ECMAScript.Pinia.Testing.targets",
             "jazor/pinia-testing/manifest.json",
             "jazor/pinia-testing/licenses/LICENSE");
-        AssertPackageEntries(
-            package.TDesignPackagePath,
-            "lib/net11.0/ECMAScript.TDesign.dll",
-            "buildTransitive/ECMAScript.TDesign.targets",
-            "jazor/tdesign-vue-next/manifest.json",
-            "jazor/tdesign-vue-next/licenses/LICENSE");
-        AssertPackageEntries(
-            package.ElementPlusPackagePath,
-            "lib/net11.0/ECMAScript.ElementPlus.dll",
-            "buildTransitive/ECMAScript.ElementPlus.targets",
-            "jazor/element-plus/manifest.json",
-            "jazor/element-plus/licenses/LICENSE");
 
         foreach (var (packagePath, libraryId) in new[]
                  {
                      (package.VuePackagePath, "vue3"),
-                     (package.VuetifyPackagePath, "vuetify"),
                      (package.VueRoutePackagePath, "vue-router"),
                      (package.PiniaPackagePath, "pinia"),
                      (package.PiniaTestingPackagePath, "pinia-testing"),
-                     (package.TDesignPackagePath, "tdesign-vue-next"),
-                     (package.ElementPlusPackagePath, "element-plus")
                  })
         {
             using var bindingArchive = ZipFile.OpenRead(packagePath);
@@ -467,34 +387,6 @@ public sealed partial class SdkIntegrationTests
                 piniaArchive.Entries.Any(entry =>
                     entry.FullName.Replace('\\', '/').StartsWith("jazor/pinia/dist/", StringComparison.OrdinalIgnoreCase)));
         }
-    }
-
-    [TestMethod]
-    [TestCategory("Consumer.Packages")]
-    public async Task CreateLocalPackage_TDesignManifest_DeclaresOnlyPackagedAssetsAndVue()
-    {
-        var package = await LocalPackage.Value;
-        using var manifest = JsonDocument.Parse(ReadPackageEntryText(
-            package.TDesignPackagePath,
-            "jazor/tdesign-vue-next/manifest.json"));
-
-        var root = manifest.RootElement;
-        Assert.AreEqual("tdesign-vue-next", root.GetProperty("libraryId").GetString());
-        Assert.AreEqual("1.20.7", root.GetProperty("version").GetString());
-        var entry = root.GetProperty("imports").GetProperty("tdesign-vue-next/es/index.mjs");
-        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("path").GetString());
-        Assert.AreEqual("tdesign-vue-next/es/index.mjs", entry.GetProperty("path").GetString());
-        Assert.AreEqual(">=3.1.0", root.GetProperty("requires").GetProperty("vue3").GetString());
-        Assert.IsFalse(entry.TryGetProperty("stylesheetImports", out _));
-        using (var tdesignArchive = ZipFile.OpenRead(package.TDesignPackagePath))
-        {
-            CollectionAssert.Contains(
-                tdesignArchive.Entries.Select(static entry => entry.FullName.Replace('\\', '/')).ToArray(),
-                "jazor/tdesign-vue-next/licenses/LICENSE");
-        }
-        Assert.IsFalse(
-            ZipFile.OpenRead(package.TDesignPackagePath).Entries.Any(entry =>
-                entry.FullName.Replace('\\', '/').StartsWith("jazor/tdesign-vue-next/dist/", StringComparison.OrdinalIgnoreCase)));
     }
 
     [TestMethod]
@@ -2744,12 +2636,9 @@ public sealed partial class SdkIntegrationTests
 
         var packages = new[]
         {
-            new DebugPackageProject("ECMAScript.Vuetify", "ECMAScript.Vuetify", "net11.0"),
             new DebugPackageProject("ECMAScript.VueRoute", "ECMAScript.VueRoute", "net11.0"),
             new DebugPackageProject("ECMAScript.Pinia", "ECMAScript.Pinia", "net11.0"),
             new DebugPackageProject("ECMAScript.Pinia.Testing", "ECMAScript.Pinia.Testing", "net11.0"),
-            new DebugPackageProject("ECMAScript.TDesign", "ECMAScript.TDesign", "net11.0"),
-            new DebugPackageProject("ECMAScript.ElementPlus", "ECMAScript.ElementPlus", "net11.0")
         };
 
         foreach (var package in packages)
@@ -2773,12 +2662,9 @@ public sealed partial class SdkIntegrationTests
             packageOutputDirectory,
             core.PackagePath,
             core.VuePackagePath,
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Vuetify", core.PackageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.VueRoute", core.PackageVersion),
             GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia", core.PackageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", core.PackageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.TDesign", core.PackageVersion),
-            GetPackagePath(packageOutputDirectory, "ECMAScript.ElementPlus", core.PackageVersion));
+            GetPackagePath(packageOutputDirectory, "ECMAScript.Pinia.Testing", core.PackageVersion));
     }
 
     private static void AssertPackageEntries(string packagePath, params string[] expectedPaths)
@@ -3142,261 +3028,6 @@ public sealed partial class SdkIntegrationTests
                 failures: smokeFailures()
               });
             }
-            """);
-    }
-
-    private static string CreateExternalNativeTDesignRazorConsumerProject(string projectRoot)
-    {
-        Directory.CreateDirectory(projectRoot);
-
-        var projectPath = Path.Combine(projectRoot, "ExternalNativeTDesignReleaseConsumer.csproj");
-        WriteFile(
-            projectPath,
-            """
-            <Project Sdk="Microsoft.NET.Sdk.Razor">
-              <PropertyGroup>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>net11.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings>
-                <Nullable>enable</Nullable>
-                <LangVersion>preview</LangVersion>
-                <RazorLangVersion>11.0</RazorLangVersion>
-                <UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-                <JazorMode>release</JazorMode>
-              </PropertyGroup>
-
-              <ItemGroup>
-                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
-                <PackageReference Include="ECMAScript.TDesign" Version="$(JazorPackageVersion)" />
-              </ItemGroup>
-
-              <ItemGroup>
-                <FrameworkReference Include="Microsoft.AspNetCore.App" />
-              </ItemGroup>
-            </Project>
-            """);
-
-        WriteFile(
-            Path.Combine(projectRoot, "Program.cs"),
-            """
-            namespace ExternalNativeTDesignReleaseConsumer;
-
-            internal static class Program
-            {
-                private static void Main()
-                {
-                }
-            }
-            """);
-
-        WriteFile(
-            Path.Combine(projectRoot, "_Imports.razor"),
-            """
-            @using ECMAScript.TDesign
-            """);
-
-        WriteFile(
-            Path.Combine(projectRoot, "TDesignAdmin.razor.cs"),
-            """
-            using ECMAScript;
-            using ECMAScript.TDesign;
-            using Microsoft.AspNetCore.Components;
-            using Microsoft.AspNetCore.Components.Web;
-            using static ECMAScript.Vue;
-
-            namespace ExternalNativeTDesignReleaseConsumer;
-
-            public sealed record TaskRow(int Id, string Title);
-
-            public sealed record TaskDraft
-            {
-                public string Title { get; set; } = "Draft task";
-            }
-
-            [ECMAScriptModule("./components/tdesign-admin.js")]
-            public partial class TDesignAdmin : ComponentBase, IVueComponent
-            {
-                private TaskDraft Draft { get; } = new() { Title = "Draft task" };
-                private int SavedCount { get; set; }
-                private TaskRow[] Rows { get; } = [new(1, "Release package task")];
-
-                private TPrimaryTableCol<TaskRow>[] Columns { get; } =
-                [
-                    new()
-                    {
-                        ColKey = "title",
-                        Title = "Title",
-                        Cell = "Title"
-                    }
-                ];
-
-                private string StatusText => $"{Draft.Title}:{SavedCount}";
-
-                private void Save(MouseEvent context)
-                {
-                    SavedCount++;
-                }
-
-                private void Submit(TSubmitContext<TaskDraft> context)
-                {
-                    SavedCount++;
-                }
-            }
-            """);
-
-        WriteFile(
-            Path.Combine(projectRoot, "TDesignAdmin.razor"),
-            """
-            <TForm FormData="TaskDraft" Data="@Draft" OnSubmit="@Submit">
-                <TFormItem LabelValue="Title" Name="title">
-                    <TInput T="string" Name="title" @bind-Value="Draft.Title" @bind-Value:event="OnChange" />
-                </TFormItem>
-            </TForm>
-            <TButton Theme="@TButtonThemeValue.Primary" OnClick="@Save">Save task</TButton>
-            <TPrimaryTable T="TaskRow" Data="@Rows" Columns="@Columns" RowKey="Id" />
-            <span id="tdesign-status">@StatusText</span>
-            """);
-
-        WriteFile(
-            Path.Combine(projectRoot, "Bootstrap.cs"),
-            """
-            using System.ComponentModel;
-            using ECMAScript;
-            using static ECMAScript.Vue;
-
-            namespace ExternalNativeTDesignReleaseConsumer;
-
-            [ECMAScript("./components/tdesign-admin.js")]
-            [Description("@#")]
-            internal static class TDesignAdminModule
-            {
-            #pragma warning disable CS0626 // The generated ECMAScript module supplies this export in the browser.
-                [ECMAScriptName("default")]
-                public extern static IVueComponent Default { get; }
-            #pragma warning restore CS0626
-            }
-
-            [ECMAScriptModule("app.mjs")]
-            public static class Bootstrap
-            {
-                private static readonly bool started = Start();
-
-                private static bool Start()
-                {
-                    CreateApp(TDesignAdminModule.Default).Mount("#app");
-                    return true;
-                }
-            }
-            """);
-
-        return projectPath;
-    }
-
-    private static string CreateExternalNativeElementPlusRazorConsumerProject(string projectRoot)
-    {
-        Directory.CreateDirectory(projectRoot);
-        var projectPath = Path.Combine(projectRoot, "ExternalNativeElementPlusReleaseConsumer.csproj");
-        WriteFile(projectPath, """
-            <Project Sdk="Microsoft.NET.Sdk.Razor">
-              <PropertyGroup>
-                <OutputType>Exe</OutputType><TargetFramework>net11.0</TargetFramework>
-                <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><LangVersion>preview</LangVersion>
-                <RazorLangVersion>11.0</RazorLangVersion><UseRazorSourceGenerator>true</UseRazorSourceGenerator>
-                <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-                <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)Generated</CompilerGeneratedFilesOutputPath>
-                <JazorMode>release</JazorMode>
-              </PropertyGroup>
-              <ItemGroup>
-                <PackageReference Include="Jazor" Version="$(JazorPackageVersion)" />
-                <PackageReference Include="ECMAScript.Vue" Version="$(JazorPackageVersion)" PrivateAssets="all" />
-                <PackageReference Include="ECMAScript.ElementPlus" Version="$(JazorPackageVersion)" />
-              </ItemGroup>
-              <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" /></ItemGroup>
-            </Project>
-            """);
-        WriteFile(Path.Combine(projectRoot, "Program.cs"), "namespace ExternalNativeElementPlusReleaseConsumer; internal static class Program { private static void Main() { } }");
-        WriteFile(Path.Combine(projectRoot, "_Imports.razor"), "@using ECMAScript.ElementPlus");
-        WriteFile(Path.Combine(projectRoot, "ElementPlusAdmin.razor.cs"), """
-            using ECMAScript; using ECMAScript.ElementPlus; using Microsoft.AspNetCore.Components; using static ECMAScript.Vue;
-            namespace ExternalNativeElementPlusReleaseConsumer;
-            [ECMAScriptModule("./components/element-plus-admin.js")]
-            public partial class ElementPlusAdmin : ComponentBase, IVueComponent
-            {
-                private VueStringNumberValue? Value { get; set; } = "Initial";
-                private int SavedCount { get; set; }
-                private string StatusText => $"{Value}:{SavedCount}";
-                private void Save() => SavedCount++;
-            }
-            """);
-        WriteFile(Path.Combine(projectRoot, "ElementPlusAdmin.razor"), """
-            <ElInput @bind-ModelValue="Value" Name="title" />
-            <ElButton Type="ElButtonType.Primary" OnClick="Save">Save value</ElButton>
-            <ElSelect Placeholder="Select value">
-                <ElOption Label="Initial" Value="Initial" />
-                <ElOption Label="Edited" Value="Edited" />
-            </ElSelect>
-            <ElTooltip Content="Element Plus tooltip">
-                <ElButton>Hover target</ElButton>
-            </ElTooltip>
-            <ElDropdown>
-                <ChildContent>
-                    <ElButton>Dropdown target</ElButton>
-                </ChildContent>
-                <Dropdown>
-                    <ElDropdownMenu>
-                        <ElDropdownItem Command="open">Open</ElDropdownItem>
-                    </ElDropdownMenu>
-                </Dropdown>
-            </ElDropdown>
-            <span id="element-plus-status">@StatusText</span>
-            """);
-        WriteFile(Path.Combine(projectRoot, "Bootstrap.cs"), """
-            using System.ComponentModel; using ECMAScript; using static ECMAScript.Vue;
-            namespace ExternalNativeElementPlusReleaseConsumer;
-            [ECMAScript("./components/element-plus-admin.js")][Description("@#")]
-            internal static class ElementPlusAdminModule
-            {
-                #pragma warning disable CS0626
-                [ECMAScriptName("default")] public extern static IVueComponent Default { get; }
-                #pragma warning restore CS0626
-            }
-            [ECMAScriptModule("app.mjs")] public static class Bootstrap
-            {
-                private static readonly bool started = Start();
-                private static bool Start() { CreateApp(ElementPlusAdminModule.Default).Mount("#app"); return true; }
-            }
-            """);
-        return projectPath;
-    }
-
-    private static void CreateReleaseElementPlusBrowserHarness(string outputRoot, string harnessRoot)
-    {
-        CopyDirectory(outputRoot, Path.Combine(harnessRoot, "jazor"), includeGeneratedAssets: true);
-        WriteFile(Path.Combine(harnessRoot, "index.html"), $"""
-            <!doctype html><html><head><meta charset="utf-8">{BuildStylesheetLinks(outputRoot)}<script>
-            window.__jazorSmokeFailures=[]; addEventListener("error",e=>window.__jazorSmokeFailures.push(e.message||"error")); addEventListener("unhandledrejection",e=>window.__jazorSmokeFailures.push(String(e.reason||"rejection")));
-            </script></head><body><div id="app"></div><script type="module" src="./jazor/dist/bundle.js"></script><script type="module" src="./smoke.mjs"></script></body></html>
-            """);
-        WriteFile(Path.Combine(harnessRoot, "smoke.mjs"), """
-            function finish(payload){const bytes=new TextEncoder().encode(JSON.stringify(payload));let b="";for(const x of bytes)b+=String.fromCharCode(x);document.documentElement.setAttribute("data-jazor-smoke",btoa(b));}
-            async function waitFor(s){for(let i=0;i<80;i++){const e=document.querySelector(s);if(e)return e;await new Promise(r=>setTimeout(r,25));}throw Error("Timed out: "+s);}
-            try {
-              const status = await waitFor('#element-plus-status');
-              const input = await waitFor('input');
-              const button = await waitFor('button');
-              const initialStatus = status.textContent;
-              input.value = 'Edited';
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-              await new Promise(r => setTimeout(r, 50));
-              const boundStatus = status.textContent;
-              button.click();
-              await new Promise(r => setTimeout(r, 50));
-              const savedStatus = status.textContent;
-              finish({ok:true,initialStatus,boundStatus,savedStatus,failures:window.__jazorSmokeFailures||[]});
-            } catch(error){finish({ok:false,error:String(error),bodyText:document.body?.textContent||"",failures:window.__jazorSmokeFailures||[]});}
             """);
     }
 
@@ -4752,157 +4383,6 @@ public sealed partial class SdkIntegrationTests
             """);
 
         return projectPath;
-    }
-
-    private static void CreateReleaseTDesignBrowserHarness(string outputRoot, string harnessRoot)
-    {
-        var harnessJazorRoot = Path.Combine(harnessRoot, "jazor");
-        CopyDirectory(outputRoot, harnessJazorRoot, includeGeneratedAssets: true);
-
-        WriteFile(
-            Path.Combine(harnessRoot, "index.html"),
-            $$"""
-            <!doctype html>
-            <html lang="en">
-              <head>
-                <meta charset="utf-8">
-                <title>Jazor RazorVue native TDesign browser smoke</title>
-                {{BuildStylesheetLinks(outputRoot)}}
-                <script>
-                  window.__jazorSmokeFailures = [];
-                  (function () {
-                    function formatArg(value) {
-                      if (value instanceof Error) {
-                        return value.stack || value.message;
-                      }
-
-                      if (typeof value === "string") {
-                        return value;
-                      }
-
-                      try {
-                        return JSON.stringify(value);
-                      } catch {
-                        return String(value);
-                      }
-                    }
-
-                    function record(kind, values) {
-                      window.__jazorSmokeFailures.push(kind + ": " + Array.from(values).map(formatArg).join(" "));
-                    }
-
-                    const originalError = console.error.bind(console);
-                    const originalWarn = console.warn.bind(console);
-                    console.error = function (...args) {
-                      record("console.error", args);
-                      originalError(...args);
-                    };
-                    console.warn = function (...args) {
-                      record("console.warn", args);
-                      originalWarn(...args);
-                    };
-                    window.addEventListener("error", function (event) {
-                      record("error", [event.message || "unknown"]);
-                    });
-                    window.addEventListener("unhandledrejection", function (event) {
-                      record("unhandledrejection", [event.reason || "unknown"]);
-                    });
-                  })();
-                </script>
-              </head>
-              <body>
-                <div id="app"></div>
-                <script type="module" src="./jazor/dist/bundle.js"></script>
-                <script type="module" src="./smoke.mjs"></script>
-              </body>
-            </html>
-            """);
-
-        WriteFile(
-            Path.Combine(harnessRoot, "smoke.mjs"),
-            """
-            function bodyText() {
-              return document.body ? (document.body.textContent || "") : "";
-            }
-
-            function smokeFailures() {
-              return Array.isArray(window.__jazorSmokeFailures)
-                ? [...window.__jazorSmokeFailures]
-                : [];
-            }
-
-            function encodeUtf8Base64(value) {
-              const bytes = new TextEncoder().encode(value);
-              let binary = "";
-              for (const byte of bytes) {
-                binary += String.fromCharCode(byte);
-              }
-
-              return btoa(binary);
-            }
-
-            function finish(payload) {
-              document.documentElement.setAttribute(
-                "data-jazor-smoke",
-                encodeUtf8Base64(JSON.stringify(payload)));
-            }
-
-            function assertBodyContains(text, expected) {
-              if (!text.includes(expected)) {
-                throw new Error(`Expected browser body to contain '${expected}', but saw '${text}'.`);
-              }
-            }
-
-            async function waitFor(selector) {
-              for (let attempt = 0; attempt < 80; attempt++) {
-                const element = document.querySelector(selector);
-                if (element) {
-                  return element;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 25));
-              }
-
-              throw new Error(`Timed out waiting for '${selector}'.`);
-            }
-
-            try {
-              const input = await waitFor('input[name="title"]');
-              const button = await waitFor("button");
-              await new Promise(resolve => setTimeout(resolve, 50));
-
-              const initialStatus = document.querySelector("#tdesign-status")?.textContent || "";
-              assertBodyContains(initialStatus, "Draft task:0");
-
-              const inputValue = "Release package task";
-              const valueSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
-              valueSetter.call(input, inputValue);
-              input.dispatchEvent(new Event("input", { bubbles: true }));
-              await new Promise(resolve => setTimeout(resolve, 50));
-              const boundStatus = document.querySelector("#tdesign-status")?.textContent || "";
-              assertBodyContains(boundStatus, "Release package task:0");
-
-              button.click();
-              await new Promise(resolve => setTimeout(resolve, 100));
-              const savedStatus = document.querySelector("#tdesign-status")?.textContent || "";
-              assertBodyContains(savedStatus, "Release package task:1");
-
-              finish({
-                ok: true,
-                initialStatus,
-                boundStatus,
-                savedStatus,
-                failures: smokeFailures()
-              });
-            } catch (error) {
-              finish({
-                ok: false,
-                error: error instanceof Error ? (error.stack || error.message) : String(error),
-                bodyText: bodyText(),
-                failures: smokeFailures()
-              });
-            }
-            """);
     }
 
     private static void CreateReleaseElementReferenceBrowserHarness(string outputRoot, string harnessRoot)
@@ -6863,12 +6343,9 @@ public sealed partial class SdkIntegrationTests
         string PackageOutputDirectory,
         string PackagePath,
         string VuePackagePath,
-        string VuetifyPackagePath,
         string VueRoutePackagePath,
         string PiniaPackagePath,
-        string PiniaTestingPackagePath,
-        string TDesignPackagePath,
-        string ElementPlusPackagePath);
+        string PiniaTestingPackagePath);
 
     private sealed record LocalReleasePackageFixture(
         string RepoRoot,

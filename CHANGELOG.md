@@ -2,6 +2,11 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## Unreleased
+
+- Vuetify、TDesign、Element Plus、Vue Data UI 和 Lucide 的组件包迁至 [RazorVue](https://github.com/devhxj/RazorVue#compatibility)。NuGet 包 ID 和 C# 命名空间保持原样。升级时按 RazorVue 兼容性表选择 SDK 和组件包版本。
+- The five Razor component binding packages are maintained and released by [RazorVue](https://github.com/devhxj/RazorVue#compatibility). Use the SDK and component versions listed in its compatibility table.
+
 ## 2026-11-19
 
 ### Jazor 2.1.0-preview.6

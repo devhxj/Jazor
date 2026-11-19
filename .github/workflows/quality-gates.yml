@@ -22,9 +22,7 @@ on:
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
-      - 'scripts/csharp/verify-vue-binding-contracts.cs'
       - 'scripts/csharp/verify-binding-documentation.cs'
-      - 'docs/04-roadmap/binding-contract-baseline.json'
       - 'Jazor.slnx'
       - 'Directory.*.props'
       - 'Directory.*.targets'
@@ -42,7 +40,6 @@ on:
       - 'scripts/csharp/inspect-public-api.cs'
       - 'scripts/csharp/compare-public-api.cs'
       - 'scripts/csharp/verify-typed-bootstrap.cs'
-      - 'scripts/csharp/verify-vue-binding-contracts.cs'
       - 'scripts/csharp/verify-binding-documentation.cs'
       - 'Jazor.slnx'
       - 'Directory.*.props'
@@ -82,10 +79,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-
-      - name: Restore Vuetify generator runtime
-        shell: pwsh
-        run: dotnet run --file ./scripts/csharp/restore-node-project.cs -- src/ECMAScript.Vue.Generator/vuetify-runtime
 
       - name: Record toolchain matrix
         shell: pwsh
@@ -220,46 +213,6 @@ jobs:
         with:
           name: typed-bootstrap-${{ github.run_attempt }}
           path: ${{ github.workspace }}/artifacts/quality/typed-bootstrap/
-          if-no-files-found: error
-          retention-days: 14
-
-  binding-contracts:
-    name: Vue binding contract gate
-    runs-on: windows-latest
-    steps:
-      - name: Prepare repository-local toolchain directories
-        shell: pwsh
-        run: New-Item -ItemType Directory -Path "${{ github.workspace }}\.tmp\agent-temp", "${{ github.workspace }}\.dotnet\.nuget\packages", "${{ github.workspace }}\.tmp\nuget-http-cache", "${{ github.workspace }}\.tmp\nodeapi-store", "${{ github.workspace }}\.tmp\npm-cache" -Force | Out-Null
-
-      - name: Checkout tested ref
-        uses: actions/checkout@v4
-        with:
-          clean: false
-          ref: ${{ inputs.release_ref || github.ref }}
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      - name: Restore Vuetify generator runtime
-        shell: pwsh
-        run: dotnet run --file ./scripts/csharp/restore-node-project.cs -- src/ECMAScript.Vue.Generator/vuetify-runtime
-
-      - name: Verify generated binding contracts
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Path artifacts/quality/binding-contracts -Force | Out-Null
-          dotnet run --file ./scripts/csharp/verify-vue-binding-contracts.cs -- --report "${{ github.workspace }}/artifacts/quality/binding-contracts/report.json" --baseline "${{ github.workspace }}/docs/04-roadmap/binding-contract-baseline.json" --fail-on-baseline-drift 2>&1 |
-            Tee-Object -FilePath artifacts/quality/binding-contracts/report.txt
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Upload binding contract evidence
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: binding-contracts-${{ github.run_attempt }}
-          path: artifacts/quality/binding-contracts/
           if-no-files-found: error
           retention-days: 14
 

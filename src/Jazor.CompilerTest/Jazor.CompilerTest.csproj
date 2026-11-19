@@ -18,9 +18,6 @@
     <ProjectReference Include="..\ECMAScript.Vue\ECMAScript.Vue.csproj" />
     <ProjectReference Include="..\ECMAScript.Pinia\ECMAScript.Pinia.csproj" />
     <ProjectReference Include="..\ECMAScript.VueRoute\ECMAScript.VueRoute.csproj" />
-    <ProjectReference Include="..\ECMAScript.TDesign\ECMAScript.TDesign.csproj" />
-    <ProjectReference Include="..\ECMAScript.ElementPlus\ECMAScript.ElementPlus.csproj" />
-    <ProjectReference Include="..\ECMAScript.Vuetify\ECMAScript.Vuetify.csproj" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

@@ -22,9 +22,6 @@ var testLanes = new[]
         MinimumPassedTests: 10_000,
         [
             new VueBindingTarget("vue3", "ECMAScript.Vue", "net11.0"),
-            new VueBindingTarget("vuetify", "ECMAScript.Vuetify", "net11.0"),
-            new VueBindingTarget("element-plus", "ECMAScript.ElementPlus", "net11.0"),
-            new VueBindingTarget("tdesign", "ECMAScript.TDesign", "net11.0")
         ]),
     new VueBindingTestLane(
         "devtools",
@@ -32,18 +29,6 @@ var testLanes = new[]
         "vue-bindings-devtools.trx",
         MinimumPassedTests: 10,
         [new VueBindingTarget("devtools", "ECMAScript.Vue.Devtools", "net11.0")]),
-    new VueBindingTestLane(
-        "vue-data-ui",
-        "src/ECMAScript.VueDataUi.Test/ECMAScript.VueDataUi.Test.csproj",
-        "vue-bindings-dataui.trx",
-        MinimumPassedTests: 6,
-        [new VueBindingTarget("vue-data-ui", "ECMAScript.VueDataUi", "net11.0")]),
-    new VueBindingTestLane(
-        "lucide",
-        "src/ECMAScript.Lucide.Test/ECMAScript.Lucide.Test.csproj",
-        "vue-bindings-lucide.trx",
-        MinimumPassedTests: 4,
-        [new VueBindingTarget("lucide", "ECMAScript.Lucide", "net11.0")]),
     new VueBindingTestLane(
         "pinia",
         "src/ECMAScript.Pinia.Test/ECMAScript.Pinia.Test.csproj",

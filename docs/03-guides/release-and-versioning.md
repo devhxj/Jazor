@@ -22,7 +22,7 @@
 
 正式版后的每次发布仍需完成[当前状态](../04-roadmap/current-status.md)列出的质量门禁、发布消费者门禁与绑定审计，并更新 CHANGELOG；公共 API 冻结与兼容性要求见[1.0 公共 API 冻结审查](./public-api-freeze.md)。
 
-发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、绑定 contract 与 XML 文档、RazorVue diagnostics、包形状和 SPA/SSR consumer 证据。绑定 contract 报告使用 `docs/04-roadmap/binding-contract-baseline.json`，检测到 inventory 漂移或公开绑定文档缺失时阻断候选。它通过后才进入正式发布工作流。
+发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、共享绑定的 XML 文档、包形状和 SPA/SSR consumer 证据。Razor 组件库的 contract 基线和发布门禁由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。它通过后才进入正式发布工作流。
 
 `1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。正式 API 基线与兼容性检查继续约束后续发布。
 

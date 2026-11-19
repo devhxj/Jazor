@@ -35,8 +35,6 @@ dotnet run --file scripts/csharp/clean-workspace.cs -- --apply
 | Emit 完整 package consumer | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer` |
 | CLR 映射 | `dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj` |
 | Vue Devtools binding | `dotnet test src/ECMAScript.Vue.Devtools.Test/ECMAScript.Vue.Devtools.Test.csproj` |
-| Vue Data UI binding | `dotnet test src/ECMAScript.VueDataUi.Test/ECMAScript.VueDataUi.Test.csproj` |
-| Lucide binding | `dotnet test src/ECMAScript.Lucide.Test/ECMAScript.Lucide.Test.csproj` |
 | 单个编译器类别 | `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj --filter "SemanticWalkerPatternTest"` |
 
 `emit-consumer` 包含真实打包、SDK、NodeApi 与浏览器场景。日常修改应按 fixture 家族选择对应 lane；CI 也以同样的四条 lane 并行执行，避免一个测试进程串行占用全部门禁时间：
@@ -57,7 +55,6 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 | 核心编译器 | 10,000 个通过场景、98% 行覆盖率、97% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
 | Razor-to-Vue | 4,000 个通过场景、90% 行覆盖率、94% 分支覆盖率 | `dotnet run --file scripts/csharp/verify-razorvue-coverage.cs` |
 | Vue 生态绑定 | 每个目标 90% 已审计公共绑定契约 | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
-| Vue 绑定版本漂移 | 三套生成器 `--check`、上游快照版本、原始注释说明和 manifest identity；可归档 schema `1.0` JSON/Markdown 报告，并可用 baseline + `--fail-on-baseline-drift` 阻断 inventory 漂移 | `dotnet run --file scripts/csharp/verify-vue-binding-contracts.cs -- --report .tmp/binding-contracts.json` |
 | 绑定 XML 文档 | 公开声明、枚举值、XML 输出、上游快照和 nuspec 文档文件一致；Release 构建后由质量工作流上传报告 | `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --configuration Release` |
 | RazorVue 构建性能 | clean、incremental、HMR、Release 的可重复时间基线；clean/incremental 另记录模块/source map/manifest/Emit 输出的原始与 gzip 体积和增量产物变化；JSON 旁生成 Markdown 摘要，质量工作流按周归档 3 轮 clean/incremental 趋势 | `dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --samples 3` |
 | 样例业务回归矩阵 | 定时/手动质量门禁串行运行 `RazorVue.Authoring` 与 `JazorAdmin` 的 Release smoke，记录每个场景的退出码、耗时、命令、提交和工具链上下文，并归档 JSON/Markdown 报告；浏览器验证默认启用，本地快速迭代可显式 `--skip-browser` | `dotnet run --file scripts/csharp/verify-sample-regression-matrix.cs -- --report artifacts/quality/sample-regression/report.json` |
@@ -144,6 +141,6 @@ dotnet run --file scripts/csharp/benchmark-razorvue-build.cs -- --consumer-proje
 
 `Basic.Reference.Assemblies.Net110` `1.8.15` 对应 .NET 11 GA 参考程序集（上游提交 “Update .NET 11 to GA”），测试编译与 SDK/运行时保持正式版基线。升级时同步更新 `Net110AssembliesVersion` 和单文件脚本的 `#:package` 版本。`global.json` 禁止选择预发布 SDK；原生 `union` 仍是 C# preview 特性，相关项目继续使用 `<LangVersion>preview</LangVersion>`。
 
-Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 使用 Node 22（浏览器脚本依赖 Node 22 提供的 WebSocket 客户端），`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。本地运行结果不构成跨版本保证。组件库升级还需先通过 `verify-vue-binding-contracts.cs`，再运行发布消费者验证。
+Node 与浏览器的绝对版本由运行器提供；`wiki-verify.yml` 的 Wiki 与发布浏览器 consumer 使用 Node 22（浏览器脚本依赖 Node 22 提供的 WebSocket 客户端），`quality-gates.yml` 与 `wiki-verify.yml` 会上传 `toolchain-matrix.md`，记录每次运行的实际 SDK、Node、Chrome、操作系统和 commit。本地运行结果不构成跨版本保证。五个 Razor 组件库的生成与发布验证见 [RazorVue](https://github.com/devhxj/RazorVue)。
 
 项目内脚本、测试说明和特殊验证路径见 [scripts/csharp README](../../scripts/csharp/README.md)。

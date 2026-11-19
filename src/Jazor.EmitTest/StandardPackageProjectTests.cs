@@ -196,10 +196,6 @@ public sealed class StandardPackageProjectTests
                 Manifest: "ECMAScript.FloatingUi",
                 Specifier: "@floating-ui/vue",
                 Source: "import { useFloating } from '@floating-ui/vue'; console.log(Boolean(useFloating));"),
-            (
-                Manifest: "ECMAScript.Lucide",
-                Specifier: "lucide-vue-next",
-                Source: "import { Circle } from 'lucide-vue-next'; console.log(Boolean(Circle));")
         };
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
 

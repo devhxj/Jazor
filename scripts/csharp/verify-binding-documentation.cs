@@ -24,8 +24,8 @@ var libraries = new[]
 {
     "ECMAScript", "ECMAScript.Contract", "ECMAScript.Vue", "ECMAScript.VueContract",
     "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute",
-    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.Monaco", "ECMAScript.VueDraggable", "ECMAScript.FilePond", "ECMAScript.WangEditor", "ECMAScript.Vue.Devtools", "ECMAScript.VueDataUi", "ECMAScript.Lucide",
-    "ECMAScript.Style", "ECMAScript.ElementPlus", "ECMAScript.Vuetify", "ECMAScript.TDesign",
+    "ECMAScript.DateFns", "ECMAScript.VueUse", "ECMAScript.FloatingUi", "ECMAScript.VeeValidate", "ECMAScript.VueI18n", "ECMAScript.VueQuery", "ECMAScript.Monaco", "ECMAScript.VueDraggable", "ECMAScript.FilePond", "ECMAScript.WangEditor", "ECMAScript.Vue.Devtools",
+    "ECMAScript.Style",
     "Jazor.AspNetCore", "Jazor.AspNetCore.Dev"
 };
 if (Option("--library") is { } selection)

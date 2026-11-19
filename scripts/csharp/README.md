@@ -29,7 +29,6 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `verify-razorvue-coverage.cs` | 执行 RazorVue 覆盖率门槛 |
 | `verify-vue-binding-coverage.cs` | 审核 Vue 生态 binding 的公开契约覆盖 |
 | `run-quality-gate.cs` | 执行单项覆盖率门禁；可用 `--output-directory` 将报告归档到发布候选目录 |
-| `verify-vue-binding-contracts.cs` | 统一校验 Element Plus、Vuetify、TDesign 的生成快照、原始文档与资源 manifest；传入 `--report <path>` 会生成 schema `1.0` 的 JSON 报告及同名 Markdown 摘要，记录组件/export/prop/event/slot inventory 与 fingerprint；配合 `--baseline <report.json> --fail-on-baseline-drift` 可阻断检测到的 inventory 漂移，仓库基线位于 `docs/04-roadmap/binding-contract-baseline.json` |
 | `verify-binding-documentation.cs` | 校验绑定库公开声明、枚举值、XML 输出、上游快照和 nuspec 文档文件；支持 `--configuration`、`--no-build`、`--baseline`、`--library` 与仓库内 `--output-directory` |
 | `benchmark-razorvue-build.cs` | 测量 RazorVue clean、incremental、HMR 和 Release；保留原始日志，解析编译阶段，报告中位数、最大值和最慢样本；支持 `--diagnostics`、`--build-observations`，并统计模块/map/manifest/资源体积 |
 | `write-toolchain-matrix.cs` | 记录当前 commit、global.json SDK、.NET CLI、Node.js、Chrome 和操作系统版本到 Markdown，供兼容矩阵与门禁日志引用 |

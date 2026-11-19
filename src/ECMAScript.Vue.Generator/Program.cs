@@ -2,7 +2,7 @@ namespace ECMAScript.VueGenerator;
 
 internal static class Program
 {
-    public static async Task<int> Main(string[] args)
+    public static int Main(string[] args)
     {
         try
         {
@@ -17,26 +17,8 @@ internal static class Program
                 case ["documentation", .. var commandArgs]:
                     global::BindingDocumentationGenerator.Run(commandArgs);
                     return 0;
-                case ["elementplus", .. var commandArgs]:
-                    global::ElementPlusGenerator.Run(commandArgs);
-                    return 0;
-                case ["vuetify", .. var commandArgs]:
-                    VuetifyCatalogGenerator.Run(commandArgs);
-                    return 0;
-                case ["tdesign", "snapshot", .. var commandArgs]:
-                    await global::TDesignSnapshotGenerator.RunAsync(commandArgs);
-                    return 0;
-                case ["tdesign", "bindings", .. var commandArgs]:
-                    global::TDesignBindingGenerator.Run(commandArgs);
-                    return 0;
-                case ["tdesign", "components", .. var commandArgs]:
-                    global::TDesignComponentGenerator.Run(commandArgs);
-                    return 0;
-                case ["tdesign", "documentation", .. var commandArgs]:
-                    global::TDesignDocumentation.Run(commandArgs);
-                    return 0;
                 default:
-                    Console.Error.WriteLine("Usage: authoring|elementplus|vuetify [--check] | tdesign snapshot|bindings|components [--check|--report] | tdesign documentation <upstream-source.tar.gz>");
+                    Console.Error.WriteLine("Usage: authoring [--check] | documentation [--check] | documentation snapshot <vue-3.5.42.tar.gz>");
                     return 1;
             }
         }
