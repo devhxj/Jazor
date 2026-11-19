@@ -1,6 +1,6 @@
 # 安装与配置
 
-> 面向：使用 Jazor 核心平台、Jolt 或共享生态绑定的应用开发者。
+> 本页说明 Jazor SDK、ECMAScript 绑定与 ASP.NET Core 宿主的包选择及 MSBuild 配置。Jolt CLI 和编辑器的安装步骤见 [Jolt 作者指南](./jolt-authoring.md)。
 >
 > 说明：ECMAScript 自有 MJS 与 `Jazor.Generated.ModuleCatalog` 提供项目源码，`ECMAScript.*` binding 提供 npm/JSR identity 与标准 ESM specifier。最终宿主在 MSBuild 中调用 `Jazor.Emit`，生成标准 `jazor/` 项目并恢复依赖。
 >
@@ -8,9 +8,9 @@
 
 ## 前置条件
 
-当前示例使用已发布的 **2.2.0-preview.1**。Jazor 与 ECMAScript 包使用同一版本，NuGet UI 中请选择“包括预发行版”。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.2.0-preview.1 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1)
+当前正式版本为 **2.2.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.2.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0)
 
-日期、VueUse、浮动定位、表单、国际化、服务端状态和 Monaco 的七个绑定包已可安装，但在补齐 真实浏览器和独立包消费者验证前仍属于 Guidance，不进入当前 Support 矩阵。
+日期、VueUse、浮动定位、表单、国际化、服务端状态和 Monaco 的七个绑定包已可安装，但在补齐真实浏览器和独立包消费者验证前仍属于 Guidance，不进入当前 Support 矩阵。
 
 live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
 
@@ -37,7 +37,7 @@ live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browse
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+  <PackageReference Include="Jazor" Version="2.2.0" />
 </ItemGroup>
 ```
 
@@ -47,17 +47,17 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.DateFns" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.VueUse" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="2.2.0-preview.1" />
-  <PackageReference Include="ECMAScript.Monaco" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Style" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.DateFns" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.VueUse" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.Monaco" Version="2.2.0" />
 </ItemGroup>
 ```
 

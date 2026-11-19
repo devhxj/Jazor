@@ -1,8 +1,19 @@
 # 当前状态
 
-> 当前版本：[2.2.0-preview.1（2026-11-19）](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.2.0（2026-11-20）](https://github.com/devhxj/Jazor/releases/tag/v2.2.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
+
+## Jolt 作者面
+
+| 范围 | 2.2.0 已发布能力 |
+| --- | --- |
+| 编译与构建 | `.jazor` 模板与 C#、本地组件、npm 公开 TypeScript 声明与 ESM、源码映射、Vite 开发与生产构建 |
+| 组件契约 | 类型化参数、回调和插槽，已验收的单泛型参数场景，以及 `<style scoped>` |
+| 编辑器 | VS Code 与 Visual Studio 扩展。语义高亮、补全、诊断、定义、引用、改名、格式化与快捷修复 |
+| 模块导出 | Vue 组件为默认导出，公开静态方法和字段以及公开常量为具名导出 |
+
+运行方式、类型边界及编辑器配置见 [Jolt 作者指南](../03-guides/jolt-authoring.md)。
 
 ## 已交付的核心能力
 
@@ -16,10 +27,6 @@
 | 构建与 SSR 工具链 | 进程内 NodeApi + LibNode + 固定 pnpm API；Vite、Vue SSR 和依赖恢复共享显式资源闭包 | [工具链与迁移](../03-guides/toolchain-migration.md)、[NodeHost](../../src/Jazor.NodeHost/README.md) |
 
 1.3.0 的语法修复包括整数行为、数组和模块默认值、表达式包装及模式 switch 控制流。35 个审计 bug 中，11 项修正运行行为，24 项以源码位置诊断替代错误代码或内部异常；这些诊断不表示完整运行时协议已实现。范围与替代写法见[逐项修复记录](./compiler-syntax-bug-fixes.md)。
-
-## Jolt 作者面
-
-Jolt 是应用主线，覆盖 .jazor 模板、C# 语义、npm 组件声明、VS Code 与 Visual Studio 编辑体验。已发布范围和示例见 [Jolt 作者指南](../03-guides/jolt-authoring.md)。
 
 ## 类型与产品边界
 
@@ -46,7 +53,7 @@ Vue、Vue Router、Pinia、Vue Devtools 与 Style 提供各自 README 声明的�
 | 门禁 | 当前最低要求 | 复现入口 |
 | --- | --- | --- |
 | Compiler | 10,000 个通过场景；行覆盖率 98%，分支覆盖率 97% | `dotnet run --file scripts/csharp/verify-compiler-coverage.cs` |
-| Jolt | 语法和编译回归、隔离包消费、语言服务与浏览器交互 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt` |
+| Jolt | 语法与编译回归、CLI 隔离安装、语言服务、浏览器交互及两套 VSIX 打包 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt`、[工具包验收](../../scripts/csharp/verify-jolt-package.cs)和[发布工作流](../../.github/workflows/nuget-publish-ref.yml) |
 | Vue binding | 每个目标公共 binding contract 审计覆盖率 90% | `dotnet run --file scripts/csharp/verify-vue-binding-coverage.cs` |
 | 绑定一致性 | 共享绑定的公开 API 保留 XML 文档 | `verify-binding-documentation.cs` |
 | 发布交付 | API 兼容性、包形状、隔离 SPA/SSR 消费者与真实浏览器通过 | `verify-release-candidate.cs`、官方 tag workflow |

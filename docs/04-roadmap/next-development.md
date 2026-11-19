@@ -49,15 +49,11 @@ SSR state envelope、认证快照/browser provider、单一显式构造函数的
 
 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 已有源码、测试 lane 和 lockstep 发布。各绑定需要补齐浏览器交互、真实包消费者，以及适用的 SSR、worker 和资源验证。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
 
-## Jolt 组件
+## Jolt 后续验收
 
-当前源码候选已实现后台 npm 初始化、跨文件引用与改名、格式化和快捷修复，以及选定的泛型组件和 `.jazor` 样式隔离场景。平台、编辑器版本和复现入口见候选验收。 [Jolt 编辑器与组件能力实施计划](./jolt-editor-implementation-plan.md#候选验收)
+以真实 Jolt 应用为输入，复现 npm 组件组合、编辑器定位和浏览器交互。组件文件跨目录移动涉及命名空间与 ESM 路径变化，需定义引用更新与产物替换规则后再验收。 [Jolt #138](https://github.com/devhxj/Jazor/issues/138)
 
-一个 `.jazor` 文件定义一个 Vue 组件，HTML 与组件标签直接写在顶层，`@using` 引入命名空间，`@code` 声明 C# 成员。构建从 npm 包的公开类型声明检查调用，从公开 ESM 入口导入组件。 [Issue #138](https://github.com/devhxj/Jazor/issues/138)
-
-Jolt 在 Razor 语言层取得带原文位置的标记与 C# 片段，通过 Roslyn 和 Jazor.Compiler 生成 Vue 渲染模块。项目加载器读取 npm 锁文件和声明，构建与编辑器共用相同的输入。 [Jolt 作者指南](../03-guides/jolt-authoring.md)
-
-验收应用通过父子回调驱动 Reka UI 更新，开发服务器与生产资源均使用浏览器验证。编辑器验证涵盖作者文件诊断和跳转到 npm 声明。本地打包验证检查安装后的 CLI 在隔离项目中构建与打包。正式发布以版本发行记录为准。 [浏览器样例](../../samples/Jolt.Counter/README.md) · [工具包验收](../../scripts/csharp/verify-jolt-package.cs)
+已发布的编辑器、泛型组件和样式能力见 [当前状态](./current-status.md#jolt-作者面)。
 
 ## 写入当前状态的门槛
 

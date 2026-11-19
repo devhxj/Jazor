@@ -2,10 +2,37 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
-## Unreleased
+## 2026-11-20
 
-- Jazor 应用指南和 Wiki 将 Jolt 作为 .jazor 开发入口。Wiki 直接依赖 ECMAScript.Vue。
-- Jazor's application guides and Wiki point to Jolt for .jazor development. The Wiki references ECMAScript.Vue directly.
+### Jazor 2.2.0
+
+中文 | English
+
+#### 新增功能
+
+- Jolt 随 2.2 正式发布。用 `.jazor` 和 C# 编写 Vue 应用，直接使用 npm 包公开的 TypeScript 声明和 ESM 导出。支持类型化参数、回调与插槽、选定的泛型组件和 `<style scoped>`。Vue 组件是默认导出，公开静态方法、字段和公开常量是具名导出。by @devhxj
+- VS Code 和 Visual Studio 2026 扩展提供语义高亮、类型化补全、诊断、定义导航、引用、改名、格式化和快捷修复。by @devhxj
+
+#### 体验优化
+
+- README 和作者指南提供计数器示例、npm 组件及 ES 模块导出写法。安装或升级 `Jazor.Jolt` 到 `2.2.0`，VS Code 使用 `jolt-2.2.0.vsix`，Visual Studio 2026 使用 `Jolt.VisualStudio.vsix`。by @devhxj
+
+#### 迁移说明
+
+- 纯 C# Vue 项目可直接引用 `ECMAScript.Vue`，并将使用的 Jazor 和 ECMAScript 包统一升级至 `2.2.0`。Jazor SDK 已移除旧组件生成器的专用接线。迁入 Jolt 的应用使用 `.jazor` 编写组件，通过 `package.json` 声明 npm 依赖。by @devhxj
+
+New Features
+
+- Jolt ships in the 2.2 stable release. Author Vue applications in C# with `.jazor` and consume public TypeScript declarations and ESM exports from npm packages. Jolt supports typed props, callbacks, slots, selected generic components, and `<style scoped>`. Modules default-export the Vue component and provide named exports for public static methods, fields, and public constants. by @devhxj
+- The VS Code and Visual Studio 2026 extensions provide semantic highlighting, typed completion, diagnostics, navigation, references, rename, formatting, and quick fixes. by @devhxj
+
+Improvements
+
+- The README and authoring guide walk through the counter sample, npm components, and ES module exports. Install or update `Jazor.Jolt` to `2.2.0`. Install `jolt-2.2.0.vsix` for VS Code or `Jolt.VisualStudio.vsix` for Visual Studio 2026. by @devhxj
+
+Migration
+
+- C# Vue projects can reference `ECMAScript.Vue` directly. Upgrade the Jazor and ECMAScript packages together to `2.2.0`. The Jazor SDK has removed its previous component generator integration. Applications moving to Jolt author components in `.jazor` and declare npm dependencies in `package.json`. by @devhxj
 
 ## 2026-11-19
 

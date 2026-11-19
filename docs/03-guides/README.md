@@ -1,21 +1,23 @@
 # 使用与维护指南
 
-本目录面向两类读者：使用 Jazor 构建应用的开发者，以及维护 Jazor 仓库的贡献者。每份指南提供当下可执行的路径，让读者从配置、编写到验证都能找到明确入口；历史背景与阶段任务记录归档于相应文档。
+## 编写应用和模块
 
-| 文档 | 面向读者 | 说明 |
-| --- | --- | --- |
-| [安装与配置](./installation-and-configuration.md) | 应用开发者 | 包选择、MSBuild 输出、SSR 和可选绑定 |
-| [快速开始](./quick-start.md) | 初次使用者 | 从 C# 模块到本地 `.mjs` 产物的最小路径 |
-| [类型、宿主标注与迁移](./type-semantics.md) | 应用与类库作者 | 普通源码、class/record、宿主 union、外部 DLL 和 Analyzer/Compiler 的边界 |
-| [NodeApi 工具链与旧项目迁移](./toolchain-migration.md) | 应用开发者与维护者 | 当前运行条件、旧配置与锁文件迁移、平台和发布验证 |
-| [Jolt 作者指南](./jolt-authoring.md) | Jolt 应用开发者 | `.jazor` 组件、npm 组件和编辑器 |
-| [浏览器互操作](./browser-interop.md) | ECMAScript 应用开发者 | live DOM、精度安全 JSON 和原生文件/拖放 |
-| [开发与测试](./development-and-testing.md) | 仓库维护者 | 构建、测试、覆盖率门槛与脚本约定 |
-| [JS 资源库绑定](./js-resource-binding.md) | 仓库维护者 | 为上游 JS 库新建 `ECMAScript.*` 绑定的上游锁定、入口设计、生成器、C# 契约、测试与门禁接线全流程 |
-| [发版与版本规则](./release-and-versioning.md) | 仓库维护者 | 正式版版本通道、兼容性、发版门禁与 CHANGELOG 规则 |
-| [公共 API 兼容性与冻结基线](./public-api-freeze.md) | 仓库维护者 | 固定机器基线、已审阅移除、候选快照和每次发布的比较流程 |
-| [发布说明规范](./release-notes-format.md) | 仓库维护者与贡献者 | CHANGELOG 与 GitHub Release 的双语分类、条目、署名和发布前检查清单 |
-| [示例](./examples.md) | 应用开发者与维护者 | 示例项目的用途和验证范围 |
-| [文档规范](./documentation-style.md) | 文档维护者 | 目录、命名、写作和历史资料规则 |
+| 任务 | 指南 |
+| --- | --- |
+| 用 `.jazor` 写 Vue 应用 | [Jolt 作者指南](./jolt-authoring.md) |
+| 跟着可运行的应用练习 | [样例](./examples.md) |
+| 把 C# 类库编译成 ECMAScript 模块 | [C# 模块快速开始](./quick-start.md) |
+| 选择 Jazor SDK 和绑定包，配置 MSBuild、发布与 SSR | [安装与配置](./installation-and-configuration.md) |
+| 理解 class、record、宿主 union 和外部 DLL 的行为 | [类型、宿主标注与迁移](./type-semantics.md) |
+| 使用 DOM、JSON 和原生文件 API | [浏览器互操作](./browser-interop.md) |
+| 迁移旧工具链和锁文件 | [NodeApi 工具链与旧项目迁移](./toolchain-migration.md) |
 
-涉及框架集成时，请先阅读[框架集成层](../02-architecture/framework-integrations.md)，确认边界后再进入具体操作。
+## 维护仓库
+
+| 任务 | 指南 |
+| --- | --- |
+| 构建、运行回归和查看测试报告 | [开发与测试](./development-and-testing.md) |
+| 新增或更新 `ECMAScript.*` 绑定 | [JS 资源库绑定](./js-resource-binding.md) |
+| 检查公共 API 签名变化 | [公共 API 兼容性与冻结基线](./public-api-freeze.md) |
+| 检查版本、打包和发布流程 | [发版与版本规则](./release-and-versioning.md) · [发布说明规范](./release-notes-format.md) |
+| 编辑与验证文档 | [文档规范](./documentation-style.md) |

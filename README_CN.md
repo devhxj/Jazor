@@ -4,12 +4,12 @@
 
 <h1>Jazor</h1>
 
-<p><strong>将受支持的 C# 语义编译为确定性 ECMAScript 模块的强类型 .NET 工具链。</strong></p>
+<p><strong>用 Jolt 和 C# 开发 Vue 应用，用 Jazor 将 C# 编译为 ECMAScript 模块。</strong></p>
 
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.2.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.2.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.2.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -19,25 +19,77 @@
   <a href="docs/04-roadmap/current-status.md"><img alt="编译器分支覆盖率至少 97%" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
-<p><a href="docs/03-guides/quick-start.md">快速开始</a> · <a href="docs/README.md">文档</a> · <a href="CHANGELOG.md">更新日志</a></p>
+<p><a href="docs/03-guides/jolt-authoring.md">Jolt 快速开始</a> · <a href="samples/Jolt.Counter/README.md">计数器示例</a> · <a href="docs/README.md">文档</a> · <a href="CHANGELOG.md">更新日志</a></p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
 
 </div>
 
-> Jazor 2.2.0-preview.1 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
+## 运行 Jolt 应用
 
-> 工具链与 SSR 使用进程内 NodeApi、LibNode 和固定 pnpm API。运行条件与升级步骤见[工具链指南](docs/03-guides/toolchain-migration.md)，支持边界与验证入口见[当前状态](docs/04-roadmap/current-status.md)。
+在 Windows 或 glibc Linux（x64 或 ARM64）上安装 .NET 11 SDK。克隆仓库，在仓库根目录运行以下命令。
 
-Emit 和 SSR 通过微软 LibNode 使用 Node.js 26，覆盖 Windows 和 glibc Linux 的 x64、ARM64。从 macOS 或 Windows x86 升级前，请查阅[平台要求和迁移步骤](docs/03-guides/toolchain-migration.md)。
+```sh
+dotnet tool install --global Jazor.Jolt --version 2.2.0
+jolt dev samples/Jolt.Counter
+```
 
-Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
+已安装工具时，使用 `dotnet tool update --global Jazor.Jolt --version 2.2.0`。打开终端打印的网址，点击 **Increment**。子组件通过类型化回调更新父组件的计数及 Reka UI 组件的状态。 [计数器项目](samples/Jolt.Counter/README.md)
 
-**Jolt 是 Jazor 的应用开发工具。** 用 .jazor 编写强类型 Vue 组件，接入 npm 包，在 VS Code 或 Visual Studio 中编辑。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
+在 `.jazor` 文件中编写标记和 C#。
 
-普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
+```razor
+<button @onclick="@Increment">Count: @Count</button>
 
-普通源码类型沿编译入口及源码依赖参与转换，无需逐类型添加 `[ECMAScript]` 许可标注。class 保留构造与实例行为，record 表达结构化对象；宿主标注仅声明实际 JavaScript 绑定和特殊值语义。具体规则与迁移步骤见[类型与宿主标注指南](docs/03-guides/type-semantics.md)。
+@code {
+    private int Count;
+    private void Increment() => Count++;
+}
+```
+
+每个 `.jazor` 文件生成一个 ES 模块，默认导出 Vue 组件，公开静态方法和字段以及公开常量生成具名导出。每个挂载的组件实例持有自己的状态。Jolt 读取 npm 包的公开 TypeScript 声明来检查组件用法，并导入包发布的 ESM 导出。 [组件写法](docs/03-guides/jolt-authoring.md)
+
+### 编辑与构建
+
+| 编辑器 | 扩展 |
+| --- | --- |
+| VS Code | 在扩展菜单中选择 **Install from VSIX**，安装 `jolt-2.2.0.vsix`。 [VS Code 配置](editors/jolt/README.md) |
+| Visual Studio 2026（Windows x64） | 双击 `Jolt.VisualStudio.vsix`，通过 VSIX Installer 安装。 [Visual Studio 配置](editors/jolt-visual-studio/README.md) |
+
+从与 CLI 同一版本的发布页下载扩展，将 `samples/Jolt.Counter` 作为文件夹打开。在 `App.jazor` 中试用语义高亮、类型化补全和转到定义。 [2.2.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0)
+
+`jolt build samples/Jolt.Counter` 将模块和源码映射写入 `samples/Jolt.Counter/.jolt/`。`jolt bundle samples/Jolt.Counter` 将生产资源写入 `samples/Jolt.Counter/dist/`。
+
+## 编译 C# 模块
+
+在 .NET 项目中引用 `Jazor` SDK，即可编译带 `[ECMAScriptModule]` 的类。该包包含编译器、分析器、产物工具和 ASP.NET Core 集成。 [C# 模块快速开始](docs/03-guides/quick-start.md)
+
+```sh
+dotnet add package Jazor --version 2.2.0
+```
+
+| 主题 | 文档 |
+| --- | --- |
+| SDK 配置、产物模式和 ASP.NET Core SSR | [安装与配置](docs/03-guides/installation-and-configuration.md) |
+| 复用 C# 类库和 NuGet 包 | [普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md) |
+| 编译器和产物管线 | [系统架构](docs/01-overview/system-architecture.md) |
+| 支持范围和测试要求 | [当前状态](docs/04-roadmap/current-status.md) |
+
+## 开发 Jazor
+
+在仓库根目录用 [global.json](global.json) 选定的 SDK 执行以下命令。
+
+```sh
+dotnet build Jazor.slnx
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt
+dotnet run --file scripts/csharp/test-dotnet.cs
+```
+
+发布工作流验证 Jolt CLI 的隔离安装、语言服务和浏览器交互，并构建两套 VSIX。 [开发与测试](docs/03-guides/development-and-testing.md)
+
+## 最新发布
+
+Jazor 2.2.0 正式交付 Jolt、两套编辑器扩展和 Jolt 作者指南。 [发布说明](CHANGELOG.md#jazor-220)
 
 ## AI 协作开发
 
@@ -48,152 +100,6 @@ Jazor 核心编译器和 CLR 支持的第一版，以及首批 500 个测试，�
 ## 致谢
 
 Jazor 使用了 [Roslyn](https://github.com/dotnet/roslyn)、[Acornima](https://github.com/adams85/acornima)、[node-api-dotnet](https://github.com/microsoft/node-api-dotnet)、[pnpm](https://github.com/pnpm/pnpm)、[Vite](https://github.com/vitejs/vite) 与 [WebRef](https://github.com/w3c/webref)。早期工作也受益于 Netpack、DenoHost，以及 [WootzJs](https://github.com/kswoll/WootzJs)、[h5](https://github.com/curiosity-ai/h5)、[SharpKit](https://github.com/SharpKit/SharpKit) 等 C# 到 JavaScript 项目。
-
-## 核心模型
-
-```mermaid
-flowchart LR
-    subgraph Core["Jazor 核心平台：C# -> ECMAScript"]
-        CSharp["C# 模块"] --> Roslyn["Roslyn 语义模型"]
-        Roslyn --> Compiler["Jazor.Compiler"]
-        Bindings["CLR 与 ECMAScript 绑定"] --> Compiler
-        Compiler --> Ast["ESTree"] --> Emit["Jazor.Emit"]
-        Emit --> Artifacts["标准 JS 项目、.mjs、源映射与构建输出"]
-    end
-
-    subgraph Jolt["Jolt .jazor 开发"]
-        Jazor[".jazor 和 npm 声明"] --> Roslyn
-        Compiler --> Vue["Vue 组件与源映射"]
-        Vue --> Vite["Vite 应用产物"]
-    end
-```
-
-## 质量门槛
-
-顶部徽标展示持续适用的验收门槛，而非会过期的单次构建结果。仓库通过可复现脚本验证以下最低要求：
-
-- 核心编译器：至少 10,000 个通过的 `IOperation` 场景、98% 行覆盖率和 97% 分支覆盖率。
-- Jolt：隔离 CLI 安装、语言服务协议、两套 VSIX 打包及浏览器交互。
-- Vue 生态绑定：每个目标至少 90% 的已审计公共绑定契约覆盖率。
-
-可在 `scripts/csharp/` 下运行 `verify-compiler-coverage.cs` 或 `verify-vue-binding-coverage.cs` 复现相应门槛。运行 `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` 可验证公共 ECMAScript 和绑定声明保留了 XML 文档、上游源元数据和包 XML 交付。当前范围与测试入口见[当前状态](docs/04-roadmap/current-status.md)。
-
-## 包组成
-
-| 包 | 职责 |
-| --- | --- |
-| `Jazor` | 框架无关的编译器、CLR 契约、分析器、emit 工具、MSBuild 与 ASP.NET Core 集成，可用于普通 ECMAScript 类库 |
-| Jazor.Jolt | .jazor CLI 与语言服务器 |
-| ECMAScript.Vue | 共享的 Vue 3 类型、组件契约与运行时元数据 |
-| `ECMAScript.*` | 框架无关 ECMAScript 绑定、可选 Vue 生态绑定与 CSS-in-JS 类库 |
-
-### 类库形式与直接引用
-
-类库通过以下两种方式之一携带 JavaScript。
-
-| 类库形式 | carrier | 直接引用规则 |
-| --- | --- | --- |
-| JS resource library（`ECMAScript`、Vue、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`pnpm-lock.yaml`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
-| Jazor 类库（`ECMAScript.Style` 或开发者编写的 C# 模块） | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 直接引用 `Jazor`。 |
-
-最终可执行或 Web 宿主运行 Emit 时必须直接引用 `Jazor`。宿主一次收集选中的
-`ModuleCatalog` 模块和 manifest 资源；Debug、Release、SSR、HMR 只是同一依赖闭包的输出投影，
-不是额外的类库形式。
-
-`ModuleCatalog` 是纯 Jazor 的正式程序集生成格式，因为 analysis/source generator 的标准输出是
-C#；它不是遗留兼容载体。
-
-## 安装
-
-纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
-
-```bash
-dotnet add package Jazor --version 2.2.0-preview.1
-```
-
-完整的包选择、输出设置、SSR 配置与生态绑定见[安装与配置](docs/03-guides/installation-and-configuration.md)。
-
-## 第一个模块
-
-使用 `[ECMAScriptModule]` 使 C# 模块进入 JavaScript 发射范围：
-
-```csharp
-using ECMAScript;
-
-namespace MyApp;
-
-[ECMAScriptModule("shared/greetings.mjs")]
-public static class GreetingModule
-{
-    public static string Compose(string name) => $"Hello, {name}";
-}
-```
-
-核心编译器会生成标准的具名导出 ECMAScript 模块。跨模块调用由编译器维护 import，不需要手写 JavaScript。
-
-完整的可运行路径见[快速开始](docs/03-guides/quick-start.md)。
-
-## 输出模式
-
-可执行项目或 Web 宿主通过 MSBuild 选择产物模式：
-
-```xml
-<PropertyGroup>
-  <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
-</PropertyGroup>
-```
-
-| 模式 | 结果 |
-| --- | --- |
-| `none` | 默认值，不写入 Jazor 产物 |
-| `debug` | 标准 JS 项目、可检查的模块和外部 source map；Emit 增量状态写入 `obj` |
-| `release` | 通过项目配置的 JavaScript 构建工具生成生产浏览器产物 |
-
-ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设置 `JazorSSR=true`。详见[产物管线](docs/02-architecture/artifact-pipeline.md)。
-
-## 文档
-
-| 需求 | 入口 |
-| --- | --- |
-| 产品总览 | [docs/README.md](docs/README.md) |
-| 核心编译器架构 | [编译器](docs/02-architecture/compiler.md) |
-| 框架集成规则 | [框架集成层](docs/02-architecture/framework-integrations.md) |
-| 安装、配置与编写 | [使用指南](docs/03-guides/README.md) |
-| 示例 | [示例](docs/03-guides/examples.md) |
-| 当前范围 | [路线图](docs/04-roadmap/current-status.md) |
-| 历史背景 | [演进记录](docs/05-history/evolution.md) |
-| 版本历史 | [CHANGELOG.md](CHANGELOG.md) |
-
-## 开发
-
-使用 [global.json](global.json) 指定的 .NET 11 SDK。在仓库根目录执行：
-
-```bash
-dotnet restore Jazor.slnx
-dotnet build Jazor.slnx
-dotnet run --file scripts/csharp/test-dotnet.cs
-```
-
-常用聚焦测试：
-
-```bash
-dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
-```
-
-仓库自动化使用 `scripts/csharp/` 下的单文件 C# 入口。完整流程见[开发与测试](docs/03-guides/development-and-testing.md)。
-
-## 最新更新
-
-### Jazor 2.2.0-preview.1 · 2026-11-19
-
-- Emit 和 SSR 使用 Node.js 26.13.1，覆盖 Windows 和 glibc Linux 的 x64、ARM64。
-- macOS 和 Windows x86 的 Emit 或 SSR 可迁至受支持平台，或使用上一发行版本。详见[迁移指南](docs/03-guides/toolchain-migration.md)。
-- 使用 Jolt 2.2.0-preview.1 编写 .jazor 组件，并为 VS Code 或 Visual Studio 安装对应的 VSIX。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
-
-版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 

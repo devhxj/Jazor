@@ -2,6 +2,10 @@
 
 > 本页解释当前分层为何形成；当前实现与路线图以现行架构和状态文档为依据。
 
+## 2026-11-19 Jolt 编辑器与组件能力
+
+Jolt 完成后台 npm 声明初始化、跨文件引用和改名、格式化及快捷修复。候选包在 Windows x64 上验证 VS Code 和 Visual Studio 的编辑流程，并在 Chrome 验证本地泛型组件、Reka UI `ListboxVirtualizer`、scoped CSS、热更新和 ES 模块导出。Visual Studio 的实测改名场景覆盖跨文件参数，组件文件改名在 VS Code 中验证。旧实施计划和候选性能数字见 [Git 历史](https://github.com/devhxj/Jazor/blob/v2.2.0-preview.1/docs/04-roadmap/jolt-editor-implementation-plan.md)。发布能力见 [当前状态](../04-roadmap/current-status.md#jolt-作者面)。
+
 ## 2026-11-19 自建 LibNode 归档
 
 微软发布 LibNode 26 原生包后，Jazor 改用微软的 LibNode 和 NodeApi。自建 LibNode 的源码与发布记录保存在 GitHub 归档仓库。 [Libnode](https://github.com/devhxj/Libnode)

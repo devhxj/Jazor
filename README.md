@@ -4,12 +4,12 @@
 
 <h1>Jazor</h1>
 
-<p><strong>A typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules.</strong></p>
+<p><strong>Build Vue applications in C# with Jolt and compile C# modules to ECMAScript with Jazor.</strong></p>
 
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.2.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.2.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.2.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -19,23 +19,77 @@
   <a href="docs/04-roadmap/current-status.md"><img alt="At least 97 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
-<p><a href="docs/03-guides/quick-start.md">Quick start</a> · <a href="docs/README.md">Documentation</a> · <a href="CHANGELOG.md">Changelog</a></p>
+<p><a href="docs/03-guides/jolt-authoring.md">Get started with Jolt</a> · <a href="samples/Jolt.Counter/README.md">Counter example</a> · <a href="docs/README.md">Documentation</a> · <a href="CHANGELOG.md">Changelog</a></p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
 
 </div>
 
-> Jazor 2.2.0-preview.1 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
+## Run a Jolt app
 
-> Tooling and SSR run through in-process NodeApi, LibNode and the fixed pnpm API. The [toolchain guide](docs/03-guides/toolchain-migration.md) defines runtime conditions and upgrade steps; [current status](docs/04-roadmap/current-status.md) identifies support boundaries and verification commands.
+Install the .NET 11 SDK on Windows or glibc Linux (x64 or ARM64). Clone the repository and run these commands from its root.
 
-Emit and SSR use Node.js 26 via Microsoft's LibNode on Windows and glibc Linux x64 and ARM64. See the [platform requirements and migration steps](docs/03-guides/toolchain-migration.md) before upgrading from macOS or Windows x86.
+```sh
+dotnet tool install --global Jazor.Jolt --version 2.2.0
+jolt dev samples/Jolt.Counter
+```
 
-Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
+If the tool is already installed, use `dotnet tool update --global Jazor.Jolt --version 2.2.0`. Open the URL printed in the terminal and click **Increment**. A typed callback updates the parent’s count and the state of a Reka UI component. [Counter project](samples/Jolt.Counter/README.md)
 
-**Jolt is Jazor's application authoring tool.** Write typed Vue components in .jazor, consume npm packages, and use the VS Code or Visual Studio extension. [Start with Jolt](docs/03-guides/jolt-authoring.md)
+A `.jazor` file combines markup and C#.
 
-Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
+```razor
+<button @onclick="@Increment">Count: @Count</button>
+
+@code {
+    private int Count;
+    private void Increment() => Count++;
+}
+```
+
+Each `.jazor` file becomes one ES module. The Vue component is the default export. Public static methods and fields and public constants become named exports. Instance state belongs to each mounted component. Jolt checks npm components against their public TypeScript declarations and imports their published ESM exports. [Component authoring](docs/03-guides/jolt-authoring.md)
+
+### Edit and build
+
+| Editor | Extension |
+| --- | --- |
+| VS Code | Install `jolt-2.2.0.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
+| Visual Studio 2026 on Windows x64 | Open `Jolt.VisualStudio.vsix` with the VSIX Installer. [Visual Studio setup](editors/jolt-visual-studio/README.md) |
+
+Get the CLI and your editor’s VSIX from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor` to try semantic highlighting, typed completion and go to definition. [2.2.0 release](https://github.com/devhxj/Jazor/releases/tag/v2.2.0)
+
+`jolt build samples/Jolt.Counter` writes modules and source maps to `samples/Jolt.Counter/.jolt/`. `jolt bundle samples/Jolt.Counter` writes production assets to `samples/Jolt.Counter/dist/`.
+
+## Compile C# modules
+
+Add the `Jazor` SDK to a .NET project to compile `[ECMAScriptModule]` classes. The SDK includes the compiler, analyzer, Emit tooling and ASP.NET Core integration. [C# module quickstart](docs/03-guides/quick-start.md)
+
+```sh
+dotnet add package Jazor --version 2.2.0
+```
+
+| Topic | Documentation |
+| --- | --- |
+| SDK configuration, output modes and ASP.NET Core SSR | [Installation and configuration](docs/03-guides/installation-and-configuration.md) |
+| Reusing C# libraries and NuGet packages | [Managed library imports](docs/04-roadmap/ordinary-nuget-compilation-research.md) |
+| Compiler and artifact pipeline | [System architecture](docs/01-overview/system-architecture.md) |
+| Supported features and test requirements | [Current status](docs/04-roadmap/current-status.md) |
+
+## Develop Jazor
+
+Run from the repository root with the .NET SDK selected by [global.json](global.json).
+
+```sh
+dotnet build Jazor.slnx
+dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt
+dotnet run --file scripts/csharp/test-dotnet.cs
+```
+
+The Jolt release workflow verifies an isolated CLI install, the language server and browser interaction, and builds both VSIX packages. [Development and testing](docs/03-guides/development-and-testing.md)
+
+## Latest release
+
+Jazor 2.2.0 ships Jolt, both editor extensions and the Jolt authoring guides. [Release notes](CHANGELOG.md#jazor-220)
 
 ## AI-assisted development
 
@@ -46,155 +100,6 @@ AI assistance has primarily helped advance documentation, test coverage, externa
 ## Acknowledgements
 
 Jazor builds on [Roslyn](https://github.com/dotnet/roslyn), [Acornima](https://github.com/adams85/acornima), [node-api-dotnet](https://github.com/microsoft/node-api-dotnet), [pnpm](https://github.com/pnpm/pnpm), [Vite](https://github.com/vitejs/vite), and [WebRef](https://github.com/w3c/webref). Earlier work also benefited from Netpack, DenoHost, and C#-to-JavaScript projects including [WootzJs](https://github.com/kswoll/WootzJs), [h5](https://github.com/curiosity-ai/h5), and [SharpKit](https://github.com/SharpKit/SharpKit).
-
-## Core Model
-
-Ordinary source types participate through the compilation root and its source dependencies without an `[ECMAScript]` permission marker. Classes retain construction and instance behavior; records describe structural objects. Host attributes declare actual JavaScript bindings and special value semantics. See the [type and host contract guide](docs/03-guides/type-semantics.md) for the current rules and migration steps.
-
-```mermaid
-flowchart LR
-    subgraph Core["Jazor core platform: C# -> ECMAScript"]
-        CSharp["C# modules"] --> Roslyn["Roslyn semantic model"]
-        Roslyn --> Compiler["Jazor.Compiler"]
-        Bindings["CLR and ECMAScript bindings"] --> Compiler
-        Compiler --> Ast["ESTree"] --> Emit["Jazor.Emit"]
-        Emit --> Artifacts["Standard JS project, .mjs, source maps, build output"]
-    end
-
-    subgraph Jolt["Jolt .jazor authoring"]
-        Jazor[".jazor + npm declarations"] --> Roslyn
-        Compiler --> Vue["Vue components and source maps"]
-        Vue --> Vite["Vite application bundle"]
-    end
-```
-
-## Quality Gates
-
-The badges above show maintained acceptance thresholds rather than a stale one-off result. The repository verifies the following minimums through repeatable scripts:
-
-- Core compiler: at least 10,000 passing `IOperation` scenarios, 98% line coverage, and 97% branch coverage.
-- Jolt: isolated CLI install, language-server protocol, both VSIX packages, and a browser interaction smoke test.
-- Vue ecosystem bindings: at least 90% audited public binding-contract coverage per target.
-
-Run `verify-compiler-coverage.cs` or `verify-vue-binding-coverage.cs` under `scripts/csharp/` to reproduce the relevant gate. Run `dotnet run --file scripts/csharp/verify-binding-documentation.cs -- --no-build --baseline HEAD` to verify that public ECMAScript and binding declarations retain XML documentation, upstream source metadata, and package XML delivery. The active scope and test entry points are listed in [Current Status](docs/04-roadmap/current-status.md).
-
-## Packages
-
-| Package | Responsibility |
-| --- | --- |
-| `Jazor` | Framework-neutral compiler, CLR contracts, analyzer, emit tooling, MSBuild and ASP.NET Core integration; suitable for ordinary ECMAScript libraries |
-| `Jazor.Jolt` | CLI and language server for .jazor projects |
-| `ECMAScript.Vue` | Shared Vue 3 types, component contracts, and runtime metadata |
-| `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
-
-### Library forms and direct references
-
-A library carries JavaScript in one of two ways.
-
-| Library form | Carrier | Direct reference rule |
-| --- | --- | --- |
-| JS resource library (`ECMAScript`, Vue, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `pnpm-lock.yaml`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
-| Jazor library (`ECMAScript.Style` or author-written C# modules) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | Directly reference `Jazor`. |
-
-The final executable or web host directly references `Jazor` when it runs Emit. It collects the
-selected `ModuleCatalog` modules and manifest resources once; Debug, Release, SSR, and HMR are
-output projections of that same closure, not additional library forms.
-
-`ModuleCatalog` is the standard assembly output for pure Jazor because the analysis/source-generator
-pipeline emits C#; it is not a legacy compatibility carrier.
-
-## Install
-
-For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the core package
-directly:
-
-```bash
-dotnet add package Jazor --version 2.2.0-preview.1
-```
-
-Detailed package selection, output settings, SSR configuration, and ecosystem bindings are in [Installation and Configuration](docs/03-guides/installation-and-configuration.md).
-
-## First Module
-
-Use `[ECMAScriptModule]` to make a C# module eligible for JavaScript emission:
-
-```csharp
-using ECMAScript;
-
-namespace MyApp;
-
-[ECMAScriptModule("shared/greetings.mjs")]
-public static class GreetingModule
-{
-    public static string Compose(string name) => $"Hello, {name}";
-}
-```
-
-The core compiler emits a standard named-export ECMAScript module. Cross-module calls are resolved through compiler-owned imports rather than hand-written JavaScript.
-
-For a complete runnable path, see [Quick Start](docs/03-guides/quick-start.md).
-
-## Output Modes
-
-The executable or web host selects its artifact mode through MSBuild:
-
-```xml
-<PropertyGroup>
-  <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
-</PropertyGroup>
-```
-
-| Mode | Result |
-| --- | --- |
-| `none` | Default; no Jazor artifacts are written |
-| `debug` | Standard JS project with inspectable modules and external source maps; Emit state stays in `obj` |
-| `release` | Production browser output through the project's configured JavaScript build tool |
-
-Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core application needs Vue server rendering and hydration. See [Artifact Pipeline](docs/02-architecture/artifact-pipeline.md).
-
-## Documentation
-
-| Need | Entry |
-| --- | --- |
-| Product overview | [docs/README.md](docs/README.md) |
-| Core compiler architecture | [Compiler](docs/02-architecture/compiler.md) |
-| Framework integration rules | [Framework Integrations](docs/02-architecture/framework-integrations.md) |
-| Install, configure, and author | [Guides](docs/03-guides/README.md) |
-| Examples | [Examples](docs/03-guides/examples.md) |
-| Current scope | [Roadmap](docs/04-roadmap/current-status.md) |
-| Historical context | [Evolution](docs/05-history/evolution.md) |
-| Release history | [CHANGELOG.md](CHANGELOG.md) |
-
-## Development
-
-Use the .NET 11 SDK selected by [global.json](global.json). From the repository root:
-
-```bash
-dotnet restore Jazor.slnx
-dotnet build Jazor.slnx
-dotnet run --file scripts/csharp/test-dotnet.cs
-```
-
-Focused suites include:
-
-```bash
-dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
-dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
-```
-
-Repository automation uses single-file C# entry points under `scripts/csharp/`. See [Development and Testing](docs/03-guides/development-and-testing.md) for the full workflow.
-
-## Latest release
-
-### Jazor 2.2.0-preview.1 · 2026-11-19
-
-- Emit and SSR use Node.js 26.13.1 on Windows and glibc Linux x64 and ARM64.
-- Move macOS and Windows x86 Emit or SSR workloads to a supported platform, or use the previous release. See the [migration guide](docs/03-guides/toolchain-migration.md).
-- Install Jolt 2.2.0-preview.1 for .jazor authoring and use the matching VSIX for either editor. [Jolt setup](docs/03-guides/jolt-authoring.md)
-
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

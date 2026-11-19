@@ -8,7 +8,7 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+  <PackageReference Include="Jazor" Version="2.2.0" />
   <PackageReference Include="Fastenshtein" Version="1.1.1" />
 </ItemGroup>
 ```

@@ -1,10 +1,10 @@
-# 快速开始
+# 编译第一个 C# 模块
 
 > 目标：用最小的两项目结构验证 Jazor 核心的 C# -> ECMAScript 模块路径。
 
-本指南首先验证框架无关的核心能力。应用组件使用 `.jazor` 编写。 [Jolt 作者指南](./jolt-authoring.md)
+本指南用两个 .NET 项目演示如何将类库中的 C# 模块生成 `.mjs` 并写入宿主输出目录。编写 Vue 应用请看 [Jolt 作者指南](./jolt-authoring.md)。
 
-示例使用 `2.2.0-preview.1`。应用级绑定已可从同版本 NuGet 包安装，但在补齐真实浏览器和独立包消费者验证前仍保持 Guidance。
+示例使用 `2.2.0`。应用级绑定已可从同版本 NuGet 包安装，但在补齐真实浏览器和独立包消费者验证前仍保持 Guidance。
 
 ## 1. 创建模块库
 
@@ -12,7 +12,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 2.2.0-preview.1
+dotnet add Sample.Modules package Jazor --version 2.2.0
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -38,7 +38,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 2.2.0-preview.1
+dotnet add Sample.Host package Jazor --version 2.2.0
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：
