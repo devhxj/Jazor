@@ -1,6 +1,6 @@
 # Vue 应用生态绑定扩展计划
 
-> 本计划定义 Jazor 七个已发布应用级绑定进入 Support 所需的后续消费者验收。FilePond、VueDraggable 和 WangEditor 的源码、测试和版本兼容表由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。
+> 本计划定义 Jazor 七个已发布应用级绑定进入 Support 所需的后续消费者验收。
 
 ## 目标
 
@@ -27,7 +27,7 @@ Monaco 直接绑定核心 `monaco-editor`。Floating UI 以 `@floating-ui/vue` �
 ## 共同边界
 
 - 公开 C# API 使用具体类型、重载、命名 union 和显式 callback；不使用 `object`/`dynamic` 作为万能参数。
-- Vue ref、computed、事件和组件 props 通过现有 `ECMAScript.Vue`/`ECMAScript.VueContract` 投影；第三方库自身的响应式语义不复制到 Jazor runtime。
+- Vue ref、computed、事件和组件 props 通过现有 `ECMAScript.Vue` 投影；第三方库自身的响应式语义不复制到 Jazor runtime。
 - 每个库按需导入公开 ESM entry；`SemanticWalker` 负责表达式和成员翻译，`Jazor.Emit` 生成标准项目，进程内 Vite API 负责 bundle 与资源图。
 - SSR 不可用的浏览器 API 必须在 contract 中标明生命周期和使用边界；不能静默退化为服务器实现。
 - 上游包名、版本、export/component、prop、event、slot、文档来源、许可证和资源 hash 都写入 manifest/快照，并接受 contract drift 检查。
@@ -40,7 +40,7 @@ Monaco 直接绑定核心 `monaco-editor`。Floating UI 以 `@floating-ui/vue` �
 
 先实现 `ECMAScript.DateFns`、`ECMAScript.VueUse` 和 `ECMAScript.FloatingUi`。date-fns 的纯函数导入最容易验证；VueUse 建立 composable/ref 约定；Floating UI 为 Tooltip、Popover、菜单和编辑器浮层提供共享定位能力。
 
-退出条件：三个包可独立 pack，标准 package identity 与 ESM 入口可解析，compiler/SG 测试通过，至少一个真实 RazorVue 页面和浏览器 smoke 使用每个包。
+退出条件：三个包可独立 pack，标准 package identity 与 ESM 入口可解析，编译器测试通过，每个包的独立消费者通过真实浏览器验证。
 
 ### P3-B：表单、国际化与服务端状态
 
@@ -50,7 +50,7 @@ Monaco 直接绑定核心 `monaco-editor`。Floating UI 以 `@floating-ui/vue` �
 
 ### P3-D：重量级编辑器
 
-`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；该绑定已进入默认发布集合，browser smoke 与真实 RazorVue consumer 证据仍待补。
+`ECMAScript.Monaco` 的核心 editor/model/language/marker 生命周期已经实现，worker URL 和 bundler 资源通过 manifest 明确声明。diff editor、completion、语义 token 和大文件策略仍属于后续扩展；该绑定已进入默认发布集合，真实浏览器和独立包消费者验证仍待补。
 
 退出条件：编辑器可在独立 package consumer 中创建、更新、销毁；model 变更、language、theme、marker 和 layout 的事件/调用顺序有浏览器证据；SSR 明确拒绝直接创建浏览器 editor。
 
@@ -60,7 +60,7 @@ Monaco 直接绑定核心 `monaco-editor`。Floating UI 以 `@floating-ui/vue` �
 2. C# 类型契约、delegate、union、组件 proxy 和 `[ECMAScript]` 映射；命名空间不跨包复用。
 3. 上游 runtime 的锁定版本、`manifest.json` schema 2、npm/JSR identity、公开入口、许可证和 `README.md`。
 4. 生成或手工维护的 export/prop/event/slot inventory、文档来源和 contract fingerprint。
-5. 对应 `src/ECMAScript.<Name>.Test`：metadata、compiler emission、Razor SG、标准项目/Vite 输出和适用的 browser smoke。
+5. 对应 `src/ECMAScript.<Name>.Test`：metadata、compiler emission、标准项目/Vite 输出和适用的 browser smoke。
 6. 真实消费者样例，证明安装包和源码引用得到相同 module/import 结果。
 7. 作者指南、平台绑定表、current status 和 CHANGELOG 的同步条目。
 
@@ -68,17 +68,17 @@ Monaco 直接绑定核心 `monaco-editor`。Floating UI 以 `@floating-ui/vue` �
 
 每个包在声明 Support 前必须通过：
 
-- C# API 能在官方 Razor Source Generator 下编译，且错误输入产生稳定诊断；
+- C# API 能在独立消费者项目中编译，且错误输入产生稳定诊断；
 - compiler 输出的 import、alias、临时变量、source origin 和 source map 稳定；
 - Debug/Release/SSR（适用时）使用同一 `jazor/` 项目、`node_modules` 与 frozen lock；
 - NodeApi runtime 测试覆盖正常、空值、错误、取消、重复挂载或竞态路径；
 - 真实 Chromium browser smoke 覆盖至少一个用户可观察流程；
 - 上游版本、文档和 contract fingerprint 与仓库 baseline 一致；漂移默认阻止发布；
-- 适用的 compiler、Razor SG、Emit、Vue binding coverage 和 package consumer 门禁通过。
+- 适用的 compiler、Emit、Vue binding coverage 和 package consumer 门禁通过。
 
 ## Definition of Done
 
-每个包的完成条件包括：独立包和测试项目进入 solution；提供锁定版本、manifest、许可证、README 和 inventory；通过编译器、Razor SG、Emit 回归及真实浏览器和独立包消费者验证；同步公开边界、SSR 约束与已知限制。
+每个包的完成条件包括：独立包和测试项目进入 solution；提供锁定版本、manifest、许可证、README 和 inventory；通过编译器、Emit 回归及真实浏览器和独立包消费者验证；同步公开边界、SSR 约束与已知限制。
 
 七个绑定已进入默认发布集合，当前保持 Guidance，等待浏览器和独立包消费者验收。
 

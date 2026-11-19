@@ -21,22 +21,10 @@
 
 这些包按需显式引用。绑定库声明 npm/JSR package identity 与标准 ESM specifier；最终宿主的 Emit 将依赖写入根 `package.json`，pnpm API 恢复 `node_modules`，项目配置的 JavaScript 构建工具从同一 `jazor/` 项目解析模块、样式和其他资源。
 
-## Blazor framework 绑定
-
-| 包/程序集 | 用途 | 交付边界 |
-| --- | --- | --- |
-| `Jazor.CLR` | Blazor framework CLR 类型的生成 module/doc、`[Jazor]` mapping、carrier 与 runtime helper | runtime JavaScript 由 `ECMAScript` 的 `src/ECMAScript/clr/**` 源码提供；唯一 CLR mapping owner |
-
-`Jazor.CLR` 面向 Blazor framework CLR mapping 与 runtime helper；所有进入 runtime-sensitive lowering 的 Blazor 类型都先由 `Jazor.CLR.Generator` 从真实 reference symbol 生成 module/doc，再由 `Jazor.CLR` 完善。核心 runtime JavaScript 从 `src/ECMAScript/clr/**` 写入 `jazor/clr/**`；其他 `ECMAScriptModule` 生成结果按各自模块路径写入项目。Vue listener/component framing 仍由 `Jazor.Vue`/`Jazor.RazorVue` 负责。
-
 ## 名称与作者契约
 
 作者声明的 C# 符号保持原有名称。JavaScript ABI 所需的名称差异通过成员级 `ECMAScriptName` 或约定的元数据显式声明，并以 metadata 解析。
 
-Razor 组件的参数、事件、双向绑定和 slot 由正常 C# 与 Razor 类型系统表达。JavaScript ABI 名称差异通过显式映射声明。
+Jolt 从 npm 包的公开 TypeScript 声明绑定组件参数、事件和插槽，再用 Roslyn 检查 `.jazor` 中的 C# 表达式。
 
 项目级 API 和示例位于各绑定项目的 README；包选择与配置见 [安装与配置](../03-guides/installation-and-configuration.md)。
-
-Vuetify、TDesign、Element Plus、Vue Data UI、Lucide、FilePond、VueDraggable 和 WangEditor 的 Razor 组件绑定由 [RazorVue](https://github.com/devhxj/RazorVue) 维护和发布。
-
-从 2.2 起，RazorVue 的 `Jazor.Vue` 包还交付 Router 组件代理、Blazor 事件扩展和 `ECMAScript.VueContract.dll`。共享 Vue 和 Router API 分别由 `ECMAScript.Vue` 与 `ECMAScript.VueRoute` 提供。

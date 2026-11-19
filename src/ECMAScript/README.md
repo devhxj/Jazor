@@ -7,19 +7,19 @@
 本项目是 JS resource library，不是纯 Jazor library。它发布时由 `manifest.json` 声明
 `src/ECMAScript/clr/**` embedded carrier，携带已有的 ECMAScript/System JavaScript；C# 程序集
 只提供映射和 authoring contract，不生成或替代 `Jazor.Generated.ModuleCatalog`。`ModuleCatalog` 只属于开发者
-编写的纯 Jazor（包括 RazorVue）模块。最终宿主由 Emit 通过 manifest locator 发现本项目资源，
+编写的Jazor 模块。最终宿主由 Emit 通过 manifest locator 发现本项目资源，
 并按显式依赖闭包物化。
 
 ## 职责
 
 - 提供 global host、DOM/Web API、命名 union 与基础 runtime contract。
 - 保留 authoring 中声明的 npm specifier 与模块路径，按 compiler 的标准 import 路径发射。
-- 提供 ECMAScript global、DOM/Web API、union 和 runtime contract；Vue authoring API 由 `ECMAScript.Vue`（随 `Jazor.Vue` 交付）提供。
+- 提供 ECMAScript global、DOM/Web API、union 和 runtime contract；Vue authoring API 由 `ECMAScript.Vue`提供。
 - 为 record、`[Spread]` 与 typed object literal 提供可预测的结构化 lowering 契约。
 
 ## Host authoring 接口
 
-Vue component、props、reactivity 和 render-function authoring 位于独立的 `ECMAScript.Vue` 项目，并随 `Jazor.Vue` 交付。`ECMAScript` 只提供通用 compiler/host contract；普通 ECMAScript 类库无需安装 Vue binding。
+Vue component、props、reactivity 和 render-function authoring 位于独立的 `ECMAScript.Vue` 项目。`ECMAScript` 只提供通用 compiler/host contract；普通 ECMAScript 类库无需安装 Vue binding。
 
 ## 边界
 

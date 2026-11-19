@@ -10,8 +10,6 @@ Jazor 核心负责 C# 到 ECMAScript 的语义转换，不以 Vue、React 或任
 
 Jolt 从 `.jazor` 模板和 npm 包的公开声明绑定组件，通过 Jazor 核心编译 C# 并生成 Vue 渲染模块。 [Jolt 作者指南](../03-guides/jolt-authoring.md)
 
-基于 Razor Source Generator 的 `.razor` 集成由独立仓库维护。 [RazorVue](https://github.com/devhxj/RazorVue)
-
 ## 集成边界
 
 1. C# 到 JavaScript 语义由 `Jazor.Compiler` 统一编译，集成层通过正式 translation hooks 使用该能力。

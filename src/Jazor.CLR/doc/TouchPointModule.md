@@ -1,10 +1,6 @@
 # TouchPointModule.cs
 
-在 `Jazor.Vue` 中为既有 `TouchPoint` 提供 extension。
-引入 `ECMAScript` 后，`NativeTouch` 返回同一个 WebIDL `Touch`；还可直接读取
-`Target`、`RadiusX`、`RadiusY`、`RotationAngle`、`Force`、`AltitudeAngle`、
-`AzimuthAngle` 和 `TouchType`。这些属性保留 WebIDL 的类型和原生对象身份。
-使用方式见 [Browser Interop](../../../docs/03-guides/browser-interop.md)。
+将 CLR 的 `TouchPoint` 映射到 WebIDL `Touch`。
 
 > ⚠️ **注意**：签名= _+ SHA256Hash(成员)
 

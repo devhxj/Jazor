@@ -1,23 +1,20 @@
 # ECMAScript.VueRoute
 
-> 定位：Vue Router 5 的独立强类型 C# binding 与 Razor-to-Vue authoring 接口。
+> 定位：Vue Router 5 的独立强类型 C# 绑定。
 
 本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Vue Router
 npm package、入口和依赖元数据；Emit 生成标准 `jazor/package.json`，pnpm API 将运行时恢复到
-`jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的 RazorVue
+`jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的 C#
 组件生成到消费程序集的 `Jazor.Generated.ModuleCatalog`。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.0.0" />
+  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
-
-`ECMAScript.VueRoute` 是独立的路由 API 包。2.2 起，Razor 项目通过 `Jazor.Vue` 获取 `VueRouterLink` 和 `VueRouterView`，以及配套的路由依赖。 [RazorVue 兼容性表](https://github.com/devhxj/RazorVue#compatibility)
 
 ## 当前支持范围
 

@@ -158,7 +158,7 @@ builder.Services.AddJazorReload(options =>
 1. 确认环境为 Development，且 `AddJazorReload`、`UseJazorReload` 都已调用。
 2. 检查 HTML 是否包含 reload script；若开启压缩，确认先注入后压缩。禁用 `InjectHtml` 时需自己加载客户端。
 3. 检查浏览器的客户端模块请求和 WebSocket 升级；子路径部署 URL 必须带应用前缀。
-4. 确认编译已更新观察目录中的文件，而不只是源 `.razor` 文件发生变化。
+4. 确认编译已更新观察目录中的文件，而不只是源 `.cs` 文件发生变化。
 5. 确认 HMR 映射、产物 HTTP 挂载和 ContentRootPath 一致；逻辑改动发生整页刷新是预期行为。
 
 手动注入且部署到 `/portal` 时，客户端标签使用：

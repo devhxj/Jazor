@@ -2,8 +2,6 @@
 
 Maintains documentation for shared ECMAScript bindings from source declarations and pinned upstream prose.
 
-The component binding generators are maintained in [RazorVue](https://github.com/devhxj/RazorVue/tree/main/src/ECMAScript.Vue.Generator).
-
 Run from the repository root.
 
     dotnet run --project src/ECMAScript.Vue.Generator -- authoring --check

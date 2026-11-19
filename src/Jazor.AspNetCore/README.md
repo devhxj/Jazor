@@ -1,6 +1,6 @@
 # Jazor.AspNetCore
 
-为 ASP.NET Core 提供生成产物托管、SPA 导航 fallback 和 Vue SSR。此程序集及其 XML 文档随 **Jazor** NuGet 包交付；Vue/Razor authoring 另需 **Jazor.Vue**。不需要安装名为 Jazor.AspNetCore 的独立包。项目配置见 [Jazor 包说明](../Jazor/README.md)。SSR 使用进程内 NodeApi。运行条件与升级步骤见[工具链指南](../../docs/03-guides/toolchain-migration.md)，平台与消费者证明范围见[当前状态](../../docs/04-roadmap/current-status.md)。
+为 ASP.NET Core 提供生成产物托管、SPA 导航 fallback 和 Vue SSR。此程序集及其 XML 文档随 **Jazor** NuGet 包交付。项目配置见 [Jazor 包说明](../Jazor/README.md)。SSR 使用进程内 NodeApi。运行条件与升级步骤见[工具链指南](../../docs/03-guides/toolchain-migration.md)，平台与消费者证明范围见[当前状态](../../docs/04-roadmap/current-status.md)。
 
 ## SPA 接入
 
@@ -108,8 +108,6 @@ SSR 复用 SPA 的导航筛选规则。GET 创建请求并渲染，HEAD 只设�
 宿主直接导入 SSR 入口的 `render` 导出，已移除 `TaskName` 配置。开发时入口、声明、pnpm lock 或传递源码内容变化会轮换 environment，清除 ESM cache；仅时间戳变化保留环境。旧 generation 的已租用请求先完成，新请求使用新环境。渲染失败直接传播，不重放可能已经产生副作用的渲染。
 
 固定 request/props 重载会跨请求共享对象；请求相关数据应由工厂创建。Props/providers 使用 `System.Text.Json` 序列化，同一快照交给浏览器 hydration，默认保留 CLR 属性名。Provider 键必须非空且唯一（区分大小写）。`Authentication` 自动占用 `jazor:auth-state`；不要同时手动提供该键。`FromPrincipal` 会复制全部 claims；它是快照转换，不执行认证或授权。
-
-完整运行示例见 [Todo 宿主](https://github.com/devhxj/RazorVue/tree/main/samples/RazorVue.TodoList/Todo.Host/Program.cs)。
 
 ## 文档验证
 

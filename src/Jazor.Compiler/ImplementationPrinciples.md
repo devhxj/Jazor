@@ -86,7 +86,7 @@
 - `CompositeSemanticWalkerHost` 固定 rewrite 的 first-handler-wins、observation fan-out 与 skip/claim OR 语义；
 - source-map node position 与 source origin 以公开值类型提供给 artifact framing，不通过 friend assembly 泄露 walker 内部状态。
 
-产品不得继承 `SemanticWalker`、使用 `object` 传递宿主协议、手拼 JavaScript 文本，或把产品模式加入 `AstConverterProfile`。例如 RazorVue 的 current-component、RenderTreeBuilder、children-to-slot、组件闭包、默认 state 和 ASP.NET Components catalog 都属于 `Jazor.RazorVue`；核心只负责其复用的 C# 语义、ESTree、导入和 source origin。任何未被 host 明确声明的行为仍走标准 compiler 路径或显式失败，不得通过 fallback 把产品语义重新塞回核心。
+产品不得继承 `SemanticWalker`、使用 `object` 传递宿主协议、手拼 JavaScript 文本，或把产品模式加入 `AstConverterProfile`。Jolt 负责组件绑定与 Vue 渲染模块外壳。核心负责 C# 语义、ESTree、导入和 source origin。任何未被 host 明确声明的行为仍走标准 compiler 路径或显式失败，不得通过 fallback 把产品语义重新塞回核心。
 
 ## 4. 等价模型
 

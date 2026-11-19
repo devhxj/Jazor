@@ -2,7 +2,7 @@
 
 > 定位：将受支持 C# 语义编译为确定性 ECMAScript 模块的核心 NuGet 包。
 
-`Jazor` 包含框架无关的 runtime contract、analyzer、source generator、Emit 工具、MSBuild 集成与 ASP.NET Core 集成。它可以用于编写普通 ECMAScript 类库；Vue authoring、Razor-to-Vue、Vue bindings 与 Vue runtime 由独立的 `Jazor.Vue` opt-in 包提供。
+`Jazor` 包含框架无关的 runtime contract、analyzer、source generator、Emit 工具、MSBuild 集成与 ASP.NET Core 集成。使用 `Jazor.Jolt` 工具编写 `.jazor` 组件。Vue 的 C# API 由 `ECMAScript.Vue` 提供。
 
 > 资源契约：仓库自有 ECMAScript runtime 由 `ECMAScript` manifest 与
 > `src/ECMAScript/clr/**` 提供；其他运行时来自 manifest 声明的 npm/JSR package 或明确的
@@ -11,9 +11,7 @@
 
 类库的 JavaScript 来源由 package metadata 明确区分：`ECMAScript` 使用仓库内的
 `src/ECMAScript/clr/**` embedded carrier，外部绑定使用 npm/JSR package，少数需要随包交付
-的模块使用显式 embedded carrier。RazorVue 是纯 Jazor 类库的 authoring 场景，不是第三种
-来源。`ModuleCatalog`（`ECMAScriptCode`）是开发者编写的 C#/RazorVue 模块的程序集内生成
-载体；它是纯 Jazor 的正式生成格式，不是遗留兼容载体。
+的模块使用显式 embedded carrier。Jazor 编译的 C# 模块由程序集内的 `ModuleCatalog`（`ECMAScriptCode`）携带。
 
 ## 安装
 
@@ -21,19 +19,18 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
+  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 
 纯 Jazor 类库（开发者编写 C# 并声明 `[ECMAScriptModule]`）直接引用 `Jazor`。类库保留默认
 `JazorMode=none`，自身生成模块写入 DLL 内的 `ModuleCatalog`；最终可执行或 Web 宿主负责
-收集程序集 catalog 与传递的资源 manifest 并输出产物。编写 RazorVue 组件的项目属于纯 Jazor
-类库，必须直接引用 `Jazor` 和 `Jazor.Vue`；只消费上游类库的项目不会因普通引用获得工具资格。
+收集程序集 catalog 与传递的资源 manifest 并输出产物。
 
 定义 module 的类库应隔离这项工具引用：
 
 ```xml
-<PackageReference Include="Jazor" Version="2.0.0" PrivateAssets="all" />
+<PackageReference Include="Jazor" Version="2.2.0-preview.1" PrivateAssets="all" />
 ```
 
 最终 `Exe`/`WinExe` 宿主需要 Emit 时直接引用 `Jazor`，不设置 `PrivateAssets`。包内
@@ -54,7 +51,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 </ItemGroup>
 ```
 
-这会恢复并编译可达的受支持成员；生产者无需标注类型。实例 class、共享状态、RazorVue、增量与限制见[普通类库导入](../../docs/04-roadmap/ordinary-nuget-compilation-research.md)。
+这会恢复并编译可达的受支持成员；生产者无需标注类型。实例 class、共享状态、增量与限制见[普通类库导入](../../docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 
 ```xml
 <PropertyGroup>
@@ -80,9 +77,9 @@ Vue Router、Pinia、UI 组件库与 CSS-in-JS 均需按使用场景显式引用
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Style" Version="2.0.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Style" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 
@@ -115,7 +112,7 @@ ASP.NET Core 持有请求管线与响应文档，在同一进程内执行 Vue SS
 
 ## 组件开发
 
-编写 `.jazor` 并使用 npm 组件，见 [Jolt 作者指南](../../docs/03-guides/jolt-authoring.md)。现有 `.razor` 项目的配置、组件包和版本组合由 [RazorVue](https://github.com/devhxj/RazorVue#compatibility) 维护。
+编写 `.jazor` 并使用 npm 组件，见 [Jolt 作者指南](../../docs/03-guides/jolt-authoring.md)。
 
 ## 相关文档
 

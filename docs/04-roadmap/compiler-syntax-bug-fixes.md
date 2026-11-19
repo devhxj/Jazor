@@ -30,7 +30,7 @@ This ledger tracks the 35 `bug` issues from the C# syntax audit. A diagnostic re
 | [#98](https://github.com/devhxj/Jazor/issues/98) | Record custom constructors | Reject executable bodies and constructor initializers instead of discarding their behavior. |
 | [#99](https://github.com/devhxj/Jazor/issues/99) | Mutable record struct copying | Reject mutable record struct values until implicit value-copy semantics exist. Readonly structural records remain available. |
 | [#102](https://github.com/devhxj/Jazor/issues/102) | Array defaults | Initialize every allocated element; allocate independent structured defaults and evaluate rectangular dimensions once. |
-| [#103](https://github.com/devhxj/Jazor/issues/103) | Module field defaults | Reuse compiler-owned typed defaults for fields and backing storage. Initialize all module storage before executing nonconstant authored initializers, preserving forward reads through helper calls. RazorVue owns its existing setup/props phases. |
+| [#103](https://github.com/devhxj/Jazor/issues/103) | Module field defaults | Reuse compiler-owned typed defaults for fields and backing storage. Initialize all module storage before executing nonconstant authored initializers, preserving forward reads through helper calls. |
 | [#104](https://github.com/devhxj/Jazor/issues/104) | Custom foreach enumerators | Reject source collection protocols without JS iterable semantics. |
 | [#105](https://github.com/devhxj/Jazor/issues/105) | Custom async enumerators | Reject source async enumerator protocols without an implemented async iterable bridge. |
 | [#106](https://github.com/devhxj/Jazor/issues/106) | Custom awaiters | Reject source C# awaiter protocols instead of treating arbitrary values as Promises. |

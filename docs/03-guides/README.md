@@ -10,7 +10,6 @@
 | [NodeApi 工具链与旧项目迁移](./toolchain-migration.md) | 应用开发者与维护者 | 当前运行条件、旧配置与锁文件迁移、平台和发布验证 |
 | [Jolt 作者指南](./jolt-authoring.md) | Jolt 应用开发者 | `.jazor` 组件、npm 组件和编辑器 |
 | [浏览器互操作](./browser-interop.md) | ECMAScript 应用开发者 | live DOM、精度安全 JSON 和原生文件/拖放 |
-| [RazorVue 作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md) | RazorVue 应用开发者 | 独立仓库维护的 `.razor` 指南 |
 | [开发与测试](./development-and-testing.md) | 仓库维护者 | 构建、测试、覆盖率门槛与脚本约定 |
 | [JS 资源库绑定](./js-resource-binding.md) | 仓库维护者 | 为上游 JS 库新建 `ECMAScript.*` 绑定的上游锁定、入口设计、生成器、C# 契约、测试与门禁接线全流程 |
 | [发版与版本规则](./release-and-versioning.md) | 仓库维护者 | 正式版版本通道、兼容性、发版门禁与 CHANGELOG 规则 |

@@ -249,12 +249,11 @@ B：通过 ProjectReference/PackageReference 使用 A
 最终宿主：收集实际 Entries 和 package imports，生成一次 jazor/ 项目
 ```
 
-工具资格由直接引用的 `Jazor`、`Jazor.Vue` 和 Emit targets 提供。源码 carrier、`ModuleCatalog` 与 binding declaration 随普通项目引用传递；最终 `Exe`、`WinExe` 或 Web 宿主直接引用 `Jazor`，配置并拥有 `JazorDir`。
+直接引用 `Jazor` 可启用其 MSBuild 工具。源码 carrier、`ModuleCatalog` 与 binding declaration 随普通项目引用传递；最终 `Exe`、`WinExe` 或 Web 宿主直接引用 `Jazor`，配置并拥有 `JazorDir`。
 
 | 包 | 直接资产 | 传递资产 |
 | --- | --- | --- |
 | `Jazor` | props/targets、compiler、analyzer、Emit 与 NodeApi/libnode 接线 | ECMAScript 源码 locator 与 binding declaration locator |
-| `Jazor.Vue` | RazorVue analyzer、generator 与项目源码 | Vue 相关源码和 binding locator |
 | `ECMAScript.*` binding | C# assembly、XML 文档、binding metadata、inventory、许可证 | npm/JSR identity 与标准入口 |
 | `ECMAScript` 源码库 | C# assembly、源码 metadata | MJS 源码、source map 与本地资源 |
 

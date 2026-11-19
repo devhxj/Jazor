@@ -6,7 +6,7 @@
 | carrier | 内容 | 来源 |
 | --- | --- | --- |
 | JS resource library | package metadata + ESM/CSS/worker/static 资源；资源来自 npm、JSR 或明确声明的 embedded carrier | Vue、Vuetify、Pinia、`ECMAScript` 等已有 JavaScript 资源包 |
-| 纯 Jazor library | 程序集内 `Jazor.Generated.ModuleCatalog`（ECMAScriptCode） | `Jazor.Compiler`/RazorVue 从 C# 生成的模块 |
+| 纯 Jazor library | 程序集内 `Jazor.Generated.ModuleCatalog`（ECMAScriptCode） | `Jazor.Compiler` 从 C# 生成的模块 |
 
 这两种 carrier 是并列的一等输入。Emit 可以在内存中把它们归一化为资源记录和 package graph
 来做去重、依赖闭包和冲突校验，并生成标准 `jazor/package.json`。源码 carrier 按声明路径写入项目；

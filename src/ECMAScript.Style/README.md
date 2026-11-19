@@ -2,23 +2,22 @@
 
 > 定位：面向 Jazor ECMAScript 模块的强类型、确定性 CSS-in-JS binding。
 
-`ECMAScript.Style` 将结构化 C# 值转换为标准 `style.js` runtime 模块。它保持普通 ECMAScript import、Razor-to-Vue 互操作、基于内容的稳定命名、隔离 registry、Shadow DOM 所有权、SSR snapshot、CSP nonce 与幂等 hydration。
+`ECMAScript.Style` 将结构化 C# 值转换为标准 `style.js` runtime 模块。它保持普通 ECMAScript import、基于内容的稳定命名、隔离 registry、Shadow DOM 所有权、SSR snapshot、CSP nonce 与幂等 hydration。
 
 本包是纯 Jazor 类库：`style.js` 由 Jazor 编译并写入程序集内的
 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`），不携带外部 npm/JSR runtime package
-资源。编写或组合 Jazor 模块的项目应直接引用 `Jazor`；RazorVue 项目还应直接引用
-`Jazor.Vue`。最终宿主只通过一次 Emit 物化选中的 catalog 依赖闭包。
+资源。编写或组合 Jazor 模块的项目应直接引用 `Jazor`。最终宿主只通过一次 Emit 物化选中的 catalog 依赖闭包。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Style" Version="2.0.0" />
+  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Style" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 
-该包依赖同版本 `Jazor` 的 contract；编译器、analyzer 与 Emit 工具不会通过传递依赖安装。它不安装 Razor hook、CSS 专用 MSBuild target、Vue adapter 或 compiler 分支。可复用类库通常将直接的 `Jazor` 工具引用设置为 `PrivateAssets="all"`；最终宿主需要 Emit 时应自行直接引用 `Jazor`。只有调用 `css` API 才会注册样式。
+该包依赖同版本 `Jazor` 的 contract；编译器、analyzer 与 Emit 工具不会通过传递依赖安装。可复用类库通常将直接的 `Jazor` 工具引用设置为 `PrivateAssets="all"`；最终宿主需要 Emit 时应自行直接引用 `Jazor`。只有调用 `css` API 才会注册样式。
 
 ## 编写方式
 

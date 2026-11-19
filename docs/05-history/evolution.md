@@ -8,11 +8,11 @@
 
 ## 2026-11-15 1.3.0 语法修复与发布
 
-11 月 14 日的语法审计以 `9f0bb79c` 为基线，检查核心与 RazorVue lowering，并创建 133 个独立英文 issue：35 个 bug、82 个 enhancement 和 16 个 documentation。探针包括核心 C#、隔离 render-body 与选定程序的 CLR/NodeApi 对照；它们不代表所有 C# 组合或生产 profile 均已验证。
+11 月 14 日的语法审计以 `9f0bb79c` 为基线，检查 C# lowering，并创建 133 个独立英文 issue：35 个 bug、82 个 enhancement 和 16 个 documentation。探针包括核心 C#、隔离 render-body 与选定程序的 CLR/NodeApi 对照；它们不代表所有 C# 组合或生产 profile 均已验证。
 
 1.3.0 将 11 项 bug 修正为受支持的运行行为，将其余 24 项收口为源码位置明确的不支持诊断。修复涵盖整数宽度、溢出和零除、默认初始化、表达式包装、模式 switch 控制流，以及动态、引用、接口、枚举器和 awaiter 的协议边界。宿主 Number/BigInt 按 JavaScript 值域判定，CLR 装箱身份仍需可证明。逐项结果保留在[修复记录](../04-roadmap/compiler-syntax-bug-fixes.md)。
 
-本轮本地 Compiler 为 10,876/10,876，行/分支覆盖率 99.38%/97.02%；RazorVue 为 5,056/5,056，覆盖率 97.54%/94.01%；CLR 为 5,092/5,092。Emit 完整套件为 292 项，主测试 lane 按既有分类运行其中 244 项；独立发布消费者继续验证其余相关交付路径。Release build、API、binding、样例与 SPA/SSR 包消费者门禁通过。候选 API 比较为基线 78,224、当前 78,241，新增 20、删除 3；删除均为已审阅的 TaskName 签名，未批准删除为 0。
+本轮本地 Compiler 为 10,876/10,876，行/分支覆盖率 99.38%/97.02%；CLR 为 5,092/5,092。Emit 完整套件为 292 项，主测试 lane 按既有分类运行其中 244 项；独立发布消费者继续验证其余相关交付路径。Release build、API、binding、样例与 SPA/SSR 包消费者门禁通过。候选 API 比较为基线 78,224、当前 78,241，新增 20、删除 3；删除均为已审阅的 TaskName 签名，未批准删除为 0。
 
 [官方 v1.3.0 工作流](https://github.com/devhxj/Jazor/actions/runs/43657840445)完成质量检查、23 包上传与 GitHub Release；35 个 bug 均以独立英文说明关闭。上传成功与 NuGet 公共索引/下载可用性分别核实，不将服务端后续处理状态写成永久产品能力。
 
@@ -26,7 +26,7 @@
 
 普通源码类型改由编译根与依赖闭包决定实现归属，不再逐类型要求 `[ECMAScript]`。标注保留环境宿主、外部 ESM 与特殊宿主值语义。class 保留类行为，record 表达结构化对象；原 options/callback literal class 的迁移需审查继承和初始化。维护者批准本轮使用 MINOR 作为版本规则例外，破坏性影响仍记入 CHANGELOG。
 
-源码、Analyzer、生成模板和 RazorVue 共享符号绑定同步调整。当前规则与迁移步骤保留在[类型指南](../03-guides/type-semantics.md)，原实施表与探针通过 Git 历史追溯。
+源码、Analyzer 与生成模板的符号绑定同步调整。当前规则与迁移步骤保留在[类型指南](../03-guides/type-semantics.md)，原实施表与探针通过 Git 历史追溯。
 
 ## 2026-11-12 NodeApi 工具链迁移
 
@@ -36,9 +36,9 @@
 
 ## 2026-10-10 preview.9 作者体验与发布准备
 
-本轮将入口分包、最终编译阶段计时和 N4 数值/union 作者体验整理到 `1.0.0-preview.9`。通用 lowering 使用 Roslyn 分支与返回类型；绑定维护生成器按声明提供 1,665 条参数提示和 22 个嵌套 union 的直接标量投影。官方 Razor SG、跨库矩阵、真实 Vue/Element Plus 运行与消费者写法共同验证这些边界。
+本轮将入口分包、最终编译阶段计时和 N4 数值/union 作者体验整理到 `1.0.0-preview.9`。通用 lowering 使用 Roslyn 分支与返回类型；绑定维护生成器按声明提供 1,665 条参数提示和 22 个嵌套 union 的直接标量投影。跨库矩阵与消费者测试验证这些边界。
 
-本地完整主线通过，最终编译器回归为 10,740/10,740，CLR 为 5,092/5,092，RazorVue SG 为 5,047/5,047，Emit 为 239/239。编译器行覆盖率 17,789/17,895（99.41%）、分支覆盖率 6,974/7,189（97.01%）；RazorVue 行覆盖率 14,740/15,115（97.52%）、分支覆盖率 6,353/6,754（94.06%）。Release solution build 为 0 警告、0 错误；Vue binding coverage、绑定 XML 文档、绑定 contract 和发布说明门禁通过。
+本地完整主线通过，最终编译器回归为 10,740/10,740，CLR 为 5,092/5,092，Emit 为 239/239。编译器行覆盖率 17,789/17,895（99.41%）、分支覆盖率 6,974/7,189（97.01%）。Release solution build 为 0 警告、0 错误；Vue binding coverage、绑定 XML 文档、绑定 contract 和发布说明门禁通过。
 
 Release API 快照包含 78,224 个去重签名（9,018 个顶层声明、69,206 个成员声明），相对已审查的 frontend 候选基线 76,566 项新增 1,658 个数值隐式转换签名、删除 0。该候选基线已经包含本轮此前审查的 Number 分页回调与字符串日期组件；它不代表相对公开 preview.8 没有破坏性变化，迁移以 CHANGELOG 为准。刷新机器快照后再比较新增 0、删除 0；上游 binding inventory 未漂移。本地日志与报告位于忽略目录 `.tmp/preview9-release/`、`artifacts/preview9/`，正式发布 ref 由官方 tag workflow 继续验证。
 
@@ -48,7 +48,7 @@ Zero/Jero 的 `.8.12` 本地候选完成 33 个作者文件迁移、0 警告/错
 
 Zero/Jero 的迁移反馈推动了组件诊断、wrapper 默认值、lifecycle/fragment、Element Plus typed interaction、原生事件与 payload、Startup 宿主、RID 选择、子路径身份及发布闭包修正。反馈 G1–G34 的逐项复现和早期验收表通过 Git 历史追溯；当前边界由作者指南、Browser Interop 与各 binding README 定义。
 
-当时完整主线为 Compiler 10,728、CLR 5,092、RazorVue 5,035、Emit 221，Compiler 覆盖率 99.41%/97.02%，RazorVue 97.53%/94.01%。API 基线为 76,564 项，相对前候选新增 445、改变 14；刷新基线后的 0 diff 只说明该次比较。23 包、绑定/XML、typed bootstrap、诊断、参考应用和 Deno 时代的 SPA/SSR 消费者通过，不外推为当前 NodeApi 的证明。
+当时完整主线为 Compiler 10,728、CLR 5,092、Emit 221，Compiler 覆盖率 99.41%/97.02%。API 基线为 76,564 项，相对前候选新增 445、改变 14；刷新基线后的 0 diff 只说明该次比较。23 包、绑定/XML、typed bootstrap、诊断、参考应用和 Deno 时代的 SPA/SSR 消费者通过，不外推为当前 NodeApi 的证明。
 
 DOM 仿真使用真实 Vue 与 Happy DOM，部分 FileList/TouchList 字段由夹具补齐；真实 Chrome 消费者证明各自目标场景。Element Plus command/sort/service 的部分成功路径使用 stub，不把仿真结果表述为每个事件或服务均已完成真实浏览器验收。
 
@@ -64,15 +64,9 @@ P1 逐步交付版本化 SSR state envelope、typed 认证状态、单一显式�
 
 Jazor 始终围绕一项核心能力展开：受支持的 C# 语义转换为 ECMAScript。Roslyn 语义模型、`Jazor.Compiler` 的 ESTree lowering、宿主白名单和 `Jazor.Emit` 的产物交付共同构成这条平台主线。当前文档以它为第一层，并以核心语义定义 Jazor。
 
-## Razor-to-Vue 的位置
+## Jolt 的早期探索
 
-Razor-to-Vue 被确立为建立在核心平台之上的框架集成方向。其稳定边界是官方 Razor Source Generator 完成后的最终 `Compilation`：`Jazor.RazorVue` 负责组件绑定和 Vue artifact framing，所有 C# 语义继续由 Jazor 核心翻译。
-
-这一决定确立官方 Razor Source Generator 最终 `Compilation` 与 Vue render-function 的生产路径。Razor IR、生成 SFC、二次解析生成 C# 和 wrapper-JS marker 协议归入历史探索。
-
-## 已退役的 Jolt 路线
-
-早期 Jolt 覆盖开发宿主、语言服务、调试、DevServer 和相关协议探索，随后项目曾集中于 RazorVue。自 2.1.0-preview.6 起，Jolt 成为 Jazor 的应用开发主线，RazorVue 在独立仓库维护。
+早期 Jolt 覆盖开发宿主、语言服务、调试、DevServer 和相关协议探索。自 2.1.0-preview.6 起，Jolt 成为 Jazor 的应用开发主线。
 
 ## 未落地的 CSX 提案
 
@@ -80,7 +74,7 @@ CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.j
 
 ## 路线图的收口
 
-早期路线图曾按模块、阶段和单个消费者分别记录 Artifact Graph、CLR runtime、RazorVue authoring、性能、宿主交付与 JazorAdmin 的实施过程。随着这些工作中的稳定结论进入架构文档、作者指南和当前状态页面，继续保留相互引用的独立计划会让读者难以分辨已交付能力与下一步方向。
+早期路线图曾按模块、阶段和单个消费者分别记录 Artifact Graph、CLR runtime、性能与宿主交付 的实施过程。随着这些工作中的稳定结论进入架构文档、作者指南和当前状态页面，继续保留相互引用的独立计划会让读者难以分辨已交付能力与下一步方向。
 
 因此，路线图收束为“当前状态”和“下一阶段”两份文档：前者陈述已成立的产品契约与验证入口，后者记录待推进的优先级、边界和完成条件。历史方案、阶段清单和当时的测试快照由 Git 历史保存；当前设计以现行架构和指南为依据。
 
@@ -91,22 +85,6 @@ CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.j
 ## 2026-08-24 CLR 审查与修复
 
 本轮审查收口了整型解析、零值符号判断、只读集合变更拦截、数值边界与字符串拆分语义，并补齐 `Queue<T>` / `Stack<T>` 核心成员。映射源、生成白名单和回归测试同步更新；Trim 的宿主空白字符集合及浮点换底舍入边界由模块源码说明。原始审计与复评报告由 Git 历史保存，当前支持面以 `Jazor.CLR/module/`、模块参考和自动化测试为准。
-
-## 2026-09-05 RazorVue 审查与修复
-
-本轮审查保持官方 Razor SG -> final Compilation -> Compiler hooks -> Vue render-function `.mjs` 的生产边界。审查发现和验收范围如下，当前行为以作者指南与回归测试为准。
-
-| 优先级 | 审查发现 | 修复与验收范围 |
-| --- | --- | --- |
-| P1 | 同步 `OnAfterRender` 的 pending 标志立即复位，状态修改产生的 Vue update 可再次进入同一回调。 | pending 保持到对应 Vue flush 完成；真实 Vue renderer 验证受控调度，后续外部更新进入回调。 |
-| P1 | 普通 `OnInitializedAsync` 与参数生命周期缺少顺序约束，SSR 也缺少普通异步初始化等待。 | 初始参数阶段等待初始化，SSR 等待初始生命周期任务；覆盖初始化错误、参数顺序与首屏 HTML。 |
-| P2 | `SetParametersAsync` 仅在入队时检查 disposed，已排队任务可在卸载后启动。 | 出队执行前检查实例生命周期；已启动任务允许完成，卸载后不启动新的作者任务。 |
-| P2 | `DisposeAsync` 的 Promise 被 `void` 丢弃，异步失败脱离 Vue 错误处理。 | 卸载 hook 返回可观察的任务，验证异步释放失败到达 Vue error handler。 |
-| P2 | 序号参数省略规则接受属性 getter、复杂字段 receiver 和可抛错运算。 | 可证明省略的序号表达式进入 lowering，其余形状通过 direct-render 诊断说明；覆盖 getter、receiver、转换、除零与无副作用序号。 |
-
-测试区分表达式运行时验证与 Vue 调度验证：轻量 stub 用于 VNode 形状和表达式结果，生命周期、依赖跟踪、卸载与 SSR 使用真实 Vue runtime。真实调度证明由 Vue runtime 验证提供。
-
-后续优化候选包括限制组件发现的程序集扫描范围、按职责拆分大型 lowering 文件，以及补齐原生 SG hook 的 SDK/平台验证。性能优化应先使用现有 benchmark 建立基线；这些候选不与本轮正确性修复混合实施。
 
 ## 2026-09-05 Jazor.Compiler 审查与修复
 
@@ -124,6 +102,6 @@ CSX 曾提出 `.jazor` TSX-like 作者格式，经 shadow C# 绑定后生成 `.j
 
 本轮复核了 P3/Monaco 发布接线、测试 lane 和 API 基线，并重新生成 Release 程序集快照。`compare-public-api.cs` 按 ordinal 去重统计 `- ` 顶层声明与 `  - ` 成员声明：基线和当前均为 76,105 项，其中顶层 8,948 项、成员 67,157 项，新增和删除均为 0。比较器现在会在报告中直接给出这两个分类计数；本节保留该次兼容性结论，逐行报告、当前快照和原始日志保存在本地 `artifacts/quality/review-2026-09-28/`。
 
-`test-dotnet.cs` 的默认集合和项目选择器实际包含 10 个 P3 lane。复核时全部通过，共 115/115 个测试；先前的 8-lane 摘要漏列 `vue-i18n` 与 `monaco`，并非它们未接线。Release solution build 通过（0 warning、0 error），Emit SSR consumer 定向测试 1/1、Razor SG timing 测试 1/1、Vue binding contract gate 和 `git diff --check` 也通过。逐项命令输出与完整当前 API 快照保留在本地忽略目录 `artifacts/quality/review-2026-09-28/`；这些测试结果不替代 P3/Monaco 进入 Support 矩阵所需的 browser smoke 和真实 RazorVue consumer 证据。
+`test-dotnet.cs` 的默认集合和项目选择器实际包含 10 个 P3 lane。复核时全部通过，共 115/115 个测试；先前的 8-lane 摘要漏列 `vue-i18n` 与 `monaco`，并非它们未接线。Release solution build 通过（0 warning、0 error），Emit SSR consumer 定向测试 1/1、Vue binding contract gate 和 `git diff --check` 也通过。逐项命令输出与完整当前 API 快照保留在本地忽略目录 `artifacts/quality/review-2026-09-28/`；这些测试结果不替代 P3/Monaco 进入 Support 矩阵所需的 真实浏览器和独立包消费者验证。
 
 绑定 XML 文档门禁随后纳入 `quality-gates.yml` 与独立 Release Candidate stage；Release 输出中的 26 个绑定库均通过，报告为 0 failures。该门禁验证公开声明、枚举值、XML 产物、上游快照和 nuspec 文档文件，并使用仓库内的临时目录与缓存。

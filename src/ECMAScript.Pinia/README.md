@@ -5,15 +5,14 @@
 本包属于 JS resource library：`manifest.json` 与 `inventory.json` 记录锁定的 Pinia npm
 package、入口和依赖元数据；运行时由 Emit 生成的标准 `jazor/package.json` 声明，随后由
 pnpm API 恢复到 `jazor/node_modules`。C# 程序集只提供映射和 authoring contract。消费方编写的
-RazorVue 模块生成到消费程序集的 `Jazor.Generated.ModuleCatalog`，不会改写上游 package。
+C# 模块生成到消费程序集的 `Jazor.Generated.ModuleCatalog`，不会改写上游 package。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" PrivateAssets="all" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.0.0" />
+  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 

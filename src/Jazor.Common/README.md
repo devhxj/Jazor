@@ -1,8 +1,8 @@
 # Jazor.Common
 
-> 定位：编译器、分析器、Emit 与 Razor-to-Vue 共用的依赖型实现层。
+> 定位：编译器、分析器、Emit 与 Jolt 共用的依赖型实现层。
 
-`Jazor.Common` 承接需要跨项目共享、但不应污染 `ECMAScript.*` 最小契约面的实现代码。格式化、稳定命名与 SourceMap 支持统一在此维护；Razor-to-Vue 的组件绑定和生成职责仍归其专属项目。
+`Jazor.Common` 承接需要跨项目共享、但不应污染 `ECMAScript.*` 最小契约面的实现代码。格式化、稳定命名与 SourceMap 支持统一在此维护。
 
 ## 职责
 
@@ -19,7 +19,7 @@
 
 - 本项目可以依赖 `System.Text.Json` 等共享实现需要的包。
 - 最小契约仍归 `ECMAScript.Contract`，例如 `JazorAttribute`、`Op` 与 `IUIComponent`。
-- 本项目不拥有 ECMAScript AST、编译器入口、Razor SDK 桥接或组件专属 artifact schema。
+- 本项目不拥有 ECMAScript AST、编译器入口、模板解析或组件专属 artifact schema。
 
 ## 关键区域
 

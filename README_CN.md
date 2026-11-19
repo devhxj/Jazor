@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.0.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.2.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -25,7 +25,7 @@
 
 </div>
 
-> Jazor 2.0.0 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
+> Jazor 2.2.0-preview.1 基于 .NET 11 GA；原生 union 作者面仍需启用 C# preview 语言模式。升级前请审阅 class→record 迁移说明。
 
 > 工具链与 SSR 使用进程内 NodeApi、LibNode 和固定 pnpm API。运行条件与升级步骤见[工具链指南](docs/03-guides/toolchain-migration.md)，支持边界与验证入口见[当前状态](docs/04-roadmap/current-status.md)。
 
@@ -33,17 +33,15 @@ Emit 和 SSR 通过微软 LibNode 使用 Node.js 26，覆盖 Windows 和 glibc L
 
 Jazor 是一套将受支持 C# 语义转换为确定性 ECMAScript 模块的强类型 .NET 工具链。它的核心不依赖 Vue、React 或其他 UI 框架：Roslyn 提供语义模型，`Jazor.Compiler` 将其降低为 ESTree，`Jazor.Emit` 负责物化浏览器产物。
 
-**Jolt 是 Jazor 的应用开发主线。** 用 .jazor 编写强类型 Vue 组件，接入 npm 包，在 VS Code 或 Visual Studio 中编辑。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
+**Jolt 是 Jazor 的应用开发工具。** 用 .jazor 编写强类型 Vue 组件，接入 npm 包，在 VS Code 或 Visual Studio 中编辑。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
 
-[RazorVue](https://github.com/devhxj/RazorVue) 独立维护 .razor 集成、Jazor.Vue、Jazor.Admin，以及 Vuetify、TDesign、Element Plus、Vue Data UI、Lucide、FilePond、VueDraggable 和 WangEditor 绑定。
-
-普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块，适用于普通模块与 RazorVue。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
+普通 NuGet／ProjectReference 引用按实际使用点自动导入，由 ILSpy 恢复实现，再将实际可达且受支持的成员编译为共享模块。配置和支持边界见[普通类库导入](docs/04-roadmap/ordinary-nuget-compilation-research.md)。
 
 普通源码类型沿编译入口及源码依赖参与转换，无需逐类型添加 `[ECMAScript]` 许可标注。class 保留构造与实例行为，record 表达结构化对象；宿主标注仅声明实际 JavaScript 绑定和特殊值语义。具体规则与迁移步骤见[类型与宿主标注指南](docs/03-guides/type-semantics.md)。
 
 ## AI 协作开发
 
-Jazor 核心编译器、RazorVue 和 CLR 支持的第一版，以及首批 500 个测试，均由人工手写完成，前后投入近两年时间，奠定了项目的技术基础。
+Jazor 核心编译器和 CLR 支持的第一版，以及首批 500 个测试，均由人工手写完成，前后投入近两年时间，奠定了项目的技术基础。
 
 在此基础上，AI 主要协助推进文档完善、测试覆盖、外部库封装、迭代优化，以及 CI 和版本管理。后续协作主要使用智谱 GLM-5 系列和 GPT-5 系列；项目方向、代码审查和发版决策仍由维护者负责。
 
@@ -70,7 +68,6 @@ flowchart LR
     end
 ```
 
-
 ## 质量门槛
 
 顶部徽标展示持续适用的验收门槛，而非会过期的单次构建结果。仓库通过可复现脚本验证以下最低要求：
@@ -90,16 +87,14 @@ flowchart LR
 | ECMAScript.Vue | 共享的 Vue 3 类型、组件契约与运行时元数据 |
 | `ECMAScript.*` | 框架无关 ECMAScript 绑定、可选 Vue 生态绑定与 CSS-in-JS 类库 |
 
-
 ### 类库形式与直接引用
 
-类库携带 JavaScript 只有以下两种形式。RazorVue 是纯 Jazor 类库的一种 authoring 场景，
-不是第三种 carrier。
+类库通过以下两种方式之一携带 JavaScript。
 
 | 类库形式 | carrier | 直接引用规则 |
 | --- | --- | --- |
 | JS resource library（`ECMAScript`、Vue、Pinia 及其他已经拥有 `.mjs`/`.js` 的类库） | 包元数据投射为标准 `jazor/` 项目（`package.json`、`pnpm-lock.yaml`、已还原的 `node_modules`，以及显式声明的嵌入包） | 包声明其上游 npm/JSR 身份、导出、副作用和资源边界；Emit 为浏览器和 SSR 配置还原一个共享依赖图。 |
-| 纯 Jazor 类库（`ECMAScript.Style`、`Jazor.Admin` 或其他开发者编写的 C# 和 RazorVue） | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 编写纯 Jazor 模块的项目直接引用 `Jazor`；编写 RazorVue 组件的项目直接引用 `Jazor` 和 `Jazor.Vue`。 |
+| Jazor 类库（`ECMAScript.Style` 或开发者编写的 C# 模块） | 程序集内 `Jazor.Generated.ModuleCatalog`（`ECMAScriptCode`） | 直接引用 `Jazor`。 |
 
 最终可执行或 Web 宿主运行 Emit 时必须直接引用 `Jazor`。宿主一次收集选中的
 `ModuleCatalog` 模块和 manifest 资源；Debug、Release、SSR、HMR 只是同一依赖闭包的输出投影，
@@ -113,10 +108,8 @@ C#；它不是遗留兼容载体。
 纯 Jazor 类库（C# 编译为 ECMAScript）或最终宿主应直接安装核心包：
 
 ```bash
-dotnet add package Jazor --version 2.0.0
+dotnet add package Jazor --version 2.2.0-preview.1
 ```
-
-编写 RazorVue 组件的 Razor SDK 项目需要直接引用 Jazor 和 Jazor.Vue。对应版本见 [RazorVue 兼容性表](https://github.com/devhxj/RazorVue#compatibility)。
 
 完整的包选择、输出设置、SSR 配置与生态绑定见[安装与配置](docs/03-guides/installation-and-configuration.md)。
 
@@ -166,7 +159,6 @@ ASP.NET Core 应用需要 Vue SSR 与 hydration 时，按支持的 SSR 配置设
 | 产品总览 | [docs/README.md](docs/README.md) |
 | 核心编译器架构 | [编译器](docs/02-architecture/compiler.md) |
 | 框架集成规则 | [框架集成层](docs/02-architecture/framework-integrations.md) |
-| 独立维护的 .razor 集成 | [RazorVue](https://github.com/devhxj/RazorVue) |
 | 安装、配置与编写 | [使用指南](docs/03-guides/README.md) |
 | 示例 | [示例](docs/03-guides/examples.md) |
 | 当前范围 | [路线图](docs/04-roadmap/current-status.md) |
@@ -195,15 +187,13 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer
 
 ## 最新更新
 
-[2.2 预览版迁移](CHANGELOG.md#jazor-220-preview1)将 Router 的 Razor 代理组件和 Blazor 事件扩展移入 `Jazor.Vue`。升级时请对齐共享 SDK 和 RazorVue 包的版本，并重编译使用这些类型的项目。
-
-### Jazor 2.0.0 · 2026-11-18
+### Jazor 2.2.0-preview.1 · 2026-11-19
 
 - Emit 和 SSR 使用 Node.js 26.13.1，覆盖 Windows 和 glibc Linux 的 x64、ARM64。
 - macOS 和 Windows x86 的 Emit 或 SSR 可迁至受支持平台，或使用上一发行版本。详见[迁移指南](docs/03-guides/toolchain-migration.md)。
-- 所有 Jazor 和 ECMAScript 包统一升级到 `2.0.0`。
+- 使用 Jolt 2.2.0-preview.1 编写 .jazor 组件，并为 VS Code 或 Visual Studio 安装对应的 VSIX。 [Jolt 作者指南](docs/03-guides/jolt-authoring.md)
 
-版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v2.0.0)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
+版本以[官方发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1)及对应 Git tag 为准；完整历史与迁移说明见 [CHANGELOG](CHANGELOG.md)。
 
 ## 许可证与反馈
 

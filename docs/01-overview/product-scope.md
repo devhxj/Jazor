@@ -21,13 +21,11 @@ Jolt 是应用开发主线。它将 .jazor 中的模板与 C# 语义投影到 Vu
 | 应用主线 | Jolt | .jazor 与 npm 声明 | Vue render-function 模块、源映射与 Vite 应用 | 安装 Jazor.Jolt |
 | 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSSR` 并注册 SSR 服务 |
 
-Jazor 维护 Vue、Vue Router、Pinia、Vue Devtools 和 CSS-in-JS 等共享绑定。Razor 组件库和管理壳由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。
+Jazor 维护 Vue、Vue Router、Pinia、Vue Devtools 和 CSS-in-JS 等共享绑定。
 
 ## 范围边界
 
 Jazor 聚焦受支持 C# 语义在浏览器中的确定性执行。外部类型与成员进入运行时前，须具备明确的宿主映射；映射缺失或语义表达条件不足时，编译器在实际使用点报告诊断。每项可用能力均由实现、映射和可复现证据共同定义。
-
-RazorVue 在独立仓库维护 .razor 备选路径。它以官方 Razor Source Generator 生成的最终 C# 为输入，通过 Jazor 编译器生成 Vue render-function 模块。 [RazorVue](https://github.com/devhxj/RazorVue)
 
 ## 产品组成
 
@@ -39,7 +37,5 @@ RazorVue 在独立仓库维护 .razor 备选路径。它以官方 Razor Source G
 | 宿主映射 | `Jazor.CLR`、`Jazor.Analyzer`、生成器项目 | CLR 白名单、静态诊断和映射生成 |
 | Jolt | Jolt.Syntax、Jolt.Compiler、Jolt.LanguageServer、Jolt.Cli | .jazor、npm 类型投影、编辑与交付 |
 | 交付与宿主 | `Jazor.Emit`、`Jazor.AspNetCore`、`Jazor.AspNetCore.Dev` | 物化、打包、SSR、开发期集成 |
-| 生态与 UI | `ECMAScript.*`、`Jazor.Admin` | Vue 生态绑定、样式和管理壳库 |
+| 生态与样式 | `ECMAScript.*` | ECMAScript、Vue 生态绑定和 CSS-in-JS |
 | 示例 | `samples/` | 真实集成、浏览器验证和使用参考 |
-
-现有 .razor 项目和 Jazor.Admin 通过 RazorVue 仓库维护。 [RazorVue](https://github.com/devhxj/RazorVue)

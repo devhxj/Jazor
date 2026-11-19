@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前版本：[2.0.0（2026-11-18）](https://github.com/devhxj/Jazor/releases/tag/v2.0.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.2.0-preview.1（2026-11-19）](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -22,7 +22,7 @@
 
 正式版后的每次发布仍需完成[当前状态](../04-roadmap/current-status.md)列出的质量门禁、发布消费者门禁与绑定审计，并更新 CHANGELOG；公共 API 冻结与兼容性要求见[1.0 公共 API 冻结审查](./public-api-freeze.md)。
 
-发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、共享绑定的 XML 文档、包形状和 SPA/SSR consumer 证据。Razor 组件库的 contract 基线和发布门禁由 [RazorVue](https://github.com/devhxj/RazorVue) 维护。它通过后才进入正式发布工作流。
+发布候选应先手动运行 `Release Candidate Verification` workflow，或执行 `scripts/csharp/verify-release-candidate.cs`；该入口统一归档 API 兼容性、质量门禁、共享绑定的 XML 文档、包形状和 SPA/SSR consumer 证据。验证通过后进入正式发布工作流。
 
 `1.0.0` 发布之后，通道语义固定为：`MINOR` 承载新增，`PATCH` 承载修复，破坏性变更进入 `MAJOR`。正式 API 基线与兼容性检查继续约束后续发布。
 
@@ -37,8 +37,6 @@
 维护者明确指定本轮 ECMAScript 标注与 class/record 调整以 `1.2.0` 发布。普通源码免许可属于新增能力；去除 class 的隐式对象字面量创建、将 `ErrorOptions`、`PropertyDescriptorRef` 与 WebIDL callback literal 改为 record 仍有破坏性影响，必须按 CHANGELOG 迁移。这是单次 MINOR 通道例外，不改变后续 MAJOR 规则，不覆盖冻结 API 基线，也不跳过发布门禁。
 
 ## 发版节奏
-
-2.2 的 RazorVue 适配层迁移按维护者指定版本交付。Router 代理与 Blazor 事件扩展改由 `Jazor.Vue` 提供，引用这些类型的项目升级后需要重编译。该迁移以 CHANGELOG 的配套包升级说明为准。
 
 - 按语义触发，不按日历：一个完整能力切片完成并通过聚焦回归后发布 `MINOR`；已发布版本发现缺陷时发布 `PATCH`。
 - 不为凑节奏拆分版本，同一主题的多个小能力可以合并进同一个 `MINOR`；也不强制"每个工作日一版"。

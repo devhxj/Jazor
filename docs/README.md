@@ -48,7 +48,6 @@ Jolt 是应用开发主线。它从 `.jazor` 模板、C# 和 npm 组件的公开
 | 从旧运行时升级 | [NodeApi 工具链与迁移](./03-guides/toolchain-migration.md) |
 | 第一次使用 Jazor | [安装与配置](./03-guides/installation-and-configuration.md) -> [快速开始](./03-guides/quick-start.md) |
 | 编写 `.jazor` 组件 | [Jolt 作者指南](./03-guides/jolt-authoring.md) |
-| 维护现有 `.razor` 项目 | [RazorVue](https://github.com/devhxj/RazorVue) |
 | 理解 Jazor 核心 | [系统架构](./01-overview/system-architecture.md) -> [编译器](./02-architecture/compiler.md) -> [产物管线](./02-architecture/artifact-pipeline.md) |
 | 设计多项目类库与资源交付 | [类库产物与引用契约](./02-architecture/library-artifact-contract.md) |
 | 在核心平台上使用框架集成、Vue 生态或 SSR | [框架集成层](./02-architecture/framework-integrations.md) -> [平台与绑定](./02-architecture/platform-and-bindings.md) |

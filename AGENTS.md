@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`Jazor.slnx` is the entry point for the .NET solution. Jolt is the primary application authoring path. RazorVue maintains the optional .razor integration at https://github.com/devhxj/RazorVue.
+`Jazor.slnx` is the entry point for the .NET solution. Jolt is the application authoring tool for typed .jazor components.
 
 | Line | Mode | Key Projects | Description |
 |------|------|-------------|-------------|
@@ -54,13 +54,6 @@ Documentation is organized under `docs/` in five categories:
 Documentation interpretation rule:
 - Historical exploration, old audits, and fixed test snapshots belong only to `docs/05-history/evolution.md`; Git history retains the detailed record.
 - For current compiler semantics, lowering direction, and support boundaries, prefer `src/Jazor.Compiler/ImplementationPrinciples.md`, `docs/02-architecture/compiler.md`, `docs/04-roadmap/current-status.md`, and the current `src/Jazor.Compiler/README.md` / `src/Jazor.CompilerTest/README.md`.
-
-RazorVue artifact and lowering boundary rule (maintained in devhxj/RazorVue):
-- The production input is official Razor SG generated C#, and the output contract is a Vue render-function `.mjs` artifact. Razor DR/IR, generated SFC output, and Jolt protocols are not fallback paths.
-- Razor/C# compiler already validates Razor-side unknown parameters, required parameters, and parameter type mismatches. RazorVue lowering should directly translate official SG generated C# and must not duplicate those checks.
-- Do not introduce intermediate wrapper-JS marker protocols for RazorVue slot/template transport when the same behavior can be expressed as the final Vue render-function shape directly.
-- When RazorVue lowering needs CLR-aware type mapping, import collection, symbol binding, reference stability, or other compiler-owned semantics, it must flow through `Jazor.Compiler` / `SemanticWalker` translation hooks rather than bypassing them with hand-assembled Acornima AST or ad hoc JavaScript string stitching.
-- Direct AST/manual-JS construction in RazorVue is acceptable only for Vue artifact framing that `Jazor.Compiler` does not own (for example Vue runtime bridge code). It must not replace compiler translation for C# expression/function/member semantics.
 
 ## Build, Test, and Development Commands
 
@@ -142,14 +135,13 @@ Compiler support boundary rule:
 - When a JavaScript value domain is known and intentionally shaped, prefer a closed, strongly typed C# union type as the primary public API surface. Union types are now the default representation for host value domains that previously required wrapper records plus `From(...)` factories.
 - On `net11.0` / C# preview projects, the erased-value union priority order is: first the language-native `union` keyword, then a tagged fallback wrapper using `[System.Runtime.CompilerServices.Union]` + `IUnion` when native union cannot preserve semantics. Do not hand-author `[Union]` + `IUnion` wrappers when the same contract can be expressed as `public readonly union Name(T1, T2, ...)` while preserving required authoring ergonomics.
 - Native erased-value unions are only safe when their branch types are mutually non-assignable. If any branch type is assignable to another branch type (for example `ScrollPositionElement : ScrollPositionCoordinates`), use a tagged fallback wrapper with `[System.Runtime.CompilerServices.Union]` + `IUnion` so `AsX` projections remain exact and cannot be widened by `Value as BaseType`. A bare `IUnion` implementation without `[System.Runtime.CompilerServices.Union]` is not an erased-value union contract.
-- Preserve compatibility members such as `AsX` projections, collection builders, and strongly typed overload/initializer entry points when migrating an existing wrapper to the `union` keyword. The migration is only acceptable when normal assignment, implicit union construction, overload resolution, Razor SG binding, and compiler erased-value projection keep the same public behavior.
+- Preserve compatibility members such as `AsX` projections, collection builders, and strongly typed overload/initializer entry points when migrating an existing wrapper to the `union` keyword. The migration is only acceptable when normal assignment, implicit union construction, overload resolution, and compiler erased-value projection keep the same public behavior.
 - Treat removed legacy union compatibility surfaces as fully retired. Do not add new public host APIs, generated WebIDL output, compatibility markers, or compiler erased-union recognition paths that depend on the retired generic-wrapper or marker model; use named native `union` contracts first, or a strongly typed `[System.Runtime.CompilerServices.Union]` + `IUnion` fallback when native union cannot preserve exact tagged projection semantics.
 - If a class source type, scalar source type, or union branch can already be expressed cleanly through normal C# assignment, implicit conversion, overload resolution, or union construction, prefer that direct expression. Do not introduce `From(...)` helpers as a default habit when the language already models the contract cleanly.
 - Use explicit overloads when they are clearer than a union for a small number of common call forms, when overload resolution materially improves C# authoring ergonomics, or when C# collection-initializer `Add(...)` binding needs a strong typed entry point.
 - Treat explicit `From(...)` factories as a narrow compatibility or language-boundary bridge, not a second weak API surface and not the default authoring style: every factory overload must stay strongly typed, map to one intentional target contract, and exist only for scenarios union syntax, assignment, implicit conversion, or overload resolution cannot model ergonomically or legally.
 - Only introduce analyzer rules, compiler special lowering, or JavaScript-side runtime guards when the required constraint cannot be expressed faithfully in the C# type system, or when runtime semantics explicitly require additional enforcement beyond C# authoring constraints.
 - For JavaScript values with broad runtime domains, prefer dedicated host union/value types or explicit overload families over `object?` catch-alls. If a compiler/runtime special case is added, document why the C# surface alone was insufficient.
-- RazorVue `.razor` component parameter surfaces must also remain valid for the official Razor Source Generator. Do not choose a parameter type shape that only RazorVue lowering can understand if the generated `.razor.g.cs` cannot compile under the SDK Razor SG. Static Razor attribute authoring, enum-like string domains, and union-valued props must be designed against both Razor SG binding rules and RazorVue lowering semantics.
 - Generic arguments and array element types are treated as erased compile-time annotations unless the compiler is directly lowering that concrete type's runtime semantics.
 - Do not reject `List<Unsupported>`, `Task<Unsupported>`, `Dictionary<TKey, Unsupported>`, `Unsupported[]`, or similar shapes only because their erased type arguments are unsupported.
 - Reject unsupported external types only when the type itself is being materialized or lowered with runtime semantics, such as `new Unsupported()`, `default(Unsupported)` when a concrete lowering is required, runtime type checks, or direct static/instance member access on `Unsupported`.
@@ -209,4 +201,4 @@ when preparing or completing a repository release.
 
 ## Commit & Pull Request Guidelines
 
-Recent history uses Conventional Commit-style prefixes, often with an emoji, for example `♻️ refactor(compiler): ...`, `✅ test(razorvue): ...`, and `🐛 fix(emit): ...`. Keep scopes specific (`compiler`, `razorvue`, `clr`, `emit`, `test`, `docs`) and subjects imperative. Pull requests should summarize the affected module, describe behavior changes, list the commands you ran, and include sample output or screenshots when the change affects generated code or developer-facing tooling.
+Recent history uses Conventional Commit-style prefixes, often with an emoji, for example `♻️ refactor(compiler): ...`, `✅ test(jolt): ...`, and `🐛 fix(emit): ...`. Keep scopes specific (`compiler`, `jolt`, `clr`, `emit`, `test`, `docs`) and subjects imperative. Pull requests should summarize the affected module, describe behavior changes, list the commands you ran, and include sample output or screenshots when the change affects generated code or developer-facing tooling.

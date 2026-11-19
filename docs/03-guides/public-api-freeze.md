@@ -6,21 +6,18 @@
 
 ## 稳定决策
 
-- 包名保持现状，公开包 lockstep；核心、Vue opt-in、管理壳与生态 binding 分别承担各自契约。
+- 包名保持现状，公开包 lockstep；核心 SDK、Jolt 工具和 ECMAScript 绑定各自维护公开契约。
 - ASP.NET Core 生产宿主与开发宿主程序集继续随 `Jazor` 交付，不因模块分层增加宿主 NuGet 包。
 - 扩展入口保留 PascalCase 的 `AddJazor*` / `UseJazor*` 和既有 `Ssr` 拼写；配置保持明确类型、只读集合和显式委托。
 - 当前作者表面见[人工可读基线](./public-api-baseline.md)，权威比较范围和工具如下。历史签名及已批准移除仍由机器记录保存。
 - 新增进入 MINOR，修复进入 PATCH，正式版后的破坏性改变进入 MAJOR；1.1.0/1.2.0 的单次例外见[版本规则](./release-and-versioning.md)。
-
 
 ## 包名与命名空间基线
 
 | 包 | 稳定用途 | 公开命名空间 | 冻结意见 |
 | --- | --- | --- | --- |
 | `Jazor` | 编译器、Emit、MSBuild 与 ASP.NET Core 生产宿主集成 | `Jazor.*`、`Jazor.AspNetCore` | 保持 |
-| `Jazor.Vue` | 官方 Razor Source Generator 到 Vue render-function 的 opt-in 集成 | `Jazor.RazorVue`、`ECMAScript.Vue*` | 保持 |
 | `Jazor.AspNetCore.Dev`（`Jazor` 包内程序集） | 统一 frontend orchestration 与 Development reload/HMR | `Jazor.AspNetCore.Dev` | 不新增独立 NuGet 包 |
-| `Jazor.Admin` | UI 库无关的管理壳与 RazorVue 组件 | `Jazor.Admin` | 保持 |
 | `ECMAScript.*` | ECMAScript、Vue 生态与样式绑定 | 各包现有命名空间 | 按各自 binding 审查，不在本表重命名 |
 
 包名、程序集名、RootNamespace 和 README 安装示例保持一致。未来拆分 `Jazor.AspNetCore` 包或改变资源 carrier 进入 MAJOR 版本通道。
@@ -80,9 +77,9 @@ SSR envelope 的 schema/version、provider key、认证保留 key、错误传播
 
 ## 每次发布的兼容性验证
 
-1. 在发布候选 ref 上生成当前 API 快照，与保留的正式冻结基线比较，覆盖上述两个 ASP.NET Core 命名空间、`Jazor.Admin` 和所有受审查 lockstep 作者程序集。
+1. 在发布候选 ref 上生成当前 API 快照，与保留的正式冻结基线比较，覆盖上述两个 ASP.NET Core 命名空间和所有受审查 lockstep 作者程序集。
 2. 对每个 `AddJazor*` / `UseJazor*` 入口保留至少一个源码消费者测试，并验证默认配置、链式返回值、异常/ no-op 行为。
-3. 运行当前状态页列出的主线测试、编译器/RazorVue/Vue binding 覆盖率门禁，以及 Windows SPA/SSR 发布消费者门禁。
+3. 运行当前状态页列出的主线测试、编译器与 Vue binding 覆盖率门禁，以及 Windows SPA/SSR 发布消费者门禁。
 4. 检查 README、安装指南、示例、路线图和 CHANGELOG 使用的包名、命名空间、扩展方法拼写完全一致。
 5. 在 CHANGELOG 的目标版本条目中记录变更与迁移；保留 API 差异、批准记录和门禁证据。
 6. 所有候选检查通过后，创建目标版本 tag，由正式工作流重新验证并上传。
@@ -111,7 +108,7 @@ dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api
 dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline docs/03-guides/public-api-baseline.snapshot.md --approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md --output artifacts/api/public-api-compatibility.md
 ```
 
-首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，未审阅的删除或签名变化会使命令失败。1.1.0 的 TaskName 删除通过显式 `--approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md` 放行，报告仍保留差异。快照覆盖宿主、开发 reload、Jazor.Admin、Jazor/Jazor.Vue 以及 P3-A/B/C、Monaco 和其他 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common、Contract、RazorVue 和 Blazor 程序集不计入作者 API 冻结面。
+首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，未审阅的删除或签名变化会使命令失败。1.1.0 的 TaskName 删除通过显式 `--approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md` 放行，报告仍保留差异。快照覆盖宿主、开发 reload 和纳入发布的 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common 和 Contract 程序集不计入作者 API 冻结面。
 
 ## 变更规则
 

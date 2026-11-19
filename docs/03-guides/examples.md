@@ -13,6 +13,4 @@
 | `samples/ECMAScript.VueRoute.MemorySmoke/` | Vue Router 模块与浏览器验证 | Router 绑定与导航运行时 |
 | `samples/Wiki/` | 端到端示例应用 | 使用与验证参考 |
 
-`.razor` 示例、管理壳和组件库示例由独立仓库维护。 [RazorVue 示例](https://github.com/devhxj/RazorVue/tree/main/samples)
-
 部分示例拥有专用的构建、浏览器或 smoke 脚本。可从 [scripts/csharp README](../../scripts/csharp/README.md) 查找当前验证入口；`bin/`、`obj/`、`node_modules/`、`.tmp/` 和测试结果归属构建与验证输出。

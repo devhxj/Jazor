@@ -26,7 +26,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit
 ```
 
-本地 NuGet、外部 Razor SG、NodeApi 和真实浏览器消费者矩阵属于发布验收 lane：
+本地 NuGet、NodeApi 和真实浏览器消费者矩阵属于发布验收 lane：
 
 ```bash
 dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer

@@ -2,6 +2,11 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## Unreleased
+
+- Jazor 应用指南和 Wiki 将 Jolt 作为 .jazor 开发入口。Wiki 直接依赖 ECMAScript.Vue。
+- Jazor's application guides and Wiki point to Jolt for .jazor development. The Wiki references ECMAScript.Vue directly.
+
 ## 2026-11-19
 
 ### Jazor 2.2.0-preview.1

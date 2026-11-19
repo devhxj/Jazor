@@ -172,7 +172,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project <binding-lane>
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 ```
 
-真实 RazorVue consumer 和适用的浏览器/SSR smoke 为绑定进入 Support 矩阵的最终证据。
+独立包消费者 和适用的浏览器/SSR smoke 为绑定进入 Support 矩阵的最终证据。
 
 ## 包接线
 

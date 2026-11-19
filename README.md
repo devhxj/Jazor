@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.0.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.0.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.2.0-preview.1&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -25,7 +25,7 @@
 
 </div>
 
-> Jazor 2.0.0 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
+> Jazor 2.2.0-preview.1 targets .NET 11 GA. Native union authoring still requires C# preview language mode. Review the class-to-record migration before upgrading.
 
 > Tooling and SSR run through in-process NodeApi, LibNode and the fixed pnpm API. The [toolchain guide](docs/03-guides/toolchain-migration.md) defines runtime conditions and upgrade steps; [current status](docs/04-roadmap/current-status.md) identifies support boundaries and verification commands.
 
@@ -33,14 +33,13 @@ Emit and SSR use Node.js 26 via Microsoft's LibNode on Windows and glibc Linux x
 
 Jazor is a typed .NET toolchain for compiling supported C# semantics into deterministic ECMAScript modules. It is framework-neutral at its core: Roslyn supplies the semantic model, `Jazor.Compiler` lowers it to ESTree, and `Jazor.Emit` materializes browser artifacts.
 
-**Jolt is Jazor's primary app authoring path.** Write typed Vue components in .jazor, consume npm packages, and use the VS Code or Visual Studio extension. [Start with Jolt](docs/03-guides/jolt-authoring.md)
+**Jolt is Jazor's application authoring tool.** Write typed Vue components in .jazor, consume npm packages, and use the VS Code or Visual Studio extension. [Start with Jolt](docs/03-guides/jolt-authoring.md)
 
-[RazorVue](https://github.com/devhxj/RazorVue) maintains the optional .razor integration, Jazor.Vue, Jazor.Admin, and the Vuetify, TDesign, Element Plus, Vue Data UI, Lucide, FilePond, VueDraggable, and WangEditor bindings.
-Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules, including RazorVue consumers. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
+Reference ordinary managed libraries normally through NuGet or ProjectReference. Jazor uses ILSpy to recover selected implementations and compiles reachable members into shared modules. See [configuration and support boundaries](docs/04-roadmap/ordinary-nuget-compilation-research.md).
 
 ## AI-assisted development
 
-The initial implementations of Jazor's core compiler, RazorVue, and CLR support, together with the first 500 tests, were written by hand over nearly two years. This work established the project's technical foundation.
+The initial implementations of Jazor's core compiler and CLR support, together with the first 500 tests, were written by hand over nearly two years. This work established the project's technical foundation.
 
 AI assistance has primarily helped advance documentation, test coverage, external library bindings, iterative improvements, CI, and version management. The Zhipu GLM-5 and GPT-5 series have been the main AI collaborators in this subsequent work; maintainers continue to guide the project, review changes, and make release decisions.
 
@@ -69,7 +68,6 @@ flowchart LR
     end
 ```
 
-
 ## Quality Gates
 
 The badges above show maintained acceptance thresholds rather than a stale one-off result. The repository verifies the following minimums through repeatable scripts:
@@ -89,16 +87,14 @@ Run `verify-compiler-coverage.cs` or `verify-vue-binding-coverage.cs` under `scr
 | `ECMAScript.Vue` | Shared Vue 3 types, component contracts, and runtime metadata |
 | `ECMAScript.*` | Framework-neutral ECMAScript bindings plus optional Vue ecosystem bindings and CSS-in-JS libraries |
 
-
 ### Library forms and direct references
 
-A library has exactly one of these two JavaScript carriers. RazorVue is an authoring mode of the
-pure Jazor form, not a third carrier.
+A library carries JavaScript in one of two ways.
 
 | Library form | Carrier | Direct reference rule |
 | --- | --- | --- |
 | JS resource library (`ECMAScript`, Vue, Pinia, and other libraries that already own `.mjs`/`.js`) | Package metadata projected into a standard `jazor/` project (`package.json`, `pnpm-lock.yaml`, restored `node_modules`, and explicitly declared embedded packages) | The package declares its upstream npm/JSR identity, exports, side effects, and resource edges; Emit restores one shared graph for browser and SSR profiles. |
-| Pure Jazor library (`ECMAScript.Style`, `Jazor.Admin`, or other developer-authored C# and RazorVue) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | A pure Jazor authoring project directly references `Jazor`; a RazorVue authoring project directly references both `Jazor` and `Jazor.Vue`. |
+| Jazor library (`ECMAScript.Style` or author-written C# modules) | Assembly `Jazor.Generated.ModuleCatalog` (`ECMAScriptCode`) | Directly reference `Jazor`. |
 
 The final executable or web host directly references `Jazor` when it runs Emit. It collects the
 selected `ModuleCatalog` modules and manifest resources once; Debug, Release, SSR, and HMR are
@@ -113,10 +109,8 @@ For a pure Jazor library (C# compiled to ECMAScript) or the final host, add the 
 directly:
 
 ```bash
-dotnet add package Jazor --version 2.0.0
+dotnet add package Jazor --version 2.2.0-preview.1
 ```
-
-For .razor projects, see the compatibility table in [RazorVue](https://github.com/devhxj/RazorVue).
 
 Detailed package selection, output settings, SSR configuration, and ecosystem bindings are in [Installation and Configuration](docs/03-guides/installation-and-configuration.md).
 
@@ -166,7 +160,6 @@ Set `JazorSSR=true` with the supported SSR setup when an ASP.NET Core applicatio
 | Product overview | [docs/README.md](docs/README.md) |
 | Core compiler architecture | [Compiler](docs/02-architecture/compiler.md) |
 | Framework integration rules | [Framework Integrations](docs/02-architecture/framework-integrations.md) |
-| Standalone .razor integration | [RazorVue](https://github.com/devhxj/RazorVue) |
 | Install, configure, and author | [Guides](docs/03-guides/README.md) |
 | Examples | [Examples](docs/03-guides/examples.md) |
 | Current scope | [Roadmap](docs/04-roadmap/current-status.md) |
@@ -195,15 +188,13 @@ Repository automation uses single-file C# entry points under `scripts/csharp/`. 
 
 ## Latest release
 
-The [2.2 preview migration](CHANGELOG.md#jazor-220-preview1) moves the Razor Router proxies and Blazor event extensions to `Jazor.Vue`. Upgrade the shared SDK and RazorVue packages together and rebuild projects using the moved types.
-
-### Jazor 2.0.0 · 2026-11-18
+### Jazor 2.2.0-preview.1 · 2026-11-19
 
 - Emit and SSR use Node.js 26.13.1 on Windows and glibc Linux x64 and ARM64.
 - Move macOS and Windows x86 Emit or SSR workloads to a supported platform, or use the previous release. See the [migration guide](docs/03-guides/toolchain-migration.md).
-- Upgrade all Jazor and ECMAScript packages together to `2.0.0`.
+- Install Jolt 2.2.0-preview.1 for .jazor authoring and use the matching VSIX for either editor. [Jolt setup](docs/03-guides/jolt-authoring.md)
 
-Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v2.0.0) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
+Use the [official release page](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1) and matching Git tag as the version reference. Full release history and migration guidance are in the [Changelog](CHANGELOG.md).
 
 ## License and Feedback
 

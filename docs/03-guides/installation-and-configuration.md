@@ -8,19 +8,17 @@
 
 ## 前置条件
 
-当前正式版本为 **2.0.0（2026-11-18）**。版本与发布说明以[主仓库 Release](https://github.com/devhxj/Jazor/releases/tag/v2.0.0)和对应 tag 为准。安装时显式指定版本，NuGet UI 无需启用“包括预发行版”。安装或升级时，将全部 Jazor/ECMAScript 包统一更新到 `2.0.0`，并安装 .NET SDK `11.0.100` 或 `global.json` 允许的更新正式 SDK；普通源码无需 `[ECMAScript]` 许可，class 保留类语义、record 承担对象字面量；受影响的 class 声明、继承及宿主配置迁移见下文和 CHANGELOG。更早预览版的迁移路径见 [CHANGELOG](../../CHANGELOG.md)。
+当前示例使用已发布的 **2.2.0-preview.1**。Jazor 与 ECMAScript 包使用同一版本，NuGet UI 中请选择“包括预发行版”。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.2.0-preview.1 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0-preview.1)
 
-P3-A/B/C 与 Monaco 的十个绑定包已可安装，但在补齐 browser smoke 与真实 RazorVue consumer 证据前仍属于 Guidance，不进入当前 Support 矩阵。
+日期、VueUse、浮动定位、表单、国际化、服务端状态和 Monaco 的七个绑定包已可安装，但在补齐 真实浏览器和独立包消费者验证前仍属于 Guidance，不进入当前 Support 矩阵。
 
-live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
+live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browser-interop.md)；升级时统一使用下文的 lockstep 包版本。
 
 - 使用仓库 [global.json](../../global.json) 指定的 .NET SDK；当前基线为 .NET SDK `11.0.100`，项目目标为 `net11.0`；使用原生 `union` 的项目仍须设置 `<LangVersion>preview</LangVersion>`。
-- Jazor 主仓库发布的 SDK 和共享绑定使用同一版本。RazorVue 及其组件包使用[独立兼容性表](https://github.com/devhxj/RazorVue#compatibility)。
+- Jazor 发布的 SDK 和生态绑定使用同一版本。
 - ECMAScript 源码库通过 NuGet carrier 写入项目源码，绑定库通过 npm/JSR dependency 接入项目。
 
 ## 选择包
-
-下表中的独立 Vue 绑定组合适用于 `2.1.0-preview.6` 及后续版本。使用 `2.0.0` 时，按对应版本的文档选择依赖。
 
 | 需求 | 必需包 | 可选包 |
 | --- | --- | --- |
@@ -28,20 +26,18 @@ live DOM、BigInt JSON、原生文件/拖放及 Razor 语法示例见[浏览器�
 | 普通 C# -> ECMAScript 类库 | `Jazor` | 不需要 Vue 依赖 |
 | 复用普通 NuGet / ProjectReference | `Jazor` 和原本的库引用 | 按实际使用点自动恢复受支持实现，无需额外导入项；范围见[类库导入](../04-roadmap/ordinary-nuget-compilation-research.md) |
 | `.jazor` 组件 | `Jazor.Jolt`，按 [Jolt 作者指南](./jolt-authoring.md) 安装 | 项目选用的 npm 组件与编辑器扩展 |
-| `.razor` 组件与管理壳 | 见 [RazorVue 的兼容性表](https://github.com/devhxj/RazorVue#compatibility) | 按应用选择 Razor 组件包 |
 | Vue Router | `Jazor`、`ECMAScript.VueRoute` | |
 | Pinia | `Jazor`、`ECMAScript.Pinia` | `ECMAScript.Pinia.Testing` |
 | Vue Devtools 自定义插件 | `Jazor`、`ECMAScript.Vue.Devtools` | |
 | 日期、浏览器工具与浮动定位 | `Jazor`、`ECMAScript.DateFns` / `ECMAScript.VueUse` / `ECMAScript.FloatingUi` | 按应用选择 |
 | 表单、国际化与服务端状态 | `Jazor`、`ECMAScript.VeeValidate` / `ECMAScript.VueI18n` / `ECMAScript.VueQuery` | 按应用选择 |
-| Razor 拖拽、文件上传与富文本 | 按 [RazorVue 的兼容性表](https://github.com/devhxj/RazorVue#compatibility) 选择 `ECMAScript.VueDraggable`、`ECMAScript.FilePond` 或 `ECMAScript.WangEditor` | 按应用选择 |
 | Monaco 编辑器 | `Jazor`、`ECMAScript.Monaco` | bundler/worker 配置按应用提供 |
 
 核心包示例：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
+  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 
@@ -51,17 +47,17 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.DateFns" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VueUse" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Monaco" Version="2.0.0" />
+  <PackageReference Include="ECMAScript.Style" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.DateFns" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueUse" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Monaco" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 
@@ -75,11 +71,11 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 </ItemGroup>
 ```
 
-路径必须是生成 `ModuleCatalog` 中的模块路径，可以声明多个启动根。省略时沿用原有入口集合；显式选择仅影响浏览器入口，所有作者模块仍被物化并执行语法与 Vite 模块图检查，SSR/hydration 根独立。RazorVue 路由页面通过 literal `import()` 按导航加载，布局仍静态导入。页面或编辑器若仍被启动模块静态导入，就仍属于首屏闭包。
+路径必须是生成 `ModuleCatalog` 中的模块路径，可以声明多个启动根。省略时沿用原有入口集合；显式选择仅影响浏览器入口，所有作者模块仍被物化并执行语法与 Vite 模块图检查，SSR/hydration 根独立。路由页面可通过字面量 `import()` 按需加载。页面或编辑器若仍被启动模块静态导入，就仍属于首屏闭包。
 
 输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；源码类库通过 `ModuleCatalog` 或源码 locator 传递模块，binding 通过 metadata 传递 npm/JSR identity 与入口。最终宿主调用 Emit 写出源码、入口和 `package.json`，再通过进程内 pnpm API 恢复 `node_modules` 并生成或验证 `pnpm-lock.yaml`。
 
-多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块或 RazorVue 组件的类库直接引用相应工具；最终宿主直接引用并配置 Emit。工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
+多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块的类库直接引用 `Jazor`；最终宿主直接引用并配置 Emit。工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
 
 ```xml
 <PropertyGroup>
@@ -91,7 +87,7 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
 | `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另调用 Vite build API；默认值在 targets 中设置，允许项目体用空值条件设置模式 |
-| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；保留此目录中的作者 `.cs` / `.razor` 输入，只排除生成资源 |
+| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；保留此目录中的作者 `.cs` 输入，只排除生成资源 |
 | `JazorSSR` | `false` | 生成开发 SSR 入口；Release 另构建 `ssr/` 运行闭包 |
 | `JazorPnpmStoreDirectory` | 用户本地 Jazor store | 共享 pnpm store；不要求生产部署恢复依赖 |
 | `JazorPublishSourceMaps` | `false` | 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |
@@ -105,7 +101,7 @@ Folder Publish 使用 Release 构建运行闭包，发布后的 `jazor/` 包含 
 
 升级时统一所有 Jazor/生态包的版本，并审阅[工具链](./toolchain-migration.md)和[类型语义](./type-semantics.md)的迁移步骤。含作者配置的 `JazorDir` 应先保留和合并；确认可再生后再清理旧安装结果。历史 API 与目录布局见[演进记录](../05-history/evolution.md)。
 
-开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成资源不参与 MSBuild 作者输入，`JazorDir` 中的作者 `.cs` / `.razor` 文件保留；更新缺少安全热替换证据时，服务执行整页刷新。
+开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成资源不参与 MSBuild 作者输入，`JazorDir` 中的作者 `.cs` 文件保留；更新缺少安全热替换证据时，服务执行整页刷新。
 
 `ECMAScript.Style` 的 DSL 使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`，并生成 CSS `background-color`。WebIDL 生成的 DOM 对象按规范使用 `backgroundColor`。两套 C# 表面分别维持既定命名：`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型采用 PascalCase，生成 CSS、`style.js` 与浏览器 HMR 协议。
 
@@ -188,4 +184,3 @@ ASP.NET Core 负责路由、静态文件与响应。`Jazor.AspNetCore` 在开发
 - 应用开发：[Jolt 作者指南](./jolt-authoring.md)
 - 产物归属：[产物管线](../02-architecture/artifact-pipeline.md)
 - 多项目类库、直接引用与源码/绑定传播：[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)
-- `.razor` 集成与管理壳：[RazorVue](https://github.com/devhxj/RazorVue)

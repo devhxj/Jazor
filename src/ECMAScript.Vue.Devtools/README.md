@@ -3,20 +3,19 @@
 > 定位：`@vue/devtools-api` 8.1.5 的独立强类型 C# binding，用于 author custom Vue Devtools plugin，而不是浏览器扩展或 Devtools 内部实现的封装。
 
 本包只提供 `@vue/devtools-api` 的 C# authoring contract，不重复携带运行时文件。运行时
-资源由 `Jazor.Vue` manifest 声明的 embedded Vue runtime bridge 提供；调用方编写的插件模块
+资源由 `ECMAScript.Vue` manifest 声明的 npm 依赖提供；调用方编写的插件模块
 仍由自身的 Jazor 工具生成到程序集 `Jazor.Generated.ModuleCatalog`。
 
 ## 安装
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.0.0" />
-  <PackageReference Include="Jazor.Vue" Version="2.0.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.0.0" />
+  <PackageReference Include="Jazor" Version="2.2.0-preview.1" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.2.0-preview.1" />
 </ItemGroup>
 ```
 
-所有 Jazor、`Jazor.Vue` 和 `ECMAScript.*` 包应使用相同版本。Emit 根据各 binding manifest 将 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的 npm identity 写入标准 `jazor/package.json`，由 pnpm API 恢复共享 `node_modules`；本包只提供 authoring contract。
+所有 `Jazor` 和 `ECMAScript.*` 包应使用相同版本。Emit 根据各 binding manifest 将 Vue、`@vue/devtools-api` 与 `perfect-debounce` 的 npm identity 写入标准 `jazor/package.json`，由 pnpm API 恢复共享 `node_modules`；本包只提供 authoring contract。
 
 ## 使用
 

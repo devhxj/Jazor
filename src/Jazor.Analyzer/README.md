@@ -2,7 +2,7 @@
 
 > 定位：ECMAScript 编译域的 Roslyn 预诊断分析器。
 
-`Jazor.Analyzer` 承载 `ECMAScript` / `Jazor.Compiler` 主线的静态诊断。直接引用 `Jazor` 时，包的 MSBuild targets 注册 analyzer，设计时构建也保留该注册，使 IDE 和构建均可提前报告问题。Razor Source Generator 接入与 Vue 作者面兼容性诊断由 `Jazor.RazorVue` 负责。
+`Jazor.Analyzer` 承载 `ECMAScript` / `Jazor.Compiler` 主线的静态诊断。直接引用 `Jazor` 时，包的 MSBuild targets 注册 analyzer，设计时构建也保留该注册，使 IDE 和构建均可提前报告问题。
 
 ## 职责
 
@@ -17,8 +17,7 @@
 - 白名单诊断覆盖模块/宿主编译入口以及源码闭包中可达的普通辅助类型，前端辅助类型不要求逐个添加宿主标注；`Spread` 用法诊断随该特性检查。生成代码不参与本分析器诊断。没有 analyzer 报错不等于所有 lowering 均能成功，依赖具体发射上下文的限制仍由 compiler 裁决。
 - 泛型参数 `T` 本身允许通过，不追踪它的来源或数据流；闭合的具体类型会提前诊断。这不要求 compiler 拒绝相同的 erased positions。
 - `ECMAScript.Contract` 提供最小声明契约，`Jazor.Common` 提供 `Format` 与 `SourceMaps` 等共享实现。
-- 外部组件使用 `[ECMAScript("specifier")]` 与名称机制声明导入；Analyzer 不依赖 Vue、React 或其他框架的专属 attribute。组件身份、Razor SG 绑定和渲染协议由对应适配层负责，退役的组件标注模型不再作为兼容入口。
-- `Jazor.RazorVue` 持有 Razor SDK final-document 绑定、Vue 作者面兼容性诊断与 lowering 边界。
+- 外部组件使用 `[ECMAScript("specifier")]` 与名称机制声明导入；Analyzer 不依赖 Vue、React 或其他框架的专属 attribute。Jolt 负责 .jazor 的组件绑定与模板诊断。
 
 ## 代码结构
 
@@ -55,5 +54,4 @@ dotnet build src/Jazor.Analyzer/Jazor.Analyzer.csproj
 ## 相关文档
 
 - [Jazor.Compiler](../Jazor.Compiler/README.md)
-- [Jazor.RazorVue](https://github.com/devhxj/RazorVue/tree/main/src/Jazor.RazorVue/README.md)
 - [编译器架构](../../docs/02-architecture/compiler.md)

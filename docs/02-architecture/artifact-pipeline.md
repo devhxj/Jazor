@@ -26,7 +26,7 @@ Emit 在 MSBuild 阶段将 carrier 物化为标准项目，再经共享 `Jazor.N
 
 | 输入 | 产生方 | Emit 的处理 |
 | --- | --- | --- |
-| `Jazor.Generated.ModuleCatalog` | Compiler / RazorVue | 写入生成模块、Entries、source map、相对依赖与 package imports |
+| `Jazor.Generated.ModuleCatalog` | Jazor.Compiler | 写入生成模块、Entries、source map、相对依赖与 package imports |
 | ECMAScript 源码 carrier | ECMAScript 源码库 | 按声明路径写入 `clr/**` 等项目源码 |
 | binding declaration | `ECMAScript.*` | 收集 npm/JSR 身份、精确版本、specifier 与显式样式入口 |
 | 应用资源 | 最终宿主 / ModuleCatalog | 按源码 import 或 URL 的目标路径写出 CSS、worker、字体、图片和 wasm |
@@ -82,4 +82,4 @@ SSR 不再通过 loopback HTTP 或 package task 启动，`TaskName` 设置已移
 
 `dotnet publish` 仅交付 `dist/**` 和启用后的 `ssr/**`，运行时所需 NodeApi/libnode 资产随宿主发布。Windows 应启动该构建的 apphost，以保留 `CETCompat=false`，不要用另一个工具宿主替代。
 
-当前 Windows x64 的真实证据包含 pnpm/JSR 解析、Vite/HMR、Pinia/VueRoute DOM、JazorAdmin、Wiki PathBase，以及从 NuGet 发布到干净目录的 SPA/SSR 和 hydration。跨平台、覆盖率与全仓库门禁仍须按迁移方案完成，不能据此扩大支持声明。
+当前 Windows x64 的真实证据包含 pnpm/JSR 解析、Vite/HMR、Pinia/VueRoute DOM、Wiki PathBase，以及从 NuGet 发布到干净目录的 SPA/SSR 和 hydration。跨平台、覆盖率与全仓库门禁仍须按迁移方案完成，不能据此扩大支持声明。

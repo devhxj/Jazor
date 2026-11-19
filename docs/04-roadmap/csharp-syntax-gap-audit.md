@@ -1,4 +1,4 @@
-# C# and RazorVue support boundaries and issue index
+# C# support boundaries and issue index
 
 > Current scope: Jazor 1.3.0. The original audit's observations and probe limits are summarized in the [evolution record](../05-history/evolution.md). This page tracks individual feature boundaries and follow-up work.
 
@@ -8,10 +8,9 @@ The remaining enhancement and documentation issues require individual product de
 
 ## Scope and prioritization
 
-The inventory separates C# syntax from unavailable .NET APIs and does not establish support for every language-feature combination. Source compilation, analyzer diagnostics, Razor direct-render lowering and package integration have distinct validation layers. Use the [compiler contract](../../src/Jazor.Compiler/README.md), [RazorVue authoring guide](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md) and targeted regressions to assess a concrete form.
+The inventory separates C# syntax from unavailable .NET APIs and does not establish support for every language-feature combination. Source compilation, analyzer diagnostics and package integration have distinct validation layers. Use the [compiler contract](../../src/Jazor.Compiler/README.md) and targeted regressions to assess a concrete form.
 
 Prioritize high-frequency source/library features with real reproducers, then rendering composition through compiler hooks. Representation changes such as generic reification, value/location carriers, handlers and stack buffers require separate protocol decisions. Keep dynamic binding, unmanaged addresses, finalizers and erased nominal identity within explicit boundaries unless requirements justify expansion.
-
 
 ## Individual issues
 
@@ -55,7 +54,7 @@ Prioritize high-frequency source/library features with real reproducers, then re
 | [#93 — Document the unsupported destructor/finalizer boundary](https://github.com/devhxj/Jazor/issues/93) | `documentation` | Keep CLR finalizers outside the JS artifact contract. |
 | [#101 — Assess enum values inside interpolated strings](https://github.com/devhxj/Jazor/issues/101) | `enhancement` | Useful for diagnostics and UI text, through compile-time metadata rather than runtime enum objects. |
 | [#102 — Initialize managed array elements with supported C# defaults](https://github.com/devhxj/Jazor/issues/102) | `bug` — resolved in 1.3.0 | Initialize every allocated element; allocate independent structured defaults and evaluate rectangular dimensions once. |
-| [#103 — Initialize unassigned static module fields with C# defaults](https://github.com/devhxj/Jazor/issues/103) | `bug` — resolved in 1.3.0 | Reuse compiler-owned typed defaults for fields and backing storage. Initialize all module storage before executing nonconstant authored initializers, preserving forward reads through helper calls. RazorVue owns its existing setup/props phases. |
+| [#103 — Initialize unassigned static module fields with C# defaults](https://github.com/devhxj/Jazor/issues/103) | `bug` — resolved in 1.3.0 | Reuse compiler-owned typed defaults for fields and backing storage. Initialize all module storage before executing nonconstant authored initializers, preserving forward reads through helper calls. |
 | [#108 — Bind expression-bodied checked, null-suppression and ref wrappers without internal exceptions](https://github.com/devhxj/Jazor/issues/108) | `bug` — resolved in 1.3.0 | Obtain the bound arrow-body operation when wrapper syntax has no direct operation. |
 | [#133 — Support instance extension methods declared in extension blocks](https://github.com/devhxj/Jazor/issues/133) | `enhancement` | Useful current C# authoring syntax, distinct from classic this-parameter methods. |
 | [#135 — Assess assignment to static fields exported by another generated module](https://github.com/devhxj/Jazor/issues/135) | `enhancement` | Useful only with an owner-side mutation protocol; keep explicit rejection until then. |
@@ -196,29 +195,3 @@ Prioritize high-frequency source/library features with real reproducers, then re
 | [#98 — Preserve or reject custom record constructor bodies instead of dropping them](https://github.com/devhxj/Jazor/issues/98) | `bug` — resolved in 1.3.0 | Reject executable bodies and constructor initializers instead of discarding their behavior. |
 | [#99 — Preserve record struct copy semantics during assignment](https://github.com/devhxj/Jazor/issues/99) | `bug` — resolved in 1.3.0 | Reject mutable record struct values until implicit value-copy semantics exist. Readonly structural records remain available. |
 | [#100 — Assess computed string keys in structural object initializers](https://github.com/devhxj/Jazor/issues/100) | `enhancement` | Useful for explicit dictionary-like record contracts; define evaluation and key rules first. |
-
-### RazorVue rendering and component activation
-
-| Feature / issue | Classification | Recommendation |
-| --- | --- | --- |
-| [#109 — Support switch statements containing render content](https://github.com/devhxj/Jazor/issues/109) | `enhancement` | High-value authoring syntax; implement through the official SG operation path. |
-| [#110 — Assess try/catch/finally around Razor render content](https://github.com/devhxj/Jazor/issues/110) | `enhancement` | Useful for authored render-time control flow if Vue framing remains sound. |
-| [#111 — Preserve throw statements in Razor render bodies](https://github.com/devhxj/Jazor/issues/111) | `enhancement` | Worth supporting as ordinary explicit error propagation. |
-| [#112 — Assess using scopes that contain render content](https://github.com/devhxj/Jazor/issues/112) | `enhancement` | Support a bounded synchronous scope if its cleanup timing can be preserved. |
-| [#113 — Support runtime local declarations inside open render frames](https://github.com/devhxj/Jazor/issues/113) | `enhancement` | High-value normal Razor authoring pattern. |
-| [#114 — Allow valid local declarations without initializers in render bodies](https://github.com/devhxj/Jazor/issues/114) | `enhancement` | Worth supporting; Roslyn already validates definite assignment. |
-| [#115 — Support ordinary assignment and update statements in render bodies](https://github.com/devhxj/Jazor/issues/115) | `enhancement` | Useful for normal local render computation; document state-write implications separately. |
-| [#116 — Support while/do conditions that require compiler temporaries](https://github.com/devhxj/Jazor/issues/116) | `enhancement` | Worth supporting to compose existing pattern/expression lowering. |
-| [#117 — Support for control expressions that require compiler temporaries](https://github.com/devhxj/Jazor/issues/117) | `enhancement` | Worth supporting as a compiler-framing integration slice. |
-| [#118 — Support side effects between complete render segments in a loop](https://github.com/devhxj/Jazor/issues/118) | `enhancement` | Useful for authored loops without changing evaluation order. |
-| [#119 — Support computation-only loops inside render bodies](https://github.com/devhxj/Jazor/issues/119) | `enhancement` | Useful for ordinary render-local preparation. |
-| [#120 — Allow for declarations with unused uninitialized control locals](https://github.com/devhxj/Jazor/issues/120) | `enhancement` | Small correctness/authoring improvement after local declarations are supported. |
-| [#121 — Support statement-bodied RenderFragment factories with captured locals](https://github.com/devhxj/Jazor/issues/121) | `enhancement` | Useful for reusable typed render composition. |
-| [#122 — Assess runtime element tag names in RenderTreeBuilder authoring](https://github.com/devhxj/Jazor/issues/122) | `enhancement` | Useful as an explicitly typed dynamic-element feature. |
-| [#123 — Assess runtime attribute names in RenderTreeBuilder authoring](https://github.com/devhxj/Jazor/issues/123) | `enhancement` | Useful through an explicit dynamic-props contract; preserve typed component parameters. |
-| [#124 — Support conditional parameters targeting different named RenderFragment slots](https://github.com/devhxj/Jazor/issues/124) | `enhancement` | Useful for conditional slot composition. |
-| [#125 — Assess source component primary constructors](https://github.com/devhxj/Jazor/issues/125) | `enhancement` | Useful if parameters can be resolved through a clear activation contract. |
-| [#126 — Define activation for multiple explicit component constructors](https://github.com/devhxj/Jazor/issues/126) | `enhancement` | Defer until a deterministic authoring-time selector is defined. |
-| [#127 — Support base(...) arguments in source component activation](https://github.com/devhxj/Jazor/issues/127) | `enhancement` | Useful for source component hierarchies after activation inputs are specified. |
-| [#128 — Assess this(...) chaining during component initialization](https://github.com/devhxj/Jazor/issues/128) | `enhancement` | Useful only with a coordinated component activation chain. |
-| [#129 — Define ref/out/in/params component constructor parameter boundaries](https://github.com/devhxj/Jazor/issues/129) | `documentation` | Keep these activation parameter forms unsupported unless a concrete protocol need emerges. |

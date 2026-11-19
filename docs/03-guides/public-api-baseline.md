@@ -1,14 +1,12 @@
 # 公共作者 API 与冻结基线
 
-本文是当前公开作者面的人工可读索引，覆盖宿主、SSR、开发 reload、`Jazor.Admin` 与重点绑定契约。正式冻结基线保存在机器快照中，当前完整签名和差异以实际发布候选程序集的 API 兼容性工具结果为准。机器快照会排除 Razor 生成的下划线前缀辅助类型，例如 `_Imports`。
+本文是当前公开作者面的人工可读索引，覆盖宿主、SSR、开发 reload 与重点绑定契约。正式冻结基线保存在机器快照中，当前完整签名和差异以实际发布候选程序集的 API 兼容性工具结果为准。
 
 ## 包与命名空间
 
 | 包 | 稳定程序集/命名空间 |
 | --- | --- |
 | `Jazor` | `Jazor`, `Jazor.AspNetCore`, `Jazor.AspNetCore.Dev` |
-| `Jazor.Vue` | `Jazor.RazorVue`, `ECMAScript.Vue*` |
-| `Jazor.Admin` | `Jazor.Admin` |
 
 ## `Jazor.AspNetCore`
 
@@ -57,43 +55,6 @@
 
 frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。1.0.0 冻结快照仍保留为兼容性比较基线；Vite/SSR `TaskName` 删除按维护者指定的 1.1.0 工具链重构例外发布，迁移步骤见[发版规则](./release-and-versioning.md)。`public-api-reviewed-removals.snapshot.md` 只放行已确认签名，报告仍列出删除，旧冻结快照保持不变。
 
-## `Jazor.Vue` 原生事件与载荷扩展
-
-`ECMAScript.NativeFileEventExtensions` 自 2.2 起由 `Jazor.Vue` 程序集交付。引入 `ECMAScript` 命名空间后，既有 Blazor 事件类型可直接访问以下 extension 属性：
-
-| C# 事件类型 | 扩展属性 | 返回类型 |
-| --- | --- | --- |
-| `InputFileChangeEventArgs` | `Files` | `FileList` |
-| `DragEventArgs` | `Files` | `FileList?` |
-
-输入变更事件的 `Files` 对应原生 `target.files`，拖放事件的 `Files` 对应 `dataTransfer?.files`；应在事件回调中、首次 `await` 前读取。`FileList`、`FileRef` 仍由 WebIDL 定义；这些 extension 只在已有 C# 事件类型上追加映射，不改变浏览器接口的生成归属。CLR 文件事件 adapter 是编译映射实现，不增加独立作者 API，也不引入 `IBrowserFile` / CLR Stream 模拟。
-
-`NativeDomEventExtensions` 同时覆盖 `ChangeEventArgs`、`InputFileChangeEventArgs`、`MouseEventArgs`、`KeyboardEventArgs`、`FocusEventArgs`、`PointerEventArgs`、`WheelEventArgs`、`DragEventArgs`、`ClipboardEventArgs`、`TouchEventArgs`、`ErrorEventArgs`、`ProgressEventArgs`。每种事件提供精确返回类型的 `NativeEvent`，并增加缺少的共同 `Target`、`CurrentTarget`、`EventPhase`、`Bubbles`、`Cancelable`、`DefaultPrevented`、`Composed`、`IsTrusted`、`TimeStamp` 属性。鼠标派生家族复用基类 extension；`RelatedTarget`、`ClipboardData`、pointer 压力/角度与 UI `View` 等保持 WebIDL 类型和 nullability。
-
-`NativeBrowserPayloadExtensions` 提供以下同类投影：
-
-| 已有 C# 类型 | 新增原生入口 | 契约 |
-| --- | --- | --- |
-| `DataTransfer` | `NativeDataTransfer`、`NativeFiles`、`NativeItems` | `ECMAScript.DataTransfer`、`FileList`、`DataTransferItemList` |
-| `DataTransferItem` | `NativeItem` | WebIDL `DataTransferItem`；CLR `Kind`/`Type` getter 也已映射 |
-| `TouchPoint` | `NativeTouch`、`Target`、半径/压力/角度属性 | WebIDL `Touch`；`Target` 为 `EventTarget` |
-| `ElementReference` | `NativeElement` | WebIDL `HTMLElement` |
-
-`NativeDomEventExtensions` 还为 `ChangeEventArgs`/`InputFileChangeEventArgs` 增加 `Type`，为 `TouchEventArgs` 增加 `NativeTouches`、`NativeTargetTouches`、`NativeChangedTouches`；它们返回原生 `TouchList`，CLR 三个数组属性保留复制行为。
-
-`DataTransfer` 的 CLR `Files:string[]` 和 `Items:DataTransferItem[]` 与原生列表不同，extension 不能覆盖实例成员，故使用 `NativeFiles`/`NativeItems`。原生方法及旧属性通过精确的 `NativeEvent`/载荷投影访问。`System.EventArgs`、导航和验证等合成参数不具有 DOM carrier，不增加通用原生映射。
-
-## `Jazor.Admin`
-
-- `AdminRouteDefinition`、`AdminRouteCatalog`
-- `AdminLayoutState`
-- `AdminLayoutMode`、`AdminThemeMode`
-- `AdminPageActionKind`、`AdminPageAction`
-- `AdminBreadcrumbItem`
-- `AdminNavItem`、`AdminNavItemsCollectionBuilder`
-
-`Jazor.Admin` 的页面、表单、表格和认证业务模型仍属于应用层，不进入公共壳 API 基线。
-
 ## ECMAScript 绑定命名
 
 ECMAScript 浏览器绑定保留浏览器标准运行时名称；当标准名称与 C# 常用类型冲突时使用 `Ref` 后缀。涉及旧名称的迁移对照如下：
@@ -130,17 +91,11 @@ ECMAScript 浏览器绑定保留浏览器标准运行时名称；当标准名称
 
 `Number` 新增到 `long` / `ulong` 的显式转换；它们进入 BigInt 值域，不能恢复源 Number 已丢失的整数精度。精确 ID 的 JSON 策略见 [Browser Interop](./browser-interop.md)。
 
-Element Plus 新增 `ElTypedSelect<TValue>`、`ElTypedOption<TValue>`、`ElTypedTable<TRow>`、`ElTypedTableColumn<TRow>`、`ElTypedDropdown<TCommand>`、`ElTypedDropdownItem<TCommand>`，保留原组件的 runtime export/import。反馈服务通过 `ElMessage.Service`、`ElMessageBox.Service`、`ElNotification.Service` 暴露强类型选项、返回 handle 和 promise。
-
-`ElTableColumn.ChildContent` 现在显式接收 `ElTableSlotContext`；typed column 接收 `ElTableSlotContext<TRow>`。直接给原 `ChildContent` 赋 `RenderFragment` 的 C# 代码需改为接收 context 的 `RenderFragment<ElTableSlotContext>`。Razor 中用 `Context="cell"` 访问 `cell.Row`、`cell.Column` 和 `cell.Index`，使默认单元格 slot 的 payload 与 Element Plus 一致。
-
 ## 数值与 union 作者面
 
-嵌套 union 保留原分支路径，并增加由声明生成的直接标量投影。包含 `Number` 分支的 union 同时提供对应数值类型的强类型隐式转换，使整数变量和 `Size="@(32)"` 能通过普通 C# 与官方 Razor SG 绑定。参数和回调提示来自实际声明，不增加 `object` 或开放泛型兜底。
+嵌套 union 保留原分支路径，并增加由声明生成的直接标量投影。包含 `Number` 分支的 union 同时提供对应数值类型的强类型隐式转换，可在 C# 中直接传入整数变量。参数和回调提示来自实际声明，不增加 `object` 或开放泛型兜底。
 
-`ElStringDatePicker` 以字符串格式表达日期；Pagination 的 `OnCurrentChange` / `OnSizeChange` 使用 `EventCallback<Number>`，handler 可通过 `(int)value` 转成业务整数。Release HTML shell 使用 `JazorFrontendUrls.GetStylesheets` 读取 manifest 样式。
-
-Union 投影在不匹配时返回 null，并只求值一次。无法恢复精确标签的可赋值分支、无法区分的结构化对象分支明确失败；原始路由需要已解析路径时使用 `router.Resolve(raw).Path`。完整写法与限制见[作者指南](https://github.com/devhxj/RazorVue/blob/main/docs/03-guides/razorvue-authoring.md)及 [CHANGELOG](../../CHANGELOG.md)。
+Union 投影在不匹配时返回 null，并只求值一次。无法恢复精确标签的可赋值分支、无法区分的结构化对象分支明确失败；原始路由需要已解析路径时使用 `router.Resolve(raw).Path`。完整写法与限制见[类型与宿主标注](./type-semantics.md)及 [CHANGELOG](../../CHANGELOG.md)。
 
 ## 冻结规则
 

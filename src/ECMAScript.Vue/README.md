@@ -19,7 +19,7 @@
 - 默认保留 Vue 官方 API 词根，只做 C# 命名投影；runtime ABI 差异通过显式 `Description("@#...")` 或 `ECMAScriptName` 声明。
 - props、emits、slots 和组件上下文必须以明确 C# contract 表示，避免 `object` / `object?` 兜底。
 - 类型擦除不是降低 authoring contract 的理由。已能由 assignment、implicit conversion、overload 或 native `union` 表达的场景，不新增弱 factory。
-- 组件/生命周期/响应式 API 只定义 host binding；Razor-to-Vue 的组件绑定与 render-function framing 不属于本项目。
+- 组件、生命周期和响应式 API 映射 Vue 的运行时接口。
 
 ## 交付边界
 
