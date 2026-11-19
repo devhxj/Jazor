@@ -2,6 +2,10 @@
 
 > 本页解释当前分层为何形成；当前实现与路线图以现行架构和状态文档为依据。
 
+## 2026-11-19 自建 LibNode 归档
+
+微软发布 LibNode 26 原生包后，Jazor 改用微软的 LibNode 和 NodeApi。自建 LibNode 的源码与发布记录保存在 GitHub 归档仓库。 [Libnode](https://github.com/devhxj/Libnode)
+
 ## 2026-11-15 1.3.0 语法修复与发布
 
 11 月 14 日的语法审计以 `9f0bb79c` 为基线，检查核心与 RazorVue lowering，并创建 133 个独立英文 issue：35 个 bug、82 个 enhancement 和 16 个 documentation。探针包括核心 C#、隔离 render-body 与选定程序的 CLR/NodeApi 对照；它们不代表所有 C# 组合或生产 profile 均已验证。

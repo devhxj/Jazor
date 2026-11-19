@@ -6,17 +6,12 @@
 
 从真实消费者复现、高频作者写法和明确的行为缺口选择任务。每个切片先定义 C# 契约、责任层和验收，再实现、回归并更新指南；缺少需求或可复现收益时不增加运行时协议。
 
-## 三项提案的实施优先级
-
-以下 P0/P1/P2 表示三项提案的主线投入顺序；已发布能力的回归缺陷仍按实际影响处理。
+## 主线投入
 
 | 优先级 | 提案 | 排序依据 | 首个交付门槛 |
 | --- | --- | --- | --- |
 | **P0：首批切片已交付** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 与 RazorVue 的代码复用范围；1.4.2 已实现普通 DLL/NuGet 自动导入、成员闭包与共享模块 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
-| **P1：其次推进** | [#139：Jazor.LibNode LTS 原生包](https://github.com/devhxj/Jazor/issues/139) | 掌握 LTS 原生构建与更新，验证现有 pnpm/Vite/SSR 和后续 npm 类型工具的兼容性 | 移植匹配微软托管层的 C ABI，复用上游测试，通过已声明平台的原生包与现有工具链门禁 |
-| **P2：源码实现** | [#138：Jolt 组件和语义编辑](../03-guides/jolt-authoring.md) | 以顶层标记和 C# 编写 Vue 组件，直接使用项目依赖中的 npm 组件 | 用同一应用验证组件组合、编辑器、浏览器和隔离工具包消费者 |
-
-这不是三项提案之间的强制技术依赖。ILSpy 首个切片使用现有宿主验证，无需等待 LibNode 升级；后续 `.jazor` 的 npm 工具如需要更高 Node 版本，由 LibNode 切片提供已验证环境。优先完成每项有界切片及其交付证据，再扩大下一条主线的投入，不以“支持任意 NuGet”作为开始后续工作的门槛。
+| **当前主线** | [#138：Jolt 组件和语义编辑](../03-guides/jolt-authoring.md) | 以顶层标记和 C# 编写 Vue 组件，直接使用项目依赖中的 npm 组件 | 用同一应用验证组件组合、编辑器、浏览器和隔离工具包消费者 |
 
 ## 作者体验与交付证据
 
@@ -57,12 +52,6 @@ Microsoft/Blazor 内置 UI、`IJSRuntime` 字符串互操作、`StreamRendering`
 ## Vue 应用生态绑定
 
 DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery、VueDraggable、FilePond、WangEditor、Monaco 均已有源码、测试 lane 和 lockstep 发布。当前待办是各绑定的 browser smoke、真实 RazorVue/package consumer、适用 SSR 与 worker/资源验证，完成前保持 Guidance。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
-
-## LibNode LTS 集成
-
-Jazor 采用微软 LibNode 26.0.18 和 NodeApi 0.9.39，构建宿主与 SSR 目标覆盖 Windows 和 glibc Linux 的 x64、ARM64。macOS 暂缓，Windows x86 退出原生资产范围。自建原生库研究由 [Libnode](https://github.com/devhxj/Libnode) 维护。
-
-原生 ABI 和上游测试的设计见 [实施计划](./libnode-lts-implementation-plan.md)。Jazor 侧通过 NodeApi、pnpm、Vite、WebIDL 和 NuGet/SSR 消费者门禁验证集成，发布沿用 lockstep 版本和官方工作流。平台要求与迁移步骤见[工具链指南](../03-guides/toolchain-migration.md)。
 
 ## Jolt 组件
 

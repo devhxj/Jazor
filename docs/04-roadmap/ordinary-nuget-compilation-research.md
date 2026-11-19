@@ -83,6 +83,6 @@ dotnet test src/Jazor.RazorVue.Sg.Test/Jazor.RazorVue.Sg.Test.csproj --filter Fu
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter FullyQualifiedName~Build_LocalJazorPackage_OrdinaryLibraryImports
 ```
 
-发布需通过[质量与交付门禁](./current-status.md)。新增库先验证实际调用闭包与 JS/.NET 结果，按具体消费者需求扩展缺失协议。后续主线为 [Jazor.LibNode #139](https://github.com/devhxj/Jazor/issues/139)，再到 [.jazor #138](https://github.com/devhxj/Jazor/issues/138)。
+发布需通过[质量与交付门禁](./current-status.md)。新增库先验证实际调用闭包与 JS/.NET 结果，按具体消费者需求扩展缺失协议。
 
 依据：[ILSpy](https://github.com/icsharpcode/ILSpy)、[库 API](https://github.com/icsharpcode/ILSpy/wiki/Getting-Started-With-ICSharpCode.Decompiler)、[Microsoft reference assemblies](https://learn.microsoft.com/en-us/dotnet/standard/assembly/reference-assemblies)、[Fastenshtein 1.1.1](https://www.nuget.org/packages/Fastenshtein/1.1.1)、[Compiler 实现原则](../../src/Jazor.Compiler/ImplementationPrinciples.md)与[编译器架构](../02-architecture/compiler.md)。
