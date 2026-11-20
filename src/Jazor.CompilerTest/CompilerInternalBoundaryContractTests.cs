@@ -2094,6 +2094,35 @@ public sealed class CompilerInternalBoundaryContractTests
     }
 
     [TestMethod]
+    public void BindExternalImportSpecifier_ForcedAliasesPreserveSpecifiersAndTrackRelativeTargets()
+    {
+        var projectSources = new HashSet<string>(StringComparer.Ordinal);
+        var argument = new SenseArgument().WithImportContext([], [], [],
+            currentModuleImportPath: "./components/Widget.mjs",
+            currentModuleBindings: [],
+            currentModuleOutputPath: "components/Widget.mjs",
+            projectSourceImportKeys: projectSources);
+
+        var sibling = argument.BindExternalImportSpecifier("./tools.js", "create", forceAlias: true);
+        var parent = argument.BindExternalImportSpecifier("../shared/tools.js", "create", forceAlias: true);
+        var package = argument.BindExternalImportSpecifier("tools/create", "create", forceAlias: true);
+
+        Assert.AreNotEqual("create", sibling.Name);
+        Assert.AreNotEqual(sibling.Name, parent.Name);
+        Assert.AreNotEqual(parent.Name, package.Name);
+        Assert.AreEqual(sibling.Name,
+            argument.BindExternalImportSpecifier("./tools.js", "create", forceAlias: true).Name);
+        CollectionAssert.AreEquivalent(new[] { "components/tools.js", "shared/tools.js" }, projectSources.ToArray());
+        var imports = argument.FlushImportSpecifiers().ToDictionary(
+            pair => pair.Key, pair => (ImportSpecifier)pair.Value.Single(), StringComparer.Ordinal);
+        Assert.HasCount(3, imports);
+        Assert.AreEqual("create", ((Identifier)imports["./tools.js"].Imported).Name);
+        Assert.AreEqual(sibling.Name, imports["./tools.js"].Local.Name);
+        Assert.AreEqual(parent.Name, imports["../shared/tools.js"].Local.Name);
+        Assert.AreEqual(package.Name, imports["tools/create"].Local.Name);
+    }
+
+    [TestMethod]
     public void PatternAndListBoundAccess_RejectUnmappedNominalMemberFallbacks()
     {
         var (_, block) = CreateBlock(

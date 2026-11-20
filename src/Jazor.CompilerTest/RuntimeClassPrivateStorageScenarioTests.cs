@@ -16,6 +16,8 @@ public sealed class RuntimeClassPrivateStorageScenarioTests
             public sealed class RuntimeHost
             {
                 private int secret;
+                internal int Shared;
+                public int Visible;
 
                 private int Value { get; set; }
             }
@@ -31,6 +33,14 @@ public sealed class RuntimeClassPrivateStorageScenarioTests
         var value = runtimeHost.GetMembers("Value").OfType<IPropertySymbol>().Single();
         var backingField = runtimeHost.GetMembers("<Value>k__BackingField").OfType<IFieldSymbol>().Single();
         var valueHash = Format.HashName(value.OriginalDefinition.ToDisplayString(Format.NameFormat));
+
+        Assert.AreEqual("$jazor$private$secret", RuntimeClassPrivateStorageNames.GetProxySafeFieldName(secret));
+        Assert.AreEqual("Shared", RuntimeClassPrivateStorageNames.GetProxySafeFieldName(
+            runtimeHost.GetMembers("Shared").OfType<IFieldSymbol>().Single()));
+        Assert.AreEqual("Visible", RuntimeClassPrivateStorageNames.GetProxySafeFieldName(
+            runtimeHost.GetMembers("Visible").OfType<IFieldSymbol>().Single()));
+        Assert.AreEqual("$jazor$private$" + valueHash,
+            RuntimeClassPrivateStorageNames.GetProxySafeFieldName(backingField));
 
         Assert.AreEqual(
             "secret",

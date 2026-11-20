@@ -62,6 +62,42 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public void ConvertRuntimeClass_AutoPropertyHostRewritesBothAccessorsAndPreservesUnclaimedReceiver()
+    {
+        const string scenarioId = "ast-converter-runtime-class.auto-property-host-receiver";
+        var fixture = CompileModule(
+            """
+            public static class TestModule
+            {
+                public sealed class Widget
+                {
+                    public int Reactive { get; set; }
+                    public int Plain { get; set; }
+                }
+            }
+            """,
+            scenarioId);
+        var type = fixture.GetType("Widget");
+        var reactiveField = type.GetMembers("<Reactive>k__BackingField").OfType<IFieldSymbol>().Single();
+        var plainField = type.GetMembers("<Plain>k__BackingField").OfType<IFieldSymbol>().Single();
+        var options = new AstConverterOptions(
+            AstConverterProfile.Standard,
+            Host: new CompositeSemanticWalkerHost(new PassiveStorageHost(), new ReactiveStorageHost()),
+            RuntimeClassPrivateStorage: RuntimeClassPrivateStorage.ProxySafeMangledProperties);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel, options);
+
+        var script = converter.ConvertRuntimeClass(type).ToKnRECMAScript();
+        var reactiveKey = RuntimeClassPrivateStorageNames.GetProxySafeFieldName(reactiveField);
+        var plainKey = RuntimeClassPrivateStorageNames.GetProxySafeFieldName(plainField);
+
+        StringAssert.Contains(script, $"return reactiveState.{reactiveKey};", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"reactiveState.{reactiveKey} = value;", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"return this.{plainKey};", StringComparison.Ordinal);
+        StringAssert.Contains(script, $"this.{plainKey} = value;", StringComparison.Ordinal);
+        _ = new Parser().ParseScript(script);
+    }
+
+    [TestMethod]
     public void ConvertRuntimeClass_DuplicateJavaScriptMemberName_RejectsTheUnsafeShape()
     {
         const string scenarioId = "ast-converter-runtime-class.duplicate-javascript-member-name";
@@ -3768,6 +3804,14 @@ public sealed class AstConverterRuntimeClassScenarioTests
             .OfType<INamedTypeSymbol>()
             .Single();
         return new RuntimeClassFixture(module, semanticModel);
+    }
+
+    private sealed class PassiveStorageHost : SemanticWalkerHost;
+
+    private sealed class ReactiveStorageHost : SemanticWalkerHost
+    {
+        public override Expression? RewriteAutoPropertyBackingFieldReceiver(IFieldSymbol field, Expression receiver)
+            => field.AssociatedSymbol?.Name == "Reactive" ? new Identifier("reactiveState") : null;
     }
 
     private sealed record RuntimeClassFixture(
