@@ -7,5 +7,6 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="../Jolt.Compiler/Jolt.Compiler.csproj" />
+        <ProjectReference Include="../Jolt.Project/Jolt.Project.csproj" />
     </ItemGroup>
 </Project>

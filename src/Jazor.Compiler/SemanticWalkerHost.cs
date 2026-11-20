@@ -95,6 +95,9 @@ public abstract class SemanticWalkerHost
         Expression? instance)
         => null;
 
+    public virtual Expression? RewriteAutoPropertyBackingFieldReceiver(IFieldSymbol field, Expression receiver)
+        => null;
+
     public virtual Expression? RewritePropertyReference(
         IPropertyReferenceOperation operation,
         SenseArgument argument,

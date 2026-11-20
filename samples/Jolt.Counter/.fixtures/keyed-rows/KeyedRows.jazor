@@ -1,0 +1,28 @@
+<section>
+    <button id="update" @onclick="Update">Update row</button>
+    <button id="insert" @onclick="Insert">Insert row</button>
+    <button id="reverse" @onclick="Reverse">Reverse rows</button>
+    <ul id="rows">
+        @foreach (var row in Rows)
+        {
+            <li @key="row" data-row="@row">
+                <input aria-label="@row" />
+                <span>@(row == "500" ? Label : row)</span>
+                <button class="select" @onclick="() => OnSelect?.Invoke(row)">Select</button>
+            </li>
+        }
+    </ul>
+</section>
+
+@code {
+    [Parameter] public string[] Rows { get; set; } = [];
+    [Parameter] public string Label { get; set; } = "500";
+    [Parameter] public Action? OnUpdate { get; set; }
+    [Parameter] public Action? OnInsert { get; set; }
+    [Parameter] public Action? OnReverse { get; set; }
+    [Parameter] public Action<string>? OnSelect { get; set; }
+
+    private void Update() => OnUpdate?.Invoke();
+    private void Insert() => OnInsert?.Invoke();
+    private void Reverse() => OnReverse?.Invoke();
+}

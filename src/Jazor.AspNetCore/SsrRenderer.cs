@@ -15,12 +15,12 @@ namespace Jazor.AspNetCore;
 /// </summary>
 internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    internal static readonly JsonSerializerOptions JsonOptions = new()
     {
         Encoder = JavaScriptEncoder.Default
     };
 
-    private readonly SsrArtifactLocator _artifactLocator;
+    private readonly Func<SsrArtifacts> _resolveArtifacts;
     private readonly int _workerCount;
     private readonly SemaphoreSlim _generationGate = new(1, 1);
     private readonly SemaphoreSlim _renderCapacity;
@@ -33,10 +33,14 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
     public SsrRenderer(
         SsrArtifactLocator artifactLocator,
         IOptions<JazorSsrOptions> options)
+        : this(artifactLocator.Resolve, options.Value.WorkerCount)
     {
-        _artifactLocator = artifactLocator ?? throw new ArgumentNullException(nameof(artifactLocator));
-        ArgumentNullException.ThrowIfNull(options);
-        _workerCount = options.Value.WorkerCount;
+    }
+
+    internal SsrRenderer(Func<SsrArtifacts> resolveArtifacts, int workerCount)
+    {
+        _resolveArtifacts = resolveArtifacts;
+        _workerCount = workerCount;
         if (_workerCount <= 0)
             throw new InvalidOperationException("Jazor SSR WorkerCount must be greater than zero.");
         _renderCapacity = new SemaphoreSlim(_workerCount, _workerCount);
@@ -49,31 +53,41 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
+        cancellationToken.ThrowIfCancellationRequested();
+        var modulePath = SsrArtifactLocator.NormalizeRelativePath(request.ModulePath, "module path");
+        var state = JazorSsrStateEnvelope.Create(request);
+        var serializedState = JsonSerializer.Serialize(state, JsonOptions);
+        var serializedProps = JsonSerializer.Serialize(request.Props, JsonOptions);
+        var serializedProviders = JsonSerializer.Serialize(state.Providers, JsonOptions);
+        using var stateDocument = JsonDocument.Parse(serializedState);
+        var html = await RenderCoreAsync(modulePath, stateDocument.RootElement, url: null, cancellationToken)
+            .ConfigureAwait(false);
+        return new JazorSsrRenderResult(modulePath, html, serializedProps, serializedProviders, serializedState);
+    }
+
+    internal async Task<string> RenderCoreAsync(
+        string? modulePath,
+        JsonElement state,
+        string? url,
+        CancellationToken cancellationToken)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         await _renderCapacity.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            var modulePath = SsrArtifactLocator.NormalizeRelativePath(request.ModulePath, "module path");
-            var state = JazorSsrStateEnvelope.Create(request);
-            var serializedState = JsonSerializer.Serialize(state, JsonOptions);
-            var serializedProps = JsonSerializer.Serialize(request.Props, JsonOptions);
-            var serializedProviders = JsonSerializer.Serialize(state.Providers, JsonOptions);
-            using var stateDocument = JsonDocument.Parse(serializedState);
-            var payload = new SsrRenderPayload(
-                modulePath,
-                stateDocument.RootElement);
+            var payload = new SsrRenderPayload(modulePath, state, url);
 
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var artifacts = _artifactLocator.Resolve();
+                var artifacts = _resolveArtifacts();
                 var pool = await GetPoolAsync(artifacts, cancellationToken).ConfigureAwait(false);
 
                 try
                 {
-                    var html = await pool.RenderAsync(payload, cancellationToken).ConfigureAwait(false);
-                    return new JazorSsrRenderResult(modulePath, html, serializedProps, serializedProviders, serializedState);
+                    return await pool.RenderAsync(payload, cancellationToken).ConfigureAwait(false);
                 }
                 catch (SsrGenerationRetiredException) when (!cancellationToken.IsCancellationRequested)
                 {
@@ -122,7 +136,9 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         SsrArtifacts artifacts,
         CancellationToken cancellationToken)
     {
-        var stamp = SsrArtifactStamp.Capture(artifacts);
+        // A production Jolt distribution is loaded as a unit at host startup.
+        // Its template and server modules stay on that release until restart.
+        var stamp = artifacts.IsJolt ? null : SsrArtifactStamp.Capture(artifacts);
         await _generationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         SsrWorkerPool? retiredPool = null;
         try
@@ -297,7 +313,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
             try
             {
                 var request = JsonSerializer.Serialize(new SsrExecutionRequest(
-                    _artifacts.RootPath, payload.ModulePath, payload.State), _jsonOptions);
+                    _artifacts.RootPath, payload.ModulePath, payload.State, payload.Url), _jsonOptions);
                 // Cancellation retires this environment and joins its JS thread
                 // before releasing capacity. Never replay a render whose hooks
                 // may already have produced side effects.
@@ -325,20 +341,22 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         }
     }
     private sealed record SsrRenderPayload(
-        string ModulePath,
-        JsonElement State);
+        string? ModulePath,
+        JsonElement State,
+        string? Url);
 
     // The runner protocol is a JavaScript-owned ABI. Keep field names explicit so the
     // host-wide CLR naming policy never becomes an accidental transport convention.
     private sealed record SsrExecutionRequest(
         [property: JsonPropertyName("projectDirectory")] string ProjectDirectory,
-        [property: JsonPropertyName("modulePath")] string ModulePath,
-        [property: JsonPropertyName("state")] JsonElement State);
+        [property: JsonPropertyName("modulePath")] string? ModulePath,
+        [property: JsonPropertyName("state")] JsonElement State,
+        [property: JsonPropertyName("url")] string? Url);
 
     private sealed record SsrArtifactStamp(
         string RootPath,
         FileStamp SsrEntry,
-        FileStamp Package,
+        FileStamp? Package,
         FileStamp? Lock,
         FileStamp SourceTree)
     {
@@ -346,7 +364,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
             => new(
                 NormalizeRoot(artifacts.RootPath),
                 FileStamp.Capture(artifacts.SsrEntryPath),
-                FileStamp.Capture(Path.Combine(artifacts.RootPath, "package.json")),
+                artifacts.IsJolt ? null : FileStamp.Capture(Path.Combine(artifacts.RootPath, "package.json")),
                 artifacts.IsBundled ? null : FileStamp.Capture(Path.Combine(artifacts.RootPath, "pnpm-lock.yaml")),
                 FileStamp.CaptureSourceTree(artifacts.RootPath));
     }
@@ -354,18 +372,18 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
     private sealed record SsrArtifactGeneration(
         string RootPath,
         string SsrEntryHash,
-        string PackageHash,
+        string? PackageHash,
         string? LockHash,
         string SourceTreeHash)
     {
         public string Id => SsrEntryHash[..12] + ":" +
-                            PackageHash[..12] + ":" + (LockHash?[..12] ?? "bundled") + ":" + SourceTreeHash[..12];
+                            (PackageHash?[..12] ?? "jolt") + ":" + (LockHash?[..12] ?? "bundled") + ":" + SourceTreeHash[..12];
 
         public static SsrArtifactGeneration Create(SsrArtifacts artifacts)
             => new(
                 NormalizeRoot(artifacts.RootPath),
                 ComputeFileHash(artifacts.SsrEntryPath),
-                ComputeFileHash(Path.Combine(artifacts.RootPath, "package.json")),
+                artifacts.IsJolt ? null : ComputeFileHash(Path.Combine(artifacts.RootPath, "package.json")),
                 // The locator marks a bundled runtime explicitly. Source projects still
                 // require their restore lock; published local chunks do not have one.
                 artifacts.IsBundled ? null : ComputeFileHash(Path.Combine(artifacts.RootPath, "pnpm-lock.yaml")),
@@ -387,11 +405,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         {
             long length = 0;
             long latest = 0;
-            foreach (var path in Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories)
-                         .Where(static path => !path.Contains(Path.DirectorySeparatorChar + "node_modules" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                            && !path.Contains(Path.DirectorySeparatorChar + "dist" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                            && !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                            && !path.Contains(Path.DirectorySeparatorChar + ".jazor" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
+            foreach (var path in EnumerateSourceTree(rootPath))
             {
                 var file = new FileInfo(path);
                 length = unchecked(length + file.Length);
@@ -417,11 +431,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
     private static string ComputeSourceTreeHash(string rootPath)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        foreach (var path in Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories)
-                     .Where(static path => !path.Contains(Path.DirectorySeparatorChar + "node_modules" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                        && !path.Contains(Path.DirectorySeparatorChar + "dist" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                            && !path.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                            && !path.Contains(Path.DirectorySeparatorChar + ".jazor" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        foreach (var path in EnumerateSourceTree(rootPath)
                      .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase))
         {
             var relative = Path.GetRelativePath(rootPath, path).Replace('\\', '/');
@@ -432,6 +442,19 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
         }
 
         return Convert.ToHexString(hash.GetHashAndReset());
+    }
+
+    private static IEnumerable<string> EnumerateSourceTree(string rootPath)
+    {
+        // Exclusions apply below the artifact root. A deployed Jolt server graph can
+        // live under dist/server, and its chunks must still invalidate the pool.
+        return Directory.EnumerateFiles(rootPath, "*", SearchOption.AllDirectories)
+            .Where(path => !Path.GetRelativePath(rootPath, path)
+                .Split(Path.DirectorySeparatorChar)
+                .Any(static segment => segment.Equals("node_modules", StringComparison.OrdinalIgnoreCase) ||
+                    segment.Equals("dist", StringComparison.OrdinalIgnoreCase) ||
+                    segment.Equals("obj", StringComparison.OrdinalIgnoreCase) ||
+                    segment.Equals(".jazor", StringComparison.OrdinalIgnoreCase)));
     }
 
     private sealed class SsrGenerationRetiredException : InvalidOperationException;

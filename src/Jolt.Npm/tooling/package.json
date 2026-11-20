@@ -1,6 +1,8 @@
 {
-    "private": true,
-    "dependencies": {
-        "typescript": "5.9.3"
-    }
+  "private": true,
+  "dependencies": {
+    "typescript": "5.9.3",
+    "@vue/language-core": "3.1.8",
+    "@volar/typescript": "2.4.23"
+  }
 }

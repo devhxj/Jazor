@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <CETCompat>false</CETCompat>
+        <PublishAot>false</PublishAot>
+        <DefaultItemExcludes>$(DefaultItemExcludes);frontend/**</DefaultItemExcludes>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
+        <Content Include="frontend/dist/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    </ItemGroup>
+</Project>

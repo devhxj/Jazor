@@ -9,6 +9,186 @@ namespace Jolt.Syntax.Test;
 public sealed class JoltParserTest
 {
     [TestMethod]
+    public void Parse_PreservesInlineTemplateMarkupAndAuthorCodeExtent()
+    {
+        const string source = """
+            @code { private RenderFragment<string> Label = value => @<strong>@value</strong>; }
+            @{ RenderFragment local = () => @<em>Local</em>; }
+            """;
+        var document = JoltParser.Parse(source);
+        Assert.IsEmpty(document.Diagnostics);
+        var templates = document.InlineTemplates;
+        CollectionAssert.AreEqual(new[] { "@<strong>@value</strong>", "@<em>Local</em>" },
+            templates.Select(template => Slice(source, template.Span)).ToArray());
+        Assert.IsTrue(document.Nodes.OfType<JoltCode>().Single().CodeSpan.Contains(templates[0].Span));
+        Assert.IsTrue(document.Nodes.OfType<JoltStatement>().Single().CodeSpan.Contains(templates[1].Span));
+        for (var end = 0; end <= source.Length; end++)
+        {
+            var incomplete = JoltParser.Parse(source[..end]);
+            Assert.IsTrue(incomplete.InlineTemplates.All(template => template.Span.End <= end), $"Prefix {end}");
+        }
+    }
+
+    [TestMethod]
+    public void Parse_ControlFlow()
+    {
+        const string source = """
+            @{ var count = 3; }
+            @for (var i = 0; i < count; i++) {
+                var label = i.ToString();
+                switch (i) {
+                    case > 0 when (i != 2 ? true : false):
+                    case 0:
+                        if (i > 0) {
+                            <p>@label</p>
+                        }
+                        break;
+                    default:
+                        continue;
+                }
+            }
+            @switch (count) {
+                case 3: <p>Three</p> break;
+                default: break;
+            }
+            """;
+        var document = JoltParser.Parse(source);
+        Assert.IsEmpty(document.Diagnostics);
+        var declaration = document.Nodes.OfType<JoltStatement>().Single();
+        Assert.AreEqual("var count = 3;", Slice(source, declaration.CodeSpan));
+        var loop = document.Nodes.OfType<JoltFor>().Single();
+        Assert.AreEqual("var i = 0; i < count; i++", Slice(source, loop.HeaderSpan));
+        Assert.IsTrue(Slice(source, loop.Span).StartsWith("@for", StringComparison.Ordinal));
+        Assert.AreEqual("var label = i.ToString();", loop.Children.OfType<JoltStatement>().Single().Code);
+
+        var selection = loop.Children.OfType<JoltSwitch>().Single();
+        Assert.AreEqual("i", Slice(source, selection.ExpressionSpan));
+        CollectionAssert.AreEqual(new[] { "case > 0 when (i != 2 ? true : false):", "case 0:" },
+            selection.Sections[0].Labels.Select(label => Slice(source, label.CodeSpan)).ToArray());
+        Assert.AreEqual("break;", selection.Sections[0].Children.OfType<JoltStatement>().Single().Code);
+        Assert.AreEqual("default:", selection.Sections[1].Labels.Single().Code);
+        Assert.AreEqual("continue;", selection.Sections[1].Children.OfType<JoltStatement>().Single().Code);
+        var topLevelSelection = document.Nodes.OfType<JoltSwitch>().Single();
+        Assert.AreEqual("case 3:", topLevelSelection.Sections[0].Labels.Single().Code);
+        Assert.AreEqual("label", JoltTree.Elements(loop.Children).Single().Children.OfType<JoltExpression>().Single().Code);
+
+        for (var end = 0; end <= source.Length; end++)
+        {
+            var incomplete = JoltParser.Parse(source[..end]);
+            Assert.IsTrue(JoltTree.Descendants(incomplete.Nodes).All(node => node.Span.End <= end), $"Prefix {end}");
+        }
+    }
+
+    [TestMethod]
+    public void Parse_PreservesStatementOrderAndLexicalBlocks()
+    {
+        const string source = """
+            @foreach (var row in Rows) {
+                var label = row.Name;
+                var title = label.ToUpper();
+                {
+                    var caption = title + "!";
+                    <p>@caption</p>
+                }
+                <span>@title</span>
+            }
+            """;
+        var document = JoltParser.Parse(source);
+        Assert.IsEmpty(document.Diagnostics, string.Join("\n", document.Diagnostics));
+        var loop = document.Nodes.OfType<JoltForEach>().Single();
+        var declarations = loop.Children.OfType<JoltStatement>().ToArray();
+        CollectionAssert.AreEqual(new[] { "var label = row.Name;", "var title = label.ToUpper();" },
+            declarations.Select(statement => Slice(source, statement.CodeSpan)).ToArray());
+        var block = loop.Children.OfType<JoltBlock>().Single();
+        Assert.AreEqual("var caption = title + \"!\";", block.Children.OfType<JoltStatement>().Single().Code);
+        CollectionAssert.AreEqual(new[] { "p", "span" }, JoltTree.Elements(document.Nodes).Select(element => element.Name).ToArray());
+    }
+    [TestMethod]
+    public void Parse_MapsDirectiveKindsAndAuthoredSpans()
+    {
+        const string source = """
+            <input type="text" @bind=" name " @bind:event="oninput" />
+            <li @key="row.Id" />
+            <button @onclick="Handle" @onclick:preventDefault @onclick:stopPropagation="enabled" />
+            <CollapsibleRoot @bind-Open="@(state.Open)" @onupdate:open="Set" />
+            <input @bind:get="Name" @bind:set="SetName" />
+            <Editor @bind-Value:after="Saved" @bind-Open:get="Open" @bind-Open:set="SetOpen" />
+            """;
+        var document = JoltParser.Parse(source, "Form.jazor");
+        Assert.IsEmpty(document.Diagnostics);
+        var elements = document.Nodes.OfType<JoltElement>().ToArray();
+
+        var input = elements[0];
+        Assert.AreEqual(JoltAttributeKind.Markup, input.Attributes[0].Kind);
+        Assert.AreEqual("text", ((JoltText)input.Attributes[0].Value.Single()).Text);
+        AssertDirective(input.Attributes[1], JoltAttributeKind.Bind, "@bind", "name");
+        Assert.AreEqual(JoltAttributeKind.BindEvent, input.Attributes[2].Kind);
+        Assert.AreEqual("@bind:event", Slice(source, input.Attributes[2].NameSpan));
+        Assert.AreEqual("oninput", ((JoltText)input.Attributes[2].Value.Single()).Text);
+
+        AssertDirective(elements[1].Attributes.Single(), JoltAttributeKind.Key, "@key", "row.Id");
+        var button = elements[2];
+        AssertDirective(button.Attributes[0], JoltAttributeKind.Event, "@onclick", "Handle", "click");
+        Assert.AreEqual(JoltAttributeKind.EventModifier, button.Attributes[1].Kind);
+        Assert.AreEqual("@onclick:preventDefault", Slice(source, button.Attributes[1].NameSpan));
+        Assert.AreEqual("click", button.Attributes[1].Target);
+        Assert.AreEqual("preventDefault", button.Attributes[1].Modifier);
+        Assert.IsEmpty(button.Attributes[1].Value);
+        AssertDirective(button.Attributes[2], JoltAttributeKind.EventModifier, "@onclick:stopPropagation", "enabled", "click");
+        Assert.AreEqual("stopPropagation", button.Attributes[2].Modifier);
+
+        AssertDirective(elements[3].Attributes[0], JoltAttributeKind.Bind, "@bind-Open", "state.Open", "Open");
+        AssertDirective(elements[3].Attributes[1], JoltAttributeKind.Event, "@onupdate:open", "Set", "update:open");
+        AssertDirective(elements[4].Attributes[0], JoltAttributeKind.Bind, "@bind:get", "Name");
+        AssertDirective(elements[4].Attributes[1], JoltAttributeKind.Bind, "@bind:set", "SetName");
+        AssertDirective(elements[5].Attributes[0], JoltAttributeKind.Bind, "@bind-Value:after", "Saved", "Value");
+        AssertDirective(elements[5].Attributes[1], JoltAttributeKind.Bind, "@bind-Open:get", "Open", "Open");
+        AssertDirective(elements[5].Attributes[2], JoltAttributeKind.Bind, "@bind-Open:set", "SetOpen", "Open");
+        CollectionAssert.AreEqual(new[] { "get", "set", "after", "get", "set" },
+            elements.Skip(4).SelectMany(element => element.Attributes).Select(attribute => attribute.Modifier).ToArray());
+
+        void AssertDirective(JoltAttribute attribute, JoltAttributeKind kind, string name, string code, string? target = null)
+        {
+            Assert.AreEqual(kind, attribute.Kind);
+            Assert.AreEqual(name, attribute.Name);
+            Assert.AreEqual(name, Slice(source, attribute.NameSpan));
+            Assert.AreEqual(target, attribute.Target);
+            var expression = (JoltExpression)attribute.Value.Single();
+            Assert.AreEqual(code, expression.Code);
+            Assert.AreEqual(code, Slice(source, expression.CodeSpan));
+        }
+    }
+
+    [TestMethod]
+    public void Parse_ReportsUnsupportedDirectivesAtTheirNames()
+    {
+        const string source = """
+            @page "/demo"
+            @rendermode InteractiveAuto
+            @inject IService Service
+            @namespace Demo
+            @attribute [Demo]
+            @implements IFoo
+            @inherits Base
+            @layout Layout
+            @preservewhitespace true
+            @using System
+            @typeparam T
+            @code { private string value = "@page @ref"; }
+            @* @implements IFoo *@
+            <p title="@@ref">@@page</p>
+            <input @ref="field" @attributes="more" @bind:culture="culture" />
+            """;
+        var document = JoltParser.Parse(source, "Form.jazor");
+        CollectionAssert.AreEqual(
+            new[] { "@page", "@rendermode", "@inject", "@namespace", "@attribute", "@implements", "@inherits",
+                "@layout", "@preservewhitespace", "@bind:culture" },
+            document.Diagnostics.Select(diagnostic => Slice(source, diagnostic.Span)).ToArray(),
+            string.Join("\n", document.Diagnostics));
+        Assert.IsTrue(document.Diagnostics.All(diagnostic => diagnostic is { Id: "JOLT1022", Severity: DiagnosticSeverity.Error }));
+        Assert.IsTrue(document.Diagnostics[^1].Message.Contains("explicit property and event handler", StringComparison.Ordinal));
+    }
+    [TestMethod]
     public void Parse_PreservesStaticMarkupAndDirectiveSpans()
     {
         const string source = """
@@ -103,6 +283,7 @@ public sealed class JoltParserTest
             @using System
             <div>
                 @if (Count is > 0) {
+                    <input @bind="Name" @bind:event="oninput" @key="Id" />
                     <Widget Name="Hello @Name" @onclick="() => Pick(1)" />
                 } else {
                     @foreach (var row in Rows) {

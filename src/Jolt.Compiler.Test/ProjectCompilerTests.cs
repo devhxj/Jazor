@@ -29,7 +29,8 @@ public sealed class ProjectCompilerTests
             </TypedList>
             @code { private string[] Items = ["one"]; private void Pick(string item) { } }
             """;
-        foreach (var source in new[] { app, app.Replace("<TypedList ", "<TypedList T=\"string\" ") })
+        var namedChild = app.Replace("<template #item context=", "<Item Context=").Replace("</template>", "</Item>");
+        foreach (var source in new[] { app, app.Replace("<TypedList ", "<TypedList T=\"string\" "), namedChild })
         {
             var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source), new("TypedList.jazor", list)]);
             Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
@@ -50,6 +51,23 @@ public sealed class ProjectCompilerTests
             Assert.IsTrue(result.Diagnostics.Any(diagnostic => diagnostic.Id == expected && diagnostic.Location.SourceSpan.Length > 0),
                 string.Join(Environment.NewLine, result.Diagnostics));
         }
+    }
+
+    [TestMethod]
+    public async Task Compile_ResolvesDefaultAndExplicitNamedChildrenAndReportsAmbiguity()
+    {
+        const string panel = """<section><slot name="header" /><slot /></section>""";
+        const string source = """<Panel><Header><h1>Header</h1></Header><ChildContent><p>Body</p></ChildContent></Panel>""";
+        var inputs = new[] { new JoltSource("App.jazor", source), new JoltSource("Panel.jazor", panel) };
+        var result = await JoltProjectCompiler.CompileAsync(inputs);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        StringAssert.Contains(result.Modules[0].Content, "h1");
+        StringAssert.Contains(result.Modules[0].Content, "Body");
+
+        result = await JoltProjectCompiler.CompileAsync([.. inputs, new("Header.jazor", "<strong>Component</strong>")]);
+        var diagnostic = result.Diagnostics.Single();
+        StringAssert.Contains(diagnostic.GetMessage(), "both a child component and a slot");
+        Assert.AreEqual("Header", source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
     }
 
     [TestMethod]

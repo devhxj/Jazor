@@ -4,6 +4,7 @@
 
 | 文档 | 说明 |
 | --- | --- |
+| [Jolt 作者模型、目标特性与语法审计](./jolt-authoring-comparison.md) | Razor 指令与模板、Vue/TSX 组件契约、npm 与本地 SFC 混编的目标写法，以及当前实现对照 |
 | [编译器](./compiler.md) | C# 语义降低、白名单和确定性输出的边界 |
 | [框架集成层](./framework-integrations.md) | 核心平台与框架特定产品方向的分层约束 |
 | [产物管线](./artifact-pipeline.md) | 两类 carrier、模块、源映射、物化输出、打包和 SSR 的归属 |

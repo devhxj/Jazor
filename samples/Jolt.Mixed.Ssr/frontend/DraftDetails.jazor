@@ -1,0 +1,10 @@
+@page "/drafts/{id:int}"
+@layout DraftLayout
+
+<h1 id="route-heading">Draft details</h1>
+<p>Draft number <output id="draft-number">@(Id + 1)</output></p>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+}

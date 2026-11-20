@@ -12,8 +12,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.Style" Version="2.2.0" />
+  <PackageReference Include="Jazor" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.Style" Version="2.3.0" />
 </ItemGroup>
 ```
 

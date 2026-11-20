@@ -45,9 +45,18 @@ public enum RuntimeClassPrivateStorage
 }
 
 /// <summary>Shared names for proxy-safe storage. The prefix is outside C# identifier syntax.</summary>
-internal static class RuntimeClassPrivateStorageNames
+public static class RuntimeClassPrivateStorageNames
 {
     private const string ProxySafePrefix = "$jazor$private$";
+
+    /// <summary>Gets the JavaScript storage key for a runtime-class instance field in the proxy-safe profile.</summary>
+    public static string GetProxySafeFieldName(IFieldSymbol field)
+    {
+        var name = Util.GetConfigOrSymbolName(field);
+        return field.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal
+            ? name
+            : GetFieldStorageName(RuntimeClassPrivateStorage.ProxySafeMangledProperties, field, name);
+    }
 
     internal static string GetFieldStorageName(
         RuntimeClassPrivateStorage storage,

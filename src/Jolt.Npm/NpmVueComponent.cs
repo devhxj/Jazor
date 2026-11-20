@@ -8,7 +8,10 @@ public sealed record NpmVueProp(
     IReadOnlyList<string> LiteralValues,
     NpmDefinition? Definition);
 
-public sealed record NpmVueParameter(string Name, string Type, IReadOnlyDictionary<string, string>? Properties = null);
+public sealed record NpmVueParameter(string Name, string Type, IReadOnlyDictionary<string, string>? Properties = null)
+{
+    public IReadOnlyDictionary<string, NpmDefinition>? PropertyDefinitions { get; init; }
+}
 
 public sealed record NpmVueEvent(
     IReadOnlyList<IReadOnlyList<NpmVueParameter>> Signatures,
@@ -34,4 +37,7 @@ public sealed record NpmVueComponent(
     IReadOnlyDictionary<string, NpmVueSlot> Slots)
 {
     public NpmVueTypeParameter? TypeParameter { get; init; }
+    public string? LocalPath { get; init; }
+    public string? LocalNamespace { get; init; }
+    public string DisplayName => LocalPath is { } path ? $"Vue component '{path}'" : $"npm component '{ModuleSpecifier}/{ExportName}'";
 }

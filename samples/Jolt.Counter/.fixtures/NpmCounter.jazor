@@ -1,0 +1,29 @@
+@using ECMAScript
+@using Text = Npm.EsToolkit.String.Exports
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<h2 class="npm-counter-title">@Text.CamelCase("npm counter")</h2>
+<output class="npm-counter-value">@_counter.Count.Value</output>
+<button class="npm-counter-increment" @onclick="@Increment">Increment npm count</button>
+<button class="npm-counter-write" @onclick="@WriteCount">Set npm count</button>
+
+@code {
+    [Parameter] public double Initial { get; set; }
+    [Parameter] public Action<VueUse.UseCounterResult>? OnSetup { get; set; }
+    [Parameter] public Action<double>? OnChange { get; set; }
+
+    private VueUse.UseCounterResult _counter = default!;
+
+    [Setup]
+    private void Configure()
+    {
+        _counter = VueUse.UseCounter(Initial);
+        Vue.Watch(() => _counter.Count.Value, (value, previous) => ReportCount(value),
+            new Vue.VueWatchOptions { Flush = Vue.VueWatchFlush.Sync });
+        OnSetup?.Invoke(_counter);
+    }
+
+    private void Increment() => _counter.Inc();
+    private void WriteCount() => _counter.Set(_counter.Count.Value + 2);
+    private void ReportCount(double value) => OnChange?.Invoke(value);
+}

@@ -1,0 +1,19 @@
+@using ECMAScript
+
+<div>
+    <input class="table-editor-input" value="@Value" @ref="Input" />
+    <button class="table-editor-next" @onclick="Next">Next editor value</button>
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public Action<string>? ValueChanged { get; set; }
+    private HTMLInputElement? Input;
+
+    [Expose] public void Focus()
+    {
+        Input?.Focus();
+    }
+
+    private void Next() => ValueChanged?.Invoke(Value + "!");
+}

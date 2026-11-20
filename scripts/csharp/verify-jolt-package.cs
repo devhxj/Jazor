@@ -78,17 +78,32 @@ try
     new XDocument(new XElement("configuration",
         new XElement("packageSources", new XElement("clear"), new XElement("add", new XAttribute("key", "jolt"), new XAttribute("value", feed)))))
         .Save(config);
-    await RunAsync("dotnet", consumer, "tool", "install", packageId, "--version", version, "--tool-path", tools, "--configfile", config, "--no-cache");
+    // Source candidates may share the version of a locally cached official tool.
+    await RunProcessAsync("dotnet", consumer, null,
+        ["tool", "install", packageId, "--version", version, "--tool-path", tools, "--configfile", config, "--no-cache"],
+        packageCache: Path.Combine(scratch.FullName, "nuget"));
     // RID tools use an SDK-generated .cmd launcher on Windows.
     var commandPath = OperatingSystem.IsWindows() ? "cmd.exe" : Path.Combine(tools, "jolt");
     var output = Path.Combine(consumer, ".jolt");
-    var npmStore = Path.Combine(scratch.FullName, "npm-store");
+    var npmStore = Path.GetFullPath(Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
+        ?? Path.Combine(scratch.FullName, "npm-store"));
     await RunInstalledAsync("build");
     var app = await File.ReadAllTextAsync(Path.Combine(output, "App.mjs"));
     if (!app.Contains("reka-ui", StringComparison.Ordinal)
         || !File.Exists(Path.Combine(output, "App.mjs.map"))
         || !File.Exists(Path.Combine(output, "CounterButton.mjs")))
         throw new InvalidOperationException("Installed Jolt did not emit the npm import, author source map and local child module.");
+    if (editorFeatures && (!File.Exists(Path.Combine(output, "TypedTable.mjs")) ||
+        !File.Exists(Path.Combine(output, "clr", "System", "StringModule.js")) ||
+        File.Exists(Path.Combine(output, "_Imports.mjs"))))
+        throw new InvalidOperationException("Installed Jolt failed to materialize the typed table or its fixture's shared CLR modules, or emitted _Imports.jazor as a component.");
+    if (editorFeatures)
+    {
+        var counter = await File.ReadAllTextAsync(Path.Combine(output, "NpmCounter.mjs"));
+        foreach (var specifier in new[] { "es-toolkit/string", "@vueuse/core" })
+            if (!counter.Contains($"from \"{specifier}\"", StringComparison.Ordinal))
+                throw new InvalidOperationException($"Installed Jolt did not preserve the public ESM specifier '{specifier}' in NpmCounter.mjs.");
+    }
 
     await RunInstalledAsync("bundle");
     if (!File.Exists(Path.Combine(consumer, "dist", "index.html")))
@@ -100,8 +115,14 @@ try
     var appHost = Directory.EnumerateFiles(Path.Combine(tools, ".store"),
         OperatingSystem.IsWindows() ? "Jolt.Cli.exe" : "Jolt.Cli", SearchOption.AllDirectories).Single();
     if (editorFeatures)
+    {
         await RunProcessAsync("dotnet", root, npmStore,
             ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", appHost]);
+        await RunProcessAsync("dotnet", root, npmStore,
+            ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", "--local-vue", appHost]);
+        await RunProcessAsync("dotnet", root, npmStore,
+            ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", "--router", appHost]);
+    }
     if (browserPath is not null)
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -129,6 +150,12 @@ try
             if (!server.HasExited)
                 server.Kill(entireProcessTree: true);
             await server.WaitForExitAsync();
+        }
+        if (editorFeatures)
+        {
+            foreach (var check in new[] { "verify-jolt-library.cs", "verify-jolt-mixed.cs", "verify-jolt-ssr.cs" })
+                await RunProcessAsync("dotnet", root, npmStore,
+                    ["run", "--file", Path.Combine(root, "scripts", "csharp", check), "--", appHost, browserPath]);
         }
     }
     if (editorFeatures)
@@ -159,13 +186,16 @@ finally
 static Task RunAsync(string program, string workingDirectory, params string[] arguments)
     => RunProcessAsync(program, workingDirectory, null, arguments);
 
-static async Task RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments, string? toolDirectory = null)
+static async Task RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments,
+    string? toolDirectory = null, string? packageCache = null)
 {
     var start = new ProcessStartInfo(program) { WorkingDirectory = workingDirectory, UseShellExecute = false };
     if (toolDirectory is not null)
         start.Environment["PATH"] = toolDirectory + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
     if (npmStore is not null)
         start.Environment["JazorPnpmStoreDirectory"] = npmStore;
+    if (packageCache is not null)
+        start.Environment["NUGET_PACKAGES"] = packageCache;
     foreach (var argument in arguments)
         start.ArgumentList.Add(argument);
     using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {program}.");

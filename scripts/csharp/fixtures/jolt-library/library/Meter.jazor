@@ -1,0 +1,23 @@
+<section>
+    <button type="button" class="meter-button" @onclick="Increment">@(Caption ?? "Increment")</button>
+    <slot name="reading" amount="@Value" />
+</section>
+
+@code {
+    [Parameter, EditorRequired] public int Value { get; set; }
+    [Parameter] public Action<int>? ValueChanged { get; set; }
+    [Parameter] public string? Caption { get; set; }
+
+    [Expose] public int Multiply(int factor) => Value * factor;
+
+    private void Increment() => ValueChanged?.Invoke(Value + 1);
+}
+
+<style>
+    .meter-global { border-top: 7px solid; }
+</style>
+
+<style scoped>
+    .meter-button { color: rgb(21, 40, 180); }
+    :slotted(.meter-reading) { font-weight: 700; }
+</style>

@@ -11,6 +11,12 @@ importers:
 
   .:
     dependencies:
+      '@vueuse/core':
+        specifier: 14.4.0
+        version: 14.4.0(vue@3.5.42(typescript@5.9.3))
+      es-toolkit:
+        specifier: 1.53.2
+        version: 1.53.2
       reka-ui:
         specifier: 2.11.0
         version: 2.11.0(vue@3.5.42(typescript@5.9.3))
@@ -257,6 +263,9 @@ packages:
   entities@7.0.1:
     resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
     engines: {node: '>=0.12'}
+
+  es-toolkit@1.53.2:
+    resolution: {integrity: sha512-iUqZ+NlwH4jUgRmXZUxFBsV/9762TQEa1O4IXLFBmDEjVHScBytKuseX23I0+v9ShZ5MYxEx6WKNzm6IPnex8g==}
 
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
@@ -593,6 +602,8 @@ snapshots:
   defu@6.1.7: {}
 
   entities@7.0.1: {}
+
+  es-toolkit@1.53.2: {}
 
   estree-walker@2.0.2: {}
 

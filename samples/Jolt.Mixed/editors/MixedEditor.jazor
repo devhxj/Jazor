@@ -1,0 +1,16 @@
+<section>
+    <h1 id="editor-title">Draft editor</h1>
+    <NameInput Limit="@Limit" @bind-Text:get="Text" @bind-Text:set="Save" />
+</section>
+
+<style scoped>
+#editor-title { color: rgb(160, 30, 30); }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public int Limit { get; set; }
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    [Parameter] public Action<string>? TextChanged { get; set; }
+
+    private void Save(string text) => TextChanged?.Invoke(text);
+}

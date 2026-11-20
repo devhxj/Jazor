@@ -39,7 +39,7 @@ internal sealed partial class LanguageFeatures
         var indent = options.GetProperty("insertSpaces").GetBoolean()
             ? new string(' ', Math.Max(1, options.GetProperty("tabSize").GetInt32()))
             : "\t";
-        foreach (var element in Elements(projection.Document.Nodes))
+        foreach (var element in JoltTree.Elements(projection.Document))
         {
             var tagLine = _text.Lines.GetLineFromPosition(element.Span.Start);
             var baseIndent = _text.ToString(TextSpan.FromBounds(tagLine.Start, element.Span.Start));
@@ -68,7 +68,7 @@ internal sealed partial class LanguageFeatures
             if (!diagnostic.TryGetProperty("code", out var code) || code.ValueKind != JsonValueKind.String)
                 continue;
             var start = Server.Offset(_text, diagnostic.GetProperty("range").GetProperty("start"));
-            if (Elements(projection.Document.Nodes).FirstOrDefault(element => element.NameSpan.Start == start) is not { } site ||
+            if (JoltTree.Elements(projection.Document).FirstOrDefault(element => element.NameSpan.Start == start) is not { } site ||
                 !requested.IntersectsWith(site.NameSpan))
                 continue;
             if (!analysis.Diagnostics.Any(item => item.Id == code.GetString() && item.Location.GetMappedLineSpan().Path == projection.Document.Path &&

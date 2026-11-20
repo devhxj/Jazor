@@ -380,6 +380,12 @@ public readonly record struct SenseArgument
     /// 外部 ESM specifier 必须按原文保留，不能套用生成模块的 `.mjs`/目录逃逸规则。
     /// </summary>
     public Identifier BindExternalImportSpecifier(string? modulePath, string importedName)
+        => BindExternalImportSpecifier(modulePath, importedName, forceAlias: false);
+
+    /// <summary>
+    /// Binds an external import with an optional module/export-based alias independent of use order.
+    /// </summary>
+    public Identifier BindExternalImportSpecifier(string? modulePath, string importedName, bool forceAlias)
     {
         if (_projectSourceImportKeys is not null && _currentModuleOutputPath is not null &&
             (modulePath?.StartsWith("./", System.StringComparison.Ordinal) == true ||
@@ -390,13 +396,14 @@ public readonly record struct SenseArgument
             _projectSourceImportKeys.Add(
                 ECMAScriptModulePath.ResolveRelativePath(_currentModuleOutputPath, modulePath!));
         }
-        return BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: false);
+        return BindImportSpecifierCore(modulePath, importedName, normalizeForCurrentModule: false, forceAlias);
     }
 
     private Identifier BindImportSpecifierCore(
         string? modulePath,
         string importedName,
-        bool normalizeForCurrentModule)
+        bool normalizeForCurrentModule,
+        bool forceAlias = false)
     {
         if (string.IsNullOrWhiteSpace(importedName))
             return new Identifier(importedName ?? string.Empty);
@@ -413,7 +420,7 @@ public readonly record struct SenseArgument
         if (_specifiers is null || _importBindings is null)
             return new Identifier(importedName);
 
-        var requiresAlias = !JavaScriptAstFactory.IsJavaScriptBindingIdentifier(importedName);
+        var requiresAlias = forceAlias || !JavaScriptAstFactory.IsJavaScriptBindingIdentifier(importedName);
         if (!UseImportAliases && !requiresAlias)
         {
             MergeImportSpecifier(modulePath!, new ImportSpecifier(new Identifier(importedName)));

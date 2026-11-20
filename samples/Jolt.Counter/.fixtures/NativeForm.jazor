@@ -1,0 +1,27 @@
+<section id="native-form">
+    <label>First <input id="radio-first" type="radio" name="form-mode" value="first" @bind="Mode" /></label>
+    <label>Second <input id="radio-second" type="radio" name="form-mode" value="second" @bind="Mode" /></label>
+    <label>Choice
+        <select id="select-single" @bind="Choice">
+            <option value="red">Red</option>
+            <option value="blue">Blue</option>
+        </select>
+    </label>
+    <label>Choices
+        <select id="select-multiple" multiple @bind="Choices">
+            <option value="one">One</option>
+            <option value="two">Two</option>
+            <option value="three">Three</option>
+        </select>
+    </label>
+    <label>Amount <input id="form-number" type="number" @bind="Amount" @bind:event="oninput" /></label>
+    <output id="native-form-state">@FormState</output>
+</section>
+
+@code {
+    private string Mode = "first";
+    private string Choice = "red";
+    private string[] Choices = ["one"];
+    private double? Amount = 4;
+    private string FormState => $"{Mode}|{Choice}|{string.Join(",", Choices)}|{(Amount is null ? "empty" : $"{Amount}")}";
+}

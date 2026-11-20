@@ -31,6 +31,7 @@ dotnet run --file scripts/csharp/clean-workspace.cs -- --apply
 | --- | --- |
 | 编译器 | `dotnet test src/Jazor.CompilerTest/Jazor.CompilerTest.csproj` |
 | Jolt 语法与编译 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project jolt` |
+| Jolt SSR、路由与 hydration | `dotnet run --file scripts/csharp/verify-jolt-ssr.cs -- <Jolt.Cli-apphost> <Chromium-executable>` |
 | Emit 与 bundle 快速回归 | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit` |
 | Emit 完整 package consumer | `dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer` |
 | CLR 映射 | `dotnet test src/Jazor.CLR.Test/Jazor.CLR.Test.csproj` |
@@ -47,6 +48,19 @@ dotnet run --file scripts/csharp/test-dotnet.cs -- --project emit-consumer-relea
 ```
 
 并行运行多个 `dotnet test` lane 时，应使用独立 `BaseOutputPath`；聚焦回归构建成功后优先使用 `--no-build`。测试创建的临时目录、端口、管道和进程标识必须隔离并在结束时清理。
+
+### 复测 Jolt 编辑与渲染性能
+
+先运行 `dotnet build src/Jolt.Cli/Jolt.Cli.csproj -c Release`。将以下占位符替换为该构建的 apphost 和本机 Chromium 可执行文件的绝对路径，逐项运行。
+
+| 测量 | 命令 |
+| --- | --- |
+| 混编项目交替保存两种组件到浏览器更新 | `dotnet run --file scripts/csharp/verify-jolt-mixed.cs -- <Jolt-apphost> <Chromium> --benchmark 20` |
+| C# 表达式或 Vue prop 增量编辑到 LSP 诊断 | `dotnet run --file src/Jolt.LanguageServer/verify.cs -- --benchmark-mixed 10 <Jolt-apphost>` |
+| 生产千行列表与 SFC 同批对照 | `dotnet run --file samples/Jolt.Counter/benchmark-keyed-rows.cs -- <Jolt-apphost> <Chromium> .tmp/keyed-rows.json` |
+| 独立声明文件变更引发编译错误及修复 | `dotnet run --file scripts/csharp/verify-jolt-dev-dependencies.cs -- <Jolt-apphost>` |
+
+列表命令可在最后追加旧版 apphost，同一标签页会轮换旧版、候选版和 SFC 三份产物。混编 HMR 的计时包含前一次保存尚未完成的检查，LSP 的计时包含防抖。两项均在检查编辑结果后才接收下一次编辑。 [编辑反馈基线](../../samples/Jolt.Mixed/EditFeedback-baseline.md) · [列表基线](../../samples/Jolt.Counter/KeyedRows-baseline.md)
 
 ## 覆盖率门槛
 

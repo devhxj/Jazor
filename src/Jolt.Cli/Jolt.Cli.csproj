@@ -12,7 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="../ECMAScript/manifest.json" LogicalName="Jolt.Clr.manifest.json" />
-    <EmbeddedResource Include="../ECMAScript/clr/**/*.js" LogicalName="Jolt.Clr/%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Manifest specifiers use forward slashes on every build host. -->
+    <EmbeddedResource Include="../ECMAScript/clr/**/*.js" LogicalName="Jolt.Clr/$([System.String]::Copy('%(RecursiveDir)').Replace('\', '/'))%(Filename)%(Extension)" />
   </ItemGroup>
   <Import Project="Packaging.targets" />
 </Project>

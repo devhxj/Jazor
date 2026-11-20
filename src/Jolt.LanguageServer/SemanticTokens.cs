@@ -1,3 +1,4 @@
+using Jolt.Npm;
 using Jolt.Syntax;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Classification;
@@ -77,12 +78,17 @@ internal sealed partial class LanguageFeatures
             }
         }
 
-        foreach (var element in Elements(projection.Document.Nodes))
+        foreach (var element in JoltTree.Elements(projection.Document))
         {
             var local = LocalComponent(element.Name);
             var component = Component(element.Name);
             if (local is null && component is null)
+            {
+                foreach (var attribute in element.Attributes)
+                    if (attribute.Kind is JoltAttributeKind.Event or JoltAttributeKind.EventModifier)
+                        Add(attribute.NameSpan, TokenKind.Event);
                 continue;
+            }
 
             Add(element.NameSpan, TokenKind.Class);
             var closingTag = "</" + element.Name;
@@ -97,7 +103,9 @@ internal sealed partial class LanguageFeatures
                 if (component is not null && component.Events.Keys.Any(name => MatchesEvent(attribute.Name, name)))
                     Add(attribute.NameSpan, TokenKind.Event);
                 else if (local?.Properties.Any(property => property.Name.Equals(attribute.Name, StringComparison.OrdinalIgnoreCase)) == true ||
-                    component?.Props.Keys.Any(name => MatchesProp(attribute.Name, name)) == true)
+                    component?.Props.Keys.Any(name => MatchesProp(attribute.Name, name)) == true ||
+                    (component is not null && attribute is { Kind: JoltAttributeKind.Bind, Target: { } target } &&
+                        NpmVueModels.Get(component).Any(model => MatchesProp(target, model.PropName))))
                     Add(attribute.NameSpan, TokenKind.Property);
             }
         }

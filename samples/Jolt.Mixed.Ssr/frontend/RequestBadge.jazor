@@ -1,0 +1,17 @@
+@using ECMAScript
+
+<p>Workspace for <strong id="request-name">@RequestName</strong></p>
+
+<style scoped>
+#request-name { color: rgb(160, 30, 30); }
+</style>
+
+@code {
+    private string RequestName { get; set; } = "";
+
+    [Setup]
+    private void ReadProvider()
+    {
+        RequestName = Vue.Inject<string>("workspace:request-name")!;
+    }
+}

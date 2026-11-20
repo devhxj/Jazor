@@ -10,8 +10,9 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Jolt.Compiler;
 
-internal sealed class VueLowering(Projection projection, ComponentContract contract) : SemanticWalkerHost
+internal sealed partial class VueLowering(Projection projection, ComponentContract contract) : SemanticWalkerHost
 {
+    internal string VueSourceRootRelative { get; init; } = ".";
     private readonly Dictionary<ComponentContract, string> _aliases = projection.Dependencies
         .Select((component, index) => (component, alias: "$joltComponent" + index))
         .ToDictionary(pair => pair.component, pair => pair.alias);
@@ -31,10 +32,7 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         var props = Member(instance, "$joltProps");
         var read = new ChainExpression(new MemberExpression(props, String(property.Name), computed: true, optional: true));
         var fallback = Member(instance, Util.GetConfigOrSymbolName(property));
-        return new ConditionalExpression(
-            new NonLogicalBinaryExpression(Operator.StrictInequality, read, Id("undefined")),
-            read,
-            fallback);
+        return ReadLocalProp(instance, props, property.Name, read, fallback);
     }
 
     public override Expression? RewriteInvocationIntrinsic(
@@ -48,11 +46,18 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         {
             IntrinsicKind.Array => Array(),
             IntrinsicKind.Append => Call(Member(arguments[0], "push"), arguments[1]),
-            IntrinsicKind.Text => Call(Id("$joltDisplay"), arguments[0]),
-            IntrinsicKind.Element => Call(Id("$joltH"), intrinsic.Component is null
-                ? String(intrinsic.Name!)
-                : Id(_aliases[intrinsic.Component]),
-                Properties(arguments[0]), intrinsic.Component is null ? arguments[1] : Properties(arguments[1])),
+            IntrinsicKind.Text => operation.Arguments[0].Value is IConversionOperation { Operand.Type: { Name: "RenderedFragment" } type }
+                && type.ContainingNamespace.ToDisplayString() == "JoltAuthoring"
+                ? arguments[0] : Call(Id("$joltDisplay"), arguments[0]),
+            IntrinsicKind.Fragment => arguments[0],
+            IntrinsicKind.Element => LowerElement(intrinsic, arguments),
+            IntrinsicKind.ConditionalBranch => Call(Id("$joltH"), Id("$joltFragment"),
+                Object(Property("key", String(intrinsic.Name!))), arguments[0]),
+            IntrinsicKind.Bind => LowerNativeBinding(intrinsic.Binding!, arguments),
+            IntrinsicKind.ModelUpdate => LowerModelUpdate(arguments),
+            IntrinsicKind.Attributes => Array(arguments[0]),
+            IntrinsicKind.DomEvent => LowerDomEvent(intrinsic.Name!, operation, arguments),
+            IntrinsicKind.Ref => LowerReference(intrinsic.Name!, arguments),
             IntrinsicKind.Prop or IntrinsicKind.Slot => Array(String(intrinsic.Name!), arguments[0]),
             IntrinsicKind.Outlet => Call(Id("$joltRenderSlot"), Member(arguments[0], "$joltSlots"), String(intrinsic.Name!),
                 Properties(arguments[1]), arguments[2]),
@@ -67,7 +72,8 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         return expression;
     }
 
-    internal JoltModule Emit(Module compilerModule, string renderName)
+    internal JoltModule Emit(Module compilerModule, INamedTypeSymbol moduleSymbol, string renderName, IReadOnlyList<IMethodSymbol> exposed,
+        IMethodSymbol? setupMethod)
     {
         string path = ModulePath(contract.Path);
         var statements = new List<Statement>();
@@ -75,24 +81,46 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         var scope = styles.Length == 0 ? null : ScopedStyleId(path);
         if (scope is not null)
             statements.Add(ImportDeclarationFactory.CreateSideEffect("./" + Path.GetFileNameWithoutExtension(path) + ".jolt.css"));
-        statements.AddRange(ImportDeclarationFactory.Create("vue",
-        [
+        var vueImports = new List<ImportSpecifier>
+        {
             Import("defineComponent", "$joltDefine"),
             Import("h", "$joltH"),
             Import("reactive", "$joltReactive"),
             Import("renderSlot", "$joltRenderSlot"),
             Import("toDisplayString", "$joltDisplay"),
-        ]));
+        };
+        AddModelImports(vueImports);
+        if (_usesShallowState)
+            vueImports.Add(Import("shallowReactive", "$joltShallowReactive"));
+        if (projection.Intrinsics.Values.Any(intrinsic => intrinsic.Kind == IntrinsicKind.ConditionalBranch))
+            vueImports.Add(Import("Fragment", "$joltFragment"));
+        var hasDomRefs = projection.Intrinsics.Values.Any(intrinsic => intrinsic.Kind == IntrinsicKind.Ref);
+        if (hasDomRefs)
+            vueImports.Add(Import("customRef", "$joltCustomRef"));
+        if (hasDomRefs || _usesShallowState)
+            vueImports.Add(Import("toRaw", "$joltToRaw"));
+        if (contract.LocalModels.Count > 0 || contract.VuePropertyAliases.Count > 0)
+            vueImports.Add(Import("getCurrentInstance", "$joltGetCurrentInstance"));
+        if (projection.Intrinsics.Values.Any(intrinsic => intrinsic.Kind == IntrinsicKind.Attributes))
+            vueImports.Add(Import("mergeProps", "$joltMergeProps"));
+        foreach (var (component, alias) in _aliases.Where(pair => pair.Key.IsVueBuiltIn))
+            vueImports.Add(Import(component.Name, alias));
+        statements.AddRange(ImportDeclarationFactory.Create("vue", vueImports));
         foreach (var (component, alias) in _aliases)
         {
-            if (component.Npm is { } npm)
+            if (component.IsVueBuiltIn)
+                continue;
+            if (component.Npm is { LocalPath: null } npm)
                 statements.AddRange(ImportDeclarationFactory.Create(npm.ModuleSpecifier,
                     [npm.ExportName == "default" ? new ImportDefaultSpecifier(Id(alias)) : Import(npm.ExportName, alias)]));
             else if (component.Path != contract.Path)
             {
                 var directory = Path.GetDirectoryName(path) ?? "";
+                var target = component.Npm?.LocalPath is { } vuePath
+                    ? Path.Combine(VueSourceRootRelative, vuePath)
+                    : ModulePath(component.Path);
                 var specifier = Path.GetRelativePath(Path.GetFullPath(directory.Length == 0 ? "." : directory),
-                    Path.GetFullPath(ModulePath(component.Path))).Replace('\\', '/');
+                    Path.GetFullPath(target)).Replace('\\', '/');
                 if (!specifier.StartsWith("../", StringComparison.Ordinal))
                     specifier = "./" + specifier;
                 statements.AddRange(ImportDeclarationFactory.Create(specifier, [new ImportDefaultSpecifier(Id(alias))]));
@@ -119,22 +147,60 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
         var state = Id("$joltState");
         var stateClass = compilerModule.Body.OfType<ClassDeclaration>()
             .Single(declaration => declaration.Id?.Name == projection.StateName);
+        var context = Id("$joltContext");
+        var setupStatements = new List<Statement>();
+        setupStatements.Add(new VariableDeclaration(VariableDeclarationKind.Const, NodeList.From(new VariableDeclarator(state,
+            Call(Id("$joltReactive"), new NewExpression(Id(stateClass.Id!.Name), NodeList.Empty<Expression>()))))));
+        setupStatements.Add(Assign(Member(state, "$joltProps"), Id("$joltProps")));
+        setupStatements.Add(Assign(Member(state, "$joltSlots"), Member(context, "slots")));
+        if (contract.LocalModels.Count > 0 || contract.VuePropertyAliases.Count > 0)
+        {
+            var vueInstance = Id("$joltVueInstance");
+            setupStatements.Add(new VariableDeclaration(VariableDeclarationKind.Const, NodeList.From(
+                new VariableDeclarator(vueInstance, Call(Id("$joltGetCurrentInstance"))))));
+            setupStatements.Add(Assign(Member(state, "$joltReadVNodeProps"),
+                new ArrowFunctionExpression(NodeList.Empty<Node>(), Member(Member(vueInstance, "vnode"), "props"),
+                    expression: true, async: false)));
+            if (contract.LocalModels.Count > 0)
+                setupStatements.Add(Assign(Member(state, "$joltEmit"), Member(context, "emit")));
+        }
+        if (setupMethod is not null)
+        {
+            // Vue owns the active instance and effect scope during setup. Keep this call
+            // synchronous so lifecycle registration and watcher disposal use that scope.
+            setupStatements.Add(new NonSpecialExpressionStatement(Call(Member(state, Util.GetConfigOrSymbolName(setupMethod)))));
+        }
+        if (exposed.Count > 0)
+        {
+            // Bind to the reactive state so externally invoked methods observe and
+            // update the same instance as the template.
+            var publicMethods = exposed.Select(method =>
+                Property(method.Name, Call(Member(Member(state, Util.GetConfigOrSymbolName(method)), "bind"), state)));
+            setupStatements.Add(new NonSpecialExpressionStatement(Call(Member(context, "expose"), Object(publicMethods.ToArray()))));
+        }
+        setupStatements.Add(new ReturnStatement(Object(Property("joltState", state))));
         var setup = new ArrowFunctionExpression(
-            NodeList.From<Node>(Id("$joltProps"), Id("$joltContext")),
-            new FunctionBody(NodeList.From<Statement>(
-                new VariableDeclaration(VariableDeclarationKind.Const, NodeList.From(new VariableDeclarator(state,
-                    Call(Id("$joltReactive"), new NewExpression(Id(stateClass.Id!.Name), NodeList.Empty<Expression>()))))),
-                Assign(Member(state, "$joltProps"), Id("$joltProps")),
-                Assign(Member(state, "$joltSlots"), Member(Id("$joltContext"), "slots")),
-                new ReturnStatement(new ArrowFunctionExpression(NodeList.Empty<Node>(), Call(Member(state, renderName)), expression: true, async: false))), strict: true),
+            NodeList.From<Node>(Id("$joltProps"), context),
+            new FunctionBody(NodeList.From(setupStatements), strict: true),
             expression: false, async: false);
 
         var definitionProperties = new List<ObjectProperty>
         {
             Property("name", String(contract.Name)),
-            Property("props", Array(contract.Properties.Select(property => (Expression)String(property.Name)).ToArray())),
+            Property("props", Array(contract.Properties.Select(property => property.Name)
+                .Concat(contract.VuePropertyAliases.Values)
+                .Select(property => (Expression)String(property)).ToArray())),
             Property("setup", setup),
+            // Vue can replace this render function while retaining setup state. Invoke the
+            // render method from this module's prototype to pick up the new template body.
+            Property("render", new ArrowFunctionExpression(
+                NodeList.From<Node>(Id("_ctx"), Id("_cache"), Id("_props"), Id("$setup")),
+                Call(Member(Member(Member(Id(stateClass.Id!.Name), "prototype"), renderName), "call"),
+                    Member(Id("$setup"), "joltState")),
+                expression: true, async: false)),
         };
+        if (contract.LocalModels.Count > 0)
+            definitionProperties.Add(Property("emits", Array(contract.LocalModels.Select(model => (Expression)String(model.Event)).ToArray())));
         if (scope is not null)
             definitionProperties.Add(Property("__scopeId", String(scope)));
         var definition = Call(Id("$joltDefine"), Object(definitionProperties.ToArray()));
@@ -149,14 +215,19 @@ internal sealed class VueLowering(Projection projection, ComponentContract contr
 
         var artifact = new Module(NodeList.From(statements)).ToKnRECMAScriptWithSourceMap(path,
             readSourceContent: _ => projection.Document.Source);
+        var declaration = JoltTypeScriptDeclaration.Emit(contract, projection, moduleSymbol, StateType!, exposed);
         return new JoltModule(contract.Name, path, artifact.Content + "\n//# sourceMappingURL=" + Path.GetFileName(path) + ".map\n", artifact.SourceMapContent!)
         {
             ClrImports = clrImports.Count == 0 ? [] : clrImports.ToArray(),
+            LocalVueImports = _aliases.Keys.Select(component => component.Npm?.LocalPath).OfType<string>()
+                .Order(StringComparer.Ordinal).ToArray(),
             ScopedCss = scope is null ? null : $"/* {scope} */\n" + string.Join("\n", styles.Select(style => style.Css)),
+            TypeScriptDeclaration = declaration.Content,
+            TypeScriptSourceMap = declaration.SourceMap,
         };
     }
 
-    private static string ModulePath(string source) => Path.ChangeExtension(source.Replace('\\', '/'), ".mjs");
+    internal static string ModulePath(string source) => Path.ChangeExtension(source.Replace('\\', '/'), ".mjs");
 
     private static string ScopedStyleId(string modulePath) =>
         "data-v-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(modulePath)).AsSpan(0, 6));

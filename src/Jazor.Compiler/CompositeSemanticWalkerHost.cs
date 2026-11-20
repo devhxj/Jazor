@@ -102,6 +102,9 @@ public class CompositeSemanticWalkerHost : SemanticWalkerHost
         SenseArgument argument)
         => _hosts.Any(host => host.ShouldSkipLocalFunctionDeclaration(operation, argument));
 
+    public override Expression? RewriteAutoPropertyBackingFieldReceiver(IFieldSymbol field, Expression receiver)
+        => First(host => host.RewriteAutoPropertyBackingFieldReceiver(field, receiver));
+
     public override Expression? RewriteFieldReference(
         IFieldReferenceOperation operation,
         SenseArgument argument,

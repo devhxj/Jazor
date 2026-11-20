@@ -164,10 +164,24 @@ internal sealed partial class LanguageFeatures
             throw new ArgumentException($"'{newName}' is invalid for this rename.");
 
         var edits = new HashSet<(string Path, TextChange Change)>();
+        var markupNames = new Dictionary<JoltMarkupSymbol, string>();
+        if (markup is not null)
+            markupNames.Add(markup, newName);
         if (symbol is not null)
+            await AddCSharpEdits(symbol, newName);
+        if (symbol is IPropertySymbol property && markup is { Kind: JoltMarkupKind.Property } &&
+            analysis.LocalComponents.Single(component => component.Path == markup.ComponentPath).Models.Any(model => model.Property == markup.Name) &&
+            property.ContainingType.GetMembers(markup.Name + "Changed").OfType<IPropertySymbol>().SingleOrDefault() is { } callback)
+        {
+            // The authoring contract recognizes a model by the property and its Changed callback.
+            await AddCSharpEdits(callback, newName + "Changed");
+            markupNames.Add(markup with { Name = callback.Name }, newName + "Changed");
+        }
+
+        async Task AddCSharpEdits(ISymbol target, string name)
         {
             var solution = documents!.Values.First().Project.Solution;
-            var renamed = await Renamer.RenameSymbolAsync(solution, symbol, new SymbolRenameOptions(), newName, cancellationToken);
+            var renamed = await Renamer.RenameSymbolAsync(solution, target, new SymbolRenameOptions(), name, cancellationToken);
             foreach (var author in analysis.Documents)
             {
                 var oldDocument = documents[author.Document.Path];
@@ -182,13 +196,19 @@ internal sealed partial class LanguageFeatures
                 }
             }
         }
-        if (markup is not null)
+        foreach (var (binding, replacementName) in markupNames)
         {
-            foreach (var site in MarkupReferences(markup, true))
+            foreach (var site in MarkupReferences(binding, true))
             {
                 var authored = Text(site.Path).ToString(site.Span);
-                var replacement = markup.Kind == JoltMarkupKind.Property && authored.StartsWith("@on", StringComparison.Ordinal) &&
-                    newName.StartsWith("on", StringComparison.OrdinalIgnoreCase) ? "@on" + newName[2..] : newName;
+                var replacement = binding.Kind switch
+                {
+                    JoltMarkupKind.Property when authored.StartsWith("@on", StringComparison.Ordinal) &&
+                        replacementName.StartsWith("on", StringComparison.OrdinalIgnoreCase) => "@on" + replacementName[2..],
+                    JoltMarkupKind.Slot when authored.Length > 0 && char.IsUpper(authored[0]) &&
+                        binding.Name.Length > 0 && char.IsLower(binding.Name[0]) => Pascal(replacementName),
+                    _ => replacementName,
+                };
                 edits.Add((site.Path, new TextChange(site.Span, replacement)));
             }
         }
@@ -232,8 +252,8 @@ internal sealed partial class LanguageFeatures
                 var expected = original.Symbol;
                 if (newPath is not null && expected.ComponentPath == markup!.ComponentPath)
                     expected = expected with { ComponentPath = newPath };
-                if (original.Symbol == markup && markup.Kind != JoltMarkupKind.Component)
-                    expected = expected with { Name = newName };
+                if (original.Symbol.Kind != JoltMarkupKind.Component && markupNames.TryGetValue(original.Symbol, out var renamedMember))
+                    expected = expected with { Name = renamedMember };
                 if (!bound[start].Any(candidate => candidate.Symbol == expected && candidate.IsDeclaration == original.IsDeclaration))
                     throw new ArgumentException($"The rename would change a component binding in '{author.Document.Path}'.");
             }

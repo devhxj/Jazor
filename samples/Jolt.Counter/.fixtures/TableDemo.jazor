@@ -1,0 +1,94 @@
+@using static ECMAScript.Vue
+
+<section>
+    <TypedTable Items="@Items" RowKey="@RowKey" GetStatus="@RowStatus">
+        <Row Context="row">
+            @{ var quantity = row.status + row.value.Length; }
+            <td class="table-name">@Label(row.value)</td>
+            @switch (quantity)
+            {
+                case 0:
+                    <td class="table-status">Empty</td>
+                    break;
+                case var shortName when shortName < 5:
+                    <td class="table-status">Short</td>
+                    break;
+                default:
+                    <td class="table-status">Long</td>
+                    break;
+            }
+        </Row>
+    </TypedTable>
+    <button id="table-reverse" class="table-command" @attributes="ReverseAttributes()" title="Reverse table rows" @onclick="Reverse">Reverse table rows</button>
+    @if (ShowEditor)
+    {
+        <div id="table-model"><TableEditor @bind-Value="ModelValue" @ref="Editor" /></div>
+    }
+    <div id="table-legacy"><TableEditor Value="@LegacyValue" ValueChanged="@SetLegacyValue" /></div>
+    <button id="table-focus" @onclick="FocusEditor">Focus table editor</button>
+    <button id="table-toggle-editor" @onclick="ToggleEditor">Toggle table editor</button>
+    <output id="table-model-state">@ModelState</output>
+    <label>Normalized input <input id="table-normalized" @bind:get="Text" @bind:set="SetText" @bind:event="oninput" /></label>
+    <label>Saved input <input id="table-saved" @bind="SavedText" @bind:after="AfterWrite" /></label>
+    <output id="table-text-state">@TextState</output>
+</section>
+
+@code {
+    private string[] Items = ["", "One", "Four"];
+    private RenderFragment<string> Label = name => @<strong>@name</strong>;
+    private int RowKey(string row) => row.Length;
+    private int RowStatus(string row) => row.Length == 0 ? 0 : 1;
+    private VueDictionary<string> ReverseAttributes() => new()
+    {
+        ["class"] = "table-action",
+        ["title"] = "Table action",
+        ["style"] = "font-weight: 700",
+    };
+    private void Reverse() => Items = [Items[2], Items[1], Items[0]];
+    private string _modelValue = "Bound";
+    private string LegacyValue = "Legacy";
+    private int ModelWrites;
+    private int LegacyWrites;
+    private bool ShowEditor = true;
+    private TableEditorRef? Editor;
+    private string Text = "";
+    private string SavedText = "";
+    private string WriteSnapshot = "";
+    private int SetCalls;
+    private int AfterCalls;
+    private string TextState => $"{Text}:{SetCalls}|{WriteSnapshot}:{AfterCalls}";
+    private string ModelState => $"{_modelValue}:{ModelWrites}|{LegacyValue}:{LegacyWrites}|{(Editor is null ? "unmounted" : "mounted")}";
+
+    private string ModelValue
+    {
+        get => _modelValue;
+        set { _modelValue = value; ModelWrites++; }
+    }
+
+    private void SetLegacyValue(string value)
+    {
+        LegacyValue = value;
+        LegacyWrites++;
+    }
+
+    private void FocusEditor()
+    {
+        Editor?.Focus();
+    }
+
+    private void ToggleEditor() => ShowEditor = !ShowEditor;
+
+    private void SetText(string value)
+    {
+        if (value == "reject")
+            return;
+        Text = value + "!";
+        SetCalls++;
+    }
+
+    private void AfterWrite()
+    {
+        WriteSnapshot = SavedText;
+        AfterCalls++;
+    }
+}

@@ -1,0 +1,13 @@
+<section>
+    <output id="draft-preview">@Text</output>
+    <span>@Text.Length / @Limit</span>
+    <button type="button" @onclick="Clear">Clear draft</button>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public int Limit { get; set; }
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    [Parameter] public Action<string>? TextChanged { get; set; }
+
+    private void Clear() => TextChanged?.Invoke("");
+}

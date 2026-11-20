@@ -985,6 +985,9 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                 ? GetMemberBackingFieldName((IPropertySymbol)symbol.AssociatedSymbol!)
                 : GetMemberFieldDeclaredName(backingField);
             var backField = CreatePrivateStorageKey(backingField, backName);
+            Expression receiver = new ThisExpression();
+            if (backingField is not null)
+                receiver = _options.Host?.RewriteAutoPropertyBackingFieldReceiver(backingField, receiver) ?? receiver;
 
             if (symbol.MethodKind == MethodKind.PropertyGet)
                 body = new FunctionBody(
@@ -992,7 +995,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                     body: NodeList.From<Statement>(
                         new ReturnStatement(
                             new MemberExpression(
-                                obj: new ThisExpression(),
+                                obj: receiver,
                                 property: backField,
                                 computed: false,
                                 optional: false))));
@@ -1005,7 +1008,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
                             new NonSpecialExpressionStatement(
                                 new AssignmentExpression("=",
                                     new MemberExpression(
-                                        obj: new ThisExpression(),
+                                        obj: receiver,
                                         property: backField,
                                         computed: false,
                                         optional: false),

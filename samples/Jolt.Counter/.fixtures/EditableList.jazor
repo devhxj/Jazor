@@ -1,0 +1,90 @@
+@using ECMAScript
+
+<section id="editable-list">
+    <label>Label <input id="edit-label" @bind="Label" /></label>
+    <label>Filter <input id="edit-filter" @bind="Filter" @bind:event="oninput" /></label>
+    <label>Include archived <input id="edit-archived" type="checkbox" @bind="Archived" /></label>
+    <CollapsibleRoot @bind-Open="Open">
+        <div id="edit-toggle"><CollapsibleTrigger>Details</CollapsibleTrigger></div>
+        <div id="edit-details"><CollapsibleContent>Editable rows</CollapsibleContent></div>
+    </CollapsibleRoot>
+    <output id="edit-label-state">@LabelState</output>
+    <output id="edit-filter-state">@FilterState</output>
+    <output id="edit-archived-state">@ArchivedState</output>
+    <output id="edit-open-state">@OpenState</output>
+    <button id="edit-reset" @onclick="RestoreParentValues">Restore parent values</button>
+    <div @onclick="RecordBubble">
+        <a id="edit-sort" href="#sorted" @onclick="Reverse" @onclick:preventDefault @onclick:stopPropagation="@StopSortPropagation">Reverse rows</a>
+    </div>
+    <button id="edit-allow-bubble" @onclick="AllowSortPropagation">Allow sort to bubble</button>
+    <output id="edit-sort-state">@SortState</output>
+    <ul id="edit-rows">
+        @foreach (var row in Rows)
+        {
+            <li @key="row" data-row="@row"><input aria-label="@row" value="@row" /></li>
+        }
+    </ul>
+</section>
+
+@code {
+    private string _label = "Initial";
+    private string _filter = "";
+    private bool _archived;
+    private bool _open;
+    private int LabelWrites;
+    private int FilterWrites;
+    private int ArchivedWrites;
+    private int OpenWrites;
+    private int Sorts;
+    private int Bubbles;
+    private bool DefaultPrevented;
+    private bool StopSortPropagation = true;
+    private string[] Rows = ["alpha", "beta"];
+    private string LabelState => $"{_label}:{LabelWrites}";
+    private string FilterState => $"{_filter}:{FilterWrites}";
+    private string ArchivedState => $"{(_archived ? "checked" : "unchecked")}:{ArchivedWrites}";
+    private string OpenState => $"{(_open ? "open" : "closed")}:{OpenWrites}";
+    private string SortState => $"{Sorts}:{Bubbles}:{(DefaultPrevented ? "prevented" : "allowed")}";
+
+    private string Label
+    {
+        get => _label;
+        set { _label = value; LabelWrites++; }
+    }
+
+    private string Filter
+    {
+        get => _filter;
+        set { _filter = value; FilterWrites++; }
+    }
+
+    private bool Archived
+    {
+        get => _archived;
+        set { _archived = value; ArchivedWrites++; }
+    }
+
+    private bool Open
+    {
+        get => _open;
+        set { _open = value; OpenWrites++; }
+    }
+
+    private void RestoreParentValues()
+    {
+        _label = "Parent";
+        _filter = "Parent filter";
+        _archived = true;
+        _open = true;
+    }
+
+    private void Reverse(MouseEvent e)
+    {
+        DefaultPrevented = e.DefaultPrevented;
+        Rows = [Rows[1], Rows[0]];
+        Sorts++;
+    }
+
+    private void RecordBubble() => Bubbles++;
+    private void AllowSortPropagation() => StopSortPropagation = false;
+}

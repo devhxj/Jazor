@@ -21,11 +21,13 @@
             "patterns": [{ "match": "[\\w.]+", "name": "entity.name.namespace.cs" }]
         },
         {
-            "match": "(@typeparam)\\s+([\\p{L}_][\\p{L}\\p{Nd}_]*)",
-            "captures": {
+            "begin": "(@typeparam)\\s+([\\p{L}_][\\p{L}\\p{Nd}_]*)",
+            "end": "$",
+            "beginCaptures": {
                 "1": { "name": "keyword.control.jazor" },
                 "2": { "name": "entity.name.type.cs" }
-            }
+            },
+            "patterns": [{ "include": "#csharp" }]
         },
         {
             "begin": "<style\\s+scoped\\s*>",
@@ -36,7 +38,7 @@
             "patterns": [{ "include": "source.css" }]
         },
         {
-            "begin": "(@(?:if|foreach))\\s*(\\()",
+            "begin": "(@(?:if|for|foreach|switch))\\s*(\\()",
             "beginCaptures": {
                 "1": { "name": "keyword.control.jazor" },
                 "2": { "name": "punctuation.section.parens.begin.cs" }
@@ -46,41 +48,86 @@
             "contentName": "source.cs",
             "patterns": [{ "include": "#parentheses" }, { "include": "#csharp" }]
         },
+        {
+            "begin": "(@)(\\{)",
+            "beginCaptures": {
+                "1": { "name": "keyword.control.jazor" },
+                "2": { "name": "punctuation.section.block.begin.cs" }
+            },
+            "end": "\\}",
+            "endCaptures": { "0": { "name": "punctuation.section.block.end.cs" } },
+            "contentName": "source.cs",
+            "patterns": [{ "include": "#template-code" }]
+        },
         { "include": "#transition" },
         { "include": "#markup" }
     ],
     "repository": {
+        "template-code": {
+            "patterns": [
+                { "include": "#tag" },
+                {
+                    "begin": "\\{",
+                    "end": "\\}",
+                    "patterns": [{ "include": "#template-code" }]
+                },
+                { "include": "#csharp" }
+            ]
+        },
         "markup": {
             "patterns": [
                 { "begin": "<!--", "end": "-->", "name": "comment.block.html" },
                 { "begin": "@\\*", "end": "\\*@", "name": "comment.block.jazor" },
-                {
-                    "begin": "(</?)([A-Za-z][\\w.:-]*)",
-                    "beginCaptures": {
-                        "1": { "name": "punctuation.definition.tag.begin.html" },
-                        "2": { "name": "entity.name.tag.html" }
-                    },
-                    "end": "/?>",
-                    "endCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
-                    "name": "meta.tag.html",
-                    "patterns": [
-                        {
-                            "begin": "\"",
-                            "end": "\"",
-                            "name": "string.quoted.double.html",
-                            "patterns": [{ "include": "#transition" }, { "include": "#entity" }]
-                        },
-                        {
-                            "begin": "'",
-                            "end": "'",
-                            "name": "string.quoted.single.html",
-                            "patterns": [{ "include": "#transition" }, { "include": "#entity" }]
-                        },
-                        { "match": "[@#]?[A-Za-z_][\\w.:-]*", "name": "entity.other.attribute-name.html" }
-                    ]
-                },
+                { "include": "#tag" },
                 { "include": "#entity" },
                 { "include": "text.html.basic" }
+            ]
+        },
+        "tag": {
+            "begin": "(</?)([A-Za-z][\\w.:-]*)",
+            "beginCaptures": {
+                "1": { "name": "punctuation.definition.tag.begin.html" },
+                "2": { "name": "entity.name.tag.html" }
+            },
+            "end": "/?>",
+            "endCaptures": { "0": { "name": "punctuation.definition.tag.end.html" } },
+            "name": "meta.tag.html",
+            "patterns": [
+                {
+            "begin": "(@(?:key|attributes|ref|bind(?:-[\\w-]+)?(?::(?:get|set|after))?|on[\\w-]+(?::[\\w-]+)*))\\s*=\\s*(\")",
+                    "beginCaptures": {
+                        "1": { "name": "keyword.control.jazor" },
+                        "2": { "name": "punctuation.definition.string.begin.html" }
+                    },
+                    "end": "\"",
+                    "endCaptures": { "0": { "name": "punctuation.definition.string.end.html" } },
+                    "contentName": "source.cs",
+                    "patterns": [{ "include": "#transition" }, { "include": "#csharp" }]
+                },
+                {
+            "begin": "(@(?:key|attributes|ref|bind(?:-[\\w-]+)?(?::(?:get|set|after))?|on[\\w-]+(?::[\\w-]+)*))\\s*=\\s*(')",
+                    "beginCaptures": {
+                        "1": { "name": "keyword.control.jazor" },
+                        "2": { "name": "punctuation.definition.string.begin.html" }
+                    },
+                    "end": "'",
+                    "endCaptures": { "0": { "name": "punctuation.definition.string.end.html" } },
+                    "contentName": "source.cs",
+                    "patterns": [{ "include": "#transition" }, { "include": "#csharp" }]
+                },
+                {
+                    "begin": "\"",
+                    "end": "\"",
+                    "name": "string.quoted.double.html",
+                    "patterns": [{ "include": "#transition" }, { "include": "#entity" }]
+                },
+                {
+                    "begin": "'",
+                    "end": "'",
+                    "name": "string.quoted.single.html",
+                    "patterns": [{ "include": "#transition" }, { "include": "#entity" }]
+                },
+                { "match": "[@#]?[A-Za-z_][\\w.:-]*", "name": "entity.other.attribute-name.html" }
             ]
         },
         "entity": {

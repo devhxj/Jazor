@@ -13,9 +13,9 @@ internal static class NodeToolchain
         .Single(attribute => attribute.Key == "LightningCssWasmVersion").Value!;
 
     public static async Task<string> RestoreAsync(string projectDirectory, string storeDirectory,
-        CancellationToken cancellationToken, TextWriter? progress = null)
+        CancellationToken cancellationToken, TextWriter? progress = null, string? engineCacheDirectory = null)
     {
-        var bootstrap = await PnpmBootstrap.EnsureAsync(storeDirectory, cancellationToken);
+        var bootstrap = await PnpmBootstrap.EnsureAsync(engineCacheDirectory ?? storeDirectory, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory, progress);
         var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "restore",
@@ -54,6 +54,26 @@ internal static class NodeToolchain
         return result;
     }
 
+    public static async Task BuildJoltSsrAsync(string projectDirectory, string serverEntry,
+        string outputDirectory, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var environment = new NodeEnvironment(projectDirectory);
+        await environment.InvokeAsync(MaterializeBridge(projectDirectory), "buildJoltSsr", cancellationToken,
+            JsonSerializer.Serialize(new { projectDirectory, serverEntry, outputDirectory }));
+        cancellationToken.ThrowIfCancellationRequested();
+    }
+
+    public static async Task BuildJoltLibraryAsync(string projectDirectory, string generatedDirectory,
+        string outputDirectory, IReadOnlyList<string> modulePaths, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var environment = new NodeEnvironment(projectDirectory);
+        await environment.InvokeAsync(MaterializeBridge(projectDirectory), "buildJoltLibrary", cancellationToken,
+            JsonSerializer.Serialize(new { projectDirectory, generatedDirectory, outputDirectory, modulePaths }));
+        cancellationToken.ThrowIfCancellationRequested();
+    }
+
     public static async Task<string> CheckAsync(string projectDirectory, IReadOnlyList<string> entryPaths,
         CancellationToken cancellationToken, TextWriter? progress = null)
     {
@@ -64,6 +84,14 @@ internal static class NodeToolchain
         progress?.WriteLine("[Jazor NodeApi] " + result);
         cancellationToken.ThrowIfCancellationRequested();
         return result;
+    }
+
+    public static async Task<string> CompileJoltStylesAsync(string projectDirectory,
+        IReadOnlyDictionary<string, string> styles, CancellationToken cancellationToken)
+    {
+        using var environment = new NodeEnvironment(projectDirectory);
+        return await environment.InvokeAsync(MaterializeBridge(projectDirectory), "compileJoltStyles", cancellationToken,
+            JsonSerializer.Serialize(new { projectDirectory, styles }));
     }
 
     private static string ReadBridge()

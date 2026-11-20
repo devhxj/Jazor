@@ -5,13 +5,13 @@ The sample uses two `.jazor` components. The button renders a default slot and s
 Start the dev server from the repository root after installing the CLI. [Jolt CLI setup](../../docs/03-guides/jolt-authoring.md#安装并运行)
 
 ```sh
-jolt dev samples/Jolt.Counter
+jolt dev samples/Jolt.Counter --port 15658
 ```
 
 To run with the CLI built from source, use `dotnet run --project src/Jolt.Cli -- dev samples/Jolt.Counter`. Open the printed URL or run the browser check from a second terminal. Pass the installed Chrome or Chromium executable. The final argument makes the check edit and restore the source file to verify hot updates.
 
 ```sh
-dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:5173/ samples/Jolt.Counter/CounterButton.jazor
+dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:15658/ samples/Jolt.Counter/CounterButton.jazor
 ```
 
 Build the production assets in `samples/Jolt.Counter/dist`.
@@ -28,9 +28,11 @@ Prepare an isolated copy of the authoring fixture and start it with the candidat
 
 ```sh
 dotnet run --file samples/Jolt.Counter/verify-browser.cs -- --prepare .tmp/jolt-feature-web
-jolt dev .tmp/jolt-feature-web
-dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:5173/ .tmp/jolt-feature-web/CounterButton.jazor --features
+jolt dev .tmp/jolt-feature-web --port 15658
+dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:15658/ .tmp/jolt-feature-web/CounterButton.jazor --features
 jolt bundle .tmp/jolt-feature-web
 ```
 
-Run the browser check against the served production directory with `--features`. The check covers matching CSS class names in two components, the parent's selector on the child's root, slotted content and the rendered slots of both generic lists.
+Run the browser check against the served production directory with `--features`. It checks scoped CSS and HMR, Reka UI bindings, and a local table whose rows and status values come from two inferred type parameters. Reversing the table must reuse the same DOM rows and evaluate each row key once. The editor fixture verifies model writes, focus through an exposed method, and the lifetime of the component reference when the editor is removed and mounted again. The form fixture checks setter normalization and veto, post-assignment callbacks, radio buttons, selects and nullable numbers. [Table consumer](.fixtures/TableDemo.jazor) · [Table declaration](.fixtures/TypedTable.jazor) · [Native controls](.fixtures/NativeForm.jazor)
+
+The same fixture imports `camelCase` from `es-toolkit/string` and calls VueUse's `useCounter` in `[Setup]`. The browser check exercises the returned callbacks and reads the published readonly ref in two independent instances. It also verifies that Vue disposes the watcher created during setup when the component unmounts and that remounting starts with a fresh counter. [npm counter](.fixtures/NpmCounter.jazor)

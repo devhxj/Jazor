@@ -121,30 +121,37 @@ public sealed record JazorSsrStateEnvelope(
     public static JazorSsrStateEnvelope Create(JazorSsrRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var providers = (request.Providers ?? []).ToList();
+        return Create(request.Props, request.Providers, request.Authentication);
+    }
+
+    internal static JazorSsrStateEnvelope Create(
+        object? props,
+        IReadOnlyList<JazorSsrProvider>? suppliedProviders,
+        JazorAuthenticationState? authentication)
+    {
+        var providers = (suppliedProviders ?? []).ToList();
         if (providers.Any(static provider => provider is null || string.IsNullOrWhiteSpace(provider.Key)))
-            throw new ArgumentException("Jazor SSR providers must have non-empty keys.", nameof(request));
+            throw new ArgumentException("Jazor SSR providers must have non-empty keys.", "request");
 
         if (providers
             .GroupBy(static provider => provider.Key, StringComparer.Ordinal)
             .Any(static group => group.Skip(1).Any()))
-            throw new ArgumentException("Jazor SSR providers must have unique keys.", nameof(request));
+            throw new ArgumentException("Jazor SSR providers must have unique keys.", "request");
 
-        if (request.Authentication is not null &&
+        if (authentication is not null &&
             providers.Any(static provider => string.Equals(provider.Key, JazorAuthenticationState.ProviderKey, StringComparison.Ordinal)))
             throw new ArgumentException(
-                "Jazor SSR authentication provider key is reserved and cannot be supplied twice.",
-                nameof(request));
+                "Jazor SSR authentication provider key is reserved and cannot be supplied twice.", "request");
 
-        if (request.Authentication is not null)
-            providers.Add(new JazorSsrProvider(JazorAuthenticationState.ProviderKey, request.Authentication));
+        if (authentication is not null)
+            providers.Add(new JazorSsrProvider(JazorAuthenticationState.ProviderKey, authentication));
 
         return new JazorSsrStateEnvelope(
             CurrentSchema,
             CurrentVersion,
-            request.Props,
+            props,
             providers,
-            request.Authentication);
+            authentication);
     }
 }
 

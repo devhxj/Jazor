@@ -1,0 +1,21 @@
+{
+    "private": true,
+    "name": "mixed-editor-smoke",
+    "version": "1.0.0",
+    "type": "module",
+    "jolt": { "rootNamespace": "Mixed" },
+    "dependencies": {
+        "vue": "3.5.42"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-vue": "6.0.7",
+        "typescript": "5.9.3",
+        "vite": "8.2.0",
+        "vue-tsc": "3.3.14"
+    },
+    "pnpm": {
+        "overrides": {
+            "vite>lightningcss": "npm:lightningcss-wasm@1.33.0"
+        }
+    }
+}

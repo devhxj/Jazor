@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-当前正式版本为 **2.2.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.2.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.2.0)
+当前正式版本为 **2.3.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.3.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.3.0)
 
 日期、VueUse、浮动定位、表单、国际化、服务端状态和 Monaco 的七个绑定包已可安装，但在补齐真实浏览器和独立包消费者验证前仍属于 Guidance，不进入当前 Support 矩阵。
 
@@ -37,7 +37,7 @@ live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browse
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.2.0" />
+  <PackageReference Include="Jazor" Version="2.3.0" />
 </ItemGroup>
 ```
 
@@ -47,17 +47,17 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.DateFns" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.VueUse" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.FloatingUi" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.VeeValidate" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.VueI18n" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.VueQuery" Version="2.2.0" />
-  <PackageReference Include="ECMAScript.Monaco" Version="2.2.0" />
+  <PackageReference Include="ECMAScript.Style" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.DateFns" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.VueUse" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.FloatingUi" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.VeeValidate" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.VueI18n" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.VueQuery" Version="2.3.0" />
+  <PackageReference Include="ECMAScript.Monaco" Version="2.3.0" />
 </ItemGroup>
 ```
 

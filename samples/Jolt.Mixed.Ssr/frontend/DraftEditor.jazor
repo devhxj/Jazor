@@ -1,0 +1,13 @@
+<button id="draft-view" type="button" @onclick="SwitchView">@(Preview ? "Edit draft" : "Preview draft")</button>
+<component is="@(Preview ? DraftPreview : NameInput)" Limit="24" @bind-Text="Draft" />
+<Teleport To="#overlays">
+    <Transition Name="fade">
+        <p id="teleported-notice">Draft workspace</p>
+    </Transition>
+</Teleport>
+
+@code {
+    private string Draft { get; set; } = "";
+    private bool Preview;
+    private void SwitchView() => Preview = !Preview;
+}

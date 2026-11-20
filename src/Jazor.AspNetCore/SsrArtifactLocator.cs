@@ -142,4 +142,5 @@ internal sealed record SsrArtifacts(
     string RootPath,
     string SsrEntryPath,
     string RequestPath,
-    bool IsBundled = false);
+    bool IsBundled = false,
+    bool IsJolt = false);

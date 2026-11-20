@@ -1,15 +1,17 @@
 # 当前状态
 
-> 当前版本：[2.2.0（2026-11-20）](https://github.com/devhxj/Jazor/releases/tag/v2.2.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.3.0（2026-11-20）](https://github.com/devhxj/Jazor/releases/tag/v2.3.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 
 ## Jolt 作者面
 
-| 范围 | 2.2.0 已发布能力 |
+| 范围 | 2.3.0 已发布能力 |
 | --- | --- |
 | 编译与构建 | `.jazor` 模板与 C#、本地组件、npm 公开 TypeScript 声明与 ESM、源码映射、Vite 开发与生产构建 |
-| 组件契约 | 类型化参数、回调和插槽，已验收的单泛型参数场景，以及 `<style scoped>` |
+| 组件契约 | 类型化参数、回调、插槽、受约束的泛型参数、本地和 npm 命名模型、原生表单绑定、DOM 事件、`@key`、`@ref` 与 `<style scoped>` |
+| 混合项目与组件库 | 同一 Vite 项目双向引用 `.vue` 和 `.jazor`，通过 `jolt library` 分发 ESM、TypeScript 声明和样式 |
+| npm 与应用组合 | 类型化 npm 函数和标量常量、每实例 `[Setup]`、Vue 内置组件、可选路由指令和 ASP.NET Core 生产 SSR |
 | 编辑器 | VS Code 与 Visual Studio 扩展。语义高亮、补全、诊断、定义、引用、改名、格式化与快捷修复 |
 | 模块导出 | Vue 组件为默认导出，公开静态方法和字段以及公开常量为具名导出 |
 

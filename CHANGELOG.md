@@ -4,6 +4,44 @@
 
 ## 2026-11-20
 
+### Jazor 2.3.0
+
+中文 | English
+
+#### 新增功能
+
+- 在同一个 Vite 项目中双向引用 `.vue` 和 `.jazor`。`jolt library` 可生成供 Vue SFC 和 TSX 应用安装的 ESM 组件包，包含 TypeScript 声明、组件子路径和 scoped CSS。by @devhxj
+- 用 `jolt bundle --ssr <server-entry>` 构建混合应用的客户端与服务端资源。ASP.NET Core 按请求渲染，并把预取状态和 Teleport 内容交给客户端。`.jazor` 支持 `Teleport`、`Transition`、类型化动态组件和可选的 Vue Router `@page` / `@layout`。by @devhxj
+- 直接调用项目锁定的 npm 函数、读取标量常量，并在每个组件实例的 `[Setup]` 中使用 Vue composable。编辑器支持参数检查、补全和到依赖声明的导航。by @devhxj
+- 原生表单和 npm 命名模型支持双向绑定。`.jazor` 支持 `@key`、类型化 DOM 事件、事件修饰符，以及 `:get` / `:set` 和 `:after` 绑定。by @devhxj
+- 模板支持 Razor 局部声明、`@for`、`@switch`、内联 `RenderFragment<T>`、多个受约束的泛型参数、具名子内容和目录级 `_Imports.jazor`。本地组件支持 Vue 命名模型、`[Expose]`、`@attributes` 和单目标 `@ref`。by @devhxj
+
+#### 体验优化
+
+- 混合项目修改本地 TypeScript 声明时，`jolt dev` 会重新检查调用方。编辑器诊断跟踪 Vue 组件引用的未保存 `.jazor` 参数类型，关闭缓冲区时恢复磁盘版本。仅修改 SFC 模板文字且公开契约与定义位置未变时，连续保存的热更新更快。by @devhxj
+
+#### 迁移说明
+
+- `jolt dev` 默认端口从 `5173` 改为 `15658`。更新固定使用旧地址的代理、测试或启动配置，或传入 `--port 5173` 保持原地址。by @devhxj
+- 未支持的 Razor 指令现在产生源码诊断。已有 `@page` 的项目可在 `package.json` 启用 `jolt.router` 并将生成的路由记录传给 Vue Router，也可以移除指令并在应用中声明路由。by @devhxj
+
+New Features
+
+- Import `.vue` and `.jazor` components from each other in a Vite project. `jolt library` builds an installable ESM component package with TypeScript declarations, component subpaths and scoped CSS for Vue SFC and TSX consumers. by @devhxj
+- Build client and server assets for mixed apps with `jolt bundle --ssr <server-entry>`. ASP.NET Core renders each request and passes prefetched state and teleports to the client. Jolt components support `Teleport`, `Transition`, typed dynamic components and opt-in Vue Router `@page` and `@layout` directives. by @devhxj
+- Call functions and read scalar constants from the npm dependencies locked by your project. Use Vue composables in per-instance `[Setup]` methods. The editor checks arguments, offers completions and navigates to dependency declarations. by @devhxj
+- Bind native form controls and named npm models in both directions. Jolt supports `@key`, typed DOM events, event modifiers, and `:get` / `:set` and `:after` bindings. by @devhxj
+- Templates support Razor locals, `@for`, `@switch`, inline `RenderFragment<T>`, multiple constrained generic parameters, named child content and directory-level `_Imports.jazor`. Local components support Vue named models, `[Expose]`, `@attributes` and single-target `@ref`. by @devhxj
+
+Improvements
+
+- `jolt dev` rechecks callers when local TypeScript declarations change. Editor diagnostics follow unsaved Jolt prop types referenced by Vue components and revert to disk when the buffer closes. Consecutive saves update faster when SFC template text edits preserve the public contract and definition locations. by @devhxj
+
+Migration
+
+- `jolt dev` now defaults to port `15658`, previously `5173`. Update proxies, tests or launch configurations tied to the old address, or pass `--port 5173` to retain it. by @devhxj
+- Unsupported Razor directives now report a source diagnostic. For existing `@page` directives, enable `jolt.router` in `package.json` and pass the generated route records to Vue Router, or remove the directives and declare routes in the app. by @devhxj
+
 ### Jazor 2.2.0
 
 中文 | English

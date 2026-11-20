@@ -123,7 +123,7 @@ public sealed partial class Server(Stream input, Stream output)
                 {
                     positionEncoding = "utf-16",
                     textDocumentSync = new { openClose = true, change = 2, save = true },
-                    completionProvider = new { triggerCharacters = new[] { "<", " ", ".", "@", "#", "\"" }, resolveProvider = true },
+                    completionProvider = new { triggerCharacters = new[] { "<", " ", ".", "@", "#", "\"", ":" }, resolveProvider = true },
                     hoverProvider = true,
                     definitionProvider = true,
                     referencesProvider = true,
@@ -167,11 +167,14 @@ public sealed partial class Server(Stream input, Stream output)
         var snapshot = await versioned.Input.WaitAsync(cancellationToken);
         if (snapshot.Npm is { IsCompletedSuccessfully: true } ready)
             snapshot = ready.Result;
+        if (resolve && (!completionData.TryGetProperty("snapshotId", out var snapshotId) ||
+            !snapshotId.TryGetInt64(out var id) || id != snapshot.Id))
+            return args;
         var document = snapshot.Analysis.Documents.FirstOrDefault(item => PathEquals(Path.GetFullPath(item.Document.Path, snapshot.Directory), path));
         if (document is null)
             return resolve ? args : null;
         var text = SourceText.From(document.Document.Source);
-        var features = new LanguageFeatures(document, snapshot.Analysis, snapshot.Workspace, snapshot.Directory);
+        var features = new LanguageFeatures(document, snapshot.Analysis, snapshot.Workspace, snapshot.Directory, snapshot.Id);
         var result = method switch
         {
             "textDocument/semanticTokens/full" => await features.ClassifyAsync(new TextSpan(0, text.Length), _visualStudioClassifications, cancellationToken),
@@ -206,7 +209,8 @@ public sealed partial class Server(Stream input, Stream output)
                     var doc = args.GetProperty("textDocument");
                     var path = FilePath(doc.GetProperty("uri"));
                     _buffers[path] = new(SourceText.From(doc.GetProperty("text").GetString()!), doc.GetProperty("version").GetInt32());
-                    ProjectFor(path);
+                    if (IsJazor(path))
+                        ProjectFor(path);
                     affected.UnionWith(Invalidate(path));
                     break;
                 }
@@ -239,7 +243,8 @@ public sealed partial class Server(Stream input, Stream output)
                     var path = FilePath(uri);
                     _buffers.TryRemove(path, out _);
                     affected.UnionWith(Invalidate(path));
-                    await PublishAsync(uri.GetString()!, null, [], stopping);
+                    if (IsJazor(path))
+                        await PublishAsync(uri.GetString()!, null, [], stopping);
                     break;
                 }
                 case "textDocument/didSave":
@@ -249,9 +254,12 @@ public sealed partial class Server(Stream input, Stream output)
                     foreach (var change in args.GetProperty("changes").EnumerateArray())
                     {
                         var path = FilePath(change.GetProperty("uri"));
+                        // Editors also watch .mjs tooling resources. Rebuilding on these events restarts the query that wrote them.
+                        if (IsVueMetadataResource(path))
+                            continue;
                         affected.UnionWith(Invalidate(path, fileSystem: true));
                         if (Path.GetFileName(path) == "package.json")
-                            foreach (var buffer in _buffers.Keys.Where(open => IsWithin(Path.GetDirectoryName(path)!, open)))
+                            foreach (var buffer in _buffers.Keys.Where(open => IsJazor(open) && IsWithin(Path.GetDirectoryName(path)!, open)))
                                 affected.Add(ProjectFor(buffer));
                     }
                     break;
@@ -292,7 +300,8 @@ public sealed partial class Server(Stream input, Stream output)
     private async Task ValidateProjectAsync(ProjectState project, CancellationToken cancellationToken)
     {
         await Task.Delay(125, cancellationToken);
-        var buffers = _buffers.ToArray().Where(entry => PathEquals(ProjectDirectory(entry.Key), project.Directory)).ToArray();
+        var buffers = _buffers.ToArray().Where(entry => IsJazor(entry.Key) && IsWithin(project.Directory, entry.Key) &&
+            PathEquals(ProjectDirectory(entry.Key), project.Directory)).ToArray();
         if (buffers.Length == 0)
             return;
         var versioned = GetProject(project);
@@ -345,13 +354,26 @@ public sealed partial class Server(Stream input, Stream output)
                     }).ToList();
             if (snapshot.Npm is not null && snapshot.NpmImports.Contains(Path.GetRelativePath(snapshot.Directory, entry.Key).Replace('\\', '/')))
                 result.Add(new { range = Range(new LinePositionSpan(default, default)), severity = 3,
-                    code = "JOLT1018", source = "Jolt", message = "Loading npm component declarations." });
+                    code = "JOLT1018", source = "Jolt", message = "Loading npm declarations." });
             await PublishAsync(new Uri(entry.Key).AbsoluteUri, buffer.Version, result.ToArray(), cancellationToken);
         }
     }
 
     private Task PublishAsync(string uri, int? version, object[] diagnostics, CancellationToken cancellationToken) =>
         _transport.WriteAsync(new { jsonrpc = "2.0", method = "textDocument/publishDiagnostics", @params = new { uri, version, diagnostics } }, cancellationToken);
+
+    private static bool IsVueMetadataResource(string path)
+    {
+        const string prefix = "vue-metadata-";
+        for (var directory = Path.GetDirectoryName(path); directory is not null; directory = Path.GetDirectoryName(directory))
+        {
+            var name = Path.GetFileName(directory);
+            if (name.StartsWith(prefix, StringComparison.Ordinal) && Guid.TryParseExact(name.AsSpan(prefix.Length), "N", out _) &&
+                PathEquals(Path.GetFileName(Path.GetDirectoryName(directory)), ".jazor"))
+                return true;
+        }
+        return false;
+    }
 
     private string ProjectDirectory(string path)
     {

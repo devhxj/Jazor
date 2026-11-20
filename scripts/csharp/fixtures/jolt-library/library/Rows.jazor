@@ -1,0 +1,20 @@
+@typeparam TItem where TItem : notnull
+
+<table>
+    <tbody>
+        @for (var index = 0; index < Items.Count; index++)
+        {
+            <tr @key="index">
+                <slot name="row" item="@Items[index]" details="@Details" />
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    public record Cell(string Label);
+    public record RowDetails(long Id, ulong Total, Cell Header);
+
+    [Parameter, EditorRequired] public IReadOnlyList<TItem> Items { get; set; } = [];
+    [Parameter, EditorRequired] public RowDetails Details { get; set; } = default!;
+}

@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Jolt.Compiler.Test" />
     <ProjectReference Include="../Jolt.Compiler/Jolt.Compiler.csproj" />
   </ItemGroup>
 </Project>

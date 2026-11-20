@@ -7,9 +7,19 @@ using System.Text.RegularExpressions;
 
 namespace Jolt.Compiler;
 
-internal sealed record ComponentProperty(string Name, string? Type, bool Required, IReadOnlyList<string>? Literals = null, string? Unsupported = null, Microsoft.CodeAnalysis.Text.TextSpan? Source = null);
+internal sealed record ComponentProperty(string Name, string? Type, bool Required, IReadOnlyList<string>? Literals = null, string? Unsupported = null, Microsoft.CodeAnalysis.Text.TextSpan? Source = null)
+{
+    internal ITypeSymbol? LocalType { get; init; }
+    internal IReadOnlyDictionary<string, string>? LiteralExpressions { get; init; }
+}
 internal sealed record ComponentSlot(string Name, bool Required, IReadOnlyList<ComponentProperty>? Scope = null, string? Unsupported = null);
-internal sealed record ComponentTypeParameter(string Name, IReadOnlyList<string>? NpmConstraint = null);
+internal sealed record ComponentTypeParameter(string Name, string Constraint = "", IReadOnlyList<string>? NpmConstraint = null);
+internal sealed record LocalModel(string Property, string Callback)
+{
+    internal string VueProperty => char.ToLowerInvariant(Property[0]) + Property[1..];
+    internal string Event => "update:" + VueProperty;
+}
+internal sealed record ComponentTypeBinding(string[]? Arguments, Microsoft.CodeAnalysis.Text.TextSpan? ErrorSource = null, string? Error = null);
 
 internal sealed record ComponentContract(
     string Name,
@@ -18,19 +28,34 @@ internal sealed record ComponentContract(
     IReadOnlyList<ComponentSlot> Slots,
     NpmVueComponent? Npm = null)
 {
-    internal ComponentTypeParameter? TypeParameter { get; init; }
+    internal IReadOnlyList<ComponentTypeParameter> TypeParameters { get; init; } = [];
+    internal bool IsVueBuiltIn { get; init; }
+    internal string? ReferenceType { get; init; }
+    internal IReadOnlyList<LocalModel> LocalModels { get; init; } = [];
+    internal IReadOnlyDictionary<string, string> VuePropertyAliases { get; init; } = new Dictionary<string, string>();
 
-    internal ComponentContract Specialize(string type)
+    internal static readonly SymbolDisplayFormat TypeDisplay = SymbolDisplayFormat.FullyQualifiedFormat
+        .AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+    internal ComponentContract Specialize(IReadOnlyList<string> types)
     {
-        var parameter = TypeParameter!.Name;
+        var substitutions = TypeParameters.Select((parameter, index) => (parameter.Name, Type: SyntaxFactory.ParseTypeName(types[index])))
+            .ToDictionary(entry => entry.Name, entry => entry.Type, StringComparer.Ordinal);
         ComponentProperty Substitute(ComponentProperty property)
         {
             if (property.Type is null)
                 return property;
             var syntax = SyntaxFactory.ParseTypeName(property.Type);
             var matches = syntax.DescendantNodesAndSelf().OfType<IdentifierNameSyntax>()
-                .Where(name => name.Identifier.ValueText == parameter && name.Parent is not QualifiedNameSyntax and not AliasQualifiedNameSyntax);
-            return property with { Type = syntax.ReplaceNodes(matches, (original, _) => SyntaxFactory.ParseTypeName(type).WithTriviaFrom(original)).ToString() };
+                .Where(name => substitutions.ContainsKey(name.Identifier.ValueText) && name.Parent is not QualifiedNameSyntax and not AliasQualifiedNameSyntax);
+            return property with { Type = syntax.ReplaceNodes(matches, (original, _) =>
+            {
+                var replacement = substitutions[original.Identifier.ValueText];
+                // A consumer can itself supply a nullable type argument for T?.
+                if (original.Parent is NullableTypeSyntax && replacement is NullableTypeSyntax nullable)
+                    replacement = nullable.ElementType;
+                return replacement.WithTriviaFrom(original);
+            }).ToString() };
         }
         return this with
         {
@@ -39,38 +64,85 @@ internal sealed record ComponentContract(
         };
     }
 
-    internal static ComponentContract FromLocal(Projection projection, INamedTypeSymbol state, SemanticModel? model = null)
+    internal static ComponentContract FromLocal(Projection projection, INamedTypeSymbol state, Compilation compilation, SemanticModel? model = null)
     {
-        var props = state.GetMembers().OfType<IPropertySymbol>()
+        var symbols = state.GetMembers().OfType<IPropertySymbol>()
             .Where(property => property is { IsStatic: false, DeclaredAccessibility: Accessibility.Public, GetMethod: not null, SetMethod: not null } &&
                 property.GetAttributes().Any(attribute => attribute.AttributeClass?.Name == "ParameterAttribute"))
+            .ToDictionary(property => property.Name, StringComparer.Ordinal);
+        var props = symbols.Values
             .Select(property => new ComponentProperty(
                 property.Name,
-                property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                property.Type.ToDisplayString(TypeDisplay),
                 property.IsRequired || property.GetAttributes().Any(attribute => attribute.AttributeClass?.Name == "EditorRequiredAttribute"),
-                Source: property.Locations.FirstOrDefault(location => location.IsInSource) is { } location ? projection.Map(location.SourceSpan) : null))
+                Source: property.Locations.FirstOrDefault(location => location.IsInSource) is { } location ? projection.Map(location.SourceSpan) : null)
+                { LocalType = property.Type })
             .ToArray();
 
-        var slots = Descendants(projection.Document.Nodes).Where(element => element.Name == "slot")
-            .GroupBy(element => Text(element.Attributes.FirstOrDefault(attribute => attribute.Name == "name")) ?? "default")
+        var slots = SlotOutlets(projection.Document)
             .Select(group => new ComponentSlot(
                 group.Key,
                 false,
-                group.SelectMany(element => element.Attributes.Where(attribute => attribute.Name != "name"))
+                group.SelectMany(SlotMembers)
                     .DistinctBy(attribute => attribute.Name)
-                    .Select(attribute => new ComponentProperty(attribute.Name, attribute.Value switch
+                    .Select(attribute => new ComponentProperty(attribute.Name, projection.GetSlotMemberType(attribute, model) ?? "object",
+                        false, Source: attribute.NameSpan)
                     {
-                        [JoltExpression expression] when model is not null => projection.GetExpressionType(expression, model) ?? "object",
-                        [JoltText] => "string",
-                        [] => "bool",
-                        _ => "object"
-                    }, false)).ToArray()))
+                        LocalType = attribute.Value switch
+                        {
+                            [JoltExpression expression] => model is null ? null : projection.GetExpressionTypeSymbol(expression, model),
+                            [] => compilation.GetSpecialType(SpecialType.System_Boolean),
+                            _ => compilation.GetSpecialType(SpecialType.System_String),
+                        },
+                    }).ToArray()))
             .ToArray();
 
+        var aliases = symbols.Keys.Select(name => (Name: name, Alias: char.ToLowerInvariant(name[0]) + name[1..]))
+            .Where(pair => !symbols.ContainsKey(pair.Alias))
+            .GroupBy(pair => pair.Alias, StringComparer.Ordinal).Where(group => group.Count() == 1)
+            .Select(group => group.Single()).ToDictionary(pair => pair.Name, pair => pair.Alias, StringComparer.Ordinal);
+        var actionType = compilation.GetTypeByMetadataName("System.Action`1");
         return new ComponentContract(projection.Name, projection.Document.Path, props, slots)
         {
-            TypeParameter = projection.TypeParameter is { } parameter ? new(parameter.Name) : null,
+            VuePropertyAliases = aliases,
+            LocalModels = symbols.Values
+                .Where(property => symbols.TryGetValue(property.Name + "Changed", out var callback) &&
+                    callback.Type is INamedTypeSymbol action &&
+                    SymbolEqualityComparer.Default.Equals(action.OriginalDefinition, actionType) &&
+                    SymbolEqualityComparer.IncludeNullability.Equals(action.TypeArguments[0], property.Type))
+                .Select(property => new LocalModel(property.Name, property.Name + "Changed"))
+                .Where(model => model.VueProperty == model.Property || aliases.ContainsKey(model.Property))
+                .ToArray(),
+            ReferenceType = projection.ReferenceType,
+            TypeParameters = state.TypeParameters.Select(parameter => new ComponentTypeParameter(parameter.Name, GetConstraint(parameter))).ToArray(),
         };
+    }
+
+    internal static IEnumerable<IGrouping<string, JoltElement>> SlotOutlets(JoltDocument document) =>
+        JoltTree.Elements(document.Nodes).Where(element => element.Name == "slot")
+            .GroupBy(element => Text(element.Attributes.FirstOrDefault(attribute => attribute.Name == "name")) ?? "default");
+
+    internal static IEnumerable<JoltAttribute> SlotMembers(JoltElement element) =>
+        element.Attributes.Where(attribute => attribute.Name != "name" && attribute.Kind == JoltAttributeKind.Markup);
+
+    private static string GetConstraint(ITypeParameterSymbol parameter)
+    {
+        var constraints = new List<string>();
+        if (parameter.HasUnmanagedTypeConstraint)
+            constraints.Add("unmanaged");
+        else if (parameter.HasValueTypeConstraint)
+            constraints.Add("struct");
+        else if (parameter.HasReferenceTypeConstraint)
+            constraints.Add(parameter.ReferenceTypeConstraintNullableAnnotation == NullableAnnotation.Annotated ? "class?" : "class");
+        else if (parameter.HasNotNullConstraint)
+            constraints.Add("notnull");
+        constraints.AddRange(parameter.ConstraintTypes.Where(type => type.TypeKind != TypeKind.Error)
+            .Select(type => type.ToDisplayString(TypeDisplay)));
+        if (parameter.HasConstructorConstraint)
+            constraints.Add("new()");
+        if (parameter.AllowsRefLikeType)
+            constraints.Add("allows ref struct");
+        return constraints.Count == 0 ? "" : $" where {parameter.Name} : {string.Join(", ", constraints)}";
     }
 
     internal static ComponentContract FromNpm(NpmVueComponent component)
@@ -97,41 +169,39 @@ internal sealed record ComponentContract(
                 _ => new ComponentSlot(entry.Key, entry.Value.Required, Unsupported: "multiple or unsupported signatures"),
             };
         }).ToArray();
-        return new ComponentContract(NpmNames.TagFor(component.ModuleSpecifier, component.ExportName), component.ModuleSpecifier,
+        return new ComponentContract(component.LocalPath is { } path ? System.IO.Path.GetFileNameWithoutExtension(path) :
+            NpmNames.TagFor(component.ModuleSpecifier, component.ExportName), component.LocalPath ?? component.ModuleSpecifier,
             events.Concat(props).DistinctBy(prop => prop.Name).ToArray(), slots, component)
         {
-            TypeParameter = component.TypeParameter is { } type ? new(type.Name, type.PrimitiveKinds) : null,
+            TypeParameters = component.TypeParameter is { } type ? [new(type.Name, NpmConstraint: type.PrimitiveKinds)] : [],
         };
     }
 
     internal static string EventProperty(string name) => name.Length == 0 ? "on" : "on" + char.ToUpperInvariant(name[0]) + name[1..];
 
+    internal ModelBinding? FindModel(string name)
+    {
+        if (Npm is null)
+        {
+            var local = LocalModels.FirstOrDefault(candidate => candidate.Property == name || candidate.VueProperty == name);
+            return local is null ? null : new ModelBinding(local.VueProperty, EventProperty(local.Event),
+                Properties.First(property => property.Name == local.Property).Type!, Local: local);
+        }
+        var models = NpmVueModels.Get(Npm).ToArray();
+        var model = models.FirstOrDefault(candidate => candidate.PropName == name);
+        if (model is null)
+        {
+            var matches = models.Where(candidate => string.Equals(candidate.PropName, name, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (matches is [var match])
+                model = match;
+        }
+        return model is null ? null : new ModelBinding(
+            model.PropName, EventProperty(model.EventName), ToCSharpType(model.Type)!);
+    }
+
     internal static string? Text(JoltAttribute? attribute) => attribute is { Value.Length: 1 } && attribute.Value[0] is JoltText text
         ? text.Text
         : null;
-
-    internal static IEnumerable<JoltElement> Descendants(IEnumerable<JoltNode> nodes)
-    {
-        foreach (var node in nodes)
-        {
-            switch (node)
-            {
-                case JoltElement element:
-                    yield return element;
-                    foreach (var child in Descendants(element.Children))
-                        yield return child;
-                    break;
-                case JoltIf conditional:
-                    foreach (var child in Descendants(conditional.Then.Concat(conditional.Else)))
-                        yield return child;
-                    break;
-                case JoltForEach loop:
-                    foreach (var child in Descendants(loop.Children))
-                        yield return child;
-                    break;
-            }
-        }
-    }
 
     private static string Describe(IReadOnlyList<NpmVueParameter> parameters) => string.Join(", ", parameters.Select(parameter => parameter.Type));
 

@@ -1,0 +1,34 @@
+@typeparam TItem
+@typeparam TStatus where TStatus : struct
+
+<table id="typed-table">
+    <tbody>
+    @for (var i = 0; i < Items.Length; i++)
+    {
+        var row = Items[i];
+        var key = ReadRowKey(row);
+        <tr @key="key" data-index="@i">
+            <slot name="row" value="@row" status="@GetStatus(row)"><td>@row</td></slot>
+        </tr>
+    }
+    </tbody>
+</table>
+<output id="table-key-reads">@KeyReads</output>
+
+@code {
+    [Parameter, EditorRequired] public TItem[] Items { get; set; } = [];
+    [Parameter, EditorRequired] public Func<TItem, int> RowKey { get; set; } = default!;
+    [Parameter, EditorRequired] public Func<TItem, TStatus> GetStatus { get; set; } = default!;
+
+    // The counter sits outside the component's reactive state to measure ordinary renders.
+    private static int KeyReads;
+
+    private Func<TItem, int> ReadRowKey
+    {
+        get
+        {
+            KeyReads++;
+            return RowKey;
+        }
+    }
+}
