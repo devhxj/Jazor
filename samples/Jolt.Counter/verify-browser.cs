@@ -51,7 +51,17 @@ try
         {
             if (!File.Exists(portFile))
                 return false;
-            var port = (await File.ReadAllLinesAsync(portFile, token)).FirstOrDefault();
+            string? port;
+            try
+            {
+                port = (await File.ReadAllLinesAsync(portFile, token)).FirstOrDefault();
+            }
+            catch (IOException exception) when (OperatingSystem.IsWindows() &&
+                exception.HResult == unchecked((int)0x80070020))
+            {
+                // Chrome can create the file before releasing its Windows write handle.
+                return false;
+            }
             if (!int.TryParse(port, out var endpoint))
                 return false;
             using var targets = JsonDocument.Parse(await http.GetStringAsync($"http://127.0.0.1:{endpoint}/json/list", token));
