@@ -13,6 +13,8 @@ namespace Jazor.Common;
 /// </remarks>
 public static class StructuralRecordSupport
 {
+	public const string FixedBooleanAttribute = "ECMAScript.ECMAScriptFixedBooleanAttribute";
+
 	public static bool IsStructuralRecordType(ITypeSymbol? typeSymbol)
 		=> typeSymbol is INamedTypeSymbol { IsRecord: true };
 
@@ -38,7 +40,8 @@ public static class StructuralRecordSupport
 			return false;
 		}
 
-		if (property.IsAbstract)
+		if (property.IsAbstract || property.GetAttributes().Any(attribute =>
+			attribute.AttributeClass?.ToDisplayString() == FixedBooleanAttribute))
 			return true;
 
 		if (!IsSourceDeclaredProperty(property) &&

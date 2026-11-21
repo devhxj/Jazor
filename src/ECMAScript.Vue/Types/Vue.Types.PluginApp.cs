@@ -8,6 +8,9 @@ namespace ECMAScript;
 /// <remarks>该分片只描述 app.use 等 host surface，不负责插件安装或全局注册的运行时实现。</remarks>
 public static partial class Vue
 {
+	/// <summary>A Vue plugin that can be installed without options.</summary>
+	public interface IVuePlugin;
+
 	/// <summary>
 	/// 直接对象形式的 Vue 插件编写表面。映射到带有 <c>install(app)</c> 函数的普通 JavaScript 对象，可以直接传递给 <see cref="VueApp.Use(VuePlugin)"/> 或 <see cref="VueApp.Use(VuePlugin, VuePluginOptions)"/>。对于类型化安装选项，使用 <see cref="VuePlugin{TOptions}"/>。
 	/// Direct object-form Vue plugin authoring surface. This maps to a plain JavaScript
@@ -16,7 +19,7 @@ public static partial class Vue
 	/// For typed install options, use <see cref="VuePlugin{TOptions}"/>.
 	/// </summary>
 	[Description("@#")]
-	public record VuePlugin : IVueOptionsBag
+	public record VuePlugin : IVueOptionsBag, IVuePlugin
 	{
 		/// <summary>
 		/// 插件安装入口点。当 <c>app.use(plugin)</c> 运行时 Vue 调用此函数。
@@ -115,6 +118,10 @@ public static partial class Vue
 		/// <returns>应用实例，用于链式调用进一步的配置。The app instance, for chaining further configuration calls.</returns>
 		[Description("@#use")]
 		public extern VueApp Use(VuePlugin plugin);
+
+		/// <summary>Installs a Vue plugin supplied by a JavaScript module.</summary>
+		[Description("@#use")]
+		public extern VueApp Use(IVuePlugin plugin);
 
 		/// <summary>
 		/// 安装带有配置选项的 Vue 插件。插件的 <c>install()</c> 方法接收应用实例和选项对象。

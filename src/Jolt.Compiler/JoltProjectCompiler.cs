@@ -37,7 +37,7 @@ public static class JoltProjectCompiler
         internal delegate RenderedFragment RenderFragment<in T>(T value);
         """, ParseOptions);
 
-    private static readonly Lazy<ImmutableArray<MetadataReference>> PlatformReferences = new(() =>
+    internal static readonly Lazy<ImmutableArray<MetadataReference>> PlatformReferences = new(() =>
         ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
         .Select(path => (MetadataReference)MetadataReference.CreateFromFile(path)).ToImmutableArray());
 
@@ -158,7 +158,9 @@ public static class JoltProjectCompiler
         var valueNamespaces = projections.SelectMany(projection => projection.Imports)
             .Where(import => import.IsNpmValue).Select(import => import.NpmNamespace!).Distinct(StringComparer.Ordinal).ToArray();
         var valueProjection = valueNamespaces.Length != 0 || options.NpmValues.Count != 0
-            ? new JoltNpmValueProjection(valueNamespaces, options.NpmValues, ParseOptions)
+            ? options.NpmProjectionCacheDirectory is { } cache && options.NpmValues.Count != 0
+                ? JoltNpmProjectionCache.LoadComponent(cache, valueNamespaces, options.NpmValues, ParseOptions, cancellationToken)
+                : new JoltNpmValueProjection(valueNamespaces, options.NpmValues, ParseOptions)
             : null;
         var sharedTrees = new List<SyntaxTree> { Authoring };
         if (valueProjection is not null)

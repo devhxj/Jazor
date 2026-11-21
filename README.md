@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.3.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.3.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.4.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.4.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -30,11 +30,11 @@
 Install the .NET 11 SDK on Windows or glibc Linux (x64 or ARM64). Clone the repository and run these commands from its root.
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.3.0
+dotnet tool install --global Jazor.Jolt --version 2.4.0
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-If the tool is already installed, use `dotnet tool update --global Jazor.Jolt --version 2.3.0`. Open the URL printed in the terminal and click **Increment**. A typed callback updates the parent’s count and the state of a Reka UI component. [Counter project](samples/Jolt.Counter/README.md)
+If the tool is already installed, use `dotnet tool update --global Jazor.Jolt --version 2.4.0`. Open the URL printed in the terminal and click **Increment**. A typed callback updates the parent’s count and the state of a Reka UI component. [Counter project](samples/Jolt.Counter/README.md)
 
 A `.jazor` file combines markup and C#.
 
@@ -53,10 +53,10 @@ Each `.jazor` file becomes one ES module. The Vue component is the default expor
 
 | Editor | Extension |
 | --- | --- |
-| VS Code | Install `jolt-2.3.0.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
+| VS Code | Install `jolt-2.4.0.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
 | Visual Studio 2026 on Windows x64 | Open `Jolt.VisualStudio.vsix` with the VSIX Installer. [Visual Studio setup](editors/jolt-visual-studio/README.md) |
 
-Get the CLI and your editor’s VSIX from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor` to try semantic highlighting, typed completion and go to definition. [2.3.0 release](https://github.com/devhxj/Jazor/releases/tag/v2.3.0)
+Get the CLI and your editor’s VSIX from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor` to try semantic highlighting, typed completion and go to definition. [2.4.0 release](https://github.com/devhxj/Jazor/releases/tag/v2.4.0)
 
 `jolt build samples/Jolt.Counter` writes modules and source maps to `samples/Jolt.Counter/.jolt/`. `jolt bundle samples/Jolt.Counter` writes production assets to `samples/Jolt.Counter/dist/`.
 
@@ -65,7 +65,7 @@ Get the CLI and your editor’s VSIX from the same release. Open `samples/Jolt.C
 Add the `Jazor` SDK to a .NET project to compile `[ECMAScriptModule]` classes. The SDK includes the compiler, analyzer, Emit tooling and ASP.NET Core integration. [C# module quickstart](docs/03-guides/quick-start.md)
 
 ```sh
-dotnet add package Jazor --version 2.3.0
+dotnet add package Jazor --version 2.4.0
 ```
 
 | Topic | Documentation |
@@ -89,7 +89,7 @@ The Jolt release workflow verifies an isolated CLI install, the language server 
 
 ## Latest release
 
-Jazor 2.3.0 adds mixed Vue and Jolt projects, installable component libraries, and production SSR with ASP.NET Core. Jolt components gain typed form bindings and direct calls to npm functions and Vue composables. [Release notes](CHANGELOG.md#jazor-230)
+Jazor 2.4.0 adds `jolt bindings` to generate public C# declarations from locked npm dependencies. Jolt expands type projection for seven application libraries and reuses generated declarations across builds and editor sessions. [Release notes and migration](CHANGELOG.md#jazor-240)
 
 ## AI-assisted development
 

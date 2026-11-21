@@ -14,6 +14,7 @@ public sealed record JoltCompileOptions(
     IReadOnlyList<MetadataReference>? References = null)
 {
     public IReadOnlyList<NpmValueExport> NpmValues { get; init; } = [];
+    public string? NpmProjectionCacheDirectory { get; init; }
     public IReadOnlyList<NpmVueComponent> VueComponents { get; init; } = [];
     public string VueSourceRootRelative { get; init; } = ".";
     public bool Router { get; init; }

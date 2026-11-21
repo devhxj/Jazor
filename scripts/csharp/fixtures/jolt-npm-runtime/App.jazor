@@ -1,0 +1,103 @@
+@using DateFns = Npm.DateFns.Exports
+@using DateLocales = Npm.DateFns.Locale.Exports
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<output id="online">@(_online ? "online" : "offline")</output>
+<output id="client">@(VueUse.IsClient ? "client" : "server")</output>
+<output id="day">@_day</output>
+<output id="added">@_added</output>
+<output id="subtracted">@_subtracted</output>
+<output id="interval-count">@_intervalCount</output>
+<output id="interval-last">@_intervalLast</output>
+<output id="clamped">@_clamped</output>
+<output id="range-days">@_rangeDays</output>
+<output id="range-description">@_rangeDescription</output>
+<output id="basic-date">@_basicDate</output>
+<output id="date-check">@(_dateCheck ? "date" : "other")</output>
+<output id="earliest">@_earliest</output>
+<output id="latest">@_latest</output>
+<output id="mouse-x">@_mouseX</output>
+<output id="media-value">@(_mediaValue ? "matches" : "misses")</output>
+<output id="media-ref">@(_mediaRef ? "matches" : "misses")</output>
+<output id="media-getter">@(_mediaGetter ? "matches" : "misses")</output>
+<output id="storage">@_saved</output>
+
+@code {
+    public static string ReadFrenchDistance()
+    {
+        var start = new ECMAScript.Date(2026, 0, 15);
+        var end = new ECMAScript.Date(2026, 0, 17);
+        var explicitLocale = DateFns.FormatDistance(end, start, new() { Locale = DateLocales.Fr });
+        DateFns.SetDefaultOptions(new() { Locale = DateLocales.Fr });
+        var saved = DateFns.GetDefaultOptions().Locale;
+        return explicitLocale + "|" + DateFns.FormatDistance(end, start, new() { Locale = saved });
+    }
+
+    public static double ReadWeekDefaults()
+    {
+        DateFns.SetDefaultOptions(new() {
+            WeekStartsOn = DateFns.Day.Value1,
+            FirstWeekContainsDate = DateFns.FirstWeekContainsDate.Value4
+        });
+        return (DateFns.GetDefaultOptions().WeekStartsOn ?? 0) * 10 +
+            (DateFns.GetDefaultOptions().FirstWeekContainsDate ?? 0);
+    }
+
+    private bool _online;
+    private ECMAScript.Number _day;
+    private ECMAScript.Number _added;
+    private ECMAScript.Number _subtracted;
+    private ECMAScript.Number _intervalCount;
+    private ECMAScript.Number _intervalLast;
+    private ECMAScript.Number _clamped;
+    private double _rangeDays;
+    private string _rangeDescription = "";
+    private string _basicDate = "";
+    private bool _dateCheck;
+    private ECMAScript.Number _earliest;
+    private ECMAScript.Number _latest;
+    private double _mouseX;
+    private bool _mediaValue;
+    private bool _mediaRef;
+    private bool _mediaGetter;
+    private string _saved = "";
+
+    [Setup]
+    private void Configure()
+    {
+        _online = VueUse.UseOnline().Value && !VueUse.IsDef() && VueUse.IsDef("") && VueUse.IsDef<string?>(null);
+        _day = DateFns.AddDays(new ECMAScript.Date(2026, 0, 15), 1).GetDate();
+        var date = new ECMAScript.Date(2026, 0, 15);
+        _dateCheck = DateFns.IsDate(date) && !DateFns.IsDate("not a date") &&
+            DateFns.IsValid(date) && DateFns.IsValid(1700000000000d) &&
+            !DateFns.IsValid("not a date") && !DateFns.IsValid(false);
+        _basicDate = DateFns.FormatISO(date, new() {
+            Format = DateFns.ISOStringFormat.Basic, Representation = DateFns.ISOStringRepresentation.Date
+        });
+        var duration = new DateFns.Duration { Days = 2 };
+        _added = DateFns.Add(date, duration).GetDate();
+        _subtracted = DateFns.Sub(date, duration).GetDate();
+        var intervalEnd = new ECMAScript.Date(2026, 0, 17);
+        var range = new DateFns.Interval { Start = date, End = intervalEnd };
+        if (DateFns.IsWithinInterval(intervalEnd, range))
+        {
+            var elapsed = DateFns.IntervalToDuration(range);
+            _rangeDays = elapsed.Days ?? 0;
+            _rangeDescription = DateFns.FormatDuration(DateFns.IntervalToDuration(range));
+        }
+        var days = DateFns.EachDayOfInterval(new() { Start = date, End = intervalEnd }, new() { Step = 2 });
+        _intervalCount = days.Length;
+        _intervalLast = days[1].GetDate();
+        _clamped = DateFns.Clamp(new ECMAScript.Date(2026, 0, 19), new() { Start = date, End = intervalEnd }).GetDate();
+        var choices = new DateFns.DateOrNumberOrString[] { new ECMAScript.Date(1710000000000d), 1700000000000d };
+        _earliest = DateFns.Min(choices).GetTime();
+        _latest = DateFns.Max(choices).GetTime();
+        _mouseX = VueUse.UseMouse().X.Value;
+        _mediaValue = VueUse.UseMediaQuery("(min-width: 700px)").Value;
+        _mediaRef = VueUse.UseMediaQuery(ECMAScript.Vue.Ref("(max-width: 700px)")).Value;
+        _mediaGetter = VueUse.UseMediaQuery(() => "(min-width: 800px)").Value;
+        var saved = VueUse.UseStorage("jolt-projection-probe", "initial");
+        saved.Value = "changed";
+        _saved = saved.Value;
+    }
+}

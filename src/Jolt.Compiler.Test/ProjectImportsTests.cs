@@ -135,7 +135,7 @@ public sealed class ProjectImportsTests
                 {"private":true,"dependencies":{"value-fixture":"file:./fixture"}}
                 """);
             await File.WriteAllTextAsync(Path.Combine(package.FullName, "package.json"), """
-                {"name":"value-fixture","version":"1.0.0","type":"module","exports":{"./text":{"types":"./text.d.ts","import":"./text.js"}}}
+                {"name":"value-fixture","version":"1.0.0","type":"module","exports":{"./text":{"types":"./text.d.ts","import":"./text.js"},"./*.js":"./public/*.js","./*":"./public/*.js"}}
                 """);
             await File.WriteAllTextAsync(Path.Combine(package.FullName, "text.js"), """
                 export default function (label) { return label; }
@@ -147,12 +147,16 @@ public sealed class ProjectImportsTests
                 export function title(label: string): string;
                 export function unsupported(value: any): any;
                 """);
+            var wildcard = package.CreateSubdirectory("public").CreateSubdirectory("editor");
+            await File.WriteAllTextAsync(Path.Combine(wildcard.FullName, "editor.api.js"), "export function theme() { return 'dark'; }");
+            await File.WriteAllTextAsync(Path.Combine(wildcard.FullName, "editor.api.d.ts"), "export declare function theme(): string;");
             var pages = root.CreateSubdirectory("Pages");
             await File.WriteAllTextAsync(Path.Combine(pages.FullName, "_Imports.jazor"), "@using Text = Npm.ValueFixture.Text.Exports");
             var page = Path.Combine(pages.FullName, "Page.jazor");
             const string valid = """
                 @using Other = Npm.ValueFixture.Text.Exports;
-                <p>@Text.Title("label") @Other.Default("another")</p>
+                @using Wildcard = Npm.ValueFixture.Editor.EditorApiJs.Exports
+                <p>@Text.Title("label") @Other.Default("another") @Wildcard.Theme()</p>
                 @code {
                     private sealed class Local { public string Unsupported(string value) => value; }
                     private string Test(Local Text) => Text.Unsupported("shadowed");
@@ -166,18 +170,22 @@ public sealed class ProjectImportsTests
             var provider = new NpmVueMetadataProvider(Path.Combine(root.FullName, ".pnpm-store"), engineCache);
             var workspace = await JoltProjectLoader.LoadAsync(root.FullName, provider);
             Assert.IsEmpty(workspace.Diagnostics, string.Join(Environment.NewLine, workspace.Diagnostics));
-            CollectionAssert.AreEquivalent(new[] { "title", "default" }, workspace.Options.NpmValues.Select(value => value.ExportName).ToArray());
-            Assert.IsTrue(workspace.Options.NpmValues.All(value => value.ModuleSpecifier == "value-fixture/text"));
+            CollectionAssert.AreEquivalent(new[] { "title", "default", "theme" }, workspace.Options.NpmValues.Select(value => value.ExportName).ToArray());
+            Assert.AreEqual("value-fixture/editor/editor.api.js", workspace.Options.NpmValues.Single(value => value.ExportName == "theme").ModuleSpecifier);
             var analysis = JoltProjectCompiler.Analyze(workspace.Sources, workspace.Options);
             Assert.IsEmpty(analysis.Diagnostics, string.Join(Environment.NewLine, analysis.Diagnostics));
 
-            const string invalid = "<p>@Text.Unsupported(1)</p>";
+            const string invalid = "<p>@Text.Title(\"ok\") @Text.Unsupported(1) @Text.Unsupported(2)</p>";
             var unsupported = await JoltProjectLoader.LoadAsync(root.FullName, provider, new Dictionary<string, string> { [page] = invalid });
-            var diagnostic = unsupported.Diagnostics.Single();
-            Assert.AreEqual("JOLT1001", diagnostic.Id);
-            Assert.AreEqual("Pages/Page.jazor", diagnostic.Location.GetMappedLineSpan().Path);
-            Assert.AreEqual("Unsupported", invalid.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
-            StringAssert.Contains(diagnostic.GetMessage(), "unsupported");
+            Assert.IsTrue(unsupported.Options.NpmValues.Any(value => value.ExportName == "title"));
+            Assert.AreEqual(2, unsupported.Diagnostics.Select(item => item.Location.SourceSpan).Distinct().Count());
+            foreach (var diagnostic in unsupported.Diagnostics)
+            {
+                Assert.AreEqual("JOLT1001", diagnostic.Id);
+                Assert.AreEqual("Pages/Page.jazor", diagnostic.Location.GetMappedLineSpan().Path);
+                Assert.AreEqual("Unsupported", invalid.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+                StringAssert.Contains(diagnostic.GetMessage(), "unsupported");
+            }
         }
         finally
         {

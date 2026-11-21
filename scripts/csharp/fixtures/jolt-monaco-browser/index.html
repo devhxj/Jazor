@@ -1,0 +1,7 @@
+<!doctype html>
+<div id="editor" style="width:600px;height:300px"></div>
+<script>
+    addEventListener('error', event => document.body.dataset.monacoError = event.message);
+    addEventListener('unhandledrejection', event => document.body.dataset.monacoError = String(event.reason));
+</script>
+<script type="module" src="/main.js"></script>

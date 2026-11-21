@@ -1,0 +1,25 @@
+@using Floating = Npm.FloatingUi.Dom.Exports
+
+@code {
+    public static Floating.MiddlewareSequence Copy(Jolt.Generated.Npm.Exports.Middleware_60D00F6E913F[] values)
+    {
+        return Floating.MiddlewareSequence.From(values);
+    }
+
+    public static Action Track(ECMAScript.Element reference, ECMAScript.HTMLElement floating, Action update)
+    {
+        var stop = Floating.AutoUpdate(reference, floating, () => update(), new() {
+            AncestorResize = true, AncestorScroll = false, ElementResize = false, LayoutShift = false,
+        });
+        return () => stop();
+    }
+
+    public static ECMAScript.IPromise<double> Position(ECMAScript.Element reference, ECMAScript.HTMLElement floating, ECMAScript.HTMLElement arrow)
+    {
+        return Floating.ComputePosition(reference, floating, new() {
+            Placement = Floating.Placement.BottomStart,
+            Middleware = Floating.MiddlewareSequence.From(new[] { Floating.Offset(4), Floating.Arrow(new() { Element = arrow }) })
+        })
+            .Then(position => position.Placement == "bottom-start" ? position.MiddlewareData.Arrow?.X ?? -1 : -1);
+    }
+}

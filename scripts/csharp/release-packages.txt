@@ -1,0 +1,8 @@
+Jazor
+ECMAScript.Vue
+Jazor.Jolt
+ECMAScript.Style
+ECMAScript.Pinia
+ECMAScript.Pinia.Testing
+ECMAScript.VueRoute
+ECMAScript.Vue.Devtools

@@ -48,16 +48,24 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
 
     public async Task<IReadOnlyList<NpmValueExport>> ReadValuesAsync(string documentPath, string moduleSpecifier,
         IReadOnlyList<string> exportNames, CancellationToken cancellationToken = default)
+        => (await ReadValueProjectionsAsync(documentPath, moduleSpecifier, exportNames, cancellationToken)).Values;
+
+    public async Task<NpmValueProjections> ReadValueProjectionsAsync(string documentPath, string moduleSpecifier,
+        IReadOnlyList<string> exportNames, CancellationToken cancellationToken = default)
     {
         if (exportNames.Count == 0)
-            return [];
+            return new([], new Dictionary<string, string>());
         var query = JsonSerializer.Serialize(exportNames.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal));
         var metadata = await ReadSnapshotAsync(documentPath, moduleSpecifier, "values", query, cancellationToken);
-        return metadata.Values!;
+        return new(metadata.Values!, metadata.Errors!);
     }
 
     public async Task<IReadOnlyList<string>> ListSpecifiersAsync(string documentPath, string packageName,
         CancellationToken cancellationToken = default)
+        => await ListSpecifiersAsync(documentPath, packageName, requestedNamespace: null, cancellationToken);
+
+    public async Task<IReadOnlyList<string>> ListSpecifiersAsync(string documentPath, string packageName,
+        string? requestedNamespace, CancellationToken cancellationToken = default)
     {
         var project = FindProject(documentPath);
         var gate = ProjectGates.GetOrAdd(project, _ => new SemaphoreSlim(1, 1));
@@ -65,8 +73,6 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
         try
         {
             var file = Path.Combine(project, "node_modules", packageName, "package.json");
-            // Generated namespaces discover declared public subpaths. A pattern is
-            // open-ended and can still be passed explicitly to ListExportsAsync.
             await RestoreAsync(project, ResolveStore(), cancellationToken);
             using var metadata = JsonDocument.Parse(await File.ReadAllTextAsync(file, cancellationToken));
             if (!metadata.RootElement.TryGetProperty("exports", out var exports))
@@ -77,11 +83,17 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
             var properties = exports.EnumerateObject().ToArray();
             if (properties.All(property => !property.Name.StartsWith('.')))
                 return [packageName];
-            return properties
+            var exact = properties
                 .Where(property => property.Value.ValueKind != JsonValueKind.Null &&
                     (property.Name == "." || property.Name.StartsWith("./", StringComparison.Ordinal) &&
                     !property.Name.Contains('*')))
-                .Select(property => property.Name == "." ? packageName : packageName + property.Name[1..])
+                .Select(property => property.Name == "." ? packageName : packageName + property.Name[1..]);
+            if (requestedNamespace is null)
+                return exact.Order(StringComparer.Ordinal).ToArray();
+
+            return exact.Concat(MatchPatternSpecifiers(Path.GetDirectoryName(file)!, packageName, requestedNamespace, properties))
+                .Where(specifier => NpmNames.NamespaceFor(specifier) == requestedNamespace)
+                .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal)
                 .ToArray();
         }
@@ -90,6 +102,79 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
             gate.Release();
         }
     }
+
+    private static IEnumerable<string> MatchPatternSpecifiers(string packageDirectory, string packageName,
+        string requestedNamespace, JsonProperty[] exports)
+    {
+        var patterns = exports.Where(property => property.Name.StartsWith("./", StringComparison.Ordinal) &&
+                property.Name.Count(character => character == '*') == 1)
+            // Package exports prefer the longest prefix, then the longest key.
+            .OrderByDescending(property => property.Name.IndexOf('*')).ThenByDescending(property => property.Name.Length).ToArray();
+        foreach (var pattern in patterns)
+        {
+            var split = pattern.Name.IndexOf('*');
+            var keyPrefix = pattern.Name[..split];
+            var keySuffix = pattern.Name[(split + 1)..];
+            foreach (var target in GetTargets(pattern.Value))
+            {
+                if (!target.StartsWith("./", StringComparison.Ordinal) || target.Count(character => character == '*') != 1)
+                    continue;
+                var targetSplit = target.IndexOf('*');
+                var targetPrefix = target[2..targetSplit];
+                var targetSuffix = target[(targetSplit + 1)..];
+                var directoryLength = targetPrefix.LastIndexOf('/') + 1;
+                foreach (var capture in FindCaptures(Path.Combine(packageDirectory, targetPrefix[..directoryLength]),
+                    targetPrefix[directoryLength..], ""))
+                {
+                    var key = keyPrefix + capture + keySuffix;
+                    if (exports.Any(export => export.Name == key) ||
+                        patterns.First(export => PatternMatches(export.Name, key)).Name != pattern.Name)
+                        continue;
+                    yield return packageName + key[1..];
+                }
+
+                IEnumerable<string> FindCaptures(string directory, string prefix, string capturePrefix)
+                {
+                    if (!Directory.Exists(directory))
+                        yield break;
+                    foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
+                    {
+                        var name = Path.GetFileName(entry);
+                        if (!name.StartsWith(prefix, StringComparison.Ordinal))
+                            continue;
+                        var capture = capturePrefix + name[prefix.Length..];
+                        if (name.EndsWith(targetSuffix, StringComparison.Ordinal) &&
+                            name.Length >= prefix.Length + targetSuffix.Length && File.Exists(entry))
+                            yield return capture[..(capture.Length - targetSuffix.Length)];
+
+                        // Only visit directories whose public export prefix can lead to
+                        // this @using namespace. Skip the rest of the package tree.
+                        var nextNamespace = NpmNames.NamespaceFor(packageName + keyPrefix[1..] + capture);
+                        if (requestedNamespace.StartsWith(nextNamespace + ".", StringComparison.Ordinal) && Directory.Exists(entry))
+                            foreach (var nested in FindCaptures(entry, "", capture + "/"))
+                                yield return nested;
+                    }
+                }
+            }
+        }
+    }
+
+    private static bool PatternMatches(string pattern, string key)
+    {
+        var split = pattern.IndexOf('*');
+        return key.Length >= pattern.Length - 1 &&
+            key.StartsWith(pattern[..split], StringComparison.Ordinal) &&
+            key.EndsWith(pattern[(split + 1)..], StringComparison.Ordinal);
+    }
+
+    private static IEnumerable<string> GetTargets(JsonElement value) => value.ValueKind switch
+    {
+        JsonValueKind.String => [value.GetString()!],
+        JsonValueKind.Object => value.EnumerateObject().Where(property => property.Name != "types")
+            .SelectMany(property => GetTargets(property.Value)),
+        JsonValueKind.Array => value.EnumerateArray().SelectMany(GetTargets),
+        _ => [],
+    };
 
     private async Task<Snapshot> ReadSnapshotAsync(string documentPath, string moduleSpecifier, string mode, string? query,
         CancellationToken cancellationToken)
@@ -100,35 +185,78 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
         await gate.WaitAsync(cancellationToken);
         try
         {
-            if (_cache.TryGetValue(key, out var cached) && cached.Inputs.All(input => Fingerprint(input.Key) == input.Value))
-                return cached.Data;
-
+            var persistent = mode is "value" or "values";
+            if (!persistent && _cache.TryGetValue(key, out var component) && MatchesInputs(component))
+                return component.Data;
             var store = ResolveStore();
             var typescript = await RestoreTypeScriptAsync(store, cancellationToken);
             await RestoreAsync(project, store, cancellationToken);
-            IReadOnlyList<string> arguments = [typescript, moduleSpecifier, mode, query ?? ""];
+            if (persistent && _cache.TryGetValue(key, out var cached) && MatchesInputs(cached) &&
+                await MatchesModuleAsync(project, moduleSpecifier, cached, cancellationToken))
+                return cached.Data;
+            var cacheFile = persistent ? SnapshotCachePath(project, moduleSpecifier, mode, query, typescript) : null;
+            if (cacheFile is not null && await ReadCachedSnapshotAsync(cacheFile, cancellationToken) is { } previous &&
+                await MatchesModuleAsync(project, moduleSpecifier, previous, cancellationToken))
+            {
+                Remember(previous);
+                return previous.Data;
+            }
+            IReadOnlyList<string> arguments = [typescript, moduleSpecifier, mode, query ?? "", WebIdlCarriers.Metadata];
             var json = await RunMetadataAsync(project, "metadata.mjs", arguments, cancellationToken);
             var metadata = JsonSerializer.Deserialize<Snapshot>(json, JsonOptions)!;
+            if (metadata.Value is { } valueWithVariants)
+                metadata = metadata with { Value = RemoveCollidingVariants(valueWithVariants, metadata.Exports!) };
+            if (metadata.Values is { } batchWithVariants)
+                metadata = metadata with { Values = batchWithVariants.Select(value => RemoveCollidingVariants(value, metadata.Exports!)).ToArray() };
             if (metadata.Value is { } export && GetProjectionError(export, metadata.Exports!) is { } error)
                 throw new InvalidOperationException(error);
             if (metadata.Values is { } values)
-                metadata = metadata with { Values = values.Where(value => GetProjectionError(value, metadata.Exports!) is null).ToArray() };
+            {
+                var accepted = new List<NpmValueExport>(values.Count);
+                foreach (var value in values)
+                {
+                    if (GetProjectionError(value, metadata.Exports!) is { } reason)
+                        metadata.Errors!.Add(value.ExportName, reason);
+                    else
+                        accepted.Add(value);
+                }
+                metadata = metadata with { Values = accepted };
+            }
             var inputs = metadata.Inputs.Concat([
                 Path.Combine(project, "package.json"),
                 Path.Combine(project, "pnpm-lock.yaml"),
                 Path.Combine(project, ".npmrc"),
             ]).Distinct(StringComparer.Ordinal);
             var fingerprints = inputs.ToDictionary(path => path, Fingerprint, StringComparer.Ordinal);
-            _cache[key] = new(metadata, fingerprints);
-            if (metadata.Values is not null)
-                foreach (var value in metadata.Values)
-                    _cache[(project, moduleSpecifier, "value", value.ExportName)] = new(metadata with { Value = value, Values = null }, fingerprints);
+            var entry = new CacheEntry(metadata, fingerprints);
+            Remember(entry);
+            if (cacheFile is not null)
+                await WriteCachedSnapshotAsync(cacheFile, entry, cancellationToken);
             return metadata;
+
+            void Remember(CacheEntry entry)
+            {
+                _cache[key] = entry;
+                if (entry.Data.Values is { } values)
+                    foreach (var value in values)
+                        _cache[(project, moduleSpecifier, "value", value.ExportName)] =
+                            entry with { Data = entry.Data with { Value = value, Values = null } };
+            }
         }
         finally
         {
             gate.Release();
         }
+    }
+
+    private static NpmValueExport RemoveCollidingVariants(NpmValueExport export, IReadOnlyList<string> exports)
+    {
+        if (!export.Signatures.Any(signature => signature.ManagedNameSuffix is not null))
+            return export;
+        var name = NpmNames.ValueNameFor(export.ExportName);
+        var names = exports.Select(NpmNames.ValueNameFor).ToHashSet(StringComparer.Ordinal);
+        return export with { Signatures = export.Signatures.Where(signature => signature.ManagedNameSuffix is null ||
+            IsIdentifier(name + signature.ManagedNameSuffix) && !names.Contains(name + signature.ManagedNameSuffix)).ToArray() };
     }
 
     private static string? GetProjectionError(NpmValueExport export, IReadOnlyList<string> exports)
@@ -140,7 +268,8 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
         if (collisions.Length != 0)
             return Unsupported($"export names '{export.ExportName}' and '{string.Join("', '", collisions)}' both project to '{projected}'");
 
-        var error = CheckSignatures(export.Signatures);
+        var error = CheckSignatures(export.Signatures) ??
+            (export.ConstantType is { } constant ? CheckType(constant) : null);
         return error is null ? null : Unsupported(error);
 
         string Unsupported(string detail) =>
@@ -248,12 +377,18 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
     private static string? Fingerprint(string path)
     {
         if (!File.Exists(path))
-            return null;
-        using var input = File.OpenRead(path);
-        return Convert.ToHexString(SHA256.HashData(input));
+            return Directory.Exists(path) ? "directory" : null;
+        try
+        {
+            using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            return Convert.ToHexString(SHA256.HashData(input));
+        }
+        catch (FileNotFoundException) { return null; }
+        catch (DirectoryNotFoundException) { return null; }
     }
 
     private sealed record Snapshot(NpmVueComponent? Component, NpmValueExport? Value, IReadOnlyList<NpmValueExport>? Values,
-        IReadOnlyList<string>? Exports, string[] Inputs);
+        IReadOnlyList<string>? Exports, string[] Inputs, Dictionary<string, string>? Errors, string? ModulePath,
+        Dictionary<string, string>? Realpaths);
     private sealed record CacheEntry(Snapshot Data, Dictionary<string, string?> Inputs);
 }

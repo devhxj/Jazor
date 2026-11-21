@@ -1,0 +1,30 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+@code {
+    public static string Evaluate()
+    {
+        var count = ECMAScript.Vue.Ref(2.0);
+        ECMAScript.Vue.VueReadonlyRef<double> calculated = VueUse.ComputedEager(() => count.Value * 3);
+        ECMAScript.Vue.VueReadonlyRef<string> renamed = VueUse.EagerComputed(() => count.Value > 2 ? "high" : "low");
+        var before = calculated.Value;
+        count.Value = 4;
+        return $"{before}/{calculated.Value}/{renamed.Value}";
+    }
+
+    public static string Inspect()
+    {
+        var current = ECMAScript.Vue.Ref("first");
+        var previous = VueUse.UsePrevious(current);
+        var seeded = VueUse.UsePrevious(() => current.Value, "initial");
+        var supported = VueUse.UseSupported(() => current.Value == "second");
+        var active = VueUse.UseActiveElement();
+        var css = VueUse.UseCssVar("--jolt-getter-fixture");
+        var title = VueUse.UseTitle("jolt getter fixture", new() { Observe = false });
+        var favicon = VueUse.UseFavicon("fixture.svg");
+        var modifier = VueUse.UseKeyModifier(VueUse.UseKeyModifierModifierInput.Shift);
+        var age = VueUse.UseTimeAgo(new ECMAScript.Date());
+        var before = seeded.Value;
+        current.Value = "second";
+        return $"{before}/{previous.Value}/{seeded.Value}/{supported.Value}/{active.Value == null}/{css.Value == null}/{title.Value}/{favicon.Value}/{modifier.Value == null}/{age.Value.Length > 0}";
+    }
+}

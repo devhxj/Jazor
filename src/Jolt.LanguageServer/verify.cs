@@ -83,6 +83,8 @@ try
     if (args.FirstOrDefault() == "--npm-values")
     {
         await VerifyNpmValuesAsync();
+        await VerifyDateFnsAsync();
+        await VerifyI18nSpecializationAsync();
         await Send("shutdown", new { }, 40);
         await Response(40);
         await Send("exit", new { });
@@ -158,6 +160,7 @@ try
         return;
     }
     await VerifyNpmValuesAsync();
+    await VerifyDateFnsAsync();
     var dependencyFixture = Path.GetFullPath("samples/JazorComponentProbe/Npm/current");
     foreach (var file in new[] { "package.json", "pnpm-lock.yaml" })
         File.Copy(Path.Combine(dependencyFixture, file), Path.Combine(project.FullName, file));
@@ -584,6 +587,97 @@ async Task VerifyLocalVueAsync()
             break;
         }
     }
+}
+
+async Task VerifyDateFnsAsync()
+{
+    var directory = project.CreateSubdirectory("DateFns").FullName;
+    var fixture = Path.GetFullPath("scripts/csharp/fixtures/jolt-npm-runtime");
+    foreach (var file in new[] { "package.json", "pnpm-lock.yaml" })
+        File.Copy(Path.Combine(fixture, file), Path.Combine(directory, file));
+    var sourcePath = Path.Combine(directory, "Dates.jazor");
+    var document = new { uri = ClientUri(sourcePath) };
+    var sourceUri = new Uri(sourcePath).AbsoluteUri;
+    const string import = "@using Dates = Npm.DateFns.Exports\n";
+    const string body = "<p>@(Dates.AddDays(new ECMAScript.Date(2026, 0, 15), 2))</p>";
+    await Send("textDocument/didOpen", new { textDocument = new { document.uri, version = 1, languageId = "jazor", text = import + body } });
+    var diagnostics = await WaitForNpmAsync(1, sourceUri);
+    if (diagnostics.Any(item => item.GetProperty("severity").GetInt32() == 1))
+        throw new InvalidOperationException($"Expected the Date overload to compile: {string.Join(", ", diagnostics.AsEnumerable())}");
+
+    var methodStart = body.IndexOf("AddDays", StringComparison.Ordinal);
+    await Request("completion", 220, methodStart + 2);
+    var completions = (await Response(220)).EnumerateArray();
+    if (!completions.Any(item => item.GetProperty("label").GetString() == "AddDays" && item.GetProperty("kind").GetInt32() == 2))
+        throw new InvalidOperationException("Expected date-fns AddDays method completion.");
+    await Request("hover", 221, methodStart + 2);
+    var hover = (await Response(221)).GetProperty("contents").GetProperty("value").GetString()!;
+    if (!hover.Contains("AddDays", StringComparison.Ordinal) || !hover.Contains("Date", StringComparison.Ordinal) ||
+        !hover.Contains("double amount", StringComparison.Ordinal))
+        throw new InvalidOperationException($"Expected the selected Date overload in hover: {hover}");
+    await Request("definition", 222, methodStart + 2);
+    var definition = await Response(222);
+    var declarationPath = new Uri(definition.GetProperty("uri").GetString()!).LocalPath;
+    var declarationLine = definition.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32();
+    if (!declarationPath.Replace('\\', '/').Contains("/date-fns/", StringComparison.Ordinal) ||
+        !File.ReadLines(declarationPath).ElementAt(declarationLine).Contains("addDays", StringComparison.Ordinal))
+        throw new InvalidOperationException($"Expected navigation to the locked date-fns addDays declaration: {definition}");
+
+    const string invalid = "\"two\"";
+    var badBody = body.Replace("2))", invalid + "))", StringComparison.Ordinal);
+    await Send("textDocument/didChange", new { textDocument = new { document.uri, version = 2 }, contentChanges = new[] { new { text = import + badBody } } });
+    var error = (await WaitForNpmAsync(2, sourceUri)).Single(item => item.GetProperty("code").GetString() == "CS1503");
+    var range = error.GetProperty("range");
+    var start = range.GetProperty("start");
+    var end = range.GetProperty("end");
+    var argumentStart = badBody.IndexOf(invalid, StringComparison.Ordinal);
+    if (start.GetProperty("line").GetInt32() != 1 || end.GetProperty("line").GetInt32() != 1 ||
+        start.GetProperty("character").GetInt32() != argumentStart || end.GetProperty("character").GetInt32() != argumentStart + invalid.Length)
+        throw new InvalidOperationException($"Expected the Date overload diagnostic over the authored argument: {error}");
+    await Send("textDocument/didClose", new { textDocument = document });
+    Console.WriteLine("Verified date-fns Date overload completion, selected-signature hover, locked source definition, and the invalid argument's authored range.");
+
+    Task Request(string method, int id, int character) =>
+        Send("textDocument/" + method, new { textDocument = document, position = new { line = 1, character } }, id);
+}
+
+async Task VerifyI18nSpecializationAsync()
+{
+    var directory = project.CreateSubdirectory("I18nSpecialization").FullName;
+    var fixture = Path.GetFullPath("scripts/csharp/fixtures/jolt-binding-projection");
+    foreach (var file in new[] { "package.json", "pnpm-lock.yaml" })
+        File.Copy(Path.Combine(fixture, file), Path.Combine(directory, file));
+
+    var path = Path.Combine(directory, "Plugin.jazor");
+    var textDocument = new { uri = ClientUri(path) };
+    var sourceUri = new Uri(path).AbsoluteUri;
+    const string method = "CreateI18nWithLegacyFalse";
+    const string call = "<p>@(Messages." + method + "(new() { Locale = \"fr\" }).Global.Locale.Value)</p>";
+    const string source = "@using Messages = Npm.VueI18n.Exports\n" + call;
+    await Send("textDocument/didOpen", new { textDocument = new { textDocument.uri, version = 1, languageId = "jazor", text = source } });
+    var diagnostics = await WaitForNpmAsync(1, sourceUri);
+    if (diagnostics.Any(item => item.GetProperty("severity").GetInt32() == 1))
+        throw new InvalidOperationException($"Expected the standalone I18n specialization to compile. {string.Join(", ", diagnostics.AsEnumerable())}");
+
+    var character = call.IndexOf(method, StringComparison.Ordinal) + "CreateI18nWith".Length;
+    var position = new { line = 1, character };
+    await Send("textDocument/completion", new { textDocument, position }, 240);
+    if (!(await Response(240)).EnumerateArray().Any(item => item.GetProperty("label").GetString() == method))
+        throw new InvalidOperationException("Expected completion for the standalone I18n specialization.");
+
+    await Send("textDocument/definition", new { textDocument, position }, 241);
+    var definition = await Response(241);
+    var target = new Uri(definition.GetProperty("uri").GetString()!).LocalPath;
+    var declarationLine = definition.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32();
+    var installedPackage = Path.Combine(directory, "node_modules", "vue-i18n");
+    using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(installedPackage, "package.json")));
+    if (manifest.RootElement.GetProperty("version").GetString() != "11.4.12" ||
+        !target.Replace('\\', '/').Contains("/vue-i18n/", StringComparison.Ordinal) ||
+        !File.ReadLines(target).ElementAt(declarationLine).Contains("createI18n", StringComparison.Ordinal))
+        throw new InvalidOperationException($"Expected the locked Vue I18n createI18n declaration. {definition}");
+
+    await Send("textDocument/didClose", new { textDocument });
+    Console.WriteLine("Verified standalone Vue I18n specialization completion and locked declaration navigation.");
 }
 
 async Task VerifyNpmValuesAsync()

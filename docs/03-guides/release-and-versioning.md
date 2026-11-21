@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前版本：[2.3.0（2026-11-20）](https://github.com/devhxj/Jazor/releases/tag/v2.3.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.4.0（2026-11-21）](https://github.com/devhxj/Jazor/releases/tag/v2.4.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 

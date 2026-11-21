@@ -868,7 +868,10 @@ public partial class SemanticWalker
 					new Identifier(methodName),
 					computed: false,
 					optional: false);
-				var call = new CallExpression(callee, NodeList.From(args), optional: false);
+				// An extern Deconstruct can supply the out-slot array directly.
+				var call = TryBuildEcmascriptInlineExpression(method, obj, args, argument, out var inline)
+					? inline!
+					: new CallExpression(callee, NodeList.From(args), optional: false);
 				var deconstructName = AllocateUniqueName(operation, argument, LoweringSite.DeconstructResult());
 				var deconstructId = new Identifier(deconstructName);
 				var deconstructDecl = new VariableDeclarator(deconstructId, null);

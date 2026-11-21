@@ -17,6 +17,7 @@ on:
         type: boolean
 
 env:
+  JAZOR_PACKAGE_OUTPUT: artifacts/packages/${{ github.run_id }}-${{ github.run_attempt }}
   TEMP: '${{ github.workspace }}\.tmp\agent-temp'
   TMP: '${{ github.workspace }}\.tmp\agent-temp'
   DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
@@ -102,7 +103,7 @@ jobs:
         run: |
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
             --configuration Release `
-            --output-directory 'artifacts/packages' `
+            --output-directory $env:JAZOR_PACKAGE_OUTPUT `
             --package-version '${{ steps.release_ref.outputs.package_version }}' `
             --skip-push
 
@@ -110,7 +111,7 @@ jobs:
         shell: pwsh
         run: |
           $chrome = Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'
-          dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source artifacts/packages --editor-features --browser $chrome
+          dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source $env:JAZOR_PACKAGE_OUTPUT --editor-features --browser $chrome
 
       - name: Package Jolt VS Code extension
         if: steps.release_ref.outputs.create_release == 'true'
@@ -129,24 +130,24 @@ jobs:
         id: package
         shell: pwsh
         run: |
-          $nupkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' |
+          $nupkg = Get-ChildItem (Join-Path $env:JAZOR_PACKAGE_OUTPUT '*.nupkg') -Exclude '*.snupkg' |
               Where-Object { $_.BaseName -match '^Jazor\.[0-9]' } |
               Sort-Object LastWriteTimeUtc -Descending |
               Select-Object -First 1
-          if (-not $nupkg) { throw 'No Jazor nupkg found in artifacts/packages.' }
+          if (-not $nupkg) { throw "No Jazor nupkg found in $env:JAZOR_PACKAGE_OUTPUT." }
           $version = $nupkg.BaseName.Substring('Jazor.'.Length)
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: List package artifacts
         shell: pwsh
         run: |
-          Get-ChildItem 'artifacts/packages' | Select-Object Name, Length
+          Get-ChildItem $env:JAZOR_PACKAGE_OUTPUT | Select-Object Name, Length
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Jazor.${{ steps.package.outputs.version }}.${{ steps.release_ref.outputs.safe_ref }}.nupkg
-          path: artifacts/packages/*
+          path: ${{ env.JAZOR_PACKAGE_OUTPUT }}/*
           if-no-files-found: error
 
       - name: Ensure publish auth is configured
@@ -169,8 +170,8 @@ jobs:
         if: ${{ steps.release_ref.outputs.publish_enabled == 'true' && steps.nuget_login.outcome == 'success' }}
         shell: pwsh
         run: |
-          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
-          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
+          $packages = Get-ChildItem (Join-Path $env:JAZOR_PACKAGE_OUTPUT '*.nupkg') -Exclude '*.snupkg' | Sort-Object Name
+          if (-not $packages) { throw "No packages found in $env:JAZOR_PACKAGE_OUTPUT." }
           foreach ($pkg in $packages) {
             dotnet nuget push $pkg.FullName --api-key '${{ steps.nuget_login.outputs.NUGET_API_KEY }}' --source 'https://api.nuget.org/v3/index.json' --skip-duplicate
           }
@@ -179,8 +180,8 @@ jobs:
         if: ${{ steps.release_ref.outputs.publish_enabled == 'true' }}
         shell: pwsh
         run: |
-          $packages = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' | Sort-Object Name
-          if (-not $packages) { throw 'No packages found in artifacts/packages.' }
+          $packages = Get-ChildItem (Join-Path $env:JAZOR_PACKAGE_OUTPUT '*.nupkg') -Exclude '*.snupkg' | Sort-Object Name
+          if (-not $packages) { throw "No packages found in $env:JAZOR_PACKAGE_OUTPUT." }
           foreach ($pkg in $packages) {
             dotnet nuget push $pkg.FullName --api-key '${{ secrets.GITHUB_TOKEN }}' --source 'https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json' --skip-duplicate
           }

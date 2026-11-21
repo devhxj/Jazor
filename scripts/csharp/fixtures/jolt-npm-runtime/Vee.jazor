@@ -1,0 +1,187 @@
+@using VeeValidate = Npm.VeeValidate.Exports
+
+<output id="field-value">@_fieldValue</output>
+<output id="field-error">@_fieldError</output>
+<output id="field-valid">@_fieldValid</output>
+<output id="field-number">@_fieldNumber</output>
+<output id="field-short">@_fieldShort</output>
+<output id="field-context">@_fieldContext</output>
+<output id="field-context-scalars">@_fieldContextScalars</output>
+<output id="form-error">@_formError</output>
+<output id="form-invalid-value">@_formInvalidValue</output>
+<output id="form-submitted">@_formSubmitted</output>
+<output id="form-initial">@_formInitial</output>
+<output id="form-invalid-state">@_formInvalidState</output>
+<output id="form-final">@_formFinal</output>
+<output id="context-form-errors">@_contextFormErrors</output>
+<output id="bulk-errors">@_bulkErrors</output>
+<output id="bulk-touched">@_bulkTouched</output>
+<output id="form-control">@_formControl</output>
+<output id="form-array">@_formArray</output>
+<output id="form-writes">@_formWrites</output>
+<output id="form-partial">@_formPartial</output>
+<output id="form-partial-nested">@_formPartialNested</output>
+
+@code {
+    public record Email(string Address);
+    public record Contact(string Address, double Count, bool Enabled);
+    public record RegistrationInput(string Address, string[] Entries, Contact? Contact = null) : ECMAScript.Vue.VueProps;
+    public record RegistrationOutput(double AddressLength) : ECMAScript.Vue.VueProps;
+    public record ContactSnapshot([property: ECMAScript.ECMAScriptName("Address")] string EmailAddress,
+        double Count, bool Enabled, double MissingCount);
+    public record FormSnapshot([property: ECMAScript.ECMAScriptName("Address")] string EmailAddress, double MissingCount,
+        [property: ECMAScript.ECMAScriptName("Contact")] ContactSnapshot? Details, ContactSnapshot? MissingDetails) : ECMAScript.Vue.VueProps;
+
+    private string _fieldValue = "";
+    private string _fieldError = "";
+    private string _fieldValid = "";
+    private double _fieldNumber;
+    private string _fieldShort = "";
+    private string _fieldContext = "";
+    private string _formError = "";
+    private string _formInvalidValue = "";
+    private double _formSubmitted;
+    private string _formInitial = "";
+    private string _formInvalidState = "";
+    private string _formFinal = "";
+    private string _contextFormErrors = "";
+    private string _formPartial = "";
+    private string _formPartialNested = "";
+    private string _bulkErrors = "";
+    private string _bulkTouched = "";
+    private string _formControl = "";
+    private string _formArray = "";
+    private string _formWrites = "";
+    private string _fieldContextScalars = "";
+
+    [Setup]
+    private void Configure()
+    {
+        var withoutForm = VeeValidate.UseFieldValue<string>("missing-provider");
+        var withoutField = VeeValidate.UseFieldValue<Email>();
+        var withoutNumber = VeeValidate.UseFieldValue<double>("missing-provider");
+        var unruled = VeeValidate.UseField("unruled");
+        var namedRule = VeeValidate.UseField("named", "projection_example_required");
+        ECMAScript.Vue.OnServerPrefetch(() => unruled.Validate().Then(plain => namedRule.Validate().Then(named => {
+            _fieldShort = plain.Valid && !named.Valid ? named.Errors[0] : "wrong";
+        })));
+        var field = VeeValidate.UseField<Email>(
+            "email",
+            value => value.Address == "ada@example.test" ? true : "invalid-email",
+            new() { InitialValue = new Email("invalid") });
+        var count = VeeValidate.UseField<double>(
+            "count",
+            value => ECMAScript.Promise<VeeValidate.BooleanOrString>.Resolve(value == 3 ? true : "invalid-count"),
+            new() { InitialValue = 1 });
+        ECMAScript.Vue.OnServerPrefetch(() => field.Validate().Then(invalid => {
+            _fieldError = invalid.Errors[0];
+            field.Value.Value = new Email("ada@example.test");
+            return field.Validate().Then(valid => {
+                _fieldValue = field.Value.Value.Address;
+                _fieldValid = !invalid.Valid && valid.Valid ? "valid" : "invalid";
+                count.Value.Value += 2;
+                return count.Validate().Then(result => {
+                    if (result.Valid)
+                        _fieldNumber = count.Value.Value;
+                });
+            });
+        }));
+
+        var form = VeeValidate.UseForm<RegistrationInput, RegistrationOutput>(new() {
+            InitialValues = new("invalid", ["first", "second", "third"], new("nested@example.test", 0, false)),
+            ValidationSchema = new() {
+                Type = VeeValidate.TypedSchemaDiscriminator.VVTypedSchema,
+                Parse = values => ECMAScript.Promise<VeeValidate.TypedSchemaResult<RegistrationOutput>>.Resolve(
+                    values.Address == "ada@example.test"
+                        ? new VeeValidate.TypedSchemaResult<RegistrationOutput>() {
+                            Value = new(values.Address.Length),
+                            Errors = [],
+                        }
+                        : new VeeValidate.TypedSchemaResult<RegistrationOutput>() {
+                            Value = new(0),
+                            Errors = [new() {
+                                Path = nameof(RegistrationInput.Address),
+                                Errors = new[] { "invalid-form" },
+                            }],
+                        }),
+            },
+        });
+        var submit = form.HandleSubmit(values => {
+            _formSubmitted = values.AddressLength;
+        }, invalid => {
+            _formInvalidValue = invalid.Values.Address;
+            _formError = invalid.Errors[nameof(RegistrationInput.Address)] ?? "";
+        });
+        var submitValid = form.HandleSubmit(values => {
+            _formSubmitted = values.AddressLength;
+        });
+        var errors = form.Errors;
+        var snapshot = VeeValidate.UseFormValues<FormSnapshot>();
+        _formPartial = (snapshot.Value.Get(value => value.EmailAddress) ?? "missing") + "|" +
+            (snapshot.Value.GetValue(value => value.MissingCount) == null ? "missing" : "present");
+        var values = snapshot.Value;
+        _formPartialNested = (values.Get(value => value.Details!.EmailAddress) ?? "missing") + "|" +
+            (values.GetValue(value => value.Details!.Count) == 0 ? "0" : "wrong") + "|" +
+            (values.GetValue(value => value.Details!.Enabled) == false ? "false" : "wrong") + "|" +
+            (values.GetValue(value => value.Details!.MissingCount) == null ? "missing" : "wrong") + "|" +
+            (values.Get(value => value.MissingDetails!.EmailAddress) == null ? "missing" : "wrong");
+        var contextErrors = VeeValidate.UseFormErrors();
+        const string errorKey = nameof(RegistrationInput.Address);
+        var contextualAddress = VeeValidate.UseFieldValue<string>(errorKey);
+        var contextualEmail = VeeValidate.UseFieldValue<Email>("typed-record");
+        var contextualNumber = VeeValidate.UseFieldValue<double>("typed-number");
+        var contextualBoolean = VeeValidate.UseFieldValue<bool>("typed-boolean");
+        var missingBoolean = VeeValidate.UseFieldValue<bool>("missing-boolean");
+        VeeValidate.UseField<double>("typed-number", _ => true, new() { InitialValue = 0 });
+        VeeValidate.UseField<bool>("typed-boolean", _ => true, new() { InitialValue = false });
+        double? numberValue = contextualNumber.Value;
+        bool? booleanValue = contextualBoolean.Value;
+        _fieldContextScalars = numberValue == 0 && booleanValue == false &&
+            withoutNumber.Value is null && missingBoolean.Value is null ? "0|false|missing" : "wrong";
+        VeeValidate.UseField<Email>("typed-record", _ => true, new() { InitialValue = new Email("record@example.test") });
+        var missingPath = VeeValidate.UseFieldValue<string>("missing-path");
+        _fieldContext = withoutForm.Value == null && withoutField.Value is null && missingPath.Value == null
+            ? (contextualAddress.Value ?? "missing") + "|" + (contextualEmail.Value?.Address ?? "missing") : "wrong";
+        var setErrors = VeeValidate.UseSetFormErrors();
+        var setTouched = VeeValidate.UseSetFormTouched();
+        VeeValidate.UseField<string>(errorKey, _ => true, new() { InitialValue = "invalid" });
+        var touched = VeeValidate.UseIsFieldTouched(errorKey);
+        var array = VeeValidate.UseFieldArray(nameof(RegistrationInput.Entries));
+        _formArray = array.Fields.Value[0].IsFirst ? "first" : "wrong";
+        array.Remove(1);
+        _formArray += array.Fields.Value[1].IsLast && form.Values.Entries[1] == "third" ? "|third" : "|wrong";
+        var reset = VeeValidate.UseResetForm();
+        var validateForm = VeeValidate.UseValidateForm();
+        var validateField = VeeValidate.UseValidateField(errorKey);
+        var writeField = VeeValidate.UseSetFieldValue<string>(errorKey);
+        var writeForm = VeeValidate.UseSetFormValues<RegistrationInput>();
+        ECMAScript.Vue.OnServerPrefetch(() => submit().Then(() => {
+            _formInvalidState = form.Values.Address + "|" + errors.Value[errorKey];
+            _contextFormErrors = contextErrors.Value[errorKey] ?? "missing";
+            writeField("field", false);
+            _formWrites = form.Values.Address;
+            writeForm(new("ada@example.test", ["changed"]), false);
+            _formWrites += "|" + form.Values.Address;
+            return submitValid().Then(() => {
+                _formFinal = errors.Value[errorKey] == null ? form.Values.Address : "error";
+                _contextFormErrors += contextErrors.Value[errorKey] == null ? "|cleared" : "|error";
+                setErrors(new() { [errorKey] = "one", ["form"] = new[] { "two", "three" } });
+                _bulkErrors = errors.Value[errorKey] + "|" + errors.Value["form"];
+                setErrors(new() { ["form"] = new string[] { } });
+                _bulkErrors += errors.Value[errorKey] == "one" && errors.Value["form"] == null ? "|cleared" : "|error";
+                setErrors(new() { [errorKey] = ECMAScript.Global.Undefined<VeeValidate.StringArrayOrString>() });
+                _bulkErrors += errors.Value[errorKey] == null ? "|cleared" : "|error";
+                setTouched(new ECMAScript.Vue.VueDictionary<bool>() { [errorKey] = true });
+                _bulkTouched = touched.Value ? "touched" : "untouched";
+                setTouched(false);
+                _bulkTouched += touched.Value ? "|touched" : "|untouched";
+                reset();
+                return validateField().Then(fieldResult => validateForm().Then(formResult => {
+                    _formControl = form.Values.Address + "|" + fieldResult.Errors[0] + "|" +
+                        (!fieldResult.Valid && !formResult.Valid ? formResult.Errors[errorKey] : "valid");
+                }));
+            });
+        }));
+        _formInitial = errors.Value[errorKey] == null ? form.Values.Address : "error";
+    }
+}

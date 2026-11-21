@@ -8,12 +8,10 @@
         <InternalsVisibleTo Include="Jolt.Compiler.Test" />
         <Compile Remove="verify.cs" />
         <ProjectReference Include="../Jazor.NodeHost/Jazor.NodeHost.csproj" />
+        <ProjectReference Include="../ECMAScript/ECMAScript.csproj" />
         <Reference Include="Microsoft.CodeAnalysis" HintPath="$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.dll" />
         <Reference Include="Microsoft.CodeAnalysis.CSharp" HintPath="$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.CSharp.dll" />
-        <EmbeddedResource Include="metadata.mjs" LogicalName="Jolt.Npm.metadata.mjs" />
-        <EmbeddedResource Include="vue-contract.mjs" LogicalName="Jolt.Npm.vue-contract.mjs" />
-        <EmbeddedResource Include="vue-source.mjs" LogicalName="Jolt.Npm.vue-source.mjs" />
-        <EmbeddedResource Include="vue-template-text.mjs" LogicalName="Jolt.Npm.vue-template-text.mjs" />
+        <EmbeddedResource Include="*.mjs" LogicalName="Jolt.Npm.%(Filename)%(Extension)" />
         <EmbeddedResource Include="tooling/package.json" LogicalName="Jolt.Npm.package.json" />
         <EmbeddedResource Include="tooling/pnpm-lock.yaml" LogicalName="Jolt.Npm.pnpm-lock.yaml" />
     </ItemGroup>

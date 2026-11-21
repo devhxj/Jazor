@@ -32,8 +32,9 @@ ECMAScript ecosystem layer:
 | `src/ECMAScript.Vue` | Vue 3 core type bindings |
 | `src/ECMAScript.VueRoute` | Vue Router type bindings |
 | `src/ECMAScript.Pinia` | Pinia state management bindings |
+| `src/ECMAScript.Pinia.Testing`, `src/ECMAScript.Vue.Devtools` | Maintained handwritten bindings for Pinia tests and Vue Devtools plugins. Both ship as opt-in packages. |
 | `src/ECMAScript.Style` | Strongly typed, deterministic CSS-in-JS authoring and runtime module |
-| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `Monaco` | Ecosystem bindings published from preview.5; Support status still requires browser smoke and real package consumer evidence |
+| `src/ECMAScript.DateFns`, `VueUse`, `FloatingUi`, `VeeValidate`, `VueI18n`, `VueQuery`, `Monaco` | Previously shipped bindings whose source and tests supply use cases for Jolt's npm projection. New coverage is verified against the locked upstream package. |
 
 ASP.NET Core integration layer:
 

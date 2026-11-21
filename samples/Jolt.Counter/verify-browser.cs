@@ -20,16 +20,17 @@ if (args is ["--prepare", var directory])
 
 var features = args.Contains("--features", StringComparer.Ordinal);
 var editableOnly = args.Contains("--editable-only", StringComparer.Ordinal);
+var monaco = args.Contains("--monaco", StringComparer.Ordinal);
 const string mixedBenchmarkOption = "--mixed-benchmark=";
 var mixedBenchmark = args.SingleOrDefault(argument => argument.StartsWith(mixedBenchmarkOption, StringComparison.Ordinal));
 var mixedRounds = mixedBenchmark is null ? 0 : int.Parse(mixedBenchmark[mixedBenchmarkOption.Length..], CultureInfo.InvariantCulture);
 var mixed = args.Contains("--mixed", StringComparer.Ordinal) || mixedBenchmark is not null;
 var ssrBenchmark = args.Contains("--ssr-benchmark", StringComparer.Ordinal);
 var ssr = args.Contains("--ssr", StringComparer.Ordinal) || ssrBenchmark;
-args = args.Where(argument => argument != mixedBenchmark && argument is not ("--features" or "--editable-only" or "--mixed" or "--ssr" or "--ssr-benchmark")).ToArray();
+args = args.Where(argument => argument != mixedBenchmark && argument is not ("--features" or "--editable-only" or "--mixed" or "--ssr" or "--ssr-benchmark" or "--monaco")).ToArray();
 if (args.Length is < 2 or > 3 || (editableOnly || ssr) && args.Length != 2 ||
     mixedBenchmark is not null && (args.Length != 3 || mixedRounds is < 1 or > 100))
-    throw new ArgumentException("Usage: verify-browser.cs <browser-executable> <app-url> [component-source] [--features | --editable-only | --mixed | --mixed-benchmark=<rounds> | --ssr]");
+    throw new ArgumentException("Usage: verify-browser.cs <browser-executable> <app-url> [component-source] [--features | --editable-only | --mixed | --mixed-benchmark=<rounds> | --ssr | --monaco]");
 
 var origin = new Uri(args[1]);
 var profile = Directory.CreateTempSubdirectory("jolt-browser-");
@@ -99,12 +100,23 @@ try
         }
         if (!ssrBenchmark)
             await SendAsync("Page.navigate", new { url = origin.ToString() });
-        if (mixed || ssr)
+        if (mixed || ssr || monaco)
         {
             if (ssrBenchmark)
                 await BenchmarkSsrAsync();
             else if (ssr)
                 await VerifySsrAsync();
+            else if (monaco)
+            {
+                await CheckAsync("the generated Monaco editor, model, worker, theme, and markers",
+                    """
+                    (() => {
+                        if (document.body?.dataset.monacoError) throw new Error(document.body.dataset.monacoError);
+                        return document.body?.dataset.monacoVerified === 'true';
+                    })()
+                    """);
+                Console.WriteLine("Verified Monaco editor, model, worker, disposal, theme and marker owners in Chromium.");
+            }
             else
                 await VerifyMixedAsync(args.Length == 3 ? args[2] : null);
             // Let Chrome release its profile databases before deleting the profile.
@@ -809,6 +821,8 @@ try
         async Task<bool> EvaluateAsync(string expression)
         {
             var response = await SendAsync("Runtime.evaluate", new { expression, returnByValue = true });
+            if (monaco && response.TryGetProperty("exceptionDetails", out var details))
+                throw new InvalidOperationException(details.GetProperty("exception").GetProperty("description").GetString());
             return response.TryGetProperty("result", out var result) &&
                 result.TryGetProperty("value", out var value) && value.ValueKind == JsonValueKind.True;
         }

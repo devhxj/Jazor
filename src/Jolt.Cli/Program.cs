@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 using var stop = new CancellationTokenSource();
 Console.CancelKeyPress += (_, eventArgs) => { eventArgs.Cancel = true; stop.Cancel(); };
-const string usage = "Usage: jolt build [project] [--output directory] | dev [project] [--port port] | bundle [project] [--ssr server-entry] | library [project] [--output directory] | lsp";
+const string usage = "Usage: jolt build [project] [--output directory] | dev [project] [--port port] | bundle [project] [--ssr server-entry] | library [project] [--output directory] | lsp\n       " + NpmBindingsCommand.Usage;
 try
 {
     if (args is ["lsp"])
@@ -19,6 +19,8 @@ try
         Console.WriteLine(usage);
         return 0;
     }
+    if (args[0] == "bindings")
+        return await NpmBindingsCommand.RunAsync(args[1..], stop.Token);
     var index = 1;
     var project = Path.GetFullPath(index < args.Length && !args[index].StartsWith('-') ? args[index++] : ".");
     var output = Path.Combine(project, args[0] == "library" ? "dist" : ".jolt");

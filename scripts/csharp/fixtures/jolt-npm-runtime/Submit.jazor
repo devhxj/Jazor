@@ -1,0 +1,31 @@
+@using Vee = Npm.VeeValidate.Exports
+
+<output>@_result</output>
+
+@code {
+    [Parameter] public bool Provide { get; set; }
+    public record Input(string Address) : ECMAScript.Vue.VueProps;
+    private string _result = "waiting";
+
+    [Setup]
+    private void Configure()
+    {
+        if (Provide)
+            Vee.UseForm<Input, Input>(new() {
+                InitialValues = new Input("submitted"),
+                ValidationSchema = new() { Type = Vee.TypedSchemaDiscriminator.VVTypedSchema,
+                    Parse = values => ECMAScript.Promise<Vee.TypedSchemaResult<Input>>.Resolve(
+                        new Vee.TypedSchemaResult<Input> { Value = values, Errors = [] })
+                }
+            });
+        var submittedAddress = "";
+        var submit = Vee.UseSubmitForm<Input>(values => { submittedAddress = values.Address; });
+        ECMAScript.Vue.OnMounted(() => {
+            var pending = submit();
+            if (ECMAScript.Global.IsUndefined(pending))
+                _result = "missing";
+            else
+                pending!.Then(() => { _result = submittedAddress; });
+        });
+    }
+}

@@ -6,6 +6,7 @@ using Acornima.Ast;
 using ECMAScript.Contract;
 using Jazor.Common;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using System;
@@ -2283,7 +2284,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			arguments.Add(Translate<Expression>(propertyArgument.Value, argument));
 
 		if (Host?.RewritePropertyReference(operation, argument, instance, arguments) is Expression hostExpression)
-			return WithOriginIfMissing(hostExpression, operation);
+			return WithOriginIfMissing(NormalizeOptionalRead(operation.Property, hostExpression), operation);
 
 		// 检查白名单映射。索引器 getter 也必须先走这里，
 		// 否则会绕过运行时 helper，丢失越界/缺键等 CLR 语义。
@@ -2317,6 +2318,12 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(operation, operation.Property.GetMethod!, "property access", runtimeHostType);
 
+		// Optional named properties and sparse indexers both read undefined as null.
+		// The assignment target must remain the original JavaScript lvalue.
+		bool ReadsOptionalMember() => HasOptionalRead(operation.Property) &&
+			!(operation.Parent is IAssignmentOperation assignment && ReferenceEquals(assignment.Target, operation)) &&
+			operation.Parent is not IIncrementOrDecrementOperation;
+
 		if (instance is not null &&
 			arguments.Count > 0 &&
 			(operation.Property.IsIndexer || operation.Property.Parameters.Length > 0))
@@ -2325,7 +2332,8 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				return HandleTransformationFailure<Node>(operation, "JavaScript fallback for indexers only supports a single translated index argument.");
 
 			var indexerOptional = operation.Instance is IConditionalAccessInstanceOperation;
-			return WithOriginIfMissing(new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional), operation);
+			var member = new MemberExpression(instance, arguments[0], computed: true, optional: indexerOptional);
+			return WithOriginIfMissing<Expression>(ReadsOptionalMember() ? new LogicalExpression(Operator.NullishCoalescing, member, Null) : member, operation);
 		}
 
 		// 获取方法名称
@@ -2337,6 +2345,12 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
+			if (ReadsOptionalMember())
+			{
+				var member = new MemberExpression(instance, new StringLiteral(propertyName!, SymbolDisplay.FormatLiteral(propertyName!, true)),
+					computed: true, optional: optional);
+				return WithOriginIfMissing(new LogicalExpression(Operator.NullishCoalescing, member, Null), operation);
+			}
 			return WithOriginIfMissing(
 				BuildAliasedPropertyAccess(instance, propertyName!, optional),
 				operation);
@@ -2353,7 +2367,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 			if (TryBuildImportedModulePropertyAccess(operation.Property, argument, out var importedProperty) &&
 				importedProperty is not null)
-				return WithOriginIfMissing(importedProperty, operation);
+				return WithOriginIfMissing(NormalizeOptionalRead(operation.Property, importedProperty), operation);
 
 			if (TryBuildPreferredRuntimeStaticMemberAccess(operation.Property, operation.Syntax, operation.SemanticModel!, propertyName!, argument, out var preferredStaticProperty) &&
 				preferredStaticProperty is not null)
@@ -2379,6 +2393,26 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, SenseArgument argument)
 	{
+		var reference = TranslateMethodReference(operation, argument);
+		if (reference is not Expression callee || !HasOptionalRead(operation.Method))
+			return reference;
+
+		// Capture the already-bound callable when the method group is created.
+		// Forward the supplied arity and normalize the result when it is invoked.
+		var target = new Identifier("__jz_optionalCall");
+		var supplied = new Identifier("__jz_optionalArgs");
+		var invoke = new CallExpression(target, NodeList.From<Expression>(new SpreadElement(supplied)), optional: false);
+		var adapter = new ArrowFunctionExpression(NodeList.From<Node>(new RestElement(supplied)),
+			new LogicalExpression(Operator.NullishCoalescing, invoke, Null), expression: true, async: false);
+		var capture = new ArrowFunctionExpression(NodeList.From<Node>(target), adapter, expression: true, async: false);
+		return WithOriginIfMissing(new CallExpression(capture, NodeList.From(callee), optional: false), operation);
+	}
+
+	private Node? TranslateMethodReference(IMethodReferenceOperation operation, SenseArgument argument)
+	{
+		if (IsPartialRecordRead(operation.Method))
+			return HandleTransformationFailure<Node>(operation, "PartialRecord requires a direct call with a property selector.");
+
 		if (Host?.RewriteMethodReferencePreorder(operation, argument) is Expression preorderHostExpression)
 			return WithOriginIfMissing(preorderHostExpression, operation);
 
@@ -2668,6 +2702,9 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	/// <returns>Acornima的ESTree的Node</returns>
 	public override Node? VisitInvocation(IInvocationOperation operation, SenseArgument argument)
 	{
+		if (IsPartialRecordRead(operation.TargetMethod))
+			return WithOriginIfMissing(TranslatePartialRecordRead(operation, argument), operation);
+
 		if (Host?.RewriteInvocationPreorder(operation, argument) is Expression preorderHostExpression)
 			return WithOriginIfMissing(preorderHostExpression, operation);
 
@@ -2693,7 +2730,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				var argContext = arg.Parameter!.RefKind is RefKind.Out
 					? argument.With(Sense.OutParameter)
 					: argument;
-				var hostArgument = Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext);
+				var hostArgument = ReadUndefinedDefault(arg) ?? Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext);
 				loweredArguments.Add(LowerBoundArgument(operation, arg, argument, hostArgument));
 			}
 
@@ -2727,7 +2764,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				if (isTrailingEcmascriptDefaultArgument)
 					continue;
 
-				if (Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext) is Expression hostArgument)
+				if ((ReadUndefinedDefault(arg) ?? Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext)) is Expression hostArgument)
 				{
 					var hostLoweredArgument = LowerBoundArgument(operation, arg, argument, hostArgument);
 					if (arg.Parameter!.RefKind is RefKind.Out or RefKind.Ref)
@@ -2750,7 +2787,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		}
 
 		if (Host?.RewriteInvocation(operation, argument, instance, arguments) is Expression hostExpression)
-			return WithOriginIfMissing(hostExpression, operation);
+			return WithOriginIfMissing(NormalizeOptionalRead(operation.TargetMethod, hostExpression), operation);
 
 		var callExpr = BuildMethodCallExpression(
 			operation,
@@ -2763,7 +2800,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			runtimeHostType,
 			allowIntrinsic: true,
 			invocationOperation: operation);
-		return WithOriginIfMissing(BuildInvExpr(hasReturn, callExpr, refParas, argument), operation);
+		return WithOriginIfMissing(NormalizeOptionalRead(operation.TargetMethod, BuildInvExpr(hasReturn, callExpr, refParas, argument)), operation);
 
 		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression?> refs, in SenseArgument ctx)
 		{
@@ -2799,6 +2836,65 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 			return expr;
 		}
+	}
+
+	private static bool HasOptionalRead(ISymbol symbol) => symbol.GetAttributes().Any(attribute =>
+		attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptOptionalAttribute");
+
+	private static Expression NormalizeOptionalRead(ISymbol symbol, Expression expression) =>
+		HasOptionalRead(symbol) ? new LogicalExpression(Operator.NullishCoalescing, expression, Null) : expression;
+
+	private static Expression? ReadUndefinedDefault(IArgumentOperation argument) =>
+		argument.ArgumentKind == ArgumentKind.DefaultValue &&
+		argument.Parameter!.GetAttributes().Any(attribute =>
+			attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptUndefinedDefaultAttribute")
+			? new NonUpdateUnaryExpression(Operator.Void, new NumericLiteral(0, "0"))
+			: null;
+
+	private static bool IsPartialRecordRead(IMethodSymbol method) =>
+		method.IsGenericMethod && method.Name is "Get" or "GetValue" &&
+		method.ContainingType.OriginalDefinition.ToDisplayString() == "ECMAScript.Vue.PartialRecord<TRecord>";
+
+	private Expression TranslatePartialRecordRead(IInvocationOperation operation, SenseArgument argument)
+	{
+		const string invalidSelector = "PartialRecord requires a lambda selecting a record data property path.";
+		var selector = UnwrapImplicitConversions(operation.Arguments[0].Value);
+		if (selector is not IDelegateCreationOperation { Target: IAnonymousFunctionOperation lambda } ||
+			lambda.Body.Operations.Length != 1 ||
+			lambda.Body.Operations[0] is not IReturnOperation { ReturnedValue: { } value } ||
+			UnwrapImplicitConversions(value) is not IPropertyReferenceOperation property ||
+			!SymbolEqualityComparer.Default.Equals(property.Type, operation.TargetMethod.TypeArguments[0]) &&
+			!(property.Type is INamedTypeSymbol nullable &&
+				nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+				SymbolEqualityComparer.Default.Equals(nullable.TypeArguments[0], operation.TargetMethod.TypeArguments[0])))
+			return HandleTransformationFailure<Expression>(operation, invalidSelector)!;
+
+		var path = new Stack<IPropertySymbol>();
+		IOperation root = property;
+		while (root is IPropertyReferenceOperation { Instance: { } instance } segment && IsStructuralMember(segment.Property))
+		{
+			path.Push(segment.Property);
+			root = instance;
+		}
+		if (root is not IParameterReferenceOperation receiver ||
+			!SymbolEqualityComparer.Default.Equals(receiver.Parameter, lambda.Symbol.Parameters[0]))
+			return HandleTransformationFailure<Expression>(operation, invalidSelector)!;
+
+		// Selectors describe JS property paths. Emit one chain so missing parents
+		// short-circuit without repeating the receiver or any earlier access.
+		var access = Translate<Expression>(operation.Instance, argument, null)!;
+		var nested = path.Count > 1;
+		var optional = false;
+		foreach (var segment in path)
+		{
+			var name = GetCurrentModuleDeclaredOrConfigName(segment);
+			access = new MemberExpression(access, new StringLiteral(name, SymbolDisplay.FormatLiteral(name, true)),
+				computed: true, optional: optional);
+			optional = true;
+		}
+		if (nested)
+			access = new ChainExpression(access);
+		return new LogicalExpression(Operator.NullishCoalescing, access, Null);
 	}
 
 	private Expression BuildMethodCallExpression(

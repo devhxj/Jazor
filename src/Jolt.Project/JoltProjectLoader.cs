@@ -105,7 +105,9 @@ public static class JoltProjectLoader
                         packages.Add(dep.Name);
         }
 
-        return new(sources.Values.ToArray(), new(rootNamespace) { Router = router }, [], packages.ToArray(),
+        return new(sources.Values.ToArray(), new(rootNamespace) {
+            Router = router, NpmProjectionCacheDirectory = JoltNpmBindings.CacheDirectory(root),
+        }, [], packages.ToArray(),
             new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal))
         {
             VuePaths = vuePaths.ToArray(),
@@ -126,7 +128,6 @@ public static class JoltProjectLoader
         var valueNames = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
         var metadata = new Dictionary<(string Module, string Export), NpmVueComponent>();
         var values = new Dictionary<(string Module, string Export), NpmValueExport>();
-        var valueErrors = new Dictionary<(string Module, string Export), string>();
         var diagnostics = new List<Diagnostic>();
         var projectImports = JoltProjectImports.Parse(workspace.Sources, cancellationToken);
         var modules = new Dictionary<JoltImport, string?>();
@@ -177,16 +178,20 @@ public static class JoltProjectLoader
         componentOptions = componentOptions with { VueComponents = vueComponents };
         if (valueAliases.Count != 0)
         {
+            var namesByModule = valueNames.ToDictionary(pair => pair.Key,
+                pair => pair.Value.ToLookup(NpmNames.ValueNameFor, StringComparer.Ordinal), StringComparer.Ordinal);
             // Bind through the actual C# projection so a local/parameter can shadow
             // an alias and aliases in scoped slots see the real component contracts.
             var preliminary = JoltProjectCompiler.Analyze(workspace.Sources,
                 componentOptions, cancellationToken);
+            var requests = new List<(string Module, string Export, string ImportPath, Location Site, string? Variant)>();
             foreach (var projected in preliminary.Documents)
             {
                 if (!valueAliases.TryGetValue(projected.Document.Path, out var aliases))
                     continue;
                 var model = projected.SemanticModel;
                 var seen = new HashSet<TextSpan>();
+                var lines = SourceText.From(projected.Document.Source).Lines;
                 foreach (var access in model.SyntaxTree.GetRoot(cancellationToken).DescendantNodes().OfType<MemberAccessExpressionSyntax>())
                 {
                     if (access.Expression is not IdentifierNameSyntax receiver || access.Name.IsMissing ||
@@ -198,9 +203,55 @@ public static class JoltProjectLoader
                     if (selection is null)
                         continue;
                     var sourceSpan = new TextSpan(selection.Source.Start + name.SpanStart - selection.Generated.Start, name.Span.Length);
-                    if (seen.Add(sourceSpan))
-                        await LoadValueAsync(projected.Document, name.ValueText, sourceSpan, import.ImportPath, import.Module);
+                    if (!seen.Add(sourceSpan))
+                        continue;
+                    var moduleNames = namesByModule[import.Module];
+                    var matches = moduleNames[name.ValueText].ToArray();
+                    var site = Location.Create(projected.Document.Path, sourceSpan, lines.GetLinePositionSpan(sourceSpan));
+                    if (matches.Length == 1)
+                        requests.Add((import.Module, matches[0], import.ImportPath, site, null));
+                    else if (matches.Length > 1)
+                        diagnostics.Add(Diagnostic.Create(ImportError, site,
+                            $"'{name.ValueText}' matches multiple exports of '{import.Module}': {string.Join(", ", matches)}."));
+                    else
+                    {
+                        // A specialized method can be the only reference to its export.
+                        // A matching prefix is only a candidate until its signature confirms the suffix.
+                        for (var cut = 1; cut < name.ValueText.Length; cut++)
+                        {
+                            if (!char.IsUpper(name.ValueText[cut]))
+                                continue;
+                            foreach (var candidate in moduleNames[name.ValueText[..cut]])
+                                requests.Add((import.Module, candidate, import.ImportPath, site, name.ValueText[cut..]));
+                        }
+                    }
                 }
+            }
+            // Resolve all selected exports against one snapshot per module. Import
+            // locations come from @using (including inherited _Imports.jazor files).
+            var sitesByExport = requests.ToLookup(request => (request.Module, request.Export));
+            var byDirectory = sitesByExport.Select(sites => sites.First()).GroupBy(request =>
+                (request.Module, Directory: Path.GetDirectoryName(request.ImportPath)));
+            foreach (var group in byDirectory)
+            {
+                var module = group.Key.Module;
+                var names = group.Select(request => request.Export).ToArray();
+                NpmValueProjections projections;
+                try
+                {
+                    projections = await provider.ReadValueProjectionsAsync(group.First().ImportPath, module, names, cancellationToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    projections = new([], names.ToDictionary(name => name, _ => ex.Message, StringComparer.Ordinal));
+                }
+                foreach (var value in projections.Values)
+                    if (sitesByExport[(module, value.ExportName)].Any(site => site.Variant is null ||
+                        value.Signatures.Any(signature => signature.ManagedNameSuffix == site.Variant)))
+                        values.Add((module, value.ExportName), value);
+                foreach (var (export, error) in projections.Errors)
+                    foreach (var request in sitesByExport[(module, export)].Where(site => site.Variant is null))
+                        diagnostics.Add(Diagnostic.Create(ImportError, request.Site, $"{module} ({export}): {error}"));
             }
         }
         return workspace with
@@ -211,42 +262,6 @@ public static class JoltProjectLoader
             ValueExports = valueNames,
             VueUsesJolt = vueUsesJolt,
         };
-
-        async Task LoadValueAsync(JoltDocument document, string member, TextSpan sourceSpan, string importPath, string module)
-        {
-            var matches = valueNames[module].Where(name => NpmNames.ValueNameFor(name) == member).ToArray();
-            // A miss is diagnosed by Roslyn on the authored member access. Report
-            // metadata errors here for real exports that cannot be projected into C#.
-            if (matches.Length == 0)
-                return;
-
-            string message;
-            if (matches.Length > 1)
-            {
-                message = $"'{member}' matches multiple exports of '{module}': {string.Join(", ", matches)}.";
-            }
-            else
-            {
-                var key = (module, matches[0]);
-                if (values.ContainsKey(key))
-                    return;
-                if (!valueErrors.TryGetValue(key, out message!))
-                {
-                    try
-                    {
-                        values[key] = await provider.ReadValueAsync(importPath, module, key.Item2, cancellationToken);
-                        return;
-                    }
-                    catch (Exception ex) when (ex is not OperationCanceledException)
-                    {
-                        valueErrors[key] = message = $"{module} ({key.Item2}): {ex.Message}";
-                    }
-                }
-            }
-            var lines = SourceText.From(document.Source).Lines;
-            var location = Location.Create(document.Path, sourceSpan, lines.GetLinePositionSpan(sourceSpan));
-            diagnostics.Add(Diagnostic.Create(ImportError, location, message));
-        }
 
         async Task<string?> ResolveImportAsync(JoltImport import, string importPath)
         {
@@ -261,7 +276,7 @@ public static class JoltProjectLoader
                     if (ns == target)
                         matches.Add(package);
                     else if (target.StartsWith(ns + ".", StringComparison.Ordinal))
-                        matches.AddRange((await provider.ListSpecifiersAsync(importPath, package, cancellationToken))
+                        matches.AddRange((await provider.ListSpecifiersAsync(importPath, package, target, cancellationToken))
                             .Where(spec => NpmNames.NamespaceFor(spec) == target));
                 }
                 if (matches.Count == 1)
@@ -344,7 +359,8 @@ public static class JoltProjectLoader
             return [];
 
         var names = match.Value.GroupBy(NpmNames.ValueNameFor, StringComparer.Ordinal)
-            .Where(group => group.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && group.Count() == 1)
+            .Where(group => group.Count() == 1 && (group.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
+                prefix.StartsWith(group.Key, StringComparison.OrdinalIgnoreCase)))
             .Select(group => group.Single()).ToArray();
         if (names.Length == 0)
             return [];

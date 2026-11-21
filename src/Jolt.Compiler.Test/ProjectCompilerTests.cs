@@ -116,6 +116,27 @@ public sealed class ProjectCompilerTests
     }
 
     [TestMethod]
+    public async Task Compile_ErasesHostInterfaceSharedByStaticExportAndInstance()
+    {
+        var result = await JoltProjectCompiler.CompileAsync([new("Worker.jazor", """
+            @code {
+                [ECMAScript.ECMAScript]
+                public interface IWorker {
+                    [ECMAScript.ECMAScriptName("read")]
+                    string Read();
+                }
+                public static string Read(IWorker worker) => worker.Read();
+                private string ReadAgain(IWorker worker) => Read(worker);
+            }
+            """)]);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single().Content;
+        StringAssert.Contains(js, "export function Read(");
+        StringAssert.Contains(js, "worker.read()");
+        Assert.DoesNotContain("class IWorker", js);
+    }
+
+    [TestMethod]
     public async Task Compile_UnnamedElement_ReportsDiagnosticDuringEditing()
     {
         var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", "<\n@code { private int Count = 1; }")]);

@@ -47,7 +47,16 @@ SSR state envelope、认证快照/browser provider、单一显式构造函数的
 
 ## Vue 应用生态绑定
 
-DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 已有源码、测试 lane 和 lockstep 发布。各绑定需要补齐浏览器交互、真实包消费者，以及适用的 SSR、worker 和资源验证。交付清单见 [P3 验收计划](./p3-vue-application-bindings-plan.md)。
+Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 的手写绑定持续维护并随 SDK 发布。DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 的现有绑定及测试提供自动投影的业务用例，验收覆盖浏览器及适用的 SSR 和 worker。 [npm 投影计划](./p3-vue-application-bindings-plan.md)
+
+以七个手写库的完整公开 API 和消费代码为参考，按声明中的类型关系归集差距。优先选会阻断跨调用传值的规则，用锁定包验证实际行为，再用其他包或独立声明验证规则可复用。已能生成的导出也要检查其重载、选项、返回成员和错误输入。[映射规则与验收](./p3-vue-application-bindings-plan.md#从手写设计提取映射规则) · [七库对照检查](../../scripts/csharp/verify-jolt-binding-projection.cs)
+
+| 目标调用 | 下一步验收 |
+| --- | --- |
+| date-fns 的区间选项，VueUse 的 ref 与 getter | 已验证 `EachDayOfInterval` 的 `Step`、混合数组传给 `Min` 和 `Max`，以及 `UseMediaQuery` 的字符串、ref 和 getter 调用。已从事件名推导键盘和鼠标两类回调。通用和专用回调均已验证分发与清理，独立类库已将法语 locale 传给 `FormatDistance`。后续检查其他 DOM 事件目标和日期上下文选项。 |
+| Floating UI、表单和查询 | 已验证 Floating UI 的箭头定位、同步与异步字段验证、异步查询到数据 ref，以及 mutation 输入到返回值。带类型的表单已区分原始输入与成功提交结果。查询用例已在三个活跃查询上验证按 key 精确或前缀失效及主动重取。DOM 入口的 `autoUpdate` 已验证清理后停止响应 resize。Vue 入口的双 ref 也已验证换锚点后重新定位。`WhileElementsMounted` 会在替换锚点时移除旧监听器。含记录的混合查询键与按页号的并发重取已通过缓存断言。DOM 与 Vue 跨入口的 middleware 已通过定位和清理用例。字段数组和表单写入已通过 SSR。记录选择器已能读取嵌套字段，后续扩展到嵌套写入与数组索引。无限查询已验证数字游标、两页记录与终止条件，显式结果类型下的 `PageParams` 仍待覆盖。 |
+| Vue 插件和本地化 | 已运行 Vue Query 对象插件与 Vue I18n 泛型工厂的 C# 注册。初始化模式已能约束全局 `Locale` 的读写方式，下一步检查嵌套消息如何约束插值键。命名插值已支持字符串字典，本地作用域与一层嵌套消息已通过独立应用 SSR。 |
+| 普通 C# 类库生成公开绑定 | `jolt bindings` 已通过独立的类库与第二个消费项目构建，并执行了消费端生成的 ESM。后续随七库扩展的泛型和实例类型复用这条门禁。[消费验证](../../scripts/csharp/verify-jolt-public-projection.cs) |
 
 ## Jolt 开发顺序
 

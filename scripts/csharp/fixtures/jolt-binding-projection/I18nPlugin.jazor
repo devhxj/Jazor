@@ -1,0 +1,73 @@
+@using Messages = Npm.VueI18n.Exports
+@using ECMAScript
+
+<p>@Text</p>
+
+@code {
+    private string Text = "";
+
+    [Setup]
+    private void Translate()
+    {
+        var composer = Messages.UseI18n();
+        var local = Messages.UseI18n(new() {
+            UseScope = Npm.VueI18n.Exports.I18nScope.Local,
+            InheritLocale = false,
+            Locale = "en",
+            Messages = new() { ["en"] = new() {
+                ["local"] = new Vue.VueDictionary<string> { ["greeting"] = "Hello" },
+            } },
+        });
+        Text = composer.T("welcome", new Vue.VueDictionary<string> { ["guest"] = "Ada" })
+            + " / " + composer.T("welcome", new Vue.VueDictionary<string> { ["guest"] = "Lin" })
+            + " / " + composer.N(321) + " / " + composer.D("2026-11-21T12:00:00Z")
+            + " / " + local.T("local.greeting");
+    }
+
+    public static Action Install(Vue.VueApp app, string message)
+    {
+        var plugin = Messages.CreateI18n(new() {
+            Legacy = false,
+            Locale = "fr",
+            Messages = new() { ["fr"] = new() { ["welcome"] = message } },
+        });
+        if (plugin.Mode != Npm.VueI18n.Exports.I18nMode.Composition)
+            return () => { };
+        app.Use(plugin);
+        return plugin.Dispose;
+    }
+
+    public static string CompositionGlobal()
+    {
+        var plugin = Messages.CreateI18nWithLegacyFalse(new() {
+            Locale = "fr",
+            Messages = new() {
+                ["fr"] = new() { ["greeting"] = "Bonjour" },
+                ["en"] = new() { ["greeting"] = "Hello" },
+            },
+        });
+        var global = plugin.Global;
+        var before = global.Locale.Value + "/" + global.T("greeting");
+        global.Locale.Value = "en";
+        var after = global.Locale.Value + "/" + global.T("greeting");
+        plugin.Dispose();
+        return before + "/" + after;
+    }
+
+    public static string LegacyGlobal()
+    {
+        var plugin = Messages.CreateI18nWithLegacyTrue(new() {
+            Locale = "en",
+            Messages = new() {
+                ["en"] = new() { ["greeting"] = "Hello" },
+                ["fr"] = new() { ["greeting"] = "Salut" },
+            },
+        });
+        var global = plugin.Global;
+        var before = global.Locale + "/" + global.T("greeting");
+        global.Locale = "fr";
+        var after = global.Locale + "/" + global.T("greeting");
+        plugin.Dispose();
+        return before + "/" + after;
+    }
+}

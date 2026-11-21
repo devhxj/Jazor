@@ -9,7 +9,11 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="../ECMAScript/ECMAScript.csproj" />
+        <ProjectReference Include="../ECMAScript.Pinia/ECMAScript.Pinia.csproj" />
+        <ProjectReference Include="../ECMAScript.Pinia.Testing/ECMAScript.Pinia.Testing.csproj" />
         <ProjectReference Include="../ECMAScript.Vue/ECMAScript.Vue.csproj" />
+        <ProjectReference Include="../ECMAScript.Vue.Devtools/ECMAScript.Vue.Devtools.csproj" />
+        <ProjectReference Include="../ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
         <ProjectReference Include="../Jazor.Compiler/Jazor.Compiler.csproj" />
         <ProjectReference Include="../Jolt.Syntax/Jolt.Syntax.csproj" />
         <ProjectReference Include="../Jolt.Npm/Jolt.Npm.csproj" />

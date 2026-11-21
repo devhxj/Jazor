@@ -88,7 +88,12 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "AssertNoBuildPackInputsExist");
 		StringAssert.Contains(source, "GetNoBuildPackInputRoots");
 		StringAssert.Contains(source, "PackageCatalog.ResolveSelectedPackages");
-		StringAssert.Contains(source, "Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco");
+		StringAssert.Contains(source, "Default package set: ");
+		StringAssert.Contains(source, "ReadDefaultPublicPackageIds(repoRoot)");
+		var releasePackages = System.IO.File.ReadAllLines(Path.Combine(repoRoot, "scripts", "csharp", "release-packages.txt"));
+		CollectionAssert.AreEquivalent(
+			new[] { "Jazor", "ECMAScript.Vue", "Jazor.Jolt", "ECMAScript.Style", "ECMAScript.Vue.Devtools", "ECMAScript.Pinia", "ECMAScript.Pinia.Testing", "ECMAScript.VueRoute" },
+			releasePackages);
 		StringAssert.Contains(source, "Selected packages: ");
 		StringAssert.Contains(source, "case \"--package\"");
 		StringAssert.Contains(source, "case \"--package-version\"");
@@ -209,7 +214,8 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		Assert.IsFalse(source.Contains("--package jazor ", StringComparison.Ordinal));
 		Assert.IsFalse(source.Contains("--package style ", StringComparison.Ordinal));
 		StringAssert.Contains(source, "--package-version '${{ steps.release_ref.outputs.package_version }}'");
-		StringAssert.Contains(source, "Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg'");
+		StringAssert.Contains(source, "JAZOR_PACKAGE_OUTPUT: artifacts/packages/${{ github.run_id }}-${{ github.run_attempt }}");
+		StringAssert.Contains(source, "Get-ChildItem (Join-Path $env:JAZOR_PACKAGE_OUTPUT '*.nupkg') -Exclude '*.snupkg'");
 		StringAssert.Contains(source, "Where-Object { $_.BaseName -match '^Jazor\\.[0-9]' }");
 		StringAssert.Contains(source, "$nupkg.BaseName.Substring('Jazor.'.Length)");
 		Assert.IsFalse(
@@ -233,7 +239,8 @@ public sealed class EcmaScriptPiniaLayoutGuardTests
 		StringAssert.Contains(source, "--skip-push");
 		Assert.IsFalse(source.Contains("--package jazor ", StringComparison.Ordinal));
 		Assert.IsFalse(source.Contains("--package style ", StringComparison.Ordinal));
-		StringAssert.Contains(source, "--output-directory 'artifacts/packages'");
+		StringAssert.Contains(source, "JAZOR_PACKAGE_OUTPUT: artifacts/packages/${{ github.run_id }}-${{ github.run_attempt }}");
+		StringAssert.Contains(source, "--output-directory $env:JAZOR_PACKAGE_OUTPUT");
 		StringAssert.Contains(source, "Where-Object { $_.BaseName -match '^Jazor\\.[0-9]' }");
 		Assert.IsFalse(source.Contains("push:", StringComparison.Ordinal), "Dry-run workflow must not run on tag pushes.");
 		Assert.IsFalse(source.Contains("id-token: write", StringComparison.Ordinal), "Dry-run workflow must not request NuGet trusted-publishing permissions.");

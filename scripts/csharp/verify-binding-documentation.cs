@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 // Run from the repository root. --no-build checks existing Debug output.
-// --packages DIR also validates the XML inside every shipping binding package.
+// --packages DIR requires default release packages and validates additional binding packages when present.
 // --baseline REF verifies that this documentation-only change preserves C# tokens.
 // --library NAME[,NAME] selects binding or ASP.NET Core libraries for focused checks.
 // --output-directory DIR writes the report and per-library build logs inside the repository.
@@ -28,7 +28,8 @@ var libraries = new[]
     "ECMAScript.Style",
     "Jazor.AspNetCore", "Jazor.AspNetCore.Dev"
 };
-if (Option("--library") is { } selection)
+var selection = Option("--library");
+if (selection is not null)
 {
     var selected = selection.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
     if (selected.Length == 0 || selected.Except(libraries).Any())
@@ -120,6 +121,8 @@ foreach (var library in libraries)
 }
 if (Option("--packages") is { } packages)
 {
+    var defaultPackageIds = File.ReadAllLines(Path.Combine(root, "scripts", "csharp", "release-packages.txt"))
+        .ToHashSet(StringComparer.Ordinal);
     var archives = Directory.GetFiles(packages, "*.nupkg").Select(path =>
     {
         using var zip = ZipFile.OpenRead(path);
@@ -136,6 +139,8 @@ if (Option("--packages") is { } packages)
             _ => library
         };
         var candidates = archives.Where(p => p.Id == packageId).ToArray();
+        if (candidates.Length == 0 && selection is null && !defaultPackageIds.Contains(packageId))
+            continue;
         if (candidates.Length != 1) { failures.Add(packageId + ": expected exactly one package."); continue; }
         using var zip = ZipFile.OpenRead(candidates[0].Path);
         var dll = zip.Entries.SingleOrDefault(e => e.FullName.StartsWith("lib/", StringComparison.Ordinal) && e.Name == library + ".dll");

@@ -19,7 +19,7 @@ public sealed class SdkFeedbackPublishTests
         var result = await RunAsync(workspace.Root,
             ["msbuild", project, "-nologo", "-getProperty:JazorMode", "-getItem:Compile,Content,None"]);
         Assert.AreEqual(0, result.ExitCode, result.Output);
-        using var json = JsonDocument.Parse(result.Output);
+        using var json = JsonDocument.Parse(result.StandardOutput);
         Assert.AreEqual("debug", json.RootElement.GetProperty("Properties").GetProperty("JazorMode").GetString());
         var items = json.RootElement.GetProperty("Items");
         Assert.IsTrue(ItemsContain(items, "Compile", "Jazor/Authored.cs"), result.Output);
@@ -38,7 +38,7 @@ public sealed class SdkFeedbackPublishTests
         workspace.Write("jazor/authored.js", "export const authored = true;");
         var result = await RunAsync(workspace.Root, ["msbuild", project, "-nologo", "-getProperty:JazorMode", "-getItem:Content,None"]);
         Assert.AreEqual(0, result.ExitCode, result.Output);
-        using var json = JsonDocument.Parse(result.Output);
+        using var json = JsonDocument.Parse(result.StandardOutput);
         Assert.AreEqual("none", json.RootElement.GetProperty("Properties").GetProperty("JazorMode").GetString());
         var items = json.RootElement.GetProperty("Items");
         Assert.IsFalse(ItemsContain(items, "Content", "generated/frontend/runtime/generated.js"), result.Output);
@@ -111,7 +111,7 @@ public sealed class SdkFeedbackPublishTests
                 arguments.Add("-p:RuntimeIdentifier=" + requestedRid);
             var result = await RunAsync(workspace.Root, [.. arguments]);
             Assert.AreEqual(0, result.ExitCode, result.Output);
-            using var json = JsonDocument.Parse(result.Output);
+            using var json = JsonDocument.Parse(result.StandardOutput);
             var properties = json.RootElement.GetProperty("Properties");
             var expectedRid = requestedRid.Length > 0 ? requestedRid : properties.GetProperty("NETCoreSdkRuntimeIdentifier").GetString();
             Assert.AreEqual(expectedRid, properties.GetProperty("_JazorTargetRuntimeIdentifier").GetString());
@@ -137,6 +137,7 @@ public sealed class SdkFeedbackPublishTests
         foreach (var argument in arguments)
             start.ArgumentList.Add(argument);
         RepositoryTemp.ApplyProcessEnvironment(start);
+        start.Environment["DOTNET_NOLOGO"] = "1";
         using var process = Process.Start(start)!;
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
@@ -151,10 +152,13 @@ public sealed class SdkFeedbackPublishTests
                 process.Kill(entireProcessTree: true);
             throw;
         }
-        return new ProcessResult(process.ExitCode, (await output + await error).Trim());
+        return new ProcessResult(process.ExitCode, (await output).Trim(), (await error).Trim());
     }
 
-    private sealed record ProcessResult(int ExitCode, string Output);
+    private sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError)
+    {
+        public string Output => StandardOutput + Environment.NewLine + StandardError;
+    }
 
     private sealed class Workspace : IDisposable
     {

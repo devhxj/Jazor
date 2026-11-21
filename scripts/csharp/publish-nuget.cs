@@ -498,8 +498,9 @@ internal sealed record PublishNuGetOptions(
         Console.WriteLine("  --base-output-path <path>");
         Console.WriteLine("  --base-intermediate-output-path <path>");
         Console.WriteLine("  --package-version <semver>");
-        Console.WriteLine("  --package <jazor|vue|jolt|style|devtools|dataui|lucide|pinia|pinia-testing|vueroute|date-fns|vueuse|floating-ui|vee-validate|vue-i18n|vue-query|monaco|vuetify|tdesign|elementplus|PackageId>");
-        Console.WriteLine("    Default package set: Jazor, ECMAScript.Vue, Jazor.Jolt, ECMAScript.Style, ECMAScript.Vue.Devtools, ECMAScript.Pinia, ECMAScript.Pinia.Testing, ECMAScript.VueRoute, ECMAScript.DateFns, ECMAScript.VueUse, ECMAScript.FloatingUi, ECMAScript.VeeValidate, ECMAScript.VueI18n, ECMAScript.VueQuery, ECMAScript.Monaco");
+        Console.WriteLine("  --package <selector>");
+        Console.WriteLine("    Default package set: " + string.Join(", ", PackageCatalog.ReadDefaultPublicPackageIds(ScriptHelpers.RequireRepoRoot())));
+        Console.WriteLine("    Explicit selectors: " + string.Join(", ", PackageCatalog.Selectors));
         Console.WriteLine("  --skip-push");
         Console.WriteLine("  --no-build");
         Console.WriteLine();
@@ -524,24 +525,8 @@ internal sealed record NoBuildPackInputRoots(
 
 internal static class PackageCatalog
 {
-    private static readonly string[] DefaultPublicPackageIds =
-    [
-        "Jazor",
-        "ECMAScript.Vue",
-        "Jazor.Jolt",
-        "ECMAScript.Style",
-        "ECMAScript.Vue.Devtools",
-        "ECMAScript.Pinia",
-        "ECMAScript.Pinia.Testing",
-        "ECMAScript.VueRoute",
-        "ECMAScript.DateFns",
-        "ECMAScript.VueUse",
-        "ECMAScript.FloatingUi",
-        "ECMAScript.VeeValidate",
-        "ECMAScript.VueI18n",
-        "ECMAScript.VueQuery",
-        "ECMAScript.Monaco",
-    ];
+    internal static string[] ReadDefaultPublicPackageIds(string repoRoot) =>
+        File.ReadAllLines(Path.Combine(repoRoot, "scripts", "csharp", "release-packages.txt"));
 
     private static readonly Dictionary<string, string> PackageAliases = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -584,11 +569,13 @@ internal static class PackageCatalog
         ["ECMAScript.Monaco"] = "ECMAScript.Monaco",
     };
 
+    internal static IEnumerable<string> Selectors => PackageAliases.Keys;
+
     public static IReadOnlyList<PackageDefinition> ResolveSelectedPackages(string repoRoot, IReadOnlyList<string> packageSelectors)
     {
         var catalog = CreateCatalog(repoRoot);
         var resolvedPackageIds = packageSelectors.Count == 0
-            ? DefaultPublicPackageIds
+            ? ReadDefaultPublicPackageIds(repoRoot)
             : packageSelectors.Select(NormalizePackageSelector).ToArray();
 
         var selectedPackages = new List<PackageDefinition>(resolvedPackageIds.Length);
@@ -598,7 +585,7 @@ internal static class PackageCatalog
             {
                 throw new InvalidOperationException(
                     "Unsupported package selector '" + packageId + "'. Supported packages: " +
-                    string.Join(", ", DefaultPublicPackageIds));
+                    string.Join(", ", catalog.Keys));
             }
 
             if (selectedPackages.Any(existing => existing.PackageId.Equals(package.PackageId, StringComparison.OrdinalIgnoreCase)))
@@ -622,7 +609,7 @@ internal static class PackageCatalog
 
         throw new InvalidOperationException(
             "Unsupported package selector: " + selector + ". Supported selectors: " +
-            "jazor, vue, jolt, style, devtools, dataui, lucide, pinia, pinia-testing, vueroute, date-fns, vueuse, floating-ui, vee-validate, vue-i18n, vue-query, monaco, vuetify, elementplus, tdesign.");
+            string.Join(", ", Selectors) + ".");
     }
 
     private static Dictionary<string, PackageDefinition> CreateCatalog(string repoRoot)

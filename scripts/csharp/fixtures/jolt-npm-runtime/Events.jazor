@@ -1,0 +1,37 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<output id="event-count">@_count</output>
+
+@code {
+    [Parameter] public ECMAScript.HTMLElement Target { get; set; } = default!;
+    [Parameter] public bool Manual { get; set; }
+    private int _count;
+
+    [Setup]
+    private void Configure()
+    {
+        var stop = VueUse.UseEventListener(Target, "click", OnEvent);
+        var stopKeyboard = VueUse.UseEventListener(Target, VueUse.KeyboardEventName.Keydown, OnKeyboard);
+        var stopMouse = VueUse.UseEventListener(Target, VueUse.MouseEventName.Dblclick, OnMouse);
+        if (Manual)
+            ECMAScript.Vue.OnMounted(() => { stop(); stopKeyboard(); stopMouse(); });
+    }
+
+    private void OnEvent(ECMAScript.EventRef value)
+    {
+        if (value.Type == "click")
+            _count++;
+    }
+
+    private void OnKeyboard(ECMAScript.KeyboardEvent value)
+    {
+        if (value.Key == "Enter")
+            _count += 2;
+    }
+
+    private void OnMouse(ECMAScript.MouseEvent value)
+    {
+        if (value.ClientX == 42)
+            _count += 4;
+    }
+}

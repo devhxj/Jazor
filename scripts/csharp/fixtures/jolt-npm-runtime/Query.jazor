@@ -1,0 +1,70 @@
+@using Query = Npm.Tanstack.VueQuery.Exports
+
+<output id="query-data">@_queryData</output>
+<output id="mutation-data">@_mutationData</output>
+<output id="scalar-data">@_scalarData</output>
+<output id="infinite-data">@_infiniteData</output>
+
+@code {
+    public static void Install(ECMAScript.Vue.VueApp app)
+    {
+        app.Use(Query.VueQueryPlugin);
+    }
+
+    private string _queryData = "";
+    private string _mutationData = "";
+    private string _scalarData = "";
+    private string _infiniteData = "";
+
+    [Setup]
+    private void Configure()
+    {
+        ECMAScript.Number page = 0;
+        var query = Query.UseQuery(new Query.UseQueryAsyncOptionsInput<QueryData> {
+            QueryKey = ["fixture", page, false, new QueryFilter(3)],
+            QueryFn = () => ECMAScript.Promise<QueryData>.Resolve(new QueryData("fetched"))
+        });
+        var mutation = Query.UseMutation(new Query.UseMutationOptionsInput<string, string> {
+            MutationFn = value => ECMAScript.Promise<string>.Resolve(value + "-saved")
+        });
+        var numberQuery = Query.UseQuery(new Query.UseQueryNumberAsyncOptionsInput {
+            QueryKey = ["number-fixture"],
+            QueryFn = () => ECMAScript.Promise<double>.Resolve(0)
+        });
+        var booleanMutation = Query.UseMutation(new Query.UseMutationBooleanOptionsInput<double> {
+            MutationFn = value => ECMAScript.Promise<bool>.Resolve(value > 0)
+        });
+        var scalarWasMissing = numberQuery.Data.Value == null && booleanMutation.Data.Value == null;
+        var infinite = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberOptionsInput<QueryData> {
+            QueryKey = ["infinite-fixture", page, false, new QueryFilter(3)],
+            InitialPageParam = 0,
+            QueryFn = context => ECMAScript.Promise<QueryData>.Resolve(
+                new QueryData(context.PageParam == 0 ? "first" : "second")),
+            GetNextPageParam = (lastPage, pages, lastPageParam, pageParams) => lastPageParam == 0 ? 1 : null
+        });
+        Func<ECMAScript.IPromise> fetchPages = () => infinite.Refetch().Then(() => {
+            if (infinite.Data.Value!.Pages[0].Label != "first" || !infinite.HasNextPage.Value)
+                return ECMAScript.Promise.Resolve();
+            return infinite.FetchNextPage().Then(() => {
+                var data = infinite.Data.Value!;
+                if (!infinite.HasNextPage.Value && data.Pages.Length == 2 && data.Pages[1].Label == "second")
+                    _infiniteData = "first|second|0|1|stopped";
+            });
+        });
+        Func<ECMAScript.IPromise> fetchAndSave = () => query.Refetch().Then(result => {
+            _queryData = query.Data.Value!.Label;
+            return mutation.MutateAsync("fixture").Then(value => {
+                _mutationData = value;
+                return numberQuery.Refetch().Then(result => booleanMutation.MutateAsync(0).Then(value => {
+                    _scalarData = scalarWasMissing && numberQuery.Data.Value == 0 &&
+                        booleanMutation.Data.Value == false ? "null-then-zero-and-false" : "unexpected";
+                }));
+            });
+        });
+        ECMAScript.Vue.OnServerPrefetch(() => fetchAndSave().Then(() => fetchPages()));
+        ECMAScript.Vue.OnMounted(() => { fetchAndSave().Then(() => fetchPages()); });
+    }
+
+    private sealed record QueryData(string Label);
+    private sealed record QueryFilter(double Page) : ECMAScript.Vue.VueProps;
+}

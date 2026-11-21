@@ -116,6 +116,8 @@ Blazor 组件库中的常用能力也应有迁移路径。祖先共享主题或�
 | 本地 `.vue` ↔ `.jazor` | 在 SFC 或 Vue TSX 中直接 `import SearchBox from './SearchBox.jazor'`；同目录的 `SearchBox.jazor` 可以在模板里写 `<StatusBadge … />` 引用 `StatusBadge.vue` | 项目加载器识别本地组件，跨目录使用命名空间或显式别名，重名时要求消歧。Vue Language Tools 提取 SFC 的公开类型，Vue Vite 插件编译 SFC，Jolt 插件解析 `.jazor` 并提供产物与映射。两者共享应用的 Vue 实例与 Vite 依赖图。 |
 | Jolt 组件库 → 普通 Vue/TS 项目 | 消费者从包的公开路径导入组件、类型及具名工具方法，像使用其他 Vue 库一样开发 | 从同一 `ComponentContract` 生成与 ESM 配套的 TS 声明，保留泛型、可选性、props/emits/slots、公开 ref 和具名成员。包声明 `exports` 的类型与运行入口、CSS 资产及 Vue peer dependency。已构建的包由常规 Vue 工具链直接消费。 |
 
+工作区可以把同一个 `DateFns.Duration` 传给 `Add`、`Sub` 和 `FormatDuration`。在 setup 中可读写 `VueUse.UseStorage("draft", "")` 返回的 ref，或从 `VueUse.UseMouse().X.Value` 读取坐标。验证脚本从现有手写绑定提取导出清单，以新写法检查强类型调用和跨导出传值。 [日期调用示例](../03-guides/jolt-authoring.md) · [真实包运行用例](../../scripts/csharp/fixtures/jolt-npm-runtime/App.jazor) · [绑定对照验证](../../scripts/csharp/verify-jolt-binding-projection.cs)
+
 **工作区示例 · npm 的普通函数**。项目声明 `es-toolkit` 后，可以在 `.jazor` 中直接使用它公开的字符串工具。
 
 ```razor
@@ -173,7 +175,7 @@ return () => <SearchBox modelValue={query.value}
 | --- | --- |
 | SDK Razor 与 `Jolt.Syntax` | 继续用组件模式的 Razor 标记 IR、Roslyn tokenizer 和原始区间；扩展语句、指令属性、模板片段和恢复节点。每项新指令先保留结构、参数和修饰符的位置。未知或尚未实现的框架指令给出定点诊断，普通 HTML、Web Components 和 `data-*` 继续可用。 |
 | `Jolt.Project`、`Jolt.Compiler` 投影 | Project 管目录、共享 imports、partial 来源、模块解析和未保存缓冲。Projection 与 ComponentContract 统一描述本地、SFC 和 npm 组件的外部名称、值类型、事件与插槽，并生成让 Roslyn 能检查的赋值、委托和泛型调用。绑定读取、写回和订阅各有源位置。现有公开 prop 使用作者大小写，导出 Vue model 前要用旧 JS 调用方验证兼容性，并处理显式监听器与模型监听器重复的情况。 |
-| `Jolt.Npm` 与现有 `ECMAScript.*` | 先覆盖可无损表示的标量、可选参数、数组、结构化对象和回调，再按真实包增加重载、联合和泛型。保留 JS 的缺省、显式 null 和字面量约束。已知且复杂的宿主协议优先复用现有 typed binding；同一导出只选一个类型来源。无声明的包可在项目内提供窄 `.d.ts` 或 typed ESM 适配模块。无法表达的**已使用**成员指向包、导出和声明位置。 |
+| `Jolt.Npm` 与现有 `ECMAScript.*` | Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 提供长期维护的手写契约。其他 npm 应用库按用到的导出推导，复用宿主的 Date、DOM 及 Vue ref 类型。根据真实用例补充通用的重载、闭合联合和泛型规则，保留 JS 的缺省、显式 null 和字面量约束。缺少可用声明时由类型包、项目内窄 `.d.ts` 或 typed ESM 模块提供契约。无法表达的已使用成员需要可定位的诊断。 |
 | Roslyn、`Jazor.Compiler` 与 CLR/WebIDL | Roslyn 决定符号、约束、重载和可写性，SemanticWalker 在运行时敏感的使用点检查并降低 `IOperation`。闭合值域优先用原生 C# union；分支存在可赋值关系时按仓库规则保留标签。编译期擦除泛型。核心维护求值顺序、单次副作用、确定性导入和 source origin。 |
 | `Jolt.Compiler` 的 VueLowering 与 Vue | Jolt 通过现有 host hooks 生成 VNode、model 监听器、slot 函数、setup 外壳与明确的 Vue helper 导入。Vue 拥有组件实例、响应式调度、DOM patch 和生命周期。带副作用的 getter、动态键和捕获循环变量的闭包均按原语义求值。 |
 | `Jolt.Cli`、`Jolt.Vite`、NodeHost、LSP | CLI 继续物化组件模块、CSS、映射和清单，Vite 组合插件、HMR、资源及打包。仓库维护的还原、TS 检查和 Vite 均走进程内 NodeApi + LibNode + 固定 pnpm API，使用 `pnpm-lock.yaml`。LSP 与 CLI 共用项目图和契约，定义、改名和诊断回到作者区间。SSR/路由、服务作用域和请求状态由相应应用集成负责。 |

@@ -179,9 +179,12 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         }
     }
 
-    private static bool IsModuleMember(MemberDeclarationSyntax member) =>
-        member is MethodDeclarationSyntax or FieldDeclarationSyntax &&
-        member.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.StaticKeyword) || modifier.IsKind(SyntaxKind.ConstKeyword));
+    private bool IsModuleMember(MemberDeclarationSyntax member) =>
+        // Static exports and instance code can both name a host interface. In a
+        // generic component, nested contracts keep their component type parameters.
+        (member is InterfaceDeclarationSyntax && TypeParameters.Length == 0) ||
+        (member is MethodDeclarationSyntax or FieldDeclarationSyntax &&
+         member.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.StaticKeyword) || modifier.IsKind(SyntaxKind.ConstKeyword)));
 
     internal string? GetExpressionType(JoltExpression expression, SemanticModel model) =>
         GetExpressionTypeSymbol(expression, model)?.ToDisplayString(ComponentContract.TypeDisplay);

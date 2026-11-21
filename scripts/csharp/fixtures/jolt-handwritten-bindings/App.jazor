@@ -1,0 +1,12 @@
+<p>bindings</p>
+@code {
+    [Setup]
+    private void Configure() {
+        ECMAScript.Pinia.SetActivePinia(ECMAScript.PiniaTesting.CreateTestingPinia());
+        ECMAScript.VueDevtools.RemoveCustomCommand("probe");
+        ECMAScript.VueRoute.CreateRouter(new ECMAScript.RouterOptions {
+            History = ECMAScript.VueRoute.CreateMemoryHistory(),
+            Routes = []
+        });
+    }
+}

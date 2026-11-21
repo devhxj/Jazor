@@ -389,6 +389,19 @@ public partial class SemanticWalker
 										 IsStructuralMember(property))
 					 .OrderBy(GetStructuralMemberSourceOrder, StringComparer.Ordinal))
 			{
+				// The option literal is part of the host contract and must survive
+				// precompilation, where source property initializers are unavailable.
+				var fixedBoolean = property.GetAttributes().FirstOrDefault(attribute =>
+					attribute.AttributeClass?.ToDisplayString() == StructuralRecordSupport.FixedBooleanAttribute);
+				if (fixedBoolean?.ConstructorArguments.FirstOrDefault().Value is bool fixedValue)
+				{
+					var key = Util.GetConfigOrSymbolName(property);
+					var literal = new BooleanLiteral(fixedValue, fixedValue ? "true" : "false");
+					var node = WithOriginIfMissing(new ObjectProperty(PropertyKind.Init,
+						CreateObjectPropertyKey(key), literal, computed: false, shorthand: false, method: false), ownerOperation);
+					members.Add((node, key, GetRecordStructuralMemberOrder(memberOrder, key)));
+					continue;
+				}
 				foreach (var reference in property.DeclaringSyntaxReferences
 							 .OrderBy(static reference => reference.Span.Start))
 				{
@@ -525,6 +538,11 @@ public partial class SemanticWalker
 		ITypeSymbol? hostType)
 	{
 		if (!IsStaticallyKnownNull(initializer))
+			return false;
+
+		if (orderSymbol is IPropertySymbol explicitNull &&
+			explicitNull.GetAttributes().Any(attribute =>
+				attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptExplicitNullAttribute"))
 			return false;
 
 		if (orderSymbol is IPropertySymbol propertySymbol &&

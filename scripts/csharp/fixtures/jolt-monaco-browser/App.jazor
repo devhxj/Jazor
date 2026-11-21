@@ -1,0 +1,58 @@
+@using Monaco = Npm.MonacoEditor.Editor.EditorApiJs.Exports
+@using System.ComponentModel
+
+@code {
+    [ECMAScript.ECMAScript]
+    public interface IModelWorker {
+        [Description("@#readModel")]
+        ECMAScript.IPromise<string> ReadModel();
+    }
+
+    public static Action MountEditor(ECMAScript.HTMLElement element, ECMAScript.Worker transport, Action<string> onRead) {
+        var model = Monaco.Editor.CreateModel("one line", "plaintext");
+        var editor = Monaco.Editor.Create(element);
+        editor.SetModel(model);
+        var marker = new Monaco.IMarkerData {
+            Severity = Monaco.MarkerSeverity.Warning,
+            Message = "typed warning",
+            StartLineNumber = 1,
+            StartColumn = 1,
+            EndLineNumber = 1,
+            EndColumn = 2
+        };
+        Monaco.Editor.SetModelMarkers(model, "clear-me", [marker]);
+        Monaco.Editor.SetModelMarkers(model, "keep-me", [marker]);
+        var worker = Monaco.Editor.CreateWebWorker<IModelWorker>(new() { Worker = transport });
+        worker.WithSyncedResources(new[] { model.Uri }).Then(proxy => proxy.ReadModel().Then(onRead));
+        return () => {
+            worker.Dispose();
+            editor.Dispose();
+            model.Dispose();
+        };
+    }
+
+    public static void UpdateEditor() {
+        Monaco.Editor.DefineTheme("jolt-theme", new() {
+            Base = Monaco.BuiltinTheme.VsDark,
+            Inherit = true,
+            Rules = [new() { Token = "comment", Foreground = "abcdef" }],
+            Colors = new() { ["editor.background"] = "#123456" }
+        });
+        Monaco.Editor.SetTheme("jolt-theme");
+        Monaco.Editor.RemoveAllMarkers("clear-me");
+    }
+
+    public static string ReadMarker() {
+        var model = Monaco.Editor.GetModels()[0];
+        var markers = Monaco.Editor.GetModelMarkers(new() { Resource = model.Uri, Owner = "keep-me" });
+        var marker = markers[0];
+        return marker.Owner + "|" + marker.Message + "|" +
+            (marker.Severity == Monaco.MarkerSeverity.Warning ? "warning" : "unexpected");
+    }
+
+    public static Action ObserveContent(Action<double> onVersion) {
+        var editor = Monaco.Editor.GetEditors()[0];
+        var subscription = editor.OnDidChangeModelContent(change => onVersion(change.VersionId));
+        return () => subscription.Dispose();
+    }
+}

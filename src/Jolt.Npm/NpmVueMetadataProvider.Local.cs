@@ -91,6 +91,12 @@ public sealed partial class NpmVueMetadataProvider
         Dictionary<string, string?> Inputs, string[] Missing, string[] MissingDirectories, string TypeScript,
         Dictionary<string, TemplateSignature> Templates);
 
+    // metadata.mjs imports the package's projection modules. Extract from the
+    // same embedded resource set as MSBuild so newly added imports resolve.
+    private static readonly string[] MetadataModules = typeof(NpmVueMetadataProvider).Assembly.GetManifestResourceNames()
+        .Where(name => name.StartsWith("Jolt.Npm.", StringComparison.Ordinal) && name.EndsWith(".mjs", StringComparison.Ordinal))
+        .Select(name => name["Jolt.Npm.".Length..]).ToArray();
+
     private static async Task<string> RunMetadataAsync(string project, string entry, IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
@@ -98,7 +104,7 @@ public sealed partial class NpmVueMetadataProvider
         string[] resources = entry switch
         {
             "vue-source.mjs" => [entry, "vue-contract.mjs", "vue-template-text.mjs"],
-            "metadata.mjs" => [entry, "vue-contract.mjs"],
+            "metadata.mjs" => MetadataModules,
             _ => [entry],
         };
         Directory.CreateDirectory(directory);

@@ -1,14 +1,116 @@
 using System.Text.RegularExpressions;
 using Jolt.Compiler;
 using Jolt.Npm;
+using Microsoft.CodeAnalysis;
 
 namespace Jolt.Compiler.Test;
 
 [TestClass]
 public sealed class NpmValueTests
 {
+    [TestMethod]
+    public void GenerateSource_PreservesRealExportOverVariantFromAnotherSpecifier()
+    {
+        var factory = Export("sample/feature-api", "createPlugin", [
+            new([], Text),
+            new([], Text, ManagedNameSuffix: "WithModeTrue"),
+            new([], Text, ManagedNameSuffix: "WithModeFalse"),
+        ]);
+        var real = Export("sample/feature_api", "createPluginWithModeTrue", [new([], Number)]);
+        var source = JoltNpmBindings.GenerateSource([factory, real]);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
+            .Split(Path.PathSeparator).Select(path => MetadataReference.CreateFromFile(path));
+        var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("PublicFacade",
+            [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(source)], references,
+            new(Microsoft.CodeAnalysis.OutputKind.DynamicallyLinkedLibrary));
+        var errors = compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+        Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
+        var facade = compilation.GetTypeByMetadataName("Npm.Sample.FeatureApi.Exports")!;
+        var winner = (IMethodSymbol)facade.GetMembers("CreatePluginWithModeTrue").Single();
+        Assert.AreEqual(SpecialType.System_Double, winner.ReturnType.SpecialType);
+        Assert.AreEqual("sample/feature_api", winner.GetAttributes()
+            .Single(attribute => attribute.AttributeClass?.Name == "ECMAScriptAttribute").ConstructorArguments[0].Value);
+        Assert.HasCount(1, facade.GetMembers("CreatePlugin"));
+        Assert.HasCount(1, facade.GetMembers("CreatePluginWithModeFalse"));
+    }
+
     private static readonly NpmValueType Text = new("string");
     private static readonly NpmValueType Number = new("number");
+
+    [TestMethod]
+    public void Analyze_ReusesOnlyMatchingNumericEnumDomains()
+    {
+        var first = new NpmValueType("enum", Name: "Level", EnumMembers: [new("low", 1)]);
+        var same = first with { EnumMembers = [new("low", 1)] };
+        var otherValue = first with { EnumMembers = [new("low", 2)] };
+        var otherMember = first with { EnumMembers = [new("high", 1)] };
+        var analysis = JoltProjectCompiler.Analyze([new("App.jazor", "<p />")], Options(
+            Export("counter", "first", [new([], first)]),
+            Export("counter", "same", [new([], same)]),
+            Export("counter", "otherValue", [new([], otherValue)]),
+            Export("counter", "otherMember", [new([], otherMember)])));
+        Assert.IsEmpty(analysis.Diagnostics, string.Join(Environment.NewLine, analysis.Diagnostics));
+        var facade = analysis.Documents.Single().SemanticModel.Compilation
+            .GetTypeByMetadataName("Npm.Counter.Exports")!;
+        IMethodSymbol Method(string name) => (IMethodSymbol)facade.GetMembers(name).Single();
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(
+            Method("First").ReturnType, Method("Same").ReturnType));
+        var differentValue = Method("OtherValue").ReturnType;
+        var differentMember = Method("OtherMember").ReturnType;
+        Assert.IsFalse(SymbolEqualityComparer.Default.Equals(Method("First").ReturnType, differentValue));
+        Assert.AreEqual(2, ((IFieldSymbol)differentValue.GetMembers("Low").Single()).ConstantValue);
+        Assert.AreEqual(1, ((IFieldSymbol)differentMember.GetMembers("High").Single()).ConstantValue);
+    }
+
+    [TestMethod]
+    public void Analyze_PreservesPartialRecordElementsAndRefKinds()
+    {
+        var definition = new NpmDefinition("counter.d.ts", 0, 6);
+        NpmValueType Shape(NpmValueType element, string? refKind) => new("object",
+            Name: "Result", TypeDefinition: definition, Members:
+            [
+                new("values", new("partialRecord", ElementType: element), true),
+                new("current", new("ref", ElementType: Text, Name: refKind, ReadOnly: true), true),
+            ]);
+        var plainRecord = new NpmValueType("plainRecord");
+        var typedRecord = new NpmValueType("recordTypeParameter", Name: "T");
+        var analysis = JoltProjectCompiler.Analyze([new("App.jazor", "<p />")], Options(
+            Export("counter", "first", [new([], Shape(plainRecord, null))]),
+            Export("counter", "same", [new([], Shape(plainRecord, null))]),
+            Export("counter", "otherElement", [new([], Shape(typedRecord, null), TypeParameters: ["T"])]),
+            Export("counter", "otherRef", [new([], Shape(plainRecord, "VueComputedRef"))])));
+        Assert.IsEmpty(analysis.Diagnostics, string.Join(Environment.NewLine, analysis.Diagnostics));
+        var facade = analysis.Documents.Single().SemanticModel.Compilation.GetTypeByMetadataName("Npm.Counter.Exports")!;
+        ITypeSymbol Result(string name) => ((IMethodSymbol)facade.GetMembers(name).Single()).ReturnType;
+        Assert.IsTrue(SymbolEqualityComparer.Default.Equals(Result("First"), Result("Same")));
+        var values = (INamedTypeSymbol)((IPropertySymbol)Result("OtherElement").GetMembers("Values").Single()).Type;
+        var current = (IPropertySymbol)Result("OtherRef").GetMembers("Current").Single();
+        Assert.AreEqual(TypeKind.TypeParameter, values.TypeArguments.Single().TypeKind);
+        Assert.AreEqual("VueComputedRef", current.Type.Name);
+    }
+
+    [TestMethod]
+    public async Task Compile_PreservesPromisePayloadInThenCallback()
+    {
+        const string source = """
+            @using Tool = Npm.Counter.Exports
+            <p>@Current</p>
+            @code {
+                private double Current;
+                [Setup]
+                private void Configure() {
+                    Tool.Fetch().Then(result => { Current = result.Count; });
+                }
+            }
+            """;
+        var payload = new NpmValueType("object", Members: [new("count", Number, true)]);
+        var promise = new NpmValueType("promise", ElementType: payload);
+        var options = Options(Export("counter", "fetch", [new([], promise)]));
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        StringAssert.Contains(result.Modules.Single().Content, ".then(");
+        StringAssert.Contains(result.Modules.Single().Content, "result.count");
+    }
 
     [TestMethod]
     public async Task Compile_ImportsOnlyUsedValuesWithStableAliases()
@@ -177,6 +279,36 @@ public sealed class NpmValueTests
     }
 
     [TestMethod]
+    public async Task Compile_ProjectsCallbackArgumentsAndResultsByValueDirection()
+    {
+        const string source = """
+            @using Tool = Npm.Counter.Exports
+            <p>@Current</p>
+            @code {
+                private double Current {
+                    get {
+                        var callback = Tool.GetCallback();
+                        var result = callback(new() { X = 3 });
+                        return Tool.ApplyCallback(input => new() { Y = input.X }) + result.Y;
+                    }
+                }
+            }
+            """;
+        var input = new NpmValueType("object", Members: [new("x", Number, true)]);
+        var output = new NpmValueType("object", Members: [new("y", Number, true)]);
+        var callback = new NpmValueType("function", Signatures: [new([new("event", input, false)], output)]);
+        var options = Options(
+            Export("counter", "getCallback", [new([], callback)]),
+            Export("counter", "applyCallback", [new([new("callback", callback, false)], Number)]));
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single().Content;
+        StringAssert.Contains(js, "callback({ x: 3 })");
+        StringAssert.Contains(js, "y: input.x");
+        StringAssert.Contains(js, "result.y");
+    }
+
+    [TestMethod]
     public async Task Compile_PreservesPunctuationInExportAndMemberNames()
     {
         const string source = """
@@ -193,6 +325,104 @@ public sealed class NpmValueTests
         var js = result.Modules.Single().Content;
         StringAssert.Contains(js, "\"content-info\" as ");
         StringAssert.Contains(js, "[\"content-type\"]");
+    }
+
+    [TestMethod]
+    public async Task Compile_UsesTypedDateAndArrayOverloadsWithOneImport()
+    {
+        const string source = """
+            @using Dates = Npm.Dates.Exports
+            <p>@Current</p>
+            @code {
+                private double Current {
+                    get {
+                        ECMAScript.Date date = Dates.Normalize("2025-01-01");
+                        ECMAScript.Array<ECMAScript.Date> dates = Dates.Normalize(date);
+                        ECMAScript.IArray<ECMAScript.Date> snapshot = Dates.Snapshot(dates);
+                        date = snapshot[0];
+                        return Dates.Read(new ECMAScript.Date[] { date, dates[0] });
+                    }
+                }
+            }
+            """;
+        var date = new NpmValueType("date");
+        var dates = new NpmValueType("array", ElementType: date);
+        var options = Options(
+            Export("dates", "normalize", [new([new("value", Text, false)], date), new([new("value", date, false)], dates)]),
+            Export("dates", "read", [new([new("values", dates, false)], Number)]),
+            Export("dates", "snapshot", [new([new("values", dates with { ReadOnly = true }, false)], dates with { ReadOnly = true })]));
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single().Content;
+        Assert.HasCount(1, Regex.Matches(js, "normalize as "));
+        Assert.HasCount(1, Regex.Matches(js, "read as "));
+        StringAssert.Contains(js, "dates[0]");
+
+        var invalid = JoltProjectCompiler.Analyze([new("App.jazor", source.Replace("Dates.Normalize(date)", "Dates.Normalize(true)"))], options);
+        Assert.AreEqual("CS1503", invalid.Diagnostics.Single().Id);
+        var invalidWrite = JoltProjectCompiler.Analyze([new("App.jazor", source.Replace("date = snapshot[0]", "snapshot[0] = date"))], options);
+        Assert.AreEqual("CS0200", invalidWrite.Diagnostics.Single().Id);
+    }
+
+    [TestMethod]
+    public async Task Compile_PassesNominalDomValuesDirectlyToNpm()
+    {
+        const string source = """
+            @using Browser = Npm.Browser.Exports
+            <p>@Current</p>
+            @code {
+                private double Current {
+                    get {
+                        ECMAScript.WindowRef window = Browser.CurrentWindow();
+                        return Browser.Measure(window, Browser.CurrentElement());
+                    }
+                }
+            }
+            """;
+        var window = new NpmValueType("web", Name: "WindowRef");
+        var element = new NpmValueType("web", Name: "Element");
+        var options = Options(
+            Export("browser", "currentWindow", [new([], window)]),
+            Export("browser", "currentElement", [new([], element)]),
+            Export("browser", "measure", [new([new("window", window, false), new("element", element, false)], Number)]));
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single().Content;
+        var measure = Regex.Match(js, @"measure as (\w+\$\w+)").Groups[1].Value;
+        var currentElement = Regex.Match(js, @"currentElement as (\w+\$\w+)").Groups[1].Value;
+        StringAssert.Contains(js, $"{measure}(window, {currentElement}())");
+
+        var invalid = JoltProjectCompiler.Analyze([new("App.jazor", source.Replace("Browser.Measure(window", "Browser.Measure(Browser.CurrentElement()"))], options);
+        Assert.AreEqual("CS1503", invalid.Diagnostics.Single().Id);
+    }
+
+    [TestMethod]
+    public async Task Compile_DistinguishesExplicitNullFromAnOmittedParameter()
+    {
+        const string source = """
+            @using Tool = Npm.Counter.Exports
+            <p>@Current</p>
+            @code {
+                private double Current {
+                    get {
+                        Tool.Measure();
+                        Tool.Measure(null);
+                        return Tool.Measure(label: "sample");
+                    }
+                }
+            }
+            """;
+        var nullable = new NpmValueType("nullable", ElementType: Number);
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)],
+            Options(Export("counter", "measure", [new([new("value", nullable, true), new("label", Text, true)], Number)])));
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single().Content;
+        var binding = Regex.Match(js, @"measure as (\w+\$\w+)").Groups[1].Value;
+        StringAssert.Contains(js, $"{binding}()");
+        StringAssert.Contains(js, $"{binding}(null)");
+        // Named argument canonicalization captures the supplied label before the gap.
+        StringAssert.Matches(js, new Regex(Regex.Escape(binding) +
+            @"\(\((__arg\$\w+) = ""sample"", (__arg\$\w+) = void 0, \2\), \1\)"));
     }
 
     private static NpmValueExport Export(string specifier, string name, NpmValueSignature[] signatures, NpmValueType? constant = null) =>

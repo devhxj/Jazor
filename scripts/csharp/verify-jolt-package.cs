@@ -61,6 +61,11 @@ try
             "Microsoft.CodeAnalysis.Razor.Compiler.dll",
             "Microsoft.AspNetCore.Razor.Utilities.Shared.dll",
             "Microsoft.JavaScript.NodeApi.dll",
+            "ECMAScript.Vue.dll",
+            "ECMAScript.Pinia.dll",
+            "ECMAScript.Pinia.Testing.dll",
+            "ECMAScript.Vue.Devtools.dll",
+            "ECMAScript.VueRoute.dll",
             packagedRid.StartsWith("win-", StringComparison.Ordinal) ? "libnode.dll" : "libnode.so",
             "licenses/dotnet-sdk/LICENSE.txt",
             "licenses/dotnet-sdk/ThirdPartyNotices.txt",
@@ -114,6 +119,7 @@ try
         throw new InvalidOperationException("Installed Jolt did not emit and bundle scoped component styles.");
     var appHost = Directory.EnumerateFiles(Path.Combine(tools, ".store"),
         OperatingSystem.IsWindows() ? "Jolt.Cli.exe" : "Jolt.Cli", SearchOption.AllDirectories).Single();
+    await VerifyHandwrittenBindingsAsync(appHost, root, scratch.FullName, npmStore);
     if (editorFeatures)
     {
         await RunProcessAsync("dotnet", root, npmStore,
@@ -186,8 +192,38 @@ finally
 static Task RunAsync(string program, string workingDirectory, params string[] arguments)
     => RunProcessAsync(program, workingDirectory, null, arguments);
 
+static async Task VerifyHandwrittenBindingsAsync(string appHost, string root, string scratch, string npmStore)
+{
+    var fixture = Path.Combine(root, "scripts", "csharp", "fixtures", "jolt-handwritten-bindings");
+    var project = Directory.CreateDirectory(Path.Combine(scratch, "handwritten-bindings")).FullName;
+    foreach (var file in new[] { "App.jazor", "package.json", "pnpm-lock.yaml" })
+        File.Copy(Path.Combine(fixture, file), Path.Combine(project, file));
+
+    await RunProcessAsync(appHost, project, npmStore, ["build"]);
+    var module = await File.ReadAllTextAsync(Path.Combine(project, ".jolt", "App.mjs"));
+    foreach (var statement in new[]
+    {
+        """import { createTestingPinia } from "@pinia/testing";""",
+        """import { setActivePinia } from "pinia";""",
+        """import { removeCustomCommand } from "@vue/devtools-api";""",
+        """import { createMemoryHistory, createRouter } from "vue-router";""",
+        "setActivePinia(createTestingPinia());",
+        """removeCustomCommand("probe");""",
+        "history: createMemoryHistory()"
+    })
+    {
+        if (!module.Contains(statement, StringComparison.Ordinal))
+            throw new InvalidOperationException($"Missing {statement} in the generated module.\n{module}");
+    }
+
+    var source = Path.Combine(project, "App.jazor");
+    await File.WriteAllTextAsync(source, (await File.ReadAllTextAsync(source)).Replace(
+        """RemoveCustomCommand("probe")""", "RemoveCustomCommand(true)", StringComparison.Ordinal));
+    await RunProcessAsync(appHost, project, npmStore, ["build"], expectedError: "error CS1503");
+}
+
 static async Task RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments,
-    string? toolDirectory = null, string? packageCache = null)
+    string? toolDirectory = null, string? packageCache = null, string? expectedError = null)
 {
     var start = new ProcessStartInfo(program) { WorkingDirectory = workingDirectory, UseShellExecute = false };
     if (toolDirectory is not null)
@@ -196,10 +232,24 @@ static async Task RunProcessAsync(string program, string workingDirectory, strin
         start.Environment["JazorPnpmStoreDirectory"] = npmStore;
     if (packageCache is not null)
         start.Environment["NUGET_PACKAGES"] = packageCache;
+    if (expectedError is not null)
+    {
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
+    }
     foreach (var argument in arguments)
         start.ArgumentList.Add(argument);
     using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {program}.");
+    var output = expectedError is null ? Task.FromResult("") : process.StandardOutput.ReadToEndAsync();
+    var errors = expectedError is null ? Task.FromResult("") : process.StandardError.ReadToEndAsync();
     await process.WaitForExitAsync();
+    if (expectedError is not null)
+    {
+        var diagnostics = await output + await errors;
+        if (process.ExitCode == 0 || !diagnostics.Contains(expectedError, StringComparison.Ordinal))
+            throw new InvalidOperationException($"Expected {expectedError} from {program}.\n{diagnostics}");
+        return;
+    }
     if (process.ExitCode != 0)
         throw new InvalidOperationException($"{program} {string.Join(' ', arguments)} returned exit code {process.ExitCode}.");
 }

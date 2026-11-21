@@ -306,12 +306,238 @@ public sealed class SourceTypeCompilationTests
         Assert.DoesNotContain("class Browser", script, StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public async Task Convert_HostRecordOptionsKeepFixedBooleansAndExplicitNull()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            public record Options
+            {
+                [ECMAScriptFixedBoolean(true)]
+                public bool Enabled => true;
+                [ECMAScriptFixedBoolean(false)]
+                public bool Disabled => false;
+                [ECMAScriptExplicitNull]
+                public string? Nullable { get; init; }
+                public string? Omitted { get; init; }
+            }
+            public static class TestModule
+            {
+                public static Options Run() => new() { Nullable = null, Omitted = null };
+            }
+            """);
+
+        StringAssert.Contains(script, "Enabled: true");
+        StringAssert.Contains(script, "Disabled: false");
+        StringAssert.Contains(script, "Nullable: null");
+        Assert.DoesNotContain("Omitted", script, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_OptionalHostMembersNormalizeReadsAndPreserveAssignmentTargets()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System;
+            using System.ComponentModel;
+            [ECMAScript]
+            public class Host
+            {
+                [ECMAScriptOptional]
+                public extern int? Value { get; set; }
+                [ECMAScriptOptional]
+                [Description("@#")]
+                public extern string? this[string key] { get; set; }
+                [ECMAScriptOptional]
+                public extern string? Read(string key);
+                public extern string Call([ECMAScriptUndefinedDefault] string? kind = null, string key = "");
+                public extern string Ordered(string first, [ECMAScriptUndefinedDefault] string? middle = null, string last = "", string trailing = "unused");
+            }
+            public static class TestModule
+            {
+                public static bool Run(Host host, string key)
+                {
+                    var missing = host.Value == null && host[key] == null && host.Read(key) == null;
+                    Func<string, string?> read = host.Read;
+                    host.Value = 2;
+                    host.Value++;
+                    host.Value = host.Value;
+                    host[key] = "present";
+                    return missing && read(key) == null && host.Call(key: key) == ""
+                        && host.Ordered(last: key, first: "first") == "";
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, """host["Value"] ?? null""");
+        StringAssert.Contains(script, "host[key] ?? null");
+        StringAssert.Contains(script, "host.Read(key) ?? null");
+        StringAssert.Contains(script, "host.Value = 2");
+        StringAssert.Contains(script, """host.Value = host["Value"] ?? null""");
+        StringAssert.Contains(script, "host[key] = \"present\"");
+        StringAssert.Contains(script, "void 0");
+        StringAssert.Contains(script, "__jz_optionalArgs");
+        Assert.DoesNotContain("unused", script, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_OptionalImportedPropertyNormalizesUndefined()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            [ECMAScript("host-values")]
+            public static class Host
+            {
+                [ECMAScriptName("optionalValue")]
+                [ECMAScriptOptional]
+                public static extern string? Value { get; }
+            }
+            public static class TestModule
+            {
+                public static bool Run() => Host.Value == null;
+            }
+            """);
+
+        StringAssert.Contains(script, "optionalValue");
+        StringAssert.Contains(script, "?? null");
+    }
+
+    [TestMethod]
+    public async Task Convert_HostArgumentRewriteStillWritesBackRefResult()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            [ECMAScript]
+            public static class Host
+            {
+                public static extern bool TryRead(ref int value);
+            }
+            public static class TestModule
+            {
+                public static int Run()
+                {
+                    var value = 1;
+                    Host.TryRead(ref value);
+                    return value;
+                }
+            }
+            """, new AstConverterOptions(AstConverterProfile.Standard, Host: new RefArgumentHost()));
+
+        StringAssert.Contains(script, "Host.TryRead(value)");
+        StringAssert.Contains(script, "[1]");
+        StringAssert.Contains(script, "return value");
+    }
+
+    [TestMethod]
+    public async Task Convert_NamedHostRefAndOutArgumentsKeepWritebackOrder()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            [ECMAScript]
+            public static class Host
+            {
+                public static extern void Exchange(out int first, ref int second);
+            }
+            public static class TestModule
+            {
+                public static int Run()
+                {
+                    var second = 7;
+                    Host.Exchange(second: ref second, first: out var first);
+                    return first * 10 + second;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "Host.Exchange(");
+        StringAssert.Contains(script, "first = ");
+        StringAssert.Contains(script, "second = ");
+        StringAssert.Contains(script, "[0]");
+        StringAssert.Contains(script, "[1]");
+    }
+
+    [TestMethod]
+    public async Task Convert_InlineDeconstructUsesHostTupleWithoutCallingAMethod()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            [ECMAScript]
+            public sealed class HostTuple
+            {
+                [ECMAScriptInline("__arg1")]
+                public extern void Deconstruct(out int first, out int second);
+            }
+            public static class TestModule
+            {
+                public static int Run(HostTuple tuple)
+                {
+                    var (first, second) = tuple;
+                    return first + second;
+                }
+            }
+            """);
+
+        Assert.DoesNotContain(".Deconstruct(", script, StringComparison.Ordinal);
+        StringAssert.Contains(script, "[0]");
+        StringAssert.Contains(script, "[1]");
+    }
+
+    [TestMethod]
+    public async Task Convert_PartialRecordReadsSingleAndNestedPaths()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System;
+            public record Detail([property: ECMAScriptName("item-count")] int Count);
+            public record Shape(string Name, int? Score, Detail? Child) : Vue.VueProps;
+            public static class TestModule
+            {
+                public static bool Run(Func<Vue.PartialRecord<Shape>> snapshot) =>
+                    snapshot().Get(value => value.Name) == null &&
+                    snapshot().GetValue(value => value.Score) == null &&
+                    snapshot().GetValue(value => value.Child!.Count) == null;
+            }
+            """);
+
+        StringAssert.Contains(script, """snapshot()["Name"] ?? null""");
+        StringAssert.Contains(script, """snapshot()["Score"] ?? null""");
+        StringAssert.Contains(script, """snapshot()["Child"]?.["item-count"] ?? null""");
+    }
+
+    [TestMethod]
+    [DataRow("snapshot.GetValue(selector)", "selecting a record data property path")]
+    [DataRow("snapshot.GetValue(value => 1)", "selecting a record data property path")]
+    [DataRow("snapshot.GetValue(value => { var count = value.Score; return count; })", "selecting a record data property path")]
+    [DataRow("snapshot.GetValue<long>(value => value.Score)", "selecting a record data property path")]
+    [DataRow("snapshot.GetValue(value => value.Computed)", "selecting a record data property path")]
+    [DataRow("snapshot.GetValue(value => other.Score)", "selecting a record data property path")]
+    [DataRow("((Func<Func<Shape, int>, int?>)snapshot.GetValue<int>)(selector)", "direct call with a property selector")]
+    public async Task Convert_PartialRecordRejectsSelectorsOutsideRecordPropertyContract(string expression, string message)
+    {
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert($$"""
+            using ECMAScript;
+            using System;
+            public record Shape(int Score) : Vue.VueProps
+            {
+                public int Computed => Score + 1;
+            }
+            public static class TestModule
+            {
+                public static bool Run(Vue.PartialRecord<Shape> snapshot, Shape other, Func<Shape, int> selector)
+                    => {{expression}} == null;
+            }
+            """));
+        StringAssert.Contains(exception.Message, message);
+    }
+
     private static async Task<string> Convert(string source, AstConverterOptions? options = null,
         Func<INamedTypeSymbol, AstConverterOptions>? createOptions = null, string moduleName = "TestModule")
     {
         var tree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions, "source-types.cs");
         var compilation = CSharpCompilation.Create("SourceTypes_" + Guid.NewGuid().ToString("N"), [tree],
-            TestMetadataReferences.Net11.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location)),
+            TestMetadataReferences.Net11
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location))
+                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));
@@ -346,6 +572,13 @@ public sealed class SourceTypeCompilationTests
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    private sealed class RefArgumentHost : SemanticWalkerHost
+    {
+        public override Expression? RewriteInvocationArgumentPreorder(
+            IInvocationOperation operation, IArgumentOperation argumentOperation, int argumentIndex, SenseArgument argument)
+            => operation.TargetMethod.Name == "TryRead" ? new Identifier("value") : null;
     }
 
     private sealed class ProtocolPolicy : AstConverterModulePolicy

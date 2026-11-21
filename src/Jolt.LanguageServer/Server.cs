@@ -248,7 +248,8 @@ public sealed partial class Server(Stream input, Stream output)
                     break;
                 }
                 case "textDocument/didSave":
-                    affected.UnionWith(Invalidate(FilePath(args.GetProperty("textDocument").GetProperty("uri"))));
+                    // Saved TypeScript declarations are read from disk by the npm provider.
+                    affected.UnionWith(Invalidate(FilePath(args.GetProperty("textDocument").GetProperty("uri")), fileSystem: true));
                     break;
                 case "workspace/didChangeWatchedFiles":
                     foreach (var change in args.GetProperty("changes").EnumerateArray())

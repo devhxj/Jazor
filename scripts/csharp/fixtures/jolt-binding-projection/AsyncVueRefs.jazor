@@ -1,0 +1,55 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+@using ECMAScript
+
+<p>Async state</p>
+
+@code {
+    public record Row(string Label, double Rank) : ECMAScript.Vue.VueProps;
+
+    public static Vue.VueReadonlyRef<double> ReadNumber() =>
+        VueUse.ComputedAsync(() => Promise<double>.Resolve(42), 10);
+
+    public static Vue.VueReadonlyRef<string> ReadText() =>
+        VueUse.ComputedAsync(() => Promise<string>.Resolve("done"), "pending");
+
+    public static Vue.VueReadonlyRef<ECMAScript.Array<string>> SortText() =>
+        VueUse.UseSorted(ECMAScript.Array<string>.From(new[] { "3", "1", "2" }));
+
+    public static Vue.VueReadonlyRef<double> LoadState() =>
+        VueUse.UseAsyncState(Promise<double>.Resolve(23), 11).State;
+
+    [Parameter] public Action<bool, string>? Observe { get; set; }
+
+    [Setup]
+    private void LoadRow()
+    {
+        var observe = Observe;
+        if (observe is null)
+            return;
+        var state = VueUse.UseAsyncState(Promise<Row>.Resolve(new Row("ready", 2)), new Row("initial", 0),
+            new() { Immediate = false, ResetOnExecute = true });
+        observe(state.IsLoading.Value, state.State.Value.Label);
+        var pending = state.Execute();
+        observe(state.IsLoading.Value, state.State.Value.Label);
+        pending.Then(row => {
+            observe(state.IsLoading.Value, state.State.Value.Label);
+            return row?.Label;
+        });
+    }
+
+    public static bool Toggle(Vue.IVueRef<bool> state) => VueUse.UseToggle(state)();
+
+    public static Vue.IVueRef<bool> ToggleDefault()
+    {
+        var (state, update) = VueUse.UseToggle();
+        update();
+        return state;
+    }
+
+    public static Vue.IVueRef<bool> ToggleSeed()
+    {
+        var pair = VueUse.UseToggle(true);
+        pair.Item2();
+        return pair.Item1;
+    }
+}

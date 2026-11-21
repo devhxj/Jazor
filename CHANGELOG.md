@@ -2,6 +2,40 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-21
+
+### Jazor 2.4.0
+
+中文 | English
+
+#### 新增功能
+
+- `jolt bindings` 可将项目锁定的 npm 导出生成公开 C# 声明，供普通 .NET 类库及其消费者独立构建。一次可生成多个入口，使共享 TypeScript 类型在 C# 中使用同一声明。by @devhxj
+- Jolt 扩展了 VueUse、date-fns、Floating UI、VeeValidate、Vue I18n、Vue Query 和 Monaco 的类型投影，覆盖类型化事件参数、字面量枚举、插件注册、表单验证、查询回调及编辑器和模型句柄。by @devhxj
+
+#### 体验优化
+
+- Jolt 构建、语言服务和 `jolt bindings` 可以跨进程复用项目内的 npm 类型投影及生成的 C#。by @devhxj
+
+#### 迁移说明
+
+- DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 的独立 `ECMAScript.*` 包从本次默认发布清单移除。现有项目可以继续使用 2.3.0 的包。迁入 Jolt 时，在 `package.json` 中声明所需的 npm 依赖。普通 C# 类库可以用 `jolt bindings` 生成公开声明。by @devhxj
+- Vue Query 的查询键改用集合表达式，例如将 `QueryKey = new ECMAScript.Array<string>("orders")` 改为 `QueryKey = ["orders"]`。显式引用按方法生成的 date-fns Duration 类型时，改用共享的 `Npm.DateFns.Exports.Duration`。by @devhxj
+
+New Features
+
+- `jolt bindings` generates public C# declarations from locked npm exports for use in independently built .NET libraries and their consumers. Generate multiple entry points together to share C# declarations for common TypeScript types. by @devhxj
+- Jolt expands type projection for VueUse, date-fns, Floating UI, VeeValidate, Vue I18n, Vue Query and Monaco, including typed event arguments, literal enums, plugin registration, form validation, query callbacks, and editor and model handles. by @devhxj
+
+Improvements
+
+- Jolt builds, the language server, and `jolt bindings` reuse project-local npm type projections and generated C# across processes. by @devhxj
+
+Migration
+
+- The standalone `ECMAScript.*` packages for DateFns, VueUse, FloatingUi, VeeValidate, VueI18n, VueQuery and Monaco leave the default release catalog. Existing projects can continue using their 2.3.0 packages. For Jolt, declare the dependencies in `package.json`. C# libraries can generate public declarations with `jolt bindings`. by @devhxj
+- Use a collection expression for Vue Query keys, for example changing `QueryKey = new ECMAScript.Array<string>("orders")` to `QueryKey = ["orders"]`. Replace explicit per-method date-fns Duration types with the shared `Npm.DateFns.Exports.Duration`. by @devhxj
+
 ## 2026-11-20
 
 ### Jazor 2.3.0

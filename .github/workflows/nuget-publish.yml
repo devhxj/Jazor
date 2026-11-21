@@ -9,6 +9,7 @@ on:
         type: string
 
 env:
+  JAZOR_PACKAGE_OUTPUT: artifacts/packages/${{ github.run_id }}-${{ github.run_attempt }}
   TEMP: '${{ github.workspace }}\.tmp\agent-temp'
   TMP: '${{ github.workspace }}\.tmp\agent-temp'
   DOTNET_CLI_HOME: '${{ github.workspace }}\.dotnet'
@@ -46,29 +47,29 @@ jobs:
         run: |
           dotnet run --file ./scripts/csharp/publish-nuget.cs -- `
             --configuration Release `
-            --output-directory 'artifacts/packages' `
+            --output-directory $env:JAZOR_PACKAGE_OUTPUT `
             --skip-push
 
       - name: Discover package version
         id: package
         shell: pwsh
         run: |
-          $nupkg = Get-ChildItem 'artifacts/packages/*.nupkg' -Exclude '*.snupkg' |
+          $nupkg = Get-ChildItem (Join-Path $env:JAZOR_PACKAGE_OUTPUT '*.nupkg') -Exclude '*.snupkg' |
               Where-Object { $_.BaseName -match '^Jazor\.[0-9]' } |
               Sort-Object LastWriteTimeUtc -Descending |
               Select-Object -First 1
-          if (-not $nupkg) { throw 'No Jazor nupkg found in artifacts/packages.' }
+          if (-not $nupkg) { throw "No Jazor nupkg found in $env:JAZOR_PACKAGE_OUTPUT." }
           $version = $nupkg.BaseName.Substring('Jazor.'.Length)
           "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: List package artifacts
         shell: pwsh
         run: |
-          Get-ChildItem 'artifacts/packages' | Select-Object Name, Length
+          Get-ChildItem $env:JAZOR_PACKAGE_OUTPUT | Select-Object Name, Length
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Jazor.${{ steps.package.outputs.version }}.dry-run.nupkg
-          path: artifacts/packages/*
+          path: ${{ env.JAZOR_PACKAGE_OUTPUT }}/*
           if-no-files-found: error

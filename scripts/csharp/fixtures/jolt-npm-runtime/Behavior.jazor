@@ -1,0 +1,36 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<output id="behavior-count">@_count</output>
+
+@code {
+    [Parameter] public ECMAScript.HTMLElement Target { get; set; } = default!;
+    private int _count;
+
+    [Setup]
+    private void Configure()
+    {
+        var debounce = VueUse.UseDebounceFn((string value) => {
+            if (value == "drop")
+                _count += 100;
+            return value + "-debounced";
+        }, 100);
+        var throttle = VueUse.UseThrottleFn((string value) => value + "-throttled", 100);
+        var throttleAsync = VueUse.UseThrottleFn((string value) => ECMAScript.Promise<string>.Resolve(value + "-async"), 100);
+        var timer = VueUse.UseTimeoutFn((string value) => { _count += value.Length; }, 100);
+        var stopOutside = VueUse.OnClickOutside(Target, value => {
+            if (value.ClientX == 42)
+                _count += 8;
+        });
+        timer.Stop();
+        ECMAScript.Vue.OnMounted(() => {
+            debounce.Invoke("drop").Then(_ => { _count += 1; });
+            debounce.Cancel();
+            debounce.Invoke("keep").Then(value => { if (value == "keep-debounced") _count += 2; });
+            debounce.Flush();
+            throttle("keep").Then(value => { if (value == "keep-throttled") _count += 4; });
+            throttleAsync("keep").Then(value => { if (value == "keep-async") _count += 16; });
+            timer.Start("timer");
+        });
+        ECMAScript.Vue.OnUnmounted(stopOutside);
+    }
+}

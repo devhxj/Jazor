@@ -1,0 +1,35 @@
+@using Floating = Npm.FloatingUi.Vue.Exports
+@using FloatingDom = Npm.FloatingUi.Dom.Exports
+@using Dom = ECMAScript
+@using VueApi = ECMAScript.Vue
+<output>@X/@Y/@Positioned</output>
+@code {
+    [Parameter] public Dom.Element? Reference { get; set; }
+    [Parameter] public Dom.HTMLElement? Panel { get; set; }
+    [Parameter] public Dom.HTMLElement ArrowElement { get; set; } = null!;
+    private double X { get; set; }
+    private double Y { get; set; }
+    private bool Positioned { get; set; }
+    [Setup] private void Initialize() {
+        var position = Floating.UseFloating(VueApi.Computed(() => Reference), VueApi.Computed(() => Panel), new()
+        {
+            Middleware = Floating.MiddlewareSequence.From(new[]
+            {
+                FloatingDom.Offset(4),
+                Floating.Shift(new() { Limiter = Floating.LimitShift() }),
+                Floating.Arrow(new() { Element = ArrowElement }),
+            }),
+            WhileElementsMounted = (reference, panel, update) =>
+                FloatingDom.AutoUpdate(reference, panel, update, new()
+                {
+                    AncestorScroll = true,
+                    AncestorResize = false,
+                    ElementResize = false,
+                    LayoutShift = false,
+                }),
+        });
+        VueApi.Watch(position.X, (value, _) => X = value);
+        VueApi.Watch(position.Y, (value, _) => Y = value);
+        VueApi.Watch(position.IsPositioned, (value, _) => Positioned = value);
+    }
+}
