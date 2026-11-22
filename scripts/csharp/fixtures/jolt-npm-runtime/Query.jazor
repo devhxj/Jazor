@@ -4,6 +4,11 @@
 <output id="mutation-data">@_mutationData</output>
 <output id="scalar-data">@_scalarData</output>
 <output id="infinite-data">@_infiniteData</output>
+<output id="cache-data">@_cacheData</output>
+<output id="query-status">@_queryStatus()</output>
+<output id="mutation-status">@_mutationStatus()</output>
+<button id="query-observer" @onclick="FetchObserver">Fetch observer</button>
+<button id="mutation-observer" @onclick="MutateObserver">Mutate observer</button>
 
 @code {
     public static void Install(ECMAScript.Vue.VueApp app)
@@ -15,10 +20,40 @@
     private string _mutationData = "";
     private string _scalarData = "";
     private string _infiniteData = "";
+    private string _cacheData = "";
+    [Parameter] public Func<ECMAScript.IPromise<double>>? FetchValue { get; set; }
+    [Parameter] public Func<ECMAScript.IPromise<bool>>? SaveValue { get; set; }
+    private Func<string> _queryStatus = () => "";
+    private Func<string> _mutationStatus = () => "";
+    private Action _fetchObserver = () => { };
+    private Action _mutateObserver = () => { };
+
+    private void FetchObserver() => _fetchObserver();
+    private void MutateObserver() => _mutateObserver();
+
+    private static string ObserverFlags(bool pending, bool success, bool error) =>
+        (pending ? "pending" : "-") + "|" + (success ? "success" : "-") + "|" + (error ? "error" : "-");
 
     [Setup]
     private void Configure()
     {
+        if (FetchValue is { } fetch && SaveValue is { } save)
+        {
+            var observedQuery = Query.UseQuery(new Query.UseQueryNumberAsyncOptionsInput {
+                QueryKey = ["observer-state"],
+                Enabled = false,
+                QueryFn = () => fetch()
+            });
+            var observedMutation = Query.UseMutation(new Query.UseMutationBooleanValueOptionsInput<double> {
+                MutationFn = value => save()
+            });
+            _queryStatus = () => ObserverFlags(observedQuery.IsPending.Value, observedQuery.IsSuccess.Value, observedQuery.IsError.Value) +
+                $"|{observedQuery.Status.Value}|{observedQuery.Error.Value?.Message}";
+            _mutationStatus = () => ObserverFlags(observedMutation.IsPending.Value, observedMutation.IsSuccess.Value, observedMutation.IsError.Value) +
+                $"|{observedMutation.Status.Value}|{observedMutation.Error.Value?.Message}";
+            _fetchObserver = () => { observedQuery.Refetch(); };
+            _mutateObserver = () => observedMutation.Mutate(0);
+        }
         ECMAScript.Number page = 0;
         var query = Query.UseQuery(new Query.UseQueryAsyncOptionsInput<QueryData> {
             QueryKey = ["fixture", page, false, new QueryFilter(3)],
@@ -31,10 +66,11 @@
             QueryKey = ["number-fixture"],
             QueryFn = () => ECMAScript.Promise<double>.Resolve(0)
         });
-        var booleanMutation = Query.UseMutation(new Query.UseMutationBooleanOptionsInput<double> {
+        var booleanMutation = Query.UseMutation(new Query.UseMutationBooleanValueOptionsInput<double> {
             MutationFn = value => ECMAScript.Promise<bool>.Resolve(value > 0)
         });
-        var scalarWasMissing = numberQuery.Data.Value == null && booleanMutation.Data.Value == null;
+        double? initialVariables = booleanMutation.Variables.Value;
+        var scalarWasMissing = numberQuery.Data.Value == null && booleanMutation.Data.Value == null && initialVariables == null;
         var infinite = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberOptionsInput<QueryData> {
             QueryKey = ["infinite-fixture", page, false, new QueryFilter(3)],
             InitialPageParam = 0,
@@ -42,6 +78,30 @@
                 new QueryData(context.PageParam == 0 ? "first" : "second")),
             GetNextPageParam = (lastPage, pages, lastPageParam, pageParams) => lastPageParam == 0 ? 1 : null
         });
+        var selected = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberSelectedOptionsInput<QueryData, SelectedPage> {
+            QueryKey = ["selected-fixture"],
+            InitialPageParam = 0,
+            QueryFn = context => ECMAScript.Promise<QueryData>.Resolve(
+                new QueryData(context.PageParam == 0 ? "first" : "second")),
+            GetNextPageParam = (lastPage, pages, lastPageParam, pageParams) => lastPageParam == 0 ? 1 : null,
+            Select = data => new SelectedPage(data.Pages[0].Label, data.PageParams[0])
+        });
+        var identity = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberSelectedOptionsInput<QueryData,
+            Query.UseInfiniteQueryNumberSelectedOptionsInputSelectInputDataMember<QueryData>> {
+            QueryKey = ["identity-fixture"],
+            InitialPageParam = 0,
+            QueryFn = context => ECMAScript.Promise<QueryData>.Resolve(new QueryData("identity")),
+            GetNextPageParam = (lastPage, pages, lastPageParam, pageParams) => null,
+            Select = data => data
+        });
+        var selectedFlag = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberValueSelectedOptionsInput<QueryData, bool> {
+            QueryKey = ["selected-flag-fixture"],
+            InitialPageParam = 0,
+            QueryFn = context => ECMAScript.Promise<QueryData>.Resolve(new QueryData("zero")),
+            GetNextPageParam = (lastPage, pages, lastPageParam, pageParams) => null,
+            Select = data => data.PageParams[0] > 0
+        });
+        bool? initialSelectedFlag = selectedFlag.Data.Value;
         Func<ECMAScript.IPromise> fetchPages = () => infinite.Refetch().Then(() => {
             if (infinite.Data.Value!.Pages[0].Label != "first" || !infinite.HasNextPage.Value)
                 return ECMAScript.Promise.Resolve();
@@ -56,15 +116,57 @@
             return mutation.MutateAsync("fixture").Then(value => {
                 _mutationData = value;
                 return numberQuery.Refetch().Then(result => booleanMutation.MutateAsync(0).Then(value => {
-                    _scalarData = scalarWasMissing && numberQuery.Data.Value == 0 &&
+                    double? variables = booleanMutation.Variables.Value;
+                    _scalarData = scalarWasMissing && variables == 0 && numberQuery.Data.Value == 0 &&
                         booleanMutation.Data.Value == false ? "null-then-zero-and-false" : "unexpected";
                 }));
             });
         });
-        ECMAScript.Vue.OnServerPrefetch(() => fetchAndSave().Then(() => fetchPages()));
-        ECMAScript.Vue.OnMounted(() => { fetchAndSave().Then(() => fetchPages()); });
+        Func<ECMAScript.IPromise> run = () => fetchAndSave().Then(() => fetchPages()).Then(() =>
+            selected.Refetch().Then(() => identity.Refetch()).Then(() => selectedFlag.Refetch()).Then(() => {
+                var transformed = selected.Data.Value!;
+                var sameShape = identity.Data.Value!;
+                if (transformed.Label == "first" && transformed.Cursor == 0 &&
+                    sameShape.Pages[0].Label == "identity" && sameShape.PageParams[0] == 0)
+                    _infiniteData += "|selected";
+                bool? finalSelectedFlag = selectedFlag.Data.Value;
+                if (initialSelectedFlag == null && finalSelectedFlag == false)
+                    _infiniteData += "|null-then-false";
+            }));
+        ECMAScript.Vue.OnServerPrefetch(() => run());
+        var client = Query.UseQueryClient();
+        ECMAScript.Vue.OnMounted(() => { CheckCache().Then(() => run()); });
+
+        ECMAScript.IPromise CheckCache()
+        {
+            double? missing = client.GetQueryData<double>(["cache-roundtrip", 0]);
+            client.SetQueryData(["cache-roundtrip", 0], 0d);
+            client.SetQueryData(["cache-roundtrip", 0, "sibling"], false);
+            client.SetQueryData(["cache-record"], new QueryFilter(5));
+            var record = client.GetQueryData<QueryFilter>(["cache-record"]);
+            double? zero = client.GetQueryData<double>(["cache-roundtrip", 0]);
+            client.SetQueryData<double>(["cache-roundtrip", 0], (double? previous) => previous == 0 ? 2d : -1d);
+            double? updated = client.GetQueryData<double>(["cache-roundtrip", 0]);
+            client.SetQueryData<double>(["cache-roundtrip", 0], (double? previous) => null);
+            double? skipped = client.GetQueryData<double>(["cache-roundtrip", 0]);
+            client.SetQueryData<double>(["cache-updater-missing"], (double? previous) => previous == null ? 3d : -1d);
+            double? fromMissing = client.GetQueryData<double>(["cache-updater-missing"]);
+            return client.FetchQuery<double>(new() {
+                QueryKey = ["cache-roundtrip", 0],
+                QueryFn = () => ECMAScript.Promise<double>.Resolve(7)
+            }).Then(fetched => {
+                double? cached = client.GetQueryData<double>(["cache-roundtrip", 0]);
+                client.RemoveQueries(new() { QueryKey = ["cache-roundtrip", 0], Exact = true });
+                double? removed = client.GetQueryData<double>(["cache-roundtrip", 0]);
+                bool? unrelated = client.GetQueryData<bool>(["cache-roundtrip", 0, "sibling"]);
+                if (missing == null && zero == 0 && updated == 2 && skipped == 2 && fromMissing == 3 && record?.Page == 5 &&
+                    fetched == 7 && cached == 7 && removed == null && unrelated == false)
+                    _cacheData = "missing|zero|fetched|removed|unrelated-false";
+            });
+        }
     }
 
     private sealed record QueryData(string Label);
+    private sealed record SelectedPage(string Label, double Cursor);
     private sealed record QueryFilter(double Page) : ECMAScript.Vue.VueProps;
 }

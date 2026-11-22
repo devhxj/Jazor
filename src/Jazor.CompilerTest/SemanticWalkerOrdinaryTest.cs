@@ -683,7 +683,7 @@ public sealed class SemanticWalkerOrdinaryTest
     console.log(param);
     return;
   }
-  LocalFunction(42);
+  LocalFunction.call(this, 42);
 }", script);
 
   }
@@ -717,7 +717,7 @@ public sealed class SemanticWalkerOrdinaryTest
   function LocalFunction() {
     return [1, 2];
   }
-  let result = LocalFunction();
+  let result = LocalFunction.call(this);
 }", script);
   }
 
@@ -3209,7 +3209,7 @@ public sealed class SemanticWalkerOrdinaryTest
     console.log(param);
     return;
   }
-  LocalFunction(42);
+  LocalFunction.call(this, 42);
   let add = (a, b) => {
     return a + b | 0;
   };

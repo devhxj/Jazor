@@ -209,6 +209,18 @@ public static class Util
     public static string? GetSymbolConfigName(ISymbol symbol)
         => GetSymbolNameConfig(symbol) is { Kind: JsNameConfigKind.Explicit, Name: var name } ? name : null;
 
+    internal static bool HasOptionalRead(ISymbol symbol) =>
+        HasAttribute(symbol, "ECMAScript.ECMAScriptOptionalAttribute");
+
+    internal static bool HasRequiredRead(ISymbol symbol) =>
+        HasAttribute(symbol, "ECMAScript.ECMAScriptRequiredReadAttribute");
+
+    internal static bool HasAttribute(ISymbol symbol, string metadataName) =>
+        symbol.GetAttributes().Any(attribute => IsAttribute(attribute, metadataName));
+
+    internal static bool IsAttribute(AttributeData attribute, string metadataName) =>
+        attribute.AttributeClass?.ToDisplayString() == metadataName;
+
     /// <summary>
     /// 判断当前符号是否声明了名称解析边界（<c>@#</c>）。
     /// 一旦命中该边界，当前符号及其外层宿主都不再继续参与名称拼接。
@@ -637,6 +649,7 @@ public static class Util
            property.Parameters.Length > 0 ||
            GetSymbolConfigName(property) is not null ||
            property.GetMethod?.IsExtern == true ||
+           property.GetMethod is { } getter && HasECMAScriptInlineTemplate(getter) ||
            property.SetMethod?.IsExtern == true;
 
     private static bool IsECMAScriptRecordProxyMethod(IMethodSymbol method)

@@ -13,6 +13,439 @@ namespace Jazor.CompilerTest;
 public sealed class SourceTypeCompilationTests
 {
     [TestMethod]
+    public async Task Convert_UndefinedArgumentPreservesLaterArgument()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptUndefinedArgument(1)]
+                [ECMAScriptInline("__arg2 === void 0 ? __arg1 + __arg3 : -1")]
+                public static extern int Sum(int first, int last);
+            }
+
+            public static class TestModule
+            {
+                public static int Run() => Host.Sum(4, 7);
+            }
+            """);
+        await AssertRun(script, 11);
+    }
+
+    [TestMethod]
+    public async Task Convert_KeyedRefRejectsFieldsRequiringReadNormalization()
+    {
+        const string source = """
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg1")]
+                public static extern Vue.VueComputedRef<TValue> Lens<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true, IndirectRead = true)] System.Func<T, TValue> key);
+
+                [ECMAScriptInline("__arg1[__arg2] = __arg3")]
+                public static extern void Set<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true)] System.Func<T, TValue> key, TValue value);
+            }
+
+            public static class TestModule
+            {
+                public sealed record Data(
+                    double Regular,
+                    [property: ECMAScriptRequiredRead] double Guarded,
+                    [property: ECMAScriptOptional] double? Optional);
+
+                public static double Run(Data source)
+                {
+                    Host.Set(source, value => value.Guarded, 0d);
+                    return Host.Lens(source, value => value.Regular).Value;
+                }
+            }
+            """;
+        var script = await Convert(source);
+        StringAssert.Contains(script, "Guarded");
+        foreach (var (field, diagnostic) in new[] {
+            ("Guarded", "Read 'Guarded' directly"),
+            ("Optional", "Read optional property 'Optional' directly"),
+        })
+        {
+            var invalid = source.Replace("public static double Run", "public static double? Run")
+                .Replace("value => value.Regular", "value => value." + field);
+            var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(invalid));
+            StringAssert.Contains(exception.Message, diagnostic);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("row => row.Nested.Alias", "\"nested.wire\"")]
+    [DataRow("row => row.Alias", "\"wire\"")]
+    [DataRow("row => row.Nested.Fallback", "\"nested.Fallback\"")]
+    [DataRow("row => row.Dot", "\"[first.last]\"")]
+    [DataRow("row => row.Brackets", "\"item[text]\"")]
+    [DataRow("row => row.Index", "cannot be represented")]
+    [DataRow("row => row.Bracketed", "cannot be represented")]
+    [DataRow("row => row.DotBracket", "cannot be represented")]
+    [DataRow("row => row.DotClosingBracket", "cannot be represented")]
+    [DataRow("row => row.DotNewline", "cannot be represented")]
+    [DataRow("row => row.Nested.Dot", "segments must be nonempty")]
+    [DataRow("row => row.Nested.Brackets", "segments must be nonempty")]
+    [DataRow("row => row.Nested.ClosingBracket", "segments must be nonempty")]
+    [DataRow("row => row.Calculated", "requires a lambda")]
+    [DataRow("row => other.Alias", "requires a lambda")]
+    [DataRow("Selector", "requires a lambda")]
+    [DataRow("row => { var selected = row.Alias; return selected; }", "requires a lambda")]
+    public async Task Convert_FormFieldSelector_EncodesLiteralAndNestedPaths(string selector, string expected)
+    {
+        var source = $$"""
+            using System;
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg2")]
+                public static extern string Path<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(VeeValidatePath = true)] Func<T, TValue> key);
+            }
+
+            public static class TestModule
+            {
+                public sealed record Data(
+                    [property: Description("@#nested")] Data Nested,
+                    [property: Description("@#wire")] string Alias,
+                    [property: Description("@#first.last")] string Dot,
+                    [property: Description("@#item[text]")] string Brackets,
+                    [property: Description("@#item[0]")] string Index,
+                    [property: Description("@#[item]")] string Bracketed,
+                    [property: Description("@#a.b[x")] string DotBracket,
+                    [property: Description("@#a.b]")] string DotClosingBracket,
+                    [property: Description("@#a.b\nc")] string DotNewline,
+                    [property: Description("@#item]")] string ClosingBracket,
+                    [property: Description("@#")] string Fallback)
+                {
+                    public string Calculated => Alias;
+                }
+
+                private static string Selector(Data row) => row.Alias;
+                public static string Run(Data row, Data other) => Host.Path(row, {{selector}});
+            }
+            """;
+        if (expected.StartsWith('"'))
+        {
+            var script = await Convert(source);
+            StringAssert.Contains(script, expected);
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source));
+            StringAssert.Contains(exception.Message, expected);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Plain", null)]
+    [DataRow("WithField", "Value.Number")]
+    [DataRow("WithComputed", "Value.Number")]
+    [DataRow("WithRef", "Value.Number")]
+    [DataRow("WithOptional", "Value.Number")]
+    [DataRow("WithRequired", "Value.Number")]
+    [DataRow("WithProxyKey", "Value.Number")]
+    [DataRow("WithProto", "Value.Number")]
+    [DataRow("WithRaw", "Value.Number")]
+    [DataRow("WithShallow", "Value.Number")]
+    [DataRow("WithReactive", "Value.Number")]
+    [DataRow("WithReadonly", "Value.Number")]
+    [DataRow("WithSkip", "Value.Number")]
+    [DataRow("WithNullableNested", "Value.Nested")]
+    [DataRow("Recursive", "Value.Next")]
+    [DataRow("OpenRecord", "Value")]
+    [DataRow("Generic<double>", "Value")]
+    [DataRow("StructRecord", "Value")]
+    [DataRow("Derived", "Value")]
+    [DataRow("double", "Value")]
+    public async Task Convert_PassiveModelSelector_RequiresPlainRecord(string payload, string? invalidMember)
+    {
+        var source = $$"""
+            #nullable enable
+            using System;
+            using System.ComponentModel;
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg2")]
+                public static extern string Path<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true, RequirePlainRecord = true)] Func<T, TValue> key);
+            }
+
+            public static class TestModule
+            {
+                public sealed record Leaf(string Text, double Number, bool Enabled);
+                public sealed record Plain(Leaf First, Leaf Second)
+                {
+                    public const string Kind = "plain";
+                }
+                public sealed record WithField { public double Number; }
+                public sealed record WithComputed(double Initial) { public double Number => Initial; }
+                public sealed record WithRef(Vue.IVueRef<double> Number);
+                public sealed record WithOptional([property: ECMAScriptOptional] double? Number);
+                public sealed record WithRequired([property: ECMAScriptRequiredRead] double Number);
+                public sealed record WithProxyKey([property: Description("@#__v_isRef")] bool Number);
+                public sealed record WithProto([property: Description("@#__proto__")] bool Number);
+                public sealed record WithRaw([property: Description("@#__v_raw")] bool Number);
+                public sealed record WithShallow([property: Description("@#__v_isShallow")] bool Number);
+                public sealed record WithReactive([property: Description("@#__v_isReactive")] bool Number);
+                public sealed record WithReadonly([property: Description("@#__v_isReadonly")] bool Number);
+                public sealed record WithSkip([property: Description("@#__v_skip")] bool Number);
+                public sealed record WithNullableNested(Leaf? Nested);
+                public sealed record Recursive { public Recursive Next { get; init; } = default!; }
+                public record OpenRecord;
+                public sealed record Derived : OpenRecord;
+                public sealed record Generic<T>(T Item);
+                public readonly record struct StructRecord(double Item);
+                public sealed record Data({{payload}} Value);
+
+                public static string Run(Data row) => Host.Path(row, item => item.Value);
+            }
+            """;
+        if (invalidMember is null)
+        {
+            var script = await Convert(source);
+            StringAssert.Contains(script, "\"Value\"");
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source));
+            StringAssert.Contains(exception.Message, $"Passive Vue model property '{invalidMember}'");
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Host.Get(row, x => x.Child.Text)", "exactly one structural record data property")]
+    [DataRow("Host.Get(row, x => x.Required)", "Read 'Required' directly")]
+    [DataRow("Host.Get<Row, object>(row, x => x.Text)", "but the call expects")]
+    [DataRow("Host.Set(row, x => x.Text, missing!)", null)]
+    [DataRow("Host.Set<Row, string>(row, x => x.Text, missing)", "requires a non-null value")]
+    [DataRow("Host.Set(row, x => x.Text, \"value\")", null)]
+    [DataRow("Host.Set(row, x => x.Optional, missing)", null)]
+    [DataRow("Host.Get(row, x => x.Optional)", null)]
+    [DataRow("Host.Get(row, x => x.Text)", null)]
+    [DataRow("Host.GetText(row, x => x.Text)", null)]
+    [DataRow("Host.GetOther(row, x => x.Optional)", null)]
+    [DataRow("Host.Get<Row, string>", "requires a direct call")]
+    public async Task Convert_RecordKeySelector_PreservesSelectedTypeAndNullability(string call, string? error)
+    {
+        var source = $$"""
+            #nullable enable
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg1[__arg2]")]
+                public static extern TValue Get<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true, IndirectRead = false)] Func<T, TValue> key);
+
+                [ECMAScriptInline("__arg2")]
+                public static extern string GetText(TestModule.Row source,
+                    [ECMAScriptPropertyPath(true)] Func<TestModule.Row, string> key);
+
+                [ECMAScriptInline("__arg2")]
+                public static extern string GetOther<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true)] Func<T, TValue> key);
+
+                [ECMAScriptInline("__arg1[__arg2] = __arg3")]
+                public static extern void Set<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true)] Func<T, TValue> key, TValue value);
+            }
+
+            public static class TestModule
+            {
+                public sealed record Row(
+                    string Text, Row Child,
+                    [property: ECMAScriptOptional] string? Optional,
+                    [property: ECMAScriptRequiredRead] string Required);
+
+                public static void Run(Row row, string? missing)
+                {
+                    {{(call == "Host.Get<Row, string>" ? "Func<Row, Func<Row, string>, string> read = " : "")}}{{call}};
+                }
+            }
+            """;
+        if (error is null)
+        {
+            var script = await Convert(source);
+            StringAssert.Contains(script, call.Contains("Optional") ? "Optional" : "Text");
+            if (call == "Host.Get(row, x => x.Optional)")
+                StringAssert.Contains(script, "?? null");
+        }
+        else
+        {
+            var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source));
+            StringAssert.Contains(exception.Message, error);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Action<Row>", "row => { return; }")]
+    [DataRow("Func<Row, Row, string>", "(left, right) => left.Text")]
+    [DataRow("Func<string>", "() => \"key\"")]
+    [DataRow("Func<Row, string>", "row => throw new Exception()")]
+    public async Task Convert_RecordSelectorRejectsDelegatesWithoutOneFieldResult(string callback, string selector)
+    {
+        var source = $$"""
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg1")]
+                public static extern string Path([ECMAScriptPropertyPath] {{callback}} key);
+            }
+
+            public sealed record Row(string Text);
+
+            public static class TestModule
+            {
+                public static string Run() => Host.Path({{selector}});
+            }
+            """;
+        var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source));
+        StringAssert.Contains(exception.Message, "requires a lambda selecting structural record data properties");
+    }
+
+    [TestMethod]
+    public async Task Convert_FixedBooleanArgumentsPreserveTrueAndFalse()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg1 && !__arg2 ? __arg3 : -1")]
+                [ECMAScriptFixedBooleanArgument(0, true)]
+                [ECMAScriptFixedBooleanArgument(1, false)]
+                public static extern int Select(int value);
+            }
+
+            public static class TestModule
+            {
+                public static int Run() => Host.Select(7);
+            }
+            """);
+        await AssertRun(script, 7);
+    }
+
+    [TestMethod]
+    public async Task Convert_FixedSlotKeepsAnOmittedOptionalArgumentAndAdaptsMethodGroup()
+    {
+        var script = await Convert("""
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            public class Host
+            {
+                [ECMAScriptFixedBooleanArgument(2, false)]
+                public extern int Select(int value, [ECMAScriptUndefinedDefault] int? offset = null);
+            }
+
+            public static class TestModule
+            {
+                public static int Run(Host host)
+                {
+                    Func<int, int?, int> select = host.Select;
+                    return host.Select(7) + select(8, 0);
+                }
+            }
+            """);
+        StringAssert.Contains(script, "host.Select(7, void 0, false)");
+        StringAssert.Contains(script, "__jz_optionalCall(__jz_fixedArg0, __jz_fixedArg1, false)");
+        StringAssert.Contains(script, ".bind(host)");
+    }
+
+    [TestMethod]
+    public async Task Convert_SelectorConstructor_UsesBoundKeyWithoutAnInvocationResult()
+    {
+        var script = await Convert("""
+            using System;
+            using ECMAScript;
+
+            [ECMAScript]
+            public class Host
+            {
+                public extern Host([ECMAScriptPropertyPath(true, IndirectRead = false)] Func<Data, double> key);
+            }
+
+            public sealed record Data(double Count);
+
+            public static class TestModule
+            {
+                public static Host Run() => new(value => value.Count);
+            }
+            """);
+        StringAssert.Contains(script, """new Host("Count")""");
+    }
+
+    [TestMethod]
+    public async Task Convert_RequiredStructuralReadChecksUndefinedAndKeepsWritesRaw()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System.ComponentModel;
+
+            public static class TestModule
+            {
+                public static double Run()
+                {
+                    var box = new Box<double> { Value = 0 };
+                    var reads = 0;
+                    Box<double> Next() { reads++; return box; }
+                    var first = Next().Value++;
+                    Next().Value += 2;
+                    var second = Next().Value;
+                    var writes = new Box<double>();
+                    writes.Value = 4;
+                    Box<double>? absent = null;
+                    var inherited = new Inherited<string>();
+                    try { _ = inherited.Value; return -2; }
+                    catch (System.Exception) { }
+                    var presentNull = new Box<string?> { Value = null };
+                    return (box.HasValue && !new Box<double>().HasValue && (absent?.Value ?? -1) == -1 &&
+                        presentNull.HasValue && presentNull.Value == null)
+                        ? first + second + writes.Value + reads : -1;
+                }
+            }
+
+            [ECMAScript]
+            public sealed record Box<T>
+            {
+                [Description("@#wire.key"), ECMAScriptRequiredRead, ECMAScriptExplicitNull]
+                public T Value { get; set; }
+                public extern bool HasValue { [ECMAScriptInline("Object.hasOwn(__arg1, \"wire.key\")")] get; }
+            }
+
+            [ECMAScript]
+            public sealed record Inherited<T>
+            {
+                [Description("@#toString"), ECMAScriptRequiredRead]
+                public T Value { get; set; }
+            }
+            """);
+        StringAssert.Contains(script, "Required property 'wire.key' is undefined.");
+        await AssertRun(script, 10);
+    }
+
+    [TestMethod]
     public async Task Convert_FilteredSourceFieldInitializer_DeclaresHelperBeforeAllocation()
     {
         var script = await Convert("""
@@ -378,6 +811,31 @@ public sealed class SourceTypeCompilationTests
         StringAssert.Contains(script, "void 0");
         StringAssert.Contains(script, "__jz_optionalArgs");
         Assert.DoesNotContain("unused", script, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_OptionalCallbackAdaptsMissingValueInDirectCallsAndMethodGroups()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System;
+            [ECMAScript]
+            public class Store
+            {
+                [ECMAScriptOptional]
+                public extern double? Update(string key, [ECMAScriptOptionalCallback] Func<double?, double?> write);
+            }
+            public static class TestModule
+            {
+                public static double? Direct(Store store, Func<Func<double?, double?>> supply) =>
+                    store.Update(write: supply(), key: "key");
+                public static Func<string, Func<double?, double?>, double?> Capture(Store store) => store.Update;
+            }
+            """);
+
+        Assert.AreEqual(2, script.Split("$callback($value ?? null) ?? void 0").Length - 1, script);
+        Assert.AreEqual(1, script.Split("supply()").Length - 1, script);
+        StringAssert.Contains(script, ".bind(store)");
     }
 
     [TestMethod]

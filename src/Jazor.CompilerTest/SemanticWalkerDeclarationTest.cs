@@ -1069,7 +1069,7 @@ public sealed class SemanticWalkerDeclarationTest
   function GetNumber() {
     return 42;
   }
-  let result = GetNumber();
+  let result = GetNumber.call(this);
 }", script);
     }
 
@@ -1099,7 +1099,7 @@ public sealed class SemanticWalkerDeclarationTest
   function Add(a, b) {
     return a + b | 0;
   }
-  let sum = Add(1, 2);
+  let sum = Add.call(this, 1, 2);
 }", script);
     }
 
@@ -1129,7 +1129,7 @@ public sealed class SemanticWalkerDeclarationTest
   function Multiply(a, b) {
     return Math.imul(a, b) | 0;
   }
-  let result = TestClass.Multiply(3, 4);
+  let result = Multiply(3, 4);
 }", script);
     }
 
@@ -2255,7 +2255,7 @@ public sealed class SemanticWalkerDeclarationTest
   function Add(a, b) {
     return a + b | 0;
   }
-  let result = Add(5, 1);
+  let result = Add.call(this, 5, 1);
 }", script);
     }
 
@@ -2286,9 +2286,9 @@ public sealed class SemanticWalkerDeclarationTest
         AssertScriptEqual(
 @"{
   function Factorial(n) {
-    return n <= 1 ? 1 : Math.imul(n, Factorial(n - 1 | 0)) | 0;
+    return n <= 1 ? 1 : Math.imul(n, Factorial.call(this, n - 1 | 0)) | 0;
   }
-  let result = Factorial(5);
+  let result = Factorial.call(this, 5);
 }", script);
     }
 
@@ -2363,7 +2363,7 @@ public sealed class SemanticWalkerDeclarationTest
     yield 3;
     return;
   }
-  let nums = GetNumbers();
+  let nums = GetNumbers.call(this);
 }", script);
     }
 
@@ -2397,7 +2397,7 @@ public sealed class SemanticWalkerDeclarationTest
     yield prefix + ""Bob"";
     return;
   }
-  let names = GetNames(""Dr. "");
+  let names = GetNames.call(this, ""Dr. "");
 }", script);
     }
 

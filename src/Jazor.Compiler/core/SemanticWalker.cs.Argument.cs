@@ -4,6 +4,7 @@
 using Acornima;
 using Acornima.Ast;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Jazor.Compiler;
@@ -42,10 +43,15 @@ public partial class SemanticWalker
 
         if (refKind is not (RefKind.Ref or RefKind.Out))
         {
-            return new LoweredBoundArgument(
-                operation,
-                rewrittenValue ?? TranslateTupleForTarget(operation.Value, parameter.Type, argumentContext),
-                null);
+            if (PropertyPathSelector.IsPathParameter(parameter))
+            {
+                var error = PropertyPathSelector.Read(operation, out var path);
+                if (error is not null)
+                    return HandleTransformationFailure<LoweredBoundArgument>(operation.Value, error);
+                rewrittenValue = new StringLiteral(path, SymbolDisplay.FormatLiteral(path, true));
+            }
+            var value = rewrittenValue ?? TranslateTupleForTarget(operation.Value, parameter.Type, argumentContext);
+            return new LoweredBoundArgument(operation, AdaptOptionalCallback(parameter, value), null);
         }
 
         if (operation.Value is IDiscardOperation)
@@ -97,6 +103,27 @@ public partial class SemanticWalker
             ? CreateOutArgumentValue(initializations)
             : CreateRefArgumentValue(initializations, writeBackTarget);
         return new LoweredBoundArgument(operation, callValue, writeBackTarget);
+    }
+
+    private static bool HasOptionalCallback(IParameterSymbol parameter) =>
+        Util.HasAttribute(parameter, "ECMAScript.ECMAScriptOptionalCallbackAttribute");
+
+    private static Expression AdaptOptionalCallback(IParameterSymbol parameter, Expression value)
+    {
+        if (!HasOptionalCallback(parameter))
+            return value;
+
+        // Capture the supplied delegate at the call site, even if npm keeps it
+        // for later. The two directions use different missing-value conventions.
+        var callback = new Identifier("$callback");
+        var incoming = new Identifier("$value");
+        var read = new LogicalExpression(Operator.NullishCoalescing, incoming, Null);
+        var invoke = new CallExpression(callback, NodeList.From<Expression>(read), optional: false);
+        var written = new LogicalExpression(Operator.NullishCoalescing, invoke,
+            new NonUpdateUnaryExpression(Operator.Void, new NumericLiteral(0, "0")));
+        var adapter = new ArrowFunctionExpression(NodeList.From<Node>(incoming), written, expression: true, async: false);
+        var capture = new ArrowFunctionExpression(NodeList.From<Node>(callback), adapter, expression: true, async: false);
+        return new CallExpression(capture, NodeList.From(value), optional: false);
     }
 
     private static bool IsRefOutWriteBackTarget(Expression expression)

@@ -1,10 +1,11 @@
 @using Vee = Npm.VeeValidate.Exports
 
 <output>@_result</output>
+<FormScope />
 
 @code {
     [Parameter] public bool Provide { get; set; }
-    public record Input(string Address) : ECMAScript.Vue.VueProps;
+    public record Input(string Address, double Count) : ECMAScript.Vue.VueProps;
     private string _result = "waiting";
 
     [Setup]
@@ -12,7 +13,7 @@
     {
         if (Provide)
             Vee.UseForm<Input, Input>(new() {
-                InitialValues = new Input("submitted"),
+                InitialValues = new Input("submitted", 0),
                 ValidationSchema = new() { Type = Vee.TypedSchemaDiscriminator.VVTypedSchema,
                     Parse = values => ECMAScript.Promise<Vee.TypedSchemaResult<Input>>.Resolve(
                         new Vee.TypedSchemaResult<Input> { Value = values, Errors = [] })

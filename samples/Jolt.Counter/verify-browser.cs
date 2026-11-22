@@ -115,7 +115,7 @@ try
                         return document.body?.dataset.monacoVerified === 'true';
                     })()
                     """);
-                Console.WriteLine("Verified Monaco editor, model, worker, disposal, theme and marker owners in Chromium.");
+                Console.WriteLine("Verified Monaco model identity, string ID and detachment, worker, disposal, theme and marker owners in Chromium.");
             }
             else
                 await VerifyMixedAsync(args.Length == 3 ? args[2] : null);

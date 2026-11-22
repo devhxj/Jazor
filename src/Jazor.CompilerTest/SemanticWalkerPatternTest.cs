@@ -897,8 +897,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
-    AssertContainsCount(script, "= GetValue(),", 1);
-    StringAssert.Contains(script, "let result = (v$0 = GetValue(), v$0 > 0 && v$0 < 10);", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValue.call(this),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValue.call(this), v$0 > 0 && v$0 < 10);", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -1071,7 +1071,7 @@ public sealed class SemanticWalkerPatternTest
   function GetValue() {
     return 1;
   }
-  let result = (v$0 = GetValue(), v$0 > 0);
+  let result = (v$0 = GetValue.call(this), v$0 > 0);
 }", script);
   }
 
@@ -1590,8 +1590,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
-    AssertContainsCount(script, "= GetValues(),", 1);
-    StringAssert.Contains(script, "let result = (v$0 = GetValues(), Array.isArray(v$0) && v$0.length === 3 && v$0[0] === 1 && v$0[1] === 2 && v$0[2] === 3);", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValues.call(this),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValues.call(this), Array.isArray(v$0) && v$0.length === 3 && v$0[0] === 1 && v$0[1] === 2 && v$0[2] === 3);", StringComparison.Ordinal);
   }
 
   [TestMethod]
@@ -2206,8 +2206,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     StringAssert.Contains(script, "let v$0, text;", StringComparison.Ordinal);
-    AssertContainsCount(script, "= GetText(),", 1);
-    StringAssert.Contains(script, "let result = (v$0 = GetText(), typeof v$0 === \"string\" && (text = v$0, true));", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetText.call(this),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetText.call(this), typeof v$0 === \"string\" && (text = v$0, true));", StringComparison.Ordinal);
   }
 
   /// <summary>
@@ -3462,8 +3462,8 @@ public sealed class SemanticWalkerPatternTest
     var script = node?.ToKnRECMAScript();
 
     StringAssert.Contains(script, "let v$0;", StringComparison.Ordinal);
-    AssertContainsCount(script, "= GetValue(),", 1);
-    StringAssert.Contains(script, "let result = (v$0 = GetValue(), v$0 instanceof JDateTimeOffset);", StringComparison.Ordinal);
+    AssertContainsCount(script, "= GetValue.call(this),", 1);
+    StringAssert.Contains(script, "let result = (v$0 = GetValue.call(this), v$0 instanceof JDateTimeOffset);", StringComparison.Ordinal);
   }
 
   [TestMethod]

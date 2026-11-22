@@ -1,0 +1,32 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<output>@_saved.Value</output>
+<output id="clear-result">@ClearResult()</output>
+<button @onclick="Save">Save</button>
+<button @onclick="Clear">Clear</button>
+
+@code {
+    private ECMAScript.Vue.VueOptionalRef<double?> _saved = default!;
+    private string _clearResult = "";
+
+    [Setup]
+    private void Configure()
+    {
+        _saved = VueUse.UseStorage("jolt-storage-options", 1.0, options: new() { WriteDefaults = false });
+    }
+
+    private void Save()
+    {
+        var count = _saved;
+        count.Value = 0;
+    }
+
+    private void Clear()
+    {
+        _saved.Value = null;
+        double? immediate = _saved.Value;
+        _clearResult = immediate is null ? "null" : "value";
+    }
+
+    private string ClearResult() => _clearResult;
+}

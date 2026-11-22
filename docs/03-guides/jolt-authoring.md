@@ -9,11 +9,11 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 Jolt CLI 使用 .NET 11，发布包覆盖 Windows 和 glibc Linux 的 x64 与 ARM64。在克隆的仓库根目录执行以下命令。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.4.0
+dotnet tool install --global Jazor.Jolt --version 2.5.0
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.4.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
+已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.5.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
 
 | 命令 | 结果 |
 | --- | --- |
@@ -28,11 +28,11 @@ jolt dev samples/Jolt.Counter --port 15658
 
 ## 配置编辑器
 
-在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.4.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.4.0)
+在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.5.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)
 
 | 编辑器 | 安装 |
 | --- | --- |
-| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.4.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
+| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.5.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
 
 在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
@@ -131,6 +131,18 @@ var legacy = I18n.CreateI18nWithLegacyTrue(new() { Locale = "en" });
 legacy.Global.Locale = "fr";
 ```
 
+使用动态消息目录时，`GetLocaleMessage` 返回可传给另一语言的 `VueProps`。输入可以是嵌套字典或应用自己的 `VueProps` 记录。`SetLocaleMessage` 替换整棵树，`MergeLocaleMessage` 保留未被修改的兄弟节点。获取缺少的语言时，锁定的 Vue I18n 返回空对象。[消息树及跨语言回传](../../scripts/csharp/fixtures/jolt-binding-projection/I18nPlugin.jazor)
+
+```csharp
+var composer = composition.Global;
+composer.MergeLocaleMessage("fr", new Vue.VueDictionary {
+    ["menu"] = new Vue.VueDictionary<string> { ["save"] = "Enregistrer" },
+});
+composer.SetLocaleMessage("fr-CA", composer.GetLocaleMessage("fr"));
+```
+
+手上已经有原始消息文本时，可以用 `composer.Rt("Resolved {'message'}")` 按 Vue I18n 的消息语法求值，得到 `"Resolved message"`。按资源键查找仍使用 `composer.T("checkout.receipt")`。[独立 DLL 与 SSR 用例](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+
 Vue Query 的异步查询可以返回项目自己的记录。例如在 `[Setup]` 中创建查询后，`query.Data.Value?.Label` 会检查记录字段，首次加载前允许为空。
 
 ```csharp
@@ -143,7 +155,21 @@ var query = Query.UseQuery(new Query.UseQueryAsyncOptionsInput<QueryData> {
 
 上例的 `QueryData` 声明为 `record QueryData(string Label)`。查询、失效和重取都能使用混合键。例如 `record PageFilter(double Page) : ECMAScript.Vue.VueProps` 可以作为 `QueryKey = ["orders", 0, false, new PageFilter(3)]` 的第四项。此前传入 `ECMAScript.Array<string>` 的代码可改用 `QueryKey = ["orders"]`。在组件挂载或服务端渲染前，C# 可以直接在应用实例上调用 `app.Use(Query.VueQueryPlugin)`。[查询与提交](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor) · [插件注册与运行断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-query.mjs)
 
-当查询返回数字、mutation 返回布尔值时，可分别使用 `UseQueryNumberAsyncOptionsInput` 和 `UseMutationBooleanOptionsInput<TVariables>`。两者的 `Data.Value` 分别是 `double?` 和 `bool?`，首次请求前读取为 `null`，成功后能区分 `0` 和 `false`。标量结果的 mutation 重载保留 `MutateAsync` 的变量参数类型，此重载返回的对象暂未公开可能缺省的 `Variables` ref。[标量结果与实参验证](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
+普通查询键由应用约定载荷类型。读取时显式写出类型实参，未命中会得到 `null`。字符串、数值、布尔值和继承 `VueProps` 的记录可以直接写入。普通 C# 记录也可使用带类型的更新回调，按需读取旧值。返回 `null` 会跳过此次更新并保留原缓存内容。[组件用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor) · [普通 C# 类库消费](../../scripts/csharp/verify-jolt-public-projection.cs)
+
+```csharp
+var client = Query.UseQueryClient();
+client.SetQueryData(["count", 1], 0d);
+client.SetQueryData<double>(["count", 1], previous => (previous ?? 0d) + 1d);
+double? count = client.GetQueryData<double>(["count", 1]);
+var pending = client.FetchQuery<QueryData>(new() {
+    QueryKey = ["orders", 1],
+    QueryFn = () => ECMAScript.Promise<QueryData>.Resolve(new QueryData("ready")),
+});
+client.RemoveQueries(new() { QueryKey = ["count", 1], Exact = true });
+```
+
+当 mutation 接收数字并返回布尔值时，使用 `UseMutationBooleanValueOptionsInput<double>`。原先在 `UseMutationBooleanOptionsInput<double>` 中传入值类型的调用可以迁移到这个入口。`mutation.Variables.Value` 为 `double?`，`mutation.Data.Value` 为 `bool?`。首次调用前，两者均可读为 `null`。调用 `MutateAsync(0)` 后可以分别观察到 `0` 与 `false`。数值查询仍可用 `UseQueryNumberAsyncOptionsInput`。[标量结果与实参验证](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
 
 在无限查询中，页记录和游标分别参与推导。下面的页类型是应用定义的 `QueryData`，数值游标在 `QueryFn` 和 `GetNextPageParam` 中都是 `double`。最后一页返回 `null` 停止翻页。和普通查询一样，Vue Query 的无限查询键可以组合字符串、数字、布尔值和 `VueProps` 记录。[SSR 与客户端分页用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
 
@@ -159,11 +185,35 @@ var feed = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberOptionsInput<Q
 
 加载后可通过 `feed.Data.Value!.Pages[0].Label` 读取记录，通过 `feed.HasNextPage.Value` 判断能否再调用 `FetchNextPage()`。锁定的 Vue Query 5.103.1 把默认结果的 `pageParams` 声明为 `unknown[]`。回调里的 `cursors` 有元素类型，公开结果只生成声明可证明类型的 `Pages`。[页序列与真实缓存断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-query.mjs)
 
+如果需要在 C# 结果里使用游标，可以在 `UseInfiniteQueryNumberSelectedOptionsInput<QueryData, SelectedPage>` 设置 `Select = data => new SelectedPage(data.Pages[0].Label, data.PageParams[0])`。这里 `SelectedPage` 是作者定义的 `record SelectedPage(string Label, double Cursor)`。选项的 `Select` 为必填项，同时决定 `Data.Value` 的类型。查询尚未取得数据时，该值可为空。[组件用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
+
 VeeValidate 的带类型表单可以分别声明输入记录和提交记录，两者继承 `ECMAScript.Vue.VueProps`。例如 `UseForm<RegistrationInput, RegistrationOutput>` 的解析器接收含 `Address` 的输入，成功处理器收到含 `AddressLength` 的转换结果，失败处理器从 `invalid.Values.Address` 和 `invalid.Errors[nameof(RegistrationInput.Address)]` 读取原值与错误。此投影要求解析器在每个分支都填写结果记录和错误数组。
 
 在 `[Setup]` 中保留表单实例，就能用 `form.Values.Address` 读取当前输入。读取字段错误时，`form.Errors.Value[nameof(RegistrationInput.Address)]` 返回 `string?`，字段通过校验后返回 `null`。使用 Vue 注入的当前表单时，`Vee.UseFormErrors()` 也提供相同的只读错误表。需要强类型输入记录的代码应使用对应表单实例的 `Values`，其类型由创建该实例时的输入记录决定。[完整表单用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
 
 读取 VeeValidate 当前字段时可以保留标量的可空类型。调用方提供与表单字段匹配的类型参数。在 `[Setup]` 中写 `double? quantity = Vee.UseFieldValue<double>("quantity").Value;`，缺少这个字段时读到 `null`，字段已有的零会读成 `0`。布尔字段同样保留 `false`。[字段读取用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+
+需要展示同一字段的所有错误时，带 schema 的表单可以用 `string[]? messages = form.ErrorBag.Value["email"];`。同一字段的两条消息会按原顺序返回，缺席的字段读为 `null`。只显示首条错误时用 `form.Errors.Value["email"]`。[设置并读取多条消息](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+
+创建字段时，路径、规则和初值可以分别提供。下面的数量字段在首次校验时可以为空。调用 `SetValue(0, false)` 写入零，第二个实参让 VeeValidate 跳过这次写入的自动校验。若创建时同时提供校验器和必填初值，校验器直接接收字段类型，记录字段可以直接访问其属性。[独立类库中的字段调用](../../scripts/csharp/verify-jolt-public-projection.cs) · [记录与异步校验器](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+
+```csharp
+var quantity = Vee.UseField<double>("quantity", value => value is null ? "请填写数量" : true);
+quantity.SetValue(0, false);
+var enabled = Vee.UseField<bool>("enabled", options: new() { InitialValue = false });
+```
+
+子组件可以在 `[Setup]` 中用 `UseFormContext<Input>()` 获取父表单。这里的 `Input` 是和父表单约定的输入记录。独立挂载子组件时，上下文可为 `null`。即使在表单内，字段也可能尚未注册，因此数值通过 `GetValue` 读为可空值。写入和校验使用同一个属性选择器。[父子组件挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/FormScope.jazor)
+
+```csharp
+var form = Vee.UseFormContext<Input>();
+if (form is null) return;
+double? count = form.Values.GetValue(row => row.Count);
+form.SetFieldValue(row => row.Count, 2d, false);
+var validation = form.ValidateField(row => row.Count);
+```
+
+只需通用表单状态时，可以省略类型参数。例如 `var state = Vee.UseFormContext();` 后用 `state?.SubmitCount.Value` 读取提交次数，或通过 `state?.Errors.Value["email"]` 读取首条错误。这个入口在缺少父表单时也返回 `null`。[父表单存在与缺席的两种挂载](../../scripts/csharp/fixtures/jolt-npm-runtime/FormScope.jazor)
 
 已知表单记录结构时，可以通过属性选择器读取嵌套值。以下 `FormSnapshot` 的 `Details` 是可空记录。选择器中的 `!` 只处理 C# 的可空提示，生成的 JavaScript 在任一段缺失时返回 `null`。每段按该记录属性的实际 JavaScript 名称读取，因此重命名过的字段也适用。[表单记录与读取代码](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
 
@@ -174,7 +224,17 @@ double? count = values.GetValue(row => row.Details!.Count);
 bool? enabled = values.GetValue(row => row.Details!.Enabled);
 ```
 
+带类型的表单实例可以写 `form.SetFieldValue(row => row.Details!.EmailAddress, "updated", false)`。当两段属性的 JavaScript 名分别为 `contact`、`address` 时，发射的调用传入 `"contact.address"`。值的类型随叶属性确定，数值字段可直接写入 `0`。给显式指定为 `string` 的字段传 `null` 遵循 Roslyn 的可空告警规则。选择器由连续的记录数据属性组成，每段 JavaScript 名为非空，且不含 `.`、`[` 或 `]`。数组下标和字典键需要额外的路径协议。[普通类库用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
 ### 普通 C# 类库的公开投影
+
+如果 npm 函数声明为 `mapItems<T, U>(items: readonly T[], select: (item: T) => U): readonly U[]`，可直接传入普通 C# 数组。下例的 `items` 是 `CatalogItem[]`，`Name` 为字符串。第一次调用推断出字符串元素，第二次将返回的只读数组直接交回 npm，推断出数值元素。两次调用都保留传入数组的 JavaScript 身份。[组件与独立类库消费用例](../../scripts/csharp/verify-jolt-public-projection.cs)
+
+```csharp
+var items = new[] { new CatalogItem("Notebook", 6), new CatalogItem("Pen", 2) };
+var names = Fixture.MapItems(items, item => item.Name);
+var lengths = Fixture.MapItems(names, name => (double)name.Length);
+```
 
 函数直接接收异步回调并返回相同的 `Promise<T>` 时，C# 可以从回调推导应用类型。比如 es-toolkit 1.53.2 的两个公开子路径可以这样组合。普通类库消费者已实际执行此调用，若将 `row.Title` 改为不存在的属性，Roslyn 会在消费项目报告 `CS1061`。[独立消费项目](../../scripts/csharp/verify-jolt-public-projection.cs)
 
@@ -230,6 +290,39 @@ string french = Dates.FormatDistance(new ECMAScript.Date(2026, 0, 17),
 
 多个项目要传递同一种生成类型时，在一个类库中运行 `jolt bindings`，消费项目通过 `ProjectReference` 引用它。像 `date-fns/locale` 和 `date-fns` 这样共享同一声明的入口，在一次命令中生成，让 locale 的生产者与消费者使用同一个 C# 类型。独立的包可以分别输出到类库中的不同文件。[跨程序集运行用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
+如果两个包共享泛型记录，消费方通常可以让 C# 推断生成的类型。例如一个包导出 `createEnvelope<T>(value: T): Envelope<T>`，另一个包导入同一声明并导出 `forwardEnvelope<T>(value: Envelope<T>): Envelope<T>`。将这两个模块放进同一次 `jolt bindings` 调用后，普通 C# 和组件都能这样写。
+
+```csharp
+var entry = Fixture.CreateEnvelope("initial");
+var forwarded = Transfer.ForwardEnvelope(entry);
+forwarded.Payload = "updated";
+string label = entry.Payload;       // "updated"，两个变量引用同一个 JS 对象
+double version = forwarded.Version; // 对应 readonly version: number
+```
+
+类似地，若 `selectMode(label, enabled, count)` 的结果依赖 `enabled` 的布尔字面量，可以写 `Transfer.SelectModeWithEnabledTrue("catalog", 4).Path` 读取详情，或写 `double count = Transfer.SelectModeWithEnabledFalse("catalog", 4)` 取得数值。两个方法在原参数位置传入各自的布尔值。[两种入口的完整消费者](../../scripts/csharp/verify-jolt-public-projection.cs)
+
+当上游声明 `enabled?: B` 并将 `B` 默认为 `false` 时，`Transfer.SelectOptional()` 保留省略实参的调用形式，`Transfer.SelectOptionalWithEnabledFalse()` 显式传 `false`。二者都返回 `double`，上游仍可用 `arguments.length` 区分它们。递归泛型也可以跨包传递，例如子节点仍然携带原来的 `string` 类型。
+
+```csharp
+var root = Fixture.BuildTree("root");
+var child = Transfer.ForwardTree(root).Children[0];
+child.Value = "leaf";
+string label = root.Children[0].Value; // "leaf"
+```
+
+如果返回记录声明了 `value?: T`，可以用 `HasValue` 判断是否提供了该字段。下面的写入能通过先前获得的引用读回。显式写入的零会保存在原对象上。
+
+```csharp
+var draft = Transfer.ForwardDraft<double>(new() { Seed = 5 });
+double initial = draft.HasValue ? draft.Value : draft.Seed; // 5
+var forwarded = Transfer.ForwardDraft(draft);
+forwarded.Value = 0;
+double current = draft.Value; // 0
+```
+
+上游若写作 `value?: T | null`，可使用 `new() { Seed = 5d, Value = null }` 传入显式空值，此时 `HasValue` 为真。字段存在时，先取 `var value = draft.Value`，再用 `value is null` 判断是否为空，非空时 `value.Value` 给出原始 `T`。[投影规则](../02-architecture/npm-projection-rules.md#对象上的可选泛型字段) · [独立类库示例](../../scripts/csharp/verify-jolt-public-projection.cs)
+
 ### 在每个实例中使用 VueUse
 
 对需要 Vue 实例上下文的组合式函数，在 `@code` 中声明一个带 `[Setup]` 的同步、无参、返回 `void` 的私有实例方法。Vue 建立 props、slots 后调用它一次，随后开始渲染。下面的组件每次挂载都创建自己的计数器。
@@ -251,6 +344,73 @@ string french = Dates.FormatDistance(new ECMAScript.Date(2026, 0, 17),
 ```
 
 `UseCounterResult` 来自 `@vueuse/core` 14.4.0 的返回类型。`Count.Value` 可读取且参与响应式追踪，按该版本的声明应通过 `Inc()`、`Dec()` 或 `Set(value)` 更新。同步 setup 中注册的 Vue watcher 归组件实例所有，卸载即停止。 [可运行组件](../../samples/Jolt.Counter/.fixtures/NpmCounter.jazor) · [双实例、卸载与重新挂载验证](../../samples/Jolt.Counter/verify-browser.cs)
+
+`UseStorage` 的第三个参数可以指定存储对象，第四个参数配置写入行为。在 `[Setup]` 中用具名实参 `options` 可以选择浏览器默认存储。下面的数值存储首次挂载时读到 `1`，存储中仍没有这个键。写入 `0` 后重新挂载会读回 `0`。给 `Value` 赋 `null` 会清除存储，同步读取能观察到这个空值，因此读取类型为 `double?`。[可运行存储组件](../../scripts/csharp/fixtures/jolt-npm-runtime/Storage.jazor)
+
+```csharp
+var saved = VueUse.UseStorage("jolt-storage-options", 1d,
+    options: new() { WriteDefaults = false });
+saved.Value = null;
+double? afterClear = saved.Value;
+```
+
+在组件的 `[Setup]` 中使用 `UseVModel` 时，传入 Vue 的响应式 props 和一个属性选择器。如果 props 的记录类型将 `SomeProperty` 映射到 JS 的 `amount`，下面的调用会订阅 `amount`。父组件监听 `update:amount` 并更新 prop 后，模板中的 `model.Value` 会显示新值。数值属性决定了 `Value` 的 C# 类型，给它赋布尔值会在编译时报错。[可运行组件](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor) · [挂载与事件断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-model.mjs)
+
+```csharp
+var model = VueUse.UseVModel(props, x => x.SomeProperty);
+double current = model.Value;
+model.Value = 0;
+```
+
+同一个选择器也决定选项的类型。例如输入框允许数值为零，同时忽略负数提交时，可以这样绑定。父组件没有提供值时，组件读到 `0`。给 `amount.Value` 写入负数时，父组件收不到更新事件。[挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
+
+```csharp
+var amount = VueUse.UseVModel(props, x => x.SomeProperty, new()
+{
+    DefaultValue = 0d,
+    ShouldEmit = value => value >= 0,
+});
+```
+
+若要通过 Vue watcher 同步本地值，调用 `UseVModelWithPassiveTrue(props, x => x.SomeProperty, new() { DefaultValue = 0d })`。该写法支持 `string`、`bool` 和 `double` 属性。赋值后可在下一次 Vue 更新周期观察父组件的变化。[双向同步断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-model.mjs)
+
+若 prop 是带嵌套数据的密封记录，可以使用 `var draft = VueUse.UseVModelWithPassiveTrueRecord(props, x => x.Record, new());`。组件通过 `draft.Value.Info.Label` 读取，给 `draft.Value` 赋新记录会通知父组件。这个入口接受以字符串、布尔和 `double` 为叶子的非泛型密封记录，选择含有 Vue ref 的字段时，诊断会指出其属性路径。[记录示例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
+
+`UseVModelWithCloneCallback` 的克隆回调通过选项 `CloneValue` 传入。选择数值属性时，`CloneValue = value => value + 1` 的参数与返回值都是 `double`。父组件的值通过 computed getter 时执行回调。[挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
+
+`UseUrlSearchParams()` 返回响应式的 URL 参数。单个值读为字符串，重复值读为数组，缺席的键读为 `null`。用 `Set` 写入一个或多个值，用 `Delete` 移除该键。下面的模式匹配取出第一个值。[完整组件](../../scripts/csharp/fixtures/jolt-npm-runtime/UrlParams.jazor)
+
+```csharp
+var query = VueUse.UseUrlSearchParams();
+query.Set("tag", new[] { "vue", "jolt" });
+var firstTag = query["tag"] switch
+{
+    string text => text,
+    string[] tags when tags.Length > 0 => tags[0],
+    _ => "",
+};
+query.Delete("tag");
+```
+
+剪贴板的 `Copy` 接受字符串，也接受返回 `Promise<string>` 的 lambda。若文本需要异步获取，可直接传入取值函数。组件能从 `CopyPending.Value` 读取进行中状态，完成后从 `Text.Value` 和 `Copied.Value` 读取结果。[组件与调用](../../scripts/csharp/fixtures/jolt-npm-runtime/Clipboard.jazor)
+
+```csharp
+var clipboard = VueUse.UseClipboard();
+clipboard.Copy("jolt");
+clipboard.Copy(() => ECMAScript.Promise<string>.Resolve("vue"));
+```
+
+事件钩子的类型参数代表一次触发传递的载荷。下例中，监听器一次收到完整的字符串数组。订阅返回的句柄可以单独解除监听，也可以保留同一个委托传给 `hook.Off(listener)`。调用 `hook.Clear()` 会清空该钩子的订阅。[真实事件钩子与退订用例](../../scripts/csharp/fixtures/jolt-npm-runtime/EventHook.jazor)
+
+```csharp
+var hook = VueUse.CreateEventHook<string[]>();
+string selected = "";
+var registration = hook.On(items => { selected = items[0]; });
+hook.Trigger(["vue", "jolt"]);
+registration.Off();
+```
+
+读取鼠标来源时，`UseMouse().SourceType.Value` 与 `UseMouseInElement().SourceType.Value` 使用同一可空枚举，事件发生前可读为 `null`。网络状态的 `UseNetwork().EffectiveType.Value` 也是可空枚举，只供读取。宿主缺少连接信息时，可以直接用 `is null` 判断。[挂载组件](../../scripts/csharp/fixtures/jolt-npm-runtime/Events.jazor) · [事件与缺席状态断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-events.mjs)
 
 ## 从 JavaScript 导入组件和静态成员
 

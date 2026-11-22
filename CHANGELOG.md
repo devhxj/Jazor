@@ -2,6 +2,40 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-22
+
+### Jazor 2.5.0
+
+中文 | English
+
+#### 新增功能
+
+- Jolt 可为跨 npm 入口共享的泛型记录、只读数组、可选字段和依赖布尔实参的返回类型生成强类型 C#。组件和独立类库可沿调用链保留类型推断与 JavaScript 对象身份。by @devhxj
+- VueUse 投影增加双向 prop 绑定、存储、剪贴板、颜色模式、URL 参数和事件钩子的类型化调用。VeeValidate 增加表单上下文、多条字段错误和类型化字段读写。by @devhxj
+- Vue Query 可从查询键、回调与选择器推断数据，支持读写查询缓存。Vue I18n 可读取、替换和合并消息树。by @devhxj
+
+#### 体验优化
+
+- 属性选择器按记录字段的 JavaScript 名称发射。无效的选择器会在编译时报告 `JAZOR008`。生成的调用保留省略实参与显式传值的区别，读取可选值时保留 `0` 和 `false`。by @devhxj
+
+#### 迁移说明
+
+- 用 2.5.0 的 CLI 重新运行项目原有的 `jolt bindings` 命令。可选泛型字段可先用生成的 `HasX` 判断是否存在再读取 `X`。存储等可清除值现在可读为 `null`，赋给不可空变量前请先判空或指定默认值。by @devhxj
+
+New Features
+
+- Jolt generates typed C# for generic records shared across npm entry points, readonly arrays, optional fields, and return types driven by boolean arguments. Components and standalone libraries retain type inference and JavaScript object identity across calls. by @devhxj
+- VueUse projection adds typed two-way prop bindings, storage, clipboard, color mode, URL parameters, and event hooks. VeeValidate adds form context, multiple field errors, and typed field reads and writes. by @devhxj
+- Vue Query infers data from query keys, callbacks, and selectors and supports reading and updating the query cache. Vue I18n can read, replace, and merge message trees. by @devhxj
+
+Improvements
+
+- Property selectors emit the JavaScript names of record fields. Invalid selectors report `JAZOR008` at compile time. Generated calls distinguish omitted arguments from explicit values, and optional reads preserve `0` and `false`. by @devhxj
+
+Migration
+
+- Rerun your existing `jolt bindings` command with the 2.5.0 CLI. For optional generic fields, check the generated `HasX` member before reading `X`. Values that can be cleared, such as storage entries, can now read as `null`. Check for null or provide a default before assigning to a non-nullable variable. by @devhxj
+
 ## 2026-11-21
 
 ### Jazor 2.4.0

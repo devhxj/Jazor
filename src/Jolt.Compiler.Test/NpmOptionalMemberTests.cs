@@ -20,7 +20,10 @@ public sealed class NpmOptionalMemberTests
             """;
         var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], new() { NpmValues = [export] });
         Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
-        StringAssert.Contains(result.Modules.Single().Content, "[key] ?? null) === null");
+        var js = result.Modules.Single().Content;
+        StringAssert.Contains(js, "Object.hasOwn(");
+        StringAssert.Contains(js, "?? null : null");
+        StringAssert.Contains(js, ", key) === null");
     }
 
     [TestMethod]

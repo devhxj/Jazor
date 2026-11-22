@@ -1,0 +1,30 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<span></span>
+
+@code {
+    public static string Exercise()
+    {
+        var hook = VueUse.CreateEventHook<string>();
+        var log = "";
+        var first = hook.On(value => { log += "A" + value; });
+        var second = hook.On(value => { log += "B" + value; });
+        hook.Trigger("1");
+        first.Off();
+        hook.Trigger("2");
+        second.Off();
+        hook.Trigger("3");
+        System.Action<string> listener = value => { log += "C" + value; };
+        hook.On(listener);
+        hook.Trigger("4");
+        hook.Off(listener);
+        hook.Trigger("5");
+
+        var arrayHook = VueUse.CreateEventHook<string[]>();
+        arrayHook.On(values => { log += values[1]; });
+        arrayHook.Trigger(["unused", "array"]);
+        arrayHook.Clear();
+        arrayHook.Trigger(["unused", "cleared"]);
+        return log;
+    }
+}

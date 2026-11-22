@@ -665,6 +665,19 @@ public static partial class Vue
 		public extern T Value { get; }
 	}
 
+	/// <summary>A Vue ref whose JavaScript undefined reads are represented by C# null.</summary>
+	/// <typeparam name="T">The nullable value type exposed to C#.</typeparam>
+	[ECMAScript]
+	public sealed class VueOptionalRef<T>
+	{
+		private VueOptionalRef() { }
+
+		/// <summary>Reads the current value or null when absent, and writes directly to the underlying ref.</summary>
+		[Description("@#value")]
+		[ECMAScriptOptional]
+		public extern T Value { get; set; }
+	}
+
 	/// <summary>
 	/// Vue <c>computed(getter)</c> 产生的只读计算引用。与更广泛的 <see cref="VueReadonlyRef{T}"/> 契约保持区分，以便库界面可以保留专门保证计算语义的官方 API。
 	/// A readonly computed ref produced by Vue's <c>computed(getter)</c>. This remains
@@ -690,7 +703,7 @@ public static partial class Vue
 	/// <see cref="IVueRef{T}"/>.
 	/// </summary>
 	/// <typeparam name="T">计算属性值类型。</typeparam>
-	public abstract class VueWritableComputedRef<T> : IVueRef<T>
+	public abstract class VueWritableComputedRef<T> : VueWritableComputedRef<T, T>
 	{
 		/// <summary>
 		/// 供派生类型声明宿主对象的强类型投影；实际对象由 JavaScript 运行时 API 创建或返回。
@@ -699,12 +712,35 @@ public static partial class Vue
 		{
 		}
 
-		/// <summary>
-		/// 获取或设置当前计算值。
-		/// Gets or sets the current computed value.
-		/// </summary>
+		/// <summary>Reads or writes the current computed value.</summary>
 		[Description("@#value")]
-		public extern T Value { get; set; }
+		public new extern T Value { get; set; }
+	}
+
+	/// <summary>A writable computed ref with independent read and write types.</summary>
+	[ECMAScript]
+	public abstract class VueSplitComputedRef<TRead, TWrite> : IVueSplitRef<TRead, TWrite>
+	{
+		private protected VueSplitComputedRef() { }
+
+		/// <summary>Reads the current computed value.</summary>
+		[Description("@#value")]
+		public extern TRead Value { get; }
+
+		/// <summary>Writes the current computed value using its write type.</summary>
+		[Description("@#value")]
+		public extern TWrite WriteValue { set; }
+	}
+
+	/// <summary>A computed ref whose write type also accepts its read type.</summary>
+	[ECMAScript]
+	public abstract class VueWritableComputedRef<TRead, TWrite> : VueSplitComputedRef<TRead, TWrite>, IVueWritableRef<TRead, TWrite>
+	{
+		private protected VueWritableComputedRef() { }
+
+		/// <summary>Reads or writes the current computed value using its read type.</summary>
+		[Description("@#value")]
+		public new extern TRead Value { get; set; }
 	}
 
 	/// <summary>

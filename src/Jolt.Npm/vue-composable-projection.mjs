@@ -76,15 +76,22 @@ export function omittedOptionsProbes(ts, checker, aliases, callsOf, requested, t
     return aliases.filter(alias => requested.has(alias.name)).flatMap(alias => {
         const signatures = callsOf(alias);
         const signature = signatures[0];
-        if (signature?.typeParameters?.length !== 1 || signature.minArgumentCount !== 1 ||
+        if (signature?.typeParameters?.length !== 1 || signature.minArgumentCount > 1 ||
             signature.parameters.length < 2 || signature.thisParameter || checker.hasEffectiveRestParameter(signature))
             return [];
         const [parameter] = signature.typeParameters;
+        const defaultType = parameter.getDefault();
+        const sparseDefault = signature.minArgumentCount === 0 && signatures.length === 1 &&
+            signature.getReturnType() === parameter && defaultType &&
+            checker.getIndexInfosOfType(defaultType).some(index => index.keyType === checker.getStringType());
+        if (signature.minArgumentCount === 0 && !sparseDefault)
+            return [];
         const input = typeOf(signature.parameters[0]);
         const constraint = checker.getBaseConstraintOfType(parameter);
         // Probe distinct supported inputs through the actual call. Keep the
         // resulting inferred type only for this arity, where options are absent.
-        const candidates = input.isUnion() ? input.types : [input];
+        const candidates = (input.isUnion() ? input.types : [input])
+            .filter(type => !sparseDefault || !(type.flags & ts.TypeFlags.Undefined));
         const literals = candidates.every(type => type.flags & ts.TypeFlags.StringLiteral) ?
             candidates.map(type => type.value).sort() : undefined;
         const samples = [...new Set(candidates.map(type => {
@@ -100,6 +107,7 @@ export function omittedOptionsProbes(ts, checker, aliases, callsOf, requested, t
             name: alias.name,
             expression: `packageExports[${JSON.stringify(alias.name)}](${argument})`,
             domain: literals,
+            sparseDefault: Boolean(sparseDefault),
         }));
     });
 }

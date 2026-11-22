@@ -10,5 +10,6 @@
 | [产物管线](./artifact-pipeline.md) | 两类 carrier、模块、源映射、物化输出、打包和 SSR 的归属 |
 | [类库产物与引用契约](./library-artifact-contract.md) | 直接引用、工具资产隔离、manifest/ModuleCatalog 传播和统一 Emit 物化 |
 | [平台与绑定](./platform-and-bindings.md) | ECMAScript/Vue 生态绑定和宿主契约 |
+| [npm 类型投影与值传递规范](./npm-projection-rules.md) | TypeScript 泛型关系、参数与回调方向、C# 表示、重载选择和结构稳定的投影缓存 |
 
 建议先阅读[系统架构](../01-overview/system-architecture.md)，再按当前问题进入相应的专题文档。

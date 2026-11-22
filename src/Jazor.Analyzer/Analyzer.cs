@@ -55,6 +55,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private const string ConflictingSpreadPropertyNameDiagnosticId = "JAZOR004";
 	private const string ConflictingJavaScriptNameMetadataDiagnosticId = "JAZOR005";
 	private const string ConflictingJavaScriptNameDiagnosticId = "JAZOR006";
+	private const string InvalidPropertyPathDiagnosticId = "JAZOR008";
 	private const string Title = "Jazor";
 	private const string MessageFormat = "[{0}] is not support in ECMAScript";
 	private const string AmbiguousRuntimeTypeFilterMessageFormat = "[{0}] cannot be used for {1} because runtime alias '{2}' is shared with incompatible supported types: {3}";
@@ -118,12 +119,16 @@ public partial class Analyzer : DiagnosticAnalyzer
 		DiagnosticSeverity.Error,
 		isEnabledByDefault: true);
 
+	private static readonly DiagnosticDescriptor InvalidPropertyPathRule = new(
+		InvalidPropertyPathDiagnosticId, "Invalid JavaScript property path", "{0}", Category,
+		DiagnosticSeverity.Error, isEnabledByDefault: true);
+
 	/// <summary>
 	/// <inheritdoc/>
 	/// </summary>
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
 		[Rule, AmbiguousRuntimeTypeFilterRule, InvalidSpreadUsageRule, ConflictingSpreadPropertyNameRule,
-			ConflictingJavaScriptNameMetadataRule, ConflictingJavaScriptNameRule, LibraryImportFailureRule];
+			ConflictingJavaScriptNameMetadataRule, ConflictingJavaScriptNameRule, InvalidPropertyPathRule, LibraryImportFailureRule];
 
 	internal static readonly ImmutableArray<OperationKind> AnalysisOperationKinds =
 	[
@@ -749,6 +754,12 @@ public partial class Analyzer : DiagnosticAnalyzer
 			case OperationKind.Invocation:
 				{
 					var invocation = (IInvocationOperation)ctx.Operation;
+					foreach (var argument in invocation.Arguments)
+					{
+						if (argument.Parameter is { } parameter && PropertyPathSelector.IsPathParameter(parameter) &&
+							PropertyPathSelector.GetError(argument) is { } error)
+							ctx.ReportDiagnostic(Diagnostic.Create(InvalidPropertyPathRule, argument.Value.Syntax.GetLocation(), error));
+					}
 					CheckType(ctx.ReportDiagnostic, invocation.TargetMethod.ContainingType, invocation.Syntax.GetLocation());
 					// A mapped invocation owns its JavaScript result shape. Its C# return type may only
 					// carry compiler protocol metadata (for example Task.Yield's YieldAwaitable), so it
@@ -895,6 +906,11 @@ public partial class Analyzer : DiagnosticAnalyzer
 					var operation = (IMethodReferenceOperation)ctx.Operation;
 					if (IsInsideNameOf(operation))
 						return;
+					if (operation.Method.Parameters.Any(PropertyPathSelector.IsPathParameter))
+					{
+						ctx.ReportDiagnostic(Diagnostic.Create(InvalidPropertyPathRule, operation.Syntax.GetLocation(), PropertyPathSelector.DirectCallRequired));
+						return;
+					}
 
 					var key = operation.Method.OriginalDefinition.ToDisplayString(Format.NameFormat);
                     CheckType(ctx.ReportDiagnostic, operation.Method.ContainingType, operation.Syntax.GetLocation());

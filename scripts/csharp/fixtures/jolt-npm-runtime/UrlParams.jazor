@@ -1,0 +1,33 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+<output>@Current()</output>
+<button id="single" @onclick="SetSingle">Set single value</button>
+<button id="repeated" @onclick="SetRepeated">Set repeated values</button>
+<button id="change" @onclick="ChangeRepeated">Change repeated value</button>
+<button id="delete" @onclick="Delete">Delete value</button>
+@code {
+    private Func<string> Current = default!;
+    private Action SetSingle = default!;
+    private Action SetRepeated = default!;
+    private Action ChangeRepeated = default!;
+    private Action Delete = default!;
+
+    [Setup]
+    private void Configure()
+    {
+        var query = VueUse.UseUrlSearchParams();
+        var explicitQuery = VueUse.UseUrlSearchParams(VueUse.UseUrlSearchParamsModeInput.History);
+        SetSingle = () => explicitQuery.Set("tag", "one");
+        SetRepeated = () => query.Set("tag", new string[] { "one", "two" });
+        ChangeRepeated = () =>
+        {
+            if (query["tag"] is string[] values)
+                values[1] = "three";
+        };
+        Delete = () => { query.Delete("tag"); explicitQuery.Delete("tag"); };
+        Current = () => query["toString"] != null ? "inherited" :
+            query["tag"] == null && explicitQuery["tag"] == null ? "absent" :
+            query["tag"] is string text ? text :
+            query["tag"] is string[] tags ? tags[0] + "/" + tags[1] :
+            explicitQuery["tag"] is string explicitText ? explicitText : "unexpected";
+    }
+}

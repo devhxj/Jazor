@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.4.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.4.0&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.5.0"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.5.0&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -30,11 +30,11 @@
 在 Windows 或 glibc Linux（x64 或 ARM64）上安装 .NET 11 SDK。克隆仓库，在仓库根目录运行以下命令。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.4.0
+dotnet tool install --global Jazor.Jolt --version 2.5.0
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-已安装工具时，使用 `dotnet tool update --global Jazor.Jolt --version 2.4.0`。打开终端打印的网址，点击 **Increment**。子组件通过类型化回调更新父组件的计数及 Reka UI 组件的状态。 [计数器项目](samples/Jolt.Counter/README.md)
+已安装工具时，使用 `dotnet tool update --global Jazor.Jolt --version 2.5.0`。打开终端打印的网址，点击 **Increment**。子组件通过类型化回调更新父组件的计数及 Reka UI 组件的状态。 [计数器项目](samples/Jolt.Counter/README.md)
 
 在 `.jazor` 文件中编写标记和 C#。
 
@@ -53,10 +53,10 @@ jolt dev samples/Jolt.Counter --port 15658
 
 | 编辑器 | 扩展 |
 | --- | --- |
-| VS Code | 在扩展菜单中选择 **Install from VSIX**，安装 `jolt-2.4.0.vsix`。 [VS Code 配置](editors/jolt/README.md) |
+| VS Code | 在扩展菜单中选择 **Install from VSIX**，安装 `jolt-2.5.0.vsix`。 [VS Code 配置](editors/jolt/README.md) |
 | Visual Studio 2026（Windows x64） | 双击 `Jolt.VisualStudio.vsix`，通过 VSIX Installer 安装。 [Visual Studio 配置](editors/jolt-visual-studio/README.md) |
 
-从与 CLI 同一版本的发布页下载扩展，将 `samples/Jolt.Counter` 作为文件夹打开。在 `App.jazor` 中试用语义高亮、类型化补全和转到定义。 [2.4.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.4.0)
+从与 CLI 同一版本的发布页下载扩展，将 `samples/Jolt.Counter` 作为文件夹打开。在 `App.jazor` 中试用语义高亮、类型化补全和转到定义。 [2.5.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)
 
 `jolt build samples/Jolt.Counter` 将模块和源码映射写入 `samples/Jolt.Counter/.jolt/`。`jolt bundle samples/Jolt.Counter` 将生产资源写入 `samples/Jolt.Counter/dist/`。
 
@@ -65,7 +65,7 @@ jolt dev samples/Jolt.Counter --port 15658
 在 .NET 项目中引用 `Jazor` SDK，即可编译带 `[ECMAScriptModule]` 的类。该包包含编译器、分析器、产物工具和 ASP.NET Core 集成。 [C# 模块快速开始](docs/03-guides/quick-start.md)
 
 ```sh
-dotnet add package Jazor --version 2.4.0
+dotnet add package Jazor --version 2.5.0
 ```
 
 | 主题 | 文档 |
@@ -89,7 +89,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 ## 最新发布
 
-Jazor 2.4.0 新增 `jolt bindings`，可从锁定的 npm 依赖生成公开 C# 声明。Jolt 扩展了七个应用库的类型投影，构建和编辑器可复用生成的声明。 [发布及迁移说明](CHANGELOG.md#jazor-240)
+Jazor 2.5.0 扩展了共享泛型记录、可选字段和类型化属性选择器的 npm 投影。Jolt 增加 VueUse、VeeValidate、Vue Query 和 Vue I18n 的类型化调用。 [发布及迁移说明](CHANGELOG.md#jazor-250)
 
 ## AI 协作开发
 

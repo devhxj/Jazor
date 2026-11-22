@@ -3,6 +3,8 @@ using Jolt.Syntax;
 using Jolt.Npm;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using System.Collections.Immutable;
 
@@ -265,6 +267,20 @@ public static class JoltProjectCompiler
         {
             var projection = pair.Value;
             var model = compilation.GetSemanticModel(pair.Key);
+            if (valueProjection?.HasPropertyPaths == true || options.References is { Count: > 0 })
+            {
+                foreach (var syntax in pair.Key.GetRoot(cancellationToken).DescendantNodes().OfType<InvocationExpressionSyntax>())
+                {
+                    if (model.GetOperation(syntax, cancellationToken) is not IInvocationOperation invocation)
+                        continue;
+                    foreach (var argument in invocation.Arguments)
+                    {
+                        if (argument.Parameter is { } parameter && PropertyPathSelector.IsPathParameter(parameter) &&
+                            PropertyPathSelector.GetError(argument) is { } error)
+                            diagnostics.Add(Error("JOLT2001", Map(projection, argument.Value.Syntax.GetLocation()), error));
+                    }
+                }
+            }
             projection.CheckLiterals(model);
             projection.CheckBindings(model);
             projection.CheckSlotOutlets(model);

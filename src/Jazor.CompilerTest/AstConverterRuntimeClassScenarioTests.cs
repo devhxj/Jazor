@@ -2334,6 +2334,73 @@ public sealed class AstConverterRuntimeClassScenarioTests
     }
 
     [TestMethod]
+    public async Task ConvertModule_DirectLocalFunctionCalls_PreserveReceiverInNestedCallbacks()
+    {
+        const string scenarioId = "ast-converter-runtime-class.local-function-direct-receiver";
+        var fixture = CompileModule(
+            """
+            using System;
+
+            public static class TestModule
+            {
+                public sealed class Counter
+                {
+                    public int Value;
+
+                    public Action<int> CreateIncrementer()
+                    {
+                        return amount => Forward(amount);
+
+                        void Forward(int amount) => Increment(amount);
+
+                        void Increment(int amount)
+                        {
+                            Action update = () => { Value += amount; };
+                            update();
+                        }
+                    }
+                }
+            }
+            """,
+            scenarioId);
+        var converter = new AstConverter(fixture.Module, fixture.SemanticModel);
+        var module = await converter.Convert();
+        var script = module?.ToKnRECMAScript();
+
+        Assert.IsNotNull(script, scenarioId);
+        StringAssert.Contains(script, "Forward.call(this, amount)", StringComparison.Ordinal, scenarioId);
+        StringAssert.Contains(script, "Increment.call(this, amount)", StringComparison.Ordinal, scenarioId);
+
+        var root = Path.Combine(RepositoryTemp.Root, "jazor-local-function-direct-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var testPath = Path.Combine(root, "counter.test.mjs");
+            await File.WriteAllTextAsync(Path.Combine(root, "counter.mjs"), script);
+            await File.WriteAllTextAsync(testPath,
+                """
+                import { Counter } from "./counter.mjs";
+
+                globalThis.__jazorTest("direct local calls preserve the instance through nested callbacks", () => {
+                  const counter = new Counter();
+                  const increment = counter.CreateIncrementer();
+                  increment(2);
+                  increment(3);
+                  if (counter.Value !== 5)
+                    throw new Error(`expected counter value 5, got ${counter.Value}`);
+                });
+                """);
+
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await NodeModuleRunner.RunAsync(root, testPath, cancellationToken: timeout.Token);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ConvertModule_InstanceCapturingLocalFunctionDelegate_PreservesReceiverWhenDetached()
     {
         const string scenarioId = "ast-converter-runtime-class.local-function-delegate-bound-receiver";

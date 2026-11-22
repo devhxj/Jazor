@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 
 const { window } = new JSDOM('<button></button><main></main>');
 try {
-    for (const name of ['window', 'document', 'Element', 'SVGElement'])
+    for (const name of ['window', 'document', 'Element', 'SVGElement', 'MutationObserver'])
         globalThis[name] = window[name];
     const { createApp, nextTick } = await import('vue');
     const { default: Events } = await import('./.jolt/Events.mjs');
@@ -25,11 +25,15 @@ try {
     app.mount(container);
     await nextTick();
     assert.equal(listeners.size, 3);
+    const source = () => container.querySelector('#mouse-source').textContent;
+    assert.equal(source(), 'none');
+    window.dispatchEvent(new window.MouseEvent('mousemove', { clientX: 20 }));
     target.click();
     target.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter' }));
     target.dispatchEvent(new window.MouseEvent('dblclick', { clientX: 42 }));
     await nextTick();
     assert.equal(count(), '7');
+    assert.equal(source(), 'mouse');
     app.unmount();
     assert.equal(listeners.size, 0);
     target.click();

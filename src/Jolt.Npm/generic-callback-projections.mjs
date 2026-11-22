@@ -28,11 +28,11 @@ export function genericCallbackProjections(ts, program, checker, source, aliases
             return values.includes(typeParameter) && !values.some(type => type.getCallSignatures().length);
         });
         const result = signature.getReturnType();
-        const carriesValue = result.getProperties().some(property => {
+        const valueMembers = result.getProperties().filter(property => {
             const member = checker.getTypeOfPropertyOfType(result, property.name);
             return checker.getTypeOfPropertyOfType(member, 'value') === typeParameter;
         });
-        if (!callbacks.length || initial.length !== 1 || !carriesValue)
+        if (!callbacks.length || initial.length !== 1 || !valueMembers.length)
             continue;
         // The upstream call is type-checked with the same generic type in the
         // callback and the initial-value option. Requiring both at the C#
@@ -58,13 +58,32 @@ export function genericCallbackProjections(ts, program, checker, source, aliases
                     returns.add(`Promise<${deferred.join(' | ')}>`);
             }
         }
-        for (const keyType of keys)
-            for (const returnType of returns)
+        const flags = settings.getProperties().filter(member =>
+            checker.getNonNullableType(checker.getTypeOfPropertyOfType(settings, member.name)) === checker.getBooleanType());
+        const optionsType = `{ ${property}?: TValue; ${flags.map(member => `${JSON.stringify(member.name)}?: boolean`).join('; ')} }`;
+        for (const keyType of keys) {
+            const add = (parameters, args, { optionalCallback = false, omittedRules = false } = {}) => projections.push({
+                exportName: alias.name,
+                expression: `<TValue,>(path: ${keyType}${parameters}) => ${exportAccess}<TValue>(path${args})`,
+                optionalValue: valueMembers.map(member => member.name),
+                optionalCallback,
+                omittedRules,
+            });
+            if (signature.minArgumentCount <= 1 && checker.isTypeAssignableTo(checker.getStringType(), handler)) {
+                add('', '');
+                add(', rules: string', ', rules');
+                add(`, options: ${optionsType}`, ', undefined, options', { omittedRules: true });
+                add(`, rules: string, options: ${optionsType}`, ', rules, options');
+            }
+            for (const returnType of returns) {
+                add(`, rules: (value: TValue | undefined) => ${returnType}`, ', rules', { optionalCallback: true });
                 projections.push({
                     exportName: alias.name,
                     expression: `<TValue,>(path: ${keyType}, rules: (value: TValue) => ${returnType}, opts: { ${property}: TValue }) =>
                         ${exportAccess}<TValue>(path, rules, opts)`,
                 });
+            }
+        }
     }
     return projections;
 }
@@ -81,7 +100,7 @@ export function readGenericCallbackProjections(checker, statements, projections,
         if (!resolved || !signature)
             continue;
         const results = byExport.get(projection.exportName) ?? [];
-        results.push({ signature, declaration: resolved.declaration });
+        results.push({ signature, declaration: resolved.declaration, ...projection });
         byExport.set(projection.exportName, results);
     }
     return byExport;

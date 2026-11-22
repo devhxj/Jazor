@@ -267,6 +267,8 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
         var collisions = exports.Where(name => name != export.ExportName && NpmNames.ValueNameFor(name) == projected).ToArray();
         if (collisions.Length != 0)
             return Unsupported($"export names '{export.ExportName}' and '{string.Join("', '", collisions)}' both project to '{projected}'");
+        if (export.ConstantType is null && export.Signatures.Count == 0)
+            return Unsupported("no callable form has an available C# name");
 
         var error = CheckSignatures(export.Signatures) ??
             (export.ConstantType is { } constant ? CheckType(constant) : null);
@@ -295,8 +297,10 @@ public sealed partial class NpmVueMetadataProvider(string? storeDirectory = null
 
     private static string? CheckType(NpmValueType type)
     {
-        if (type.ElementType is { } element)
-            return CheckType(element);
+        if (type.ElementType is { } element && CheckType(element) is { } elementError)
+            return elementError;
+        if (type.WriteType is { } write && CheckType(write) is { } writeError)
+            return writeError;
         if (type.Signatures is { } signatures)
             return CheckSignatures(signatures);
         if (type.Members is not { } members)

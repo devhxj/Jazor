@@ -761,7 +761,7 @@ public partial class SemanticWalker
 		{
 			case IPropertyReferenceOperation property:
 				var getter = property.Property.GetMethod!;
-				if (TryGetEcmascriptInlineTemplate(getter, out _) ||
+				if (Util.HasRequiredRead(property.Property) || TryGetEcmascriptInlineTemplate(getter, out _) ||
 					TryGetWhiteListValue(_whiteListCompiles, getter, out _, out _) ||
 					(TryGetWhiteListValue(WhiteList.Members, getter, out _, out var entry) &&
 					 !(entry.Op == Op.Alias && property.Arguments.Length == 0)))
@@ -2098,6 +2098,12 @@ public partial class SemanticWalker
 			arguments.Add(MaterializePropertyMutationOperand(rawArgument, ownerOperation, argument, initializations, $"arg{i}"));
 		}
 
+		if (Util.HasRequiredRead(propertyReference.Property) && instance is not null)
+		{
+			readExpression = BuildRequiredPropertyRead(instance, GetCurrentModuleDeclaredOrConfigName(propertyReference.Property));
+			return true;
+		}
+
 		var getterExpression = GetWhiteListExpression(propertyReference.Property.GetMethod!, argument, arguments, instance, out _, propertyReference);
 		if (getterExpression is not null)
 		{
@@ -2118,6 +2124,9 @@ public partial class SemanticWalker
 	private bool RequiresPropertyMutationBridge(IPropertyReferenceOperation propertyReference)
 	{
 		// A bound read-modify-write property target necessarily has both accessors.
+		if (Util.HasRequiredRead(propertyReference.Property))
+			return true;
+
 		if (TryGetWhiteListValue(_whiteListCompiles, propertyReference.Property.GetMethod!, out _, out _))
 			return true;
 

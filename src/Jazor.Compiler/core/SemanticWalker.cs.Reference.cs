@@ -2320,7 +2320,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 		// Optional named properties and sparse indexers both read undefined as null.
 		// The assignment target must remain the original JavaScript lvalue.
-		bool ReadsOptionalMember() => HasOptionalRead(operation.Property) &&
+		bool ReadsOptionalMember() => Util.HasOptionalRead(operation.Property) &&
 			!(operation.Parent is IAssignmentOperation assignment && ReferenceEquals(assignment.Target, operation)) &&
 			operation.Parent is not IIncrementOrDecrementOperation;
 
@@ -2345,6 +2345,9 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		if (instance is not null)
 		{
 			var optional = operation.Instance is IConditionalAccessInstanceOperation;
+			if (Util.HasRequiredRead(operation.Property) &&
+				!(operation.Parent is ISimpleAssignmentOperation assignment && ReferenceEquals(assignment.Target, operation)))
+				return WithOriginIfMissing(BuildRequiredPropertyRead(instance, propertyName!), operation);
 			if (ReadsOptionalMember())
 			{
 				var member = new MemberExpression(instance, new StringLiteral(propertyName!, SymbolDisplay.FormatLiteral(propertyName!, true)),
@@ -2394,16 +2397,32 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	public override Node? VisitMethodReference(IMethodReferenceOperation operation, SenseArgument argument)
 	{
 		var reference = TranslateMethodReference(operation, argument);
-		if (reference is not Expression callee || !HasOptionalRead(operation.Method))
+		var fixedArguments = ReadFixedArguments(operation.Method);
+		var adaptsCallback = operation.Method.Parameters.Any(HasOptionalCallback);
+		if (reference is not Expression callee || fixedArguments.Length == 0 && !adaptsCallback && !Util.HasOptionalRead(operation.Method))
 			return reference;
 
 		// Capture the already-bound callable when the method group is created.
 		// Forward the supplied arity and normalize the result when it is invoked.
 		var target = new Identifier("__jz_optionalCall");
 		var supplied = new Identifier("__jz_optionalArgs");
-		var invoke = new CallExpression(target, NodeList.From<Expression>(new SpreadElement(supplied)), optional: false);
-		var adapter = new ArrowFunctionExpression(NodeList.From<Node>(new RestElement(supplied)),
-			new LogicalExpression(Operator.NullishCoalescing, invoke, Null), expression: true, async: false);
+		List<Expression> forwarded;
+		NodeList<Node> parameters;
+		if (fixedArguments.Length == 0 && !adaptsCallback)
+		{
+			forwarded = [new SpreadElement(supplied)];
+			parameters = NodeList.From<Node>(new RestElement(supplied));
+		}
+		else
+		{
+			var identifiers = Enumerable.Range(0, operation.Method.Parameters.Length)
+				.Select(index => new Identifier($"__jz_fixedArg{index}")).ToArray();
+			parameters = NodeList.From<Node>(identifiers);
+			forwarded = identifiers.Select((value, index) => AdaptOptionalCallback(operation.Method.Parameters[index], value)).ToList();
+			InsertFixedArguments(forwarded, fixedArguments);
+		}
+		var invoke = new CallExpression(target, NodeList.From(forwarded), optional: false);
+		var adapter = new ArrowFunctionExpression(parameters, NormalizeOptionalRead(operation.Method, invoke), expression: true, async: false);
 		var capture = new ArrowFunctionExpression(NodeList.From<Node>(target), adapter, expression: true, async: false);
 		return WithOriginIfMissing(new CallExpression(capture, NodeList.From(callee), optional: false), operation);
 	}
@@ -2412,6 +2431,8 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	{
 		if (IsPartialRecordRead(operation.Method))
 			return HandleTransformationFailure<Node>(operation, "PartialRecord requires a direct call with a property selector.");
+		if (operation.Method.Parameters.Any(PropertyPathSelector.IsPathParameter))
+			return HandleTransformationFailure<Node>(operation, PropertyPathSelector.DirectCallRequired);
 
 		if (Host?.RewriteMethodReferencePreorder(operation, argument) is Expression preorderHostExpression)
 			return WithOriginIfMissing(preorderHostExpression, operation);
@@ -2633,9 +2654,16 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	}
 
 	private static bool IsLexicallyStaticLocalFunction(IMethodSymbol localFunction)
-		// Roslyn binds every local function directly to its declaring method symbol. The
-		// containing method's static modifier is therefore the authoritative lexical-this contract.
-		=> ((IMethodSymbol)localFunction.ContainingSymbol!).IsStatic;
+	{
+		// A static containing local function or lambda also cuts off the instance receiver.
+		for (var scope = localFunction; scope is not null; scope = scope.ContainingSymbol as IMethodSymbol)
+		{
+			if (scope.IsStatic)
+				return true;
+		}
+
+		return false;
+	}
 
 	private Expression MaterializeMethodReferenceReceiver(
 		Expression receiver,
@@ -2716,10 +2744,13 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 		// 处理方法调用的参数
 		var arguments = new List<Expression>();
+		var fixedArguments = ReadFixedArguments(operation.TargetMethod);
+		// A fixed JavaScript slot keeps preceding omitted C# parameters in place.
+		var lastFixedPrecedingOrdinal = fixedArguments.Length == 0 ? -1 : fixedArguments[fixedArguments.Length - 1].Index - fixedArguments.Length;
 		if (RequiresBoundArgumentCanonicalization(operation.Arguments))
 		{
 			var loweredArguments = new List<LoweredBoundArgument>(operation.Arguments.Length);
-			var lastSuppliedParameterOrdinal = GetLastSuppliedParameterOrdinal(operation.Arguments);
+			var lastSuppliedParameterOrdinal = Math.Max(lastFixedPrecedingOrdinal, GetLastSuppliedParameterOrdinal(operation.Arguments));
 			for (var index = 0; index < operation.Arguments.Length; index++)
 			{
 				var arg = operation.Arguments[index];
@@ -2760,6 +2791,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				var isTrailingEcmascriptDefaultArgument =
 					Util.IsECMAScriptRuntimeSymbol(operation.TargetMethod) &&
 					arg.ArgumentKind == ArgumentKind.DefaultValue &&
+					arg.Parameter!.Ordinal > lastFixedPrecedingOrdinal &&
 					operation.Arguments.Skip(index).All(static x => x.ArgumentKind == ArgumentKind.DefaultValue);
 				if (isTrailingEcmascriptDefaultArgument)
 					continue;
@@ -2786,8 +2818,9 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			}
 		}
 
+		InsertFixedArguments(arguments, fixedArguments);
 		if (Host?.RewriteInvocation(operation, argument, instance, arguments) is Expression hostExpression)
-			return WithOriginIfMissing(NormalizeOptionalRead(operation.TargetMethod, hostExpression), operation);
+			return WithOriginIfMissing(NormalizeOptionalInvocation(operation, hostExpression), operation);
 
 		var callExpr = BuildMethodCallExpression(
 			operation,
@@ -2800,7 +2833,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			runtimeHostType,
 			allowIntrinsic: true,
 			invocationOperation: operation);
-		return WithOriginIfMissing(NormalizeOptionalRead(operation.TargetMethod, BuildInvExpr(hasReturn, callExpr, refParas, argument)), operation);
+		return WithOriginIfMissing(NormalizeOptionalInvocation(operation, BuildInvExpr(hasReturn, callExpr, refParas, argument)), operation);
 
 		Expression BuildInvExpr(bool hasReturns, in Expression expr, in List<Expression?> refs, in SenseArgument ctx)
 		{
@@ -2838,18 +2871,66 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		}
 	}
 
-	private static bool HasOptionalRead(ISymbol symbol) => symbol.GetAttributes().Any(attribute =>
-		attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptOptionalAttribute");
+	private Expression BuildRequiredPropertyRead(Expression instance, string name)
+	{
+		// Capture the property value once. Only undefined represents a missing value.
+		var value = new Identifier("$requiredValue");
+		var receiver = new Identifier("$requiredReceiver");
+		var hasOwn = new CallExpression(new MemberExpression(new Identifier("Object"), new Identifier("hasOwn"), computed: false, optional: false),
+			NodeList.From<Expression>(receiver, CreateStringLiteral(name)), optional: false);
+		var read = new ConditionalExpression(hasOwn, BuildAliasedPropertyAccess(receiver, name, optional: false), CreateUndefined());
+		var missing = new NonLogicalBinaryExpression(Operator.StrictEquality, value, CreateUndefined());
+		var error = new NewExpression(new Identifier("Error"),
+			NodeList.From<Expression>(CreateStringLiteral($"Required property '{name}' is undefined.")));
+		var body = new FunctionBody(NodeList.From<Statement>(
+			new VariableDeclaration(VariableDeclarationKind.Const, NodeList.From(new VariableDeclarator(value, read))),
+			new IfStatement(missing, new ThrowStatement(error), null),
+			new ReturnStatement(value)), strict: true);
+		return new CallExpression(new ArrowFunctionExpression(NodeList.From<Node>(receiver), body, expression: false, async: false),
+			NodeList.From(instance), optional: false);
+	}
 
 	private static Expression NormalizeOptionalRead(ISymbol symbol, Expression expression) =>
-		HasOptionalRead(symbol) ? new LogicalExpression(Operator.NullishCoalescing, expression, Null) : expression;
+		Util.HasOptionalRead(symbol) ? new LogicalExpression(Operator.NullishCoalescing, expression, Null) : expression;
+
+	private static Expression NormalizeOptionalInvocation(IInvocationOperation operation, Expression expression)
+	{
+		var definition = operation.TargetMethod.OriginalDefinition;
+		// Only a return that forwards the selector's declared generic slot has
+		// the selected member's absence semantics. Compare before substitution.
+		if (definition.ReturnType is ITypeParameterSymbol && operation.Arguments.Any(argument =>
+			PropertyPathSelector.IsSingleKeyParameter(argument.Parameter!) &&
+			(argument.Parameter!.OriginalDefinition.Type as INamedTypeSymbol)?.DelegateInvokeMethod is { } selector &&
+			SymbolEqualityComparer.Default.Equals(definition.ReturnType, selector.ReturnType) &&
+			PropertyPathSelector.TrySelect(argument.Value, out var properties) && Util.HasOptionalRead(properties.Peek())))
+			return new LogicalExpression(Operator.NullishCoalescing, expression, Null);
+		return NormalizeOptionalRead(operation.TargetMethod, expression);
+	}
 
 	private static Expression? ReadUndefinedDefault(IArgumentOperation argument) =>
 		argument.ArgumentKind == ArgumentKind.DefaultValue &&
-		argument.Parameter!.GetAttributes().Any(attribute =>
-			attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptUndefinedDefaultAttribute")
+		Util.HasAttribute(argument.Parameter!, "ECMAScript.ECMAScriptUndefinedDefaultAttribute")
 			? new NonUpdateUnaryExpression(Operator.Void, new NumericLiteral(0, "0"))
 			: null;
+
+	private static (int Index, bool? Value)[] ReadFixedArguments(IMethodSymbol method)
+	{
+		var attributes = method.GetAttributes();
+		if (attributes.IsDefaultOrEmpty)
+			return [];
+		return attributes
+			.Where(attribute => attribute.AttributeClass?.ToDisplayString() is
+				"ECMAScript.ECMAScriptFixedBooleanArgumentAttribute" or "ECMAScript.ECMAScriptUndefinedArgumentAttribute")
+			.Select(attribute => ((int)attribute.ConstructorArguments[0].Value!, attribute.ConstructorArguments.Length == 2 ? (bool?)attribute.ConstructorArguments[1].Value : null))
+			.OrderBy(argument => argument.Item1)
+			.ToArray();
+	}
+
+	private static void InsertFixedArguments(List<Expression> arguments, (int Index, bool? Value)[] fixedArguments)
+	{
+		foreach (var (index, value) in fixedArguments)
+			arguments.Insert(index, value is bool boolean ? new BooleanLiteral(boolean, boolean ? "true" : "false") : CreateUndefined());
+	}
 
 	private static bool IsPartialRecordRead(IMethodSymbol method) =>
 		method.IsGenericMethod && method.Name is "Get" or "GetValue" &&
@@ -2858,26 +2939,13 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	private Expression TranslatePartialRecordRead(IInvocationOperation operation, SenseArgument argument)
 	{
 		const string invalidSelector = "PartialRecord requires a lambda selecting a record data property path.";
-		var selector = UnwrapImplicitConversions(operation.Arguments[0].Value);
-		if (selector is not IDelegateCreationOperation { Target: IAnonymousFunctionOperation lambda } ||
-			lambda.Body.Operations.Length != 1 ||
-			lambda.Body.Operations[0] is not IReturnOperation { ReturnedValue: { } value } ||
-			UnwrapImplicitConversions(value) is not IPropertyReferenceOperation property ||
-			!SymbolEqualityComparer.Default.Equals(property.Type, operation.TargetMethod.TypeArguments[0]) &&
+		if (!PropertyPathSelector.TrySelect(UnwrapImplicitConversions(operation.Arguments[0].Value), out var path))
+			return HandleTransformationFailure<Expression>(operation, invalidSelector)!;
+		var property = path.Last();
+		if (!SymbolEqualityComparer.Default.Equals(property.Type, operation.TargetMethod.TypeArguments[0]) &&
 			!(property.Type is INamedTypeSymbol nullable &&
 				nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
 				SymbolEqualityComparer.Default.Equals(nullable.TypeArguments[0], operation.TargetMethod.TypeArguments[0])))
-			return HandleTransformationFailure<Expression>(operation, invalidSelector)!;
-
-		var path = new Stack<IPropertySymbol>();
-		IOperation root = property;
-		while (root is IPropertyReferenceOperation { Instance: { } instance } segment && IsStructuralMember(segment.Property))
-		{
-			path.Push(segment.Property);
-			root = instance;
-		}
-		if (root is not IParameterReferenceOperation receiver ||
-			!SymbolEqualityComparer.Default.Equals(receiver.Parameter, lambda.Symbol.Parameters[0]))
 			return HandleTransformationFailure<Expression>(operation, invalidSelector)!;
 
 		// Selectors describe JS property paths. Emit one chain so missing parents
@@ -2955,6 +3023,18 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 
 		var methodName = string.IsNullOrEmpty(alias) ? GetCurrentModuleDeclaredOrConfigName(targetMethod) : alias;
 		var property = new Identifier(methodName!);
+		if (targetMethod.MethodKind == MethodKind.LocalFunction)
+		{
+			// Roslyn direct calls do not carry a receiver. A regular JS function declaration
+			// preserves hoisting and generators, so bind its lexical instance at the call site.
+			if (IsLexicallyStaticLocalFunction(targetMethod))
+				return new CallExpression(property, NodeList.From(arguments), optional: false);
+
+			arguments.Insert(0, new ThisExpression());
+			var call = new MemberExpression(property, new Identifier("call"), computed: false, optional: false);
+			return new CallExpression(call, NodeList.From(arguments), optional: false);
+		}
+
 		Expression callee = property;
 		if (instance is null)
 		{

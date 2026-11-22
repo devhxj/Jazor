@@ -1,0 +1,22 @@
+@using Toolkit = Npm.EsToolkit.Compat.Exports
+
+<output id="constant-typed">@_constantTyped</output>
+
+@code {
+    public record Result(string Label)
+    {
+        public double Count { get; set; }
+    }
+
+    private string _constantTyped = "";
+
+    [Setup]
+    private void Read()
+    {
+        var original = new Result("typed");
+        var getResult = Toolkit.Constant(original);
+        var result = getResult();
+        original.Count = 7;
+        _constantTyped = result.Label + "/" + result.Count;
+    }
+}

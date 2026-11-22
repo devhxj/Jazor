@@ -1,15 +1,23 @@
 @using VueUse = Npm.Vueuse.Core.Exports
 
 <output id="event-count">@_count</output>
+<output id="mouse-source">@MouseSource()</output>
 
 @code {
     [Parameter] public ECMAScript.HTMLElement Target { get; set; } = default!;
     [Parameter] public bool Manual { get; set; }
     private int _count;
+    private System.Func<string> MouseSource = default!;
 
     [Setup]
     private void Configure()
     {
+        var mouse = VueUse.UseMouse();
+        var inElement = VueUse.UseMouseInElement();
+        var network = VueUse.UseNetwork();
+        MouseSource = () => mouse.SourceType.Value is not null &&
+            mouse.SourceType.Value == inElement.SourceType.Value ? "mouse" :
+            network.EffectiveType.Value is null ? "none" : "network";
         var stop = VueUse.UseEventListener(Target, "click", OnEvent);
         var stopKeyboard = VueUse.UseEventListener(Target, VueUse.KeyboardEventName.Keydown, OnKeyboard);
         var stopMouse = VueUse.UseEventListener(Target, VueUse.MouseEventName.Dblclick, OnMouse);

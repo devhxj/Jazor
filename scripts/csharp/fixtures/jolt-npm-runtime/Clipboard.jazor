@@ -1,0 +1,30 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<output>@Describe()</output>
+<button id="copy-text" @onclick="CopyText">Copy text</button>
+<button id="copy-promise" @onclick="CopyPromise">Copy from promise</button>
+
+@code {
+    private VueUse.UseClipboardResult _clipboard = default!;
+    private bool _pendingAtCopy;
+
+    [Setup]
+    private void Configure()
+    {
+        _clipboard = VueUse.UseClipboard(new() { Legacy = true });
+    }
+
+    private void CopyText()
+    {
+        _clipboard.Copy("plain");
+    }
+
+    private void CopyPromise()
+    {
+        _clipboard.Copy(() => ECMAScript.Promise<string>.Resolve("promised"));
+        _pendingAtCopy = _clipboard.CopyPending.Value;
+    }
+
+    private string Describe() =>
+        $"{_clipboard.Text.Value}/{(_clipboard.Copied.Value ? "copied" : "idle")}/{(_clipboard.CopyPending.Value ? "pending" : "ready")}/{(_pendingAtCopy ? "observed" : "none")}";
+}

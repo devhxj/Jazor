@@ -9,6 +9,9 @@ import { getDefaultOptions, setDefaultOptions } from 'date-fns';
 import { defineRule } from 'vee-validate';
 import Vee from './.jolt/Vee.mjs';
 import { Copy, Position, Track } from './.jolt/Floating.mjs';
+import { Exercise } from './.jolt/EventHook.mjs';
+
+assert.equal(await Exercise(), 'A1B1B2C4array');
 
 const app = createSSRApp(App);
 provideSSRWidth(800, app);
@@ -64,11 +67,11 @@ assert.match(fields, /<output id="form-initial">invalid<\/output>/);
 assert.match(fields, /<output id="form-invalid-state">invalid\|invalid-form<\/output>/);
 assert.match(fields, /<output id="form-final">ada@example.test<\/output>/);
 assert.match(fields, /<output id="context-form-errors">invalid-form\|cleared<\/output>/);
-assert.match(fields, /<output id="bulk-errors">one\|two\|cleared\|cleared<\/output>/);
+assert.match(fields, /<output id="bulk-errors">one\|two\|three\|cleared\|cleared<\/output>/);
 assert.match(fields, /<output id="bulk-touched">touched\|untouched<\/output>/);
 assert.match(fields, /<output id="form-control">invalid\|invalid-form\|invalid-form<\/output>/);
-assert.match(fields, /<output id="form-array">first\|third<\/output>/);
-assert.match(fields, /<output id="form-writes">field\|ada@example.test<\/output>/);
+assert.match(fields, /<output id="form-array">first\|third\|prepended\|updated\|inserted\|pushed\|replacement<\/output>/);
+assert.match(fields, /<output id="form-writes">field\|updated@example.test\|0\|literal\|ada@example.test<\/output>/);
 assert.match(fields, /<output id="form-partial">invalid\|missing<\/output>/);
 assert.match(fields, /<output id="form-partial-nested">nested@example\.test\|0\|false\|missing\|missing<\/output>/);
 console.log('VeeValidate awaited the validator and called both submission handlers with the schema input and output.');

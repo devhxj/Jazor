@@ -1,7 +1,9 @@
 #:property CETCompat=false
 #:property PublishAot=false
+#:property AssemblyName=Jazor.NodeApiVerification
 #:project ../Jolt.Compiler/Jolt.Compiler.csproj
 
+using Jazor.NodeHost;
 using Jolt.Compiler;
 using Jolt.Npm;
 
@@ -70,6 +72,18 @@ try
     await File.WriteAllTextAsync(Path.Combine(package, "package.json"), """
         {"name":"component-fixture","version":"1.0.0","type":"module","exports":{".":{"types":"./index.d.ts","import":"./index.js"},"./widgets":{"types":"./index.d.ts","import":"./index.js"},"./values":{"types":"./values.d.ts","import":"./values.js"},"./other":{"types":"./other.d.ts","import":"./other.js"}}}
         """);
+    foreach (var (directory, version) in new[] { ("v1", "1.0.0"), ("v2", "2.0.0") })
+    {
+        var versionedCopy = Directory.CreateDirectory(Path.Combine(package, directory)).FullName;
+        await File.WriteAllTextAsync(Path.Combine(versionedCopy, "package.json"), $$"""
+            {"name":"versioned-data","version":"{{version}}","type":"module"}
+            """);
+        await File.WriteAllTextAsync(Path.Combine(versionedCopy, "shape.d.ts"), """
+            import type { Ref } from 'vue';
+            export interface Sample<T> { value: T }
+            export type Instrument<T> = Ref<T> & { read(): T };
+            """);
+    }
     await File.WriteAllTextAsync(Path.Combine(package, "index.js"), "export default { render() {} };");
     await File.WriteAllTextAsync(Path.Combine(package, "index.d.ts"), """
         import type { DefineComponent } from 'vue';
@@ -109,6 +123,9 @@ try
         export function optionalIntervalStart(interval) { return interval.lowerBound; }
         export function localDate(date) { return date; }
         export function standardDateCheck(value) { return value instanceof Date; }
+        export function observerError() { return new Error("observer failure"); }
+        export function messageStore() { return {}; }
+        export function lookalikeObserverError() { return { name: "LookupError", message: "observer failure" }; }
         export function localDateCheck(value) { return typeof value?.ticks === 'number'; }
         export function plainDateCheck(value) { return Boolean(value); }
         export function overloadedDateCheck(value) { return typeof value === 'number' ? value : Boolean(value); }
@@ -120,8 +137,39 @@ try
         export function useEventListener(target, event, listener) { return () => {}; }
         export const registerDom = useEventListener, registerLocal = useEventListener;
         export function deferCall(fn, delay) { return (...args) => Promise.resolve(fn(...args)); }
+        export function preserve(value) { return value; }
+        export function preserveUnknown(value) { return value; }
+        export function selectFrom(value, select) { return select(value); }
+        export function inspectAndKeep(inspect, value) { inspect(value); return value; }
+        export function nestSelection(value, select) { return select(value); }
+        export function transformSequence(items, select) { return items.map(select); }
+        export function loadSequence(items, select) { return select(items); }
+        export function transformPair(items, select) { return items.map(select); }
+        export function transformMutable(items, select) { return items.map(select); }
+        export function measureSelection(value, select) { select(value); return 1; }
+        export function constrainedSelection(value, select) { return select(value); }
+        export function chooseSubtype(base, value) { return value; }
+        export function indexedSelection(value, select) { return select(value); }
+        export function conditionalSelection(value, select) { return select(value); }
+        export function resultWithoutSource(value) { return value; }
+        export function reversePair(pair) { return { left: pair.right, right: pair.left }; }
+        export function pickLabel(source) { return { data: source.data, label: source.label }; }
+        export function createPickSource(data) { return { data, label: "label", count: 3 }; }
+        export function pickCount(source) { return source.count === undefined ? {} : { count: source.count }; }
+        export function acceptCount(source, patch) { return patch.count ?? source.count; }
+        export function packPair(pair) { return Promise.resolve({ payload: pair }); }
+        export function packTwice(value) { return { payload: { payload: value } }; }
+        export function chooseVariant(left, right) { return left; }
+        export const chooseVersion = chooseVariant;
+        export function makeTree(value) { return { value, children: [{ value, children: [] }] }; }
+        export const passTree = preserve, passMutual = preserve;
+        export function makeMixed(value, alternate) { return { value, children: [{ value: alternate, children: [] }] }; }
+        export const fromPhantom = preserve, fromCallbackOnly = preserve, fromOptional = preserve,
+            fromIndexed = preserve, fromMethod = preserve, fromConstraint = preserve, fromRecursive = preserve,
+            fromExpandingCycle = preserve, fromPhantomCycle = preserve, fromUnknownCycle = preserve;
         export const collectBatches = () => ({}), fixedBatches = collectBatches, undefinedBatches = collectBatches,
-            objectBatches = collectBatches;
+            objectBatches = collectBatches, chooseBatchView = collectBatches, fixedBatchView = collectBatches,
+            ambiguousBatchView = collectBatches;
         export function submitRecord(handler) { return event => Promise.resolve(handler({}, event)); }
         export const unrelatedSubmit = submitRecord;
         export function firstLabel(label) { return label; }
@@ -151,12 +199,28 @@ try
         export function narrowRef() { return { value: 'initial' }; }
         export function localeRef() { return { value: 'en' }; }
         export function narrowLocaleRef() { return { value: 'initial' }; }
+        export function editComputedRef(source) { source.value = null; }
+        export function keepClosedComputedRef(source) { return source; }
+        export function keepGenericComputedRef(source) { return source; }
+        export function keepIndependentComputedRef(source) { return source; }
+        export function keepNullableComputedRef(source) { return source; }
+        export function receiveLocalComputedRef(source) { return source.value; }
+        export function receiveExtendedComputedRef(source) { source.reset(); return source.value; }
+        export function receiveNarrowComputedRef(source) { return source.value; }
+        export function receiveUndefinedComputedRef(source) { return source.value; }
         export function editWideRef(ref) { ref.value = null; }
+        export function optionalNumberRef(present) { return { value: present ? 0 : undefined }; }
+        export function editOptionalNumberRef(ref) { ref.value = undefined; }
         export function countDates(dates) { return dates.length; }
         export function replaceDate(dates) { dates[0] = 0; }
         export function flipValue(values) { values[0] = !values[0]; }
         export function replaceLiteral(values) { values[0] = "fixed"; }
         export function optionalNumbers() { return {}; }
+        export function optionalRecord(initial) { return { hasValue: "wire" }; }
+        export function optionalMapped(initial) { return {}; }
+        export function optionalNullable(initial) { return {}; }
+        export function requiredNullable(initial) { return { value: null }; }
+        export function optionalUndefined(initial) { return { value: undefined }; }
         export function paint(settings) { return settings.tone; }
         export const tooling = { setMode(mode) { if (mode === "verbose") return; } };
         export const fakeTooling = { setMode(mode) { if (mode === "verbose") return; } };
@@ -177,7 +241,7 @@ try
         export function secondStage() { return {}; }
         export function applyStages(options) { options.stages[0] = false; }
         export function assess(key, evaluator, config) { return { current: { value: config.seed } }; }
-        export function assessOptional(id, evaluate, settings) { return { current: { value: settings?.seed }, evaluated: false }; }
+        export function assessOptional(id, evaluate, settings) { return { current: { value: settings?.seed }, evaluated: false, label: id }; }
         export function assessImmediately(key, evaluator, config) { return { current: { value: config.seed } }; }
         export function assessDeferred(key, evaluator, config) { return { current: { value: config.seed } }; }
         export function assessDifferent(key, evaluator, config) { return { current: { value: config.seed } }; }
@@ -198,14 +262,43 @@ try
         export function restoreDraft() { return () => {}; }
         export function restoreRequired() { return () => {}; }
         export function inspectDraft() { return () => Promise.resolve({ approved: true, problems: [] }); }
+        export function currentDraft() { return undefined; }
+        export function narrowDraft() { return undefined; }
         export function inspectOpaque() { return () => Promise.resolve({}); }
         export function trackRows() { return {}; }
+        export function trackSeededRows() { return {}; }
         export function replaceRecord() { return () => {}; }
         export function replaceSelected() { return () => {}; }
         export function replaceRequired() { return () => {}; }
         """);
     await File.WriteAllTextAsync(Path.Combine(package, "other.d.ts"), """
         import type { ComputedRef, Ref } from 'vue';
+        type PulseArgs<T> = T extends unknown[] ? T : [T];
+        type PulseListener<T> = (...args: PulseArgs<T>) => void;
+        export declare function makePulse<T>(): {
+            subscribe: (listener: PulseListener<T>) => { dispose: () => void };
+            forget: (listener: PulseListener<T>) => void;
+            broadcast: (...args: Parameters<PulseListener<T>>) => Promise<unknown[]>;
+            reset: () => void;
+        };
+        export declare function mismatchedPulse<T>(): {
+            subscribe: (listener: PulseListener<T>) => { dispose: () => void };
+            forget: (listener: (value: boolean) => void) => void;
+            broadcast: (...args: Parameters<PulseListener<T>>) => Promise<unknown[]>;
+        };
+        export declare function queryDataProtocol(): QueryDataProtocol;
+        declare const dataBrand: unique symbol;
+        type TaggedResult<K, Data> = K extends { readonly [dataBrand]: infer Branded } ? Branded : Data;
+        declare class QueryDataProtocol {
+            valid<T>(key: readonly string[]): T | undefined;
+            reordered<T, K extends readonly unknown[] = readonly unknown[]>(key: K): TaggedResult<K, T> | undefined;
+            returnsKey<T>(key: T): T | undefined;
+            narrowFirst(key: readonly ['fixed']): string;
+            narrowFirst<T>(key: readonly string[]): T | undefined;
+            customThis<T>(this: { context: boolean }, key: readonly string[]): T | undefined;
+            requiredCallbackField<T>(key: readonly string[],
+                updater: T | undefined | { (old: T | undefined): T | undefined; marker: string }): T | undefined;
+        }
         type Draft = Record<string, unknown>;
         type Sparse<T> = { [K in keyof T]?: T[K] };
         interface Decoder<TSource, TDestination> {
@@ -223,12 +316,34 @@ try
         interface DraftHandle<TSource, TDestination> {
             snapshot: TSource;
             notices: ComputedRef<Sparse<Record<keyof TSource, string>>>;
+            groupedNotices: Ref<Sparse<Record<keyof TSource, string[]>>>;
+            conditionalGroups: Ref<Partial<Record<keyof TSource, TSource extends { joltInput: string } ? string[] : number[]>>>;
+            fieldGroups: Ref<Partial<{ [K in keyof TSource]: TSource[K][] }>>;
+            transformedGroups: Ref<Sparse<Record<keyof TDestination, string[]>>>;
             transformedNotices: ComputedRef<Sparse<Record<keyof TDestination, string>>>;
             numericNotices: ComputedRef<Sparse<Record<keyof TSource, number>>>;
             lookalikeNotices: { readonly value: Sparse<Record<keyof TSource, string>> };
             commit: Commit<TSource, TDestination> & { controlled: Commit<TSource, TDestination> };
             replace(patch: Sparse<TSource>, amend?: boolean): void;
+            revise<TKey extends DraftRoute<TSource>>(key: TKey, next: DraftValue<TSource, TKey>, amend?: boolean): void;
+            disregard<TKey extends DraftRoute<TSource>>(key: TKey, next: unknown, amend?: boolean): void;
+            reviseFiltered<TKey extends FilteredRoute<TSource>>(key: TKey, next: DraftValue<TSource, TKey>, amend?: boolean): void;
         }
+        interface ActiveDraft<TSource, TDestination> extends DraftHandle<TSource, TDestination> {
+            recheck(): Promise<{ accepted: boolean }>;
+            review<TKey extends DraftRoute<TSource>>(key: TKey): Promise<{ accepted: boolean; notes: string[] }>;
+            reviewFiltered<TKey extends FilteredRoute<TSource>>(key: TKey): Promise<{ accepted: boolean; notes: string[] }>;
+            reviewForeign<TKey extends DraftRoute<{ joltInput: string; different: number }>>(key: TKey): Promise<{ accepted: boolean; notes: string[] }>;
+            reviewTransformed<TKey extends DraftRoute<TDestination>>(key: TKey): Promise<{ accepted: boolean; notes: string[] }>;
+            reviewUnclassified<TKey extends DraftRoute<TSource>>(key: TKey): Promise<{ notes: string[] }>;
+            reviewOptional<TKey extends DraftRoute<TSource>>(key: TKey): Promise<{ accepted?: boolean; notes: string[] }>;
+            reviewText<TKey extends DraftRoute<TSource>>(key: TKey): Promise<{ accepted: string; notes: string[] }>;
+        }
+        type DraftRoute<T> = { [K in keyof T & string]: K | `${K}.${DraftRoute<T[K]>}` }[keyof T & string];
+        type FilteredRoute<T> = T extends { blocked: true } ? never : DraftRoute<T>;
+        type DraftValue<T, P extends DraftRoute<T>> = P extends `${infer K}.${infer R}`
+            ? K extends keyof T ? DraftValue<T[K], R & DraftRoute<T[K]>> : never
+            : P extends keyof T ? T[P] : never;
         export declare function assembleDraft<TDecoder extends Decoder<TSource, TDestination>,
             TSource extends Draft, TDestination extends Draft = TSource>(
             setup: { startingPoint: Sparse<TSource>; adapter: TDecoder extends Decoder<TSource, TDestination> ? Decoder<TSource, TDestination> : never }
@@ -241,6 +356,10 @@ try
             TDestination extends Draft = TSource, TDecoder extends Decoder<TSource, TDestination> = Decoder<TSource, TDestination>>(
             setup: { startingPoint: Sparse<TSource>; adapter: TDecoder extends Decoder<TSource, TDestination> ? Decoder<TSource, TDestination> : never }
         ): DraftHandle<TSource, TDestination>;
+        export declare function currentDraft<TSource extends Draft = Draft,
+            TDestination extends Draft = TSource>(): ActiveDraft<TSource, TDestination> | undefined;
+        export declare function narrowDraft<TSource extends { joltInput: string } = { joltInput: string },
+            TDestination extends Draft = TSource>(): ActiveDraft<TSource, TDestination> | undefined;
         export declare function collectNotices<TSource extends Draft = Draft>(): ComputedRef<Sparse<Record<keyof TSource, string>>>;
         export declare function collectSnapshot<TSource extends Record<string, any> = Record<string, any>>(): ComputedRef<Sparse<TSource>>;
         export declare function selectCurrent<TSelected = unknown>(selector?: string | Ref<string> | (() => string)): ComputedRef<TSelected>;
@@ -254,8 +373,13 @@ try
         export declare function restoreRequired<TData extends Draft = Draft>(): (state: { items: TData; visits?: number }) => void;
         export declare function inspectDraft<TParsed>(key?: string): () => Promise<{ approved: boolean; problems: string[]; decoded?: TParsed }>;
         export declare function inspectOpaque<TParsed>(key?: string): () => Promise<{ decoded: TParsed }>;
-        interface RunRow<TData> { payload: TData; isHead: boolean; isTail: boolean; }
+        interface RunRow<TData> { readonly payload: TData; isHead: boolean; isTail: boolean; }
         export declare function trackRows<TData = unknown>(key: string): {
+            rows: Ref<RunRow<TData>[]>;
+            drop(index: number): void;
+            add(payload: TData): void;
+        };
+        export declare function trackSeededRows<TData = unknown>(options: { label: string; seed?: TData }): {
             rows: Ref<RunRow<TData>[]>;
             drop(index: number): void;
             add(payload: TData): void;
@@ -263,10 +387,42 @@ try
         export declare function replaceRecord<TData extends Draft = Draft>(): (data: TData, enabled?: boolean) => void;
         export declare function replaceSelected<TData = unknown>(key?: string): (data: TData, enabled?: boolean) => void;
         export declare function replaceRequired<TData extends { key: string }>(): (data: TData) => void;
+        export declare function readColumn<TEntry, TColumn extends keyof TEntry>(entry: TEntry, column: TColumn): TEntry[TColumn];
+        export declare function columnHandle<P extends object, K extends keyof P, Name extends string>(entry: P, key?: K, emit?: (name: Name) => void): import('vue').WritableComputedRef<P[K]>;
+        export declare function columnHandle<P extends object, K extends keyof P>(entry: P, key?: K, options?: boolean): Ref<NonNullable<P[K]>>;
+        export declare function observedColumn<P, K extends keyof P>(entry: P, key: K): ComputedRef<P[K]>;
+        interface ColumnBehavior<T, B extends boolean> {
+            fallback?: T;
+            deferred?: B;
+            accept?: (value: T) => boolean;
+        }
+        export declare function trackColumn<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[K]>;
+        export declare function trackColumn<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], false>): import('vue').WritableComputedRef<P[K]>;
+        export declare function wrongBehaviorSlot<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[keyof P], true>): Ref<P[K]>;
+        export declare function requiredBehaviorHole<P extends object, K extends keyof P>(entry: P, key: K, notify: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[K]>;
+        export declare function changedBehaviorReturn<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[keyof P]>;
+        export declare function competingBehavior<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: { deferred?: boolean }): Ref<boolean>;
+        export declare function competingBehavior<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[K]>;
+        export declare function mixedHandle<P extends object, K extends keyof P>(entry: P, key: K): Ref<P[K]>;
+        export declare function mixedHandle(entry: string, key: string, count: number): number;
+        export declare function reorderedHandle<P extends object, K extends keyof P>(entry: P, key?: K, options?: boolean): Ref<NonNullable<P[K]>>;
+        export declare function reorderedHandle<P extends object, K extends keyof P>(entry: P, key?: K): import('vue').WritableComputedRef<P[K]>;
+        export declare function requiredHandleTail<P extends object, K extends keyof P>(entry: P, key: K, emit: () => void): Ref<P[K]>;
+        export declare function changedHandleIndex<P extends object, K extends keyof P>(entry: P, key: K): Ref<P[keyof P]>;
+        export declare function specializedHandle(entry: { id: string }, key: 'id'): Ref<string>;
+        export declare function specializedHandle<P extends object, K extends keyof P>(entry: P, key: K): Ref<P[K]>;
+        export declare function putCell<TIndex extends string & keyof TRow, TRow extends object>(row: TRow, index: TIndex, cell: TRow[TIndex]): void;
+        export declare function readRequired<TEntry extends { id: string }, TColumn extends keyof TEntry>(entry: TEntry, column: TColumn): TEntry[TColumn];
+        export declare function readTextKeys<TEntry, TColumn extends keyof TEntry & 'id'>(entry: TEntry, column: TColumn): TEntry[TColumn];
+        export declare function readMismatched<TEntry, TColumn extends keyof TEntry>(entry: TEntry, column: TColumn): TEntry[keyof TEntry];
+        export declare function putUnrelated<TEntry, TColumn extends keyof TEntry>(entry: TEntry, column: TColumn, newValue: unknown): void;
+        export declare function readExtra<TKey extends keyof TRight, TLeft, TRight>(entry: TLeft, column: TKey): TRight[TKey];
+        export declare function readNested<TEntry, TColumn extends keyof TEntry>(entry: TEntry, column: `${TColumn & string}.value`): TEntry[TColumn];
         export declare namespace tooling { function setMode(mode: string): void; }
         export declare const fakeTooling: { setMode(mode: string): void };
         interface StopListening { release(): void }
         interface ObservedTarget {
+            readonly tick: (listener: (unused: void) => void) => StopListening;
             readonly observe: (listener: (event: { readonly total: number }) => void) => StopListening;
             readonly requiresResult: (listener: (event: { readonly total: number }) => string) => StopListening;
             readonly uncertainPayload: (listener: (event: { readonly total: number } | symbol) => void) => StopListening;
@@ -303,7 +459,7 @@ try
         export declare function assess<T>(id: string, evaluate: (candidate: T) => Verdict | Promise<Verdict>,
             settings: { seed: T }): { current: Ref<T> };
         export declare function assessOptional<T = unknown>(id: string, evaluate?: string | ((candidate: T) => Verdict),
-            settings?: { seed: T }): { current: Ref<T>; readonly evaluated: boolean; accept(candidate: T): void };
+            settings?: { seed: T }): { current: Ref<T>; readonly evaluated: boolean; label: string | Ref<string>; accept(candidate: T): void };
         export declare function assessImmediately<T>(id: string, evaluate: (candidate: T) => string,
             settings: { seed: T }): { current: Ref<T> };
         export declare function assessDeferred<T>(id: number, evaluate: (candidate: T) => Promise<number>,
@@ -335,10 +491,44 @@ try
         }
         export declare function localDate(date: Domain.Date): Domain.Date;
         export declare function standardDateCheck(value: unknown): value is Date;
+        export declare function observerError(): Error | null;
+        type IsAbsent<T> = [T] extends [never] ? true : false;
+        type MessageDictionary = Record<string, unknown>;
+        export declare function messageStore(): {
+            resolveText: {
+                (text: string | (() => string)): string;
+                (text: string | (() => string), count: number): string;
+            };
+            ambiguousText: {
+                (text: string): number;
+                (text: string | (() => string)): string;
+            };
+            retrieve<S extends MessageDictionary = never, L extends string = string, K extends string = string,
+                R = IsAbsent<S> extends true ? {} : S>(language: L | K): R;
+            replace<S extends MessageDictionary = never, L extends string = string, K extends string = string,
+                P = IsAbsent<S> extends true ? MessageDictionary : S, M extends P = P>(language: L | K, contents: M): void;
+            numeric<S extends MessageDictionary = never, L extends string = string, K extends string = string,
+                P = IsAbsent<S> extends true ? Record<string, number> : S>(language: L | K, contents: P): void;
+            optionalNumber<S extends MessageDictionary = never, L extends string = string, K extends string = string,
+                P = IsAbsent<S> extends true ? { label?: number } : S>(language: L | K, contents: P): void;
+            unrelated<S extends MessageDictionary = never, L extends string = string, K extends string = string,
+                P = IsAbsent<L> extends true ? MessageDictionary : S>(language: L | K, contents: P): void;
+            wrongConstraint<S extends MessageDictionary = never, L extends string = string, K extends string = string,
+                P = IsAbsent<S> extends true ? MessageDictionary : S,
+                M extends Record<string, number> = never>(language: L | K, contents: M): void;
+        };
+        export declare namespace ErrorDomain {
+            interface Error { name: string; message: string; stack?: string }
+        }
+        export declare function lookalikeObserverError(): ErrorDomain.Error | null;
         export declare function localDateCheck(value: unknown): value is Domain.Date;
         export declare function plainDateCheck(value: unknown): boolean;
         export declare function overloadedDateCheck(value: number): number;
         export declare function overloadedDateCheck(value: unknown): boolean;
+        export declare function interiorOption(key: string, backend?: { file: string }, options?: { verbose?: boolean }): string;
+        export declare function interiorOption(key: string, backend?: { host: string }, options?: { retries?: number }): string;
+        export declare function competingOption(key: string, backend: undefined, options: { retries?: number }): number;
+        export declare function competingOption(key: string, backend?: { host: string }, options?: { retries?: number }): string;
         export declare function getElement(element: Element): Element;
         export declare function getInput(input: HTMLInputElement): HTMLInputElement;
         declare namespace LocalInputs {
@@ -366,6 +556,71 @@ try
         export declare function registerLocal<E extends keyof HTMLElementEventMap>(target: HTMLElement, event: E, listener: (event: HTMLElementEventMap[E]) => void): () => void;
         export declare function registerLocal<E = globalThis.Event>(target: globalThis.EventTarget, event: string, listener: (event: E) => void): () => void;
         export declare function deferCall<F extends (...args: any[]) => unknown>(callback: F, delay: number): (...args: Parameters<F>) => Promise<Awaited<ReturnType<F>>>;
+        export declare function preserve<S>(value: S): S;
+        export declare function preserveUnknown<S extends unknown>(value: S): S;
+        export declare function selectFrom<R, S>(value: S, select: (value: S) => R): R;
+        export declare function inspectAndKeep<R, S>(inspect: (value: S) => R, value: S): S;
+        export declare function nestSelection<S, R>(value: S, select: (value: S) => Promise<(next: S) => Promise<R>>): Promise<(next: S) => Promise<R>>;
+        export declare function transformSequence<R, S>(items: readonly S[], select: (item: S) => R): ReadonlyArray<R>;
+        export declare function loadSequence<S, R>(items: ReadonlyArray<S>, select: (items: readonly S[]) => Promise<readonly R[]>): Promise<ReadonlyArray<R>>;
+        export declare function transformPair<S, R>(items: readonly [S, S], select: (item: S) => R): readonly [R, R];
+        export declare function transformMutable<S, R>(items: S[], select: (item: S) => R): R[];
+        export declare function doublePromise<S, R>(value: S, select: (value: S) => Promise<Promise<R>>): Promise<Promise<R>>;
+        export declare function measureSelection<S, R>(value: S, select: (value: S) => R): number;
+        export declare function constrainedSelection<S extends { requiredTag: string }, R>(value: S, select: (value: S) => R): R;
+        export declare function chooseSubtype<T, U extends T>(base: T, value: U): U;
+        export declare function indexedSelection<S, R>(value: S, select: { (item: S): R; [key: string]: boolean }): R;
+        export declare function conditionalSelection<S, R>(value: S, select: (value: S) => R): S extends string ? R : S;
+        export declare function resultWithoutSource<S, R>(value: S): R;
+        interface RightData<T> { right: T }
+        interface PairData<TLeft, TRight> extends RightData<TRight> { readonly left: TLeft }
+        type ReverseAlias<L, R> = PairData<R, L>;
+        type Envelope<T> = { payload: T };
+        export declare function reversePair<A, B>(pair: ReverseAlias<B, A>): PairData<B, A>;
+        export interface PickSource<T> { data: T; readonly label: string; count: number; }
+        export type CountPatch<T> = Partial<Pick<PickSource<T> & { nullableCount: number | null }, 'count' | 'nullableCount'>>;
+        export declare function createPickSource<T>(data: T): PickSource<T>;
+        export declare function pickLabel<T>(source: PickSource<T>): Pick<PickSource<T>, 'data' | 'label'>;
+        export declare function pickCount<TProduced>(source: PickSource<TProduced>): CountPatch<TProduced>;
+        export declare function acceptCount<TRequested>(source: PickSource<TRequested>, patch: CountPatch<TRequested>): number;
+        export declare function openPick<T, K extends keyof PickSource<T>>(source: PickSource<T>): Pick<PickSource<T>, K>;
+        declare const hiddenPickKey: unique symbol;
+        export declare function symbolPick<T>(source: PickSource<T>): Pick<PickSource<T> & { [hiddenPickKey]: number }, typeof hiddenPickKey>;
+        export declare function packPair<U, V>(pair: PairData<U, V>): Promise<Envelope<PairData<U, V>>>;
+        export declare function packTwice<T>(value: T): Envelope<Envelope<T>>;
+        declare namespace LeftVariant { interface Sample<T> { value: T } }
+        declare namespace RightVariant { interface Sample<T> { value: T } }
+        export declare function chooseVariant<A, B>(left: LeftVariant.Sample<A>, right: RightVariant.Sample<B>): RightVariant.Sample<A>;
+        export declare function chooseVersion<A, B>(left: import('./v1/shape.js').Sample<A>, right: import('./v2/shape.js').Sample<B>): import('./v2/shape.js').Sample<A>;
+        interface Tree<T> { value: T; readonly children: readonly Tree<T>[] }
+        type Mutual<A, B> = { value: A; branch: MutualBranch<B, A> };
+        interface MutualBranch<A, B> { value: A; readonly descendants: readonly Mutual<B, A>[] }
+        interface Mixed<T, U> { value: T; readonly children: readonly Mixed<U, T>[] }
+        export declare function makeTree<T>(value: T): Tree<T>;
+        export declare function passTree<T>(value: Tree<T>): Tree<T>;
+        export declare function passMutual<T, U>(value: Mutual<T, U>): Mutual<T, U>;
+        export declare function makeMixed<T>(value: T, alternate: import('vue').Ref<T>): Mixed<T, import('vue').Ref<T>>;
+        interface Phantom<T> { name: string }
+        interface CallbackOnly<T> { invoke: (value: T) => void }
+        interface OptionalData<T> { value?: T }
+        interface IndexedData<T> { value: T; [key: string]: T }
+        interface MethodData<T> { value: T; invoke(): void }
+        interface ConstrainedData<T extends string> { value: T }
+        interface RecursiveData<T> { value: T; next: RecursiveData<readonly T[]> }
+        interface ExpandingStart<T> { value: T; next: ExpandingTail<readonly T[]> }
+        interface ExpandingTail<T> { value: T; next: ExpandingStart<T> }
+        interface PhantomCycle<T> { readonly children: readonly PhantomCycle<T>[] }
+        interface UnknownCycle<T> { value: T; readonly children: readonly UnknownCycle<unknown>[] }
+        export declare function fromPhantom<T>(record: Phantom<T>): T;
+        export declare function fromCallbackOnly<T>(record: CallbackOnly<T>): T;
+        export declare function fromOptional<T>(record: OptionalData<T>): T;
+        export declare function fromIndexed<T>(record: IndexedData<T>): T;
+        export declare function fromMethod<T>(record: MethodData<T>): T;
+        export declare function fromConstraint<T>(value: T): ConstrainedData<string>;
+        export declare function fromRecursive<T>(record: RecursiveData<T>): T;
+        export declare function fromExpandingCycle<T>(record: ExpandingStart<T>): T;
+        export declare function fromPhantomCycle<T>(record: PhantomCycle<T>): T;
+        export declare function fromUnknownCycle<T>(record: UnknownCycle<T>): T;
         type BatchOptions<P, C, Stop = null> = {
             queryKey: string[];
             initialPageParam: C;
@@ -378,6 +633,14 @@ try
         export declare function undefinedBatches<P, C>(options: BatchOptions<P, C, undefined>): BatchResult<P>;
         type ObjectPage<P> = P extends object ? string : P;
         export declare function objectBatches<P, C>(options: BatchOptions<P, C>): BatchResult<ObjectPage<P>>;
+        type BatchView<P, C> = { pages: P[]; pageParams: C[] };
+        type BatchViewOptions<P, C, R> = BatchOptions<P, C> & { projectView?: (data: BatchView<P, C>) => R };
+        export declare function chooseBatchView<P, C, R = BatchView<P, unknown>>(options: BatchViewOptions<P, C, R>):
+            { data: import('vue').Ref<R | undefined> };
+        export declare function fixedBatchView<P, C, R>(options: BatchViewOptions<P, C, R>): BatchResult<P>;
+        export declare function ambiguousBatchView<P, C, R = BatchView<P, unknown>>(
+            options: BatchViewOptions<P, C, R> & { anotherView?: (data: BatchView<P, C>) => R }):
+            { data: import('vue').Ref<R | undefined> };
         export declare function submitRecord<T extends Record<string, unknown>>(handler: (values: T, context: { submitCount: number }) => unknown): (event?: globalThis.Event) => Promise<unknown>;
         export declare function unrelatedSubmit<T extends Record<string, unknown>>(handler: (values: T, context: { submitCount: number }) => unknown): (event?: string) => Promise<unknown>;
         export declare enum SignalLevel { Quiet = -2, Loud = 17, loud = 19, "loud-mode" = 23 }
@@ -452,12 +715,129 @@ try
         export declare function narrowRef(): Ref<string, 'initial'>;
         export declare function localeRef(): import('vue').WritableComputedRef<string>;
         export declare function narrowLocaleRef(): import('vue').WritableComputedRef<string, 'initial'>;
+        export declare function editComputedRef(source: import('vue').WritableComputedRef<string, string | null>): void;
+        type CalculatedWritable<R, W = R> = import('vue').WritableComputedRef<R, W>;
+        export declare function keepClosedComputedRef(source: CalculatedWritable<string>): CalculatedWritable<string>;
+        export declare function keepGenericComputedRef<T>(source: CalculatedWritable<T>): CalculatedWritable<T>;
+        export declare function keepIndependentComputedRef<R, W>(source: CalculatedWritable<R, W>): CalculatedWritable<R, W>;
+        export declare function keepNullableComputedRef<T>(source: CalculatedWritable<T, T | null>): CalculatedWritable<T, T | null>;
+        declare const LocalComputedRefSymbol: unique symbol;
+        interface LocalComputedRef extends Ref<string> {
+            readonly [LocalComputedRefSymbol]: true;
+        }
+        interface ExtendedComputedRef extends CalculatedWritable<string> {
+            reset(): void;
+        }
+        export declare function receiveLocalComputedRef(source: LocalComputedRef): string;
+        export declare function receiveExtendedComputedRef(source: ExtendedComputedRef): string;
+        export declare function receiveNarrowComputedRef(source: CalculatedWritable<string, 'initial'>): string;
+        export declare function receiveUndefinedComputedRef(source: CalculatedWritable<string, string | null | undefined>): string;
         export declare function editWideRef(ref: Ref<string, string | null>): void;
+        export declare function optionalNumberRef(present: boolean): Ref<number, number | null | undefined>;
+        export declare function editOptionalNumberRef(ref: Ref<number, number | null | undefined>): void;
+        type SourceRef<T> = Readonly<Ref<T>>;
+        type Calculated<T> = ComputedRef<T>;
+        export declare function transferRef<S, R>(source: SourceRef<S>, map: (value: S) => Calculated<R>): Calculated<R>;
+        export declare function keepGenericRef<T>(source: Ref<T>): Ref<T>;
+        export declare function receiveComputed<T>(source: Calculated<T>): T;
+        interface ExtendedRef<T> extends Ref<T> { reset(): void }
+        type SignalMode = 'enabled' | 'disabled';
+        type GaugeReading = Ref<SignalMode> & {
+            readonly status: ComputedRef<SignalMode>;
+            readonly source: Ref<SignalMode>;
+        };
+        export declare function buildGauge(): GaugeReading;
+        type PulseMode = 'quick' | 'slow' | null;
+        type PulseLink = 'local' | 'remote' | undefined;
+        export declare function readPulse(): {
+            mode: import('vue').ShallowRef<PulseMode>;
+            equivalentMode: import('vue').ShallowRef<PulseMode>;
+            link: Readonly<import('vue').ShallowRef<PulseLink>>;
+        };
+        type GaugeMode<T extends string> = 'disabled' | T;
+        export declare function readFastGauge(): Ref<GaugeMode<'fast'>>;
+        export declare function readSlowGauge(): Ref<GaugeMode<'slow'>>;
+        export declare function buildConflictingGauge(): GaugeReading & { readonly value: 'enabled' };
+        export declare function acceptGauge(source: GaugeReading): SignalMode;
+        type Instrument<T> = Ref<T> & { readonly label: string; read(): T; replace(value: T): void };
+        type CounterInstrument = Instrument<number>;
+        type IncompleteInstrument = Ref<number> & { read(): number; unsupported: { new(): object } };
+        export declare function makeInstrument(): CounterInstrument;
+        export declare function passInstrument(value: Instrument<number>): CounterInstrument;
+        export declare function passTextInstrument(value: Instrument<string>): Instrument<string>;
+        export declare function passIncompleteInstrument(value: IncompleteInstrument): number;
+        export declare function makeWriter(): { submit: (data: number | (() => Promise<number | undefined>)) => Promise<void> };
+        export declare function makeOptionalWriter(): { submit: (data?: number | (() => Promise<number | undefined>)) => Promise<void> };
+        export declare function makeMismatchedWriter(): { submit: (data: number | (() => Promise<string>)) => Promise<void> };
+        interface ArchiveFilter<K> { key?: K; exact?: boolean }
+        declare const archiveTag: unique symbol;
+        type ArchiveKey = readonly unknown[];
+        type ArchivePayload<D, K> = K extends { readonly [archiveTag]: infer V } ? V : D;
+        type ArchiveUpdater<D> = D | undefined | ((previous: D | undefined) => D | undefined);
+        interface ArchiveLoad<D, K> { coordinates: K; loader?: () => D | Promise<D> }
+        interface ArchiveController {
+            sweep<K extends readonly unknown[] = readonly unknown[]>(filter?: ArchiveFilter<K>): void;
+            conflict<K extends readonly unknown[] = readonly unknown[]>(filter?: ArchiveFilter<K>): number;
+            conflict<K extends readonly unknown[] = readonly unknown[]>(filter?: ArchiveFilter<K>): void;
+            peek<D = unknown, K extends ArchiveKey = ArchiveKey, V = ArchivePayload<D, K>>(key: K): V | undefined;
+            wrongDefault<D = unknown, K extends ArchiveKey = ArchiveKey, V = string>(key: K): V | undefined;
+            wrongKey<D = unknown, K extends ArchiveKey = ArchiveKey, V = ArchivePayload<D, K>>(key: readonly [K]): V | undefined;
+            revise<D = unknown, K extends ArchiveKey = ArchiveKey, V = ArchivePayload<D, K>>(key: K, updater: ArchiveUpdater<NoInfer<V>>): V | undefined;
+            wrongUpdater<D = unknown, K extends ArchiveKey = ArchiveKey, V = ArchivePayload<D, K>>(key: K, updater: (previous: V | undefined) => V | null): V | undefined;
+            resolve<D, V = D, K extends ArchiveKey = ArchiveKey>(options: ArchiveLoad<D, K>): Promise<V>;
+            competingLoad(options: object): number;
+            competingLoad<D, V = D, K extends ArchiveKey = ArchiveKey>(options: ArchiveLoad<D, K>): Promise<V>;
+            wrongPromise<D, V = D, K extends ArchiveKey = ArchiveKey>(options: ArchiveLoad<D, K>): PromiseLike<V>;
+        }
+        export declare function openArchive(): ArchiveController;
+        export declare function makeLookup(): {
+            contains<S extends string, K extends 'reserved' = 'reserved'>(key: S | K, locale?: string): boolean;
+            restricted<K extends 'reserved' = 'reserved', S extends K = K>(key: S, locale?: string): boolean;
+            competing: {
+                <S extends string>(key: S): number;
+                <S extends string>(key: S, locale?: string): boolean;
+            };
+        };
+        interface CatalogEntry { readonly id: string; revision: number; describe(): string }
+        interface CatalogView { selection(): CatalogEntry | null; setSelection(value: CatalogEntry): void }
+        export declare function inspectCatalog(): CatalogView;
+        export declare function getCatalogEntry(): CatalogEntry;
+        export declare function passVersionedInstrument(left: import('./v1/shape.js').Instrument<number>,
+            right: import('./v2/shape.js').Instrument<number>): import('./v2/shape.js').Instrument<number>;
+        type ShadowRef<T> = { readonly value: T };
+        export declare function receiveExtendedRef<T>(source: ExtendedRef<T>): T;
+        export declare function receiveAsymmetricRef<T>(source: Ref<T, T | null>): T;
+        export declare function passIndependentRef<TRead, TWrite>(source: Ref<TRead, TWrite>): Ref<TRead, TWrite>;
+        export declare function receiveNarrowRef(source: Ref<string, 'initial'>): string;
+        export declare function receiveShadowRef<T>(source: ShadowRef<T>): T;
+        type Selection<B extends boolean> = B extends true ? { path: string } : number;
+        export declare function selectMode<B extends boolean>(label: string, enabled: B, count: number): Selection<B>;
+        export declare function selectCollision<B extends boolean>(enabled: B): Selection<B>;
+        export declare function selectCollisionWithEnabledTrue(): number;
+        export declare function choose<B extends boolean>(detail: B): Selection<B>;
+        export declare function chooseWithDetailTrue(): string;
+        export declare function chooseWithDetailFalse(): string;
+        export declare function selectTwice<B extends boolean>(first: B, second: B): Selection<B>;
+        export declare function selectOptional<B extends boolean = false>(enabled?: B): Selection<B>;
+        export declare function selectAmbiguous<B extends boolean>(enabled?: B): Selection<B>;
+        export declare function selectCorrelated<B extends boolean = false>(options: { enabled: B }, enabled?: B): Selection<B>;
+        export declare function selectOptionalTail<B extends boolean = true>(label: string, enabled?: B, count?: number): Selection<B>;
         export declare function countDates(dates: readonly (Date | number | string)[]): number;
         export declare function replaceDate(dates: (Date | number | string)[]): void;
         export declare function flipValue(values: (number | boolean)[]): void;
         export declare function replaceLiteral(values: (Date | "fixed")[]): void;
         export declare function optionalNumbers(): { absent?: number; nullable?: number | null };
+        interface OptionalRecord<T> { value?: T; hasValue: string }
+        interface OptionalMappedSource<T> { value: T; ignored: string }
+        type OptionalMapped<T> = Partial<Pick<OptionalMappedSource<T>, "value">>;
+        interface OptionalNullable<T> { value?: T | null }
+        interface RequiredNullable<T> { value: T | null }
+        interface OptionalUndefined<T> { value?: T | undefined }
+        export declare function optionalRecord<T>(initial: T): OptionalRecord<T>;
+        export declare function optionalMapped<T>(initial: T): OptionalMapped<T>;
+        export declare function optionalNullable<T>(initial: T): OptionalNullable<T>;
+        export declare function requiredNullable<T>(initial: T): RequiredNullable<T>;
+        export declare function optionalUndefined<T>(initial: T): OptionalUndefined<T>;
         export declare function paint(settings: { tone: "" | "warm-tone" | "warm_tone" }): string;
         """);
     var document = Path.Combine(project, "views", "Widget.jazor");
@@ -539,7 +919,180 @@ try
     Check(registerLocal.Signatures is [{ Parameters: [_, { Type.Kind: "string" }, _] }],
         "package-local event map does not acquire standard DOM overloads");
     var deferCall = await provider.ReadValueAsync(document, "component-fixture/other", "deferCall");
+    var transfer = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["preserve", "preserveUnknown", "selectFrom", "inspectAndKeep", "nestSelection", "measureSelection",
+            "transformSequence", "loadSequence", "transformPair", "transformMutable",
+            "constrainedSelection", "chooseSubtype", "indexedSelection", "conditionalSelection", "doublePromise", "resultWithoutSource"]);
+    var transferSignatures = transfer.Values.ToDictionary(export => export.ExportName, export => export.Signatures[0]);
+    Check(transferSignatures.GetValueOrDefault("preserve") is {
+        TypeParameters: ["S"], Parameters: [{ Type: { Kind: "typeParameter", Name: "S" } }],
+        ReturnType: { Kind: "typeParameter", Name: "S" } }, "an ordinary generic value preserves its declaration slot");
+    Check(transferSignatures.GetValueOrDefault("preserveUnknown") is {
+        TypeParameters: ["S"], Parameters: [{ Type: { Kind: "typeParameter", Name: "S" } }],
+        ReturnType: { Kind: "typeParameter", Name: "S" } }, "an explicit unknown bound preserves the unrestricted generic slot");
+    Check(transferSignatures.GetValueOrDefault("selectFrom") is {
+        TypeParameters: ["R", "S"], Parameters: [{ Type.Name: "S" }, { Type.Signatures: [
+            { Parameters: [{ Type.Name: "S" }], ReturnType.Name: "R" }] }], ReturnType.Name: "R" },
+        "a reordered declaration preserves the independent callback result");
+    Check(transferSignatures.GetValueOrDefault("inspectAndKeep") is {
+        TypeParameters: ["R", "S"], Parameters: [{ Type.Signatures: [
+            { Parameters: [{ Type.Name: "S" }], ReturnType.Name: "R" }] }, { Type.Name: "S" }], ReturnType.Name: "S" },
+        "returning the original value preserves its slot while accepting an independent callback result");
+    Check(transferSignatures.GetValueOrDefault("nestSelection") is {
+        TypeParameters: ["S", "R"], Parameters: [{ Type.Name: "S" }, { Type.Signatures: [
+            { Parameters: [{ Type.Name: "S" }], ReturnType: { Kind: "promise", ElementType.Signatures: [{
+                Parameters: [{ Type.Name: "S" }], ReturnType: { Kind: "promise", ElementType.Name: "R" } }] } }] }],
+        ReturnType: { Kind: "promise", ElementType.Signatures: [{
+            Parameters: [{ Type.Name: "S" }], ReturnType: { Kind: "promise", ElementType.Name: "R" } }] } },
+        "Promise fulfillment preserves a function with its own Promise result");
+    Check(transferSignatures.GetValueOrDefault("measureSelection") is {
+        TypeParameters: ["S", "R"], Parameters: [{ Type.Name: "S" }, { Type.Signatures: [
+            { Parameters: [{ Type.Name: "S" }], ReturnType.Name: "R" }] }], ReturnType.Kind: "number" },
+        "a fixed return retains its declared numeric type despite the independent callback result");
+    Check(transferSignatures.GetValueOrDefault("transformSequence") is {
+        TypeParameters: ["R", "S"], Parameters: [
+            { Type: { Kind: "array", ReadOnly: true, ElementType.Name: "S" } },
+            { Type.Signatures: [{ Parameters: [{ Type.Name: "S" }], ReturnType.Name: "R" }] }],
+        ReturnType: { Kind: "array", ReadOnly: true, ElementType.Name: "R" } },
+        "renamed standard readonly arrays share their element slots with the selector");
+    Check(transferSignatures.GetValueOrDefault("loadSequence") is {
+        Parameters: [{ Type: { Kind: "array", ReadOnly: true, ElementType.Name: "S" } },
+            { Type.Signatures: [{ Parameters: [{ Type: { Kind: "array", ReadOnly: true, ElementType.Name: "S" } }],
+                ReturnType: { Kind: "promise", ElementType: { Kind: "array", ReadOnly: true, ElementType.Name: "R" } } }] }],
+        ReturnType: { Kind: "promise", ElementType: { Kind: "array", ReadOnly: true, ElementType.Name: "R" } } },
+        "readonly arrays preserve their element slots through callbacks and Promise fulfillment");
+    Check(transfer.Values.Single(export => export.ExportName == "transformSequence").Signatures is [
+        { Parameters: [{ Type.Kind: "array" }, _] },
+        { Parameters: [{ Type: { Kind: "recordArray", ElementType.Name: "S" } }, _],
+            ReturnType: { Kind: "array", ReadOnly: true, ElementType.Name: "R" } }],
+        "a direct readonly array input also accepts a managed array without changing the result type");
+    Check(transfer.Errors.Keys.Order(StringComparer.Ordinal).SequenceEqual(
+        ["chooseSubtype", "conditionalSelection", "constrainedSelection", "doublePromise", "indexedSelection", "resultWithoutSource",
+            "transformMutable", "transformPair"]),
+        "the direct transfer projection rejects unsupported constraints, callable state, unresolved conditions, nested fulfillment and unbound results. " +
+        $"Actual rejections: {string.Join(", ", transfer.Errors.Keys.Order(StringComparer.Ordinal))}");
+    var picks = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["pickLabel", "pickCount", "acceptCount", "createPickSource", "openPick", "symbolPick"]);
+    Check(picks.Errors.Keys.Order(StringComparer.Ordinal).SequenceEqual(["openPick", "symbolPick"]),
+        "finite generic Picks project and open or symbol keys are rejected: " +
+        string.Join(", ", picks.Errors));
+    var pickLabel = picks.Values.Single(export => export.ExportName == "pickLabel").Signatures.Single();
+    Check(pickLabel.ReturnType.Members is [
+        { Name: "data", Type.Name: "T", Optional: false, ReadOnly: false },
+        { Name: "label", Type.Kind: "string", Optional: false, ReadOnly: true }],
+        "Pick preserves the selected field types and readonly modifiers");
+    var pickCount = picks.Values.Single(export => export.ExportName == "pickCount").Signatures.Single();
+    var acceptCount = picks.Values.Single(export => export.ExportName == "acceptCount").Signatures.Single();
+    Check(pickCount.ReturnType is { TypeIdentity: not null, TypeArguments: [{ Name: "TProduced" }] } &&
+        acceptCount.Parameters[1].Type is { TypeArguments: [{ Name: "TRequested" }] } inputPatch &&
+        pickCount.ReturnType.TypeIdentity == inputPatch.TypeIdentity, "named Pick aliases retain their resolved type arguments and share declaration identity");
+    Check(pickCount.ReturnType.Members is [{ Name: "count", Type.Kind: "number", Optional: true },
+        { Name: "nullableCount", Type: { Kind: "nullable", ElementType.Kind: "number" }, Optional: true }] &&
+        acceptCount.Parameters[1].Type.Members is [{ Name: "count", Type.Kind: "number", Optional: true },
+        { Name: "nullableCount", Type: { Kind: "nullable", ElementType.Kind: "number" }, Optional: true }],
+        "Partial Pick preserves optional numeric reads and writes");
+    var pickOptions = new JoltCompileOptions { NpmValues = picks.Values };
+    const string pickCaller = """
+        @using Tool = Npm.ComponentFixture.Other.Exports
+        @code {
+            public static double Run() {
+                var source = Tool.CreatePickSource("payload");
+                var output = Tool.PickLabel(source);
+                string data = output.Data;
+                output.Data = "updated";
+                double? count = Tool.PickCount(source).Count;
+                return Tool.AcceptCount(source, new() { Count = 0, NullableCount = null }) + Tool.AcceptCount(source, new()) +
+                    Tool.AcceptCount(source, Tool.PickCount(source)) + (count ?? 0);
+            }
+        }
+        """;
+    var picked = await JoltProjectCompiler.CompileAsync([new("Pick.jazor", pickCaller)], pickOptions);
+    Check(picked.Diagnostics.Count == 0, "finite Picks compile in C#: " + string.Join(", ", picked.Diagnostics));
+    Check(picked.Modules.Single().Content.Contains("?? null", StringComparison.Ordinal), "optional numeric reads normalize undefined");
+    Check(picked.Modules.Single().Content.Contains("count: 0", StringComparison.Ordinal), "optional input preserves zero");
+    Check(picked.Modules.Single().Content.Contains("nullableCount: null", StringComparison.Ordinal), "nullable optional input preserves explicit null");
+    foreach (var (invalid, diagnostic) in new[] {
+        (pickCaller.Replace("output.Data = \"updated\"", "output.Label = \"updated\""), "CS0200"),
+        (pickCaller.Replace("output.Data = \"updated\"", "output.Count = 5"), "CS1061"),
+        (pickCaller.Replace("Count = 0", "Count = null"), "CS0037"),
+    }) {
+        var result = await JoltProjectCompiler.CompileAsync([new("Pick.jazor", invalid)], pickOptions);
+        Check(result.Diagnostics.Any(item => item.Id == diagnostic), "invalid finite Pick C# use yields " + diagnostic);
+    }
+    var recordExports = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["reversePair", "packPair", "packTwice", "chooseVariant", "chooseVersion", "fromPhantom", "fromCallbackOnly",
+            "fromOptional", "fromIndexed", "fromMethod", "fromConstraint", "fromRecursive", "makeTree", "passTree", "passMutual",
+            "makeMixed", "fromExpandingCycle", "fromPhantomCycle", "fromUnknownCycle"]);
+    var reversePair = recordExports.Values.Single(export => export.ExportName == "reversePair").Signatures.Single();
+    var pairRecord = reversePair.Parameters.Single().Type;
+    Check(pairRecord is { Kind: "namedRecord", Name: "PairData", TypeParameters: ["TLeft", "TRight"],
+        TypeArguments: [{ Name: "A" }, { Name: "B" }] } &&
+        pairRecord.Members!.Single(member => member.Name == "left") is { ReadOnly: true, Type.Name: "TLeft" } &&
+        pairRecord.Members!.Single(member => member.Name == "right") is { ReadOnly: false, Type.Name: "TRight" } &&
+        reversePair.ReturnType.TypeArguments is [{ Name: "B" }, { Name: "A" }] &&
+        pairRecord.TypeIdentity == "[\"component-fixture\",\"1.0.0\",\"other.d.ts\",\"PairData\"]",
+        "a substituted interface alias preserves declaration slots, source arguments and inherited mutability");
+    var packPair = recordExports.Values.Single(export => export.ExportName == "packPair").Signatures.Single();
+    Check(packPair.ReturnType is { Kind: "promise", ElementType: { Kind: "namedRecord", Name: "Envelope",
+        TypeParameters: ["T"], Members: [{ Type.Name: "T" }], TypeArguments: [{ Name: "PairData" } pair] } } &&
+        pair.TypeDefinition == pairRecord.TypeDefinition && pair.TypeDefinition == packPair.Parameters.Single().Type.TypeDefinition,
+        "a named type composes with Promise and reuses the same source declaration across exports");
+    Check(recordExports.Values.Single(export => export.ExportName == "packTwice").Signatures.Single().ReturnType is
+        { Name: "Envelope", TypeArguments: [{ Name: "Envelope", TypeArguments: [{ Name: "T" }] }] },
+        "finite nesting can reuse the same data declaration");
+    var chooseVariant = recordExports.Values.Single(export => export.ExportName == "chooseVariant").Signatures.Single();
+    Check(chooseVariant.Parameters[0].Type.TypeIdentity == "[\"component-fixture\",\"1.0.0\",\"other.d.ts\",\"LeftVariant\",\"Sample\"]" &&
+        chooseVariant.Parameters[1].Type.TypeIdentity == "[\"component-fixture\",\"1.0.0\",\"other.d.ts\",\"RightVariant\",\"Sample\"]" &&
+        chooseVariant.ReturnType.TypeIdentity == chooseVariant.Parameters[1].Type.TypeIdentity,
+        "an identical record in a different namespace receives a separate stable declaration identity");
+    var chooseVersion = recordExports.Values.Single(export => export.ExportName == "chooseVersion").Signatures.Single();
+    Check(chooseVersion.Parameters[0].Type.TypeIdentity == "[\"versioned-data\",\"1.0.0\",\"shape.d.ts\",\"Sample\"]" &&
+        chooseVersion.Parameters[1].Type.TypeIdentity == "[\"versioned-data\",\"2.0.0\",\"shape.d.ts\",\"Sample\"]" &&
+        chooseVersion.ReturnType.TypeIdentity == chooseVersion.Parameters[1].Type.TypeIdentity,
+        "an identical record in a different version receives a separate stable declaration identity");
+    Check(JoltNpmBindings.GenerateSource(recordExports.Values).Split("public sealed record Sample_").Length == 5,
+        "the public projection emits distinct carriers for each package version and namespace");
+    var makeTree = recordExports.Values.Single(export => export.ExportName == "makeTree").Signatures.Single().ReturnType;
+    var passTree = recordExports.Values.Single(export => export.ExportName == "passTree").Signatures.Single();
+    Check(makeTree is { Kind: "namedRecord", Name: "Tree", Members: [
+        { Name: "value", Type.Name: "T" }, { Name: "children", ReadOnly: true, Type: { Kind: "array", ReadOnly: true,
+            ElementType: { Kind: "namedRecord", Name: "Tree", Members: null, TypeArguments: [{ Name: "T" }] } child } }] } &&
+        child.TypeIdentity == makeTree.TypeIdentity && passTree.Parameters.Single().Type.TypeIdentity == child.TypeIdentity,
+        "recursive readonly array elements reuse the same declaration and infer the payload from its data field");
+    var mutual = recordExports.Values.Single(export => export.ExportName == "passMutual").Signatures.Single().ReturnType;
+    Check(mutual is { Name: "Mutual", Members: [_, { Type: { Name: "MutualBranch", TypeArguments: [{ Name: "B" }, { Name: "A" }],
+        Members: [_, { Type.ElementType: { Name: "Mutual", Members: null, TypeArguments: [{ Name: "B" }, { Name: "A" }] } descendant }] } }] } &&
+        descendant.TypeIdentity == mutual.TypeIdentity,
+        "mutually recursive records preserve the substitution on each edge and both payloads participate in inference");
+    Check(recordExports.Values.Single(export => export.ExportName == "makeMixed").Signatures.Single().ReturnType is
+        { TypeArguments: [{ Name: "T" }, { Kind: "ref", ElementType.Name: "T" }], Members: [_,
+            { Type.ElementType: { Members: null, TypeArguments: [{ Name: "U" }, { Name: "T" }] } }] },
+        "a ref supplied as a concrete outer argument can become a data field through a recursive slot swap");
+    Check(recordExports.Errors.Keys.Order(StringComparer.Ordinal).SequenceEqual(
+        ["fromCallbackOnly", "fromConstraint", "fromExpandingCycle", "fromIndexed", "fromMethod", "fromPhantom",
+            "fromPhantomCycle", "fromRecursive", "fromUnknownCycle"]),
+        "named records preserve the data-only contract, require inference evidence and reject unbounded or unsupported substitutions. " +
+        $"Actual rejections: {string.Join(", ", recordExports.Errors.Keys.Order(StringComparer.Ordinal))}");
+    Check(recordExports.Values.Single(export => export.ExportName == "fromOptional").Signatures is [
+        { Parameters: [{ Type: { TypeArguments: [{ Name: "T" }], Members: [
+            { Optional: true, Type: { Kind: "optionalSlot", ElementType.Name: "T" } }] } }],
+            ReturnType.Name: "T" }],
+        "a required typed input record provides inference evidence for its optional generic field");
     var batches = await provider.ReadValueAsync(document, "component-fixture/other", "collectBatches");
+    var selectedBatches = await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["chooseBatchView", "fixedBatchView", "ambiguousBatchView"]);
+    var selected = selectedBatches.Single(export => export.ExportName == "chooseBatchView");
+    Check(selected.Signatures.Count == 2 &&
+        selected.Signatures[0].ReturnType.Members!.Single().Type.ElementType?.ElementType?.Members is [{ Name: "pages" }] &&
+        selected.Signatures[1].ReturnType.Members!.Single().Type.ElementType?.ElementType is { Kind: "typeParameter", Name: "TResult" } &&
+        selected.Signatures[1].Parameters.Single().Type.Members!.Single(member => member.Name == "projectView") is
+            { Optional: false, Type.Signatures: [{ Parameters: [{ Type.Members: [
+                { Name: "pages", Type.ElementType.Name: "TPage" },
+                { Name: "pageParams", Type.ElementType.Name: "TPageParam" },
+            ] }], ReturnType.Name: "TResult" }] } &&
+        selectedBatches.Single(export => export.ExportName == "fixedBatchView").Signatures.Count == 1 &&
+        selectedBatches.Single(export => export.ExportName == "ambiguousBatchView").Signatures.Count == 1,
+        "a unique renamed callback independently determines the result ref");
     Check(batches.Signatures.Single().Parameters.Single().Type.Members!.Single(member => member.Name == "queryKey").Type
         is { Kind: "array", ElementType.Kind: "string" }, "narrow paged query keeps the declared string key");
     Check(batches.Signatures is [{ TypeParameters: ["TPage", "TPageParam"], ScalarResultTypeParameter: "TPageParam" }] &&
@@ -568,6 +1121,28 @@ try
     Check(headers is [{ ExportName: "headers", Signatures: [{ ReturnType.Members: [{ Name: "content-type" }] }] }] &&
         NpmNames.ValueNameFor("content-type") == "ContentType", "valid hyphenated property preserves its npm spelling");
     var tooling = await provider.ReadValuesAsync(document, "component-fixture/other", ["tooling", "fakeTooling"]);
+    var pulse = await provider.ReadValuesAsync(document, "component-fixture/other", ["makePulse", "mismatchedPulse"]);
+    Check(pulse.Single(value => value.ExportName == "makePulse").Signatures is [{
+        TypeParameters: ["TPayload"], ReturnType.Members: [
+            { Name: "subscribe", Type.Signatures: [{ ReturnType.Members: [{ Name: "dispose" }] }] },
+            { Name: "forget" },
+            { Name: "broadcast", Type.Signatures: [{ Parameters: [{ Type.Name: "TPayload" }], ReturnType.Kind: "promise" }] },
+            { Name: "reset" }
+        ]
+    }] && pulse.Where(value => value.ExportName == "mismatchedPulse").SelectMany(value => value.Signatures)
+        .All(signature => signature.TypeParameters is not ["TPayload"]),
+        "event hook projection follows renamed subscription, removal and dispatch members with one shared payload");
+    var queryData = await provider.ReadValueAsync(document, "component-fixture/other", "queryDataProtocol");
+    var dataMembers = queryData.Signatures.Single().ReturnType.Members!;
+    Check(dataMembers.Single(member => member.Name == "valid").Type.Signatures is
+        [{ ReturnType.Kind: "undefinedable" }, { ReturnType.Kind: "undefinedable", ValueTypeParameters: ["T"] }],
+        "query cache reads preserve missing reference and value payloads");
+    Check(dataMembers.Single(member => member.Name == "reordered").Type.Signatures![0].ReturnType is
+        { Kind: "undefinedable", ElementType: { Kind: "typeParameter", Name: "T" } },
+        "a keyed conditional alias with reordered type parameters still returns the payload for ordinary keys");
+    Check(!dataMembers.Any(member => member.Name is "returnsKey" or "customThis" or "requiredCallbackField" ||
+        member.Name == "narrowFirst" && member.Type.Signatures!.Any(signature => signature.TypeParameters is ["T"])),
+        "query cache projection rejects key-dependent payloads, earlier overlapping overloads, explicit receivers and callbacks with required fields");
     var subscriptions = await provider.ReadValueAsync(document, "component-fixture/other", "observeTarget");
     var plugins = await provider.ReadValuesAsync(document, "component-fixture/other",
         ["companion", "requiresConfiguration", "needsNumber", "invalidInstaller"]);
@@ -599,7 +1174,11 @@ try
     var wrongStage = JoltProjectCompiler.Analyze(
         [new("Stages.jazor", stageSource.Replace("Package.FirstStage()", "Package.SecondStage()", StringComparison.Ordinal))], stageOptions);
     Check(wrongStage.Diagnostics.Any(diagnostic => diagnostic.Id == "CS1503"), "an identically shaped second protocol cannot enter the first sequence");
-    var subscription = subscriptions.Signatures.Single().ReturnType.Members!.Single();
+    var listeners = subscriptions.Signatures.Single().ReturnType.Members!;
+    Check(listeners.Count == 2 && listeners.Single(member => member.Name == "tick").Type.Signatures is [{
+        Parameters: [{ Type.Signatures: [{ Parameters.Count: 0, ReturnType.Kind: "void" }] }],
+        ReturnType.Members: [{ Name: "release" }] }], "a void event carries no C# listener argument");
+    var subscription = listeners.Single(member => member.Name == "observe");
     Check(subscription is { Name: "observe", Type.Signatures: [{
         Parameters: [{ Type.Signatures: [{ Parameters: [{ Type.Members: [{ Name: "total", Type.Kind: "number" }] }],
             ReturnType.Kind: "void" }] }],
@@ -628,6 +1207,24 @@ try
         ["moveDate", "taggedDate", "intervalStart", "taggedIntervalStart", "optionalIntervalStart", "localDate",
          "getElement", "getInput", "localInput", "augmentedInput", "localElement", "firstLabel", "getLabel"]);
     var projected = hostExports.ToDictionary(value => value.ExportName);
+    var messages = await provider.ReadValueAsync(document, "component-fixture/other", "messageStore");
+    var messageMethods = messages.Signatures.Single().ReturnType.Members!;
+    Check(messageMethods.Single(member => member.Name == "retrieve").Type.Signatures is
+            [{ Parameters: [{ Type.Kind: "string" }], ReturnType.Kind: "plainRecord" }] &&
+        messageMethods.Single(member => member.Name == "replace").Type.Signatures is
+            [{ Parameters: [{ Type.Kind: "string" }, { Type.Kind: "plainRecord" }], ReturnType.Kind: "void" }] &&
+        messageMethods.Single(member => member.Name == "resolveText").Type is { Kind: "method", Signatures:
+            [{ Parameters: [{ Type.Kind: "string" }], ReturnType.Kind: "string" }] } &&
+        !messageMethods.Any(member => member.Name is "numeric" or "optionalNumber" or "unrelated" or "wrongConstraint"
+            || member.Name == "ambiguousText" && member.Type.Kind == "method"),
+        "renamed locale message methods preserve the default record domain and reject narrower or unrelated signatures");
+    var errors = (await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["observerError", "lookalikeObserverError"])).ToDictionary(value => value.ExportName);
+    Check(errors["observerError"].Signatures is [{ ReturnType: {
+            Kind: "nullable", ElementType.Kind: "error" } }] &&
+        (!errors.TryGetValue("lookalikeObserverError", out var lookalikeError) ||
+            lookalikeError.Signatures is [{ ReturnType: { Kind: "nullable", ElementType.Kind: "object" } }]),
+        "only the standard TypeScript Error symbol projects as the JavaScript Error host");
     var predicates = (await provider.ReadValuesAsync(document, "component-fixture/other",
         ["standardDateCheck", "localDateCheck", "plainDateCheck", "overloadedDateCheck"]))
         .ToDictionary(value => value.ExportName);
@@ -690,10 +1287,15 @@ try
         "only standard promises project as host promises and retain their fulfillment type");
     var forwardedJobs = await provider.ReadValuesAsync(document, "component-fixture/other",
         ["schedule", "counterOnly", "constrainedJob"]);
-    Check(forwardedJobs is [{ ExportName: "schedule", Signatures: [{
+    var jobsByName = forwardedJobs.ToDictionary(value => value.ExportName);
+    Check(jobsByName.GetValueOrDefault("schedule")?.Signatures is [{
         TypeParameters: ["R"], ReturnType: { Kind: "promise", ElementType.Name: "R" },
         Parameters: [_, { Type.Signatures: [{ ReturnType: { Kind: "promise", ElementType.Name: "R" } }] }]
-    }] }], "a Promise callback carries its own unconstrained result through another export");
+    }] && jobsByName.GetValueOrDefault("counterOnly")?.Signatures is [{
+        TypeParameters: ["R"], ReturnType: { Kind: "promise", ElementType.Kind: "number" },
+        Parameters: [{ Type.Signatures: [{ ReturnType: { Kind: "promise", ElementType.Name: "R" } }] }]
+    }] && !jobsByName.ContainsKey("constrainedJob"),
+        "Promise callback results retain their own slot and a fixed Promise result keeps its declared fulfillment type");
     var namedInputs = (await provider.ReadValuesAsync(document, "component-fixture/other",
         ["namedInput", "loadNamedInput", "secondNamedInput", "genericInput", "anotherInput", "textInput"])).ToDictionary(value => value.ExportName);
     var firstInput = namedInputs["namedInput"].Signatures.Single();
@@ -785,12 +1387,288 @@ try
         ReturnType: { Name: "VueComputedRef", ElementType.Kind: "boolean" },
     }] }], "renamed unknown getter accepts a boolean predicate only for a compatible computed-ref result");
     var refs = (await provider.ReadValuesAsync(document, "component-fixture/other",
-        ["wideRef", "narrowRef", "editWideRef", "localeRef", "narrowLocaleRef"])).ToDictionary(value => value.ExportName);
-    Check(refs["wideRef"].Signatures is [{ ReturnType: { Kind: "ref", ElementType.Kind: "string", ReadOnly: false } }] &&
-        refs["narrowRef"].Signatures is [{ ReturnType: { Kind: "ref", ElementType.Kind: "string", ReadOnly: true } }] &&
-        !refs.ContainsKey("editWideRef"),
-        "an asymmetric Vue ref offers only safe writes and keeps asymmetric input refs unsupported");
+        ["wideRef", "narrowRef", "editWideRef", "localeRef", "narrowLocaleRef", "editComputedRef"])).ToDictionary(value => value.ExportName);
+    Check(refs["editComputedRef"].Signatures is [{ Parameters: [{ Type: {
+        Kind: "ref", Name: "VueWritableComputedRef", ElementType.Kind: "string",
+        WriteType: { Kind: "nullable", ElementType.Kind: "string" }, ReadOnly: false,
+    } }] }], "writable computed input keeps Vue identity and the exact setter payload");
+    Check(refs["wideRef"].Signatures is [{ ReturnType: {
+        Kind: "ref", ElementType.Kind: "string", WriteType: { Kind: "nullable", ElementType.Kind: "string" }, ReadOnly: false,
+    } }] && refs["editWideRef"].Signatures is [{ Parameters: [{ Type: {
+        Kind: "ref", ElementType.Kind: "string", WriteType: { Kind: "nullable", ElementType.Kind: "string" },
+    } }] }], "closed asymmetric Vue refs preserve their exact nullable setter for input and output");
+    Check(refs["narrowRef"].Signatures is [{ ReturnType: {
+        Kind: "ref", ElementType.Kind: "string", ReadOnly: true, WriteType: null,
+    } }] && refs["narrowLocaleRef"].Signatures is [{ ReturnType: {
+        Kind: "ref", ElementType.Kind: "string", ReadOnly: true, WriteType: null,
+    } }], "literal-only setters preserve readonly Ref and ComputedRef outputs");
+    var computedProjections = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["keepClosedComputedRef", "keepGenericComputedRef", "keepIndependentComputedRef", "keepNullableComputedRef",
+         "receiveLocalComputedRef", "receiveExtendedComputedRef", "receiveNarrowComputedRef", "receiveUndefinedComputedRef"]);
+    var computedRefs = computedProjections.Values.ToDictionary(value => value.ExportName);
+    Check(computedRefs["keepClosedComputedRef"].Signatures is [{
+        Parameters: [{ Type: { Name: "VueWritableComputedRef", ElementType.Kind: "string", ReadOnly: false, WriteType: null } }],
+        ReturnType: { Name: "VueWritableComputedRef", ElementType.Kind: "string", ReadOnly: false, WriteType: null },
+    }] && computedRefs["keepGenericComputedRef"].Signatures is [{
+        TypeParameters: ["T"],
+        Parameters: [{ Type: { Name: "VueWritableComputedRef", ElementType.Name: "T", ReadOnly: false, WriteType: null } }],
+        ReturnType: { Name: "VueWritableComputedRef", ElementType.Name: "T", ReadOnly: false, WriteType: null },
+    }], "writable computed aliases retain their identity for closed and generic payloads");
+    Check(computedRefs["keepIndependentComputedRef"].Signatures is [{
+        TypeParameters: ["R", "W"],
+        Parameters: [{ Type: { Name: "VueWritableComputedRef", ElementType.Name: "R", WriteType.Name: "W", ReadOnly: true } }],
+        ReturnType: { Name: "VueWritableComputedRef", ElementType.Name: "R", WriteType.Name: "W", ReadOnly: true },
+    }] && computedRefs["keepNullableComputedRef"].Signatures is [{
+        TypeParameters: ["T"],
+        Parameters: [{ Type: {
+            Name: "VueWritableComputedRef", ElementType.Name: "T",
+            WriteType: { Kind: "nullableSlot", ElementType.Name: "T" }, ReadOnly: false,
+        } }],
+        ReturnType: {
+            Name: "VueWritableComputedRef", ElementType.Name: "T",
+            WriteType: { Kind: "nullableSlot", ElementType.Name: "T" }, ReadOnly: false,
+        },
+    }], "computed refs keep the same read/write slots for inputs and outputs");
+    Check(computedRefs["receiveExtendedComputedRef"].Signatures is [{
+        Parameters: [{ Type: { Kind: "handle", Name: "ExtendedComputedRef" } }],
+    }] && computedProjections.Errors.ContainsKey("receiveLocalComputedRef") &&
+        computedProjections.Errors.ContainsKey("receiveNarrowComputedRef") &&
+        computedProjections.Errors.ContainsKey("receiveUndefinedComputedRef"),
+        "extra required members keep their named contract and unsupported computed inputs do not widen");
+    var optionalRefs = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["optionalNumberRef", "editOptionalNumberRef"]);
+    Check(optionalRefs.Errors.ContainsKey("editOptionalNumberRef") &&
+        optionalRefs.Values.Single().Signatures is [{ ReturnType: {
+            Kind: "ref", Name: "VueOptionalRef", ElementType: { Kind: "nullable", ElementType.Kind: "number" },
+            ReadOnly: false, WriteType: null,
+        } }], "undefined-capable setters expose a nullable output view and reject input transfer");
+    var optionalRefResult = await JoltProjectCompiler.CompileAsync([new("OptionalRef.jazor", """
+        @using Tool = Npm.ComponentFixture.Other.Exports
+        @code {
+            public static bool Run() {
+                var present = Tool.OptionalNumberRef(true);
+                var absent = Tool.OptionalNumberRef(false);
+                double? zero = present.Value;
+                double? missing = absent.Value;
+                present.Value = null;
+                absent.Value = 0;
+                return zero == 0 && missing == null && present.Value == null && absent.Value == 0;
+            }
+        }
+        """)], new JoltCompileOptions { NpmValues = optionalRefs.Values });
+    Check(optionalRefResult.Diagnostics.Count == 0, "optional numeric Ref allows nullable reads and writes: " +
+        string.Join(", ", optionalRefResult.Diagnostics));
+    await File.WriteAllTextAsync(Path.Combine(project, "OptionalRef.mjs"), optionalRefResult.Modules.Single().Content);
+    var optionalRefRunner = Path.Combine(project, "verify-optional-ref.mjs");
+    await File.WriteAllTextAsync(optionalRefRunner, """
+        import assert from 'node:assert/strict';
+        import { Run } from './OptionalRef.mjs';
+        assert.equal(Run(), true);
+        """);
+    await NodeModuleRunner.RunAsync(project, optionalRefRunner);
+    var gauges = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["buildGauge", "buildConflictingGauge", "acceptGauge", "readFastGauge", "readSlowGauge"]);
+    var pulseRefs = (await provider.ReadValueAsync(document, "component-fixture/other", "readPulse")).Signatures.Single().ReturnType.Members;
+    Check(pulseRefs is [
+        { Name: "mode", Type: { Kind: "ref", Name: "VueShallowRef", ReadOnly: false,
+            ElementType: { Kind: "nullable", ElementType: { Kind: "stringEnum", Name: "PulseMode", TypeIdentity: var modeIdentity,
+                StringLiterals: ["quick", "slow"] } } } },
+        { Name: "equivalentMode", Type.ElementType.ElementType.TypeIdentity: var equivalentIdentity },
+        { Name: "link", Type: { Kind: "ref", ReadOnly: true,
+            ElementType: { Kind: "undefinedable", ElementType: { Kind: "stringEnum", StringLiterals: ["local", "remote"] } } } },
+    ] && modeIdentity is not null && modeIdentity == equivalentIdentity,
+        "nullable writable and undefinedable readonly string refs preserve their literal domain and named enum identity");
+    var closedDomains = gauges.Values.Where(value => value.ExportName is "readFastGauge" or "readSlowGauge")
+        .Select(value => value.Signatures.Single().ReturnType.ElementType).ToArray();
+    Check(closedDomains.Length == 2 && closedDomains.All(domain => domain is { Kind: "stringEnum" }) &&
+        closedDomains.Select(domain => domain!.TypeIdentity ?? domain.Name).Distinct().Count() == 2,
+        "Two instantiations of a finite string alias retain their separate writable enum domains.");
+    Check(gauges.Values.Single(value => value.ExportName == "buildGauge").Signatures is [{ ReturnType: {
+        Kind: "enrichedRef", ReadOnly: false, ElementType: { Kind: "stringEnum", StringLiterals: var modes },
+        Members: var gaugeMembers,
+    } }] && modes is not null && modes.Order(StringComparer.Ordinal).SequenceEqual(["disabled", "enabled"]) &&
+        gaugeMembers is not null &&
+        gaugeMembers.Any(member => member is { Name: "status", ReadOnly: true, Type: { Kind: "ref", ReadOnly: true } }) &&
+        gaugeMembers.Any(member => member is { Name: "source", ReadOnly: true, Type: { Kind: "ref", ReadOnly: false } }) &&
+        gauges.Values.Single(value => value.ExportName == "acceptGauge").Signatures is
+            [{ Parameters: [{ Type.Kind: "enrichedRef" }] }] &&
+        gauges.Values.Single(value => value.ExportName == "buildConflictingGauge").Signatures is
+            [{ ReturnType: { Kind: "ref", ReadOnly: true, WriteType: null, Members: null } }],
+        "complete named enriched Ref inputs and outputs preserve literal writes and nested host members, while conflicting value declarations expose only readonly access");
+    var writers = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["makeWriter", "makeOptionalWriter", "makeMismatchedWriter"]);
+    foreach (var (writerName, optional) in new[] { ("makeWriter", false), ("makeOptionalWriter", true) })
+    {
+        var methods = writers.Values.Single(value => value.ExportName == writerName).Signatures.Single().ReturnType.Members!
+            .Single(member => member.Name == "submit").Type;
+        Check(methods is { Kind: "method", Signatures: { } overloads } &&
+            overloads.Count == (optional ? 3 : 2) &&
+            overloads.All(overload => overload.ReturnType is { Kind: "promise", ElementType.Kind: "void" }) &&
+            overloads.Any(overload => overload.Parameters.Count == 0) == optional &&
+            overloads.Any(overload => overload.Parameters is [{ Type.Kind: "number", Optional: false }]) &&
+            overloads.Any(overload => overload.Parameters is [{ Type.Kind: "function", Optional: false }]),
+            "direct and lazy async submit forms preserve the original omission and return contract");
+    }
+    Check(writers.Values.Where(value => value.ExportName == "makeMismatchedWriter").All(value =>
+        value.Signatures.All(signature => signature.ReturnType.Members?.Any(member =>
+            member.Name == "submit" && member.Type.Kind == "method") != true)),
+        "a supplier resolving a different payload type does not project as a submit overload");
+    var catalogs = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["inspectCatalog", "getCatalogEntry"]);
+    var catalog = catalogs.Values.Single(value => value.ExportName == "inspectCatalog").Signatures.Single().ReturnType;
+    var catalogEntry = catalogs.Values.Single(value => value.ExportName == "getCatalogEntry").Signatures.Single().ReturnType;
+    var catalogSelection = catalog.Members!.Single(member => member.Name == "selection").Type;
+    Check(catalog.Kind == "handle" && catalogSelection is { Kind: "method", Signatures: [
+        { Parameters.Count: 0, ReturnType: { Kind: "nullable", ElementType: { Kind: "handle", Name: "CatalogEntry" } nestedEntry } },
+    ] } && catalogEntry is { Kind: "handle", Name: "CatalogEntry" } &&
+        nestedEntry.TypeDefinition == catalogEntry.TypeDefinition &&
+        catalogEntry.Members!.Any(member => member is { Name: "id", ReadOnly: true, Type.Kind: "string" }) &&
+        catalogEntry.Members!.All(member => member.Name != "revision"),
+        "a nullable handle getter preserves the returned declaration and exposes readonly scalar host properties");
+    Check(catalog.Members!.Single(member => member.Name == "setSelection").Type.Signatures is
+        [{ Parameters: [{ Type: { Kind: "handle", Name: "CatalogEntry" } inputEntry }] }] &&
+        inputEntry.TypeDefinition == catalogEntry.TypeDefinition,
+        "a host method taking the entry preserves its input declaration identity");
+    var archive = (await provider.ReadValueAsync(document, "component-fixture/other", "openArchive"))
+        .Signatures.Single().ReturnType.Members!.ToDictionary(member => member.Name);
+    Check(archive["sweep"].Type.Signatures!.Any(call => call.ReturnType.Kind == "void" &&
+        (call.Parameters.Count == 0 || call.Parameters is [{ Optional: true }])) &&
+        archive["sweep"].Type.Signatures!.Any(call => call.ReturnType.Kind == "void" && call.Parameters is [{ Type.Kind: "object" }]) &&
+        (!archive.TryGetValue("conflict", out var archiveConflict) ||
+            archiveConflict.Type.Signatures!.All(call => call.ReturnType.Kind != "void")),
+        "generic optional filters retain void calls at valid arities and preserve competing return contracts");
+    var archiveReads = archive["peek"].Type.Signatures!;
+    var archiveWrites = archive["revise"].Type.Signatures!;
+    Check(archiveReads.Any(call => call.Parameters.Count == 1 &&
+        call.ReturnType is { Kind: "undefinedable", ElementType.Name: "D" }) &&
+        archiveWrites.Select(call => call.Parameters[1].Type.Kind).Order(StringComparer.Ordinal)
+            .SequenceEqual(["boolean", "function", "function", "number", "recordTypeParameter", "string"]) &&
+        archiveWrites.All(call => call.ReturnType.Kind == "undefinedable" &&
+            (call.Parameters[1].OptionalCallback
+                ? call.Parameters[1].Type.Signatures is [{ Parameters: [{ Type.Kind: "undefinedable" }], ReturnType.Kind: "undefinedable" }]
+                : call.ReturnType.ElementType?.Kind == call.Parameters[1].Type.Kind)) &&
+        !archive.ContainsKey("wrongDefault") && !archive.ContainsKey("wrongKey") && !archive.ContainsKey("wrongUpdater"),
+        "generic keyed reads and updates preserve undefined output and require the declared key, default and updater contracts");
+    Check(archive["resolve"].Type.Signatures is [{ ReturnType: { Kind: "promise", ElementType.Name: var archiveResultSlot },
+        Parameters: [{ Type.Members: [{ Name: "coordinates" }, { Name: "loader", Type.Signatures: [
+            { ReturnType: { Kind: "promise", ElementType.Name: var archiveCallbackSlot } },
+        ] }] }] }] && archiveResultSlot == archiveCallbackSlot && !archive.ContainsKey("wrongPromise") &&
+        (!archive.TryGetValue("competingLoad", out var competingLoad) ||
+            competingLoad.Type.Signatures!.All(call => call.ReturnType.Kind != "promise")),
+        "generic keyed fetching shares its Promise payload with the callback and excludes nonstandard thenables");
+    var lookup = (await provider.ReadValueAsync(document, "component-fixture/other", "makeLookup"))
+        .Signatures.Single().ReturnType.Members!;
+    var contains = lookup.Single(member => member.Name == "contains").Type.Signatures!;
+    var lookupCompetitors = lookup.Single(member => member.Name == "competing").Type.Signatures!;
+    Check(contains.Count == 2 && contains.All(call => call.ReturnType.Kind == "boolean" &&
+        call.Parameters.All(parameter => parameter.Type.Kind == "string")) &&
+        contains.Select(call => call.Parameters.Count).Order().SequenceEqual([1, 2]) &&
+        lookup.All(member => member.Name != "restricted") &&
+        lookupCompetitors.All(call => call.Parameters.Count != 1 || call.ReturnType.Kind != "boolean"),
+        "defaulted schema slots preserve open string inputs and omitted arguments respect competing overload results");
+    var instruments = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["makeInstrument", "passInstrument", "passTextInstrument", "passIncompleteInstrument", "passVersionedInstrument"]);
+    var instrument = instruments.Values.Single(value => value.ExportName == "makeInstrument").Signatures.Single().ReturnType;
+    var numberInstrument = instruments.Values.Single(value => value.ExportName == "passInstrument").Signatures.Single();
+    var textInstrument = instruments.Values.Single(value => value.ExportName == "passTextInstrument").Signatures.Single();
+    Check(instrument is { Kind: "enrichedRef", ElementType.Name: "T", TypeIdentity: not null,
+            TypeArguments: [{ Kind: "number" }], Members: var instrumentMembers } &&
+        instrumentMembers is not null &&
+        instrumentMembers.Any(member => member is { Name: "label", ReadOnly: true, Type.Kind: "string" }) &&
+        instrumentMembers.Any(member => member is { Name: "read", Type: { Kind: "method", Signatures: [{ Parameters.Count: 0, ReturnType.Name: "T" }] } }) &&
+        instrumentMembers.Any(member => member is { Name: "replace", Type: { Kind: "method", Signatures: [{ Parameters: [{ Type.Name: "T" }], ReturnType.Kind: "void" }] } }) &&
+        numberInstrument.Parameters.Single().Type.TypeIdentity == instrument.TypeIdentity &&
+        numberInstrument.ReturnType.TypeIdentity == instrument.TypeIdentity &&
+        textInstrument.Parameters.Single().Type is { TypeArguments: [{ Kind: "string" }] } &&
+        textInstrument.ReturnType is { TypeArguments: [{ Kind: "string" }] } &&
+        instruments.Values.Where(value => value.ExportName == "passIncompleteInstrument")
+            .All(value => value.Signatures.All(signature => signature.Parameters.Single().Type.Kind == "handle")),
+        "named augmented Ref inputs and outputs keep their closed member types and reject incomplete input contracts");
+    var versionedInstrument = instruments.Values.Single(value => value.ExportName == "passVersionedInstrument").Signatures.Single();
+    Check(versionedInstrument.Parameters[0].Type.TypeIdentity is { } firstInstrument &&
+        versionedInstrument.Parameters[1].Type.TypeIdentity is { } secondInstrument &&
+        firstInstrument.Contains("\"versioned-data\",\"1.0.0\"", StringComparison.Ordinal) &&
+        secondInstrument.Contains("\"versioned-data\",\"2.0.0\"", StringComparison.Ordinal) &&
+        versionedInstrument.ReturnType.TypeIdentity == secondInstrument,
+        "same-named augmented refs keep the identity of each declaring package version");
+    var genericRefs = (await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["transferRef", "keepGenericRef", "receiveComputed", "receiveExtendedRef", "receiveAsymmetricRef", "receiveShadowRef",
+            "passIndependentRef", "receiveNarrowRef"]))
+        .ToDictionary(value => value.ExportName);
+    Check(genericRefs["transferRef"].Signatures is [{ TypeParameters: ["S", "R"], Parameters: [
+        { Type: { Kind: "ref", ReadOnly: true, Name: null, ElementType: { Kind: "typeParameter", Name: "S" } } },
+        { Type.Signatures: [{ Parameters: [{ Type.Name: "S" }], ReturnType: { Name: "VueComputedRef", ElementType.Name: "R" } }] },
+    ], ReturnType: { Kind: "ref", Name: "VueComputedRef", ReadOnly: true, ElementType.Name: "R" } }] &&
+        genericRefs["receiveComputed"].Signatures is [{ TypeParameters: ["T"], Parameters: [
+            { Type: { Kind: "ref", ReadOnly: true, Name: "VueComputedRef", ElementType.Name: "T" } }],
+            ReturnType: { Kind: "typeParameter", Name: "T" } }],
+        "generic Vue aliases preserve computed identity in arguments, callbacks, and results");
+    Check(genericRefs["keepGenericRef"].Signatures is [{ TypeParameters: ["T"], Parameters: [
+        { Type: { Kind: "ref", ReadOnly: false, ElementType.Name: "T" } }],
+        ReturnType: { Kind: "ref", ReadOnly: false, ElementType.Name: "T" } }] &&
+        !genericRefs.ContainsKey("receiveNarrowRef") &&
+        genericRefs.GetValueOrDefault("receiveShadowRef")?.Signatures is [{ TypeParameters: ["T"], Parameters: [
+            { Type: { Kind: "namedRecord", Name: "ShadowRef", TypeArguments: [{ Kind: "typeParameter", Name: "T" }],
+                Members: [{ Name: "value", ReadOnly: true }] } }], ReturnType: { Kind: "typeParameter", Name: "T" } }],
+        "generic writable Vue refs preserve exact writes and require the authentic ref contract");
+    Check(genericRefs["receiveExtendedRef"].Signatures is [{
+        TypeParameters: ["T"], Parameters: [{ Type: { Kind: "enrichedRef", TypeArguments: [{ Name: "T" }],
+            Members: [{ Name: "reset", Type.Kind: "method" }] } }], ReturnType.Name: "T",
+    }], "generic augmented Ref inputs retain required methods and the inferred payload type");
+    Check(genericRefs["receiveAsymmetricRef"].Signatures is [{
+        TypeParameters: ["T"], Parameters: [{ Type: {
+            Kind: "ref", ElementType: { Kind: "typeParameter", Name: "T" },
+            WriteType: { Kind: "nullableSlot", ElementType: { Kind: "typeParameter", Name: "T" } },
+        } }], ReturnType: { Kind: "typeParameter", Name: "T" },
+    }], "a generic nullable setter retains the same type parameter as the getter");
+    Check(genericRefs["passIndependentRef"].Signatures is [{
+        TypeParameters: ["TRead", "TWrite"], Parameters: [{ Type: {
+            Kind: "ref", ElementType: { Kind: "typeParameter", Name: "TRead" },
+            WriteType: { Kind: "typeParameter", Name: "TWrite" },
+        } }], ReturnType: {
+            Kind: "ref", ElementType: { Kind: "typeParameter", Name: "TRead" },
+            WriteType: { Kind: "typeParameter", Name: "TWrite" }, ReadOnly: true,
+        },
+    }], "independent generic setters and getters retain their own slots");
+    var interior = await provider.ReadValueAsync(document, "component-fixture/other", "interiorOption");
+    Check(interior.Signatures.Count(signature => signature.Parameters is [_, { Optional: true }, { Optional: true }]) == 1 &&
+        interior.Signatures.Count(signature => signature.Parameters.Count == 3) == 2,
+        "only one overlapping overload accepts a target-typed named options argument");
+    var competing = await provider.ReadValueAsync(document, "component-fixture/other", "competingOption");
+    Check(competing.Signatures.Any(signature => signature.Parameters.Count == 3 && signature.ReturnType.Kind == "string") &&
+        competing.Signatures.All(signature => signature.Parameters.All(parameter => !parameter.Optional)),
+        "an earlier overload accepting an undefined slot can suppress named omission");
     var callbackResult = await provider.ReadValueAsync(document, "component-fixture/other", "callbackResult");
+    var selection = await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["selectMode", "selectTwice", "selectOptional", "selectAmbiguous", "selectOptionalTail", "selectCorrelated", "selectCollision", "selectCollisionWithEnabledTrue"]);
+    Check(selection.Single(value => value.ExportName == "selectMode").Signatures is [
+        { ManagedNameSuffix: "WithEnabledFalse", Parameters: [{ Type.Kind: "string", FixedBoolean: null },
+            { FixedBoolean: false }, { Type.Kind: "number", FixedBoolean: null }], ReturnType.Kind: "number" },
+        { ManagedNameSuffix: "WithEnabledTrue", Parameters: [{ FixedBoolean: null },
+            { FixedBoolean: true }, { FixedBoolean: null }], ReturnType.Members: [{ Name: "path", Type.Kind: "string" }] },
+    ] && selection.Where(value => value.ExportName == "selectTwice")
+        .All(value => value.Signatures.All(signature => signature.ManagedNameSuffix is null)),
+        "literal boolean calls preserve argument position and expose each exact conditional result");
+    Check(selection.Single(value => value.ExportName == "selectOptional").Signatures is [
+        { ManagedNameSuffix: "WithEnabledFalse", Parameters: [{ FixedBoolean: false }], ReturnType.Kind: "number" },
+        { ManagedNameSuffix: "WithEnabledTrue", Parameters: [{ FixedBoolean: true }], ReturnType.Members: [{ Name: "path" }] },
+        { ManagedNameSuffix: null, Parameters: [], ReturnType.Kind: "number" },
+    ] && selection.Single(value => value.ExportName == "selectAmbiguous").Signatures is [
+        { ManagedNameSuffix: "WithEnabledFalse" }, { ManagedNameSuffix: "WithEnabledTrue" },
+    ] && selection.Single(value => value.ExportName == "selectOptionalTail").Signatures is [
+        { Parameters: [{ Optional: false }, { FixedBoolean: false }, { Optional: true }] },
+        { Parameters: [{ Optional: false }, { FixedBoolean: true }, { Optional: true }] },
+        { ManagedNameSuffix: null, Parameters: [{ Name: "label" }], ReturnType.Members: [{ Name: "path" }] },
+    ], "optional boolean calls expose exact literal results and the projectable result of omitting the parameter: " +
+        System.Text.Json.JsonSerializer.Serialize(selection.Where(value => value.ExportName is "selectOptional" or "selectAmbiguous" or "selectOptionalTail")));
+    Check(selection.All(value => value.ExportName != "selectCorrelated"),
+        "a retained input that can also infer the flag prevents literal and omission specialization");
+    Check(selection.Single(value => value.ExportName == "selectCollision").Signatures is
+        [{ ManagedNameSuffix: "WithEnabledFalse" }] &&
+        selection.Single(value => value.ExportName == "selectCollisionWithEnabledTrue").Signatures is
+        [{ ManagedNameSuffix: null, ReturnType.Kind: "number" }],
+        "a declared export takes precedence over a synthesized literal entry point");
+    await CheckUnsupported("component-fixture/other", "choose", "no callable form has an available C# name");
     Check(callbackResult.Signatures.Single().ReturnType.Members is [{ Name: "data" }],
         "an ordinary tuple parameter retains its arity and cannot become a tuple-rest call");
     var callbackProjections = await provider.ReadValuesAsync(document, "component-fixture/other", ["createScore", "measureText"]);
@@ -830,6 +1708,65 @@ try
         { Name: "absent", Optional: true, ReadOnly: true, Type.Kind: "number" },
         { Name: "nullable", Optional: true, ReadOnly: false, Type: { Kind: "nullable", ElementType.Kind: "number" } }] }],
         "an optional numeric result can accept null only if null is in the write domain");
+    var genericOptional = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["optionalRecord", "optionalMapped", "optionalNullable", "requiredNullable", "optionalUndefined"]);
+    Check(genericOptional.Errors.Keys.Order(StringComparer.Ordinal).SequenceEqual(["optionalUndefined", "requiredNullable"]) &&
+        genericOptional.Values.Count == 3,
+        "generic optional results project and unsupported union domains report projection errors: " +
+        string.Join(", ", genericOptional.Errors));
+    var genericOptionalOptions = new JoltCompileOptions { NpmValues = genericOptional.Values };
+    const string genericOptionalCaller = """
+        @using Tool = Npm.ComponentFixture.Other.Exports
+        @code {
+            public static bool Run() {
+                var named = Tool.OptionalRecord<double>(1);
+                var mapped = Tool.OptionalMapped<bool>(true);
+                bool namedPresent = named.HasValue_2;
+                bool mappedPresent = mapped.HasValue;
+                string wire = named.HasValue;
+                named.Value = 0;
+                mapped.Value = false;
+                double number = named.Value;
+                bool flag = mapped.Value;
+                var nullable = Tool.OptionalMapped<double?>(1);
+                nullable.Value = null;
+                double? nullableNumber = nullable.Value;
+                var nullableBranch = Tool.OptionalNullable<double>(1);
+                bool nullableBranchPresent = nullableBranch.HasValue;
+                nullableBranch.Value = 0;
+                double unwrapped = nullableBranch.Value!.Value;
+                nullableBranch.Value = null;
+                return !namedPresent && !mappedPresent && wire == "wire" &&
+                    named.HasValue_2 && mapped.HasValue && nullable.HasValue &&
+                    number == 0 && !flag && nullableNumber == null && !nullableBranchPresent &&
+                    unwrapped == 0 && nullableBranch.HasValue && nullableBranch.Value is null;
+            }
+        }
+        """;
+    var projectedOptional = await JoltProjectCompiler.CompileAsync([new("Optional.jazor", genericOptionalCaller)], genericOptionalOptions);
+    Check(projectedOptional.Diagnostics.Count == 0,
+        "generic optional result members retain their instantiated C# types: " + string.Join(", ", projectedOptional.Diagnostics));
+    var optionalModule = projectedOptional.Modules.Single().Content;
+    Check(optionalModule.Contains("named.hasValue", StringComparison.Ordinal) &&
+        optionalModule.Contains("named.value = 0", StringComparison.Ordinal) &&
+        optionalModule.Contains("mapped.value = false", StringComparison.Ordinal) &&
+        optionalModule.Contains("nullable.value = null", StringComparison.Ordinal) &&
+        !optionalModule.Contains("?? null", StringComparison.Ordinal) &&
+        !optionalModule.Contains("hasValue_2", StringComparison.Ordinal),
+        "generic optional access uses the upstream wire properties and raw instantiated values: " + optionalModule);
+    var invalidOptional = await JoltProjectCompiler.CompileAsync(
+        [new("Optional.jazor", genericOptionalCaller.Replace("named.Value = 0", "named.Value = null", StringComparison.Ordinal))],
+        genericOptionalOptions);
+    Check(invalidOptional.Diagnostics.Any(item => item.Id == "CS0037"),
+        "a generic optional numeric result rejects null writes");
+    await File.WriteAllTextAsync(Path.Combine(project, "Optional.mjs"), optionalModule);
+    var optionalRunner = Path.Combine(project, "verify-optional.mjs");
+    await File.WriteAllTextAsync(optionalRunner, """
+        import assert from 'node:assert/strict';
+        import { Run } from './Optional.mjs';
+        assert.equal(Run(), true);
+        """);
+    await NodeModuleRunner.RunAsync(project, optionalRunner);
     var validators = (await provider.ReadValuesAsync(document, "component-fixture/other",
         ["assess", "assessOptional", "assessImmediately", "assessDeferred", "assessDifferent", "dispatchLiteral", "dispatchCustom"]))
         .ToDictionary(value => value.ExportName);
@@ -841,13 +1778,16 @@ try
         !validators.ContainsKey("dispatchLiteral") &&
         !validators.ContainsKey("dispatchCustom"),
         "a generic callback is exposed only in the sync and async forms proved by TypeScript");
-    Check(validators["assessOptional"].Signatures is [
-        { TypeParameters: null, Parameters: [{ Name: "id", Type.Kind: "string" },
-            { Name: "evaluate", Optional: true, Type.Kind: "string" }], ReturnType.Members: [{ Name: "evaluated", ReadOnly: true }] },
-        { TypeParameters: ["TValue"], Parameters: [{ Type.Kind: "string" }, { Type.Kind: "function" }, { Type.Kind: "object" }] }] &&
-        validators["assessOptional"].Signatures[1].ReturnType.Members!.Any(member =>
-            member is { Name: "current", Type.ElementType.Kind: "typeParameter" }),
-        "the renamed validator keeps its shorter declared calls and only exposes the value with an initialized generic type");
+    var optionalValidators = validators["assessOptional"].Signatures;
+    Check(optionalValidators.Any(signature => signature is { TypeParameters: null, Parameters.Count: 2 }) &&
+        optionalValidators.Any(signature => signature is { TypeParameters: ["TValue"], Parameters.Count: 1 } &&
+            signature.ReturnType.Members!.Any(member => member is { Name: "current", Type.ElementType.Kind: "nullableSlot" }) &&
+            signature.ReturnType.Members!.Any(member => member is { Name: "label", Type.Kind: "union" })) &&
+        optionalValidators.Any(signature => signature.Parameters is [_, { OptionalCallback: true }] &&
+            signature.Parameters[1].Type.Signatures!.Single().Parameters[0].Type.Kind == "nullableSlot") &&
+        optionalValidators.Any(signature => signature.Parameters is [_, _, { Type.Kind: "object" }] &&
+            signature.ReturnType.Members!.Any(member => member is { Name: "current", Type.ElementType.Kind: "typeParameter" })),
+        "the renamed validator preserves the string-or-ref label and distinguishes missing-value and initialized calls");
 
     static NpmValueType GetResult(NpmValueSignature signature) =>
         signature.Parameters[1].Type.Signatures!.Single().ReturnType;
@@ -865,16 +1805,93 @@ try
             { Name: "snapshot" },
             { Name: "notices", ReadOnly: true, Type: { Kind: "ref", Name: "VueComputedRef", ReadOnly: true,
                 ElementType: { Kind: "readonlyDictionary", ElementType.Kind: "string" } } },
+            { Name: "groupedNotices", Type: { Kind: "ref", ReadOnly: true,
+                ElementType: { Kind: "readonlyDictionary", ElementType: { Kind: "array", ElementType.Kind: "string" } } } },
             { Name: "commit", Type.Kind: "method", Type.Signatures: [{ Parameters: [{ Name: "accept" }] }, { Parameters: [
                 { Name: "accept" }, { Name: "reject", Type.Signatures: [{ Parameters: [
                     { Type.Members: [{ Name: "draft" }, { Name: "problems", Type.Kind: "readonlyDictionary" }] }] }] }] }] },
-            { Name: "replace", Type.Kind: "method" }],
-        "renamed schema and form roles preserve the input-keyed computed errors and exclude incompatible refs");
+            { Name: "replace", Type.Kind: "method" },
+            { Name: "revise", Type.Signatures: [{
+                TypeParameters: [var fieldType],
+                Parameters: [
+                    { Type: { Kind: "propertyPath", VeeValidatePath: false, ElementType: { Kind: "recordTypeParameter", Name: "TInput" },
+                        Variants: [{ Kind: "typeParameter", Name: var selectorType }] } },
+                    { Type: { Kind: "typeParameter", Name: var valueType } },
+                    { Optional: true, Type.Kind: "boolean" }] }] }] &&
+        fieldType == selectorType && selectorType == valueType,
+        "renamed form members preserve computed errors and tie the nested selector to the replacement type");
+    var draftBindings = JoltNpmBindings.GenerateSource(draftExports);
+    Check(draftBindings.Contains("[global::ECMAScript.ECMAScriptPropertyPath] global::System.Func<@TInput, ", StringComparison.Ordinal) &&
+        draftBindings.Contains("@Revise<", StringComparison.Ordinal),
+        "the standalone C# facade marks the selector parameter and retains its type relationship");
+    var indexedHandles = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["columnHandle", "observedColumn", "mixedHandle", "reorderedHandle", "requiredHandleTail", "changedHandleIndex", "specializedHandle"]);
+    Check(indexedHandles.Values.Single(value => value.ExportName == "columnHandle").Signatures is [{
+        TypeParameters: ["TRecord", "TValue"],
+        Parameters: [{ Type.Name: "TRecord", Optional: false },
+            { Type: { Kind: "propertyKey", Variants: [{ Name: "TValue" }] }, Optional: false }],
+        ReturnType: { Kind: "ref", Name: "VueWritableComputedRef", ElementType.Name: "TValue", ReadOnly: false },
+    }] && indexedHandles.Values.Single(value => value.ExportName == "observedColumn").Signatures is [
+        { ReturnType: { Name: "VueComputedRef", ReadOnly: true, ElementType.Name: "TValue" } },
+    ] && indexedHandles.Values.Single(value => value.ExportName == "mixedHandle").Signatures is [
+        { Parameters.Count: 2, ReturnType: { Kind: "ref", ElementType.Name: "TValue" } },
+        { Parameters.Count: 3, ReturnType.Kind: "number" },
+    ] && indexedHandles.Errors.Keys.Order(StringComparer.Ordinal).SequenceEqual(
+        ["changedHandleIndex", "reorderedHandle", "requiredHandleTail", "specializedHandle"]),
+        "indexed Vue results require the exact selected field and preserve two-argument overload order");
+    var columnBehaviors = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["trackColumn", "wrongBehaviorSlot", "requiredBehaviorHole", "changedBehaviorReturn", "competingBehavior"]);
+    var tracked = columnBehaviors.Values.Single(value => value.ExportName == "trackColumn").Signatures;
+    Check(tracked.Single(signature => signature.Parameters.Count == 2).ReturnType is
+        { Kind: "ref", Name: null, ElementType.Name: "TValue" },
+        "omitting behavior preserves declaration order even when the true overload comes first");
+    foreach (var (fixedValue, refName) in new[] { (false, "VueWritableComputedRef"), (true, (string?)null) })
+    {
+        Check(tracked.Any(signature => signature.Parameters is [
+            { Type.Name: "TRecord" }, { Type.Kind: "propertyKey" }, { FixedUndefined: true },
+            { Type.Members: var members },
+        ] && members is not null &&
+            members.Any(member => member is { Name: "deferred", FixedBoolean: var flag } && flag == fixedValue) &&
+            members.Any(member => member is { Name: "fallback", Type: { Kind: "optionalSlot", ElementType.Name: "TValue" } }) &&
+            members.Any(member => member is { Name: "accept", Type.Signatures: [
+                { Parameters: [{ Type.Name: "TValue" }], ReturnType.Kind: "boolean" },
+            ] }) &&
+            signature.ReturnType is { Kind: "ref", Name: var name, ElementType.Name: "TValue" } && name == refName),
+            $"fixed deferred={fixedValue} keeps the omitted argument slot and ties options and result to the selected value");
+    }
+    Check(columnBehaviors.Values.Where(value => value.ExportName != "trackColumn")
+        .All(value => value.Signatures.All(signature => signature.Parameters.All(parameter => !parameter.FixedUndefined))),
+        "mismatched indexed slots, required holes, changed results, and competing earlier overloads reject fixed behavior");
+    var indexedAccess = (await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["readColumn", "putCell", "readRequired", "readTextKeys", "readMismatched", "putUnrelated", "readExtra", "readNested"]))
+        .ToDictionary(value => value.ExportName);
+    Check(indexedAccess.Count == 2 && indexedAccess.TryGetValue("readColumn", out var reader) &&
+        reader.Signatures is [{ TypeParameters: ["TRecord", "TValue"], Parameters: [
+            { Name: "entry", Type: { Kind: "typeParameter", Name: "TRecord" } },
+            { Name: "column", Type: { Kind: "propertyKey", ElementType: { Kind: "typeParameter", Name: "TRecord" },
+                Variants: [{ Kind: "typeParameter", Name: "TValue" }] } }], ReturnType: { Kind: "typeParameter", Name: "TValue" } }] &&
+        indexedAccess.TryGetValue("putCell", out var writer) && writer.Signatures is [{ TypeParameters: ["TRecord", "TValue"], Parameters: [
+            { Name: "row", Type: { Kind: "typeParameter", Name: "TRecord" } },
+            { Name: "index", Type: { Kind: "propertyKey", ElementType: { Kind: "typeParameter", Name: "TRecord" },
+                Variants: [{ Kind: "typeParameter", Name: "TValue" }] } },
+            { Name: "cell", Type: { Kind: "typeParameter", Name: "TValue" } }], ReturnType.Kind: "void" }],
+        $"renamed readers and writers preserve the same object and key slot, while restricted keys and unrelated slots stay unsupported ({string.Join(", ", indexedAccess.Keys)})");
     var draftContext = await provider.ReadValuesAsync(document, "component-fixture/other",
         ["collectNotices", "collectSnapshot", "writeNotices", "markReview", "patchUnchecked", "markNarrow",
-            "restoreDraft", "restoreRequired", "inspectDraft", "inspectOpaque", "trackRows",
+            "restoreDraft", "restoreRequired", "inspectDraft", "inspectOpaque", "trackRows", "trackSeededRows",
+            "currentDraft", "narrowDraft",
             "replaceRecord", "replaceSelected", "replaceRequired", "selectCurrent", "selectConstrained", "selectDefault"]);
     var draftByName = draftContext.ToDictionary(value => value.ExportName);
+    Check(draftByName["currentDraft"].Signatures is [{ Parameters: [], TypeParameters: ["TInput"],
+        ReturnType: { Kind: "undefinedable", ElementType.Members: [
+            { Name: "snapshot", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } },
+            { Name: "revise", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }, _, _] }] },
+            { Name: "recheck", Type.Signatures: [{ Parameters: [], ReturnType.ElementType.Members: [{ Name: "accepted", Type.Kind: "boolean" }] }] },
+            { Name: "review", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }],
+                ReturnType.ElementType.Members: [{ Name: "accepted", Type.Kind: "boolean" }, { Name: "notes", Type.ElementType.Kind: "string" }] }] },
+        ] } }] && (!draftByName.TryGetValue("narrowDraft", out var narrowDraft) ||
+            narrowDraft.Signatures.All(signature => signature.TypeParameters is null)),
+        "a renamed ambient form preserves absence, sparse values and correlated validation, and rejects unmapped record constraints");
     var selections = draftByName["selectCurrent"].Signatures;
     Check(selections.Where(signature => signature.ValueTypeParameters is null)
         .Select(signature => signature.Parameters.SingleOrDefault()?.Type.Kind).SequenceEqual([null, "string", "ref", "function"]) &&
@@ -913,8 +1930,18 @@ try
         { Name: "rows", Type: { Kind: "ref", ReadOnly: true, ElementType: {
             Kind: "array", ReadOnly: true, ElementType.Members: [
                 { Name: "isHead", ReadOnly: true }, { Name: "isTail", ReadOnly: true }] } } },
-        { Name: "drop" }] }],
-        "a generic collection view preserves fixed item metadata and excludes unknown writes");
+        { Name: "drop" }] }, { TypeParameters: ["TData"], Parameters: [{ Name: "key", Type.Kind: "string" }],
+        ReturnType.Members: [
+            { Name: "rows", Type: { Kind: "ref", ElementType: { Kind: "recordArray", ElementType.Members: [
+                { Name: "payload", ReadOnly: true, Type: { Kind: "typeParameter", Name: "TData" } },
+                { Name: "isHead", ReadOnly: true }, { Name: "isTail", ReadOnly: true }] } } },
+            { Name: "drop", Type.Signatures: [{ Parameters: [{ Type.Kind: "number" }] }] },
+            { Name: "add", Type.Signatures: [{ Parameters: [{ Type: { Kind: "typeParameter", Name: "TData" } }] }] }] }],
+        "the inferred unknown collection omits payload operations and the explicit overload correlates readonly entries and typed writes");
+    Check(!draftByName.TryGetValue("trackSeededRows", out var seededRows) ||
+        seededRows.Signatures.All(signature => signature.TypeParameters is null && signature.ReturnType.Members is [
+            { Name: "rows", Type: { Kind: "ref", ReadOnly: true, ElementType.ReadOnly: true } }, { Name: "drop" },
+        ]), "a selector that depends on the selected payload cannot reuse the inferred unknown input projection");
     Check(draftByName["replaceRecord"].Signatures is [{ TypeParameters: ["TData"], ReturnType.Signatures: [
         { Parameters: [{ Type.Kind: "recordTypeParameter" }, { Optional: true, Type.Kind: "boolean" }] }] }] &&
         draftByName["replaceSelected"].Signatures.Any(signature => signature.TypeParameters is ["TData"] &&
@@ -940,6 +1967,13 @@ try
         File.ReadAllText(camelDefinition.Path).AsSpan(camelDefinition.Start, camelDefinition.Length).SequenceEqual("camelCase"),
         "published es-toolkit subpath signature, declaration navigation, and in-place version upgrade");
     var mediaQuery = await provider.ReadValueAsync(document, "@vueuse/core", "useMediaQuery");
+    var urlParams = await provider.ReadValueAsync(document, "@vueuse/core", "useUrlSearchParams");
+    Check(urlParams.Signatures is [
+        { Parameters: [], TypeParameters: null, ReturnType: { Kind: "writableDictionary", ElementType.Kind: "union" } },
+        { Parameters: [{ Type: { Kind: "stringEnum", StringLiterals: ["hash", "hash-params", "history"] } }],
+            TypeParameters: null, ReturnType: { Kind: "writableDictionary", ElementType: { Kind: "union", Variants:
+                [{ Kind: "array", ElementType.Kind: "string" }, { Kind: "string" }] } } },
+    ], "URL parameters expose a writable sparse string or repeated-string result for both supported arities");
     var windowFocus = await provider.ReadValueAsync(document, "@vueuse/core", "useWindowFocus");
     Check(mediaQuery.Signatures.Count == 3 &&
         mediaQuery.Signatures.All(signature => signature.Parameters is [_, { Optional: true, Type.Kind: "object" }] &&
@@ -1024,8 +2058,19 @@ try
 
     var formExports = await provider.ReadValuesAsync(document, "vee-validate",
         ["useField", "useFieldValue", "useForm", "useFormErrors", "useFormValues", "useSetFormErrors", "useSetFormTouched", "useSetFormValues",
-            "useIsFieldTouched", "useFieldArray", "useResetForm", "useValidateField", "useValidateForm", "useSubmitForm", "useSetFieldValue"]);
+            "useIsFieldTouched", "useFieldArray", "useResetForm", "useValidateField", "useValidateForm", "useSubmitForm", "useSetFieldValue", "useFormContext"]);
     var formOptions = new JoltCompileOptions { NpmValues = formExports };
+    var formContextSignatures = formExports.Single(value => value.ExportName == "useFormContext").Signatures;
+    Check(formContextSignatures is [
+        { Parameters: [], TypeParameters: null, ReturnType: { Kind: "undefinedable", ElementType.Members: { } status } },
+        { Parameters: [], TypeParameters: ["TInput"], ReturnType: { Kind: "undefinedable", ElementType.Members: { } typedContext } },
+    ] && status.Any(member => member is { Name: "name", Type.Kind: "string" }) &&
+        status.Any(member => member is { Name: "submitCount", Type: { Kind: "ref", ElementType.Kind: "number" } }) &&
+        status.Any(member => member is { Name: "isSubmitting", Type: { Kind: "ref", ElementType.Kind: "boolean" } }) &&
+        status.Any(member => member is { Name: "errors", Type: { Kind: "ref", ElementType.Kind: "readonlyDictionary" } }) &&
+        typedContext.Any(member => member is { Name: "values", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } }) &&
+        typedContext.Any(member => member is { Name: "validateField", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }] }] }),
+        "both ambient context overloads preserve provider absence, declared status and the input DTO path");
     var formSignatures = formExports.Single(value => value.ExportName == "useForm").Signatures;
     Check(formSignatures.Count(signature => signature is { TypeParameters: null, Parameters: [] }) == 1 &&
         formSignatures.Count(signature => signature is { TypeParameters: ["TInput", "TOutput"], Parameters: [{ Optional: false }] }) == 1,
@@ -1055,6 +2100,8 @@ try
         (formSource.Replace("array.Remove(1);", "array.Push(\"unsupported\");", StringComparison.Ordinal), "CS1061"),
         (formSource.Replace("array.Remove(1);", "array.Fields.Value[0].IsFirst = false;", StringComparison.Ordinal), "CS0200"),
         (formSource.Replace("writeField(\"field\", false);", "writeField(1, false);", StringComparison.Ordinal), "CS1503"),
+        (formSource.Replace("""value.Contact!.EmailAddress, "updated@example.test", false""",
+            "value.Contact!.EmailAddress, false, false", StringComparison.Ordinal), "CS0411"),
         (formSource.Replace("writeForm(new(\"ada@example.test\", [\"changed\"]), false);", "writeForm(new RegistrationOutput(1), false);", StringComparison.Ordinal), "CS1503"),
     })
     {

@@ -1,0 +1,23 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+
+<output>@Describe()</output>
+<button @onclick="SelectDark">Use dark mode</button>
+
+@code {
+    private VueUse.UseColorModeResult _mode = default!;
+    private ECMAScript.Vue.IVueRef<VueUse.StringChoiceOfAutoOrDarkOrLight> _forwarded = default!;
+
+    [Setup]
+    private void Configure()
+    {
+        _mode = VueUse.UseColorMode(new() { Attribute = "data-theme" });
+        _forwarded = VueUse.RefThrottled(_mode, 0);
+    }
+
+    private void SelectDark()
+    {
+        _forwarded.Value = VueUse.StringChoiceOfAutoOrDarkOrLight.Dark;
+    }
+
+    private string Describe() => $"{_mode.Value}/{_mode.Store.Value}/{_mode.System.Value}/{_mode.State.Value}";
+}

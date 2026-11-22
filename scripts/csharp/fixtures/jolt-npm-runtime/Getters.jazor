@@ -1,6 +1,14 @@
 @using VueUse = Npm.Vueuse.Core.Exports
 
+<output id="invoke-typed">@_invokeTyped</output>
+
 @code {
+    public record InvokeResult(string Label)
+    {
+        public double Count { get; set; }
+    }
+    private string _invokeTyped = "";
+
     public static string Evaluate()
     {
         var count = ECMAScript.Vue.Ref(2.0);
@@ -9,6 +17,26 @@
         var before = calculated.Value;
         count.Value = 4;
         return $"{before}/{calculated.Value}/{renamed.Value}";
+    }
+
+    [Setup]
+    private void InvokeTyped()
+    {
+        var result = VueUse.Invoke(() => new InvokeResult("typed") { Count = 7 });
+        double count = VueUse.Invoke(() => result.Count);
+        _invokeTyped = result.Label + "/" + count;
+    }
+
+
+    public static string ThrottleRefs()
+    {
+        var number = ECMAScript.Vue.Ref(2.0);
+        var text = ECMAScript.Vue.Ref("first");
+        var delayed = VueUse.RefThrottled(number);
+        var immediate = VueUse.ThrottledRef(text, 0, false, false);
+        number.Value = 4;
+        text.Value = "second";
+        return $"{delayed.Value}/{immediate.Value}";
     }
 
     public static string Inspect()

@@ -1,6 +1,6 @@
 const optionNames = ['queryKey', 'initialPageParam', 'queryFn', 'getNextPageParam'];
 
-export function pagedQueryProbes(aliases, callsOf, requested, typeOf) {
+export function pagedQueryProbes(ts, checker, aliases, callsOf, requested, typeOf) {
     return aliases.flatMap(alias => {
         if (!requested.has(alias.name) || !callsOf(alias).some(call =>
             call.typeParameters?.length && call.minArgumentCount === 1 && call.parameters[0] &&
@@ -8,26 +8,43 @@ export function pagedQueryProbes(aliases, callsOf, requested, typeOf) {
                 optionNames.every(name => options.getProperty(name)))))
             return [];
         const member = JSON.stringify(alias.name);
+        const selectors = new Set(callsOf(alias).flatMap(call => {
+            if (!call.typeParameters?.length || !call.parameters[0])
+                return [];
+            const data = checker.getTypeOfPropertyOfType(call.getReturnType(), 'data');
+            const elements = branches(data).flatMap(ref => branches(checker.getTypeOfPropertyOfType(ref, 'value')))
+                .filter(type => !(type.flags & ts.TypeFlags.Undefined));
+            return branches(typeOf(call.parameters[0])).flatMap(options => {
+                if (!optionNames.every(name => options.getProperty(name)))
+                    return [];
+                return options.getProperties().filter(property =>
+                    property.flags & ts.SymbolFlags.Optional &&
+                    resultSelector(checker, call, options, property.name, elements)).map(property => property.name);
+            });
+        }));
+        const selected = selectors.size === 1 ? [...selectors][0] : undefined;
         return [['string', 'number', "''", '0'], ['number', 'string', '0', "''"]].flatMap(([cursor, page, seed, value]) =>
-            ["['jolt', 1, true, { value: 'x' }] as readonly (string | number | boolean | object)[]", "['jolt']"].map(key => ({
-                name: alias.name,
-                cursor,
-                expression: `packageExports[${member}]({
-                    queryKey: ${key},
-                    initialPageParam: ${seed} as ${cursor},
-                    queryFn: async () => (${value} as ${page}),
-                    getNextPageParam: () => (${seed} as ${cursor}),
-                })`,
-            })));
+            ["['jolt', 1, true, { value: 'x' }] as readonly (string | number | boolean | object)[]", "['jolt']"].flatMap(key =>
+                (selected ? [undefined, selected] : [undefined]).map(selector => ({
+                    name: alias.name,
+                    cursor,
+                    selector,
+                    expression: `packageExports[${member}]({
+                        queryKey: ${key},
+                        initialPageParam: ${seed} as ${cursor},
+                        queryFn: async () => (${value} as ${page}),
+                        getNextPageParam: () => (${seed} as ${cursor}),
+                        ${selector ? `${JSON.stringify(selector)}: data => ({ selected: data.pages[0] }),` : ''}
+                    })`,
+                }))));
     });
 }
 
-export function readPagedQueries(ts, checker, probes, statements, diagnostics, vueRef, promise, definition, readKey) {
+export function readPagedQueries(ts, checker, probes, statements, diagnostics, vueRef, promise, definition, readKey, readObserverRef) {
     const result = new Map();
     if (!promise || !probes.length)
         return result;
     const scalarTypes = { string: checker.getStringType(), number: checker.getNumberType() };
-    const bool = checker.getBooleanType();
     const type = (target, name) => target && checker.getTypeOfPropertyOfType(target, name);
     const same = (left, right) => left && right &&
         checker.isTypeAssignableTo(left, right) && checker.isTypeAssignableTo(right, left) &&
@@ -81,15 +98,25 @@ export function readPagedQueries(ts, checker, probes, statements, diagnostics, v
                 nextOutcomes.includes(genericCursor) && nextOutcomes.some(branch => branch.flags & ts.TypeFlags.Null) &&
                 nextOutcomes.every(branch => branch === genericCursor || absent(branch)) &&
                 arrayOf(genericPages, genericPage) && arrayOf(genericCursors, genericCursor))
-                return { genericPage, genericCursor };
+                return { genericPage, genericCursor, options };
         }).find(Boolean);
         if (!openPair)
             continue;
-        const originalData = branches(type(original.getReturnType(), 'data'))
-            .flatMap(branch => branches(vueRef(branch)?.element))
-            .filter(branch => !absent(branch))
-            .map(branch => original.typeParameters.includes(branch)
-                ? checker.getDefaultFromTypeParameter(branch) : branch);
+        const openRefs = branches(type(original.getReturnType(), 'data')).map(vueRef);
+        if (!openRefs.length || !openRefs.every(Boolean))
+            continue;
+        const openData = openRefs.flatMap(ref => branches(ref.element))
+            .filter(branch => !absent(branch));
+        const openSelect = probe.selector && resultSelector(checker, original, openPair.options, probe.selector, openData);
+        const resultSlot = openSelect && openSelect.getReturnType();
+        // Selected data must be the independent slot supplied by this callback.
+        if (probe.selector && (!resultSlot || !original.typeParameters.includes(resultSlot) ||
+            resultSlot === openPair.genericPage || resultSlot === openPair.genericCursor ||
+            resultSlot.symbol.declarations?.some(node => node.constraint) || checker.getBaseConstraintOfType(resultSlot) ||
+            !openData.length || !openData.every(branch => branch === resultSlot)))
+            continue;
+        const originalData = openSelect ? [checker.getTypeOfSymbol(openSelect.parameters[0])] : openData.map(branch =>
+            original.typeParameters.includes(branch) ? checker.getDefaultFromTypeParameter(branch) : branch);
         const projectsOriginalArray = (name, parameter) => originalData.length > 0 &&
             originalData.every(branch => {
                 const property = type(branch, name);
@@ -132,7 +159,11 @@ export function readPagedQueries(ts, checker, probes, statements, diagnostics, v
         const dataAlternatives = dataRefs.flatMap(ref => branches(ref.element));
         const [dataValue] = dataAlternatives.filter(branch => !absent(branch));
         const mayBeAbsent = dataAlternatives.some(branch => branch.flags & ts.TypeFlags.Undefined);
-        if (!dataValue || !arrayOf(type(dataValue, 'pages'), page) ||
+        const select = probe.selector && callback(options, probe.selector, 1);
+        const selectInput = select && checker.getTypeOfSymbol(select.parameters[0]);
+        const pageSource = selectInput || dataValue;
+        if (!dataValue || !arrayOf(type(pageSource, 'pages'), page) ||
+            probe.selector && (!select || !same(select.getReturnType(), dataValue)) ||
             !dataAlternatives.every(branch => branch === dataValue || branch.flags & ts.TypeFlags.Undefined))
             continue;
 
@@ -146,15 +177,21 @@ export function readPagedQueries(ts, checker, probes, statements, diagnostics, v
         const record = members => ({ kind: 'object', members });
         const promiseResult = elementType => ({ kind: 'promise', elementType });
         const handler = (parameters, returnType) => ({ kind: 'function', signatures: [{ parameters, returnType }] });
-        const pageMembers = [member('pages', array(pageType), dataValue)];
-        if (projectsOriginalArray('pageParams', openPair.genericCursor) && arrayOf(type(dataValue, 'pageParams'), cursor))
-            pageMembers.push(member('pageParams', array(cursorType), dataValue));
+        const pageMembers = [member('pages', array(pageType), pageSource)];
+        if (projectsOriginalArray('pageParams', openPair.genericCursor) && arrayOf(type(pageSource, 'pageParams'), cursor))
+            pageMembers.push(member('pageParams', array(cursorType), pageSource));
         const pageData = record(pageMembers);
+        const selectedType = { kind: 'typeParameter', name: 'TResult' };
+        const dataType = select ? selectedType : pageData;
         const resultMembers = [member('data', { kind: 'ref', readOnly: true, elementType: mayBeAbsent
-            ? { kind: 'undefinedable', elementType: pageData } : pageData }, returned)];
-        const hasNextPage = type(returned, 'hasNextPage');
-        if (hasNextPage && vueRef(hasNextPage)?.element === bool)
-            resultMembers.push(member('hasNextPage', { kind: 'ref', readOnly: true, elementType: { kind: 'boolean' } }, returned));
+            ? { kind: 'undefinedable', elementType: dataType } : dataType }, returned)];
+        for (const property of returned.getProperties()) {
+            if (property.name === 'data' || property.flags & ts.SymbolFlags.Optional)
+                continue;
+            const ref = readObserverRef(type(returned, property.name));
+            if (ref)
+                resultMembers.push(member(property.name, ref, returned));
+        }
         for (const name of ['fetchNextPage', 'refetch']) {
             const calls = type(returned, name)?.getCallSignatures();
             if (calls?.length === 1 && calls[0].minArgumentCount === 0 &&
@@ -173,21 +210,27 @@ export function readPagedQueries(ts, checker, probes, statements, diagnostics, v
                 argument(parameter.name, [pageType, array(pageType), cursorType, array(cursorType)][index])),
             { kind: 'nullable', elementType: cursorType }), options),
         ]);
+        if (select)
+            input.members.push(member(probe.selector, handler([argument(select.parameters[0].name, pageData)], selectedType), options));
         const projection = {
-            parameters: [argument(call.parameters[0].name, input)],
+            parameters: [argument(select ? 'selectedOptions' : call.parameters[0].name, input)],
             returnType: record(resultMembers),
-            typeParameters: [pageType.name, cursorType.name],
+            typeParameters: select ? [pageType.name, cursorType.name, selectedType.name] : [pageType.name, cursorType.name],
+            referenceTypeParameters: select ? [selectedType.name] : undefined,
             // C# needs separate scalar overloads for a nullable value-type cursor.
             scalarResultTypeParameter: cursorType.name,
             definition: definition(call.declaration),
         };
-        const key = JSON.stringify([probe.name, queryKey]);
+        const key = JSON.stringify([probe.name, queryKey, probe.selector]);
         const earlier = witnesses.get(key);
         // Swapping the two witnesses rules out fixed types in mapped inputs
         // or in the result, including a fixed page inside the return ref.
-        if (!result.has(probe.name) && earlier?.cursor !== probe.cursor &&
-            JSON.stringify(earlier?.projection) === JSON.stringify(projection))
-            result.set(probe.name, projection);
+        const projections = result.get(probe.name) ?? [];
+        if (!projections.some(candidate => candidate.parameters[0].name === projection.parameters[0].name) &&
+            earlier?.cursor !== probe.cursor && JSON.stringify(earlier?.projection) === JSON.stringify(projection)) {
+            projections.push(projection);
+            result.set(probe.name, projections);
+        }
         witnesses.set(key, { cursor: probe.cursor, projection });
     }
     return result;
@@ -195,4 +238,18 @@ export function readPagedQueries(ts, checker, probes, statements, diagnostics, v
 
 function branches(type) {
     return type?.isUnion() ? type.types : type ? [type] : [];
+}
+
+function resultSelector(checker, signature, options, name, elements) {
+    const callbacks = branches(checker.getTypeOfPropertyOfType(options, name)).flatMap(type => type.getCallSignatures());
+    const [callback] = callbacks;
+    if (callbacks.length !== 1 || callback.parameters.length !== 1 || callback.minArgumentCount !== 1 ||
+        callback.thisParameter || callback.typeParameters?.length || checker.hasEffectiveRestParameter(callback))
+        return;
+    const slot = callback.getReturnType();
+    const input = checker.getTypeOfSymbol(callback.parameters[0]);
+    const pages = checker.getTypeOfPropertyOfType(input, 'pages');
+    if (signature.typeParameters.includes(slot) && elements.length && elements.every(type => type === slot) &&
+        pages && checker.isArrayType(pages))
+        return callback;
 }

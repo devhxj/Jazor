@@ -31,6 +31,8 @@ Jolt 从 npm 包的公开 TypeScript 声明绑定组件参数、事件和插槽�
 
 ## npm 值如何跨调用传递
 
+映射算法统一使用公开声明、类型参数的绑定作用域和输入输出方向，规则覆盖组件、编辑器和普通类库。设计与实施批次见 [npm 类型投影与值传递规范](./npm-projection-rules.md)。
+
 推导一个导出时，先由 TypeScript checker 确定声明身份、泛型实参和每个值的流向。函数实参由 C# 传给 npm，返回值由 npm 交给 C#，回调的形参和返回值再次交换方向。可写属性和 ref 同时涉及读和写。投影器据此选择已有宿主类型、可构造的输入记录、只读结果、闭合 union 或重载。Roslyn 检查具体调用，Jazor 根据绑定的符号发射 ESM。[声明推导](../../src/Jolt.Npm/metadata.mjs) · [C# 投影](../../src/Jolt.Compiler/JoltNpmValueProjection.cs) · [编译器语义](../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
 | 作者需要传递的值 | 投影和发射规则 |

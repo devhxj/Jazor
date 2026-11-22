@@ -22,6 +22,8 @@
                 _count += 8;
         });
         timer.Stop();
+        if (timer.IsPending.Value)
+            throw new ECMAScript.Error("Stopped timeout remained pending");
         ECMAScript.Vue.OnMounted(() => {
             debounce.Invoke("drop").Then(_ => { _count += 1; });
             debounce.Cancel();
@@ -30,6 +32,8 @@
             throttle("keep").Then(value => { if (value == "keep-throttled") _count += 4; });
             throttleAsync("keep").Then(value => { if (value == "keep-async") _count += 16; });
             timer.Start("timer");
+            if (!timer.IsPending.Value)
+                throw new ECMAScript.Error("Started timeout was not pending");
         });
         ECMAScript.Vue.OnUnmounted(stopOutside);
     }

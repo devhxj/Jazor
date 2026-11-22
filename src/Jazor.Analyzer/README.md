@@ -32,6 +32,7 @@
 - `JAZOR004`：`SpreadAttribute` 与显式 JavaScript 属性名同时使用。
 - `JAZOR005`：同一符号上的 `Description("@#...")` 与 `ECMAScriptName` 提供了不同的具体 JavaScript 名称。
 - `JAZOR006`：同一实际发射作用域内的成员解析到重复 JavaScript 名称。模块检查只覆盖 public/internal 导出；runtime member class 分开检查 static/instance，属性 getter/setter 视为一个逻辑成员，record 只检查直接结构化属性。
+- `JAZOR008`：JavaScript 属性路径需要内联选择器。路径必须由结构化记录数据属性组成，选择的字段类型必须与宿主方法的值类型一致。
 
 ### 预诊断覆盖
 

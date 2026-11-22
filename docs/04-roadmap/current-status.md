@@ -1,12 +1,12 @@
 # 当前状态
 
-> 当前版本：[2.4.0（2026-11-21）](https://github.com/devhxj/Jazor/releases/tag/v2.4.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.5.0（2026-11-22）](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 
 ## Jolt 作者面
 
-| 范围 | 2.4.0 已发布能力 |
+| 范围 | 2.5.0 已发布能力 |
 | --- | --- |
 | 编译与构建 | `.jazor` 模板与 C#、本地组件、npm 公开 TypeScript 声明与 ESM、源码映射、Vite 开发与生产构建 |
 | 组件契约 | 类型化参数、回调、插槽、受约束的泛型参数、本地和 npm 命名模型、原生表单绑定、DOM 事件、`@key`、`@ref` 与 `<style scoped>` |
@@ -42,6 +42,8 @@
 ## 生态与参考应用
 
 构建和编辑器按项目复用磁盘上的 npm 声明快照、C# 投影及定义位置。普通 C# 项目可以用 `jolt bindings` 将公开投影写入类库，其他项目通过项目引用复用同一套类型。跨进程验收覆盖并发首次生成、重启后的命中、删除输出后恢复，以及上游声明修改后的重新诊断。[缓存与输出位置](../03-guides/jolt-authoring.md#复用构建生成的投影) · [缓存验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
+
+开放泛型可穿过回调、Promise、只读数组、Vue ref 和命名数据记录。普通 C# 与 `.jazor` 的跨包用例检查同一记录、递归子节点和 ref 的读写可见性。有限 `Pick` 和 `Partial<Pick<…>>` 的结果可传回同一模块中接收相同映射的函数，并区分字段缺席与数值 `0`。独立的可选布尔判别可以按上游默认类型提供省略入口，另有对应显式真、假的精确返回类型。上游只修改泛型默认值时，缓存验收也会重新检查旧调用。Vue I18n 已验证通过生成绑定切换 locale 后的客户端重渲染。[投影规范](../02-architecture/npm-projection-rules.md) · [七库验收计划](./p3-vue-application-bindings-plan.md)
 
 Vue、Vue Router、Pinia、Pinia Testing 和 Vue Devtools 的手写绑定随 SDK 发布，Style 提供 Jazor 的样式功能。七个应用级绑定已移出 2.4.0 的默认发布清单。已有项目仍可使用 2.3.0 的包。Jolt 的投影验收沿用这些绑定的业务用例，逐项记录真实调用、浏览器交互和适用的 SSR 或 worker。 [npm 投影验收计划](./p3-vue-application-bindings-plan.md)
 

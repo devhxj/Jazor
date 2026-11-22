@@ -137,7 +137,7 @@ public sealed class SemanticWalkerHostStatementProtocolTests
         Assert.IsNotNull(script);
         Assert.IsFalse(script.Contains("Generated", StringComparison.Ordinal), script);
         StringAssert.Contains(script, "function Retained()", StringComparison.Ordinal);
-        StringAssert.Contains(script, "let result = Retained();", StringComparison.Ordinal);
+        StringAssert.Contains(script, "let result = Retained.call(this);", StringComparison.Ordinal);
         _ = new Parser().ParseScript(script);
     }
 

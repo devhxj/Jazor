@@ -17,7 +17,7 @@ using Microsoft.CodeAnalysis.Text;
 var root = Path.GetFullPath(".");
 var bindings = new[]
 {
-    (Library: "VueUse", Package: "@vueuse/core", Samples: new[] { "useCounter", "useMouse", "useOnline", "useStorage", "eagerComputed" }),
+    (Library: "VueUse", Package: "@vueuse/core", Samples: new[] { "useCounter", "useMouse", "useOnline", "useStorage", "useVModel", "useUrlSearchParams", "eagerComputed", "invoke", "refThrottled", "throttledRef" }),
     (Library: "DateFns", Package: "date-fns", Samples: new[]
         { "addDays", "isBefore", "add", "sub", "formatDuration", "eachDayOfInterval", "clamp", "min", "max" }),
     (Library: "FloatingUi", Package: "@floating-ui/vue", Samples: new[] { "computePosition" }),
@@ -120,6 +120,7 @@ try
         var (expectedArities, supportedArities) = PrintArityCoverage(authored, projected, inventory);
         authoredArityCount += expectedArities;
         projectedArityCount += supportedArities;
+        PrintReturnMemberCoverage(Path.Combine(bindingDirectory, "Types"), authored, projected, inventory);
         foreach (var (name, members) in authored)
         {
             Console.WriteLine($"  {name}");
@@ -251,8 +252,15 @@ static SortedDictionary<string, List<AuthoredMember>> ReadAuthoredExports(string
             var parameters = (member as MethodDeclarationSyntax)?.ParameterList.Parameters;
             var required = parameters?.Count(parameter => parameter.Default is null && !parameter.Modifiers.Any(SyntaxKind.ParamsKeyword));
             var variadic = parameters?.Any(parameter => parameter.Modifiers.Any(SyntaxKind.ParamsKeyword)) == true;
+            var returnType = member switch
+            {
+                MethodDeclarationSyntax method => method.ReturnType,
+                PropertyDeclarationSyntax property => property.Type,
+                FieldDeclarationSyntax field => field.Declaration.Type,
+                _ => null
+            };
             members.Add(new(shape, member is MethodDeclarationSyntax, inlineTarget?.Expression.ToString() == name
-                ? inlineTarget.Name.Identifier.ValueText : null, location, required, parameters?.Count, variadic));
+                ? inlineTarget.Name.Identifier.ValueText : null, location, required, parameters?.Count, variadic, returnType));
         }
     }
     Require(exports.Count > 0, $"No authored npm imports found in {directory}.");
@@ -286,8 +294,7 @@ static (int Expected, int Supported) PrintArityCoverage(
             foreach (var arity in arities)
             {
                 expected++;
-                if (signatures?.Any(signature => arity.Key <= signature.Parameters.Count &&
-                    signature.Parameters.Skip(arity.Key).All(parameter => parameter.Optional)) == true)
+                if (signatures?.Any(signature => CoversUpstreamArity(signature, arity.Key)) == true)
                     supported++;
                 else
                 {
@@ -303,6 +310,197 @@ static (int Expected, int Supported) PrintArityCoverage(
     }
     Console.WriteLine($"  Positional argument counts {supported}/{expected}");
     return (expected, supported);
+}
+
+static bool CoversUpstreamArity(NpmValueSignature signature, int arity)
+{
+    // The inventory counts JS argument slots, including literals supplied by the facade.
+    // A fixed slot after an omitted C# option still emits an undefined placeholder.
+    return arity >= 0 && arity <= signature.Parameters.Count &&
+        signature.Parameters.Skip(arity).All(parameter =>
+            parameter.Optional && parameter.FixedBoolean is null && !parameter.FixedUndefined);
+}
+
+static void PrintReturnMemberCoverage(
+    string directory,
+    SortedDictionary<string, List<AuthoredMember>> authored,
+    Dictionary<string, NpmValueExport> projected,
+    Dictionary<string, DeclarationExport> inventory)
+{
+    var trees = Directory.Exists(directory) ? Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories)
+        .Select(file => CSharpSyntaxTree.ParseText(File.ReadAllText(file),
+            new CSharpParseOptions(LanguageVersion.Preview), path: file)).ToArray() : [];
+    var hierarchy = CSharpCompilation.Create("AuthoredBindingTypes", trees);
+    var types = trees.SelectMany(tree => tree.GetRoot().DescendantNodes().OfType<TypeDeclarationSyntax>())
+        .Where(type => type.Parent is BaseNamespaceDeclarationSyntax or CompilationUnitSyntax &&
+            type.Modifiers.Any(SyntaxKind.PublicKeyword))
+        .ToLookup(type => (type.Identifier.ValueText, type.Arity));
+    var localTypes = types.SelectMany(group => group).ToHashSet();
+    var handles = projected.Values.SelectMany(value =>
+        (value.ConstantType is { } constant ? [constant] : Enumerable.Empty<NpmValueType>())
+        .Concat(value.Signatures.Select(signature => signature.ReturnType)))
+        .SelectMany(ReturnTypes)
+        .Where(type => type is { Kind: "handle", TypeDefinition: not null, Members.Count: > 0 })
+        .ToLookup(type => (type.TypeDefinition, type.ProtocolKey, type.TypeIdentity));
+    var present = new SortedSet<string>(StringComparer.Ordinal);
+    var missing = new SortedSet<string>(StringComparer.Ordinal);
+    var unassessed = new SortedSet<string>(StringComparer.Ordinal);
+    foreach (var (export, declarations) in authored)
+    {
+        foreach (var declaration in declarations)
+        {
+            var path = declaration.InlineTarget is { } child ? $"{export}.{child}" : export;
+            var value = projected.GetValueOrDefault(export);
+            var namespaceExport = inventory.GetValueOrDefault(export)?.Kind == "namespace";
+            var type = declaration.ReturnType is NullableTypeSyntax nullable ? nullable.ElementType : declaration.ReturnType;
+            var owners = type is SimpleNameSyntax name ? types[(name.Identifier.ValueText, name.Arity)].ToArray() : null;
+            if (owners is not [{ } owner] || declaration.Variadic ||
+                namespaceExport && declaration.InlineTarget is null)
+            {
+                unassessed.Add($"{path} ({declaration.ReturnType} at {declaration.Location})");
+                continue;
+            }
+
+            var signatures = namespaceExport
+                ? value?.ConstantType?.Members?.FirstOrDefault(member => member.Name == declaration.InlineTarget)?.Type.Signatures
+                : value?.Signatures;
+            var calls = declaration.Callable
+                ? Enumerable.Range(declaration.Required!.Value, declaration.Parameters!.Value - declaration.Required.Value + 1)
+                    .Select(arity => (Path: $"{path}({arity})", Returns: signatures?
+                        .Where(signature => CoversUpstreamArity(signature, arity)).Select(signature => signature.ReturnType).ToArray()))
+                : [(path, value?.ConstantType is { } constant ? [constant] : null)];
+
+            foreach (var (callPath, returns) in calls)
+            {
+                var resolved = returns?.Select(ResolveResultMembers).ToArray();
+                if (resolved is not { Length: > 0 } || resolved.Any(result =>
+                    result.Kind is not ("object" or "handle" or "enrichedRef" or "callableHandle") ||
+                    result.Members is null))
+                {
+                    unassessed.Add($"{callPath} ({owner.Identifier.ValueText} to {string.Join(" | ", returns?.Select(result => result.Kind) ?? ["unavailable"])})");
+                    continue;
+                }
+
+                var inherited = InheritedMembers(owner);
+                if (inherited.Unresolved)
+                    unassessed.Add($"{callPath} ({owner.Identifier.ValueText} has a base outside local public Types)");
+                foreach (var member in inherited.Members)
+                {
+                    var operations = member switch
+                    {
+                        MethodDeclarationSyntax => new[] { "call" },
+                        PropertyDeclarationSyntax property => property.AccessorList?.Accessors
+                            .Where(accessor => accessor.Modifiers.Count == 0 && !accessor.IsKind(SyntaxKind.InitAccessorDeclaration))
+                            .Select(accessor => accessor.IsKind(SyntaxKind.GetAccessorDeclaration) ? "read" : "write").ToArray() ?? [],
+                        _ => []
+                    };
+                    if (operations.Length == 0)
+                        continue;
+                    var alias = member.AttributeLists.SelectMany(list => list.Attributes)
+                        .Where(attribute => attribute.Name.ToString() is "Description" or "DescriptionAttribute")
+                        .Select(attribute => (attribute.ArgumentList?.Arguments.Single().Expression as LiteralExpressionSyntax)?.Token.ValueText)
+                        .SingleOrDefault(text => text is { Length: > 2 } && text.StartsWith("@#", StringComparison.Ordinal));
+                    if (alias is null)
+                    {
+                        unassessed.Add($"{callPath} ({owner.Identifier.ValueText} has a member without an explicit mapping)");
+                        continue;
+                    }
+                    var nameOnWire = alias[2..];
+                    var matches = resolved.Select(result => result.Members?.FirstOrDefault(projectedMember =>
+                        projectedMember.Name == nameOnWire)).ToArray();
+                    foreach (var operation in operations)
+                    {
+                        var memberPath = $"{callPath}.{nameOnWire} ({operation})";
+                        // Multiple same-arity projections cannot be paired to C# overloads
+                        // without checking argument domains. Count absence only if universal.
+                        var supported = matches.Count(match => match is not null && (operation switch
+                        {
+                            "call" => match.Type.Signatures is { Count: > 0 },
+                            "write" => !match.ReadOnly,
+                            _ => match.Type.Kind != "method"
+                        }));
+                        // The ref's value lives on its generated base interface.
+                        if (nameOnWire == "value" && operation != "call")
+                            supported += resolved.Zip(matches).Count(pair => pair.Second is null &&
+                                pair.First.Kind == "enrichedRef" &&
+                                (operation == "read" || !pair.First.ReadOnly));
+                        if (supported == 0)
+                            missing.Add(memberPath);
+                        else if (supported == matches.Length)
+                            present.Add(memberPath);
+                        else
+                            unassessed.Add($"{memberPath} (depends on overload)");
+                    }
+                }
+            }
+        }
+    }
+    Console.WriteLine($"  First-level return operation presence {present.Count}");
+    Console.WriteLine($"  Missing first-level return operations ({missing.Count}) [{string.Join(", ", missing)}]");
+    Console.WriteLine($"  Unassessed first-level returns ({unassessed.Count}) [{string.Join(", ", unassessed)}]");
+    Console.WriteLine("  Scope covers explicitly mapped operations on public Types and their resolved local bases. Parameter domains and nested return operations are outside this comparison.");
+
+    NpmValueType ResolveResultMembers(NpmValueType type)
+    {
+        // Compare operations on a present result. Nullability remains part of the
+        // C# facade and is exercised by the corresponding consumer.
+        if (type is { Kind: "nullable" or "undefinedable", ElementType: { } element })
+            return ResolveResultMembers(element);
+        if (type is not { Kind: "handle", TypeDefinition: not null, Members: null })
+            return type;
+        var arguments = type.TypeArguments ?? [];
+        // Concrete arguments can be compared across exports. Open type
+        // parameter names have signature-local scope and cannot prove identity.
+        if (arguments.Any(argument => ReturnTypes(argument).Any(nested =>
+            nested.Kind is "typeParameter" or "recordTypeParameter")))
+            return type;
+        var key = JsonSerializer.Serialize(arguments);
+        var candidates = handles[(type.TypeDefinition, type.ProtocolKey, type.TypeIdentity)]
+            .Where(candidate => JsonSerializer.Serialize(candidate.TypeArguments ?? []) == key)
+            .GroupBy(candidate => JsonSerializer.Serialize(candidate.Members), StringComparer.Ordinal)
+            .Take(2).ToArray();
+        return candidates is [var match] ? type with { Members = match.First().Members } : type;
+    }
+
+    (List<MemberDeclarationSyntax> Members, bool Unresolved) InheritedMembers(TypeDeclarationSyntax owner)
+    {
+        var members = new List<MemberDeclarationSyntax>();
+        var visited = new HashSet<TypeDeclarationSyntax>();
+        var unresolved = false;
+        Visit(owner);
+        return (members, unresolved);
+
+        void Visit(TypeDeclarationSyntax current)
+        {
+            if (!visited.Add(current))
+                return;
+            members.AddRange(current.Members.Where(member => !member.Modifiers.Any(SyntaxKind.StaticKeyword) &&
+                (member.Modifiers.Any(SyntaxKind.PublicKeyword) ||
+                    current is InterfaceDeclarationSyntax && !member.Modifiers.Any(SyntaxKind.PrivateKeyword) &&
+                    !member.Modifiers.Any(SyntaxKind.ProtectedKeyword) && !member.Modifiers.Any(SyntaxKind.InternalKeyword))));
+            foreach (var baseType in current.BaseList?.Types ?? default)
+            {
+                var symbol = hierarchy.GetSemanticModel(current.SyntaxTree).GetTypeInfo(baseType.Type).Type as INamedTypeSymbol;
+                var declarations = symbol?.OriginalDefinition.DeclaringSyntaxReferences
+                    .Select(reference => reference.GetSyntax()).OfType<TypeDeclarationSyntax>().ToArray();
+                if (declarations is [{ } declaration] && localTypes.Contains(declaration))
+                    Visit(declaration);
+                else
+                    unresolved = true;
+            }
+        }
+    }
+}
+
+static IEnumerable<NpmValueType> ReturnTypes(NpmValueType type)
+{
+    yield return type;
+    foreach (var child in (type.Members ?? []).Select(member => member.Type)
+        .Concat((type.Signatures ?? []).Select(signature => signature.ReturnType))
+        .Concat(type.TypeArguments ?? []).Concat(type.Variants ?? [])
+        .Concat(new[] { type.ElementType, type.WriteType }.OfType<NpmValueType>()))
+        foreach (var nested in ReturnTypes(child))
+            yield return nested;
 }
 
 static void PrintProjection(NpmValueExport value, bool isNamespace)
@@ -321,10 +519,22 @@ static void PrintProjection(NpmValueExport value, bool isNamespace)
 static string DescribeSignature(NpmValueSignature signature) =>
     (signature.TypeParameters is { Count: > 0 } names ? $"<{string.Join(", ", names)}>" : "") +
     $"({string.Join(", ", signature.Parameters.Select(parameter =>
-        $"{parameter.Name}{(parameter.Optional ? "?" : "")} {DescribeType(parameter.Type)}"))}) -> {DescribeType(signature.ReturnType)}";
+        parameter.FixedUndefined ? $"{parameter.Name} = undefined" :
+        parameter.FixedBoolean is { } literal ? $"{parameter.Name} = {(literal ? "true" : "false")}" :
+            $"{parameter.Name}{(parameter.Optional ? "?" : "")} {DescribeType(parameter.Type)}"))}) -> {DescribeType(signature.ReturnType)}";
 
 static string DescribeType(NpmValueType type)
 {
+    if (type.Kind is "ref" or "enrichedRef" && type.ElementType is { } read)
+    {
+        var name = type.Name ?? (type.ReadOnly && type.WriteType is null ? "ReadonlyRef" : "Ref");
+        var slots = type.WriteType is { } write
+            ? $"{DescribeType(read)}, {DescribeType(write)}" : DescribeType(read);
+        var extras = type.Members is { Count: > 0 } membersOnRef
+            ? " & { " + string.Join(", ", membersOnRef.Select(member => $"{member.Name} {DescribeType(member.Type)}")) + " }"
+            : "";
+        return $"{name}<{slots}>{extras}";
+    }
     if (type.Kind == "handle")
         return type.TypeArguments is { Count: > 0 } arguments
             ? $"{type.Name}<{string.Join(", ", arguments.Select(DescribeType))}>"
@@ -402,7 +612,10 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
     var runtime = Path.Combine("scripts", "csharp", "fixtures", "jolt-npm-runtime");
     var sources = new List<JoltSource> { new("Probe.jazor", source) };
     // Jolt interprets source paths as component namespaces, so use fixture filenames here.
-    foreach (var file in new[] { "App.jazor", "Floating.jazor", "Query.jazor", "Vee.jazor", "Submit.jazor", "Events.jazor", "Getters.jazor", "Behavior.jazor" })
+    foreach (var file in new[] {
+        "App.jazor", "Floating.jazor", "Query.jazor", "Vee.jazor", "Submit.jazor", "FormScope.jazor",
+        "Events.jazor", "EventHook.jazor", "Getters.jazor", "Behavior.jazor", "Storage.jazor",
+        "Model.jazor", "UrlParams.jazor", "ColorMode.jazor", "Clipboard.jazor" })
         sources.Add(new(file, File.ReadAllText(Path.Combine(runtime, file))));
     var fixtures = Path.GetDirectoryName(runtime)!;
     foreach (var file in new[] { "I18nPlugin.jazor", "FloatingVue.jazor", "AsyncVueRefs.jazor" })
@@ -424,10 +637,11 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
     foreach (var export in projected)
     {
         var host = compilation.GetTypeByMetadataName($"{NpmNames.NamespaceFor(export.ModuleSpecifier)}.Exports");
-        var generated = host?.GetMembers(NpmNames.ValueNameFor(export.ExportName)) ?? [];
+        var name = NpmNames.ValueNameFor(export.ExportName);
         Require(export.Signatures.Count > 0
-            ? generated.OfType<IMethodSymbol>().Any(method => method.DeclaredAccessibility == Accessibility.Public)
-            : generated.OfType<IPropertySymbol>().Any(property => property.DeclaredAccessibility == Accessibility.Public),
+            ? export.Signatures.Any(signature => host?.GetMembers(name + signature.ManagedNameSuffix)
+                .OfType<IMethodSymbol>().Any(method => method.DeclaredAccessibility == Accessibility.Public) == true)
+            : host?.GetMembers(name).OfType<IPropertySymbol>().Any(property => property.DeclaredAccessibility == Accessibility.Public) == true,
             $"The compiled facade is missing the projected declaration for {export.ModuleSpecifier}#{export.ExportName}.");
     }
     Require(!errors.Contains(false), $"Representative typed calls failed.{Environment.NewLine}" +
@@ -444,15 +658,45 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
     var emitted = library.Emit(assembly, options: new Microsoft.CodeAnalysis.Emit.EmitOptions(metadataOnly: true));
     Require(emitted.Success, string.Join(Environment.NewLine, emitted.Diagnostics));
     assembly.Position = 0;
-    var consumer = compilation.RemoveSyntaxTrees(componentTree).AddReferences(MetadataReference.CreateFromStream(assembly));
+    var consumerPath = Path.Combine(fixtures, "jolt-binding-projection", "CorrelatedConsumer.cs");
+    var consumerTree = CSharpSyntaxTree.ParseText(File.ReadAllText(consumerPath), (CSharpParseOptions)componentTree.Options, consumerPath);
+    var consumer = compilation.RemoveSyntaxTrees(componentTree).AddSyntaxTrees(consumerTree)
+        .AddReferences(MetadataReference.CreateFromStream(assembly));
+    foreach (var export in projected)
+    {
+        var facade = consumer.GetTypeByMetadataName($"{NpmNames.NamespaceFor(export.ModuleSpecifier)}.Exports");
+        Require(facade?.GetMembers().Any(member => member.DeclaredAccessibility == Accessibility.Public &&
+            (export.Signatures.Count > 0 ? member is IMethodSymbol : member is IPropertySymbol) &&
+            HasStringAttribute(member, "ECMAScript.ECMAScriptAttribute", export.ModuleSpecifier) &&
+            HasStringAttribute(member, "ECMAScript.ECMAScriptNameAttribute", export.ExportName)) == true,
+            $"The public binding assembly is missing the projected declaration for {export.ModuleSpecifier}#{export.ExportName}.");
+    }
     var consumerErrors = consumer.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
     Require(consumerErrors.Length == 0, $"Calls against the public binding assembly failed.{Environment.NewLine}" +
         string.Join(Environment.NewLine, consumerErrors.Select(diagnostic => diagnostic.ToString())));
-    Console.WriteLine($"All {sources.Count} authoring fixtures also compiled against the public binding assembly.");
+    Console.WriteLine($"All {sources.Count} authoring fixtures and the C# correlated consumer also compiled against the public binding assembly.");
+    var correlatedModel = consumer.GetSemanticModel(consumerTree);
+    var correlatedNames = new HashSet<string>(["SetFieldValue", "Variables", "PageParams", "UseStorage"], StringComparer.Ordinal);
+    foreach (var expression in consumerTree.GetRoot().DescendantNodes().OfType<MemberAccessExpressionSyntax>())
+    {
+        var name = expression.Name.Identifier.ValueText;
+        if (correlatedNames.Contains(name) &&
+            correlatedModel.GetSymbolInfo(expression).Symbol is { ContainingAssembly.Name: "SevenLibraryBindings" } symbol)
+        {
+            correlatedNames.Remove(name);
+            var line = expression.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+            Console.WriteLine($"  {symbol.ToDisplayString()} <= {Path.GetFileName(consumerPath)}:{line}");
+        }
+    }
+    Require(correlatedNames.Count == 0, $"Missing public assembly consumer evidence for {string.Join(", ", correlatedNames)}.");
     ReportCallEvidence(analysis);
     Console.WriteLine($"Roslyn compiled the pooled facade for {primary.Count} npm exports across the seven libraries " +
         $"and {additional.Count} additional exports from {string.Join(", ", additional.Select(value => value.ModuleSpecifier).Distinct())}.");
 }
+
+static bool HasStringAttribute(ISymbol symbol, string attribute, string value) =>
+    symbol.GetAttributes().Any(candidate => candidate.AttributeClass?.ToDisplayString() == attribute &&
+        candidate.ConstructorArguments is [{ Value: string argument }] && argument == value);
 
 static void ReportCallEvidence(JoltAnalysis analysis)
 {
@@ -507,7 +751,7 @@ static void ReportCallEvidence(JoltAnalysis analysis)
     var unexercised = 0;
     foreach (var declaration in tree.GetRoot().DescendantNodes().OfType<MemberDeclarationSyntax>())
     {
-        if (declaration is not (MethodDeclarationSyntax or PropertyDeclarationSyntax or EnumMemberDeclarationSyntax))
+        if (declaration is not (MethodDeclarationSyntax or PropertyDeclarationSyntax or IndexerDeclarationSyntax or EnumMemberDeclarationSyntax))
             continue;
         var member = facade.GetDeclaredSymbol(declaration);
         if (member is null)
@@ -524,7 +768,7 @@ static void ReportCallEvidence(JoltAnalysis analysis)
             Console.WriteLine($"  Unexercised {display}");
         }
     }
-    Console.WriteLine($"Generated methods, properties and enum members exercised {exercised}, unexercised {unexercised}.");
+    Console.WriteLine($"Generated methods, properties, indexers and enum members exercised {exercised}, unexercised {unexercised}.");
     Require(hasQueryEvidence, "Query.jazor must bind MutateAsync to a generated declaration and report its source line.");
     Require(hasVeeEvidence, "Vee.jazor must bind Validate to a generated declaration and report its source line.");
 }
@@ -537,4 +781,4 @@ static void Require(bool condition, string message)
 
 sealed record DeclarationExport(string Kind, string[] Members);
 sealed record AuthoredMember(string Description, bool Callable, string? InlineTarget, string Location,
-    int? Required, int? Parameters, bool Variadic);
+    int? Required, int? Parameters, bool Variadic, TypeSyntax? ReturnType);

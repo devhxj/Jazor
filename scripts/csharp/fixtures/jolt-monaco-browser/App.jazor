@@ -50,9 +50,47 @@
             (marker.Severity == Monaco.MarkerSeverity.Warning ? "warning" : "unexpected");
     }
 
+    public static string? ReadAttachedModelId() {
+        var editor = Monaco.Editor.GetEditors()[0];
+        var expected = Monaco.Editor.GetModels()[0];
+        var current = editor.GetModel();
+        return current != null && current == expected ? current.Id : null;
+    }
+
+    public static bool DetachAndRestoreModel() {
+        var editor = Monaco.Editor.GetEditors()[0];
+        var current = editor.GetModel();
+        if (current == null)
+            return false;
+
+        editor.SetModel(null);
+        var detached = editor.GetModel() == null;
+        editor.SetModel(current);
+        return detached && editor.GetModel() == current;
+    }
+
+    public static void TypeText(string text) {
+        var editor = Monaco.Editor.GetEditors()[0];
+        editor.Trigger("jolt", "type", new ECMAScript.Vue.VueDictionary<string> { ["text"] = text });
+    }
+
     public static Action ObserveContent(Action<double> onVersion) {
         var editor = Monaco.Editor.GetEditors()[0];
         var subscription = editor.OnDidChangeModelContent(change => onVersion(change.VersionId));
         return () => subscription.Dispose();
+    }
+
+    public static Action ObserveView(Action focused, Action blurred, Action<double> resized) {
+        var editor = Monaco.Editor.GetEditors()[0];
+        var focus = editor.OnDidFocusEditorText(() => focused());
+        var blur = editor.OnDidBlurEditorText(() => blurred());
+        var layout = editor.OnDidLayoutChange(info => resized(info.Width));
+        return () => { focus.Dispose(); blur.Dispose(); layout.Dispose(); };
+    }
+
+    public static double ReadViewHeight() => Monaco.Editor.GetEditors()[0].GetLayoutInfo().Height;
+
+    public static void ObserveModelDisposal(Action notify) {
+        Monaco.Editor.GetModels()[0].OnWillDispose(() => notify());
     }
 }

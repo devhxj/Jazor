@@ -1,0 +1,37 @@
+@using Vee = Npm.VeeValidate.Exports
+
+<output id="form-scope">@_result</output>
+
+@code {
+    public record Input(string Address, double Count, double Missing) : ECMAScript.Vue.VueProps;
+    private string _result = "waiting";
+
+    [Setup]
+    private void Configure()
+    {
+        var formState = Vee.UseFormContext();
+        var context = Vee.UseFormContext<Input>();
+        if (context == null)
+        {
+            _result = formState == null ? "missing" : "invalid";
+            return;
+        }
+        if (formState == null || formState.Name != "Form" || formState.SubmitCount.Value != 0 ||
+            formState.IsSubmitting.Value || formState.Errors.Value["Address"] != null)
+        {
+            _result = "invalid";
+            return;
+        }
+
+        ECMAScript.Vue.OnMounted(() => {
+            var initial = context.Values.Get(value => value.Address);
+            var missing = context.Values.GetValue(value => value.Missing);
+            var count = context.Values.GetValue(value => value.Count);
+            context.SetFieldValue(value => value.Count, 2d, false);
+            var updated = context.Values.GetValue(value => value.Count);
+            context.ValidateField(value => value.Count).Then(field => context.Validate().Then(form => {
+                _result = field.Valid && form.Valid && missing == null && count == 0 && updated == 2 ? initial + "|updated" : "invalid";
+            }));
+        });
+    }
+}

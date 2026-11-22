@@ -72,6 +72,28 @@ public static partial class Vue
 		public T Value { get; set; }
 	}
 
+	/// <summary>A Vue ref with separate read and write types.</summary>
+	[ECMAScript]
+	public interface IVueSplitRef<TRead, TWrite>
+	{
+		/// <summary>Reads the current value.</summary>
+		[Description("@#value")]
+		TRead Value { get; }
+
+		/// <summary>Writes the current value using the ref's write type.</summary>
+		[Description("@#value")]
+		TWrite WriteValue { set; }
+	}
+
+	/// <summary>A Vue ref that also accepts its read type through the Value setter.</summary>
+	[ECMAScript]
+	public interface IVueWritableRef<TRead, TWrite> : IVueRef<TRead>, IVueSplitRef<TRead, TWrite>
+	{
+		/// <summary>Reads the current value and accepts it when written back to the same ref.</summary>
+		[Description("@#value")]
+		new TRead Value { get; set; }
+	}
+
 	/// <summary>
 	/// 映射到纯 JavaScript 对象的选项包标记接口，用于 Vue 组件选项、插件配置和注册表。
 	/// Marker interface for option bags that map to plain JavaScript objects in Vue component

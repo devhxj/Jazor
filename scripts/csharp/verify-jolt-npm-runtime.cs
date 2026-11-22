@@ -26,9 +26,13 @@ var project = Directory.CreateDirectory(Path.Combine(repo, ".tmp", $"jolt-npm-ru
 try
 {
     foreach (var name in new[] { "package.json", "pnpm-lock.yaml", "App.jazor", "Floating.jazor", "Vee.jazor",
-        "Query.jazor", "Events.jazor", "Behavior.jazor", "Getters.jazor", "verify.mjs", "verify-query.mjs",
-        "verify-events.mjs", "verify-behavior.mjs", "verify-getters.mjs", "Submit.jazor", "verify-submit.mjs" })
+        "Query.jazor", "Events.jazor", "Behavior.jazor", "Getters.jazor", "Constant.jazor", "verify.mjs", "verify-query.mjs",
+        "verify-events.mjs", "verify-behavior.mjs", "verify-getters.mjs", "Submit.jazor", "FormScope.jazor", "verify-submit.mjs", "verify-i18n.mjs",
+        "Storage.jazor", "verify-storage.mjs", "Model.jazor", "verify-model.mjs", "UrlParams.jazor", "verify-url-params.mjs",
+        "ColorMode.jazor", "verify-color-mode.mjs", "Clipboard.jazor", "verify-clipboard.mjs", "EventHook.jazor" })
         File.Copy(Path.Combine(fixture, name), Path.Combine(project.FullName, name));
+    File.Copy(Path.Combine(scripts, "fixtures", "jolt-binding-projection", "I18nPlugin.jazor"),
+        Path.Combine(project.FullName, "I18nPlugin.jazor"));
 
     await NodeToolchain.RestoreAsync(project.FullName, store, stop, Console.Out);
     deadline.CancelAfter(TimeSpan.FromMinutes(2));
@@ -49,6 +53,18 @@ try
         Path.Combine(project.FullName, "verify-getters.mjs"), cancellationToken: stop));
     Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
         Path.Combine(project.FullName, "verify-query.mjs"), cancellationToken: stop));
+    Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
+        Path.Combine(project.FullName, "verify-i18n.mjs"), cancellationToken: stop));
+    Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
+        Path.Combine(project.FullName, "verify-storage.mjs"), cancellationToken: stop));
+    Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
+        Path.Combine(project.FullName, "verify-model.mjs"), cancellationToken: stop));
+    Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
+        Path.Combine(project.FullName, "verify-url-params.mjs"), cancellationToken: stop));
+    Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
+        Path.Combine(project.FullName, "verify-color-mode.mjs"), cancellationToken: stop));
+    Console.WriteLine(await NodeModuleRunner.RunAsync(project.FullName,
+        Path.Combine(project.FullName, "verify-clipboard.mjs"), cancellationToken: stop));
 
     // Compile all invalid components together so each locked package is read once.
     var getterComponent = Path.Combine(project.FullName, "Getters.jazor");
@@ -62,7 +78,8 @@ try
     await File.WriteAllTextAsync(fieldComponent, fieldSource.Replace(
         "value => value.Address == \"ada@example.test\" ? true : \"invalid-email\"", "(bool value) => value", StringComparison.Ordinal)
         .Replace("double? numberValue", "bool? numberValue", StringComparison.Ordinal)
-        .Replace("bool? booleanValue", "double? booleanValue", StringComparison.Ordinal), stop);
+        .Replace("bool? booleanValue", "double? booleanValue", StringComparison.Ordinal)
+        .Replace("typedArray.Push(\"pushed\")", "typedArray.Push(true)", StringComparison.Ordinal), stop);
     await File.WriteAllTextAsync(Path.Combine(project.FullName, "InvalidInitialValue.jazor"), fieldSource.Replace(
         "InitialValue = new Email(\"invalid\")", "InitialValue = true", StringComparison.Ordinal), stop);
 
@@ -96,21 +113,42 @@ try
     await File.WriteAllTextAsync(behaviorComponent, behaviorSource
         .Replace("debounce.Invoke(\"keep\")", "debounce.Invoke(true)", StringComparison.Ordinal)
         .Replace("timer.Start(\"timer\")", "timer.Start(true)", StringComparison.Ordinal), stop);
+    var modelComponent = Path.Combine(project.FullName, "Model.jazor");
+    var modelSource = await File.ReadAllTextAsync(modelComponent, stop);
+    await File.WriteAllTextAsync(modelComponent,
+        modelSource.Replace("_model.Value = 0", "_model.Value = false", StringComparison.Ordinal)
+            .Replace("(double value) => value + 1", "(double value) => true", StringComparison.Ordinal)
+            .Replace("string Label);", "string Label, IVueRef<double> RawCount = default!);", StringComparison.Ordinal), stop);
+    var urlComponent = Path.Combine(project.FullName, "UrlParams.jazor");
+    var urlSource = await File.ReadAllTextAsync(urlComponent, stop);
+    await File.WriteAllTextAsync(urlComponent, urlSource.Replace("Current = () =>", "query.Set(\"tag\", false);\n        query.Set(\"tag\", null);\n        Current = () =>",
+        StringComparison.Ordinal), stop);
+    var clipboardComponent = Path.Combine(project.FullName, "Clipboard.jazor");
+    var clipboardSource = await File.ReadAllTextAsync(clipboardComponent, stop);
+    await File.WriteAllTextAsync(clipboardComponent,
+        clipboardSource.Replace("Copy(\"plain\")", "Copy(true)", StringComparison.Ordinal), stop);
     var invalid = await Build();
     string[] expected = [
         @"Getters\.jazor.*CS0200", @"Getters\.jazor.*CS0029", @"Getters\.jazor.*CS1503",
-        @"Vee\.jazor.*CS1661", @"Vee\.jazor.*CS0029.*double.*bool",
+        @"Vee\.jazor.*CS1660.*string", @"Vee\.jazor.*CS0029.*double.*bool", @"Vee\.jazor.*CS1503.*bool.*string",
         @"Vee\.jazor.*CS0029.*bool.*double", @"InvalidInitialValue\.jazor.*CS0029",
         @"App\.jazor.*CS1955", @"App\.jazor.*CS1503.*ECMAScript\.Date\[\]", @"App\.jazor.*CS1503.*bool",
         @"App\.jazor.*CS0266", @"App\.jazor.*CS0029.*ISOStringFormat", @"App\.jazor.*CS0029.*Locale",
         @"Query\.jazor.*CS0266", @"Query\.jazor.*CS1503", @"Query\.jazor.*CS0029.*ECMAScript\.Date",
         @"Query\.jazor.*CS0029.*bool.*double", @"Query\.jazor.*CS0029.*string.*double",
         @"Events\.jazor.*CS0117.*Click",
+        @"Model\.jazor.*CS0029.*bool.*double",
+        @"Clipboard\.jazor.*CS1503.*bool",
+        @"Model\.jazor.*CS1662",
+        @"Model\.jazor.*Record\.Info\.RawCount.*Vue unwraps nested refs",
+        @"UrlParams\.jazor.*CS1503.*bool",
     ];
-    if (invalid.ExitCode == 0 || expected.Any(pattern => !Regex.IsMatch(invalid.Output, pattern)) ||
+    var missing = expected.Where(pattern => !Regex.IsMatch(invalid.Output, pattern)).ToArray();
+    if (invalid.ExitCode == 0 || missing.Length > 0 ||
+        !Regex.IsMatch(invalid.Output, @"UrlParams\.jazor.*CS0037") ||
         Regex.Matches(invalid.Output, @"Events\.jazor.*CS1503").Count < 2 ||
         Regex.Matches(invalid.Output, @"Behavior\.jazor.*CS1503").Count < 2)
-        throw new InvalidOperationException($"Missing projection diagnostics.\n{invalid.Output}");
+        throw new InvalidOperationException($"Projection diagnostic checks failed. Missing patterns [{string.Join(", ", missing)}].\n{invalid.Output}");
     Console.WriteLine("Jolt rejected invalid VueUse, VeeValidate, date-fns and Vue Query calls at the C# use sites.");
 
     if (args is [_, "--browser", var browser])

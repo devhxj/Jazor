@@ -7,6 +7,8 @@
 using Jazor.NodeHost;
 using Jolt.Compiler;
 using Jolt.Npm;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 var root = Path.GetFullPath(".");
 var project = Path.GetFullPath(args is [var existing] ? existing :
@@ -23,6 +25,21 @@ try
     var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], new() { NpmValues = values });
     if (result.Diagnostics.Count != 0)
         throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+    var component = JoltProjectCompiler.Analyze([new("App.jazor", source)], new() { NpmValues = values })
+        .Documents.Single().SemanticModel.Compilation;
+    var projection = component.SyntaxTrees.Single(tree => tree.FilePath == "__JoltNpmValues.g.cs");
+    var publicTree = CSharpSyntaxTree.ParseText(JoltNpmBindings.GenerateSource(values), (CSharpParseOptions)projection.Options);
+    var bindings = CSharpCompilation.Create("I18nBindings", [publicTree], component.References,
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+    using var assembly = new MemoryStream();
+    var emitted = bindings.Emit(assembly, options: new Microsoft.CodeAnalysis.Emit.EmitOptions(metadataOnly: true));
+    if (!emitted.Success)
+        throw new InvalidOperationException(string.Join(Environment.NewLine, emitted.Diagnostics));
+    assembly.Position = 0;
+    var consumer = component.RemoveSyntaxTrees(projection).AddReferences(MetadataReference.CreateFromStream(assembly));
+    var publicErrors = consumer.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+    if (publicErrors.Length != 0)
+        throw new InvalidOperationException(string.Join(Environment.NewLine, publicErrors.AsEnumerable()));
     var invalid = source.Replace("[\"guest\"] = \"Ada\"", "[\"guest\"] = false", StringComparison.Ordinal);
     var rejected = await JoltProjectCompiler.CompileAsync([new("App.jazor", invalid)], new() { NpmValues = values });
     if (!rejected.Diagnostics.Any(diagnostic => diagnostic.ToString().Contains("CS0029", StringComparison.Ordinal)))
@@ -37,7 +54,9 @@ try
         throw new InvalidOperationException("Expected a C# type error for a boolean nested message.");
     foreach (var (original, replacement, code) in new[]
     {
-        ("global.Locale.Value = \"en\"", "global.Locale = \"en\"", "CS0200"),
+        ("composer.Te(\"onlyFrench\", composer.Locale.Value)", "composer.Te(\"onlyFrench\", false)", "CS1503"),
+        ("composer.Rt(\"Resolved {'message'}\")", "composer.Rt(321)", "CS1503"),
+        ("global.Locale.Value = \"en\"", "global.Locale = \"en\"", "CS0029"),
         ("global.Locale = \"fr\"", "global.Locale.Value = \"fr\"", "CS1061"),
     })
     {
@@ -52,8 +71,17 @@ try
         import assert from 'node:assert/strict';
         import { createSSRApp } from 'vue';
         import { renderToString } from 'vue/server-renderer';
-        import App, { CompositionGlobal, Install, LegacyGlobal } from './App.mjs';
+        import App, { CompositionGlobal, Install, LegacyGlobal, MessageTree } from './App.mjs';
         assert.equal(CompositionGlobal(), 'fr/Bonjour/en/Hello');
+        const mixed = { nested: { original: 'Original', zero: 0, enabled: false, values: ['one', 2, false] } };
+        const tree = MessageTree(mixed, 'missing-locale');
+        assert.equal(tree.original, 'Original');
+        assert.equal(tree.merged, 'Merged');
+        assert.equal(tree.resolved, 'Resolved message');
+        assert.deepEqual(tree.replacement, { nested: { replacement: 'Replaced' } });
+        assert.deepEqual(tree.roundTrip, { nested: { original: 'Original', zero: 0, enabled: false,
+            values: ['one', 2, false], added: 'Merged' } });
+        assert.deepEqual(tree.requested, {});
         assert.equal(LegacyGlobal(), 'en/Hello/fr/Salut');
         assert.equal(CompositionGlobal(), 'fr/Bonjour/en/Hello');
         const first = createSSRApp(App);
@@ -64,8 +92,8 @@ try
         const number = new Intl.NumberFormat('fr').format(321);
         const date = new Intl.DateTimeFormat('fr').format(new Date('2026-11-21T12:00:00Z'));
         assert.deepEqual(await Promise.all([renderToString(first), renderToString(second)]), [
-            `<p>Bonjour Ada / Bonjour Lin / ${number} / ${date} / Hello</p>`,
-            `<p>Salut Ada / Salut Lin / ${number} / ${date} / Hello</p>`,
+            `<p>Bonjour Ada / Bonjour Lin / ${number} / ${date} / Hello<span id="known-key">absent/missing</span></p>`,
+            `<p>Salut Ada / Salut Lin / ${number} / ${date} / Hello<span id="known-key">absent/missing</span></p>`,
         ]);
         disposeFirst();
         disposeSecond();

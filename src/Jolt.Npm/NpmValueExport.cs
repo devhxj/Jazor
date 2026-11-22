@@ -24,7 +24,8 @@ public sealed record NpmValueSignature(
     IReadOnlyList<string>? ValueTypeParameters = null,
     string? ManagedNameSuffix = null);
 
-public sealed record NpmValueParameter(string Name, NpmValueType Type, bool Optional, bool ReadOnlyReference = false);
+public sealed record NpmValueParameter(string Name, NpmValueType Type, bool Optional, bool ReadOnlyReference = false,
+    bool? FixedBoolean = null, bool FixedUndefined = false, bool OptionalCallback = false);
 
 public sealed record NpmValueType(
     string Kind,
@@ -39,7 +40,12 @@ public sealed record NpmValueType(
     IReadOnlyList<NpmValueType>? TypeArguments = null,
     IReadOnlyList<NpmEnumMember>? EnumMembers = null,
     IReadOnlyList<string>? StringLiterals = null,
-    string? ProtocolKey = null);
+    string? ProtocolKey = null,
+    IReadOnlyList<string>? ValueTypeParameters = null,
+    string? TypeIdentity = null,
+    bool VeeValidatePath = false,
+    NpmValueType? WriteType = null,
+    bool RequirePlainRecord = false);
 
 public sealed record NpmEnumMember(string Name, int Value);
 

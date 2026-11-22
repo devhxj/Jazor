@@ -1,6 +1,12 @@
 import { readCallableProtocol, readProtocolArray } from './callable-protocol-projection.mjs';
 import { readSubmissionProjection } from './submission-projection.mjs';
+import { readPropertyKeySignature } from './dependent-path.mjs';
+import { readFiniteMappedRecord, readNamedRecord } from './named-record-projection.mjs';
+import { finiteBooleanProbes, readFiniteBooleanSignatures } from './finite-boolean-projection.mjs';
 import { pagedQueryProbes, readPagedQueries } from './paged-query-projection.mjs';
+import { readQueryFetch } from './query-client-projection.mjs';
+import { readLocaleMessageMethod, readStringMessageCall } from './locale-message-projection.mjs';
+import { readQueryData } from './query-data-projection.mjs';
 import fs from 'node:fs';
 import { behaviorProbes, readBehaviorProjections } from './callback-behavior.mjs';
 import { domEventProbes, readDomEventProjections } from './dom-event-projection.mjs';
@@ -9,7 +15,8 @@ import { dateArguments, dateProjection, readDateProjection } from './date-specia
 import { omittedOptionsProbes, vueComposableProjection } from './vue-composable-projection.mjs';
 import { alternatives, callbackProbes, hasConditionalAnnotation, singleCall } from './generic-callbacks.mjs';
 import { genericCallbackProjections, readGenericCallbackProjections } from './generic-callback-projections.mjs';
-import { inputClosureSlot, readSchemaFormProjections, schemaFormProbes } from './schema-form-projection.mjs';
+import { eventHookProbes, readEventHookProjections } from './event-hook-projection.mjs';
+import { inputClosureSlot, readIndexedArrayContext, readSchemaFormProjections, schemaFormProbes } from './schema-form-projection.mjs';
 import { contractTypes, readComponent } from './vue-contract.mjs';
 import { pluginFactoryProbes, projectVuePlugin, readPluginFactory } from './vue-plugin.mjs';
 import path from 'node:path';
@@ -119,6 +126,33 @@ const unalias = symbol => symbol.flags & ts.SymbolFlags.Alias ? checker.getAlias
 const typeOf = symbol => checker.getTypeOfSymbolAtLocation(symbol, source);
 const display = type => checker.typeToString(type, source, formatFlags);
 const optional = symbol => Boolean(symbol.flags & ts.SymbolFlags.Optional);
+const declarationPackageManifests = new Map();
+const activeAugmentedRefs = new Set();
+function recordIdentity(declaration) {
+    const file = path.resolve(declaration.getSourceFile().fileName);
+    const names = [declaration.name.text];
+    for (let node = declaration.parent; node && !ts.isSourceFile(node); node = node.parent) {
+        if (ts.isModuleDeclaration(node))
+            names.unshift(node.name.text);
+    }
+    const scope = declarationPackage(file);
+    return typeof scope?.manifest.version === 'string' ?
+        JSON.stringify([scope.manifest.name, scope.manifest.version, path.relative(scope.directory, file).replaceAll(path.sep, '/'), ...names]) : undefined;
+}
+
+function declarationPackage(file) {
+    // The checker resolves linked packages to their actual files. Follow the
+    // declaration's package scope so moving the link or checkout keeps its identity.
+    for (let directory = path.dirname(file); directory !== path.dirname(directory); directory = path.dirname(directory)) {
+        if (!declarationPackageManifests.has(directory)) {
+            const json = host.readFile(path.join(directory, 'package.json'));
+            declarationPackageManifests.set(directory, json ? JSON.parse(json) : null);
+        }
+        const manifest = declarationPackageManifests.get(directory);
+        if (typeof manifest?.name === 'string')
+            return { manifest, directory };
+    }
+}
 const definition = node => {
     if (!node || isEntry(node.getSourceFile().fileName))
         return null;
@@ -168,43 +202,58 @@ const callsOf = alias => {
     const symbol = valueSymbol(alias);
     return symbol ? typeOf(symbol).getCallSignatures() : [];
 };
-const projections = isValue ? dateProjection(aliases, callsOf, requestedValues, dateTypes.argumentsFor) : [];
-const callbackTypes = isValue ? callbackProbes(ts, program, checker, aliases, callsOf, requestedValues) : [];
-const validatorProbes = isValue ? genericCallbackProjections(ts, program, checker, source, aliases, callsOf, requestedValues, typeOf) : [];
-const formProbes = isValue ? schemaFormProbes(ts, program, checker, source, aliases, callsOf, requestedValues, typeOf) : [];
-const pagingProbes = isValue ? pagedQueryProbes(aliases, callsOf, requestedValues, typeOf) : [];
+const initialPromise = standardLibrarySymbol('Promise');
+const initialReadonlyArray = standardLibrarySymbol('ReadonlyArray');
+let error = standardLibrarySymbol('Error');
+const directValues = new Map(aliases.flatMap(alias => {
+    if (!requestedValues.has(alias.name))
+        return [];
+    const projection = readDirectGenericSignature(callsOf(alias), initialPromise, initialReadonlyArray);
+    return projection ? [[alias.name, projection]] : [];
+}));
+const probeValues = new Set([...requestedValues].filter(name => !directValues.has(name)));
+const finiteBooleanCalls = finiteBooleanProbes(ts, checker, aliases, callsOf, probeValues, typeOf);
+const projections = isValue ? dateProjection(aliases, callsOf, probeValues, dateTypes.argumentsFor) : [];
+const callbackTypes = isValue ? callbackProbes(ts, program, checker, aliases, callsOf, probeValues) : [];
+const validatorProbes = isValue ? genericCallbackProjections(ts, program, checker, source, aliases, callsOf, probeValues, typeOf) : [];
+const hooks = isValue ? eventHookProbes(aliases, callsOf, probeValues) : [];
+const formProbes = isValue ? schemaFormProbes(ts, program, checker, source, aliases, callsOf, probeValues, typeOf,
+    declaration => declarationPackage(path.resolve(declaration.getSourceFile().fileName))?.manifest.name) : [];
+const pagingProbes = isValue ? pagedQueryProbes(ts, checker, aliases, callsOf, probeValues, typeOf) : [];
 // Resolve the exact zero-argument call when a composable declares defaults.
 // Supplying options can infer different generics, so this result belongs only to ().
-const defaultCalls = aliases.filter(alias => requestedValues.has(alias.name) && valueSymbol(alias) &&
+const defaultCalls = aliases.filter(alias => probeValues.has(alias.name) && valueSymbol(alias) &&
     typeOf(valueSymbol(alias)).getCallSignatures().some(signature => signature.minArgumentCount === 0 &&
         hasOmittedTypeArguments(signature) &&
         !signature.thisParameter && !checker.hasEffectiveRestParameter(signature)));
-const pluginFactories = vueAvailable ? pluginFactoryProbes(ts, checker, aliases, callsOf, requestedValues,
+const pluginFactories = vueAvailable ? pluginFactoryProbes(ts, checker, aliases, callsOf, probeValues,
     typeOf, vueObjectPluginContract(), defaultCalls,
     checker.getDeclaredTypeOfSymbol(checker.resolveName('JoltStringDictionary', source, ts.SymbolFlags.Type, false))) : [];
-const eventProbes = isValue ? domEventProbes(ts, () => checker, aliases, callsOf, requestedValues,
+const eventProbes = isValue ? domEventProbes(ts, () => checker, aliases, callsOf, probeValues,
     typeOf, domSymbol, bindWebTypes()) : [];
-const behaviorCalls = isValue ? behaviorProbes(ts, checker, aliases, callsOf, requestedValues, typeOf) : [];
-const omittedOptionCalls = isValue ? omittedOptionsProbes(ts, checker, aliases, callsOf, requestedValues, typeOf, dateTypes.isDate) : [];
+const behaviorCalls = isValue ? behaviorProbes(ts, checker, aliases, callsOf, probeValues, typeOf) : [];
+const omittedOptionCalls = isValue ? omittedOptionsProbes(ts, checker, aliases, callsOf, probeValues, typeOf, dateTypes.isDate) : [];
 function vueObjectPluginContract() {
     const declaration = source.statements.find(node => ts.isTypeAliasDeclaration(node) && node.name.text === 'JoltVueObjectPlugin');
     return declaration && checker.getTypeAtLocation(declaration.type);
 }
-const elementRefCalls = isValue ? aliases.filter(alias => requestedValues.has(alias.name) &&
+const elementRefCalls = isValue ? aliases.filter(alias => probeValues.has(alias.name) &&
     callsOf(alias).length === 1 && elementRefParameters(callsOf(alias)[0])) : [];
 const stateProbes = isValue ? [
-    ...asyncStateProbes(checker, aliases, callsOf, requestedValues, typeOf,
+    ...asyncStateProbes(checker, aliases, callsOf, probeValues, typeOf,
         checker.resolveName('Promise', source, ts.SymbolFlags.Type, false)),
-    ...refUpdaterProbes(checker, aliases, callsOf, requestedValues, typeOf, vueRef),
+    ...refUpdaterProbes(checker, aliases, callsOf, probeValues, typeOf, vueRef),
 ] : [];
 const probeExpressions = new Map();
 const addProbes = (group, expression = probe => probe.expression) => {
     probeExpressions.set(group, group.map(expression));
 };
 addProbes(projections);
+addProbes(finiteBooleanCalls);
 addProbes(defaultCalls, alias => `packageExports[${JSON.stringify(alias.name)}]()`);
 addProbes(callbackTypes);
 addProbes(validatorProbes);
+addProbes(hooks);
 addProbes(pluginFactories);
 addProbes(eventProbes);
 addProbes(behaviorCalls);
@@ -247,6 +296,8 @@ const probeDiagnostics = expressions.length ? program.getSemanticDiagnostics(sou
 const dateSpecializations = readDateProjection(checker, statementsByGroup.get(projections), projections, argumentsFor, probeDiagnostics);
 const validators = readGenericCallbackProjections(checker,
     statementsByGroup.get(validatorProbes), validatorProbes, probeDiagnostics);
+const eventHooks = readEventHookProjections(ts, checker, statementsByGroup.get(hooks), hooks,
+    probeDiagnostics, standardLibrarySymbol('Promise'), definition);
 const resolvedElementRefCalls = new Map();
 for (const [index, alias] of elementRefCalls.entries()) {
     const statement = statementsByGroup.get(elementRefCalls)[index];
@@ -266,6 +317,7 @@ for (const [index, probe] of pluginFactories.entries()) {
             { probe, signature: checker.getResolvedSignature(statement.declarationList.declarations[0].initializer) });
 }
 let validatorTypeParameter;
+let optionalValidatorValue;
 const callbackSignatures = new Map();
 let projectingCallbackOptions = false;
 const callbackMarkers = new Map([...new Set([...callbackTypes.flatMap(probe => probe.names),
@@ -309,9 +361,15 @@ function readVuePlugin(type) {
 }
 
 const webTypes = bindWebTypes();
-const promise = checker.resolveName('Promise', source, ts.SymbolFlags.Type, false);
-const standardPromise = promise?.declarations?.length &&
-    promise.declarations.every(node => program.isSourceFileDefaultLibrary(node.getSourceFile()));
+const promise = standardLibrarySymbol('Promise');
+const readonlyArray = standardLibrarySymbol('ReadonlyArray');
+error = standardLibrarySymbol('Error');
+const standardPromise = Boolean(promise);
+function standardLibrarySymbol(name) {
+    const symbol = checker.resolveName(name, source, ts.SymbolFlags.Type, false);
+    return symbol?.declarations?.length &&
+        symbol.declarations.every(node => program.isSourceFileDefaultLibrary(node.getSourceFile())) ? symbol : undefined;
+}
 const scalarElements = checker.getUnionType([checker.getBooleanType(), checker.getNumberType(), checker.getStringType()]);
 const readonlyScalars = checker.createArrayType(scalarElements, true);
 const objectType = checker.getTypeFromTypeNode(ts.factory.createKeywordTypeNode(ts.SyntaxKind.ObjectKeyword));
@@ -320,14 +378,33 @@ const schemaForms = readSchemaFormProjections(ts, checker, formProbes,
     statementsByGroup.get(formProbes), probeDiagnostics, definition, vueRef);
 const asyncStates = readAsyncStateProbes(ts, checker, stateProbes, statementsByGroup.get(stateProbes), probeDiagnostics, vueRef, definition);
 const pagedQueries = readPagedQueries(ts, checker, pagingProbes, statementsByGroup.get(pagingProbes),
-    probeDiagnostics, vueRef, standardPromise && promise, definition, readPagedQueryKey);
+    probeDiagnostics, vueRef, standardPromise && promise, definition, readPagedQueryKey, readObserverRef);
 
-function readPagedQueryKey(type) {
+function readObserverRef(type) {
+    const ref = vueRef(type);
+    if (!ref)
+        return;
+    const element = ref.element;
+    const values = alternatives(element);
+    const errorValue = branch => error && branch.getSymbol() === error;
+    const elementType = readRefStringDomain(element) ??
+        (values.every(branch => branch.flags & ts.TypeFlags.BooleanLiteral) ? { kind: 'boolean' } :
+            errorValue(element) ? { kind: 'error' } :
+            values.some(errorValue) && values.every(branch => errorValue(branch) || branch.flags === ts.TypeFlags.Null)
+                ? { kind: 'nullable', elementType: { kind: 'error' } } : undefined);
+    if (elementType)
+        return { kind: 'ref', readOnly: true, elementType };
+}
+
+function readPagedQueryKey(type, constraint = type) {
+    if (!type)
+        return;
     for (const candidate of [readonlyData, readonlyScalars]) {
-        if (checker.isTypeAssignableTo(candidate, type))
+        if (checker.isTypeAssignableTo(candidate, type) && checker.isTypeAssignableTo(candidate, constraint))
             return readType(candidate, new Set(), 'input', false);
     }
-    if (checker.isTypeAssignableTo(checker.createArrayType(checker.getStringType()), type))
+    const strings = checker.createArrayType(checker.getStringType());
+    if (checker.isTypeAssignableTo(strings, type) && checker.isTypeAssignableTo(strings, constraint))
         return { kind: 'array', readOnly: true, elementType: { kind: 'string' } };
 }
 
@@ -413,9 +490,17 @@ function readValue(alias) {
     const calls = type.getCallSignatures();
     const identity = { ...packageIdentity(), exportName: alias.name };
     if (calls.length) {
+        if (directValues.has(alias.name))
+            return { ...identity, definition: definition(definitionNode), signatures: directValues.get(alias.name), constantType: null };
+        const finiteBoolean = attempt(() => readFiniteBooleanSignatures(ts, checker, finiteBooleanCalls,
+            statementsByGroup.get(finiteBooleanCalls), probeDiagnostics, alias.name, calls[0], typeOf, omitUndefined,
+            type => attempt(() => readType(type, new Set(), 'input', false, unsupported)).value,
+            call => attempt(() => readReturn(call, new Set(), 'output', false, unsupported)).value, definition)).value;
+        if (finiteBoolean)
+            return { ...identity, definition: definition(definitionNode), signatures: finiteBoolean, constantType: null };
         const pagedQuery = pagedQueries.get(alias.name);
         if (pagedQuery)
-            return { ...identity, definition: definition(definitionNode), signatures: [pagedQuery], constantType: null };
+            return { ...identity, definition: definition(definitionNode), signatures: pagedQuery, constantType: null };
         const submission = readSubmissionProjection(ts, checker, calls, typeOf, standardPromise && promise, domSymbol, definition);
         if (submission)
             return { ...identity, definition: definition(definitionNode), signatures: [submission], constantType: null };
@@ -479,18 +564,29 @@ function readValue(alias) {
         const omittedOptions = attempt(() => readOmittedOptions(alias.name, unsupported)).value;
         const defaultCall = resolvedDefaults.get(alias.name);
         const readOrdinary = () => readSignatures(dateSpecializations.signatures(alias.name, calls), unsupported, defaultCall);
+        const ambientForm = schemaForm?.returnType.kind === 'undefinedable';
         const signatures = bestCallback && calls.every(call => call.typeParameters?.length)
             ? specialized.filter(entry => entry.probe === bestCallback.probe).map(entry => entry.projected) : validationSignatures?.length
             ? [...(attempt(readOrdinary).value ?? []), ...validationSignatures]
             : resolvedElementRefCalls.has(alias.name) ? readElementRefCall(resolvedElementRefCalls.get(alias.name), unsupported)
             : correlatedRefs?.length ? correlatedRefs
+            : eventHooks.has(alias.name) ? [eventHooks.get(alias.name)]
             : asyncStates.has(alias.name) ? asyncStates.get(alias.name)
+            : ambientForm ? (attempt(readOrdinary).value ?? []).filter(signature =>
+                signature.parameters.length === 0 && !signature.typeParameters?.length).map(signature => ({
+                ...signature,
+                // An ambient lookup has the same provider requirement at either overload.
+                returnType: signature.returnType.kind === 'undefinedable' ? signature.returnType :
+                    { kind: 'undefinedable', elementType: signature.returnType },
+            }))
             : schemaForm && !defaultCall ? []
-            : omittedOptions?.length ? omittedOptions
+            : omittedOptions?.length ? omittedOptions.some(signature => isSparseDictionary(signature.returnType))
+                ? [...(attempt(readOrdinary).value ?? []), ...omittedOptions] : omittedOptions
             : readOrdinary();
         if (schemaForm)
             signatures.push(schemaForm);
-        if (factory && !factory.probe.plugin) {
+        if (factory && !factory.probe.plugin &&
+            !signatures.some(signature => signature.returnType.kind === 'enrichedRef' && signature.parameters.length === 1)) {
             const { probe, signature } = factory;
             const result = attempt(() => readReturn(signature, new Set(), 'output', true, unsupported)).value;
             if (result)
@@ -534,6 +630,10 @@ function checkSignature(signature, unsupported, permittedTypeParameters) {
         unsupported(`generic, rest or explicit this signature '${checker.signatureToString(signature)}'`);
 }
 
+function isSparseDictionary(type) {
+    return type.kind === 'readonlyDictionary' || type.kind === 'writableDictionary';
+}
+
 function readOmittedOptions(exportName, unsupported) {
     const result = [];
     const literals = [];
@@ -545,11 +645,13 @@ function readOmittedOptions(exportName, unsupported) {
             continue;
         const call = statement.declarationList.declarations[0].initializer;
         const signature = checker.getResolvedSignature(call);
-        if (!signature || !vueRef(signature.getReturnType()))
+        if (!signature || !probe.sparseDefault && !vueRef(signature.getReturnType()))
             continue;
         const name = signature.parameters[0].name;
         const location = definition(signature.declaration);
-        const returnType = readReturn(signature, new Set(), 'output', true, unsupported);
+        const returnType = attempt(() => readReturn(signature, new Set(), 'output', true, unsupported)).value;
+        if (!returnType || probe.sparseDefault && !isSparseDictionary(returnType))
+            continue;
         if (probe.domain) {
             literals.push({ name, location, returnType, domain: probe.domain });
             continue;
@@ -677,6 +779,21 @@ function readHandle(type, ancestors, position, unsupported) {
         }
         if (!methods.includes(member))
             continue;
+        const localeMessage = readLocaleMessageMethod(ts, checker, calls, definition);
+        if (localeMessage) {
+            projected.push(methodMember(member.name, [localeMessage]));
+            continue;
+        }
+        const data = readQueryData(ts, checker, calls, definition, readPagedQueryKey);
+        if (data) {
+            projected.push(methodMember(member.name, data));
+            continue;
+        }
+        const fetch = readQueryFetch(ts, checker, calls, promise, definition, readPagedQueryKey);
+        if (fetch) {
+            projected.push(methodMember(member.name, [fetch]));
+            continue;
+        }
         if (ts.isClassDeclaration(declaration) && calls.length === 1) {
             const [signature] = calls;
             const result = signature.getReturnType();
@@ -694,10 +811,27 @@ function readHandle(type, ancestors, position, unsupported) {
         }
         if (!calls.some(signature => {
             const result = signature.getReturnType();
-            return result.flags & ts.TypeFlags.Void || scalar(result) || genericParameters;
+            if (result.flags & ts.TypeFlags.Void || scalar(result) || genericParameters)
+                return true;
+            // A zero-argument snapshot getter and an event carrying the same
+            // readonly interface can share the existing named result projection.
+            if (!signature.parameters.length && !signature.typeParameters?.length &&
+                result.getSymbol()?.declarations?.some(ts.isInterfaceDeclaration)) {
+                const fields = result.getProperties();
+                if (fields.length && fields.every(field => field.declarations?.every(node =>
+                    ts.isPropertySignature(node) && ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Readonly)))
+                    return true;
+            }
+            // Establish the inner handle's declaration identity without walking
+            // its members. The normal signature reader can then project the
+            // nullable return and validate its arguments at the same boundary.
+            if (!result.isUnion() || result.types.length !== 2 || !result.types.some(branch => branch.flags & ts.TypeFlags.Null))
+                return false;
+            const target = result.types.find(branch => !(branch.flags & ts.TypeFlags.Null));
+            return readHandle(target, nested, 'input', unsupported)?.kind === 'handle';
         }))
             continue;
-        const signatures = attempt(() => readSignatures(calls, unsupported, undefined, nested)).value;
+        const signatures = attempt(() => readSignatures(calls, unsupported, undefined, nested, false, true)).value;
         if (signatures)
             projected.push(methodMember(member.name, signatures));
     }
@@ -706,6 +840,11 @@ function readHandle(type, ancestors, position, unsupported) {
             ts.isPropertySignature(node) && node.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword)))
             continue;
         const result = checker.getTypeOfPropertyOfType(type, member.name);
+        const kind = result && scalar(result);
+        if (kind) {
+            projected.push({ name: member.name, type: { kind }, readOnly: true, definition: definition(member.declarations[0]) });
+            continue;
+        }
         if (!result?.getSymbol()?.declarations?.some(ts.isClassDeclaration))
             continue;
         const propertyType = readHandle(result, nested, 'input', unsupported);
@@ -766,8 +905,11 @@ function readSubscription(signature, ancestors, unsupported) {
     if (calls.length !== 1 || listener.getProperties().length)
         return;
     const [callback] = calls;
+    // IEvent<void> in Monaco still declares one parameter. A zero-argument
+    // listener ignores that JS argument and retains the normal subscription handle.
+    const noPayload = callback.parameters.length === 1 && typeOf(callback.parameters[0]).flags === ts.TypeFlags.Void;
     if (!(callback.getReturnType().flags & (ts.TypeFlags.Void | ts.TypeFlags.Any)) ||
-        callback.minArgumentCount !== callback.parameters.length)
+        !noPayload && callback.minArgumentCount !== callback.parameters.length)
         return;
     const result = signature.getReturnType();
     // A named lifecycle handle preserves the identity of the subscription
@@ -781,7 +923,7 @@ function readSubscription(signature, ancestors, unsupported) {
         const handle = readHandle(result, ancestors, 'output', unsupported);
         if (!handle?.members?.length)
             return;
-        const parameters = callback.parameters.map(parameter => ({
+        const parameters = noPayload ? [] : callback.parameters.map(parameter => ({
             name: parameter.name, type: readType(typeOf(parameter), ancestors, 'output', true, unsupported), optional: false,
         }));
         const listenerType = { kind: 'function', signatures: [{ parameters, returnType: { kind: 'void' } }] };
@@ -818,7 +960,11 @@ function parameterTypeKey(type) {
     return type;
 }
 
-function readSignatures(signatures, unsupported, defaultCall, ancestors = new Set(), allowGeneric = false) {
+function readSignatures(signatures, unsupported, defaultCall, ancestors = new Set(), allowGeneric = false, hostMethod = false) {
+    const direct = readDirectGenericSignature(signatures, promise, readonlyArray);
+    if (direct)
+        return direct;
+    const indexedRefs = readIndexedPropertySignature(signatures, true);
     const composable = vueComposableProjection(ts, checker, typeOf, vueRef, omitUndefined);
     const result = [];
     const seen = new Set();
@@ -831,9 +977,6 @@ function readSignatures(signatures, unsupported, defaultCall, ancestors = new Se
     for (const signature of signatures) {
         const closureInput = signatures.length === 1 && inputClosureSlot(ts, checker, typeOf, signature);
         const slot = signature.typeParameters?.[0];
-        const forwardsValue = signatures.length === 1 && signature.typeParameters?.length === 1 &&
-            signature.minArgumentCount === 1 && signature.parameters.length === 1 && !checker.getBaseConstraintOfType(slot) &&
-            typeOf(signature.parameters[0]) === slot && signature.getReturnType() === slot;
         const predicate = checker.getTypePredicateOfSignature(signature);
         const genericPredicate = signatures.length === 1 && signature.typeParameters?.length === 1 &&
             signature.parameters.length === 1 && !checker.getBaseConstraintOfType(slot) &&
@@ -843,25 +986,45 @@ function readSignatures(signatures, unsupported, defaultCall, ancestors = new Se
         // member has a concrete type independent of that slot. Required inputs
         // still pass the normal projection checks and cannot accept an open T.
         const erasedResult = signatures.length === 1 && signature.typeParameters?.length &&
-            signature.typeParameters.every(parameter => !checker.getBaseConstraintOfType(parameter) &&
+            signature.typeParameters.every(parameter => !hasDeclaredConstraint(parameter) &&
                 (!parameter.getDefault() || parameter.getDefault().flags & ts.TypeFlags.Unknown));
+        // A host method with an exact void result can use its TypeScript defaults
+        // when filters are omitted. Supplied fields still need an accepted input domain.
+        const defaultedVoidMethod = hostMethod && signature.getReturnType().flags === ts.TypeFlags.Void &&
+            !signature.minArgumentCount && signature.typeParameters?.length &&
+            signature.typeParameters.every(parameter => parameter.getDefault());
         if (signature.typeParameters?.length && defaultCall?.declaration === signature.declaration) {
             const resultType = attempt(() => readReturn(defaultCall, new Set(), 'output', true, unsupported));
             if (resultType.value && !seen.has('[]')) {
                 result.push({ parameters: [], returnType: resultType.value, definition: definition(signature.declaration) });
                 seen.add('[]');
             }
+            if (resultType.value?.kind === 'enrichedRef' && signatures.length === 1 &&
+                defaultCall.parameters.length === 1 && signature.typeParameters.every(parameter => parameter.getDefault())) {
+                // The checker instantiated the omitted signature with the declared
+                // defaults. Supplying only options accepted by that instantiation
+                // also satisfies the upstream function with the same type arguments.
+                const [parameter] = defaultCall.parameters;
+                const options = attempt(() =>
+                    readType(omitUndefined(typeOf(parameter)), new Set(), 'input', true, unsupported)).value;
+                if (options?.kind === 'object')
+                    result.push({
+                        parameters: [{ name: parameter.name, type: options, optional: false }],
+                        returnType: resultType.value,
+                        definition: definition(signature.declaration),
+                    });
+            }
         }
         const partialRecord = signature.parameters.length === 0 && signature.typeParameters?.length === 1 &&
             partialRecordSlot(vueRef(signature.getReturnType())?.element ?? signature.getReturnType()) === slot;
         const contextualComputed = signatures.length === 1 && composable.contextualComputed(signature);
-        const forwardsParameters = forwardsPromise || forwardsReadonlyRef || closureInput || forwardsValue || genericPredicate || partialRecord || contextualComputed;
+        const forwardsParameters = forwardsPromise || forwardsReadonlyRef || closureInput || genericPredicate || partialRecord || contextualComputed;
         const typeParameters = forwardsParameters ? signature.typeParameters : allowGeneric && signature.typeParameters?.every(parameter =>
             checker.getBaseConstraintOfType(parameter)?.flags & ts.TypeFlags.NonPrimitive)
             ? signature.typeParameters : undefined;
         const context = typeParameters ? new Set([...ancestors, ...typeParameters]) : ancestors;
         const projection = attempt(() => {
-            checkSignature(signature, unsupported, typeParameters || erasedResult);
+            checkSignature(signature, unsupported, typeParameters || erasedResult || defaultedVoidMethod);
             let result = readReturn(signature, context, 'output', true, unsupported);
             if (contextualComputed) {
                 // The caller chooses the value type. The selector alone supplies
@@ -885,7 +1048,7 @@ function readSignatures(signatures, unsupported, defaultCall, ancestors = new Se
             const optionalArities = [];
             // A cleanup factory can participate in a method-group conversion.
             // C# delegate binding requires the actual supplied arity.
-            let useExplicitArities = signatures.length > 1 || isVoidThunk(signature.getReturnType()) || genericPredicate;
+            let useExplicitArities = signatures.length > 1 || isVoidThunk(signature.getReturnType()) || genericPredicate || defaultedVoidMethod;
             const definitionNode = definition(signature.declaration);
             const returnKey = shapeKey(projection.value);
             const add = parameters => {
@@ -919,8 +1082,14 @@ function readSignatures(signatures, unsupported, defaultCall, ancestors = new Se
                 const type = isOptional ? omitUndefined(typeOf(parameter)) : typeOf(parameter);
                 const predicateInputs = dateTypes.predicateInputs(signature, index, type, signatures.length === 1);
                 const getterInput = composable.unknownGetter(type, projection.value);
-                const projected = predicateInputs ? { value: predicateInputs } : getterInput ? { value: [getterInput] } :
-                    attempt(() => readInputBranches(type, context, true, unsupported, forwardsReadonlyRef));
+                // An exact-void host command can consume a record through an unknown
+                // parameter without exposing any unchecked value to the C# caller.
+                const recordInput = hostMethod && signature.getReturnType().flags === ts.TypeFlags.Void &&
+                    type.flags === ts.TypeFlags.Unknown;
+                const projected = recordInput ? { value: [{ kind: 'plainRecord' }] } :
+                    predicateInputs ? { value: predicateInputs } : getterInput ? { value: [getterInput] } :
+                    attempt(() => readInputBranches(type, context, true, unsupported, forwardsReadonlyRef,
+                        defaultedVoidMethod ? signature.typeParameters : undefined));
                 if (!projected.value) {
                     failure ??= projected.error;
                     if (!isOptional)
@@ -937,9 +1106,26 @@ function readSignatures(signatures, unsupported, defaultCall, ancestors = new Se
                     ...prefix, { name: parameter.name, type, optional: isOptional },
                 ]));
             }
-            if (useExplicitArities)
-                [...optionalArities, ...prefixes].forEach(parameters =>
-                    add(parameters.map(parameter => ({ ...parameter, optional: false }))));
+            if (useExplicitArities) {
+                const competing = earlier.filter(previous => previous.returnKey !== returnKey);
+                optionalArities.forEach(parameters => add(parameters.map(parameter => ({ ...parameter, optional: false }))));
+                for (const parameters of prefixes) {
+                    const optionalCount = parameters.filter(parameter => parameter.optional).length;
+                    // Preserve shorter overloads for delegate binding. The full overload
+                    // can additionally accept named arguments if each newly exposed call
+                    // stays within the same TypeScript return contract.
+                    const useDefaults = signatures.length > 1 &&
+                        optionalCount > 1 &&
+                        prefixes.every(other => other === parameters || other.every((parameter, index) =>
+                            !parameter.optional || shapeKey(parameter.type) === shapeKey(parameters[index].type))) &&
+                        competing.every(previous => !mayMatchWithOmittedArguments(previous.signature, parameters)) &&
+                        !result.some(previous => previous.parameters.filter(parameter => parameter.optional).length > 1 &&
+                            previous.parameters.some(parameter => parameter.optional && parameters.some(candidate =>
+                                candidate.optional && candidate.name === parameter.name)) &&
+                            mayMatchWithOmittedArguments(signature, previous.parameters.filter(parameter => !parameter.optional)));
+                    add(useDefaults ? parameters : parameters.map(parameter => ({ ...parameter, optional: false })));
+                }
+            }
             else
                 prefixes.forEach(add);
         } else {
@@ -947,12 +1133,149 @@ function readSignatures(signatures, unsupported, defaultCall, ancestors = new Se
         }
         earlier.push({ signature, returnKey: projection.value && shapeKey(projection.value) });
     }
+    if (signatures.length === 1 && result.length && result.every(signature => !signature.typeParameters?.length)) {
+        const indexedArray = readIndexedArrayContext(ts, checker, typeOf, vueRef, definition, signatures[0]);
+        if (indexedArray)
+            return [...result, ...result.filter(signature => signature.parameters.length === 1 &&
+                signature.parameters[0].type.kind === 'string').map(signature => ({ ...signature, ...indexedArray }))];
+    }
+    if (indexedRefs)
+        return [...indexedRefs, ...result];
     if (!result.length) {
         if (failure)
             throw failure;
         unsupported('no unambiguous supported signature');
     }
     return result;
+}
+
+function hasDeclaredConstraint(slot) {
+    // U extends T can have no effective base constraint when T is unconstrained.
+    return slot.symbol.declarations?.some(node => ts.isTypeParameterDeclaration(node) && node.constraint) ||
+        checker.getBaseConstraintOfType(slot);
+}
+
+function readIndexedPropertySignature(signatures, includeOtherArities = false) {
+    return readPropertyKeySignature(ts, checker, signatures, typeOf, definition,
+        (type, readElement) => readDirectVueRef(type, 'output', readElement, true), vueUnwrapArgument, includeOtherArities);
+}
+
+function vueUnwrapArgument(ref, element) {
+    // The alias must be the one exported beside the canonical Vue Ref
+    // declaration. A package may declare a different transformation with the same name.
+    const declaration = ref.target?.getSymbol()?.declarations?.[0];
+    const module = declaration && checker.getSymbolAtLocation(declaration.getSourceFile());
+    const unwrap = module && checker.getExportsOfModule(module).find(symbol => symbol.name === 'UnwrapRef');
+    if (unwrap && element.aliasSymbol === unwrap && element.aliasTypeArguments?.length === 1)
+        return element.aliasTypeArguments[0];
+}
+
+function readDirectGenericSignature(signatures, promiseSymbol, readonlyArraySymbol) {
+    const propertyKey = readIndexedPropertySignature(signatures);
+    if (propertyKey)
+        return propertyKey;
+    const [signature] = signatures;
+    if (signatures.length !== 1 || !signature.typeParameters?.length ||
+        signature.thisParameter || checker.getTypePredicateOfSignature(signature) ||
+        checker.hasEffectiveRestParameter(signature))
+        return;
+    const slots = new Set(signature.typeParameters);
+    // An explicit unknown bound admits the same values as an omitted bound.
+    // Check the written constraint too because `U extends T` can lack an effective base constraint.
+    if (signature.typeParameters.some(slot => hasDeclaredConstraint(slot) &&
+        !slot.symbol.declarations?.every(node => ts.isTypeParameterDeclaration(node) && node.constraint &&
+            checker.getTypeAtLocation(node.constraint).flags & ts.TypeFlags.Unknown)))
+        return;
+
+    const inferred = new Set();
+    const active = new Set();
+    const activeRecords = new Map();
+    function read(type, suppliesValue, position, permitsVoid = false, scope = slots, evidence = inferred, annotation) {
+        if (scope.has(type)) {
+            if (suppliesValue)
+                evidence.add(type);
+            return { kind: 'typeParameter', name: type.symbol.name };
+        }
+        const kind = scalar(type) || (permitsVoid && type.flags & ts.TypeFlags.Void ? 'void' : undefined);
+        if (kind)
+            return { kind };
+        const namedRecord = referenceOnly => readNamedRecord(ts, checker, program, type, suppliesValue, activeRecords,
+            (child, supplies, childScope = scope, childEvidence = evidence) =>
+                read(child, supplies, 'invariant', false, childScope, childEvidence),
+            child => scope.has(child) || scalar(child), definition, recordIdentity, referenceOnly);
+        if (active.has(type))
+            return namedRecord(true);
+        active.add(type);
+        let projection;
+        if (promiseSymbol && type.target?.getSymbol() === promiseSymbol) {
+            const elementType = read(checker.getTypeArguments(type)[0], suppliesValue, position, true, scope, evidence);
+            // Native promises assimilate another promise instead of
+            // producing it as an independently observable fulfillment.
+            if (elementType && elementType.kind !== 'promise')
+                projection = { kind: 'promise', elementType };
+        } else if (readonlyArraySymbol && checker.isArrayType(type) && type.target?.getSymbol() === readonlyArraySymbol) {
+            const elementType = read(checker.getTypeArguments(type)[0], suppliesValue, position, false, scope, evidence);
+            if (elementType)
+                projection = { kind: 'array', readOnly: true, elementType };
+        } else if (type.getCallSignatures().length) {
+            const calls = type.getCallSignatures();
+            const [call] = calls;
+            // A lambda's parameters receive contextual types. Only slots
+            // supplied directly or through callback results drive inference.
+            if (calls.length === 1 && !type.getProperties().length && !checker.getIndexInfosOfType(type).length &&
+                !type.getConstructSignatures().length &&
+                !call.thisParameter && !call.typeParameters?.length && !checker.getTypePredicateOfSignature(call) &&
+                !checker.hasEffectiveRestParameter(call) && call.minArgumentCount === call.parameters.length) {
+                const parameterPosition = position === 'invariant' ? position : position === 'input' ? 'output' : 'input';
+                const parameters = readParameters(call, false, parameterPosition, scope, evidence);
+                const returnType = parameters && read(call.getReturnType(), suppliesValue, position, true, scope, evidence);
+                if (returnType)
+                    projection = { kind: 'function', signatures: [{ parameters, returnType, definition: definition(call.declaration) }] };
+            }
+        } else {
+            projection = readDirectVueRef(type, position,
+                (element, usePosition) => read(element, suppliesValue, usePosition, false, scope, evidence)) ??
+                readAugmentedVueRef(type,
+                    argument => read(argument, suppliesValue, 'invariant', false, scope, evidence),
+                    (member, usePosition, permitsVoid, formals) =>
+                        read(member, false, usePosition, permitsVoid, formals, new Set())) ??
+                (position !== 'invariant' ? readFiniteMappedRecord(ts, checker, program, type, suppliesValue,
+                    (child, supplies) => read(child, supplies, 'invariant', false, scope, evidence),
+                    omitUndefined, definition, recordIdentity, annotation) : undefined) ??
+                namedRecord();
+        }
+        active.delete(type);
+        return projection;
+    }
+    function readParameters(call, suppliesValue, position, scope, evidence) {
+        const parameters = [];
+        for (const [index, parameter] of call.parameters.entries()) {
+            const optional = index >= call.minArgumentCount;
+            // Omitting every trailing option must still leave enough evidence
+            // for the required arguments to determine all generic slots.
+            const declared = typeOf(parameter);
+            const type = read(optional ? omitUndefined(declared) : declared, suppliesValue && !optional, position, false, scope, evidence,
+                parameter.valueDeclaration?.type);
+            if (!type)
+                return;
+            parameters.push({ name: parameter.name, type, optional });
+        }
+        return parameters;
+    }
+    const parameters = readParameters(signature, true, 'input', slots);
+    const returnType = parameters && inferred.size === slots.size &&
+        read(signature.getReturnType(), false, 'output', true, slots, inferred, signature.declaration?.type);
+    if (!returnType)
+        return;
+    const projection = { parameters, returnType, typeParameters: signature.typeParameters.map(slot => slot.symbol.name),
+        definition: definition(signature.declaration) };
+    const arrayInputs = parameters.filter(parameter => parameter.type.kind === 'array' && parameter.type.readOnly);
+    if (arrayInputs.length !== 1)
+        return [projection];
+    // A managed array and an already projected host array both erase to the original JS array.
+    const [array] = arrayInputs;
+    return [projection, { ...projection, parameters: parameters.map(parameter => parameter === array
+        ? { ...parameter, type: { kind: 'recordArray', elementType: array.type.elementType } } : parameter) }];
 }
 
 // A higher-order async function can carry the caller's payload directly.
@@ -985,6 +1308,24 @@ function mayMatch(signature, parameters) {
             return !parameter || checker.hasEffectiveRestParameter(signature) && index >= signature.parameters.length - 1 ||
                 mayAccept(typeOf(parameter), type);
         });
+}
+
+function mayMatchWithOmittedArguments(signature, parameters) {
+    // A missing middle parameter is an explicit undefined in the JS call.
+    // A missing suffix shortens its argument list.
+    for (let length = signature.minArgumentCount; length <= parameters.length; length++) {
+        if (length > signature.parameters.length && !checker.hasEffectiveRestParameter(signature) ||
+            parameters.slice(length).some(parameter => !parameter.optional))
+            continue;
+        if (parameters.slice(0, length).every(({ type, optional }, index) => {
+            if (checker.hasEffectiveRestParameter(signature) && index >= signature.parameters.length - 1)
+                return true;
+            const target = typeOf(signature.parameters[index]);
+            return mayAccept(target, type) || optional && checker.isTypeAssignableTo(checker.getUndefinedType(), target);
+        }))
+            return true;
+    }
+    return false;
 }
 
 function mayAccept(original, projected) {
@@ -1020,17 +1361,22 @@ function mayAccept(original, projected) {
     return true;
 }
 
-function readGenericValidator({ signature, declaration }, unsupported) {
+function readGenericValidator({ signature, declaration, optionalValue, optionalCallback, omittedRules }, unsupported) {
     const [generic] = signature.typeParameters;
     validatorTypeParameter = generic;
+    optionalValidatorValue = optionalValue;
     try {
-        const parameters = signature.parameters.map(parameter => ({
+        const parameters = signature.parameters.map((parameter, index) => ({
             name: parameter.name, type: readType(typeOf(parameter), new Set(), 'input', true, unsupported), optional: false,
+            ...(optionalCallback && index === 1 ? { optionalCallback: true } : {}),
         }));
+        if (omittedRules)
+            parameters.splice(1, 0, { name: 'rules', type: { kind: 'string' }, optional: false, fixedUndefined: true });
         const returnType = readReturn(signature, new Set(), 'output', true, unsupported);
         return { parameters, returnType, typeParameters: [generic.symbol.name], definition: definition(declaration) };
     } finally {
         validatorTypeParameter = undefined;
+        optionalValidatorValue = undefined;
     }
 }
 
@@ -1039,6 +1385,8 @@ function readReturn(signature, ancestors, position, partial, unsupported) {
     const protocol = position === 'output' && readProtocolAlias(result, signature.declaration?.type);
     if (protocol) {
         const projection = attempt(() => readType(result, ancestors, position, true, unsupported)).value;
+        if (projection?.kind === 'enrichedRef' && projection.typeIdentity)
+            return projection;
         return projection?.members?.length ? { ...protocol, members: projection.members } : protocol;
     }
     return result.flags & ts.TypeFlags.Void ? { kind: 'void' } : readType(result, ancestors, position, partial, unsupported);
@@ -1073,7 +1421,10 @@ function readCallbackOptions(probe, asynchronous, unsupported) {
                 type: { kind: 'function', signatures: [{ parameters, returnType: readType(payload, new Set(), 'input', false, unsupported) }] } });
             continue;
         }
-        const original = omitUndefined(checker.getTypeOfPropertyOfType(options, property.name));
+        const memberType = checker.getTypeOfPropertyOfType(options, property.name);
+        if (!memberType)
+            unsupported(`callback option '${property.name}' has no public property type`);
+        const original = omitUndefined(memberType);
         const type = attempt(() => readType(original, new Set(), 'input', true, unsupported)).value ??
             alternatives(original).filter(branch => checker.isArrayType(branch) || scalar(branch))
                 .map(branch => attempt(() => readType(branch, new Set(), 'input', false, unsupported)).value)
@@ -1176,13 +1527,16 @@ function readScalarCalls(signatures) {
     // A string key fixes K independently of the remaining argument domains.
     const projected = new Map();
     for (const signature of signatures) {
-        if ((signature.typeParameters?.length ?? 0) > 1 || !signature.parameters.length ||
-            signature.minArgumentCount !== signature.parameters.length ||
+        if (!signature.parameters.length || !signature.minArgumentCount ||
+            signature.typeParameters?.slice(1).some(parameter => !parameter.getDefault()) ||
             signature.thisParameter || checker.hasEffectiveRestParameter(signature))
             continue;
         const generic = signature.typeParameters?.[0];
-        const constraint = generic && checker.getBaseConstraintOfType(generic);
-        const types = signature.parameters.map(typeOf);
+        // An intermediate type parameter can default to a narrower literal.
+        // Only a direct scalar constraint admits the whole C# input domain.
+        const constraint = generic?.getConstraint();
+        const types = signature.parameters.map((parameter, index) =>
+            index >= signature.minArgumentCount ? omitUndefined(typeOf(parameter)) : typeOf(parameter));
         const first = types[0];
         const genericKey = generic && (first === generic || first.isUnion() && first.types.includes(generic));
         const inputs = types.map((type, index) => {
@@ -1202,35 +1556,44 @@ function readScalarCalls(signatures) {
                 return { kind: 'dictionary', elementType: { kind: 'string' } };
         });
         const output = scalar(signature.getReturnType());
-        if (!output || inputs.some(input => !input))
+        if (!output)
             continue;
-        const parameters = signature.parameters.map((parameter, index) => ({
-            name: parameter.name, type: inputs[index], optional: false,
-        }));
-        // A literal or generic overload may be chosen for part of a C# scalar
-        // domain. Every overlapping signature must agree on the result.
-        if (signatures.some(other => other !== signature && mayMatch(other, parameters) &&
-            (other.thisParameter || scalar(other.getReturnType(), true) !== output)))
-            continue;
-        const key = shapeKey(inputs);
-        if (!projected.has(key))
-            projected.set(key, { parameters, returnType: { kind: output }, definition: definition(signature.declaration) });
+        // Defaults for uninferred schema keys and an omitted locale can select a
+        // different TS overload. Check overlap separately for each callable prefix.
+        for (let count = signature.minArgumentCount; count <= inputs.length; count++) {
+            const supplied = inputs.slice(0, count);
+            if (supplied.some(input => !input))
+                break;
+            const parameters = supplied.map((type, index) => ({
+                name: signature.parameters[index].name, type, optional: false,
+            }));
+            if (signatures.some(other => other !== signature && mayMatch(other, parameters) &&
+                (other.thisParameter || scalar(other.getReturnType(), true) !== output)))
+                continue;
+            const key = shapeKey(supplied);
+            if (!projected.has(key))
+                projected.set(key, { parameters, returnType: { kind: output }, definition: definition(signature.declaration) });
+        }
     }
     return [...projected.values()];
 }
 
-function readInputBranches(type, ancestors, partial, unsupported, splitReactive = false) {
+function readInputBranches(type, ancestors, partial, unsupported, splitReactive = false, methodParameters) {
     // For an exact value/ref/getter union, each emitted overload passes the
     // original argument through. Keep the narrower member projection inside
     // option records where C# cannot spell a lambda-to-union conversion.
-    const whole = attempt(() => readType(type, ancestors, 'input', partial, unsupported));
+    const whole = attempt(() => readType(type, ancestors, 'input', partial, unsupported, methodParameters));
     if (whole.value && (!splitReactive || !type.isUnion()) && !vueInputValue(type))
         return [whole.value];
     if (!type.isUnion())
         throw whole.error;
     const branches = type.types
-        .map(branch => attempt(() => readType(branch, ancestors, 'input', partial, unsupported)).value)
+        .map(branch => attempt(() => readType(branch, ancestors, 'input', partial, unsupported, methodParameters)).value)
         .filter(Boolean);
+    // TypeScript flattens boolean into literal arms within a reactive union.
+    // Preserve the accepted whole boolean when neither literal can be emitted alone.
+    if (whole.value?.kind === 'boolean' && !branches.some(branch => branch.kind === 'boolean'))
+        branches.unshift(whole.value);
     if (!whole.value && branches.length && type.types.every(branch =>
         (branch.flags & ts.TypeFlags.Object || branch.isIntersection()) &&
         !branch.getCallSignatures().length && !vueRef(branch)))
@@ -1238,11 +1601,268 @@ function readInputBranches(type, ancestors, partial, unsupported, splitReactive 
         return [branches.find(branch => branch.members?.length) ?? branches[0]];
     if (!branches.length)
         throw whole.error;
-    return [...new Map(branches.map(branch => [shapeKey(branch), branch])).values()];
+    // VueWritableComputedRef<T> already implements IVueRef<T>. A MaybeRef
+    // union (or an equivalent alias) needs only one overload for that domain.
+    const writableElements = new Set(branches.filter(branch => branch.kind === 'ref' &&
+        !branch.name && !branch.readOnly && !branch.writeType).map(branch => shapeKey(branch.elementType)));
+    const distinct = branches.filter(branch => branch.kind !== 'ref' || branch.name !== 'VueWritableComputedRef' ||
+        branch.readOnly || branch.writeType || !writableElements.has(shapeKey(branch.elementType)));
+    return [...new Map(distinct.map(branch => [shapeKey(branch), branch])).values()];
 }
 
 function preferredInput(branches) {
     return branches.find(branch => branch.kind === 'date') ?? branches[0];
+}
+
+function readDirectVueRef(type, position, readElement, canonicalOnly = false) {
+    // Direct signature discovery runs before callback-specific union projection is initialized.
+    const ref = !type.isUnion() && vueRef(type);
+    if (!ref || type.getCallSignatures().length || type.getConstructSignatures().length ||
+        checker.getIndexInfosOfType(type).length)
+        return;
+    const computed = ref.name === 'VueComputedRef';
+    if (canonicalOnly && !ref.canonical && !computed)
+        return;
+    if (computed && (!ref.readOnly || checker.getTypeArguments(type)[0] !== ref.element ||
+        type.getProperties().some(member => !optional(member) && member.declarations?.some(node =>
+            node.getSourceFile() !== type.target.getSymbol().declarations[0].getSourceFile()))))
+        return;
+    const asymmetric = readAsymmetricVueRef(ref, position, readElement);
+    if (asymmetric)
+        return asymmetric;
+    const writableComputed = ref.canonical && ref.name === 'VueWritableComputedRef' &&
+        !ref.readOnly && ref.write === ref.element;
+    if (!computed && !writableComputed && (!ref.plain || ref.name || !ref.readOnly && ref.write !== ref.element))
+        return;
+    // A writable ref exposes the same element to both caller and callee.
+    const readOnly = computed || ref.readOnly;
+    const elementType = readElement(ref.element, readOnly ? position : 'invariant');
+    if (elementType)
+        return { kind: 'ref', readOnly, name: computed || writableComputed ? ref.name : undefined, elementType };
+}
+
+function readRefStringDomain(type, absence = 0) {
+    if (!type.isUnion())
+        return;
+    const choices = type.types.filter(branch => !(branch.flags & absence));
+    if (choices.length < 2 || !choices.every(branch => branch.flags === ts.TypeFlags.StringLiteral))
+        return;
+    const stringLiterals = choices.map(branch => branch.value).sort();
+    const names = stringLiterals.map(value => value.replace(/[^a-zA-Z0-9]+/g, ' ').split(' ')
+        .filter(Boolean).map(part => part[0].toUpperCase() + part.slice(1)).join(''));
+    const declaration = type.aliasSymbol?.declarations?.[0];
+    const name = type.aliasSymbol?.name ?? `StringChoiceOf${names.join('Or')}`;
+    const identity = declaration && recordIdentity(declaration);
+    // A closed generic alias has one source declaration but can yield several
+    // different writable domains. A ref may only share an enum for the same literals.
+    const typeIdentity = identity && declaration.typeParameters?.length
+        ? JSON.stringify([identity, stringLiterals]) : identity;
+    return { kind: 'stringEnum', name, stringLiterals, typeDefinition: definition(declaration), typeIdentity };
+}
+
+function readNullishRefStringDomain(type, ref) {
+    const mapped = type.aliasSymbol;
+    const source = mapped?.name === 'Readonly' && mapped.declarations?.every(declaration =>
+        program.isSourceFileDefaultLibrary(declaration.getSourceFile())) && type.aliasTypeArguments?.length === 1
+        ? vueRef(type.aliasTypeArguments[0]) : undefined;
+    const exact = ref.write === ref.element && (ref.canonical || ref.name === 'VueShallowRef');
+    if (!exact && !(ref.readOnly && source?.name === 'VueShallowRef' &&
+        source.element === ref.element && source.write === source.element))
+        return;
+    const branches = alternatives(ref.element);
+    const hasUndefined = branches.some(branch => branch.flags & ts.TypeFlags.Undefined);
+    const hasNull = branches.some(branch => branch.flags & ts.TypeFlags.Null);
+    if (!(hasUndefined || hasNull) || hasUndefined && !ref.readOnly)
+        return;
+    const elementType = readRefStringDomain(ref.element, ts.TypeFlags.Null | ts.TypeFlags.Undefined);
+    return elementType && { kind: hasUndefined ? 'undefinedable' : 'nullable', elementType };
+}
+
+function readAugmentedVueRef(type, readArgument, readMember) {
+    const marked = !type.isUnion() && vueRef(type);
+    if (!marked || marked.canonical || marked.name)
+        return;
+    const target = type.target?.getSymbol() ?? type.getSymbol();
+    const isInterface = Boolean(target?.flags & ts.SymbolFlags.Interface);
+    let source = isInterface ? target : type.aliasSymbol;
+    let actualTypes = isInterface ? checker.getTypeArguments(type) : type.aliasTypeArguments ?? [];
+    // A closed alias of an instantiated intersection preserves the alias
+    // spelling. Retrieve its referenced declaration and actual arguments.
+    const visitedAliases = new Set();
+    while (source?.declarations?.length === 1 && !visitedAliases.has(source) && ts.isTypeAliasDeclaration(source.declarations[0]) &&
+        !source.declarations[0].typeParameters?.length && ts.isTypeReferenceNode(source.declarations[0].type)) {
+        visitedAliases.add(source);
+        const reference = source.declarations[0].type;
+        const symbol = checker.getSymbolAtLocation(reference.typeName);
+        const referenced = symbol && unalias(symbol);
+        if (!referenced || referenced === source)
+            break;
+        source = referenced;
+        actualTypes = reference.typeArguments?.map(argument => checker.getTypeFromTypeNode(argument)) ?? [];
+        if (actualTypes.length)
+            break;
+    }
+    const [declaration] = source?.declarations ?? [];
+    if (source?.declarations?.length !== 1 || activeAugmentedRefs.has(source) ||
+        !(ts.isSourceFile(declaration.parent) || ts.isModuleBlock(declaration.parent)) ||
+        !(ts.isInterfaceDeclaration(declaration) || ts.isTypeAliasDeclaration(declaration)) ||
+        declaration.typeParameters?.some(parameter => parameter.constraint))
+        return;
+    const location = definition(declaration);
+    if (!location)
+        return;
+
+    // Share the declaration's template across closed and open use sites. An
+    // input must carry the same full required contract as a projected result.
+    const template = checker.getDeclaredTypeOfSymbol(source);
+    const base = augmentedRefBase(template);
+    if (!base || template.getCallSignatures().length || template.getConstructSignatures().length ||
+        checker.getIndexInfosOfType(template).length)
+        return;
+    const formalTypes = (declaration.typeParameters ?? []).map(parameter => checker.getTypeAtLocation(parameter.name));
+    const formals = new Set(formalTypes);
+    if (actualTypes.length !== formalTypes.length)
+        return;
+
+    activeAugmentedRefs.add(source);
+    try {
+        const argumentsList = actualTypes.map(readArgument);
+        if (argumentsList.some(argument => !argument))
+            return;
+        const read = (member, position = 'invariant', permitsVoid = false) =>
+            readRefStringDomain(member) ?? readMember(member, position, permitsVoid, formals);
+        const ref = readDirectVueRef(base, 'invariant', read, true);
+        if (!ref || ref.name)
+            return;
+        const baseNames = new Set(base.getProperties().map(member => member.name));
+        const members = [];
+        for (const member of template.getProperties()) {
+            if (baseNames.has(member.name))
+                continue;
+            const [node] = member.declarations ?? [];
+            if (!node || !node.name || !ts.isIdentifier(node.name) && !ts.isStringLiteral(node.name)) {
+                if (optional(member))
+                    continue;
+                return;
+            }
+            const memberType = typeOf(member);
+            const isOptional = optional(member);
+            const readOnly = isOptional || Boolean(ts.getCheckFlags(member) & ts.CheckFlags.Readonly) ||
+                member.declarations.some(entry => ts.getCombinedModifierFlags(entry) & ts.ModifierFlags.Readonly);
+            if (member.declarations.every(ts.isMethodSignature) && !isOptional) {
+                const calls = memberType.getCallSignatures();
+                const [call] = calls;
+                if (calls.length !== 1 || call.typeParameters?.length || call.thisParameter ||
+                    checker.hasEffectiveRestParameter(call) || checker.getTypePredicateOfSignature(call) ||
+                    call.minArgumentCount !== call.parameters.length)
+                    return;
+                const parameters = call.parameters.map(parameter => ({
+                    name: parameter.name, type: read(typeOf(parameter), 'input'), optional: false,
+                }));
+                const returnType = read(call.getReturnType(), 'output', true);
+                if (!returnType || parameters.some(parameter => !parameter.type))
+                    return;
+                members.push(methodMember(member.name, [{ parameters, returnType, definition: definition(node) }]));
+                continue;
+            }
+            const payload = isOptional ? omitUndefined(memberType) : memberType;
+            const propertyType = member.declarations.every(ts.isPropertySignature) &&
+                (!isOptional || !formals.size) && read(payload, readOnly ? 'output' : 'invariant');
+            if (!propertyType) {
+                if (isOptional)
+                    continue;
+                return;
+            }
+            members.push({ name: member.name, type: propertyType, optional: isOptional,
+                readOnly, definition: definition(node) });
+        }
+        if (!members.length)
+            return;
+        return { ...ref, kind: 'enrichedRef', name: source.name, typeDefinition: location, typeIdentity: recordIdentity(declaration),
+            ...(formals.size && { typeParameters: formalTypes.map(slot => slot.symbol.name), typeArguments: argumentsList }), members };
+    } finally {
+        activeAugmentedRefs.delete(source);
+    }
+}
+
+function augmentedRefBase(template) {
+    const branches = template.isIntersection() ? template.types : template.getBaseTypes() ?? [];
+    const bases = branches.filter(branch => {
+        const ref = vueRef(branch);
+        return ref?.canonical && !ref.name;
+    });
+    if (bases.length !== 1)
+        return;
+    const [base] = bases;
+    // A same-named property from another branch can change the Vue setter or
+    // brand. Verify each inherited symbol still has the original declarations.
+    const properties = new Map(template.getProperties().map(member => [member.name, member]));
+    if (base.getProperties().some(member => {
+        const declarations = properties.get(member.name)?.declarations;
+        return declarations?.length !== member.declarations?.length ||
+            !member.declarations?.every(node => declarations?.includes(node));
+    }))
+        return;
+    return base;
+}
+
+function readEnrichedVueRef(type, readRef, readMembers, partial, unsupported) {
+    if (!type.isIntersection() || type.getCallSignatures().length || type.getConstructSignatures().length ||
+        checker.getIndexInfosOfType(type).length)
+        return;
+    const bases = type.types.filter(branch => vueRef(branch)?.canonical);
+    if (bases.length !== 1)
+        return;
+    const [base] = bases;
+    const baseNames = new Set(base.getProperties().map(member => member.name));
+    // Preserve the declared getter and setter only if no other intersection
+    // constituent overrides either of them or any part of the Vue identity.
+    if (type.types.some(branch => branch !== base && branch.getProperties().some(member => baseNames.has(member.name))))
+        return;
+    // Vue's optional shallow marker is an internal symbol, not an exposed
+    // property. Leave an otherwise plain shallow ref on its existing path.
+    const additions = type.getProperties().filter(member => !baseNames.has(member.name) &&
+        !(optional(member) && member.declarations?.every(node => ts.isComputedPropertyName(node.name))));
+    if (!additions.length)
+        return;
+    const projected = readRef(base);
+    if (projected?.kind !== 'ref' || ['VueOptionalRef', 'VueShallowRef'].includes(projected.name))
+        return;
+    const members = readMembers(additions, partial, unsupported);
+    if (!members.length)
+        return;
+    return { ...projected, kind: 'enrichedRef', members, typeDefinition: definition(type.aliasSymbol?.declarations?.[0]) };
+}
+
+function readAsymmetricVueRef(ref, position, read) {
+    if (!ref.canonical || ref.readOnly || !ref.write || ref.write === ref.element)
+        return;
+    const branches = ref.write.isUnion() ? ref.write.types : [ref.write];
+    const admitsUndefined = branches.some(branch => branch.flags & ts.TypeFlags.Undefined);
+    const admitsNull = branches.some(branch => branch.flags & ts.TypeFlags.Null);
+    const values = branches.filter(branch => !(branch.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)));
+    if (!values.length)
+        return;
+    const value = admitsNull || admitsUndefined ? omitUndefined(checker.getUnionType(values)) : ref.write;
+    // Keep the payload carriers identical across input and output uses.
+    // A narrowed read/write shape is unsafe if the projected ref travels back.
+    const elementType = read(ref.element, 'invariant');
+    if (admitsUndefined) {
+        // In a removable ref, writing null can make a subsequent read nullish
+        // even when the authored getter exposes only the matching payload.
+        if (position !== 'output' || ref.name || !admitsNull || value !== ref.element || !elementType)
+            return;
+        const nullable = { kind: elementType.kind === 'typeParameter' ? 'nullableSlot' : 'nullable', elementType };
+        return { kind: 'ref', name: 'VueOptionalRef', elementType: nullable, readOnly: false };
+    }
+    const payload = elementType && read(value, 'invariant');
+    if (!payload)
+        return;
+    const writeType = admitsNull ? { kind: payload.kind === 'typeParameter' ? 'nullableSlot' : 'nullable', elementType: payload } : payload;
+    return {
+        kind: 'ref', name: ref.name, elementType, writeType,
+        readOnly: !checker.isTypeAssignableTo(ref.element, admitsNull ? checker.getUnionType([...values, checker.getNullType()]) : value),
+    };
 }
 
 function vueRef(type) {
@@ -1257,9 +1877,16 @@ function vueRef(type) {
                 plain: branches.every(branch => branch.plain),
                 name: branches.every(branch => branch.name === first.name) ? first.name : undefined,
             };
-        if (projectingCallbackOptions && branches.every(Boolean)) {
+        if (branches.every(Boolean)) {
             const elements = branches.map(branch => branch.element);
-            if (elements.some(element => callbackMarkers.has(element.getSymbol())) &&
+            const values = elements.flatMap(alternatives);
+            if ([ts.TypeFlags.BooleanLiteral, ts.TypeFlags.StringLiteral].some(family =>
+                values.every(value => value.flags === family)))
+                return { element: checker.getUnionType(values), readOnly: true, plain: false };
+            if (error && values.some(value => value.getSymbol() === error) &&
+                values.every(value => value.getSymbol() === error || value.flags === ts.TypeFlags.Null))
+                return { element: checker.getUnionType(values), readOnly: true, plain: false };
+            if (projectingCallbackOptions && elements.some(element => callbackMarkers.has(element.getSymbol())) &&
                 elements.some(element => element.flags & ts.TypeFlags.Undefined))
                 return { element: checker.getUnionType(elements), readOnly: true, plain: false };
         }
@@ -1298,7 +1925,10 @@ function vueRef(type) {
     const name = computed && type.target?.getSymbol() === computed ? 'VueComputedRef' :
         isWritableComputed ? 'VueWritableComputedRef' : isShallow ? 'VueShallowRef' : undefined;
     const plain = type.getProperties().every(member => member === value || member === brand || optional(member));
-    return { element, readOnly, write: read === element ? write : undefined, plain, name };
+    const canonical = type.target?.getSymbol() === refSymbol && plain || isWritableComputed &&
+        type.getProperties().every(member => optional(member) || member.declarations?.every(node =>
+            node.getSourceFile() === declaration.getSourceFile()));
+    return { element, readOnly, write: read === element ? write : undefined, plain, name, canonical };
 }
 
 function elementRefParameters(signature) {
@@ -1463,6 +2093,8 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
     }
     if (type === validatorTypeParameter)
         return { kind: 'typeParameter', name: type.symbol.name };
+    if (optionalValidatorValue && type.isUnion() && omitUndefined(type) === validatorTypeParameter)
+        return { kind: 'nullableSlot', elementType: { kind: 'typeParameter', name: validatorTypeParameter.symbol.name } };
     if (type.flags & ts.TypeFlags.TypeParameter && ancestors.has(type))
         return { kind: 'typeParameter', name: type.symbol.name };
     const marker = callbackMarkers.get(type.getSymbol());
@@ -1476,12 +2108,25 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
         return { kind };
     if (isDate(type))
         return { kind: 'date' };
+    // The host binding exposes JavaScript Error members on observer reads.
+    // A structurally compatible package type can have a different contract.
+    if (position === 'output' && error && type.getSymbol() === error)
+        return { kind: 'error' };
     const webType = webTypes(type);
     if (webType)
         return webType;
     const callableView = callableRecordView(type, position);
     if (callableView)
         return callableView;
+    if (!ancestors.has(type)) {
+        const augmented = readAugmentedVueRef(type,
+            argument => attempt(() => readType(argument, ancestors, 'invariant', false, unsupported)).value,
+            (member, usePosition, permitsVoid, formals) =>
+                permitsVoid && member.flags & ts.TypeFlags.Void ? { kind: 'void' } :
+                    attempt(() => readType(member, formals, usePosition, false, unsupported)).value);
+        if (augmented)
+            return augmented;
+    }
     const isPromise = standardPromise && type.target?.getSymbol() === promise;
     if (!isPromise) {
         const handle = readHandle(type, ancestors, position, unsupported);
@@ -1505,6 +2150,13 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
             !branch.getSymbol()?.declarations?.every(node => ts.isTypeLiteralNode(node) && !node.members.length));
         if (branches.length === 1)
             return readType(branches[0], nested, position, partial, unsupported);
+        if (position === 'output') {
+            const enriched = readEnrichedVueRef(type,
+                base => attempt(() => readType(base, nested, position, partial, unsupported)).value,
+                members => readObjectMembers(type, members, nested, position, partial, unsupported), partial, unsupported);
+            if (enriched)
+                return enriched;
+        }
     }
     if (type.isUnion()) {
         if (validatorTypeParameter && position === 'input') {
@@ -1557,14 +2209,24 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
     }
     const ref = vueRef(type);
     if (ref) {
+        const asymmetric = readAsymmetricVueRef(ref, position,
+            (element, usePosition) => attempt(() => readType(element, nested, usePosition, false, unsupported)).value);
+        if (asymmetric)
+            return asymmetric;
         const exactWrite = ref.write === ref.element;
-        if (position !== 'output' && (!ref.plain || !ref.readOnly && !exactWrite))
+        // Ordinary refs do not satisfy Vue's computed identity or setter contract.
+        const writableComputed = ref.canonical && ref.name === 'VueWritableComputedRef' && !ref.readOnly && exactWrite;
+        if (position !== 'output' && !writableComputed && (!ref.plain || !ref.readOnly && !exactWrite))
             unsupported(`Vue ref '${display(type)}'`);
         // A returned ref may accept more on write than it returns on read.
         // C# still only offers the read domain for writes on that ref.
         const readOnly = ref.readOnly || !exactWrite &&
             (!ref.write || !checker.isTypeAssignableTo(ref.element, ref.write));
-        const element = attempt(() => readType(ref.element, nested, readOnly ? position : 'invariant', false, unsupported));
+        const exactDomain = position === 'output' && readNullishRefStringDomain(type, ref) ||
+            exactWrite && (ref.canonical || ref.name === 'VueComputedRef') && readRefStringDomain(ref.element);
+        const readDomain = readOnly && position === 'output' && readObserverRef(type)?.elementType;
+        const element = exactDomain || readDomain ? { value: exactDomain || readDomain } :
+            attempt(() => readType(ref.element, nested, readOnly ? position : 'invariant', false, unsupported));
         if (!element.value) {
             if (position === 'output')
                 return { kind: 'ref', readOnly: true, elementType: readType(ref.element, nested, position, partial, unsupported) };
@@ -1572,9 +2234,8 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
         }
         return {
             kind: 'ref', readOnly,
-            name: position === 'output' && (readOnly ? ref.name === 'VueComputedRef' :
-                ref.name === 'VueShallowRef' || ref.name === 'VueWritableComputedRef')
-                ? ref.name : undefined,
+            name: writableComputed || position === 'output' && (readOnly ? ref.name === 'VueComputedRef' :
+                ref.name === 'VueShallowRef') ? ref.name : undefined,
             elementType: element.value,
         };
     }
@@ -1642,10 +2303,15 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
             const elementType = readScalarUnion(element, true) ?? readType(element, nested, 'invariant', false, unsupported);
             return { kind: 'dictionary', elementType };
         }
-        // A sparse string index has a concrete read domain even for a defaulted
-        // generic call. There is no reason to promise writes through that view.
-        if (position === 'output' && omitUndefined(indexes[0].type) === checker.getStringType())
-            return { kind: 'readonlyDictionary', elementType: { kind: 'string' } };
+        // An open index reads sparsely, independently of the declared write domain.
+        if (position === 'output') {
+            const defined = omitUndefined(indexes[0].type);
+            const kind = scalar(defined);
+            const elementType = kind ? { kind } : readScalarUnion(defined, true);
+            if (elementType)
+                return { kind: indexes[0].isReadonly || defined !== indexes[0].type
+                    ? 'readonlyDictionary' : 'writableDictionary', elementType };
+        }
     }
     if ((!(type.flags & ts.TypeFlags.Object) && !objectIntersection && !objectUnion) ||
         checker.isTupleType(type) || (position !== 'output' && indexes.length) ||
@@ -1732,6 +2398,77 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
     }
     if (calls.length || !properties.length || position === 'invariant' || type.getSymbol()?.flags & ts.SymbolFlags.Class)
         unsupported(`type '${display(type)}'`);
+    const members = readObjectMembers(type, properties, nested, position, partial, unsupported, methodParameters);
+    if (!members.length)
+        unsupported(`type '${display(type)}'`);
+    const shape = { kind: 'object', members };
+    if (position !== 'input' && position !== 'output')
+        return shape;
+    // A local alias of an instantiated interface still refers to the same
+    // checker target as the interface spelling used by the next export.
+    const target = type.target?.getSymbol();
+    const namedTarget = target?.flags & ts.SymbolFlags.Interface ? target : undefined;
+    const declarations = (namedTarget ?? type.aliasSymbol ?? type.getSymbol())?.declarations;
+    const [declaration] = declarations ?? [];
+    if (declarations?.length !== 1 || !(ts.isSourceFile(declaration.parent) || ts.isModuleBlock(declaration.parent)) ||
+        !(ts.isInterfaceDeclaration(declaration) || ts.isTypeAliasDeclaration(declaration)))
+        return shape;
+    const named = { ...shape, name: declaration.name.text, typeDefinition: definition(declaration) };
+    const parameters = declaration.typeParameters;
+    if (!parameters?.length)
+        return named;
+    const args = namedTarget ? checker.getTypeArguments(type) : type.aliasTypeArguments;
+    if (args?.length !== parameters.length)
+        return shape;
+    // Use the original type arguments for identity. An input member may expose
+    // only a subset of a union, and a phantom parameter may have no member at all.
+    if (parameters.every((p, index) => p.default && checker.getTypeFromTypeNode(p.default) === args[index]))
+        return named;
+    const typeArguments = args.map(argument => {
+        const primitive = scalar(argument);
+        return primitive ? { kind: primitive } : isDate(argument) ? { kind: 'date' } :
+            webTypes(argument) ?? readScalarUnion(argument);
+    });
+    return typeArguments.every(Boolean) ? { ...named, typeArguments } : shape;
+}
+
+// Keep a value and its lazy async supplier as separate C# overloads. A lambda
+// needs a delegate target, and the package controls when (or whether) it runs.
+function readAsyncSupplierMethod(type, ancestors, partial, unsupported) {
+    const [call] = singleCall(type);
+    if (!standardPromise || !call || call.parameters.length !== 1 || call.typeParameters?.length ||
+        call.thisParameter || checker.hasEffectiveRestParameter(call) || type.getProperties().length)
+        return;
+    const [parameter] = call.parameters;
+    const choices = omitUndefined(typeOf(parameter));
+    if (!choices.isUnion())
+        return;
+    const supplier = choices.types.find(branch => branch.getCallSignatures().length);
+    const [getter] = supplier ? singleCall(supplier) : [];
+    if (!getter || getter.parameters.length || getter.typeParameters?.length || getter.thisParameter ||
+        supplier.getProperties().length || supplier.getConstructSignatures().length || checker.getIndexInfosOfType(supplier).length)
+        return;
+    const promised = getter.getReturnType();
+    if (promised.target?.getSymbol() !== promise)
+        return;
+    const eager = checker.getUnionType(choices.types.filter(branch => branch !== supplier));
+    const kind = scalar(eager);
+    const [payload] = checker.getTypeArguments(promised);
+    if (!kind || omitUndefined(payload) !== eager)
+        return;
+
+    const element = { kind };
+    const lazy = { kind: 'function', signatures: [{ parameters: [], returnType: { kind: 'promise', elementType: element } }] };
+    const returnType = readReturn(call, ancestors, 'output', partial, unsupported);
+    const parameters = [element, lazy].map(type => [{ name: parameter.name, optional: false, type }]);
+    if (call.minArgumentCount === 0)
+        parameters.unshift([]);
+    return { kind: 'method', signatures: parameters.map(parameters => ({
+        parameters, returnType, definition: definition(call.declaration),
+    })) };
+}
+
+function readObjectMembers(type, properties, nested, position, partial, unsupported, methodParameters) {
     const members = [];
     for (const member of properties) {
         const declarations = member.declarations ?? [];
@@ -1754,6 +2491,26 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
             declarations.some(node => ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Readonly) ||
             declarations.some(ts.isGetAccessorDeclaration) && !declarations.some(ts.isSetAccessorDeclaration);
         const actualType = isOptional ? omitUndefined(memberType) : memberType;
+        if (position === 'output' && optionalValidatorValue?.includes(member.name) &&
+            vueRef(actualType)?.element === validatorTypeParameter) {
+            // VeeValidate fields without initial values read undefined. SetValue
+            // still exposes the declared payload type on the write side.
+            const slot = { kind: 'typeParameter', name: validatorTypeParameter.symbol.name };
+            members.push({ name: member.name, readOnly: true, definition: definition(declarations[0]),
+                type: { kind: 'ref', name: 'VueReadonlyOptionalRef', readOnly: true,
+                    elementType: { kind: 'nullableSlot', elementType: slot } } });
+            continue;
+        }
+        if (position === 'output' && validatorTypeParameter && !isOptional && actualType.isUnion() &&
+            actualType.types.includes(checker.getStringType()) &&
+            actualType.types.every(branch => branch === checker.getStringType() ||
+                vueRef(branch)?.element === checker.getStringType())) {
+            // Preserve both declared branches while exposing only the ref read.
+            members.push({ name: member.name, readOnly: true, definition: definition(declarations[0]),
+                type: { kind: 'union', variants: [{ kind: 'string' },
+                    { kind: 'ref', readOnly: true, elementType: { kind: 'string' } }] } });
+            continue;
+        }
         // The nullable getter normalizes absence to null. Keep a setter only
         // if that same null is legal on the TypeScript write side.
         if (position === 'output' && isOptional &&
@@ -1763,6 +2520,24 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
         // A property initializer has a target type. A closed string domain can
         // therefore use the existing Jazor string-enum lowering without widening writes.
         let projected;
+        if (position === 'output' && !isOptional) {
+            const localeMessage = declarations.every(ts.isMethodSignature) &&
+                readLocaleMessageMethod(ts, checker, actualType.getCallSignatures(), definition);
+            if (localeMessage) {
+                members.push(methodMember(member.name, [localeMessage]));
+                continue;
+            }
+            const stringMessage = readStringMessageCall(ts, checker, actualType.getCallSignatures(), definition);
+            if (stringMessage) {
+                members.push(methodMember(member.name, [stringMessage]));
+                continue;
+            }
+            const method = attempt(() => readAsyncSupplierMethod(actualType, nested, partial, unsupported)).value;
+            if (method) {
+                members.push({ name: member.name, type: method, readOnly: true, definition: definition(declarations[0]) });
+                continue;
+            }
+        }
         if (position === 'input' && actualType.isUnion() &&
             actualType.types.every(branch => branch.flags === ts.TypeFlags.StringLiteral)) {
             const annotation = declarations.find(node => node.type && ts.isTypeReferenceNode(node.type))?.type;
@@ -1805,37 +2580,7 @@ function readType(type, ancestors, position, partial, unsupported, methodParamet
             definition: definition(declarations[0]),
         });
     }
-    if (!members.length)
-        unsupported(`type '${display(type)}'`);
-    const shape = { kind: 'object', members };
-    if (position !== 'input' && position !== 'output')
-        return shape;
-    // A local alias of an instantiated interface still refers to the same
-    // checker target as the interface spelling used by the next export.
-    const target = type.target?.getSymbol();
-    const namedTarget = target?.flags & ts.SymbolFlags.Interface ? target : undefined;
-    const declarations = (namedTarget ?? type.aliasSymbol ?? type.getSymbol())?.declarations;
-    const [declaration] = declarations ?? [];
-    if (declarations?.length !== 1 || !(ts.isSourceFile(declaration.parent) || ts.isModuleBlock(declaration.parent)) ||
-        !(ts.isInterfaceDeclaration(declaration) || ts.isTypeAliasDeclaration(declaration)))
-        return shape;
-    const named = { ...shape, name: declaration.name.text, typeDefinition: definition(declaration) };
-    const parameters = declaration.typeParameters;
-    if (!parameters?.length)
-        return named;
-    const args = namedTarget ? checker.getTypeArguments(type) : type.aliasTypeArguments;
-    if (args?.length !== parameters.length)
-        return shape;
-    // Use the original type arguments for identity. An input member may expose
-    // only a subset of a union, and a phantom parameter may have no member at all.
-    if (parameters.every((p, index) => p.default && checker.getTypeFromTypeNode(p.default) === args[index]))
-        return named;
-    const typeArguments = args.map(argument => {
-        const primitive = scalar(argument);
-        return primitive ? { kind: primitive } : isDate(argument) ? { kind: 'date' } :
-            webTypes(argument) ?? readScalarUnion(argument);
-    });
-    return typeArguments.every(Boolean) ? { ...named, typeArguments } : shape;
+    return members;
 }
 
 function domSymbol(name) {

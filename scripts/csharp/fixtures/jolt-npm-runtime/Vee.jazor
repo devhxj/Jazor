@@ -24,8 +24,10 @@
 
 @code {
     public record Email(string Address);
-    public record Contact(string Address, double Count, bool Enabled);
-    public record RegistrationInput(string Address, string[] Entries, Contact? Contact = null) : ECMAScript.Vue.VueProps;
+    public record Contact([property: ECMAScript.ECMAScriptName("Address")] string EmailAddress, double Count, bool Enabled);
+    public record RegistrationInput(string Address, string[] Entries, Contact? Contact = null,
+        [property: ECMAScript.ECMAScriptName("invoice.total")] double DottedTotal = 7,
+        [property: ECMAScript.ECMAScriptName("invoice[label]")] string BracketedLabel = "initial") : ECMAScript.Vue.VueProps;
     public record RegistrationOutput(double AddressLength) : ECMAScript.Vue.VueProps;
     public record ContactSnapshot([property: ECMAScript.ECMAScriptName("Address")] string EmailAddress,
         double Count, bool Enabled, double MissingCount);
@@ -150,6 +152,15 @@
         _formArray = array.Fields.Value[0].IsFirst ? "first" : "wrong";
         array.Remove(1);
         _formArray += array.Fields.Value[1].IsLast && form.Values.Entries[1] == "third" ? "|third" : "|wrong";
+        var typedArray = VeeValidate.UseFieldArray<string>(nameof(RegistrationInput.Entries));
+        typedArray.Insert(1, "inserted");
+        typedArray.Prepend("prepended");
+        typedArray.Push("pushed");
+        typedArray.Update(1, "updated");
+        _formArray += "|" + typedArray.Fields.Value[0].Value + "|" + form.Values.Entries[1] +
+            "|" + typedArray.Fields.Value[2].Value + "|" + typedArray.Fields.Value[4].Value;
+        typedArray.Replace(["replacement"]);
+        _formArray += typedArray.Fields.Value[0].IsLast ? "|" + form.Values.Entries[0] : "|wrong";
         var reset = VeeValidate.UseResetForm();
         var validateForm = VeeValidate.UseValidateForm();
         var validateField = VeeValidate.UseValidateField(errorKey);
@@ -160,13 +171,21 @@
             _contextFormErrors = contextErrors.Value[errorKey] ?? "missing";
             writeField("field", false);
             _formWrites = form.Values.Address;
+            form.SetFieldValue(value => value.Contact!.EmailAddress, "updated@example.test", false);
+            _formWrites += "|" + form.Values.Contact!.EmailAddress;
+            form.SetFieldValue(value => value.DottedTotal, 0, false);
+            form.SetFieldValue(value => value.BracketedLabel, "literal", false);
+            _formWrites += "|" + form.Values.DottedTotal + "|" + form.Values.BracketedLabel;
             writeForm(new("ada@example.test", ["changed"]), false);
             _formWrites += "|" + form.Values.Address;
             return submitValid().Then(() => {
                 _formFinal = errors.Value[errorKey] == null ? form.Values.Address : "error";
                 _contextFormErrors += contextErrors.Value[errorKey] == null ? "|cleared" : "|error";
                 setErrors(new() { [errorKey] = "one", ["form"] = new[] { "two", "three" } });
-                _bulkErrors = errors.Value[errorKey] + "|" + errors.Value["form"];
+                string[]? messages = form.ErrorBag.Value["form"];
+                string[]? missingMessages = form.ErrorBag.Value["missing"];
+                _bulkErrors = errors.Value[errorKey] + "|" + errors.Value["form"] +
+                    (messages is { Length: 2 } && missingMessages is null ? "|" + messages[1] : "|wrong");
                 setErrors(new() { ["form"] = new string[] { } });
                 _bulkErrors += errors.Value[errorKey] == "one" && errors.Value["form"] == null ? "|cleared" : "|error";
                 setErrors(new() { [errorKey] = ECMAScript.Global.Undefined<VeeValidate.StringArrayOrString>() });

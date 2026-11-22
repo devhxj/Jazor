@@ -1,0 +1,65 @@
+@using VueUse = Npm.Vueuse.Core.Exports
+@using static ECMAScript.Vue
+
+<output id="model">@_model.Value</output>
+<button id="reset" @onclick="Write">Reset</button>
+<output id="computed">@_computed.Value</output>
+<button id="reject" @onclick="Reject">Reject</button>
+<button id="accept" @onclick="Accept">Accept</button>
+<output id="passive">@_passive.Value</output>
+<button id="edit-passive" @onclick="EditPassive">Edit passive</button>
+<output id="record">@_record.Value.Info.Label</output>
+<button id="edit-record" @onclick="EditRecord">Edit record</button>
+
+@code {
+    public record ModelProps(
+        [property: ECMAScript.ECMAScriptName("amount")] double SomeProperty,
+        [property: ECMAScript.ECMAScriptName("computedAmount")] double ComputedAmount,
+        [property: ECMAScript.ECMAScriptName("passiveAmount")] double PassiveAmount,
+        [property: ECMAScript.ECMAScriptName("payload")] Payload Record);
+
+    public sealed record Details([property: ECMAScript.ECMAScriptName("label")] string Label);
+
+    public sealed record Payload([property: ECMAScript.ECMAScriptName("info")] Details Info);
+
+    [Parameter, EditorRequired]
+    public System.Func<ModelProps> GetProps { get; set; } = default!;
+
+    private VueWritableComputedRef<double> _model = default!;
+    private VueWritableComputedRef<double> _computed = default!;
+    private IVueRef<double> _passive = default!;
+    private IVueRef<Payload> _record = default!;
+
+    [Setup]
+    private void Bind()
+    {
+        _model = VueUse.UseVModel(GetProps(), x => x.SomeProperty);
+        _computed = VueUse.UseVModelWithCloneCallback(GetProps(), x => x.ComputedAmount, new()
+        {
+            CloneValue = (double value) => value + 1,
+            DefaultValue = 0d,
+            EventName = "update:accepted",
+            ShouldEmit = value => value >= 0,
+        });
+        _passive = VueUse.UseVModelWithPassiveTrue(GetProps(), x => x.PassiveAmount, new()
+        {
+            DefaultValue = 0d,
+            Deep = true,
+            CloneValue = true,
+        });
+        _record = VueUse.UseVModelWithPassiveTrueRecord(GetProps(), x => x.Record, new());
+    }
+
+    private void Write()
+    {
+        _model.Value = 0;
+    }
+
+    private void Reject() => _computed.Value = -1;
+
+    private void Accept() => _computed.Value = 4;
+
+    private void EditPassive() => _passive.Value = 8;
+
+    private void EditRecord() => _record.Value = new Payload(new Details("child"));
+}

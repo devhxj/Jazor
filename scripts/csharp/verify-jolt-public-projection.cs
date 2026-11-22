@@ -23,6 +23,7 @@ try
     var manifestPath = Path.Combine(scratch.FullName, "package.json");
     var manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!;
     manifest["dependencies"]!["projection-fixture"] = "link:./fixture";
+    manifest["dependencies"]!["projection-transfer"] = "link:./transfer";
     var referenceManifest = JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "..", "jolt-binding-projection", "package.json")))!;
     manifest["dependencies"]!["vue-i18n"] = referenceManifest["dependencies"]!["vue-i18n"]!.DeepClone();
     File.WriteAllText(manifestPath, manifest.ToJsonString());
@@ -30,6 +31,51 @@ try
     File.WriteAllText(Path.Combine(localPackage.FullName, "package.json"),
         """{"name":"projection-fixture","version":"1.0.0","type":"module","exports":"./fixture.js"}""");
     File.WriteAllText(Path.Combine(localPackage.FullName, "fixture.js"), """
+        export function createEnvelope(value) { return { payload: value, version: 3 }; }
+        export function createDraft(seed, include) { return include ? { seed, value: seed } : { seed }; }
+        export function hasDraftValue(draft) { return Object.hasOwn(draft, "value"); }
+        export function hasNullDraftValue(draft) { return Object.hasOwn(draft, "value") && draft.value === null; }
+        export const hasNullNullableDraftValue = hasNullDraftValue;
+        import { computed, ref } from "vue";
+        export function makeMeter(initial) {
+            const meter = ref(initial);
+            meter.replace = function(next) {
+                if (this !== meter)
+                    throw new Error("Expected the original meter receiver");
+                const previous = this.value;
+                this.value = next;
+                return previous;
+            };
+            return meter;
+        }
+        export function switchSignal() {
+            const source = ref("enabled");
+            return Object.assign(source, { source, status: computed(() => source.value) });
+        }
+        export function persistCurrent(value) { return value; }
+        export function computedLabel() {
+            const number = ref(3);
+            return computed({ get: () => String(number.value), set: value => { number.value = value; } });
+        }
+        export function numberLabel() {
+            let label = "initial";
+            return { get value() { return label; }, set value(number) { label = String(number); } };
+        }
+        export function booleanLabel() {
+            let label = "initial";
+            return { get value() { return label; }, set value(flag) { label = String(flag); } };
+        }
+        export function nullableWriter(initial) {
+            let current = initial;
+            return { get value() { return current; }, set value(next) { current = next === null ? initial : next; } };
+        }
+        export function buildTree(value) { return { value, children: [{ value, children: [] }] }; }
+        export function pickCount(source) {
+            return typeof source.payload === "number" ? { count: source.payload } : {};
+        }
+        export function acceptCount(source, patch) {
+            return Object.hasOwn(patch, "count") ? patch.count : source.version;
+        }
         export default function format(label, options) {
             if (!Object.hasOwn(options, 'nullable') || options.nullable !== null)
                 throw new Error('Expected an explicit null option');
@@ -47,8 +93,54 @@ try
         export function optionalArguments(count = 7, options = {}, label = "unset") {
             return [count, options === null ? "null" : "object", label, arguments.length].join("|");
         }
+        export function transform(value, project) { return project(value); }
+        export function lookup(target, key) { return target[key]; }
+        export function assign(target, key, value) { target[key] = value; }
+        const mappedArrays = new WeakSet();
+        let lastCatalogItems;
+        export function mapItems(items, select) {
+            if (typeof items[0] === 'string' && !mappedArrays.has(items))
+                throw new Error('Mapping the projected result must preserve array identity');
+            const result = items.map(select);
+            if (items[0]?.Name === 'Notebook') {
+                if (typeof result[0] === 'string')
+                    lastCatalogItems = items;
+                else if (lastCatalogItems !== items)
+                    throw new Error('Mapping a C# array must preserve array identity');
+            }
+            mappedArrays.add(result);
+            return result;
+        }
         """);
     File.WriteAllText(Path.Combine(localPackage.FullName, "fixture.d.ts"), """
+        import type { ComputedRef, Ref, WritableComputedRef } from "vue";
+        export type SwitchState = "enabled" | "disabled";
+        export type SwitchSignal = Ref<SwitchState> & {
+            readonly source: Ref<SwitchState>;
+            readonly status: ComputedRef<SwitchState>;
+        };
+        export declare function switchSignal(): SwitchSignal;
+        export interface Meter<T> extends Ref<T> { replace(next: T): T; }
+        export declare function makeMeter<T>(initial: T): Meter<T>;
+        export interface Envelope<T> { payload: T; readonly version: number; }
+        export declare function createEnvelope<T>(value: T): Envelope<T>;
+        export interface Draft<T> { seed: T; value?: T; }
+        export declare function createDraft<T>(seed: T, include: boolean): Draft<T>;
+        export declare function hasDraftValue<T>(draft: Draft<T>): boolean;
+        export declare function hasNullDraftValue<T>(draft: Draft<T>): boolean;
+        export interface NullableDraft<T> { seed: T; value?: T | null; }
+        export declare function hasNullNullableDraftValue<T>(draft: NullableDraft<T>): boolean;
+        export declare function persistCurrent<T>(value: Ref<T>): Ref<T>;
+        export declare function computedLabel(): WritableComputedRef<string, number>;
+        export declare function numberLabel(): Ref<string, number>;
+        export declare function booleanLabel(): Ref<string, boolean>;
+        export declare function nullableWriter<T>(initial: T): Ref<T, T | null>;
+        export interface Tree<T> { value: T; readonly children: readonly Tree<T>[]; }
+        export declare function buildTree<T>(value: T): Tree<T>;
+        export interface CountFields<T> { payload: T; count: number; }
+        export type CountPatch<T> = Partial<Pick<CountFields<T>, "count">>;
+        export declare function pickCount<TSource>(source: Envelope<TSource>): CountPatch<TSource>;
+        export declare function acceptCount<TInput>(source: Envelope<TInput>, patch: CountPatch<TInput>): number;
         export default function format(label: string, options: { nullable?: number | null }): {
             label: string;
             nullable?: number | null;
@@ -61,6 +153,43 @@ try
         export declare const absent: number | undefined;
         export declare const zero: number | undefined;
         export declare function optionalArguments(count?: number, options?: string | null, label?: string): string;
+        export declare function transform<TInput, TOutput>(value: TInput, project: (value: TInput) => TOutput): TOutput;
+        export declare function lookup<T, K extends keyof T>(target: T, key: K): T[K];
+        export declare function assign<T, K extends keyof T>(target: T, key: K, value: T[K]): void;
+        export declare function mapItems<T, U>(items: readonly T[], select: (value: T) => U): readonly U[];
+        """);
+    var transferPackage = scratch.CreateSubdirectory("transfer");
+    File.WriteAllText(Path.Combine(transferPackage.FullName, "package.json"),
+        """{"name":"projection-transfer","version":"1.0.0","type":"module","exports":"./transfer.js"}""");
+    File.WriteAllText(Path.Combine(transferPackage.FullName, "transfer.js"), """
+        export function forwardEnvelope(value) { return value; }
+        export function forwardDraft(draft) { return draft; }
+        export function forwardNullableDraft(draft) { return draft; }
+        export function forwardTree(value) { return value; }
+        export function viewCurrent(value) { return value; }
+        export function forwardSlot(value) { return value; }
+        export function persistSignal(value) { return value; }
+        export function forwardMeter(value) { return value; }
+        export function forwardComputed(value) { return value; }
+        export function selectOptional(enabled = false) {
+            return enabled ? { path: "true/" + arguments.length } : arguments.length;
+        }
+        export function selectMode(label, enabled, count) { return enabled ? { path: label + "/" + count } : count; }
+        """);
+    File.WriteAllText(Path.Combine(transferPackage.FullName, "transfer.d.ts"), """
+        import type { Ref, WritableComputedRef } from "vue";
+        import type { Draft, Envelope, Meter, NullableDraft, SwitchState, Tree } from "projection-fixture";
+        export declare function forwardEnvelope<T>(value: Envelope<T>): Envelope<T>;
+        export declare function forwardDraft<T>(draft: Draft<T>): Draft<T>;
+        export declare function forwardNullableDraft<T>(draft: NullableDraft<T>): NullableDraft<T>;
+        export declare function viewCurrent<T>(value: Ref<T>): Readonly<Ref<T>>;
+        export declare function forwardSlot<R, W>(value: Ref<R, W>): Ref<R, W>;
+        export declare function persistSignal(value: Ref<SwitchState>): Ref<SwitchState>;
+        export declare function forwardMeter<T>(value: Meter<T>): Meter<T>;
+        export declare function forwardComputed<R, W>(value: WritableComputedRef<R, W>): WritableComputedRef<R, W>;
+        export declare function forwardTree<T>(value: Tree<T>): Tree<T>;
+        export declare function selectOptional<B extends boolean = false>(enabled?: B): B extends true ? { path: string } : number;
+        export declare function selectMode<B extends boolean>(label: string, enabled: B, count: number): B extends true ? { path: string } : number;
         """);
     var store = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ?? Path.Combine(root, ".tmp", "nodeapi-store");
     await NodeToolchain.RestoreAsync(scratch.FullName, store, CancellationToken.None, Console.Out);
@@ -89,11 +218,25 @@ try
         throw new InvalidOperationException("A failed generation changed the existing public projection.");
     await RunAsync(cli, scratch.FullName, ["bindings", "--module", "projection-fixture", "--export", "default", "--export", "optionalArguments",
         "--export", "tryRead", "--export", "readBox", "--export", "takeReads", "--export", "absent", "--export", "zero",
+        "--export", "transform", "--export", "mapItems", "--export", "lookup", "--export", "assign",
+        "--export", "createEnvelope", "--export", "persistCurrent", "--export", "pickCount", "--export", "acceptCount", "--export", "buildTree",
+        "--export", "createDraft", "--export", "hasDraftValue", "--export", "hasNullDraftValue",
+        "--export", "numberLabel", "--export", "booleanLabel", "--export", "nullableWriter", "--export", "computedLabel", "--export", "switchSignal",
+        "--export", "makeMeter",
+        "--export", "hasNullNullableDraftValue",
+        "--module", "projection-transfer", "--export", "forwardEnvelope", "--export", "viewCurrent", "--export", "selectMode",
+        "--export", "forwardTree", "--export", "selectOptional",
+        "--export", "forwardDraft", "--export", "forwardNullableDraft",
+        "--export", "forwardSlot", "--export", "forwardComputed", "--export", "persistSignal",
+        "--export", "forwardMeter",
         "--output", Path.Combine(library.FullName, "Fixture.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "@vueuse/core", "--export", "isClient",
+    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "@vueuse/core", "--export", "isClient", "--export", "useStorage", "--export", "useVModel", "--export", "useColorMode", "--export", "createEventHook",
         "--output", Path.Combine(library.FullName, "VueUse.g.cs")]);
     await RunAsync(cli, scratch.FullName, ["bindings", "--module", "@tanstack/vue-query", "--export", "useQuery", "--export", "VueQueryPlugin",
+        "--export", "useMutation", "--export", "useInfiniteQuery", "--export", "useQueryClient",
         "--output", Path.Combine(library.FullName, "Query.g.cs")]);
+    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "vee-validate", "--export", "useForm", "--export", "useField",
+        "--output", Path.Combine(library.FullName, "Form.g.cs")]);
     await RunAsync(cli, scratch.FullName, ["bindings", "--module", "vue-i18n", "--export", "createI18n",
         "--output", Path.Combine(library.FullName, "Messages.g.cs")]);
     await RunAsync(cli, scratch.FullName, ["bindings", "--module", "es-toolkit/compat", "--export", "truncate",
@@ -143,6 +286,212 @@ try
         """;
     File.WriteAllText(Path.Combine(scratch.FullName, "Optional.jazor"),
         "@using Fixture = Npm.ProjectionFixture.Exports\n\n@code {\n" + optionalResults + "\n}\n");
+    const string genericTransform = """
+        private sealed record TransformInput(string Label, double Count);
+
+        public static string TransformResult()
+        {
+            var input = new TransformInput("typed", 3);
+            string label = Fixture.Transform(input, value => value.Label);
+            double count = Fixture.Transform(input, value => value.Count);
+            return label + "/" + count;
+        }
+        """;
+    File.WriteAllText(Path.Combine(scratch.FullName, "Transform.jazor"), """
+        @using Fixture = Npm.ProjectionFixture.Exports
+
+        @code {
+            public static string TransformResult()
+            {
+                double length = Fixture.Transform("typed", value => (double)value.Length);
+                return Fixture.Transform(length, value => value == 5 ? "typed/5" : "unexpected");
+            }
+        }
+        """);
+    const string mapItems = """
+        public record CatalogItem(string Name, double Price) : ECMAScript.Vue.VueProps;
+
+        public static string MapCatalog()
+        {
+            var items = new[] { new CatalogItem("Notebook", 6), new CatalogItem("Pen", 2) };
+            ECMAScript.IArray<string> names = Fixture.MapItems(items, item => item.Name);
+            ECMAScript.IArray<double> prices = Fixture.MapItems(items, item => item.Price);
+            ECMAScript.IArray<double> lengths = Fixture.MapItems(names, name => (double)name.Length);
+            return names[0] + "/" + prices[1] + "/" + lengths[0];
+        }
+        """;
+    File.WriteAllText(Path.Combine(scratch.FullName, "Catalog.jazor"),
+        "@using Fixture = Npm.ProjectionFixture.Exports\n\n<p>@MapCatalog()</p>\n\n@code {\n" +
+        mapItems.Replace("public static string MapCatalog()", "private string MapCatalog()") + "\n}\n");
+    var switchState = Regex.Match(File.ReadAllText(Path.Combine(library.FullName, "Fixture.g.cs")),
+        @"public enum (SwitchState_[0-9A-F]{12})\b");
+    if (!switchState.Success)
+        throw new InvalidOperationException("Expected the shared SwitchState enum in the combined package bindings.");
+    var directGenerics = """
+        public static bool AugmentedRef()
+        {
+            var meter = Fixture.MakeMeter(5d);
+            var forwarded = Transfer.ForwardMeter(meter);
+            double previous = forwarded.Replace(0d);
+            var flag = Transfer.ForwardMeter(Fixture.MakeMeter(true));
+            bool original = flag.Replace(false);
+            return object.ReferenceEquals(meter, forwarded) && previous == 5d && meter.Value == 0d
+                && original && !flag.Value;
+        }
+
+        public static bool EnrichedRef()
+        {
+            var signal = Fixture.SwitchSignal();
+            var forwarded = Transfer.PersistSignal(signal);
+            var initial = signal.Value;
+            signal.Value = SWITCH_STATE.Disabled;
+            return object.ReferenceEquals(signal, forwarded) && object.ReferenceEquals(signal, signal.Source)
+                && initial == SWITCH_STATE.Enabled
+                && forwarded.Value == SWITCH_STATE.Disabled
+                && signal.Source.Value == SWITCH_STATE.Disabled
+                && signal.Status.Value == SWITCH_STATE.Disabled;
+        }
+
+        public static bool WritableComputed()
+        {
+            var label = Fixture.ComputedLabel();
+            var forwardedLabel = Transfer.ForwardComputed(label);
+            string before = forwardedLabel.Value;
+            forwardedLabel.WriteValue = 0d;
+
+            var state = ECMAScript.Vue.Ref(true);
+            var flag = ECMAScript.Vue.Computed(new ECMAScript.Vue.VueWritableComputedOptions<bool> {
+                Get = () => state.Value,
+                Set = value => { state.Value = value; },
+            });
+            var forwardedFlag = Transfer.ForwardComputed(flag);
+            forwardedFlag.WriteValue = false;
+            return object.ReferenceEquals(label, forwardedLabel) && object.ReferenceEquals(flag, forwardedFlag)
+                && before == "3" && label.Value == "0" && !state.Value && !forwardedFlag.Value;
+        }
+
+        public static bool AsymmetricRefs()
+        {
+            var number = Fixture.NumberLabel();
+            var forwardedNumber = Transfer.ForwardSlot(number);
+            forwardedNumber.WriteValue = 0d;
+            string zero = number.Value;
+            var flag = Fixture.BooleanLabel();
+            var forwardedFlag = Transfer.ForwardSlot(flag);
+            forwardedFlag.WriteValue = false;
+            string disabled = flag.Value;
+            var nullable = Fixture.NullableWriter(3d);
+            var forwardedNullable = Transfer.ForwardSlot(nullable);
+            forwardedNullable.WriteValue = 0d;
+            double count = nullable.Value;
+            forwardedNullable.WriteValue = null;
+            return object.ReferenceEquals(number, forwardedNumber) && object.ReferenceEquals(flag, forwardedFlag)
+                && object.ReferenceEquals(nullable, forwardedNullable)
+                && zero == "0" && disabled == "false" && count == 0d && nullable.Value == 3d;
+        }
+
+        public static string RoundTrip()
+        {
+            var source = ECMAScript.Vue.Ref(2d);
+            var writable = Fixture.PersistCurrent(source);
+            var observed = Transfer.ViewCurrent(writable);
+            writable.Value = 7d;
+            double count = observed.Value;
+            var envelope = Fixture.CreateEnvelope("initial");
+            var forwarded = Transfer.ForwardEnvelope(envelope);
+            forwarded.Payload = "updated";
+            string label = envelope.Payload;
+            double version = forwarded.Version;
+            return object.ReferenceEquals(source, writable) && object.ReferenceEquals(writable, observed)
+                && object.ReferenceEquals(envelope, forwarded) ? label + "/" + count + "/" + version : "copied";
+        }
+
+        public static string LiteralSelection()
+        {
+            string path = Transfer.SelectModeWithEnabledTrue(count: 4, label: "catalog").Path;
+            System.Func<string, double, double> selectCount = Transfer.SelectModeWithEnabledFalse;
+            double count = selectCount("catalog", 7);
+            return path + "/" + count;
+        }
+
+        public static string OptionalSelection()
+        {
+            double omitted = Transfer.SelectOptional();
+            double disabled = Transfer.SelectOptionalWithEnabledFalse();
+            string enabled = Transfer.SelectOptionalWithEnabledTrue().Path;
+            return omitted + "/" + disabled + "/" + enabled;
+        }
+
+        public static string RecursiveTree()
+        {
+            var tree = Fixture.BuildTree("root");
+            var forwarded = Transfer.ForwardTree(tree);
+            var child = forwarded.Children[0];
+            var forwardedChild = Transfer.ForwardTree(child);
+            forwardedChild.Value = "leaf";
+            return object.ReferenceEquals(tree, forwarded) && object.ReferenceEquals(child, forwardedChild)
+                && forwardedChild.Children.Length == 0 ? tree.Value + "/" + tree.Children[0].Value : "copied";
+        }
+
+        public static double ConstructEnvelope()
+        {
+            var input = Transfer.ForwardEnvelope<double>(new() { Payload = 4d, Version = 2d });
+            var output = Transfer.ForwardEnvelope(input);
+            return object.ReferenceEquals(input, output) ? output.Payload + output.Version : -1;
+        }
+
+        public static bool InspectDrafts()
+        {
+            var omitted = Fixture.CreateDraft(0d, false);
+            var initialized = Transfer.ForwardDraft<bool>(new() { Seed = true, Value = false });
+            var nullable = Transfer.ForwardDraft<double?>(new() { Seed = null, Value = null });
+            var forwarded = Transfer.ForwardDraft(omitted);
+            bool absent = !forwarded.HasValue && !Fixture.HasDraftValue(forwarded);
+            forwarded.Value = 0d;
+            var record = Fixture.CreateDraft(Fixture.CreateEnvelope("initial"), true);
+            var update = Fixture.CreateEnvelope("changed");
+            Transfer.ForwardDraft(record).Value = update;
+            return absent && object.ReferenceEquals(omitted, forwarded)
+                && omitted.HasValue && Fixture.HasDraftValue(omitted) && omitted.Value == 0d
+                && initialized.HasValue && Fixture.HasDraftValue(initialized) && !initialized.Value
+                && nullable.HasValue && Fixture.HasNullDraftValue(nullable) && nullable.Value == null
+                && record.HasValue && object.ReferenceEquals(record.Value, update)
+                && record.Value.Payload == "changed";
+        }
+
+        public static double ReadOmittedDraft() => Fixture.CreateDraft(0d, false).Value;
+
+
+        public static bool InspectNullableDrafts()
+        {
+            var absent = Transfer.ForwardNullableDraft<double>(new() { Seed = 1d });
+            var empty = Transfer.ForwardNullableDraft<double>(new() { Seed = 1d, Value = null });
+            var zero = Transfer.ForwardNullableDraft<double>(new() { Seed = 1d, Value = 0d });
+            var disabled = Transfer.ForwardNullableDraft<bool>(new() { Seed = true, Value = false });
+            return !absent.HasValue && !Fixture.HasNullNullableDraftValue(absent)
+                && empty.HasValue && Fixture.HasNullNullableDraftValue(empty) && empty.Value is null
+                && zero.HasValue && zero.Value!.Value == 0d
+                && disabled.HasValue && !disabled.Value!.Value;
+        }
+
+        public static bool MappedRoundTrip()
+        {
+            var source = Transfer.ForwardEnvelope<double>(new() { Payload = 0d, Version = 3d });
+            var patch = Fixture.PickCount(source);
+            double? count = patch.Count;
+            var missingSource = Transfer.ForwardEnvelope<string>(new() { Payload = "missing", Version = 5d });
+            var missing = Fixture.PickCount(missingSource);
+            double? missingCount = missing.Count;
+            return count == 0d && missingCount == null
+                && Fixture.AcceptCount(source, new()) == 3d
+                && Fixture.AcceptCount(source, new() { Count = 0d }) == 0d
+                && Fixture.AcceptCount(source, patch) == 0d
+                && Fixture.AcceptCount(missingSource, missing) == 5d;
+        }
+        """.Replace("SWITCH_STATE", "global::Jolt.Generated.Npm.Exports." + switchState.Groups[1].Value);
+    File.WriteAllText(Path.Combine(scratch.FullName, "DirectGenerics.jazor"),
+        "@using Fixture = Npm.ProjectionFixture.Exports\n@using Transfer = Npm.ProjectionTransfer.Exports\n\n@code {\n" +
+        directGenerics + "\n}\n");
     File.WriteAllText(Path.Combine(scratch.FullName, "Mode.jazor"), """
         @using Messages = Npm.VueI18n.Exports
         @code {
@@ -155,6 +504,27 @@ try
             }
         }
         """);
+    const string keyedProperties = """
+        public sealed record Nested(double Total);
+        public sealed record Entry(
+            [property: ECMAScript.ECMAScriptName("pricing.total")] double FlatTotal,
+            [property: ECMAScript.ECMAScriptName("pricing")] Nested Pricing,
+            string Label);
+
+        public static string ReadAndWriteKeys()
+        {
+            var entry = new Entry(7, new Nested(9), "before");
+            double initial = Fixture.Lookup(entry, item => item.FlatTotal);
+            Fixture.Assign(entry, item => item.FlatTotal, 0);
+            Fixture.Assign(entry, item => item.Label, "after");
+            double count = Fixture.Lookup(entry, item => item.FlatTotal);
+            string label = Fixture.Lookup(entry, item => item.Label);
+            return initial + "/" + count + "/" + label + "/" + entry.Pricing.Total;
+        }
+        """;
+    File.WriteAllText(Path.Combine(scratch.FullName, "Keys.jazor"),
+        "@using Fixture = Npm.ProjectionFixture.Exports\n\n<p>@ReadAndWriteKeys()</p>\n\n@code {\n" +
+        keyedProperties.Replace("public static string ReadAndWriteKeys()", "private string ReadAndWriteKeys()") + "\n}\n");
     await RunAsync(cli, scratch.FullName, ["build"]);
     var caller = Path.Combine(consumer.FullName, "Calendar.cs");
     const string calendar = """
@@ -162,6 +532,7 @@ try
         using Locales = Npm.DateFns.Locale.Exports;
         using Fixture = Npm.ProjectionFixture.Exports;
         using VueUse = Npm.Vueuse.Core.Exports;
+        using Transfer = Npm.ProjectionTransfer.Exports;
         using Text = Npm.EsToolkit.Compat.Exports;
         using Timers = Npm.EsToolkit.Promise.Exports;
         using Functions = Npm.EsToolkit.Function.Exports;
@@ -183,11 +554,66 @@ try
 
             public static bool IsClient() => VueUse.IsClient;
 
+            public static string CheckEventHook()
+            {
+                var hook = VueUse.CreateEventHook<string>();
+                var result = "";
+                System.Action<string> record = value => { result += value; };
+                hook.On(record);
+                hook.Trigger("a");
+                hook.Off(record);
+                hook.Trigger("b");
+                var registration = hook.On(record);
+                hook.Trigger("c");
+                registration.Off();
+                hook.Trigger("d");
+                return result;
+            }
+
+            public sealed record ModelProps(double Count, string Label) : ECMAScript.Vue.VueProps;
+
+            public static double ReadModel()
+            {
+                var model = VueUse.UseVModel(new ModelProps(4d, "label"), props => props.Count);
+                double count = model.Value;
+                return count;
+            }
+
+            public static bool CheckModelOptions()
+            {
+                var props = new ModelProps(4d, "label");
+                double observed = -1;
+                var direct = VueUse.UseVModel(props, value => value.Count, new() {
+                    DefaultValue = 0d,
+                    ShouldEmit = value => { observed = value; return false; },
+                });
+                var passive = VueUse.UseVModelWithPassiveTrue(props, value => value.Count, new() {
+                    DefaultValue = 0d,
+                    ShouldEmit = value => value >= 0d,
+                });
+                direct.Value = 0d;
+                var forwarded = Transfer.ForwardComputed(direct);
+                double current = forwarded.Value;
+                double passiveValue = passive.Value;
+                return object.ReferenceEquals(direct, forwarded)
+                    && observed == 0d && current == 4d && passiveValue == 4d;
+            }
+
+            public static bool CheckColorMode()
+            {
+                var mode = VueUse.UseColorMode(new() { Attribute = "data-theme" });
+                mode.Value = VueUse.StringChoiceOfAutoOrDarkOrLight.Dark;
+                return mode.Value == VueUse.StringChoiceOfAutoOrDarkOrLight.Dark
+                    && mode.Store.Value == VueUse.StringChoiceOfAutoOrDarkOrLight.Dark;
+            }
+
             public static string OptionalArguments() =>
                 Fixture.OptionalArguments() + ";" + Fixture.OptionalArguments(label: "named") + ";" +
                 Fixture.OptionalArguments(count: 0, options: null, label: "explicit");
 
             // OPTIONAL_RESULTS
+            // GENERIC_TRANSFORM
+            // MAP_ITEMS
 
             public static string FrenchDistance() =>
                 Dates.FormatDistance(new ECMAScript.Date(2026, 0, 17), new ECMAScript.Date(2026, 0, 15),
@@ -218,7 +644,10 @@ try
             }
         }
         """;
-    File.WriteAllText(caller, calendar.Replace("// OPTIONAL_RESULTS", optionalResults));
+    var calendarSource = calendar.Replace("// OPTIONAL_RESULTS", optionalResults)
+        .Replace("// GENERIC_TRANSFORM", genericTransform)
+        .Replace("// MAP_ITEMS", mapItems);
+    File.WriteAllText(caller, calendarSource);
     File.WriteAllText(Path.Combine(consumer.FullName, "MessagesProbe.cs"), """
         using Messages = Npm.VueI18n.Exports;
 
@@ -254,7 +683,8 @@ try
             }
         }
         """);
-    File.WriteAllText(Path.Combine(consumer.FullName, "QueryProbe.cs"), """
+    var queryPath = Path.Combine(consumer.FullName, "QueryProbe.cs");
+    const string querySource = """
         using Query = Npm.Tanstack.VueQuery.Exports;
         using ECMAScript;
         using System;
@@ -262,10 +692,33 @@ try
         [ECMAScriptModule("query-probe.mjs")]
         public static class QueryProbe
         {
-            private sealed record Payload(string Label);
+            private sealed record Payload(string Label) : Vue.VueProps;
             private sealed record Filter(double Page) : Vue.VueProps;
 
             public static void Install(Vue.VueApp app) => app.Use(Query.VueQueryPlugin);
+
+            public static IPromise<string> FetchCache()
+            {
+                var client = Query.UseQueryClient();
+                var seed = new Payload("seed");
+                client.SetQueryData(["public-cache-seed"], seed);
+                if (!object.ReferenceEquals(seed, client.GetQueryData<Payload>(["public-cache-seed"])))
+                    return Promise<string>.Resolve("lost seed identity");
+                return client.FetchQuery<Payload>(new() {
+                    QueryKey = ["public-cache", 0, false],
+                    QueryFn = () => Promise<Payload>.Resolve(new Payload("cache result")),
+                }).Then(data => {
+                    Payload? cached = client.GetQueryData<Payload>(["public-cache", 0, false]);
+                    if (!object.ReferenceEquals(data, cached))
+                        return "lost identity";
+                    client.SetQueryData<Payload>(["public-cache", 0, false],
+                        (Payload? previous) => new Payload((previous?.Label ?? "missing") + " updated"));
+                    return client.GetQueryData<Payload>(["public-cache", 0, false])?.Label ?? "missing";
+                });
+            }
+
+            public static void RemoveCache() =>
+                Query.UseQueryClient().RemoveQueries(new() { QueryKey = ["public-cache", 0, false], Exact = true });
 
             public static void Start(Action<string> receive)
             {
@@ -283,7 +736,70 @@ try
                 }));
             }
         }
-        """);
+        """;
+    File.WriteAllText(queryPath, querySource);
+    var fieldPath = Path.Combine(consumer.FullName, "FieldProbe.cs");
+    var fieldSource = """
+        using Validation = Npm.VeeValidate.Exports;
+
+        [ECMAScript.ECMAScriptModule("field-probe.mjs")]
+        public static class FieldProbe
+        {
+            public static string ReadFields()
+            {
+                var count = Validation.UseField<double>("rows[0].count");
+                var enabled = Validation.UseField<bool>("enabled", "projection_rule");
+                var configured = Validation.UseField<double>("configured", options: new() { InitialValue = 0 });
+                var named = Validation.UseField<bool>("named", "projection_rule", options: new() { InitialValue = false });
+                var name = ReadName(count.Name);
+                if (count.Value.Value is not null || enabled.Value.Value is not null)
+                    return "unexpected initial value";
+                count.SetValue(0, false);
+                enabled.SetValue(false, false);
+                return count.Value.Value?.Value == 0 && enabled.Value.Value?.Value == false &&
+                    configured.Value.Value?.Value == 0 && named.Value.Value?.Value == false ? name : "missing";
+            }
+
+            public static string ReadName(Validation.RefOrString name)
+            {
+                var value = name.Value;
+                return value is string text ? text : ((ECMAScript.Vue.VueReadonlyRef<string>)value!).Value;
+            }
+
+            public static ECMAScript.IPromise<string> ValidateMissing()
+            {
+                var field = Validation.UseField<double>("checked", value => value is null ? "required" : true);
+                return field.Validate().Then(result => result.Valid ? "valid" : result.Errors[0]);
+            }
+        }
+        """;
+    File.WriteAllText(fieldPath, fieldSource);
+    var correlatedPath = Path.Combine(consumer.FullName, "CorrelatedConsumer.cs");
+    var correlatedSource = File.ReadAllText(Path.Combine(fixture, "..", "jolt-binding-projection", "CorrelatedConsumer.cs"));
+    File.WriteAllText(correlatedPath, correlatedSource);
+    var keyedPath = Path.Combine(consumer.FullName, "KeyedConsumer.cs");
+    var keyedSource = """
+        using Fixture = Npm.ProjectionFixture.Exports;
+
+        [ECMAScript.ECMAScriptModule("keyed-consumer.mjs")]
+        public static class KeyedConsumer
+        {
+            // KEYED_PROPERTIES
+        }
+        """.Replace("// KEYED_PROPERTIES", keyedProperties);
+    File.WriteAllText(keyedPath, keyedSource);
+    var directPath = Path.Combine(consumer.FullName, "DirectGenerics.cs");
+    var directSource = """
+        using Fixture = Npm.ProjectionFixture.Exports;
+        using Transfer = Npm.ProjectionTransfer.Exports;
+
+        [ECMAScript.ECMAScriptModule("direct-generics.mjs")]
+        public static class DirectGenerics
+        {
+            // DIRECT_GENERICS
+        }
+        """.Replace("// DIRECT_GENERICS", directGenerics);
+    File.WriteAllText(directPath, directSource);
     await BuildAsync(library);
     await BuildAsync(consumer);
     var assembly = Assembly.Load(File.ReadAllBytes(Path.Combine(consumer.FullName, "bin", "Debug", "net11.0", "Consumer.dll")));
@@ -298,6 +814,10 @@ try
         if (name == "messages-probe.mjs" && new[] { "false", "true" }.Any(mode =>
             !Regex.IsMatch(js, $"""["']?\blegacy["']?\s*:\s*{mode}\b""")))
             throw new InvalidOperationException($"Expected both Vue I18n option literals from assembly metadata.\n{js}");
+        if (name == "correlated-consumer.mjs" &&
+            (!Regex.IsMatch(js, """useStorage\(\((?<key>[\w$]+)\s*=\s*["']named-storage["'],\s*(?<initial>[\w$]+)\s*=\s*["']configured["'],\s*(?<options>[\w$]+)\s*=\s*\{\s*["']?writeDefaults["']?\s*:\s*false\s*\},\s*(?<gap>[\w$]+)\s*=\s*(?:void\s+0|undefined),\s*\k<key>\),\s*\k<initial>,\s*\k<gap>,\s*\k<options>\)""") ||
+             !Regex.IsMatch(js, """\(["']default-storage["'],\s*["']default["']\)""")))
+            throw new InvalidOperationException($"Expected the VueUse storage gap and a separate two-argument call.\n{js}");
         File.WriteAllText(Path.Combine(scratch.FullName, name), js);
     }
     var verify = Path.Combine(scratch.FullName, "verify.mjs");
@@ -305,17 +825,49 @@ try
         import assert from "node:assert/strict";
         import { createSSRApp, h } from "vue";
         import { renderToString } from "vue/server-renderer";
-        import { BookingLength, CalendarDate, FrenchDistance, IsClient, Label, LoadTitle, OptionalArguments, OptionalResults, Preview, Upper } from "./calendar.mjs";
-        import { Install, Start } from "./query-probe.mjs";
+        import { BookingLength, CalendarDate, CheckColorMode, CheckModelOptions, FrenchDistance, IsClient, Label, LoadTitle, MapCatalog, OptionalArguments, OptionalResults, Preview, TransformResult, Upper } from "./calendar.mjs";
+        import { FetchCache, Install, RemoveCache, Start } from "./query-probe.mjs";
+        import { ReadFields, ReadName, ValidateMissing } from "./field-probe.mjs";
         import { Composition, Legacy } from "./messages-probe.mjs";
+        import { ReadPageParams, ReadStorage, ReadVariables, WriteForm } from "./correlated-consumer.mjs";
         import { OptionalResults as JoltOptionalResults } from "./.jolt/Optional.mjs";
         import { Locale } from "./.jolt/Mode.mjs";
+        import { TransformResult as JoltTransformResult } from "./.jolt/Transform.mjs";
+        import Catalog from "./.jolt/Catalog.mjs";
+        import { ConstructEnvelope, LiteralSelection, MappedRoundTrip, RoundTrip } from "./direct-generics.mjs";
+        import { ConstructEnvelope as JoltConstructEnvelope, LiteralSelection as JoltLiteralSelection, MappedRoundTrip as JoltMappedRoundTrip, RoundTrip as JoltRoundTrip } from "./.jolt/DirectGenerics.mjs";
+        import { OptionalSelection, RecursiveTree } from "./direct-generics.mjs";
+        import { OptionalSelection as JoltOptionalSelection, RecursiveTree as JoltRecursiveTree } from "./.jolt/DirectGenerics.mjs";
+        import { InspectDrafts, InspectNullableDrafts, ReadOmittedDraft } from "./direct-generics.mjs";
+        import { AsymmetricRefs, AugmentedRef, EnrichedRef, WritableComputed } from "./direct-generics.mjs";
+        import { AsymmetricRefs as JoltAsymmetricRefs, AugmentedRef as JoltAugmentedRef, EnrichedRef as JoltEnrichedRef, WritableComputed as JoltWritableComputed } from "./.jolt/DirectGenerics.mjs";
+        import { InspectDrafts as JoltInspectDrafts, InspectNullableDrafts as JoltInspectNullableDrafts, ReadOmittedDraft as JoltReadOmittedDraft } from "./.jolt/DirectGenerics.mjs";
+        import { ReadAndWriteKeys } from "./keyed-consumer.mjs";
+        import Keys from "./.jolt/Keys.mjs";
         import { useQueryClient } from "@tanstack/vue-query";
+        import { defineRule } from "vee-validate";
         assert.equal(Label(), "1 year, 2 days");
         assert.equal(Upper(), "1 YEAR, 2 DAYS");
         assert.equal(IsClient(), false);
+        assert.equal((await import("./calendar.mjs")).CheckEventHook(), "ac");
         assert.equal(BookingLength(), "2 days");
         assert.equal(FrenchDistance(), "2 jours");
+        assert.equal(ReadName("plain name"), "plain name");
+        defineRule("projection_rule", () => true);
+        const fields = createSSRApp({
+            setup() {
+                assert.equal(ReadFields(), "rows[0].count");
+                return () => h("div");
+            },
+        });
+        await renderToString(fields);
+        const validated = createSSRApp({
+            async setup() {
+                assert.equal(await ValidateMissing(), "required");
+                return () => h("div");
+            },
+        });
+        await renderToString(validated);
         assert.equal(OptionalArguments(), "7|object|unset|0;7|object|named|3;0|null|explicit|3");
         assert.equal(OptionalResults(), true);
         assert.equal(JoltOptionalResults(), true);
@@ -325,10 +877,52 @@ try
         assert.equal(Legacy(), "en/Salut");
         assert.equal(Locale(), "fr");
         assert.equal(await LoadTitle(), "loaded");
+        assert.equal(TransformResult(), "typed/3");
+        assert.equal(JoltTransformResult(), "typed/5");
+        assert.equal(MapCatalog(), "Notebook/2/8");
+        assert.equal(await renderToString(createSSRApp(Catalog)), "<p>Notebook/2/8</p>");
+        assert.equal(RoundTrip(), "updated/7/3");
+        assert.equal(JoltRoundTrip(), "updated/7/3");
+        assert.equal(LiteralSelection(), "catalog/4/7");
+        assert.equal(JoltLiteralSelection(), "catalog/4/7");
+        assert.equal(OptionalSelection(), "0/1/true/1");
+        assert.equal(JoltOptionalSelection(), "0/1/true/1");
+        assert.equal(RecursiveTree(), "root/leaf");
+        assert.equal(JoltRecursiveTree(), "root/leaf");
+        assert.equal(ConstructEnvelope(), 6);
+        assert.equal(JoltConstructEnvelope(), 6);
+        assert.equal(MappedRoundTrip(), true);
+        assert.equal(JoltMappedRoundTrip(), true);
+        assert.equal(InspectDrafts(), true);
+        assert.equal(JoltInspectDrafts(), true);
+        assert.equal(InspectNullableDrafts(), true);
+        assert.equal(JoltInspectNullableDrafts(), true);
+        assert.equal(AsymmetricRefs(), true);
+        assert.equal(JoltAsymmetricRefs(), true);
+        assert.equal(EnrichedRef(), true);
+        assert.equal(AugmentedRef(), true);
+        assert.equal(JoltAugmentedRef(), true);
+        assert.equal(JoltEnrichedRef(), true);
+        assert.equal(WritableComputed(), true);
+        assert.equal(JoltWritableComputed(), true);
+        assert.throws(ReadOmittedDraft);
+        assert.throws(JoltReadOmittedDraft);
+        assert.equal(ReadAndWriteKeys(), "7/0/after/9");
+        assert.equal(await renderToString(createSSRApp(Keys)), "<p>7/0/after/9</p>");
         const observations = [];
+        const variables = [];
+        const pages = [];
+        const pageStates = [];
         const app = createSSRApp({
             setup() {
                 Start(value => observations.push(value));
+                ReadVariables(value => variables.push(value));
+                ReadPageParams((parameter, label) => pages.push([parameter, label]),
+                    (pending, success) => pageStates.push([pending, success]));
+                assert.equal(WriteForm(), "updated/0");
+                assert.equal(ReadStorage(), "configured/default");
+                assert.equal(CheckModelOptions(), true);
+                assert.equal(CheckColorMode(), true);
                 return () => h("p");
             },
         });
@@ -336,7 +930,16 @@ try
         Install(app);
         await renderToString(app);
         assert.deepEqual(observations, ["pending", "query result"]);
+        assert.deepEqual(variables, [null, 0]);
+        assert.deepEqual(pages, [[0, "first"]]);
+        assert.deepEqual(pageStates, [[true, false], [false, true]]);
         const client = app.runWithContext(() => useQueryClient());
+        assert.equal(await app.runWithContext(FetchCache), "cache result updated");
+        assert.deepEqual(client.getQueryData(["public-cache", 0, false]), { Label: "cache result updated" });
+        client.setQueryData(["public-cache", 0, false, "child"], "retained");
+        app.runWithContext(RemoveCache);
+        assert.equal(client.getQueryData(["public-cache", 0, false]), undefined);
+        assert.equal(client.getQueryData(["public-cache", 0, false, "child"]), "retained");
         assert.ok(client.getQueryData(["public-projection", 0, false, { Page: 3 }]));
         client.clear();
         """);
@@ -354,7 +957,87 @@ try
     await BuildAsync(consumer, expectedError: "CS0266");
     File.WriteAllText(caller, calendar.Replace("Locale = Locales.Fr", "Locale = \"fr\""));
     await BuildAsync(consumer, expectedError: "CS0029");
-    Console.WriteLine("The independent C# consumer ran both Vue I18n modes, Vue Query plugin registration, date-fns with a shared locale, and the inferred DTO through es-toolkit retry and withTimeout. Invalid inputs and a missing DTO member were rejected.");
+    File.WriteAllText(caller, calendarSource.Replace("input, value => value.Label", "input, (string value) => value"));
+    await BuildAsync(consumer, expectedError: "CS0411");
+    File.WriteAllText(caller, calendarSource);
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("EmailAddress, \"updated\"", "EmailAddress, false"));
+    await BuildAsync(consumer, expectedError: "CS0411");
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("double? variables =", "double variables ="));
+    await BuildAsync(consumer, expectedError: "CS0266");
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("double pageParam =", "string pageParam ="));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("SelectedPage result =", "Page result ="));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(correlatedPath, correlatedSource);
+    File.WriteAllText(caller, calendarSource.Replace("return names[0]", "names[0] = \"changed\"; return names[0]"));
+    await BuildAsync(consumer, expectedError: "CS0200");
+    File.WriteAllText(caller, calendarSource);
+    File.WriteAllText(keyedPath, keyedSource.Replace("item => item.FlatTotal, 0", "item => item.FlatTotal, false"));
+    await BuildAsync(consumer, expectedError: "CS0411");
+    File.WriteAllText(keyedPath, keyedSource.Replace("item => item.FlatTotal, 0", "item => item.Pricing.Total, 0"));
+    await BuildAsync(consumer, expectedError: "A JavaScript property key requires a lambda selecting exactly one structural record data property.");
+    File.WriteAllText(keyedPath, keyedSource);
+    File.WriteAllText(directPath, directSource.Replace("writable.Value = 7d", "observed.Value = 7d"));
+    await BuildAsync(consumer, expectedError: "CS0200");
+    File.WriteAllText(directPath, directSource.Replace("forwarded.Payload = \"updated\"", "forwarded.Payload = 7d"));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(directPath, directSource.Replace("double version = forwarded.Version", "forwarded.Version = 7d; double version = forwarded.Version"));
+    await BuildAsync(consumer, expectedError: "CS8852");
+    File.WriteAllText(directPath, directSource.Replace("Payload = 4d, Version = 2d", "Payload = 4d"));
+    await BuildAsync(consumer, expectedError: "CS9035");
+    File.WriteAllText(directPath, directSource.Replace("double omitted = Transfer.SelectOptional()", "string omitted = Transfer.SelectOptional()"));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(directPath, directSource.Replace("forwardedChild.Value = \"leaf\"", "forwardedChild.Value = 7d"));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(directPath, directSource.Replace("forwardedChild.Value = \"leaf\"", "forwarded.Children[0] = forwardedChild"));
+    await BuildAsync(consumer, expectedError: "CS0200");
+    File.WriteAllText(directPath, directSource.Replace("forwarded.Value = 0d", "forwarded.Value = null"));
+    await BuildAsync(consumer, expectedError: "CS0037");
+    File.WriteAllText(directPath, directSource.Replace("forwardedNumber.WriteValue = 0d", "forwardedNumber.WriteValue = \"wrong\""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(directPath, directSource.Replace("Transfer.ForwardComputed(flag)", "Transfer.ForwardComputed(state)"));
+    await BuildAsync(consumer, expectedError: "CS0411");
+    File.WriteAllText(directPath, directSource);
+    File.WriteAllText(caller, calendarSource.Replace("DefaultValue = 0d", "DefaultValue = \"wrong\""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(caller, calendarSource.Replace("ShouldEmit = value => value >= 0d", "ShouldEmit = (string value) => value.Length > 0"));
+    await BuildAsync(consumer, expectedError: "CS1661");
+    File.WriteAllText(caller, calendarSource);
+    File.WriteAllText(directPath, directSource.Replace("signal.Value = global::Jolt.Generated.Npm.Exports." + switchState.Groups[1].Value + ".Disabled",
+        "signal.Value = \"outside-domain\""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(directPath, directSource);
+    File.WriteAllText(caller, calendarSource.Replace("mode.Value = VueUse.StringChoiceOfAutoOrDarkOrLight.Dark", "mode.Value = \"outside-domain\""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(caller, calendarSource);
+    File.WriteAllText(directPath, directSource.Replace("Transfer.ForwardMeter(meter)", "Transfer.ForwardMeter<double>(ECMAScript.Vue.Ref(5d))"));
+    await BuildAsync(consumer, expectedError: "CS1503");
+    File.WriteAllText(directPath, directSource.Replace("Transfer.ForwardMeter(meter)", "Transfer.ForwardMeter<string>(meter)"));
+    await BuildAsync(consumer, expectedError: "CS1503");
+    File.WriteAllText(directPath, directSource);
+    File.WriteAllText(queryPath, querySource.Replace("Promise<Payload>.Resolve(new Payload(\"cache result\"))", "Promise<string>.Resolve(\"wrong\")"));
+    await BuildAsync(consumer, expectedError: "CS0266");
+    File.WriteAllText(queryPath, querySource.Replace("Exact = true", "Exact = \"wrong\""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(queryPath, querySource.Replace("Payload? cached =", "string? cached ="));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    Console.WriteLine("The independent C# consumer verified QueryClient DTO cache reads, writes, updates, fetches, and exact removal.");
+    File.WriteAllText(queryPath, querySource);
+    File.WriteAllText(fieldPath, fieldSource.Replace("count.SetValue(0, false)", "count.SetValue(\"wrong\", false)"));
+    await BuildAsync(consumer, expectedError: "CS1503");
+    File.WriteAllText(fieldPath, fieldSource.Replace("InitialValue = 0", "InitialValue = \"wrong\""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(fieldPath, fieldSource);
+    Console.WriteLine("C# and Jolt preserved augmented refs and their method receiver across packages. C# rejected an ordinary ref and an incompatible generic instantiation.");
+    Console.WriteLine("C# and Jolt preserved split Vue ref identity across packages and wrote zero, false, and null through the typed setter.");
+    Console.WriteLine("C# and Jolt verified generic optional field presence, writes, forwarding, and absent reads.");
+    Console.WriteLine("C# and Jolt verified the omitted and explicit boolean calls, and preserved recursive tree identity across packages.");
+    Console.WriteLine("C# and Jolt preserved Vue ref and named record identity across both packages. C# rejected readonly writes and an incompatible payload.");
+    Console.WriteLine("C# and Jolt passed a named mapped result back as input and preserved both a missing count and zero.");
+    Console.WriteLine("C# and Jolt read and wrote a literal dotted key and preserved zero. C# rejected an incompatible setter value and a nested selector.");
+    Console.WriteLine("C# and Jolt mapped catalog DTOs to typed readonly arrays, and the C# compiler rejected an index assignment.");
+    Console.WriteLine("The independent C# consumer verified nested form writes, optional mutation variables, and selected infinite-query page parameters.");
+    Console.WriteLine("The independent C# consumer ran both Vue I18n modes, Vue Query plugin registration, date-fns with a shared locale, and the inferred DTO through es-toolkit retry and withTimeout. The generic transform returned string and numeric results from C# and Jolt, and the C# compiler rejected an incompatible callback.");
 
     Task GenerateAsync(string[] arguments) => RunAsync(cli, scratch.FullName, ["bindings", .. arguments, "--output", source]);
 
