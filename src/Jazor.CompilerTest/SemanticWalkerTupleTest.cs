@@ -404,6 +404,32 @@ public sealed class SemanticWalkerTupleTest
     }
 
     [TestMethod]
+    public void VisitDeconstructionAssignment_StaticFieldTarget_UsesContainingType()
+    {
+        var block = GetBlockOperation("""
+            class TestClass
+            {
+                private static int _status;
+
+                void TestMethod()
+                {
+                    var tuple = (status: 202, ignored: 0);
+                    (TestClass._status, _) = tuple;
+                }
+            }
+            """);
+
+        var script = new SemanticWalker(true).Visit(block, new())?.ToKnRECMAScript();
+
+        AssertTupleScriptEqual("""
+            {
+              let tuple = { status: 202, ignored: 0 };
+              TestClass._status = tuple.status;
+            }
+            """, script);
+    }
+
+    [TestMethod]
     public void VisitDeconstructionAssignment_ConfiguredFieldTarget_UsesComputedAssignment()
     {
         var block = GetBlockOperation("""

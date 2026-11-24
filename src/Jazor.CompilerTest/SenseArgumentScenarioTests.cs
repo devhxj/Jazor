@@ -99,6 +99,35 @@ public sealed class SenseArgumentScenarioTests
     }
 
     [TestMethod]
+    public void BindImports_WithoutAModulePath_KeepLocalNamesAndDoNotRecordEdges()
+    {
+        var catalog = new HashSet<string>(StringComparer.Ordinal);
+        var argument = new SenseArgument().WithImportContext([], [], [], "./src/app.mjs", [],
+            moduleCatalogImportPaths: catalog, currentModuleOutputPath: "src/app.mjs", projectSourceImportKeys: []);
+
+        Assert.AreEqual("global", argument.BindModuleCatalogImportSpecifier(null, "global").Name);
+        Assert.AreEqual("helper", argument.BindProjectSourceImportSpecifier(" ", "helper").Name);
+        Assert.AreEqual("local", argument.BindExternalImportSpecifier(null, "local").Name);
+        Assert.IsFalse(argument.IsCurrentModuleImport(null));
+        Assert.IsEmpty(argument.FlushImportSpecifiers());
+        Assert.IsEmpty(argument.ProjectSourceImportKeys);
+        Assert.IsEmpty(catalog);
+    }
+
+    [TestMethod]
+    public void BindImports_WithoutAnOutputPath_PreserveRootAndAuthoredSpecifiers()
+    {
+        var argument = new SenseArgument().WithImportContext([], [], [], null, [], projectSourceImportKeys: []);
+        argument.BindModuleCatalogImportSpecifier("shared/model.mjs", "Model");
+        argument.BindProjectSourceImportSpecifier("generated/client.mjs", "Client");
+        argument.BindExternalImportSpecifier("../runtime.js", "run");
+
+        CollectionAssert.AreEquivalent(new[] { "./shared/model.mjs", "./generated/client.mjs", "../runtime.js" },
+            argument.FlushImportSpecifiers().Select(import => import.Key).ToArray());
+        CollectionAssert.AreEqual(new[] { "generated/client.mjs" }, argument.ProjectSourceImportKeys.ToArray());
+    }
+
+    [TestMethod]
     [DynamicData(nameof(ContextCases))]
     public void Context_MatchesCopyAndScopeContract(SenseArgumentContextScenario testCase)
     {

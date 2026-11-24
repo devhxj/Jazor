@@ -128,13 +128,25 @@ public sealed class SourceTypeCompilationTests
     [DataRow("row => row.Branches[0].Next", "\"Branches[0].children\"", true, false)]
     [DataRow("row => row.DerivedBranches[0].Next[1].Label", "array type already traversed", true, false)]
     [DataRow("row => row.WritableBranches[0].Next[1].Label", "\"WritableBranches[0].children[1].Label\"", true, false)]
+    [DataRow("row => row.Variants[0].Shorter[1].Label", "\"Variants[0].Shorter[1].Label\"", true, false)]
+    [DataRow("row => row.Variants[0].Renamed[1].Label", "\"Variants[0].Renamed[1].Label\"", true, false)]
+    [DataRow("row => row.Variants[0].Generic[1].Label", "\"Variants[0].Generic[1].Label\"", true, false)]
+    [DataRow("row => row.GenericBranches[0].Variants[1].Label", "\"GenericBranches[0].Variants[1].Label\"", true, false)]
+    [DataRow("row => row.Variants[0].Nullable[1].Label", "\"Variants[0].Nullable[1].Label\"", true, false)]
     [DataRow("row => row.Items[0]", "\"items[0]\"")]
     [DataRow("row => row.Items[-1].Alias", "requires a nonnegative integral constant")]
     [DataRow("row => row.Items[uint.MaxValue].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[4294967294U].Alias", "\"items[4294967294].wire\"")]
+    [DataRow("row => row.Items[4294967294L].Alias", "\"items[4294967294].wire\"")]
+    [DataRow("row => row.Items[4294967294UL].Alias", "\"items[4294967294].wire\"")]
+    [DataRow("row => row.Items[-1L].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[4294967295L].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[4294967295UL].Alias", "requires a nonnegative integral constant")]
     [DataRow("row => row.Items[other.Position].Alias", "requires a nonnegative integral constant")]
     [DataRow("row => row.Items[^1].Alias", "requires a nonnegative integral constant")]
     [DataRow("row => row.Grid[0, 0].Alias", "requires a nonnegative integral constant")]
     [DataRow("row => row.Items[0].Alias", "operation does not support indexed paths", false)]
+    [DataRow("row => row.Nested.Alias", "\"nested.wire\"", false, false)]
     [DataRow("row => row[0].Alias", "requires a lambda")]
     [DataRow("row => row.Items[0].Dot", "segments must be nonempty")]
     [DataRow("row => row.Calculated", "requires a lambda")]
@@ -145,6 +157,7 @@ public sealed class SourceTypeCompilationTests
         string selector, string expected, bool arrayIndices = true, bool veeValidatePath = true)
     {
         var source = $$"""
+            #nullable enable
             using System;
             using System.ComponentModel;
             using ECMAScript;
@@ -178,6 +191,13 @@ public sealed class SourceTypeCompilationTests
                 {
                     [Description("@#children")] public WritableBranch[] Children { get; } = [];
                 }
+                public sealed record Variant(
+                    string Label, Shorter[] Shorter, RenamedShape[] Renamed, Generic<double>[] Generic, Variant?[] Nullable);
+                public sealed record Shorter(string Label);
+                public sealed record RenamedShape(
+                    string Label, Shorter[] Shorter, RenamedShape[] Renamed, Generic<double>[] Generic, Variant?[] Children);
+                public sealed record Generic<T>(string Label, T Value);
+                public sealed record GenericBranch<T>(Variant[] Variants);
                 public sealed record Data(
                     [property: Description("@#nested")] Data Nested,
                     [property: Description("@#wire")] string Alias,
@@ -195,6 +215,8 @@ public sealed class SourceTypeCompilationTests
                     Branch[] Branches,
                     DerivedBranch[] DerivedBranches,
                     WritableBranch[] WritableBranches,
+                    Variant[] Variants,
+                    GenericBranch<double>[] GenericBranches,
                     Data[,] Grid,
                     int Position)
                 {
@@ -227,6 +249,7 @@ public sealed class SourceTypeCompilationTests
     [DataRow("WithComputed", "Value.Number")]
     [DataRow("WithRef", "Value.Number")]
     [DataRow("WithOptional", null)]
+    [DataRow("WithOptionalText", null)]
     [DataRow("WithInvalidOptional", "Value.Number")]
     [DataRow("WithRequired", "Value.Number")]
     [DataRow("WithProxyKey", "Value.Number")]
@@ -242,6 +265,9 @@ public sealed class SourceTypeCompilationTests
     [DataRow("WithOptional[]", null)]
     [DataRow("WithShallowRef", "Value.Ref")]
     [DataRow("Vue.IVueRef<double>[]", null)]
+    [DataRow("Vue.VueShallowRef<double>[]", null)]
+    [DataRow("Vue.VueModelRef<double>[]", null)]
+    [DataRow("Vue.VueProps[]", "Value[]")]
     [DataRow("Vue.VueReadonlyOptionalRef<double>[]", null)]
     [DataRow("Plain?", null)]
     [DataRow("Plain[]?", null)]
@@ -286,6 +312,7 @@ public sealed class SourceTypeCompilationTests
                 public sealed record WithShallowRef(Vue.VueShallowRef<WithRef> Ref);
                 public sealed class RefLike { public double Value { get; set; } }
                 public sealed record WithOptional([property: ECMAScriptOptional] double? Number);
+                public sealed record WithOptionalText([property: ECMAScriptOptional] string? Text);
                 public sealed record WithInvalidOptional([property: ECMAScriptOptional] double Number);
                 public sealed record WithRequired([property: ECMAScriptRequiredRead] double Number);
                 public sealed record WithProxyKey([property: Description("@#__v_isRef")] bool Number);
@@ -324,11 +351,18 @@ public sealed class SourceTypeCompilationTests
     [DataRow("DerivedVuePayload", "Root", "requires a non-null structural record")]
     [DataRow("Payload?", "Root", "requires a non-null structural record")]
     [DataRow("Reserved", "Root", "requires a non-null structural record")]
+    [DataRow("WithField", "Root", "requires a non-null structural record")]
+    [DataRow("WithComputed", "Root", "requires a non-null structural record")]
+    [DataRow("DuplicateKeys", "Root", "requires a non-null structural record")]
     [DataRow("Empty", "Root", "requires a non-null structural record")]
     [DataRow("IVueRef<double>", "ToRef", null)]
     [DataRow("VueShallowRef<double>", "ToRef", "but the call expects")]
-    public async Task Convert_VueViewSelectors_ValidateRootAndRefType(string payload, string method, string? error)
+    [DataRow("IVueRef<double>", "ToRef", "Read 'Value' directly", "ECMAScriptRequiredRead")]
+    [DataRow("IVueRef<double>?", "ToRef", "Read optional property 'Value' directly", "ECMAScriptOptional")]
+    public async Task Convert_VueViewSelectors_ValidateRootAndRefType(
+        string payload, string method, string? error, string? readAttribute = null)
     {
+        var readAnnotation = readAttribute is null ? "" : $"[property: {readAttribute}] ";
         var source = $$"""
             #nullable enable
             using System;
@@ -354,8 +388,11 @@ public sealed class SourceTypeCompilationTests
                 public record IntermediateVuePayload : VueProps;
                 public sealed record DerivedVuePayload(IVueRef<double> State) : IntermediateVuePayload;
                 public sealed record Reserved([property: Description("@#__v_isRef")] bool Marker);
+                public sealed record WithField { public double Value; }
+                public sealed record WithComputed(double Initial) { public double Value => Initial; }
+                public sealed record DuplicateKeys(double First, [property: Description("@#First")] double Second);
                 public sealed record Empty;
-                public sealed record Data([property: Description("@#payload")] {{payload}} Value);
+                public sealed record Data([property: Description("@#payload")] {{readAnnotation}}{{payload}} Value);
                 public static string Run(Data row) => Host.{{method}}(row, item => item.Value);
             }
             """;
@@ -363,6 +400,33 @@ public sealed class SourceTypeCompilationTests
             StringAssert.Contains(await Convert(source), "\"payload\"");
         else
             StringAssert.Contains((await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source))).Message, error);
+    }
+
+    [TestMethod]
+    public async Task Convert_RecordViewSelector_WorksWithoutVueAssemblyReference()
+    {
+        var script = await Convert("""
+            #nullable enable
+            using ECMAScript;
+            using System;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg2")]
+                public static extern string Root<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true, RequireRecordView = true)] Func<T, TValue> key);
+            }
+
+            public static class TestModule
+            {
+                public sealed record Payload(double Count);
+                public sealed record Data(Payload Value);
+                public static string Run(Data row) => Host.Root(row, item => item.Value);
+            }
+            """, referenceVue: false);
+
+        StringAssert.Contains(script, "\"Value\"");
     }
 
     [TestMethod]
@@ -1177,13 +1241,16 @@ public sealed class SourceTypeCompilationTests
     }
 
     private static async Task<string> Convert(string source, AstConverterOptions? options = null,
-        Func<INamedTypeSymbol, AstConverterOptions>? createOptions = null, string moduleName = "TestModule")
+        Func<INamedTypeSymbol, AstConverterOptions>? createOptions = null, string moduleName = "TestModule",
+        bool referenceVue = true)
     {
         var tree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions, "source-types.cs");
+        var references = TestMetadataReferences.Net11
+            .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        if (referenceVue)
+            references = references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
         var compilation = CSharpCompilation.Create("SourceTypes_" + Guid.NewGuid().ToString("N"), [tree],
-            TestMetadataReferences.Net11
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location))
-                .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location)),
+            references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics().Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
         Assert.IsEmpty(errors, string.Join(Environment.NewLine, errors));

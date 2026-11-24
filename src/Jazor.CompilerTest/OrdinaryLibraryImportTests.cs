@@ -396,6 +396,25 @@ public sealed class OrdinaryLibraryImportTests
     }
 
     [TestMethod]
+    public void SymbolIdentity_DistinguishesOverloadsOnEnclosingAndNestedTypeArguments()
+    {
+        var tree = CSharpSyntaxTree.ParseText("""
+            public class Outer<T> { public class Cell<U> { } }
+            public static class Consumer
+            {
+                public static void Read(Outer<int>.Cell<string> cell) { }
+                public static void Read(Outer<string>.Cell<string> cell) { }
+                public static void Read(Outer<int>.Cell<int> cell) { }
+            }
+            """, TestMetadataReferences.PreviewParseOptions);
+        var compilation = CSharpCompilation.Create("NestedOverloads", [tree], TestMetadataReferences.Net11,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var overloads = compilation.GetTypeByMetadataName("Consumer")!.GetMembers("Read");
+        Assert.HasCount(3, overloads);
+        Assert.HasCount(3, overloads.Select(LibrarySymbolIdentity.Member).Distinct(StringComparer.Ordinal).ToArray());
+    }
+
+    [TestMethod]
     public void SymbolIdentity_DistinguishesEventsIndexersPointersDynamicAndNestedGenericOwners()
     {
         var tree = CSharpSyntaxTree.ParseText("""
