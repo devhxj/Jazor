@@ -61,9 +61,10 @@ internal sealed partial class Projection
         Write("}\n");
     }
 
-    internal IReadOnlyList<IMethodSymbol> ExposedMethods(INamedTypeSymbol state) => state.GetMembers().OfType<IMethodSymbol>()
-        .Where(method => _exposedDeclarations.Any(declaration => declaration.Name == method.Name) && method.GetAttributes().Any(attribute =>
-            attribute.AttributeClass?.ToDisplayString() == "JoltAuthoring.ExposeAttribute")).ToArray();
+    internal IReadOnlyList<IMethodSymbol> ExposedMethods(INamedTypeSymbol state) => _exposedDeclarations.Count == 0 ? [] :
+        state.GetMembers().OfType<IMethodSymbol>()
+            .Where(method => _exposedDeclarations.Any(declaration => declaration.Name == method.Name) && method.GetAttributes().Any(attribute =>
+                attribute.AttributeClass?.ToDisplayString() == "JoltAuthoring.ExposeAttribute")).ToArray();
 
     private void EmitReference(JoltAttribute attribute, ComponentContract? component, JoltElement element, HashSet<string> seen)
     {

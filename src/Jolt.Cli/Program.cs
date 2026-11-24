@@ -26,6 +26,8 @@ try
     var stopOnStdinClose = false;
     using var externalDeclarations = args[0] == "dev" ? new JoltExternalDeclarations(project) : null;
     var devMetadata = externalDeclarations is null ? null : JoltProjectLoader.CreateDevMetadataProvider(externalDeclarations.Observe);
+    var devCompilation = devMetadata is null ? null : new JoltDevCompilation();
+    IReadOnlyList<JoltSource>? previousDevSources = null;
     string? serverEntry = null;
     if (args[0] is "build" or "library" && args.Length == index + 2 && args[index] == "--output")
     {
@@ -97,7 +99,9 @@ try
         {
             workspace = devMetadata is null
                 ? await JoltProjectLoader.LoadAsync(project, cancellationToken: cancellationToken)
-                : await JoltProjectLoader.LoadAsync(project, devMetadata, cancellationToken: cancellationToken);
+                : await JoltProjectLoader.LoadAsync(project, devMetadata, cancellationToken: cancellationToken, previousSources: previousDevSources);
+            if (devMetadata is not null)
+                previousDevSources = workspace.Sources;
             loaded = !workspace.Diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
         }
         finally
@@ -149,8 +153,10 @@ try
     {
         if (HasErrors(workspace.Diagnostics))
             return null;
-        var result = await JoltProjectCompiler.CompileAsync(workspace.Sources,
-            workspace.Options with { VueSourceRootRelative = Path.GetRelativePath(outputDirectory, project) }, cancellationToken);
+        var options = workspace.Options with { VueSourceRootRelative = Path.GetRelativePath(outputDirectory, project) };
+        var result = devCompilation is null
+            ? await JoltProjectCompiler.CompileAsync(workspace.Sources, options, cancellationToken)
+            : await devCompilation.CompileAsync(workspace.Sources, options, cancellationToken);
         return HasErrors(result.Diagnostics) ? null : result;
     }
 }

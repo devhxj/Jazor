@@ -334,12 +334,12 @@ export function Method() { }
         AssertScriptEqual(
             """
             import "widgets/styles.css";
-            import { get_Button, get_Input } from "widgets";
+            import { get_Button as i$8d2d6d2f32650b0b, get_Input as i$6ff53725a170a408 } from "widgets";
             export function GetButton() {
-              return get_Button();
+              return i$8d2d6d2f32650b0b();
             }
             export function GetInput() {
-              return get_Input();
+              return i$6ff53725a170a408();
             }
 
             """, script);

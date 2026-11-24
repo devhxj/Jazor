@@ -182,8 +182,10 @@ try
     if (!(await Response(4)).EnumerateArray().Any(item => item.GetProperty("label").GetString() == "CollapsibleRoot"))
         throw new InvalidOperationException("Missing package export completion.");
     await Send("textDocument/hover", new { textDocument = new { uri }, position = new { line = 1, character = 18 } }, 5);
-    if ((await Response(5)).GetProperty("contents").GetProperty("value").GetString() != "Open: boolean")
-        throw new InvalidOperationException("Missing npm prop type.");
+    var openHover = (await Response(5)).GetProperty("contents").GetProperty("value").GetString();
+    if (openHover?.StartsWith("Open: boolean", StringComparison.Ordinal) != true ||
+        !openHover.Contains("The controlled open state of the collapsible.", StringComparison.Ordinal))
+        throw new InvalidOperationException($"Expected the declared type and Reka UI's documentation for Open: {openHover}");
     await Send("textDocument/definition", new { textDocument = new { uri }, position = new { line = 1, character = 4 } }, 6);
     var packageDefinition = (await Response(6)).GetProperty("uri").GetString();
     if (packageDefinition is null || !packageDefinition.Contains("/reka-ui/", StringComparison.Ordinal) || !packageDefinition.EndsWith(".d.ts", StringComparison.Ordinal))
@@ -507,7 +509,9 @@ async Task VerifyLocalVueAsync()
         <script setup lang="ts">
         import Contract from './Contract.jazor'
         import type { Title } from './title-contract.mjs'
-        defineProps<{ title: Title & NonNullable<InstanceType<typeof Contract>['$props']['Title']> }>()
+        defineProps<{
+            /** Title displayed by the card. */
+            title: Title & NonNullable<InstanceType<typeof Contract>['$props']['Title']> }>()
         defineSlots<{ header: (scope: { count: number }) => unknown }>()
         </script>
         <template><slot name="header" :count="1" /></template>
@@ -533,15 +537,19 @@ async Task VerifyLocalVueAsync()
     await Send("textDocument/didClose", new { textDocument = new { uri = contractUri } });
     await WaitForAuthorDiagnostics(initial: false, expectErrors: false);
     await Definition(50, "LocalCard", expectedLine: null);
-    await Definition(51, "Title", expectedLine: 3);
-    await Definition(52, "header", expectedLine: 4);
-    await Definition(54, "scope.count", expectedLine: 4, insideWord: "scope.".Length + 1);
+    await Definition(51, "Title", expectedLine: 5);
+    await Definition(52, "header", expectedLine: 6);
+    await Definition(54, "scope.count", expectedLine: 6, insideWord: "scope.".Length + 1);
+    await At("hover", 55, 0, jolt.IndexOf("Title", StringComparison.Ordinal) + 1);
+    var titleHover = (await Response(55)).GetProperty("contents").GetProperty("value").GetString();
+    if (titleHover?.Contains("Title displayed by the card.", StringComparison.Ordinal) != true)
+        throw new InvalidOperationException($"Missing the local Vue prop's JSDoc: {titleHover}");
     await Send("textDocument/didOpen", new
     {
         textDocument = new { uri = vueUri, version = 1, languageId = "vue", text = "\n\n" + vue },
     });
     await WaitForAuthorDiagnostics(initial: false, expectErrors: false);
-    await Definition(53, "Title", expectedLine: 5);
+    await Definition(53, "Title", expectedLine: 7);
     await Send("textDocument/didChange", new
     {
         textDocument = new { uri = vueUri, version = 2 },
@@ -626,9 +634,22 @@ async Task VerifyDateFnsAsync()
         throw new InvalidOperationException("Expected date-fns AddDays method completion.");
     await Request("hover", 221, methodStart + 2);
     var hover = (await Response(221)).GetProperty("contents").GetProperty("value").GetString()!;
+    const string summary = "Add the specified number of days to the given date.";
+    const string amountDocumentation = "The amount of days to be added.";
     if (!hover.Contains("AddDays", StringComparison.Ordinal) || !hover.Contains("Date", StringComparison.Ordinal) ||
-        !hover.Contains("double amount", StringComparison.Ordinal))
-        throw new InvalidOperationException($"Expected the selected Date overload in hover: {hover}");
+        !hover.Contains("double amount", StringComparison.Ordinal) || !hover.Contains(summary, StringComparison.Ordinal) ||
+        !hover.Contains(amountDocumentation, StringComparison.Ordinal))
+        throw new InvalidOperationException($"Expected the selected Date overload and upstream documentation in hover: {hover}");
+    await Request("signatureHelp", 223, body.LastIndexOf('2'));
+    var help = await Response(223);
+    var signature = help.GetProperty("signatures")[help.GetProperty("activeSignature").GetInt32()];
+    if (help.GetProperty("activeParameter").GetInt32() != 1 ||
+        signature.GetProperty("label").GetString()?.Contains("Date date", StringComparison.Ordinal) != true ||
+        !signature.TryGetProperty("documentation", out var docs) || docs.GetString()?.Contains(summary, StringComparison.Ordinal) != true ||
+        !signature.GetProperty("parameters").EnumerateArray().Any(parameter =>
+            parameter.GetProperty("label").GetString() == "double amount" &&
+            parameter.TryGetProperty("documentation", out var parameterDocs) && parameterDocs.GetString() == amountDocumentation))
+        throw new InvalidOperationException($"Expected upstream documentation on the selected Date overload and its amount parameter: {help}");
     await Request("definition", 222, methodStart + 2);
     var definition = await Response(222);
     var declarationPath = new Uri(definition.GetProperty("uri").GetString()!).LocalPath;
@@ -648,8 +669,18 @@ async Task VerifyDateFnsAsync()
     if (start.GetProperty("line").GetInt32() != 1 || end.GetProperty("line").GetInt32() != 1 ||
         start.GetProperty("character").GetInt32() != argumentStart || end.GetProperty("character").GetInt32() != argumentStart + invalid.Length)
         throw new InvalidOperationException($"Expected the Date overload diagnostic over the authored argument: {error}");
+
+    const string namedBody = "<p>@(Dates.AddDays(amount: 2, date: new ECMAScript.Date(2026, 0, 15)))</p>";
+    await Send("textDocument/didChange", new { textDocument = new { document.uri, version = 3 }, contentChanges = new[] { new { text = import + namedBody } } });
+    diagnostics = await WaitForNpmAsync(3, sourceUri);
+    if (diagnostics.Any(item => item.GetProperty("severity").GetInt32() == 1))
+        throw new InvalidOperationException($"Expected the reordered named arguments to compile: {string.Join(", ", diagnostics.AsEnumerable())}");
+    await Request("signatureHelp", 224, namedBody.IndexOf("2,", StringComparison.Ordinal));
+    var namedHelp = await Response(224);
+    if (namedHelp.GetProperty("activeParameter").GetInt32() != 1)
+        throw new InvalidOperationException($"Expected the amount parameter to stay active after reordering the call: {namedHelp}");
     await Send("textDocument/didClose", new { textDocument = document });
-    Console.WriteLine("Verified date-fns Date overload completion, selected-signature hover, locked source definition, and the invalid argument's authored range.");
+    Console.WriteLine("Verified date-fns Date overload completion, upstream hover and signature documentation, locked definition, and the invalid argument's authored range.");
 
     Task Request(string method, int id, int character) =>
         Send("textDocument/" + method, new { textDocument = document, position = new { line = 1, character } }, id);

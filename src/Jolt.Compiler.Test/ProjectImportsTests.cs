@@ -8,6 +8,35 @@ namespace Jolt.Compiler.Test;
 public sealed class ProjectImportsTests
 {
     [TestMethod]
+    public async Task LoadSources_ReusesUnchangedParsesAcrossDiskAndEditorSnapshots()
+    {
+        var directory = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-sources-" + Guid.NewGuid()));
+        try
+        {
+            var page = Path.Combine(directory.FullName, "Page.jazor");
+            var card = Path.Combine(directory.FullName, "Card.jazor");
+            await File.WriteAllTextAsync(page, "<p>A</p>");
+            await File.WriteAllTextAsync(card, "<b />");
+            var initial = await JoltProjectLoader.LoadSourcesAsync(directory.FullName, null, CancellationToken.None);
+            var overlay = new Dictionary<string, string> { [page] = "<p>B</p>" };
+            var edited = await JoltProjectLoader.LoadSourcesAsync(directory.FullName, overlay, CancellationToken.None, initial.Sources);
+            var before = JoltProjectImports.Parse(initial.Sources).Documents;
+            var after = JoltProjectImports.Parse(edited.Sources).Documents;
+            Assert.AreSame(before.Single(doc => doc.Path == "Card.jazor"), after.Single(doc => doc.Path == "Card.jazor"));
+            Assert.AreEqual(overlay[page], after.Single(doc => doc.Path == "Page.jazor").Source);
+
+            var stamp = File.GetLastWriteTimeUtc(page);
+            await File.WriteAllTextAsync(page, "<p>C</p>");
+            File.SetLastWriteTimeUtc(page, stamp);
+            File.Move(card, Path.Combine(directory.FullName, "Row.jazor"));
+            var disk = await JoltProjectLoader.LoadSourcesAsync(directory.FullName, null, CancellationToken.None, edited.Sources);
+            CollectionAssert.AreEqual(new[] { "Page.jazor", "Row.jazor" }, disk.Sources.Select(source => source.Path).ToArray());
+            Assert.AreEqual("<p>C</p>", JoltProjectImports.Parse(disk.Sources).Documents[0].Source);
+        }
+        finally { directory.Delete(recursive: true); }
+    }
+
+    [TestMethod]
     public void Analyze_ReusesParsedSourcesAndReparsesEditedRecords()
     {
         var source = new JoltSource("Page.jazor", "<div>Original</div>");
@@ -179,6 +208,79 @@ public sealed class ProjectImportsTests
         Assert.IsFalse(directives[1].IsNpmValue);
         Assert.IsFalse(directives[2].IsNpm);
         Assert.IsFalse(directives[3].IsNpm);
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_BatchesUsedNpmComponentsAcrossDocumentsAndRefreshesDeclarations()
+    {
+        var root = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-component-imports-" + Guid.NewGuid()));
+        try
+        {
+            var package = root.CreateSubdirectory("fixture");
+            await File.WriteAllTextAsync(Path.Combine(root.FullName, "package.json"), """
+                {"private":true,"dependencies":{"component-fixture":"link:./fixture","vue":"3.5.30"}}
+                """);
+            await File.WriteAllTextAsync(Path.Combine(package.FullName, "package.json"), """
+                {"name":"component-fixture","version":"1.0.0","type":"module","exports":{"types":"./index.d.ts","import":"./index.js"}}
+                """);
+            await File.WriteAllTextAsync(Path.Combine(package.FullName, "index.d.ts"), "export { Card, Dialog, Unused } from './types.js';");
+            var declaration = Path.Combine(package.FullName, "types.d.ts");
+            const string types = """
+                type Component<Props> = new () => { $props: Props; $emit: {}; $slots: {} };
+                export declare const Card: Component<{ label: string }>;
+                export declare const Dialog: Component<{ open: boolean }>;
+                export declare const Unused: Component<{}>;
+                """;
+            await File.WriteAllTextAsync(declaration, types);
+            await File.WriteAllTextAsync(Path.Combine(package.FullName, "index.js"), "export const Card = {}, Dialog = {}, Unused = {};");
+            await File.WriteAllTextAsync(Path.Combine(root.FullName, "_Imports.jazor"), "@using Npm.ComponentFixture");
+            var pages = root.CreateSubdirectory("Pages");
+            await File.WriteAllTextAsync(Path.Combine(pages.FullName, "First.jazor"), "<Card Label=\"hello\" />");
+            var second = Path.Combine(pages.FullName, "Second.jazor");
+            await File.WriteAllTextAsync(second, "<Card Label=\"again\" />");
+            var overlays = new Dictionary<string, string> { [second] = "<Dialog Open=\"@true\" /><Card Label=\"again\" />" };
+            var engineCache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Jolt", "pnpm-store");
+            var queries = 0;
+            var provider = new NpmVueMetadataProvider(Path.Combine(root.FullName, ".pnpm-store"), engineCache)
+            {
+                ObserveQueryInputs = _ => queries++,
+            };
+
+            var workspace = await JoltProjectLoader.LoadAsync(root.FullName, provider, overlays);
+            Assert.IsEmpty(workspace.Diagnostics, string.Join(Environment.NewLine, workspace.Diagnostics));
+            Assert.AreEqual(2, queries, "The export catalog and all requested component contracts should each be read once.");
+            CollectionAssert.AreEqual(new[] { "Card", "Dialog", "Unused" }, workspace.Exports["component-fixture"].ToArray());
+            var components = workspace.Options.NpmComponents!;
+            CollectionAssert.AreEqual(new[] { "Card", "Dialog" }, components.Select(component => component.ExportName).ToArray());
+            Assert.AreEqual("string", components[0].Props["label"].Type);
+            Assert.AreEqual("boolean", components[1].Props["open"].Type);
+
+            var timestamp = File.GetLastWriteTimeUtc(declaration);
+            await File.WriteAllTextAsync(declaration, types.Replace("label: string", "label: number", StringComparison.Ordinal));
+            File.SetLastWriteTimeUtc(declaration, timestamp);
+            queries = 0;
+            var refreshed = await JoltProjectLoader.LoadAsync(root.FullName, provider, overlays);
+            Assert.IsEmpty(refreshed.Diagnostics, string.Join(Environment.NewLine, refreshed.Diagnostics));
+            Assert.AreEqual(2, queries);
+            Assert.AreEqual("number", refreshed.Options.NpmComponents!.Single(component => component.ExportName == "Card").Props["label"].Type);
+
+            // A newly present higher-priority source changes the declaration
+            // graph even though the previously resolved file stays untouched.
+            var source = Path.Combine(package.FullName, "types.ts");
+            await File.WriteAllTextAsync(source, types.Replace("label: string", "label: boolean", StringComparison.Ordinal));
+            var replaced = await JoltProjectLoader.LoadAsync(root.FullName, provider, overlays);
+            Assert.IsEmpty(replaced.Diagnostics, string.Join(Environment.NewLine, replaced.Diagnostics));
+            Assert.AreEqual("boolean", replaced.Options.NpmComponents!.Single(component => component.ExportName == "Card").Props["label"].Type);
+
+            File.Delete(source);
+            var removed = await JoltProjectLoader.LoadAsync(root.FullName, provider, overlays);
+            Assert.IsEmpty(removed.Diagnostics, string.Join(Environment.NewLine, removed.Diagnostics));
+            Assert.AreEqual("number", removed.Options.NpmComponents!.Single(component => component.ExportName == "Card").Props["label"].Type);
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
     }
 
     [TestMethod]

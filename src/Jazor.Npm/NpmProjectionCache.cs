@@ -6,6 +6,11 @@ namespace Jazor.Npm;
 
 internal static class NpmProjectionCache
 {
+    internal static string UserCacheDirectory { get; } =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Jazor", "cache");
+
+    internal static string ProjectionDirectory { get; } = Path.Combine(UserCacheDirectory, "projections", "v1");
+
     // Include the emitting SDK and the host contracts used to validate public
     // source. Package versions alone do not identify a projection algorithm.
     private static readonly Guid[] ToolVersions =
@@ -42,17 +47,25 @@ internal static class NpmProjectionCache
             }
             catch (FileNotFoundException) { }
             catch (JsonException) { }
+            catch (UnauthorizedAccessException) { }
         }
 
         var projection = new NpmValueProjection(namespaces, exports, options);
         var declarationsBytes = JsonSerializer.SerializeToUtf8Bytes(projection.GetDeclarations(locations.Indices));
         var sourceBytes = System.Text.Encoding.UTF8.GetBytes(projection.Tree.GetText(cancellationToken).ToString());
         cancellationToken.ThrowIfCancellationRequested();
-        Directory.CreateDirectory(directory);
-        // Finish both deterministic writes once committed. The source file is the
-        // publication marker for cold readers, so publish it after the index.
-        WriteAtomic(symbols, declarationsBytes, CancellationToken.None);
-        WriteAtomic(code, sourceBytes, CancellationToken.None);
+        try
+        {
+            Directory.CreateDirectory(directory);
+            // Finish both deterministic writes once committed. The source file is the
+            // publication marker for cold readers, so publish it after the index.
+            WriteAtomic(symbols, declarationsBytes, CancellationToken.None);
+            WriteAtomic(code, sourceBytes, CancellationToken.None);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // A read-only user cache must not prevent compilation.
+        }
         return projection;
     }
 
@@ -64,14 +77,25 @@ internal static class NpmProjectionCache
         var code = Path.Combine(directory, "Bindings.g.cs");
         if (File.Exists(code))
         {
-            var cached = ReadSource(code);
-            cancellationToken.ThrowIfCancellationRequested();
-            return cached;
+            try
+            {
+                var cached = ReadSource(code);
+                cancellationToken.ThrowIfCancellationRequested();
+                return cached;
+            }
+            catch (UnauthorizedAccessException) { }
         }
 
         var source = NpmBindings.GenerateSource(namespaces, exports, cancellationToken);
-        Directory.CreateDirectory(directory);
-        WriteAtomic(code, System.Text.Encoding.UTF8.GetBytes(source), cancellationToken);
+        try
+        {
+            Directory.CreateDirectory(directory);
+            WriteAtomic(code, System.Text.Encoding.UTF8.GetBytes(source), cancellationToken);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // The source is still available in memory when the cache cannot be written.
+        }
         return source;
     }
 
@@ -85,7 +109,7 @@ internal static class NpmProjectionCache
             Namespaces = namespaces.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal),
             Exports = exports.OrderBy(value => value.ModuleSpecifier, StringComparer.Ordinal)
                 .ThenBy(value => value.ExportName, StringComparer.Ordinal)
-                .Select(value => new { value.ModuleSpecifier, value.ExportName, value.PackageName, value.Version, value.Definition, value.Signatures, value.ConstantType }),
+                .Select(value => new { value.ModuleSpecifier, value.ExportName, value.PackageName, value.Version, value.Definition, value.Signatures, value.ConstantType, value.AttachedMembers, value.AttachedMemberSuffix }),
         };
         using var digest = SHA256.Create();
         using (var stream = new CryptoStream(Stream.Null, digest, CryptoStreamMode.Write))
@@ -112,6 +136,8 @@ internal static class NpmProjectionCache
             writer.WriteNumberValue(index);
             // Package-relative declaration paths participate in emitted host type names.
             writer.WriteStringValue(NpmValueProjection.PackageDeclarationPath(value));
+            JsonSerializer.Serialize(writer, value.Documentation, options);
+            writer.WriteBooleanValue(value.DocumentationFromCallableOwner);
             writer.WriteEndArray();
         }
 

@@ -6,6 +6,31 @@ namespace Jolt.Compiler.Test;
 public sealed class TypeScriptDeclarationTests
 {
     [TestMethod]
+    [DataRow("<slot />")]
+    [DataRow("<slot caption=\"hello\" selected />")]
+    [DataRow("<slot value=\"@Value\" />")]
+    public async Task ProjectAuthorDeclarations_MatchesCompiledContractsWithAndWithoutExpressionSlots(string slot)
+    {
+        var source = new JoltSource("Meter.jazor", $$"""
+            <main>{{slot}}</main>
+            @code {
+                [Parameter] public int Value { get; set; }
+                [Parameter] public Action<int>? ValueChanged { get; set; }
+                [Expose] public int Read() => Value;
+            #if false
+                public static int Disabled() => 0;
+            #endif
+                public static int Initial() => 42;
+            }
+            """);
+        var options = new JoltCompileOptions();
+        var result = await JoltProjectCompiler.CompileAsync([source], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var declarations = JoltProjectCompiler.ProjectAuthorDeclarations([source], options);
+        Assert.AreEqual(result.Modules.Single().TypeScriptDeclaration, declarations[source.Path]);
+    }
+
+    [TestMethod]
     public async Task Compile_VueContract_DeclaresPropsModelSlotsExposedAndStaticExports()
     {
         const string source = """

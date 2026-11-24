@@ -3,3 +3,4 @@ export declare function makeCell<T>(value: T): Cell<T>;
 export declare function cellWeights(): Record<string, number>;
 export declare function cellCount(): number;
 export declare function readLabel<T>(cell: Cell<T>): string;
+export declare function describeSlots(first: string, second?: string, third?: string): string;

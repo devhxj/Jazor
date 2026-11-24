@@ -182,6 +182,8 @@ public sealed class NpmHandleTests
         }
         var export = new NpmValueExport("tool", "model", "tool", "1.0.0", "index.js", "index.d.ts", null,
             [Signature(slot, false), Signature(new("number"), true), Signature(new("boolean"), true)], null);
+        var facade = NpmBindings.GenerateSource([], [export]);
+        StringAssert.Contains(facade, """ECMAScriptInline("\"model\"(__arg1, __arg2, void 0, __arg3)")""");
         var options = new JoltCompileOptions { NpmValues = [export] };
         const string source = """
             @using ECMAScript
@@ -200,15 +202,44 @@ public sealed class NpmHandleTests
         var compiled = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
         Assert.IsEmpty(compiled.Diagnostics, string.Join(Environment.NewLine, compiled.Diagnostics));
         var js = compiled.Modules.Single().Content;
-        StringAssert.Contains(js, "\"Count\", undefined, {");
+        StringAssert.Contains(js, "\"Count\", void 0, {");
         StringAssert.Contains(js, "passive: false,");
         StringAssert.Contains(js, "defaultValue: 0,");
         StringAssert.Contains(js, "shouldEmit: value =>");
-        StringAssert.Contains(js, "\"Flag\", undefined, { passive: true, defaultValue: false }");
+        StringAssert.Contains(js, "\"Flag\", void 0, { passive: true, defaultValue: false }");
         var invalid = source.Replace("DefaultValue = 0", "DefaultValue = false", StringComparison.Ordinal);
         Assert.IsNotEmpty(JoltProjectCompiler.Analyze([new("App.jazor", invalid)], options).Diagnostics);
         var invalidCallback = source.Replace("value => value > 1", "(bool value) => value", StringComparison.Ordinal);
         Assert.IsNotEmpty(JoltProjectCompiler.Analyze([new("App.jazor", invalidCallback)], options).Diagnostics);
+    }
+
+    [TestMethod]
+    public async Task Compile_CallableOverloadLowersReservedImportAndMethodGroupWithFixedSlots()
+    {
+        var text = new NpmValueType("string");
+        var signature = new NpmValueSignature(
+            [new("first", text, false), new("skip", text, false, FixedUndefined: true),
+             new("enabled", new("boolean"), false, FixedBoolean: true), new("last", text, false)], text);
+        var export = new NpmValueExport("tool", "default", "tool", "1.0.0", "index.js", "index.d.ts", null,
+            [signature], null);
+        const string source = """
+            @using Tool = Npm.Tool.Exports
+            @code {
+                private string Call() => Tool.Default("one", "two");
+                private string Forward(string first, string last) {
+                    System.Func<string, string, string> method = Tool.Default;
+                    return method(first, last);
+                }
+            }
+            """;
+
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], new() { NpmValues = [export] });
+
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var script = result.Modules.Single().Content;
+        StringAssert.Contains(script, "from \"tool\";");
+        StringAssert.Contains(script, "(\"one\", void 0, true, \"two\")");
+        Assert.AreEqual(2, System.Text.RegularExpressions.Regex.Matches(script, @", void 0, true, ").Count, script);
     }
 
     [TestMethod]
@@ -677,51 +708,43 @@ public sealed class NpmHandleTests
                 }
             }
             """;
-        var cache = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "path-projection-" + Guid.NewGuid()));
-        try
-        {
-            var options = new JoltCompileOptions { NpmValues = [export], NpmProjectionCacheDirectory = cache.FullName };
-            var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
-            Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
-            var js = result.Modules.Single().Content;
-            StringAssert.Contains(js, """form.update("contact.address", "written", false)""");
-            StringAssert.Contains(js, """().update("contact.Count", 0)""");
-            StringAssert.Contains(js, """form.update("contact.Optional", null)""");
-            StringAssert.Contains(js, """form.update("[flat.key]", 0)""");
-            StringAssert.Contains(js, """form.update("flat[label]", "literal")""");
-            Assert.AreEqual(2, js.Split("().update(", StringSplitOptions.None).Length);
+        var options = new JoltCompileOptions { NpmValues = [export] };
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single().Content;
+        StringAssert.Contains(js, """form.update("contact.address", "written", false)""");
+        StringAssert.Contains(js, """().update("contact.Count", 0)""");
+        StringAssert.Contains(js, """form.update("contact.Optional", null)""");
+        StringAssert.Contains(js, """form.update("[flat.key]", 0)""");
+        StringAssert.Contains(js, """form.update("flat[label]", "literal")""");
+        Assert.AreEqual(2, js.Split("().update(", StringSplitOptions.None).Length);
 
-            var plainSetter = setter with { Parameters = [setter.Parameters[0] with
-                { Type = setter.Parameters[0].Type with { VeeValidatePath = false } }, .. setter.Parameters.Skip(1)] };
-            var plainSignature = export.Signatures[0] with { ReturnType = export.Signatures[0].ReturnType with
-                { Members = [new("update", new("method", Signatures: [plainSetter]), true)] } };
-            var plainExport = export with { Signatures = [plainSignature] };
-            var plainOptions = options with { NpmValues = [plainExport] };
-            var plain = JoltProjectCompiler.Analyze([new("App.jazor", source)], plainOptions);
-            Assert.HasCount(2, plain.Diagnostics, string.Join(Environment.NewLine, plain.Diagnostics));
-            Assert.IsTrue(plain.Diagnostics.All(diagnostic => diagnostic.Id == "JOLT2001" &&
-                diagnostic.GetMessage().Contains("path segments", StringComparison.Ordinal)));
+        var plainSetter = setter with { Parameters = [setter.Parameters[0] with
+            { Type = setter.Parameters[0].Type with { VeeValidatePath = false } }, .. setter.Parameters.Skip(1)] };
+        var plainSignature = export.Signatures[0] with { ReturnType = export.Signatures[0].ReturnType with
+            { Members = [new("update", new("method", Signatures: [plainSetter]), true)] } };
+        var plainExport = export with { Signatures = [plainSignature] };
+        var plainOptions = options with { NpmValues = [plainExport] };
+        var plain = JoltProjectCompiler.Analyze([new("App.jazor", source)], plainOptions);
+        Assert.HasCount(2, plain.Diagnostics, string.Join(Environment.NewLine, plain.Diagnostics));
+        Assert.IsTrue(plain.Diagnostics.All(diagnostic => diagnostic.Id == "JOLT2001" &&
+            diagnostic.GetMessage().Contains("path segments", StringComparison.Ordinal)));
 
-            const string call = "form.Update(field => field.Contact!.Address, \"written\", false);";
-            foreach (var invalidCall in new[] {
-                "form.Update<object>(field => field.Contact!.Address, true);",
-                "form.Update<string?>(field => field.Contact!.Address, null);",
-                "form.Update<string>(field => field.Contact!.Address, maybe);",
-                "form.Update<string>(field => field.Contact!.Address, null);",
-                "form.Update(field => other.Contact!.Address, \"captured\");",
-                "form.Update(field => field.Contact!.Count + 1, 0);",
-                "form.Update(field => field.Contact!.Split, \"wrong key\");",
-                "form.Update(field => field.Indexed, \"wrong key\");",
-            })
-            {
-                var invalid = JoltProjectCompiler.Analyze([new("App.jazor", source.Replace(call, invalidCall, StringComparison.Ordinal))], options);
-                Assert.HasCount(1, invalid.Diagnostics, string.Join(Environment.NewLine, invalid.Diagnostics));
-                Assert.AreEqual("JOLT2001", invalid.Diagnostics.Single().Id, invalid.Diagnostics.Single().GetMessage());
-            }
-        }
-        finally
+        const string call = "form.Update(field => field.Contact!.Address, \"written\", false);";
+        foreach (var invalidCall in new[] {
+            "form.Update<object>(field => field.Contact!.Address, true);",
+            "form.Update<string?>(field => field.Contact!.Address, null);",
+            "form.Update<string>(field => field.Contact!.Address, maybe);",
+            "form.Update<string>(field => field.Contact!.Address, null);",
+            "form.Update(field => other.Contact!.Address, \"captured\");",
+            "form.Update(field => field.Contact!.Count + 1, 0);",
+            "form.Update(field => field.Contact!.Split, \"wrong key\");",
+            "form.Update(field => field.Indexed, \"wrong key\");",
+        })
         {
-            cache.Delete(recursive: true);
+            var invalid = JoltProjectCompiler.Analyze([new("App.jazor", source.Replace(call, invalidCall, StringComparison.Ordinal))], options);
+            Assert.HasCount(1, invalid.Diagnostics, string.Join(Environment.NewLine, invalid.Diagnostics));
+            Assert.AreEqual("JOLT2001", invalid.Diagnostics.Single().Id, invalid.Diagnostics.Single().GetMessage());
         }
     }
 
@@ -766,29 +789,21 @@ public sealed class NpmHandleTests
                 private double? ReadOptional(Input input) => Tool.Lookup(input, field => field.Optional);
             }
             """;
-        var cache = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "key-projection-" + Guid.NewGuid()));
-        try
-        {
-            var options = new JoltCompileOptions { NpmValues = [export, lens], NpmProjectionCacheDirectory = cache.FullName };
-            var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
-            Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
-            StringAssert.Contains(result.Modules.Single().Content, """(input, "field[0].name")""");
-            StringAssert.Contains(result.Modules.Single().Content, """(input, "Optional") ?? null""");
-            var required = source.Replace("field.Count", "field.Required", StringComparison.Ordinal);
-            var invalidRequired = JoltProjectCompiler.Analyze([new("App.jazor", required)], options);
-            Assert.AreEqual("JOLT2001", invalidRequired.Diagnostics.Single().Id);
-            StringAssert.Contains(invalidRequired.Diagnostics.Single().GetMessage(), "Read 'Required' directly");
+        var options = new JoltCompileOptions { NpmValues = [export, lens] };
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        StringAssert.Contains(result.Modules.Single().Content, """(input, "field[0].name")""");
+        StringAssert.Contains(result.Modules.Single().Content, """(input, "Optional") ?? null""");
+        var required = source.Replace("field.Count", "field.Required", StringComparison.Ordinal);
+        var invalidRequired = JoltProjectCompiler.Analyze([new("App.jazor", required)], options);
+        Assert.AreEqual("JOLT2001", invalidRequired.Diagnostics.Single().Id);
+        StringAssert.Contains(invalidRequired.Diagnostics.Single().GetMessage(), "Read 'Required' directly");
 
-            var nested = source.Replace("field.Count", "field.Nested.Count", StringComparison.Ordinal);
-            var invalid = JoltProjectCompiler.Analyze([new("App.jazor", nested)], options);
-            Assert.HasCount(1, invalid.Diagnostics, string.Join(Environment.NewLine, invalid.Diagnostics));
-            Assert.AreEqual("JOLT2001", invalid.Diagnostics.Single().Id);
-            StringAssert.Contains(invalid.Diagnostics.Single().GetMessage(), "exactly one structural record data property");
-        }
-        finally
-        {
-            cache.Delete(recursive: true);
-        }
+        var nested = source.Replace("field.Count", "field.Nested.Count", StringComparison.Ordinal);
+        var invalid = JoltProjectCompiler.Analyze([new("App.jazor", nested)], options);
+        Assert.HasCount(1, invalid.Diagnostics, string.Join(Environment.NewLine, invalid.Diagnostics));
+        Assert.AreEqual("JOLT2001", invalid.Diagnostics.Single().Id);
+        StringAssert.Contains(invalid.Diagnostics.Single().GetMessage(), "exactly one structural record data property");
     }
 
     [TestMethod]

@@ -12,9 +12,9 @@ internal static class NpmBuildProjection
         CancellationToken cancellationToken)
     {
         using var input = new StringReader(request);
-        var project = input.ReadLine()!;
+        var manifest = input.ReadLine()!;
         var store = input.ReadLine();
-        var packages = NpmValueMetadataProvider.ListPackageNames(Path.GetDirectoryName(project)!);
+        var packages = NpmValueMetadataProvider.ListPackageNames(Path.GetDirectoryName(manifest)!);
         var requests = new List<NpmSourceRequest>();
         while (input.ReadLine() is { } ns)
         {
@@ -24,7 +24,7 @@ internal static class NpmBuildProjection
 
         var failures = new List<NpmEditorProjectionError>();
         // Keep the diagnostics and partial source together, away from native tool logs.
-        var source = await ResolveAsync(project, packages, requests, string.IsNullOrEmpty(store) ? null : store,
+        var source = await ResolveAsync(manifest, packages, requests, string.IsNullOrEmpty(store) ? null : store,
             (request, message) => failures.Add(new(request.NpmNamespace, request.MemberName, message)), cancellationToken, includeEditorLinks: true);
         var response = new NpmEditorProjectionResult(source, failures.ToArray());
         await File.WriteAllTextAsync(outputPath, JsonSerializer.Serialize(response), cancellationToken);
@@ -38,7 +38,6 @@ internal static class NpmBuildProjection
             var inputs = File.ReadLines(inputsFile).Select(line => line.Split('|', 2))
                 .ToLookup(parts => parts[0], parts => parts[1], StringComparer.Ordinal);
             var project = inputs["project"].Single();
-            var directory = Path.GetDirectoryName(project)!;
             var output = inputs["output"].Single();
             var noImports = inputs["no-imports"].SingleOrDefault();
             if (noImports is not null)
@@ -65,9 +64,30 @@ internal static class NpmBuildProjection
                 return 0;
             }
 
-            var packages = NpmValueMetadataProvider.ListPackageNames(directory);
+            var manifest = NpmWorkspace.FindProjectManifest(project, File.Exists);
             var compilation = CSharpCompilation.Create(Path.GetFileNameWithoutExtension(project), trees,
                 inputs["reference"].Select(ParseReference), new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            if (manifest is null)
+            {
+                var sourceRequests = NpmSourceRequests.Discover(compilation, packages: null, cancellationToken);
+                var selection = NpmWorkspace.Select(project, sourceRequests, File.Exists);
+                if (selection.Conflicts.Count != 0)
+                {
+                    foreach (var (candidate, site) in selection.Conflicts)
+                        Report(site, $"npm usage resolves to '{candidate}', but this C# project uses multiple npm workspaces.");
+                    return 1;
+                }
+                manifest = selection.Manifest;
+            }
+            if (manifest is null)
+            {
+                // A nested manifest can appear without any source edits. Do not
+                // publish the no-imports sentinel once source might use npm.
+                File.Delete(output);
+                return 0;
+            }
+
+            var packages = NpmValueMetadataProvider.ListPackageNames(Path.GetDirectoryName(manifest)!);
             var requests = NpmSourceRequests.Discover(compilation, packages, cancellationToken);
             if (requests.Count == 0)
             {
@@ -76,7 +96,7 @@ internal static class NpmBuildProjection
             }
 
             var failed = false;
-            var source = await ResolveAsync(project, packages, requests, inputs["store"].SingleOrDefault(), Report, cancellationToken);
+            var source = await ResolveAsync(manifest, packages, requests, inputs["store"].SingleOrDefault(), Report, cancellationToken);
             if (failed)
                 return 1;
             if (File.Exists(output) && await File.ReadAllTextAsync(output, cancellationToken) == source)
@@ -168,7 +188,7 @@ internal static class NpmBuildProjection
         var namespaces = groups.Select(group => group.Key).ToArray();
         return includeEditorLinks
             ? NpmBindings.GenerateEditorSource(directory, namespaces, exports, cancellationToken)
-            : NpmBindings.GenerateCachedSource(directory, namespaces, exports, cancellationToken);
+            : NpmBindings.GenerateCachedSource(namespaces, exports, cancellationToken);
     }
 
     private static PortableExecutableReference ParseReference(string input)

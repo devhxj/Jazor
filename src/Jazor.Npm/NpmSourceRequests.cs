@@ -9,10 +9,10 @@ public sealed record NpmSourceRequest(string NpmNamespace, string? MemberName, L
 public static class NpmSourceRequests
 {
     public static IReadOnlyList<NpmSourceRequest> Discover(CSharpCompilation compilation,
-        IEnumerable<string> packages, CancellationToken cancellationToken = default)
+        IEnumerable<string>? packages, CancellationToken cancellationToken = default)
     {
-        var prefixes = packages.Select(NpmNames.NamespaceFor).Distinct(StringComparer.Ordinal).ToArray();
-        if (prefixes.Length == 0)
+        var prefixes = packages?.Select(NpmNames.NamespaceFor).Distinct(StringComparer.Ordinal).ToArray();
+        if (prefixes is { Length: 0 })
             return [];
 
         var roots = GetRoots(compilation, cancellationToken);
@@ -23,20 +23,36 @@ public static class NpmSourceRequests
         var usings = roots.SelectMany(GetUsings).ToArray();
         var aliasNames = new HashSet<string>(usings.Where(directive => directive.Alias is not null)
             .Select(directive => directive.Alias!.Name.Identifier.ValueText), StringComparer.Ordinal);
-        var staticImports = usings.Where(directive => directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword))
-            .Select(directive => (Directive: directive, Namespace: StaticImport(directive)))
-            .Where(import => import.Namespace is not null)
-            .ToDictionary(import => import.Directive, import => import.Namespace);
+        // Roslyn may resolve a simple name through an alias. All other marker imports
+        // must end in the actual namespace name or Exports, even in a relative using.
+        var importNames = new HashSet<string>(aliasNames, StringComparer.Ordinal) { "Exports" };
+        foreach (var ns in candidates)
+            importNames.Add(ns.Substring(ns.LastIndexOf('.') + 1));
+        var imports = new Dictionary<UsingDirectiveSyntax, string>();
+        var staticImports = new Dictionary<UsingDirectiveSyntax, string>();
+        var models = new Dictionary<SyntaxTree, SemanticModel>();
+        foreach (var directive in usings)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (directive.Name is not { } name || !importNames.Contains(name.GetLastToken().ValueText))
+                continue;
+            var symbol = Model(directive.SyntaxTree).GetSymbolInfo(name, cancellationToken).Symbol;
+            if (MarkerNamespace(symbol) is not { } ns)
+                continue;
+            imports.Add(directive, ns);
+            if (directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword) && symbol is INamedTypeSymbol)
+                staticImports.Add(directive, ns);
+        }
         var globalImports = staticImports.Where(item => item.Key.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword))
             .Select(item => item.Value).ToArray();
+        var staticTrees = new HashSet<SyntaxTree>(staticImports.Keys.Select(directive => directive.SyntaxTree));
         var results = new List<NpmSourceRequest>();
         foreach (var root in roots)
         {
-            var model = probe.GetSemanticModel(root.SyntaxTree);
+            var hasStaticImports = globalImports.Length != 0 || staticTrees.Contains(root.SyntaxTree);
             foreach (var directive in GetUsings(root))
             {
-                var ns = directive.Name is null ? null : MarkerNamespace(model.GetSymbolInfo(directive.Name, cancellationToken).Symbol);
-                if (ns is not null)
+                if (imports.TryGetValue(directive, out var ns))
                     results.Add(new(ns, null, directive.GetLocation()));
             }
             foreach (var identifier in root.DescendantNodes().OfType<SimpleNameSyntax>())
@@ -53,14 +69,16 @@ public static class NpmSourceRequests
                 {
                     if (!CouldBeExports(receiver, aliasNames))
                         continue;
-                    var ns = MarkerNamespace(model.GetSymbolInfo(receiver, cancellationToken).Symbol, requireExports: true);
+                    var ns = MarkerNamespace(Model(root.SyntaxTree).GetSymbolInfo(receiver, cancellationToken).Symbol, requireExports: true);
                     if (ns is not null)
                         results.Add(new(ns, name, identifier.GetLocation()));
                     continue;
                 }
 
-                if (staticImports.Count == 0 ||
-                    identifier.Parent is MemberAccessExpressionSyntax or QualifiedNameSyntax or AliasQualifiedNameSyntax or NameColonSyntax or NameEqualsSyntax ||
+                // The left side of a member access can itself come from a static import,
+                // for example NotifyMembers.Success(...) or an exported namespace object.
+                if (!hasStaticImports ||
+                    identifier.Parent is QualifiedNameSyntax or AliasQualifiedNameSyntax or NameColonSyntax or NameEqualsSyntax ||
                     identifier.Ancestors().Any(node => node is UsingDirectiveSyntax))
                     continue;
                 var scopedUsings = identifier.Ancestors().SelectMany(node => node switch
@@ -75,7 +93,7 @@ public static class NpmSourceRequests
                     .OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
                 if (namespaces.Length == 0)
                     continue;
-                var symbol = model.GetSymbolInfo(identifier, cancellationToken);
+                var symbol = Model(root.SyntaxTree).GetSymbolInfo(identifier, cancellationToken);
                 if (symbol.Symbol is not null || symbol.CandidateSymbols.Length != 0)
                     continue;
                 foreach (var ns in namespaces)
@@ -83,6 +101,13 @@ public static class NpmSourceRequests
             }
         }
         return results;
+
+        SemanticModel Model(SyntaxTree tree)
+        {
+            if (!models.TryGetValue(tree, out var model))
+                models.Add(tree, model = probe.GetSemanticModel(tree));
+            return model;
+        }
 
         string? MarkerNamespace(ISymbol? symbol, bool requireExports = false)
         {
@@ -93,11 +118,6 @@ public static class NpmSourceRequests
                 return ns.ToDisplayString();
             return null;
         }
-
-        string? StaticImport(UsingDirectiveSyntax directive) =>
-            directive.StaticKeyword.IsKind(SyntaxKind.StaticKeyword) && directive.Name is not null
-                ? MarkerNamespace(probe.GetSemanticModel(directive.SyntaxTree).GetSymbolInfo(directive.Name, cancellationToken).Symbol, requireExports: true)
-                : null;
     }
 
     internal static string? FindCompletionNamespace(CSharpCompilation compilation, ExpressionSyntax receiver,

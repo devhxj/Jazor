@@ -20,62 +20,76 @@ internal sealed partial class NpmCompletionProvider
             info.Symbol is not null and not IErrorTypeSymbol || info.CandidateSymbols.Length != 0)
             return;
 
-        var project = context.Document.Project;
-        var options = project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GlobalOptions;
-        if (!options.TryGetValue("build_property.MSBuildProjectFullPath", out var projectPath) || string.IsNullOrEmpty(projectPath))
-            projectPath = project.FilePath;
-        if (string.IsNullOrEmpty(projectPath) || Path.GetDirectoryName(projectPath) is not { Length: > 0 } directory)
+        var document = context.Document;
+        var project = document.Project;
+        if (FindCompletionWorkspace(document, (CSharpCompilation)model.Compilation, receiver.GetLocation(), token) is not { } workspaceRoot)
             return;
 
-        foreach (var parent in Parents(directory))
+        var path = workspaceRoot.Manifest;
+        var manifest = project.AdditionalDocuments.FirstOrDefault(file => file.FilePath is { } filePath &&
+            NpmEditorManifest.SamePath(filePath, path));
+        // A Balanced completion request can retain the old AdditionalDocument after
+        // a package manager writes the manifest. Only an open buffer takes priority over disk.
+        var workspace = project.Solution.Workspace;
+        string manifestText;
+        if (manifest is not null && workspace.IsDocumentOpen(manifest.Id) &&
+            workspace.CurrentSolution.GetAdditionalDocument(manifest.Id) is { } open)
+            manifestText = (await open.GetTextAsync(token).ConfigureAwait(false)).ToString();
+        else
         {
-            var path = Path.Combine(parent.FullName, "package.json");
-            var manifest = project.AdditionalDocuments.FirstOrDefault(file => file.FilePath is { } filePath &&
-                NpmEditorManifest.SamePath(filePath, path));
-            if (manifest is null)
-                continue;
-
-            // A Balanced completion request can retain the old AdditionalDocument after
-            // a package manager writes the manifest. Only an open buffer takes priority over disk.
-            var workspace = project.Solution.Workspace;
-            string manifestText;
-            if (workspace.IsDocumentOpen(manifest.Id) && workspace.CurrentSolution.GetAdditionalDocument(manifest.Id) is { } open)
-                manifestText = (await open.GetTextAsync(token).ConfigureAwait(false)).ToString();
-            else
+            try
             {
-                try
-                {
-                    using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-                    using var reader = new StreamReader(stream);
-                    manifestText = await reader.ReadToEndAsync().ConfigureAwait(false);
-                }
-                catch (FileNotFoundException) { continue; }
-                catch (DirectoryNotFoundException) { continue; }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                {
-                    return; // The manifest may be replaced or removed during an install.
-                }
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                manifestText = await reader.ReadToEndAsync().ConfigureAwait(false);
             }
-            var packages = NpmEditorManifest.ReadPackageNames(manifestText);
-            var namespaces = NpmEditorManifest.RootNamespaces(packages, (CSharpCompilation)model.Compilation,
-                new HashSet<string>(packages.Where(name => NpmEditorManifest.HasPackageRoot(parent.FullName, name)),
-                    StringComparer.Ordinal));
-            var children = namespaces.Where(name => name.StartsWith(prefix + ".", StringComparison.Ordinal))
-                .Select(name => name.Substring(prefix.Length + 1).Split('.')[0]).ToList();
-            if (namespaces.Contains(prefix, StringComparer.Ordinal) && !children.Contains("Exports", StringComparer.Ordinal))
-                children.Add("Exports");
-
-            foreach (var child in children.Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal))
-                if (existing is null || !existing.GetMembers(child).Any())
-                    context.AddItem(CompletionItem.Create(Escape(child)));
-            return;
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return; // The manifest may be replaced or removed during an install.
+            }
         }
+        var directory = Path.GetDirectoryName(path)!;
+        var packages = NpmEditorManifest.ReadPackageNames(manifestText);
+        var namespaces = NpmEditorManifest.RootNamespaces(packages, (CSharpCompilation)model.Compilation,
+            new HashSet<string>(packages.Where(name => NpmEditorManifest.HasPackageRoot(directory, name)),
+                StringComparer.Ordinal));
+        var children = namespaces.Where(name => name.StartsWith(prefix + ".", StringComparison.Ordinal))
+            .Select(name => name.Substring(prefix.Length + 1).Split('.')[0]).ToList();
+        if (namespaces.Contains(prefix, StringComparer.Ordinal) && !children.Contains("Exports", StringComparer.Ordinal))
+            children.Add("Exports");
+
+        foreach (var child in children.Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal))
+            if (existing is null || !existing.GetMembers(child).Any())
+                context.AddItem(CompletionItem.Create(Escape(child)));
     }
 
-    private static IEnumerable<DirectoryInfo> Parents(string directory)
+    private static (string Project, string Manifest)? FindCompletionWorkspace(Document document, CSharpCompilation compilation,
+        Location completion, CancellationToken cancellationToken)
     {
-        for (var parent = new DirectoryInfo(directory); parent is not null; parent = parent.Parent)
-            yield return parent;
+        var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GlobalOptions;
+        if (!options.TryGetValue("build_property._JazorNpmEditorTool", out var host) || string.IsNullOrEmpty(host))
+            return null;
+        if (!options.TryGetValue("build_property.MSBuildProjectFullPath", out var project) || string.IsNullOrEmpty(project))
+            project = document.Project.FilePath;
+        if (string.IsNullOrEmpty(project))
+            return null;
+
+        if (NpmWorkspace.FindProjectManifest(project!, File.Exists) is { } projectManifest)
+            return (project!, projectManifest);
+
+        // Previously generated facades describe the last workspace. Remove them when checking
+        // today's source imports so they cannot conceal a change of workspace ownership.
+        var source = compilation.RemoveSyntaxTrees(compilation.SyntaxTrees.Where(tree =>
+            Path.GetFileName(tree.FilePath) == NpmSourceRequests.EditorSourceHint));
+        var requests = NpmSourceRequests.Discover(source, packages: null, cancellationToken);
+        var selection = NpmWorkspace.Select(project!, requests, File.Exists);
+        if (selection.Conflicts.Count != 0)
+            return null;
+
+        // During `using Npm.` the incomplete qualified name cannot yet select a package.
+        // Resolve that one source location with the same bounds as a complete import.
+        var manifest = selection.Manifest ?? NpmWorkspace.Select(project!, [new("Npm", null, completion)], File.Exists).Manifest;
+        return manifest is null ? null : (project!, manifest);
     }
 
     private static string Escape(string name) => SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None ||

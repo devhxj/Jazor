@@ -70,7 +70,8 @@ public sealed partial class Server
                 .ToDictionary(entry => entry.Key, entry => entry.Value.Text.ToString(), PathComparer);
             var dependencyVersion = project.DependencyVersion;
             var sourceVersion = project.SourceVersion;
-            return project.Version = new(Task.Run(() => BuildSnapshotAsync(project, overlays, sourceVersion, dependencyVersion), _lifetime));
+            var previousSources = project.Sources;
+            return project.Version = new(Task.Run(() => BuildSnapshotAsync(project, overlays, sourceVersion, dependencyVersion, previousSources), _lifetime));
         }
     }
 
@@ -81,9 +82,9 @@ public sealed partial class Server
     }
 
     private async Task<ProjectSnapshot> BuildSnapshotAsync(ProjectState project, IReadOnlyDictionary<string, string> overlays,
-        int sourceVersion, int dependencyVersion)
+        int sourceVersion, int dependencyVersion, IReadOnlyList<JoltSource>? previousSources)
     {
-        var workspace = await JoltProjectLoader.LoadSourcesAsync(project.Directory, overlays, _lifetime);
+        var workspace = await JoltProjectLoader.LoadSourcesAsync(project.Directory, overlays, _lifetime, previousSources);
         var projectImports = JoltProjectImports.Parse(workspace.Sources, _lifetime);
         var npmInputs = projectImports.Documents
             .Select(document =>
@@ -113,6 +114,7 @@ public sealed partial class Server
         {
             if (project.SourceVersion != sourceVersion)
                 throw new OperationCanceledException("The project changed while loading its sources.");
+            project.Sources = workspace.Sources;
 
             // Symbol requests share native work. Replacing a buffer only cancels the caller's wait.
             if (!hasMetadata)
@@ -239,6 +241,7 @@ public sealed partial class Server
         internal Jolt.Npm.NpmVueMetadataProvider MetadataProvider { get; }
         internal SemaphoreSlim MetadataGate { get; } = new(1);
         internal int SourceVersion { get; set; }
+        internal IReadOnlyList<JoltSource>? Sources { get; set; }
         internal int DependencyVersion { get; set; }
         internal VersionedProject? Version { get; set; }
         internal string? NpmKey { get; set; }

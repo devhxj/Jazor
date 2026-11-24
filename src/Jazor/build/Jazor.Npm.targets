@@ -1,7 +1,7 @@
 <Project>
-  <!-- Resolve linked Compile items and their package workspace from the consuming project.
-       Run before the SDK hashes Compile, so dropping the last projection invalidates CoreCompile. -->
-  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$([MSBuild]::GetPathOfFileAbove(package.json, $(MSBuildProjectDirectory)))' != ''">
+  <!-- Run before the SDK hashes Compile, so dropping the last projection invalidates
+       CoreCompile. The sources can select a nested workspace even without a project manifest. -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
     <_JazorDiscoverNpmProjection>true</_JazorDiscoverNpmProjection>
     <_JazorNpmDiscoveryTargets>$(MSBuildThisFileFullPath)</_JazorNpmDiscoveryTargets>
   </PropertyGroup>
@@ -11,17 +11,13 @@
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(DesignTimeBuild)' == 'true'">
     <_JazorNpmEditorAssembly>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'tools', 'net11.0', 'editor', 'Jazor.Npm.Editor.dll'))</_JazorNpmEditorAssembly>
     <_JazorNpmLiveEditor Condition="Exists('$(_JazorNpmEditorAssembly)')">true</_JazorNpmLiveEditor>
-    <_JazorNpmManifest>$([MSBuild]::GetPathOfFileAbove(package.json, $(MSBuildProjectDirectory)))</_JazorNpmManifest>
   </PropertyGroup>
   <ItemGroup Condition="'$(_JazorNpmLiveEditor)' == 'true'">
     <Analyzer Include="$(_JazorNpmEditorAssembly)" />
     <CompilerVisibleProperty Include="_JazorNpmEditorTool;MSBuildProjectFullPath;JazorPnpmStoreDirectory;NetCoreRoot" />
-    <!-- Roslyn tracks these exact inputs when a project first creates its npm workspace. -->
-    <AdditionalFiles Include="$(MSBuildProjectDirectory)/package.json;$(MSBuildProjectDirectory)/pnpm-lock.yaml"
-                     Condition="'$(_JazorNpmManifest)' == ''" />
   </ItemGroup>
   <Target Name="_ConfigureJazorNpmEditor" BeforeTargets="GenerateMSBuildEditorConfigFileCore"
-          DependsOnTargets="_ResolveJazorEmitTool" Condition="'$(_JazorNpmLiveEditor)' == 'true'">
+          DependsOnTargets="GenerateGlobalUsings;_ResolveJazorEmitTool" Condition="'$(_JazorNpmLiveEditor)' == 'true'">
     <PropertyGroup>
       <!-- Building from a terminal while the workspace is open rewrites the SDK's usual
            editorconfig. Keep the live generator's host path in the design-time copy. -->
@@ -29,25 +25,45 @@
       <_JazorNpmEditorTool Condition="'$(OS)' == 'Windows_NT'">$(_JazorPackagedAppHost)</_JazorNpmEditorTool>
       <_JazorNpmEditorTool Condition="'$(OS)' != 'Windows_NT'">$(_JazorToolPath)</_JazorNpmEditorTool>
       <_JazorNpmEditorInputs>$(IntermediateOutputPath)$(MSBuildProjectName).npm.editor.inputs</_JazorNpmEditorInputs>
+      <_JazorNpmEditorRequest>$(IntermediateOutputPath)$(MSBuildProjectName).npm.editor.request</_JazorNpmEditorRequest>
     </PropertyGroup>
     <MakeDir Directories="$(IntermediateOutputPath)" />
-    <Exec Command="$(_JazorToolCommand) --sdk-npm-editor-inputs &quot;$(MSBuildProjectDirectory)&quot; &quot;$(_JazorNpmEditorInputs)&quot;"
-          Condition="'$(_JazorNpmManifest)' != ''" />
-    <ReadLinesFromFile File="$(_JazorNpmEditorInputs)" Condition="'$(_JazorNpmManifest)' != ''">
+    <ItemGroup>
+      <_JazorNpmEditorSources Include="$(MSBuildProjectFullPath)" />
+      <_JazorNpmEditorSources Include="@(Compile->'%(FullPath)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_JazorNpmEditorRequest)" Lines="@(_JazorNpmEditorSources)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+    <Exec Command="$(_JazorToolCommand) --sdk-npm-editor-inputs &quot;$(_JazorNpmEditorRequest)&quot; &quot;$(_JazorNpmEditorInputs)&quot;" />
+    <ReadLinesFromFile File="$(_JazorNpmEditorInputs)">
       <Output TaskParameter="Lines" ItemName="AdditionalFiles" />
     </ReadLinesFromFile>
     <ItemGroup>
-      <FileWrites Include="$(_JazorNpmEditorInputs)" />
+      <FileWrites Include="$(_JazorNpmEditorRequest);$(_JazorNpmEditorInputs)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_CollectJazorNpmProjectionInputs"
-          DependsOnTargets="ResolveReferences;GenerateGlobalUsings;AddImplicitDefineConstants">
+  <Target Name="_DetectJazorNpmProjectionWorkspace">
     <PropertyGroup>
       <_JazorNpmRequest>$(IntermediateOutputPath)$(MSBuildProjectName).npm.inputs</_JazorNpmRequest>
       <_JazorNpmSource>$(IntermediateOutputPath)$(MSBuildProjectName).npm.g.cs</_JazorNpmSource>
       <_JazorNpmNoImports>$(IntermediateOutputPath)$(MSBuildProjectName).npm.no-imports</_JazorNpmNoImports>
+      <_JazorNpmProjectManifest>$([MSBuild]::GetPathOfFileAbove(package.json, $(MSBuildProjectDirectory)))</_JazorNpmProjectManifest>
     </PropertyGroup>
+    <ItemGroup Condition="'$(_JazorNpmProjectManifest)' == '' and !Exists('$(_JazorNpmSource)')">
+      <_JazorNpmSourceDirectory Include="@(Compile->'%(RootDir)%(Directory)'->DistinctWithCase())" />
+      <_JazorNpmSourceDirectory Update="@(_JazorNpmSourceDirectory)">
+        <Manifest>$([MSBuild]::GetPathOfFileAbove(package.json, %(_JazorNpmSourceDirectory.Identity)))</Manifest>
+      </_JazorNpmSourceDirectory>
+      <_JazorNpmSourceManifest Include="@(_JazorNpmSourceDirectory->'%(Manifest)')" />
+    </ItemGroup>
+    <PropertyGroup Condition="'$(_JazorNpmProjectManifest)' != '' or '@(_JazorNpmSourceManifest)' != '' or Exists('$(_JazorNpmSource)')">
+      <_JazorNpmProjectionMayBeNeeded>true</_JazorNpmProjectionMayBeNeeded>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_CollectJazorNpmProjectionInputs"
+          DependsOnTargets="ResolveReferences;GenerateGlobalUsings;AddImplicitDefineConstants">
     <ItemGroup>
       <_JazorNpmInputs Include="project|$(MSBuildProjectFullPath)" />
       <_JazorNpmInputs Include="output|$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(_JazorNpmSource)'))" />
@@ -66,6 +82,7 @@
   <!-- Only a proven absence of an active Npm identifier can skip the tool. A positive build
        does not leave this output, so npm metadata, declarations and lockfiles stay live. -->
   <Target Name="_RunJazorNpmProjection"
+          Condition="'$(_JazorNpmProjectionMayBeNeeded)' == 'true'"
           DependsOnTargets="_CollectJazorNpmProjectionInputs;_ResolveJazorEmitTool"
           Inputs="$(_JazorNpmRequest);$(_JazorNpmDiscoveryTargets);$(_JazorToolPath);@(Compile)"
           Outputs="$(_JazorNpmNoImports)">
@@ -74,7 +91,7 @@
 
   <Target Name="_PrepareJazorNpmProjection"
           BeforeTargets="_GenerateCompileDependencyCache;CoreCompile"
-          DependsOnTargets="_RunJazorNpmProjection"
+          DependsOnTargets="_DetectJazorNpmProjectionWorkspace;_RunJazorNpmProjection"
           Condition="'$(_JazorDiscoverNpmProjection)' == 'true' and '$(_JazorNpmLiveEditor)' != 'true'">
     <ItemGroup>
       <Compile Include="$(_JazorNpmSource)" Condition="Exists('$(_JazorNpmSource)')" />

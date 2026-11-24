@@ -6,9 +6,9 @@ namespace Jazor.Npm;
 
 internal static class NpmBindings
 {
-    internal static string GenerateCachedSource(string projectDirectory, IReadOnlyList<string> namespaces,
+    internal static string GenerateCachedSource(IReadOnlyList<string> namespaces,
         IReadOnlyList<NpmValueExport> exports, CancellationToken cancellationToken = default) =>
-        NpmProjectionCache.LoadBindings(Path.Combine(Path.GetFullPath(projectDirectory), "obj", "Jazor", "projections"),
+        NpmProjectionCache.LoadBindings(NpmProjectionCache.ProjectionDirectory,
             namespaces, exports, cancellationToken);
 
     internal static string GenerateSource(IReadOnlyList<string> namespaces, IReadOnlyList<NpmValueExport> exports,
@@ -54,7 +54,7 @@ internal static class NpmBindings
                 ? "file:" + string.Join("/", escaped)
                 : "file:///" + string.Join("/", escaped).TrimStart('/');
             var fragment = FormattableString.Invariant($"L{position.Line + 1},{position.Character + 1}");
-            return System.Security.SecurityElement.Escape(uri + "#" + fragment);
+            return uri + "#" + fragment;
         }
     }
 }

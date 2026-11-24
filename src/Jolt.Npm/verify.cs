@@ -9,10 +9,97 @@ using Jolt.Npm;
 using Jazor.Npm;
 
 var root = Path.GetFullPath("samples/JazorComponentProbe/Npm");
-var provider = new NpmVueMetadataProvider(Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
-    ?? Path.GetFullPath(".tmp/nodeapi-store"));
+var store = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ?? Path.GetFullPath(".tmp/nodeapi-store");
+var provider = new NpmVueMetadataProvider(store);
 var current = Path.Combine(root, "current", "components", "Counter.jazor");
 var previous = Path.Combine(root, "previous", "Counter.jazor");
+if (args is ["--component-batch"])
+{
+    var cache = Directory.CreateDirectory(Path.GetFullPath($".tmp/jolt-component-batch-{Guid.NewGuid():N}"));
+    try
+    {
+        await VerifyComponentBatch(cache.FullName);
+    }
+    finally
+    {
+        cache.Delete(recursive: true);
+    }
+    return;
+}
+
+async Task VerifyComponentBatch(string cache)
+{
+    var names = new[] { "CollapsibleRoot", "ListboxVirtualizer", "SwitchRoot", "useForwardProps" };
+    var callbacks = 0;
+    var reader = new NpmVueMetadataProvider(store, cache, () => callbacks++);
+    var singles = new Dictionary<string, NpmVueComponent>();
+    foreach (var name in names[..^1])
+        singles.Add(name, await reader.ReadAsync(current, "reka-ui", name));
+    var singleCallbacks = callbacks;
+    var batch = await reader.ReadComponentsAsync(current, "reka-ui", names);
+    var batchCallbacks = callbacks - singleCallbacks;
+    Check(batch.Count == names.Length && batch[names[^1]] is { Component: null, Error: { } error } &&
+        error.Contains(names[^1], StringComparison.Ordinal), "batch reports unsupported exports independently");
+    foreach (var (name, component) in singles)
+        Check(System.Text.Json.Nodes.JsonNode.DeepEquals(System.Text.Json.JsonSerializer.SerializeToNode(component),
+            System.Text.Json.JsonSerializer.SerializeToNode(batch[name].Component)),
+            $"batch preserves the complete contract and definitions for {name}");
+    var beforeWarm = callbacks;
+    var warm = await reader.ReadComponentsAsync(current, "reka-ui", [.. names.Reverse(), names[0]]);
+    Check(ReferenceEquals(batch[names[0]].Component, warm[names[0]].Component) && callbacks == beforeWarm,
+        "reordered duplicate requests reuse the batch snapshot");
+    var reopened = await new NpmVueMetadataProvider(store, cache, () => callbacks++)
+        .ReadComponentsAsync(current, "reka-ui", names);
+    Check(callbacks == beforeWarm && System.Text.Json.Nodes.JsonNode.DeepEquals(
+            System.Text.Json.JsonSerializer.SerializeToNode(batch), System.Text.Json.JsonSerializer.SerializeToNode(reopened)),
+        "a fresh provider reads the complete batch from disk without a checker callback");
+    Check(singleCallbacks == names.Length - 1 && batchCallbacks == 1, "single and batched cold checker counts");
+    Console.WriteLine($"Vue component checker callbacks: {singleCallbacks} single, {batchCallbacks} batch, {callbacks - beforeWarm} warm.");
+
+    var first = await CreateWorkspace("first");
+    var second = await CreateWorkspace("second");
+    var pathFieldNames = new[] { "modulePath", "declarationPath", "realpaths" };
+    var old = await reader.ReadComponentsAsync(Path.Combine(first, "App.jazor"), "reka-ui", pathFieldNames);
+    var secondReader = new NpmVueMetadataProvider(store, cache, () =>
+        throw new InvalidOperationException("The second checkout did not reuse portable metadata."));
+    var restored = await secondReader.ReadComponentsAsync(Path.Combine(second, "App.jazor"), "reka-ui", pathFieldNames);
+    foreach (var exportName in pathFieldNames)
+    {
+        CheckDefinition(old[exportName].Component, first);
+        CheckDefinition(restored[exportName].Component, second);
+    }
+    var single = await reader.ReadAsync(Path.Combine(first, "App.jazor"), "reka-ui", pathFieldNames[0]);
+    var restoredSingle = await secondReader.ReadAsync(Path.Combine(second, "App.jazor"), "reka-ui", pathFieldNames[0]);
+    CheckDefinition(single, first);
+    CheckDefinition(restoredSingle, second);
+    Console.WriteLine("Exports named modulePath, declarationPath and realpaths kept checkout-local definition paths in both batch and single reads.");
+
+    async Task<string> CreateWorkspace(string name)
+    {
+        var workspace = Directory.CreateDirectory(Path.Combine(cache, name)).FullName;
+        foreach (var file in new[] { "package.json", "pnpm-lock.yaml" })
+            File.Copy(Path.Combine(root, "current", file), Path.Combine(workspace, file));
+        await NodeToolchain.RestoreAsync(workspace, store, CancellationToken.None);
+        var declaration = Path.Combine(workspace, "node_modules", "reka-ui", "dist", "index.d.ts");
+        // Replacing the file preserves the store if pnpm hard-linked the original bytes.
+        await File.WriteAllTextAsync(declaration + ".next", """
+            type Widget = abstract new () => { $props: { disabled?: boolean }; $emit: {}; $slots: {} };
+            export declare const modulePath: Widget;
+            export declare const declarationPath: Widget;
+            export declare const realpaths: Widget;
+            """);
+        File.Move(declaration + ".next", declaration, overwrite: true);
+        return workspace;
+    }
+
+    static void CheckDefinition(NpmVueComponent? component, string workspace)
+    {
+        var prefix = workspace + Path.DirectorySeparatorChar;
+        Check(component?.Definition is { } definition && definition.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+            component.Props["disabled"].Definition is { } prop && prop.Path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase),
+            $"{component?.ExportName} export and prop definitions stay in {workspace}");
+    }
+}
 var exports = await provider.ListExportsAsync(current, "reka-ui");
 Check(exports.Contains("CollapsibleRoot"), "component export discovery");
 Check(!exports.Contains("useForwardProps"), "non-component omission");
@@ -1559,8 +1646,8 @@ try
     var palette = (await provider.ReadValuesAsync(document, "component-fixture/other", ["palette", "requiredPalette"]))
         .ToDictionary(value => value.ExportName);
     var paletteInput = palette["palette"].ConstantType!.Members!.Single().Type.Signatures!.Single().Parameters.Single().Type;
-    Check(paletteInput.Members!.Any(member => member is { Name: "colors", Type: { Kind: "dictionary", ElementType.Kind: "string" } }) &&
-        paletteInput.Members!.Any(member => member is { Name: "rules", Type.Kind: "recordArray" }),
+    Check(paletteInput.Members!.Any(member => member is { Name: "colors", Type: { Kind: "inputDictionary", ElementType.Kind: "string" } }) &&
+        paletteInput.Members!.Any(member => member is { Name: "rules", Type: { Kind: "recordArray", ElementType: { Kind: "object", Name: "Rule" } } }),
         "a pure string index signature composes with record arrays");
     Check(!palette.ContainsKey("requiredPalette"), "a same-named mixed index signature cannot erase a required named property");
     const string signalSource = """

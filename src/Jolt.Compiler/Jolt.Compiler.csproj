@@ -6,6 +6,8 @@
     </PropertyGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Jolt.LanguageServer" />
+        <InternalsVisibleTo Include="Jolt.Cli" />
+        <InternalsVisibleTo Include="Jolt.Compiler.Test" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="../ECMAScript/ECMAScript.csproj" />

@@ -105,7 +105,7 @@ await BuildAsync("AliasedCellConsumer");
 await WriteModuleAsync("CellProducerA", "cell-producer-a.mjs", "wire-cells");
 await WriteModuleAsync("CellProducerB", "cell-producer-b.mjs", "wire-cells", "cell-ops");
 var aliased = await WriteModuleAsync("AliasedCellConsumer", "aliased-cell-consumer.mjs",
-    "wire-cells", "./cell-producer-a.mjs", "./cell-producer-b.mjs");
+    "wire-cells", "cell-ops", "./cell-producer-a.mjs", "./cell-producer-b.mjs");
 if (!aliased.Contains("cellWeights", StringComparison.Ordinal))
     throw new InvalidOperationException($"Expected the local projection to import cellWeights.{Environment.NewLine}{aliased}");
 
@@ -121,7 +121,7 @@ ExpectContractOwner("SharedCellConsumer");
 await WriteModuleAsync("SharedCellProducerA", "shared-cell-producer-a.mjs", "wire-cells");
 await WriteModuleAsync("SharedCellProducerB", "shared-cell-producer-b.mjs", "wire-cells");
 await WriteModuleAsync("SharedCellConsumer", "shared-cell-consumer.mjs",
-    "./shared-cell-producer-a.mjs", "./shared-cell-producer-b.mjs");
+    "./shared-cell-producer-a.mjs", "./shared-cell-producer-b.mjs", "wire-cells");
 Console.WriteLine(await NodeModuleRunner.RunAsync(scratch, Path.Combine(scratch, "verify.mjs"), cancellationToken: stop));
 
 // Both producers independently project Cell<T>. CLR keeps their assembly identities
@@ -164,7 +164,8 @@ void WriteProject(string name, string[]? projectReferences = null, (string Assem
             new XElement("Nullable", "enable"),
             new XElement("EnableDefaultCompileItems", "false"),
             new XElement("TreatWarningsAsErrors", "true"),
-            new XElement("JazorPnpmStoreDirectory", store)),
+            new XElement("JazorPnpmStoreDirectory", store),
+            packaged ? null : new XElement("_JazorToolPath", Path.Combine(input, "Jazor.Emit.dll"))),
         new XElement("ItemGroup",
             new XElement("Compile", new XAttribute("Include", $"../{name}.cs")),
             aliases?.Select(reference => new XElement("Reference", new XAttribute("Include", reference.Assembly),
@@ -176,9 +177,6 @@ void WriteProject(string name, string[]? projectReferences = null, (string Assem
             new XAttribute("Include", "Jazor"), new XAttribute("Version", "[" + packageVersion + "]"))) :
         new XElement("ItemGroup",
             Reference("ECMAScript"), Reference("ECMAScript.Contract"),
-            new XElement("ProjectReference",
-                new XAttribute("Include", Path.Combine(repo, "src", "Jazor.Emit", "Jazor.Emit.csproj")),
-                new XAttribute("ReferenceOutputAssembly", "false")),
             new XElement("Analyzer", new XAttribute("Include", string.Join(';',
                 new[] { "Jazor.Compiler.dll", "Jazor.Common.dll", "ECMAScript.Contract.dll", "Acornima*.dll", "ICSharpCode.Decompiler.dll" }
                     .Select(file => Path.Combine(input, file)))))),
@@ -224,9 +222,9 @@ void ExpectContracts()
     if ((shapes.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.Public ||
         (cell.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.NestedPublic ||
         (exports.Attributes & TypeAttributes.VisibilityMask) != TypeAttributes.Public ||
-        !publicMethods.SetEquals(["MakeCell", "ReadLabel"]) ||
+        !publicMethods.SetEquals(["MakeCell", "ReadLabel", "DescribeSlots"]) ||
         types.Any(type => HasName(type.Namespace, "Jazor.Generated") && HasName(type.Name, "ModuleCatalog")))
-        throw new InvalidOperationException("CellContracts must expose the shared record and the two selected npm methods without emitting a module catalog.");
+        throw new InvalidOperationException("CellContracts must expose the shared record and selected npm methods without emitting a module catalog.");
 }
 
 void ExpectContractOwner(string project)

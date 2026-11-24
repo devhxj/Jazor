@@ -56,7 +56,7 @@ public partial class SemanticWalker
 				continue;
 			// 构造器参数同样属于 tuple 边界。具名参数和 ref/out 位置都通过同一条
 			// bound-argument lowering；前者保持源码求值顺序，后者保证回写目标不重算。
-			loweredArguments.Add(LowerBoundArgument(operation, arg, argument));
+			loweredArguments.Add(LowerBoundArgument(operation, arg, argument, LowerOmittedHostArgument(arg)));
 		}
 		var orderedArguments = CanonicalizeBoundArguments(operation, loweredArguments, argument);
 		var arguments = orderedArguments.Select(static item => item.Value).ToList();

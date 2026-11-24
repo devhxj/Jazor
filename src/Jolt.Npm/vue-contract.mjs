@@ -1,4 +1,4 @@
-export const contractTypes = componentType => `
+export const contractHelpers = `
     import type { ExtractPropTypes as JoltVueExtractProps, ExtractPublicPropTypes as JoltVueExtractPublicProps,
         PropType as JoltVuePropType } from 'vue';
     type Shape<C> = C extends abstract new (...args: any[]) => infer I
@@ -10,16 +10,21 @@ export const contractTypes = componentType => `
                 ? { props: P; emit: E; slots: S }
                 : never
             : never;
+`;
+export const contractAliases = componentType => `
     type Instance = Shape<${componentType}>;
     type Props = Omit<Instance['props'], VueProps>;
     type PropValues = Required<Props>;
     type Emit = Instance['emit'];
     type Slots = Instance['slots'];
 `;
+export const contractTypes = componentType => contractHelpers + contractAliases(componentType);
 
-export function readComponent(exportSymbol, { ts, source, checker, typeOf, display, optional, definition, identity, exportName, webType }) {
-    const types = Object.fromEntries(source.statements.filter(ts.isTypeAliasDeclaration)
+export function readComponent(exportSymbol, { ts, source, checker, typeOf, display, optional, definition, identity, exportName, webType,
+    scope = source }) {
+    const types = Object.fromEntries(scope.statements.filter(ts.isTypeAliasDeclaration)
         .map(alias => [alias.name.text, checker.getTypeAtLocation(alias.type)]));
+    types.VueProps ??= checker.getDeclaredTypeOfSymbol(checker.resolveName('VueProps', source, ts.SymbolFlags.Type, false));
     const vueType = name => unalias(checker.resolveName(name, source, ts.SymbolFlags.Type, false));
     const vuePropType = vueType('JoltVuePropType');
     const vueExtractors = new Set([vueType('JoltVueExtractProps'), vueType('JoltVueExtractPublicProps')].filter(Boolean));

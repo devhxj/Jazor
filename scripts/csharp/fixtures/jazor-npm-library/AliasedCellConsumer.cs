@@ -15,4 +15,8 @@ public static class AliasedCellConsumer
     public static double Count() => Second::CellProducerB.Count();
 
     public static double? Weight(string name) => Local.CellWeights()[name];
+
+    public static string AttachedLabel() => Npm.CellOps.Exports.LabelMembers.Loud("attached");
+
+    public static string Prefix() => Npm.CellOps.Exports.LabelMembers.Prefix;
 }

@@ -33,6 +33,7 @@ internal sealed class NpmValueProjection
         {
             WriteLine("#pragma warning disable CS0626 // Extern members are implemented by their ECMAScript module.");
             WriteLine("#pragma warning disable CS8618 // Optional input properties may be omitted from the JS object.");
+            WriteLine("#pragma warning disable CS1573, CS1712 // Upstream declarations can document only some parameters.");
             // Emit reads these exact restored dependencies from the producer DLL once catalog imports
             // establish which package specifiers are used by the application.
             foreach (var (specifier, package, version) in exports.Select(value => (value.ModuleSpecifier, value.PackageName, value.Version))
@@ -86,29 +87,48 @@ internal sealed class NpmValueProjection
                 void DeclareExport(string declaration, NpmDefinition? definition, bool optional,
                     NpmValueSignature? signature = null, int? overloadPriority = null)
                 {
-                    if (definition is not null && declarationLink?.Invoke(definition) is { } link)
-                        WriteLine($"/// <summary><see href=\"{link}\">Open TypeScript declaration</see></summary>");
+                    WriteDocumentation(definition, signature, link: definition is null ? null : declarationLink?.Invoke(definition),
+                        fallback: export.Definition);
 
                     if (overloadPriority is { } priority)
                         WriteLine($"[global::System.Runtime.CompilerServices.OverloadResolutionPriority({priority})]");
 
-                    if (standalone)
+                    var inline = signature?.Parameters.Any(parameter => parameter.FixedUndefined) == true;
+                    if (standalone || inline)
                     {
                         WriteLine($"[global::ECMAScript.ECMAScript({SymbolDisplay.FormatLiteral(export.ModuleSpecifier, true)})]");
                         WriteLine($"[global::ECMAScript.ECMAScriptName({SymbolDisplay.FormatLiteral(export.ExportName, true)})]");
                     }
                     if (optional)
                         WriteLine(OptionalRead);
-                    if (signature is not null)
+                    if (inline)
+                    {
+                        // The shorter C# overload owns the omitted JS slot. Keep the actual call
+                        // in the import's inline expression so the same contract survives a DLL.
+                        var index = 0;
+                        var arguments = signature!.Parameters.Select(parameter =>
+                            parameter.FixedUndefined ? "void 0" :
+                            parameter.FixedBoolean is { } value ? (value ? "true" : "false") :
+                            $"__arg{++index}");
+                        var callee = JsonSerializer.Serialize(export.ExportName);
+                        var template = $"{callee}({string.Join(", ", arguments)})";
+                        WriteLine($"[global::ECMAScript.ECMAScriptInline({SymbolDisplay.FormatLiteral(template, true)})]");
+                    }
+                    else if (signature is not null)
                         for (var index = 0; index < signature.Parameters.Count; index++)
                             if (signature.Parameters[index].FixedBoolean is { } value)
                                 WriteLine($"[global::ECMAScript.ECMAScriptFixedBooleanArgument({index}, {(value ? "true" : "false")})]");
-                            else if (signature.Parameters[index].FixedUndefined)
-                                WriteLine($"[global::ECMAScript.ECMAScriptUndefinedArgument({index})]");
                     Declare(declaration, export, definition);
                 }
                 if (export.ConstantType is { } constant)
                     DeclareExport($"public static extern {Type(constant, name + "Result", shapes, input: false)} {Identifier(name)} {{ get; }}", export.Definition, constant.Kind == "undefinedable");
+                if (export.AttachedMemberType is { } attached)
+                {
+                    // The companion reads the same import, preserving the receiver of attached methods.
+                    var companion = shapes.AttachedMemberNames[export];
+                    DeclareExport($"public static extern {Type(attached, companion + "View", shapes, input: false)} {Identifier(companion)} {{ get; }}",
+                        export.Definition, optional: false);
+                }
                 var resultOverloads = new List<((string Name, int Arity, string Types) Key, string Declaration, NpmDefinition? Definition, bool Optional, NpmValueSignature Signature)>();
                 foreach (var (signature, suffix) in export.Signatures.SelectMany(ScalarResultSignatures))
                 {
@@ -151,6 +171,7 @@ internal sealed class NpmValueProjection
                 {
                     // C# implicitly converts a bare zero to any enum. A sealed host
                     // carrier keeps the domain closed while the getters erase to numbers.
+                    WriteDocumentation(shape.TypeDefinition);
                     WriteLine($"{Runtime} public sealed class {name} {{ private {name}() {{ }}");
                     foreach (var number in OrderedNumberLiterals(shape))
                     {
@@ -167,6 +188,7 @@ internal sealed class NpmValueProjection
                 }
                 if (shape.Kind is "stringEnum" or "enum")
                 {
+                    WriteDocumentation(shape.TypeDefinition);
                     if (shape.Kind == "stringEnum")
                         _code.Append("[global::ECMAScript.StringAttribute] ");
                     WriteLine($"public enum {name} {{");
@@ -197,6 +219,7 @@ internal sealed class NpmValueProjection
                 if (shape.Kind == "inputArray")
                 {
                     var element = Type(shape.ElementType!, name, shapes, input: true);
+                    WriteDocumentation(shape.TypeDefinition);
                     WriteLine($"{Runtime} public sealed class {name} {{ private {name}() {{ }}");
                     WriteLine($"[global::ECMAScript.ECMAScriptInline(\"__arg1.slice()\")] public static extern {name} From({element}[] values); }}");
                     continue;
@@ -217,6 +240,7 @@ internal sealed class NpmValueProjection
                         (false, true) => "(ArrayIndices = true)",
                         _ => "",
                     };
+                    WriteDocumentation(shape.TypeDefinition, typeParameters: generic);
                     Declare($"public sealed record {typeName} : global::System.Collections.IEnumerable{constraints} {{", null, shape.TypeDefinition);
                     // C# collection initializers require IEnumerable. The JavaScript payload is a plain object.
                     WriteLine("global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => throw new global::System.NotSupportedException();");
@@ -267,6 +291,7 @@ internal sealed class NpmValueProjection
                     var signature = shape.Signatures!.Single();
                     // A callback reverses which side supplies its arguments. Its return
                     // value still flows in the same direction as the callback itself.
+                    WriteDocumentation(signature.Definition, signature, generic, fallback: shape.TypeDefinition);
                     WriteLine($"{Runtime} public delegate {Type(signature.ReturnType, name + "Result", shapes, input)} {typeName}({Parameters(signature, name, shapes, !input)}){constraints};");
                     continue;
                 }
@@ -298,6 +323,7 @@ internal sealed class NpmValueProjection
                 }
 
                 var constructible = shape.Kind != "enrichedRef" && (input || shape.Kind == "namedRecord");
+                WriteDocumentation(shape.TypeDefinition, typeParameters: generic);
                 if (constructible)
                     Declare($"public sealed record {typeName}{constraints} {{", null, shape.TypeDefinition);
                 else
@@ -326,6 +352,7 @@ internal sealed class NpmValueProjection
                     var arguments = Enumerable.Range(1, signature.Parameters.Count).Select(index => $"__arg{index + 1}");
                     // The erased receiver is the JavaScript function itself.
                     var template = $"__arg1({string.Join(", ", arguments)})";
+                    WriteDocumentation(signature.Definition, signature);
                     WriteLine($"[global::ECMAScript.ECMAScriptInline({SymbolDisplay.FormatLiteral(template, true)})]");
                     if (signature.ReturnType.Kind == "undefinedable")
                         WriteLine(OptionalRead);
@@ -378,6 +405,7 @@ internal sealed class NpmValueProjection
                     var attribute = $"[global::System.ComponentModel.Description({SymbolDisplay.FormatLiteral("@#" + jsName, true)})]";
                     if (input && member.FixedBoolean is { } fixedValue)
                     {
+                        WriteDocumentation(member.Definition);
                         WriteLine(attribute);
                         WriteLine($"[global::ECMAScript.ECMAScriptFixedBoolean({(fixedValue ? "true" : "false")})]");
                         Declare($"public bool {Identifier(property)} => {(fixedValue ? "true" : "false")};", null, member.Definition);
@@ -388,6 +416,7 @@ internal sealed class NpmValueProjection
                         foreach (var signature in member.Type.Signatures!)
                         {
                             var result = Type(signature.ReturnType, name + property + "Result", shapes, input: false);
+                            WriteDocumentation(signature.Definition, signature, fallback: member.Definition);
                             if (member.StaticKey is { } staticKey)
                             {
                                 // A bracketed member call keeps the original receiver and escapes JS keys independently of C#.
@@ -417,6 +446,7 @@ internal sealed class NpmValueProjection
                         var ownKey = $"Object.hasOwn(__arg1, {SymbolDisplay.FormatLiteral(member.Name, true)})";
                         var inline = $"[global::ECMAScript.ECMAScriptInline({SymbolDisplay.FormatLiteral(ownKey, true)})]";
                         Declare($"public extern bool {Identifier(presence)} {{ {inline} get; }}", null, member.Definition);
+                        WriteDocumentation(member.Definition);
                         WriteLine(attribute);
                         WriteLine("[global::ECMAScript.ECMAScriptRequiredRead, global::ECMAScript.ECMAScriptExplicitNull]");
                         var setter = constructible && (member.ReadOnly || shape.Kind != "namedRecord") ? " init;" :
@@ -427,6 +457,7 @@ internal sealed class NpmValueProjection
                     if (shape.Kind == "tupleView")
                     {
                         var inline = $"[global::ECMAScript.ECMAScriptInline(\"__arg1[{memberIndex++}]\")]";
+                        WriteDocumentation(member.Definition);
                         Declare($"public extern {type} {Identifier(property)} {{ {inline} get; }}", null, member.Definition);
                         continue;
                     }
@@ -437,6 +468,7 @@ internal sealed class NpmValueProjection
                     var accessors = constructible ? shape.Kind == "namedRecord" && !member.ReadOnly ? "get; set;" : "get; init;" :
                         member.ReadOnly || member.Optional && member.Type.Kind != "nullable" ? "get;" : "get; set;";
                     var modifier = constructible ? member.Optional ? "" : "required " : "extern ";
+                    WriteDocumentation(member.Definition);
                     WriteLine(attribute);
                     if (!input && (member.Optional && member.Type.Kind != "function" || member.Type.Kind == "undefinedable"))
                         WriteLine(OptionalRead);
@@ -499,7 +531,9 @@ internal sealed class NpmValueProjection
             };
             if (!_declarations.TryGetValue(start, out var metadata) || model.GetDeclaredSymbol(member) is not { } symbol)
                 continue;
-            if (metadata.Export is { } export)
+            // Inline exports already carry the import on their method symbol.
+            if (metadata.Export is { } export && !symbol.GetAttributes().Any(attribute =>
+                attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptInlineAttribute"))
                 bindings.Add(symbol, export);
             if (metadata.Definition is { } definition)
                 definitions.Add(symbol, definition);
@@ -540,6 +574,80 @@ internal sealed class NpmValueProjection
 
     // Source offsets cached for symbol binding must be identical on every platform.
     private void WriteLine(string line) => _code.Append(line).Append('\n');
+
+    private void WriteDocumentation(NpmDefinition? definition, NpmValueSignature? signature = null,
+        IReadOnlyList<string>? typeParameters = null, string? link = null, NpmDefinition? fallback = null)
+    {
+        var docs = definition?.Documentation ??
+            (fallback is { DocumentationFromCallableOwner: true } ? fallback.Documentation : null);
+        if (docs is null && link is null)
+            return;
+
+        var summary = docs?.Summary;
+        if (!string.IsNullOrWhiteSpace(summary) || link is not null)
+        {
+            WriteLine("/// <summary>");
+            if (!string.IsNullOrWhiteSpace(summary))
+                WriteDocumentationLines(summary);
+            if (link is not null)
+                WriteLine($"""/// <see href="{XmlText(link)}">Open TypeScript declaration</see>""");
+            WriteLine("/// </summary>");
+        }
+        if (docs is null)
+            return;
+        foreach (var name in typeParameters ?? signature?.TypeParameters ?? [])
+            if (docs.TypeParameters?.TryGetValue(name, out var text) == true)
+                Element("typeparam", text, TypeParameterIdentifier(name).TrimStart('@'));
+        foreach (var parameter in signature?.Parameters ?? [])
+            if (parameter.FixedBoolean is null && !parameter.FixedUndefined &&
+                docs.Parameters?.TryGetValue(parameter.Name, out var text) == true)
+                Element("param", text, NormalizeIdentifier(parameter.Name));
+        if (signature is { ReturnType.Kind: not "void" })
+            Element("returns", docs.Returns);
+        var deprecated = docs.Deprecated is null ? null : string.IsNullOrWhiteSpace(docs.Deprecated)
+            ? "Deprecated" : $"Deprecated: {docs.Deprecated}";
+        var remarks = deprecated is null ? docs.Remarks : string.IsNullOrWhiteSpace(docs.Remarks)
+            ? deprecated : $"{docs.Remarks}\n{deprecated}";
+        Element("remarks", remarks);
+        foreach (var example in docs.Examples ?? [])
+            Element("example", example);
+
+        void Element(string tag, string? content, string? name = null)
+        {
+            if (string.IsNullOrWhiteSpace(content))
+                return;
+            var attribute = name is null ? "" : $" name=\"{XmlText(name)}\"";
+            if (!content.Contains('\n') && !content.Contains('\r'))
+            {
+                WriteLine($"/// <{tag}{attribute}>{XmlText(content)}</{tag}>");
+                return;
+            }
+            WriteLine($"/// <{tag}{attribute}>");
+            WriteDocumentationLines(content);
+            WriteLine($"/// </{tag}>");
+        }
+
+        void WriteDocumentationLines(string content)
+        {
+            foreach (var line in content.ReplaceLineEndings("\n").Split('\n'))
+                WriteLine("/// " + XmlText(line));
+        }
+    }
+
+    private static string XmlText(string text)
+    {
+        var xml = new StringBuilder(text.Length);
+        foreach (var character in text.EnumerateRunes())
+            xml.Append(character.Value switch
+            {
+                '<' => "&lt;", '>' => "&gt;", '&' => "&amp;", '"' => "&quot;", '\'' => "&apos;",
+                '\r' => "&#13;", '\n' => "&#10;", 0x85 => "&#133;", 0x2028 => "&#8232;", 0x2029 => "&#8233;",
+                '\t' => "\t",
+                >= 0x20 and <= 0xD7FF or >= 0xE000 and <= 0xFFFD or >= 0x10000 => character.ToString(),
+                _ => "",
+            });
+        return xml.ToString();
+    }
 
     private void Declare(string declaration, NpmValueExport? export, NpmDefinition? definition)
     {
@@ -583,7 +691,7 @@ internal sealed class NpmValueProjection
                 };
                 declaration = $"{PropertyPathPrefix}{mode}] {declaration}";
             }
-            return parameter.Optional ? $"[global::ECMAScript.ECMAScriptUndefinedDefault] {declaration} = default!" : declaration;
+            return parameter.Optional ? $"[global::System.Runtime.InteropServices.Optional] {declaration}" : declaration;
         }).Where(declaration => declaration is not null));
 
     private static string Type(NpmValueType type, string name, ShapeDeclarations shapes, bool input)
@@ -961,6 +1069,7 @@ internal sealed class NpmValueProjection
         private readonly Queue<(string Name, NpmValueType Type, bool Input)> _pending = new();
         private readonly Dictionary<NominalKey, NpmValueType> _handles = [];
         private readonly Dictionary<NominalKey, string> _handleReferences = [];
+        public IReadOnlyDictionary<NpmValueExport, string> AttachedMemberNames { get; }
         public IReadOnlyDictionary<NominalKey, NpmValueType> Handles => _handles;
         public void ReferenceHandle(NominalKey definition, string name) =>
             _handleReferences.Add(definition, name);
@@ -972,10 +1081,28 @@ internal sealed class NpmValueProjection
         public ShapeDeclarations(IReadOnlyList<NpmValueExport> exports)
         {
             _reservedNames = new(exports.Select(export => NpmNames.ValueNameFor(export.ExportName)).Append("Exports"), StringComparer.Ordinal);
+            var companionNames = new Dictionary<NpmValueExport, string>();
+            var occupied = _reservedNames.Select(NormalizeIdentifier).ToHashSet(StringComparer.Ordinal);
+            foreach (var export in exports)
+            {
+                var name = NpmNames.ValueNameFor(export.ExportName);
+                foreach (var signature in export.Signatures)
+                    occupied.Add(NormalizeIdentifier(name + signature.ManagedNameSuffix));
+            }
+            foreach (var export in exports.Where(export => export.AttachedMembers is { Count: > 0 }))
+            {
+                var name = NormalizeIdentifier(NpmNames.ValueNameFor(export.ExportName));
+                var companion = name + (export.AttachedMemberSuffix ?? NpmExportSelection.ReserveAttachedMemberSuffix(name, occupied));
+                companionNames.Add(export, companion);
+                _reservedNames.Add(companion);
+            }
+            AttachedMemberNames = companionNames;
             foreach (var export in exports)
             {
                 if (export.ConstantType is { } constant)
                     Collect(constant);
+                if (export.AttachedMemberType is { } attached)
+                    Collect(attached);
                 var exportName = NpmNames.ValueNameFor(export.ExportName);
                 foreach (var (signature, suffix) in export.Signatures.SelectMany(ScalarResultSignatures))
                 {

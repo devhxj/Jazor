@@ -78,10 +78,15 @@
            Text="JazorDenoPath has been removed. Jazor now uses the packaged in-process NodeApi toolchain." />
   </Target>
 
-  <Target Name="JazorDebug"
+  <!-- A host that hands raw modules to another bundler can depend on JazorDebug
+       explicitly. JazorMode controls the SDK's automatic build/publish workflow. -->
+  <Target Name="_RunJazorDebugOnBuild"
           AfterTargets="Build"
+          DependsOnTargets="JazorDebug"
+          Condition="'$(JazorMode)' == 'debug'" />
+  <Target Name="JazorDebug"
           DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorRuntimeIdentifier"
-          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'debug' and Exists('$(TargetPath)')">
+          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and Exists('$(TargetPath)')">
     <PropertyGroup>
       <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
       <_JazorDebugManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorDebugManifestPath>

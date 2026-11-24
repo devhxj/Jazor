@@ -11,7 +11,15 @@ public sealed record NpmValueExport(
     string DeclarationPath,
     NpmDefinition? Definition,
     IReadOnlyList<NpmValueSignature> Signatures,
-    NpmValueType? ConstantType);
+    NpmValueType? ConstantType,
+    IReadOnlyList<NpmValueMember>? AttachedMembers = null)
+{
+    [System.Text.Json.Serialization.JsonInclude]
+    internal string? AttachedMemberSuffix { get; init; }
+
+    internal NpmValueType? AttachedMemberType =>
+        AttachedMembers is { Count: > 0 } ? new("object", Members: AttachedMembers) : null;
+}
 
 public sealed record NpmValueSignature(
     IReadOnlyList<NpmValueParameter> Parameters,

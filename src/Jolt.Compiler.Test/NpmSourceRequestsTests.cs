@@ -44,6 +44,42 @@ public sealed class NpmSourceRequestsTests
     }
 
     [TestMethod]
+    public void Discover_FindsUnqualifiedStaticExportReceiversAndRespectsLocalShadowing()
+    {
+        var requests = Discover("""
+            using static Npm.EsToolkit.Exports;
+            class Screen
+            {
+                void Show(string LocalMembers)
+                {
+                    NotifyMembers.Success("saved");
+                    LocalMembers.ToString();
+                }
+            }
+            """);
+        Has(requests, "Npm.EsToolkit", "NotifyMembers", unqualified: true);
+        Assert.IsFalse(requests.Any(request => request.MemberName is "Success" or "LocalMembers" or "ToString"));
+    }
+
+    [TestMethod]
+    public void Discover_BindsRelativeAliasStaticImportOnlyInsideItsNamespace()
+    {
+        var requests = Discover(
+            """
+            using Api = global::Npm.EsToolkit.Exports;
+            namespace Active
+            {
+                using static Api;
+                class Page { void Update() => UpdateView(); }
+            }
+            namespace Other { class Page { void Update() => OutsideScope(); } }
+            """,
+            "class OtherFile { void Update() => OutsideFile(); }");
+        Has(requests, "Npm.EsToolkit", "UpdateView", unqualified: true);
+        Assert.IsFalse(requests.Any(request => request.MemberName is "OutsideScope" or "OutsideFile"));
+    }
+
+    [TestMethod]
     public void Discover_UsesRelativePackageQualifiedNamesAndCompilerSymbols()
     {
         var requests = Discover("""

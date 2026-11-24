@@ -1247,7 +1247,7 @@ try
 
         if (expectedError is not null)
             throw new InvalidOperationException($"Expected a projection error containing {expectedError}.");
-        var text = NpmBindings.GenerateCachedSource(scratch.FullName, [], exports);
+        var text = NpmBindings.GenerateCachedSource([], exports);
         if (!File.Exists(output) || await File.ReadAllTextAsync(output) != text)
             await File.WriteAllTextAsync(output, text);
     }

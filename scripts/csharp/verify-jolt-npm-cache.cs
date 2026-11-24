@@ -1,5 +1,6 @@
 #:property CETCompat=false
 #:property PublishAot=false
+#:property AssemblyName=Jazor.NodeApiVerification
 #:project ../../src/Jazor.Npm/Jazor.Npm.csproj
 
 using Jazor.Npm;
@@ -17,7 +18,7 @@ try
 {
     var fixture = Directory.CreateDirectory(Path.Combine(project.FullName, "fixture")).FullName;
     File.WriteAllText(Path.Combine(project.FullName, "package.json"),
-        """{"private":true,"dependencies":{"cache-fixture":"file:./fixture"}}""");
+        """{"private":true,"dependencies":{"cache-fixture":"link:./fixture"}}""");
     const string manifest = """{"name":"cache-fixture","version":"1.0.0","type":"module","exports":{"types":"./index.d.ts","import":"./index.js"}}""";
     File.WriteAllText(Path.Combine(fixture, "package.json"), manifest);
     File.WriteAllText(Path.Combine(fixture, "index.js"), "export const answer = 42;");
@@ -43,16 +44,33 @@ try
     Require(worker.ExitCode == 0);
     Require(files.All(file => File.GetLastWriteTimeUtc(file) == marker));
 
+    var restore = new NpmValueMetadataProvider(store);
+    var manifestFile = Path.Combine(project.FullName, "package.json");
+    var lockFile = Path.Combine(project.FullName, "pnpm-lock.yaml");
+    Require((await restore.RestoreAsync(project.FullName, store, default)).Contains("\"status\":\"skipped\""));
+    Require((await restore.RestoreAsync(project.FullName, store, default)).Length == 0);
+    await File.AppendAllTextAsync(manifestFile, "\n");
+    Require((await restore.RestoreAsync(project.FullName, store, default)).Contains("\"status\":\"skipped\""));
+    Require((await restore.RestoreAsync(project.FullName, store, default)).Length == 0);
+    await File.AppendAllTextAsync(lockFile, "\n");
+    Require((await restore.RestoreAsync(project.FullName, store, default)).Contains("\"status\":\"completed\""));
+    try
+    {
+        await restore.RestoreAsync(project.FullName, store, new CancellationToken(true));
+        throw new InvalidOperationException("A canceled restore returned successfully.");
+    }
+    catch (OperationCanceledException)
+    {
+    }
+
     var installed = Path.Combine(project.FullName, "node_modules", "cache-fixture");
     File.WriteAllText(Path.Combine(installed, "package.json"),
         manifest.Replace("./index", "./alternate", StringComparison.Ordinal));
     await Read(new NpmValueMetadataProvider(store), document, "string");
     Require(files.All(file => File.GetLastWriteTimeUtc(file) != marker));
-    File.WriteAllText(Path.Combine(fixture, "dep.ts"), "export declare const answer: boolean;");
     File.WriteAllText(Path.Combine(installed, "dep.ts"), "export declare const answer: boolean;");
     await Read(new NpmValueMetadataProvider(store), document, "boolean");
     File.Delete(Path.Combine(installed, "dep.ts"));
-    File.Delete(Path.Combine(fixture, "dep.ts"));
     await Read(new NpmValueMetadataProvider(store), document, "string");
     var provider = new NpmValueMetadataProvider(store);
     var linkedModules = Directory.CreateDirectory(Path.Combine(installed, "node_modules"));

@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Jazor.NodeHost;
 using Jazor.Common.SourceMaps;
@@ -91,7 +92,7 @@ try
     await BuildHostAsync(standaloneProject, "none", "--no-restore");
     Require(!Directory.Exists(standaloneOutput), "Default and none modes must leave the raw module output untouched.");
     await BuildHostAsync(standaloneProject, "debug", "--no-restore");
-    await BuildHostAsync(integrationProject, "debug");
+    await BuildHostAsync(integrationProject);
     await VerifyRestoreAsync(standalone, firstVersion);
     await VerifyRestoreAsync(integration, firstVersion);
     await VerifyModulesAsync(standaloneOutput, oldModule, 2);
@@ -120,7 +121,7 @@ try
     Require(File.ReadAllText(Path.Combine(blocked.FullName, "keep")) == "blocking directory", "Emit edited the blocking directory.");
     blocked.Delete(recursive: true);
     await BuildHostAsync(standaloneProject, "debug", "--no-restore");
-    await BuildHostAsync(integrationProject, "debug");
+    await BuildHostAsync(integrationProject);
     await VerifyRestoreAsync(standalone, secondVersion);
     await VerifyRestoreAsync(integration, secondVersion);
     foreach (var output in new[] { standaloneOutput, frontOutput })
@@ -183,7 +184,11 @@ void WriteHost(string project, string output, string revision) =>
         Properties(new XElement("OutputType", "Exe"),
             new XElement("JazorDir", "$(MSBuildProjectDirectory)/" + output + "/"),
             new XElement("DefaultItemExcludes", "$(DefaultItemExcludes);front/**;custom/**")),
-        new XElement("ItemGroup", Reference("Jazor", version), Reference(libraryId, revision)))
+        new XElement("ItemGroup", Reference("Jazor", version), Reference(libraryId, revision)),
+        project == integrationProject
+            ? new XElement("Target", new XAttribute("Name", "PrepareVueModules"),
+                new XAttribute("AfterTargets", "Build"), new XAttribute("DependsOnTargets", "JazorDebug"))
+            : null)
         .Save(project);
 
 XElement Properties(params XElement[] extra) => new("PropertyGroup",
@@ -239,11 +244,15 @@ async Task VerifyModulesAsync(string root, string name, int day)
 
 static void VerifyCalendarSourceMap(string js, string json)
 {
+    // Locate the bound import so source-map verification also covers aliased calls.
+    var import = Regex.Match(js, @"import\s*\{\s*addDays(?:\s+as\s+([\w$]+))?\s*\}\s*from\s*""date-fns""");
+    Require(import.Success, "The calendar module has no named addDays import.");
+    var call = (import.Groups[1].Success ? import.Groups[1].Value : "addDays") + "(";
     var generated = js.ReplaceLineEndings("\n").Split('\n');
     var line = Array.FindIndex(generated, text => text.Contains("return ", StringComparison.Ordinal) &&
-        text.Contains("addDays(", StringComparison.Ordinal));
+        text.Contains(call, StringComparison.Ordinal));
     Require(line >= 0, "The generated calendar npm call was not found.");
-    var column = generated[line].IndexOf("addDays(", StringComparison.Ordinal);
+    var column = generated[line].IndexOf(call, StringComparison.Ordinal);
     var map = new SourceMapReader().Read(json);
     var segment = map.Segments.Where(segment => segment.GeneratedLine == line && segment.GeneratedColumn <= column)
         .OrderByDescending(segment => segment.GeneratedColumn).FirstOrDefault();

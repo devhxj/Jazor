@@ -16,4 +16,12 @@ public static class CellConsumer
         => Operations.Apply(cell, value => value.Value + value.Label);
 
     public static double? Weight(string name) => CellLibrary.Weight(name);
+
+    public static string PlainLabel() => Operations.Label("plain");
+
+    public static string ConfiguredLabel()
+        => Operations.Label(new Operations.LabelOptions { Message = "configured", Type = Operations.Type.Loud });
+
+    public static string NumericLabel()
+        => Operations.Label(new Operations.LabelOptions { Message = 7d, Type = Operations.Type.Plain });
 }

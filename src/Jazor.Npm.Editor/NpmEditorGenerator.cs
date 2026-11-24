@@ -66,41 +66,42 @@ public sealed class NpmEditorGenerator : IIncrementalGenerator
                 var (((compilation, options), manifests), lockFiles) = input;
                 if (compilation is not CSharpCompilation csharp || string.IsNullOrEmpty(options.Tool) ||
                     string.IsNullOrEmpty(options.Project))
-                    return (Projection: default(ProjectionInputs), Sites: Array.Empty<NpmSourceRequest>());
+                    return new EditorInputs(default, [], []);
 
-                var directory = Path.GetDirectoryName(options.Project!)!;
-                string[]? packages = null;
-                HashSet<string>? withRoot = null;
+                var project = options.Project!;
+                var manifestsByPath = manifests.ToLookup(file => Path.GetFullPath(file.Path), NpmWorkspace.PathComparer);
+                bool HasManifest(string path) => manifestsByPath.Contains(path);
+                var path = NpmWorkspace.FindProjectManifest(project, HasManifest);
+                if (path is null)
+                {
+                    var candidates = NpmSourceRequests.Discover(csharp, packages: null, token);
+                    var selection = NpmWorkspace.Select(project, candidates, HasManifest);
+                    if (selection.Manifest is null)
+                        return new EditorInputs(default, [], selection.Conflicts);
+                    path = selection.Manifest;
+                }
+
+                var manifest = manifestsByPath[path].First();
+                var packages = manifest.Names;
                 string? lockText = null;
                 string? workspaceConfig = null;
+                var directory = Path.GetDirectoryName(path)!;
+                var lockDirectory = directory;
+                // Restore resolves the lock from the nearest pnpm workspace above the importer.
                 for (var parent = new DirectoryInfo(directory); parent is not null; parent = parent.Parent)
                 {
-                    var path = Path.Combine(parent.FullName, "package.json");
-                    var manifest = manifests.FirstOrDefault(file => NpmEditorManifest.SamePath(file.Path, path));
-                    if (manifest.Names is null)
+                    var configPath = Path.Combine(parent.FullName, "pnpm-workspace.yaml");
+                    var config = lockFiles.FirstOrDefault(file => NpmEditorManifest.SamePath(file.Path, configPath));
+                    if (config.Content is null)
                         continue;
-                    packages = manifest.Names;
-                    withRoot = manifest.WithRoot;
-                    var lockDirectory = parent.FullName;
-                    // Restore resolves the lock from the nearest pnpm workspace above the importer.
-                    for (var candidate = parent; candidate is not null; candidate = candidate.Parent)
-                    {
-                        var configPath = Path.Combine(candidate.FullName, "pnpm-workspace.yaml");
-                        var config = lockFiles.FirstOrDefault(file => NpmEditorManifest.SamePath(file.Path, configPath));
-                        if (config.Content is null)
-                            continue;
-                        workspaceConfig = config.Content;
-                        lockDirectory = candidate.FullName;
-                        break;
-                    }
-                    var lockPath = Path.Combine(lockDirectory, "pnpm-lock.yaml");
-                    lockText = lockFiles.FirstOrDefault(file => NpmEditorManifest.SamePath(file.Path, lockPath)).Content;
+                    workspaceConfig = config.Content;
+                    lockDirectory = parent.FullName;
                     break;
                 }
-                if (packages is null)
-                    return (Projection: default(ProjectionInputs), Sites: Array.Empty<NpmSourceRequest>());
+                var lockPath = Path.Combine(lockDirectory, "pnpm-lock.yaml");
+                lockText = lockFiles.FirstOrDefault(file => NpmEditorManifest.SamePath(file.Path, lockPath)).Content;
 
-                var roots = NpmEditorManifest.RootNamespaces(packages, csharp, withRoot!);
+                var roots = NpmEditorManifest.RootNamespaces(packages, csharp, manifest.WithRoot);
                 var packageRoots = new HashSet<string>(packages.Select(NpmNames.NamespaceFor), StringComparer.Ordinal);
                 var eligibleRoots = new HashSet<string>(roots, StringComparer.Ordinal);
                 var sites = NpmSourceRequests.Discover(csharp, packages, token)
@@ -116,14 +117,17 @@ public sealed class NpmEditorGenerator : IIncrementalGenerator
                 var markers = MarkerSource(roots);
                 var unselectedMarkers = MarkerSource(roots.Where(root => !selectedRoots.Contains(root)));
                 if (requests.Length == 0)
-                    return (Projection: new ProjectionInputs(null, null, null, null, null, null, markers, markers), Sites: sites);
+                    return new EditorInputs(new ProjectionInputs(null, null, null, null, null, null, markers, markers), sites, []);
 
                 // Only semantic selections and npm inputs affect the host result. Source
                 // positions and unrelated edits never invalidate this incremental step.
-                var requestText = new StringBuilder().AppendLine(options.Project).AppendLine(options.Store);
+                var store = string.IsNullOrEmpty(options.Store) ? null :
+                    Path.GetFullPath(Path.Combine(Path.GetDirectoryName(project)!, options.Store));
+                var requestText = new StringBuilder().AppendLine(path).AppendLine(store);
                 foreach (var request in requests)
                     requestText.AppendLine(request.NpmNamespace).AppendLine(request.MemberName);
-                return (Projection: new ProjectionInputs(options.Tool!, options.NetCoreRoot, options.Project, requestText.ToString(), lockText, workspaceConfig, markers, unselectedMarkers), Sites: sites);
+                return new EditorInputs(new ProjectionInputs(options.Tool!, options.NetCoreRoot, project, requestText.ToString(),
+                    lockText, workspaceConfig, markers, unselectedMarkers), sites, []);
             });
 
         var source = inputs.Select(static (input, _) => input.Projection).Combine(dependencies).Select(static (input, token) =>
@@ -155,6 +159,12 @@ public sealed class NpmEditorGenerator : IIncrementalGenerator
                         if (request.NpmNamespace == error.Namespace && request.MemberName == error.Member)
                             output.ReportDiagnostic(Diagnostic.Create(ProjectionFailure, request.Location, error.Message));
             });
+        context.RegisterSourceOutput(inputs.Select(static (input, _) => input.Conflicts), static (output, conflicts) =>
+        {
+            foreach (var (manifest, site) in conflicts)
+                output.ReportDiagnostic(Diagnostic.Create(ProjectionFailure, site.Location,
+                    $"npm usage resolves to '{manifest}', but this C# project uses multiple npm workspaces."));
+        });
     }
 
     private static string MarkerSource(IEnumerable<string> roots) =>
@@ -163,4 +173,7 @@ public sealed class NpmEditorGenerator : IIncrementalGenerator
 
     private readonly record struct ProjectionInputs(string? Tool, string? NetCoreRoot, string? Project, string? Request, string? Lock, string? WorkspaceConfig,
         string? Markers, string? UnselectedMarkers);
+
+    private readonly record struct EditorInputs(ProjectionInputs Projection, IReadOnlyList<NpmSourceRequest> Sites,
+        IReadOnlyList<(string Manifest, NpmSourceRequest Site)> Conflicts);
 }

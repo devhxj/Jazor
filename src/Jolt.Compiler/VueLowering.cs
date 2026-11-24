@@ -242,7 +242,7 @@ internal sealed partial class VueLowering(Projection projection, ComponentContra
 
     private void RemapOrigins(Node node)
     {
-        if (node.UserData is SourceOrigin origin && origin.SourcePath == projection.Document.Path + ".g.cs" &&
+        if (node.UserData is SourceOrigin origin && origin.SourcePath == projection.GeneratedPath &&
             projection.GeneratedText is { } generated && origin.StartLine < generated.Lines.Count)
         {
             var offset = generated.Lines[origin.StartLine].Start + origin.StartColumn;

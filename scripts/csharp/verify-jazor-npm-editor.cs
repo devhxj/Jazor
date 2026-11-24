@@ -13,6 +13,8 @@ var repairManifest = args.Contains("--repair-manifest", StringComparer.Ordinal);
 var firstManifest = repairManifest || args.Contains("--first-manifest", StringComparer.Ordinal);
 var nestedManifest = args.Contains("--nested-manifest", StringComparer.Ordinal);
 var pnpmWorkspace = args.Contains("--pnpm-workspace", StringComparer.Ordinal);
+var sourceWorkspace = args.Contains("--source-workspace", StringComparer.Ordinal);
+var sharedCache = args.Contains("--shared-cache", StringComparer.Ordinal);
 string? editorRuntime = null;
 var runtimeIndex = Array.IndexOf(args, "--editor-runtime");
 if (runtimeIndex >= 0)
@@ -22,13 +24,16 @@ if (runtimeIndex >= 0)
     editorRuntime = Path.GetFullPath(args[runtimeIndex + 1]);
     args = [.. args[..runtimeIndex], .. args[(runtimeIndex + 2)..]];
 }
-args = args.Where(argument => argument is not ("--first-manifest" or "--nested-manifest" or "--repair-manifest" or "--pnpm-workspace")).ToArray();
+args = args.Where(argument => argument is not ("--first-manifest" or "--nested-manifest" or "--repair-manifest" or
+    "--pnpm-workspace" or "--source-workspace" or "--shared-cache")).ToArray();
 var serverMode = args.LastOrDefault() is "Automatic" or "Balanced" ? args[^1] : "Automatic";
 if (args.Length != 0 && args[^1] == serverMode)
     args = args[..^1];
 if (args.Length is < 1 or > 2 || nestedManifest && (firstManifest || serverMode != "Automatic") ||
-    pnpmWorkspace && (firstManifest || nestedManifest || serverMode != "Automatic"))
-    throw new ArgumentException("Usage: verify-jazor-npm-editor.cs <Jazor.nupkg> [Microsoft.CodeAnalysis.LanguageServer apphost] [Automatic|Balanced] [--first-manifest|--repair-manifest|--nested-manifest|--pnpm-workspace (Automatic)] [--editor-runtime directory]");
+    pnpmWorkspace && (firstManifest || nestedManifest || serverMode != "Automatic") ||
+    sourceWorkspace && (firstManifest || nestedManifest || pnpmWorkspace || serverMode != "Automatic") ||
+    sharedCache && (firstManifest || nestedManifest || pnpmWorkspace || sourceWorkspace || serverMode != "Automatic"))
+    throw new ArgumentException("Usage: verify-jazor-npm-editor.cs <Jazor.nupkg> [Microsoft.CodeAnalysis.LanguageServer apphost] [Automatic|Balanced] [--first-manifest|--repair-manifest|--nested-manifest|--pnpm-workspace|--source-workspace|--shared-cache (Automatic)] [--editor-runtime directory]");
 
 var package = Path.GetFullPath(args[0]);
 var server = args.Length == 2 ? Path.GetFullPath(args[1]) : FindInstalledServer();
@@ -37,7 +42,10 @@ var store = Path.GetFullPath(Environment.GetEnvironmentVariable("JazorPnpmStoreD
     ?? Path.Combine(repo, ".tmp", "nodeapi-store"));
 var scratch = Directory.CreateDirectory(Path.Combine(repo, ".tmp", $"jazor-npm-editor-{Guid.NewGuid():N}")).FullName;
 var workspace = Directory.CreateDirectory(Path.Combine(scratch, "workspace")).FullName;
-var source = Path.Combine(workspace, "Calendar.cs");
+var sourceDirectory = sourceWorkspace
+    ? Directory.CreateDirectory(Path.Combine(workspace, "Frontend", "Features")).FullName
+    : workspace;
+var source = Path.Combine(sourceDirectory, "Calendar.cs");
 const string disk = "public static class Calendar { }\n";
 
 using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -84,6 +92,16 @@ try
     }
     else if (nestedManifest)
         await WriteEditorDependenciesAsync(scratch, includeDateFns: false, stop, hotProbe: "link:./hot-probe");
+    else if (sharedCache)
+        await WriteEditorDependenciesAsync(workspace, includeDateFns: true, stop, hotProbe: null);
+    else if (sourceWorkspace)
+    {
+        await WriteEditorDependenciesAsync(Path.Combine(workspace, "Frontend"), includeDateFns: false, stop,
+            hotProbe: "link:../../hot-probe");
+        var sibling = Directory.CreateDirectory(Path.Combine(workspace, "Backoffice")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(sibling, "package.json"), """{"dependencies":{"wrong-package":"1.0.0"}}""", stop);
+        await File.WriteAllTextAsync(Path.Combine(sibling, "Other.cs"), "public static class Other { }", stop);
+    }
     else if (!firstManifest)
         await WriteEditorDependenciesAsync(workspace, includeDateFns: false, stop);
     else if (repairManifest)
@@ -100,12 +118,12 @@ try
         """, stop);
     var declaration = Path.Combine(linked, "implementation.d.ts");
     await File.WriteAllTextAsync(declaration, """
-        // linked package declaration
+        /** Parses a flag supplied as text. */
         export declare function parseFlag(value: string): string;
         export declare function unprojectable(): symbol;
 
         """, stop);
-    await File.WriteAllTextAsync(Path.Combine(workspace, "NpmImports.cs"), "", stop);
+    await File.WriteAllTextAsync(Path.Combine(sourceDirectory, "NpmImports.cs"), "", stop);
     await File.WriteAllTextAsync(source, disk, stop);
     await RunDotnetAsync(workspace, stop, "restore", "Calendar.csproj", "--nologo");
     using (var restored = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(workspace, "obj", "project.assets.json"), stop)))
@@ -125,20 +143,28 @@ try
             throw new InvalidOperationException("Expected pnpm to use the shared workspace lockfile.");
         await File.WriteAllTextAsync(source, disk, stop);
     }
-    await VerifyEditorAsync(server, serverMode, scratch, workspace, source, disk, declaration, firstManifest, nestedManifest, repairManifest, pnpmWorkspace, editorRuntime, stop);
-    if (!firstManifest && !nestedManifest && !pnpmWorkspace)
-        await VerifyColdGenerationAsync(scratch, workspace, stop);
-    Console.WriteLine(pnpmWorkspace
-        ? "C# Roslyn LSP (Automatic) verified workspace:* declaration diagnostics and repair of the shared lockfile."
-        : nestedManifest
-        ? "C# Roslyn LSP (Automatic) verified shadowing and restoration of the parent npm workspace with the C# buffer unsaved."
-        : repairManifest
-        ? $"C# Roslyn LSP ({serverMode}) verified unsaved completion and signature help after repairing the project npm manifest."
-        : firstManifest
-        ? $"C# Roslyn LSP ({serverMode}) verified the first npm manifest, unsaved completion, and typed signature help."
-        : serverMode == "Balanced"
-        ? "C# Roslyn LSP (Balanced) verified cold imports, export completion for a newly added dependency, and typed calls after saving."
-        : "C# Roslyn LSP (Automatic) verified unsaved imports after adding a dependency, typed calls and navigation to updated linked declarations.");
+    if (sharedCache)
+        await VerifySharedCacheAsync();
+    else
+    {
+        await VerifyEditorAsync(server, serverMode, scratch, workspace, source, disk, declaration, firstManifest, nestedManifest, repairManifest,
+            pnpmWorkspace, sourceWorkspace, editorRuntime, stop);
+        if (!firstManifest && !nestedManifest && !pnpmWorkspace && !sourceWorkspace)
+            await VerifyColdGenerationAsync(scratch, workspace, stop);
+        Console.WriteLine(pnpmWorkspace
+            ? "C# Roslyn LSP (Automatic) verified workspace:* declaration diagnostics and repair of the shared lockfile."
+            : nestedManifest
+            ? "C# Roslyn LSP (Automatic) verified shadowing and restoration of the parent npm workspace with the C# buffer unsaved."
+            : sourceWorkspace
+            ? "C# Roslyn LSP (Automatic) verified cold completion, global using, and linked declaration refresh in a source-owned npm workspace."
+            : repairManifest
+            ? $"C# Roslyn LSP ({serverMode}) verified unsaved completion and signature help after repairing the project npm manifest."
+            : firstManifest
+            ? $"C# Roslyn LSP ({serverMode}) verified the first npm manifest, unsaved completion, and typed signature help."
+            : serverMode == "Balanced"
+            ? "C# Roslyn LSP (Balanced) verified cold imports, export completion for a newly added dependency, and typed calls after saving."
+            : "C# Roslyn LSP (Automatic) verified unsaved imports after adding a dependency, typed calls and navigation to updated linked declarations.");
+    }
 }
 catch
 {
@@ -146,6 +172,67 @@ catch
     throw;
 }
 Directory.Delete(scratch, recursive: true);
+
+async Task VerifySharedCacheAsync()
+{
+    var second = Directory.CreateDirectory(Path.Combine(scratch, "second-workspace")).FullName;
+    foreach (var file in new[] { "NuGet.Config", "Calendar.csproj", "Calendar.cs", "package.json", "pnpm-lock.yaml" })
+        File.Copy(Path.Combine(workspace, file), Path.Combine(second, file));
+    await RunDotnetAsync(second, stop, "restore", "Calendar.csproj", "--nologo");
+    // Warm only the install inputs. No C# npm calls or TypeScript checker run before the first completion.
+    await RunDotnetAsync(repo, stop, "run", "--file", Path.Combine(repo, "scripts", "csharp", "restore-node-project.cs"),
+        "--", workspace, second);
+    var shared = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Jazor", "cache", "npm-metadata", "v1");
+    var firstTime = await MeasureAsync(workspace, "first-project");
+    using var manifest = File.OpenRead(Path.Combine(workspace, "node_modules", "date-fns", "package.json"));
+    var packageFingerprint = Convert.ToHexString(SHA256.HashData(manifest));
+    var snapshots = new Dictionary<string, DateTime>();
+    var hasProjection = false;
+    foreach (var file in CacheFiles(shared))
+    {
+        stop.ThrowIfCancellationRequested();
+        try
+        {
+            using var stream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var json = JsonDocument.Parse(stream);
+            if (!json.RootElement.TryGetProperty("inputs", out var inputs) || inputs.ValueKind != JsonValueKind.Object ||
+                !inputs.TryGetProperty("\0project/node_modules/date-fns/package.json", out var packageInput) ||
+                packageInput.GetString() != packageFingerprint ||
+                !json.RootElement.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object ||
+                !data.TryGetProperty("modulePath", out var module) || module.GetString() != "\0project/node_modules/date-fns/index.js" ||
+                !data.TryGetProperty("exports", out var exports) || exports.ValueKind != JsonValueKind.Array ||
+                !exports.EnumerateArray().Any(value => value.GetString() == "addDays"))
+                continue;
+            var projected = data.TryGetProperty("values", out var values) && values.ValueKind == JsonValueKind.Array &&
+                values.EnumerateArray().Any(value => value.TryGetProperty("exportName", out var name) && name.GetString() == "addDays" &&
+                    value.TryGetProperty("version", out var version) && version.GetString() == "4.4.0");
+            if (values.ValueKind == JsonValueKind.Array && !projected)
+                continue;
+            snapshots.Add(file, File.GetLastWriteTimeUtc(file));
+            hasProjection |= projected;
+        }
+        catch (IOException) { }
+        catch (JsonException) { }
+    }
+    if (!hasProjection)
+        throw new InvalidOperationException("The first project did not leave a portable date-fns 4.4.0 snapshot containing the AddDays projection.");
+
+    var secondTime = await MeasureAsync(second, "second-project");
+    if (CacheFiles(Path.Combine(second, ".jazor", "cache", "npm-metadata")).Any() ||
+        snapshots.Any(file => !File.Exists(file.Key) || File.GetLastWriteTimeUtc(file.Key) != file.Value))
+        throw new InvalidOperationException("The second project wrote project-local metadata or changed the shared date-fns snapshots.");
+    Console.WriteLine($"Time until the first Roslyn member completion offering AddDays was {firstTime.TotalMilliseconds:F0} ms in the first project and {secondTime.TotalMilliseconds:F0} ms in the second project. Both package installations were ready before timing.");
+    Console.WriteLine($"Both registry declaration links resolved inside each project's own node_modules. {snapshots.Count} matching shared metadata snapshots remained unchanged.");
+
+    Task<TimeSpan> MeasureAsync(string project, string name) => VerifyEditorAsync(server, "Automatic",
+        Directory.CreateDirectory(Path.Combine(scratch, name)).FullName, project, Path.Combine(project, "Calendar.cs"), disk, "",
+        firstManifest: false, nestedManifest: false, repairManifest: false, pnpmWorkspace: false, sourceWorkspace: false,
+        editorRuntime, stop, measureRegistryCompletion: true);
+
+    static IEnumerable<string> CacheFiles(string path) => Directory.Exists(path)
+        ? Directory.EnumerateFiles(path, "*.json", SearchOption.AllDirectories)
+        : [];
+}
 
 static async Task WriteEditorDependenciesAsync(string workspace, bool includeDateFns, CancellationToken stop, string? hotProbe = "link:../hot-probe")
 {
@@ -245,8 +332,9 @@ static async Task VerifyColdGenerationAsync(string scratch, string workspace, Ca
         throw new InvalidOperationException("Cold design-time compilation must reject the ambiguous and subpath-only root imports.");
 }
 
-static async Task VerifyEditorAsync(string server, string mode, string scratch, string workspace, string source, string disk,
-    string declaration, bool firstManifest, bool nestedManifest, bool repairManifest, bool pnpmWorkspace, string? editorRuntime, CancellationToken stop)
+static async Task<TimeSpan> VerifyEditorAsync(string server, string mode, string scratch, string workspace, string source, string disk,
+    string declaration, bool firstManifest, bool nestedManifest, bool repairManifest, bool pnpmWorkspace, bool sourceWorkspace,
+    string? editorRuntime, CancellationToken stop, bool measureRegistryCompletion = false)
 {
     var app = new ProcessStartInfo(server)
     {
@@ -310,6 +398,12 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
             () => HoverAsync(new Position(0, disk.IndexOf("Calendar", StringComparison.Ordinal) + 1)),
             result => Markdown(result)?.Contains("class Calendar", StringComparison.Ordinal) == true, stop);
         await ExpectEventuallyAsync("no compiler errors before any npm import", DiagnosticsAsync, NoErrors, stop);
+        if (measureRegistryCompletion)
+        {
+            var timing = await VerifyRegistryCompletionAsync();
+            await StopServerAsync();
+            return timing;
+        }
         if (pnpmWorkspace)
         {
             const string call = "using Hot = Npm.HotProbe.Exports;\nstatic class Calendar { static object Test() => Hot.Inspect($$\"true\"); }";
@@ -341,13 +435,19 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
             if (await File.ReadAllTextAsync(source, stop) != disk)
                 throw new InvalidOperationException("The workspace declaration refresh saved the editor fixture's C# source.");
             await StopServerAsync();
-            return;
+            return TimeSpan.Zero;
         }
         if (nestedManifest)
         {
             await VerifyNestedManifestAsync();
             await StopServerAsync();
-            return;
+            return TimeSpan.Zero;
+        }
+        if (sourceWorkspace)
+        {
+            await VerifySourceWorkspaceAsync();
+            await StopServerAsync();
+            return TimeSpan.Zero;
         }
 
         if (!firstManifest)
@@ -406,7 +506,7 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
             if (mode == "Automatic" && await File.ReadAllTextAsync(source, stop) != disk)
                 throw new InvalidOperationException("Automatic mode required a source save.");
             await StopServerAsync();
-            return;
+            return TimeSpan.Zero;
         }
         if (mode == "Balanced")
         {
@@ -447,7 +547,7 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
             // The separate cold generation check needs the original source without imports.
             await File.WriteAllTextAsync(source, disk, stop);
             await WriteEditorDependenciesAsync(workspace, includeDateFns: true, stop);
-            return;
+            return TimeSpan.Zero;
         }
 
         var signaturePosition = await ChangeAsync(module +
@@ -514,6 +614,7 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
 
         await StopServerAsync();
         await WriteEditorDependenciesAsync(workspace, includeDateFns: true, stop);
+        return TimeSpan.Zero;
     }
     finally
     {
@@ -598,6 +699,77 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
         await process.WaitForExitAsync(stop);
         if (process.ExitCode != 0)
             throw new InvalidOperationException($"The C# language server exited with code {process.ExitCode}.");
+    }
+
+    async Task<TimeSpan> VerifyRegistryCompletionAsync()
+    {
+        var alias = await ChangeAsync(import + "\nstatic class Calendar { static System.Type Test() => typeof(Da$$tes); }");
+        await ExpectEventuallyAsync("a cold date-fns facade before requesting any members", () => HoverAsync(alias),
+            result => Markdown(result)?.Contains("Npm.DateFns.Exports", StringComparison.Ordinal) == true, stop);
+        var completion = await ChangeAsync(firstCompletion);
+        var elapsed = Stopwatch.StartNew();
+        await ExpectEventuallyAsync("the first date-fns member completion offering AddDays", () => CompleteAsync(completion),
+            result => HasCompletion(result, "AddDays"), stop);
+        elapsed.Stop();
+
+        var call = await ChangeAsync(import + "\nstatic class Calendar { static ECMAScript.Date Test() => Dates.$$AddDays(new ECMAScript.Date(2024, 0, 31), 2); }");
+        var root = new Uri(Path.Combine(workspace, "node_modules") + Path.DirectorySeparatorChar).AbsoluteUri;
+        const string link = "[Open TypeScript declaration](";
+        await ExpectEventuallyAsync("date-fns documentation and the project's own TypeScript declaration link", () => HoverAsync(call),
+            result => Markdown(result) is { } hover && IsLocalDeclaration(hover) &&
+                hover.Contains("Add the specified number of days to the given date", StringComparison.Ordinal), stop);
+        return elapsed.Elapsed;
+
+        bool IsLocalDeclaration(string? hover)
+        {
+            var linkStart = hover?.IndexOf(link + root, StringComparison.OrdinalIgnoreCase) ?? -1;
+            if (linkStart < 0)
+                return false;
+            var targetStart = linkStart + link.Length;
+            var end = hover!.IndexOf(')', targetStart);
+            return end > targetStart && Uri.TryCreate(hover[targetStart..end], UriKind.Absolute, out var declaration) &&
+                declaration.IsFile && declaration.LocalPath.EndsWith(".d.ts", StringComparison.Ordinal) && File.Exists(declaration.LocalPath);
+        }
+    }
+
+    async Task VerifySourceWorkspaceAsync()
+    {
+        const string packages = "using Hot = Npm.$$;\nstatic class Calendar { }";
+        var packagePosition = await ChangeAsync(packages);
+        await ExpectEventuallyAsync("cold package completion at an incomplete source-local import", () => CompleteAsync(packagePosition),
+            result => HasCompletion(result, "HotProbe") && !HasCompletion(result, "WrongPackage"), stop);
+
+        var importsPath = Path.Combine(Path.GetDirectoryName(source)!, "NpmImports.cs");
+        var importsUri = new Uri(importsPath).AbsoluteUri;
+        const string imports = "global using Probe = Npm.HotProbe.Exports;\nglobal using static Npm.HotProbe.Exports;\n";
+        await lsp.NotifyAsync("textDocument/didOpen", new
+        {
+            textDocument = new { uri = importsUri, languageId = "csharp", version = 1, text = imports },
+        });
+        // Wait for Roslyn to bind the separate unsaved document, without requesting any
+        // export member that could pre-populate the generated facade or completion index.
+        var alias = await ChangeAsync("static class Calendar { static System.Type Test() => typeof(Pro$$be); }");
+        await ExpectEventuallyAsync("the cross-file global alias resolves to the cold facade", () => HoverAsync(alias),
+            result => Markdown(result)?.Contains("Npm.HotProbe.Exports", StringComparison.Ordinal) == true, stop);
+        var globalAlias = await ChangeAsync("static class Calendar { static object Test() => Probe.$$; }");
+        await ExpectEventuallyAsync("cold member completion through the cross-file global alias", () => CompleteAsync(globalAlias),
+            result => HasCompletion(result, "Inspect"), stop);
+        const string call = "static class Calendar { static string Test() => $$Inspect(\"true\"); }";
+        var callPosition = await ChangeAsync(call);
+        await ExpectEventuallyAsync("typed cross-file global using from the source manifest", () => HoverAsync(callPosition),
+            result => Markdown(result)?.Contains("Inspect(string value)", StringComparison.Ordinal) == true, stop);
+        await ExpectEventuallyAsync("no errors on the global using call", DiagnosticsAsync, NoErrors, stop);
+
+        var original = await File.ReadAllTextAsync(declaration, stop);
+        await File.WriteAllTextAsync(declaration, original.Replace("value: string): string", "value: boolean): boolean", StringComparison.Ordinal), stop);
+        var argument = callPosition with { Character = callPosition.Character + "Inspect(".Length };
+        await ExpectEventuallyAsync("CS1503 after a linked declaration changes under source ownership", DiagnosticsAsync,
+            result => HasDiagnostic(result, "CS1503", argument, "\"true\"".Length), stop);
+        await File.WriteAllTextAsync(declaration, original, stop);
+        await ExpectEventuallyAsync("no errors after restoring the source-owned linked declaration", DiagnosticsAsync, NoErrors, stop);
+        if (await File.ReadAllTextAsync(source, stop) != disk || await File.ReadAllTextAsync(importsPath, stop) != "")
+            throw new InvalidOperationException("Source-owned projection saved an unsaved C# file.");
+        await lsp.NotifyAsync("textDocument/didClose", new { textDocument = new { uri = importsUri } });
     }
 
     async Task<Position> ChangeAsync(string markedText)
@@ -788,7 +960,14 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
         var memberPosition = await ChangeAsync(call);
         var argumentPosition = memberPosition with { Character = memberPosition.Character + "spect(".Length };
         await ExpectLinkedSignatureAsync("string");
-        await ExpectDeclarationLinkAsync();
+        await ExpectDeclarationLinkAsync("Parses a flag supplied as text");
+
+        const string updatedSummary = "Reads the flag from the provided text.";
+        var originalDeclaration = await File.ReadAllTextAsync(declaration, stop);
+        await File.WriteAllTextAsync(declaration,
+            originalDeclaration.Replace("Parses a flag supplied as text.", updatedSummary, StringComparison.Ordinal), stop);
+        await ExpectDeclarationLinkAsync("Reads the flag from the provided text", staleSummary: "Parses a flag supplied as text");
+        await ExpectLinkedSignatureAsync("string");
 
         // Only this declaration changes between requests. Drive the real host's own file watcher.
         await File.WriteAllTextAsync(declaration,
@@ -828,7 +1007,7 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
                           label.Contains($"Hot.Inspect({type} value)", StringComparison.Ordinal)),
             stop);
 
-        async Task ExpectDeclarationLinkAsync()
+        async Task ExpectDeclarationLinkAsync(string? summary = null, string? staleSummary = null)
         {
             var lines = await File.ReadAllLinesAsync(declaration, stop);
             int line = Array.FindIndex(lines, text => text.Contains("parseFlag", StringComparison.Ordinal));
@@ -837,7 +1016,9 @@ static async Task VerifyEditorAsync(string server, string mode, string scratch, 
             var link = $"[Open TypeScript declaration]({target})";
             await ExpectEventuallyAsync($"hover link to {target}",
                 () => HoverAsync(memberPosition),
-                result => Markdown(result)?.Contains(link, StringComparison.Ordinal) == true,
+                result => Markdown(result) is { } hover && hover.Contains(link, StringComparison.Ordinal) &&
+                    (summary is null || hover.Contains(summary, StringComparison.Ordinal)) &&
+                    (staleSummary is null || !hover.Contains(staleSummary, StringComparison.Ordinal)),
                 stop);
             await ExpectEventuallyAsync("stock C# definition returns the generated declaration",
                 () => lsp.RequestAsync("textDocument/definition", new { textDocument = document, position = memberPosition }),

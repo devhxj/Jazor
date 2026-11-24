@@ -51,10 +51,10 @@ internal sealed partial class NpmCompletionProvider : CompletionProvider
             return;
 
         var npmNamespace = NpmSourceRequests.FindCompletionNamespace(compilation, access.Expression, cancellationToken);
-        if (npmNamespace is null)
+        if (npmNamespace is null || FindCompletionWorkspace(document, compilation, access.Expression.GetLocation(), cancellationToken) is not { } workspace)
             return;
 
-        var names = await NpmEditorIndex.ReadAsync(document, npmNamespace, cancellationToken).ConfigureAwait(false);
+        var names = await NpmEditorIndex.ReadAsync(document, workspace.Project, workspace.Manifest, npmNamespace, cancellationToken).ConfigureAwait(false);
         // Roslyn owns symbol completion for declarations already in the project.
         var existing = model.GetSymbolInfo(access.Expression, cancellationToken).Symbol as INamedTypeSymbol;
         foreach (var name in names)

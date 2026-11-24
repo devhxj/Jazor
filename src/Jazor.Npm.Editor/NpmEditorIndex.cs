@@ -10,11 +10,10 @@ internal static class NpmEditorIndex
     private static readonly ConditionalWeakTable<Workspace, ConcurrentDictionary<(ProjectId Project, string Namespace), Entry>> Entries = new();
 
     internal static async Task<IReadOnlyList<string>> ReadAsync(
-        Document document, string npmNamespace, CancellationToken cancellationToken)
+        Document document, string project, string manifest, string npmNamespace, CancellationToken cancellationToken)
     {
         var options = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GlobalOptions;
-        if (!options.TryGetValue("build_property._JazorNpmEditorTool", out var host) || string.IsNullOrEmpty(host) ||
-            !options.TryGetValue("build_property.MSBuildProjectFullPath", out var project) || string.IsNullOrEmpty(project))
+        if (!options.TryGetValue("build_property._JazorNpmEditorTool", out var host) || string.IsNullOrEmpty(host))
             return Array.Empty<string>();
         options.TryGetValue("build_property.JazorPnpmStoreDirectory", out var store);
         options.TryGetValue("build_property.NetCoreRoot", out var netCoreRoot);
@@ -29,12 +28,12 @@ internal static class NpmEditorIndex
         await entry.Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (entry.Snapshot is { } cached && cached.Host == host && cached.Project == project && cached.Store == store &&
+            if (entry.Snapshot is { } cached && cached.Host == host && cached.Manifest == manifest && cached.Store == store &&
                 InputsMatch(cached.Inputs))
                 return cached.Names;
 
             var response = await NpmHostProcess.RunAsync(host, netCoreRoot, project, "--sdk-npm-completion",
-                string.Join("\n", project, npmNamespace, store), cancellationToken).ConfigureAwait(false);
+                string.Join("\n", manifest, npmNamespace, store), cancellationToken).ConfigureAwait(false);
             if (response is null)
                 return Array.Empty<string>();
 
@@ -46,7 +45,7 @@ internal static class NpmEditorIndex
                 var linked = path.StartsWith("*", StringComparison.Ordinal);
                 inputs.Add(ReadInput(linked ? path.Substring(1) : path, linked));
             }
-            entry.Snapshot = new Snapshot(host, project, store, names, inputs);
+            entry.Snapshot = new Snapshot(host, manifest, store, names, inputs);
             return names;
         }
         finally
@@ -91,5 +90,5 @@ internal static class NpmEditorIndex
     }
 
     private sealed record Input(string Path, bool Linked, DateTime LastWrite, long Length, string? WorkspaceChecksum, string? Content);
-    private sealed record Snapshot(string Host, string Project, string? Store, string[] Names, IReadOnlyList<Input> Inputs);
+    private sealed record Snapshot(string Host, string Manifest, string? Store, string[] Names, IReadOnlyList<Input> Inputs);
 }

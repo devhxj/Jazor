@@ -8,12 +8,13 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Jazor.NodeHost;
 using Jazor.Npm;
 using Microsoft.CodeAnalysis.CSharp;
 
-if (args is not ([_] or [_, "--external-link" or "--workspace-lock"]))
-    throw new ArgumentException("Usage: verify-jolt-projection-cache.cs <Jolt CLI apphost> [--external-link | --workspace-lock]");
+if (args is not ([_] or [_, "--external-link" or "--workspace-lock" or "--global-cache"]))
+    throw new ArgumentException("Usage: verify-jolt-projection-cache.cs <Jolt CLI apphost> [--external-link | --workspace-lock | --global-cache]");
 
 var cli = Path.GetFullPath(args[0]);
 var root = Directory.GetCurrentDirectory();
@@ -24,7 +25,9 @@ if (args.Length == 2)
 {
     try
     {
-        if (args[1] == "--workspace-lock")
+        if (args[1] == "--global-cache")
+            await VerifyGlobalCache();
+        else if (args[1] == "--workspace-lock")
             await VerifyWorkspaceLock();
         else
             await VerifyExternalLink();
@@ -35,7 +38,7 @@ if (args.Length == 2)
     }
     return;
 }
-var generated = Path.Combine(project.FullName, "obj", "Jolt", "projections");
+var generated = NpmProjectionCache.ProjectionDirectory;
 var metadata = Path.Combine(project.FullName, ".jazor", "cache");
 var client = project.CreateSubdirectory("client");
 var shared = project.CreateSubdirectory("shared");
@@ -68,8 +71,10 @@ const string deepLedger = "export type LedgerRef = Ref<UnwrapRef<Ledger>>;";
 var deepSharedSource = sharedSource.Replace(shallowLedger, deepLedger, StringComparison.Ordinal);
 var output = Path.Combine(project.FullName, "Client.g.cs");
 var app = Path.Combine(project.FullName, "App.jazor");
-const string source = """
-    @using Client = Npm.ProjectionCacheFixture.Exports
+var fixturePackage = "projection-cache-fixture-x" + Guid.NewGuid().ToString("N");
+var fixtureNamespace = NpmNames.NamespaceFor(fixturePackage);
+var source = $$"""
+    @using Client = {{fixtureNamespace}}.Exports
     <p>@Label</p>
     @code {
         private string Label => Client.Select("ready", value => value.Length) > 0 ? Client.Format("ready") + Client.Count() : "";
@@ -110,7 +115,7 @@ try
 {
     File.Copy(Path.Combine(fixture, "pnpm-lock.yaml"), Path.Combine(project.FullName, "pnpm-lock.yaml"));
     var manifest = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(fixture, "package.json")))!;
-    manifest["dependencies"]!["projection-cache-fixture"] = "link:./client";
+    manifest["dependencies"]![fixturePackage] = "link:./client";
     manifest["dependencies"]!["projection-cache-ref"] = "link:./shared";
     manifest["dependencies"]!["vue-i18n"] = "11.4.12";
     File.WriteAllText(Path.Combine(project.FullName, "package.json"), manifest.ToJsonString());
@@ -119,7 +124,7 @@ try
     File.WriteAllText(sharedDeclaration, sharedSource);
     File.WriteAllText(localeDeclaration, localeSource);
     File.WriteAllText(Path.Combine(client.FullName, "package.json"),
-        """{"name":"projection-cache-fixture","version":"1.0.0","type":"module","exports":"./client.js"}""");
+        $$"""{"name":"{{fixturePackage}}","version":"1.0.0","type":"module","exports":"./client.js"}""");
     File.WriteAllText(Path.Combine(client.FullName, "client.js"),
         """
         import { computed as vueComputed, ref, shallowRef } from 'vue';
@@ -192,9 +197,9 @@ try
     File.WriteAllText(app, source);
     await NodeToolchain.RestoreAsync(project.FullName, store, CancellationToken.None, Console.Out);
 
-    var publicCache = Path.Combine(project.FullName, "obj", "Jazor", "projections");
+    var publicCache = NpmProjectionCache.ProjectionDirectory;
     var cancellationValues = (await new NpmValueMetadataProvider(store).ReadValueProjectionsAsync(
-        app, "projection-cache-fixture", ["format", "count"])).Values;
+        app, fixturePackage, ["format", "count"])).Values;
     if (cancellationValues.Count != 2)
         throw new InvalidOperationException("The cancellation fixture must supply both npm bindings.");
     var cancellationCache = Path.Combine(project.FullName, "cancellation-cache");
@@ -237,13 +242,13 @@ try
     async Task Bindings(string first, string second, string? destination = null)
     {
         var provider = new NpmValueMetadataProvider(store);
-        var projection = await provider.ReadValueProjectionsAsync(app, "projection-cache-fixture",
+        var projection = await provider.ReadValueProjectionsAsync(app, fixturePackage,
             [first, "select", second, "snapshot", "wideRef", "narrowRef", "selectMode", "applyPatch",
              "computed", "consumeComputed", "bindModel", "getSharedRef", "openRegistry", "openLedger",
              "openComposer", "openWritableComposer"]);
         if (projection.Errors.Count != 0)
             throw new InvalidOperationException(string.Join(Environment.NewLine, projection.Errors.Values));
-        var text = NpmBindings.GenerateCachedSource(project.FullName, [], projection.Values);
+        var text = NpmBindings.GenerateCachedSource([], projection.Values);
         await File.WriteAllTextAsync(destination ?? output, text);
     }
 
@@ -263,17 +268,19 @@ try
     if (File.ReadAllText(parallelOutput) != expected)
         throw new InvalidOperationException("Concurrent publishers must produce identical binding source.");
     File.Delete(parallelOutput);
-    var bindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Single();
+    var bindings = FixtureFiles(publicCache, "Bindings.g.cs").Single();
     var bindingsStamp = Mark(bindings);
     File.Delete(output);
     await Bindings("count", "format");
     if (File.ReadAllText(output) != expected || File.GetLastWriteTimeUtc(bindings) != bindingsStamp ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Length != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Length != 1)
         throw new InvalidOperationException("A reordered bindings request must reuse cached text and restore its output.");
 
     File.Delete(output);
     await Run(["build", "."]);
-    var projection = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Single();
+    var projection = FixtureFiles(generated, "Projection.g.cs").SingleOrDefault() ??
+        throw new InvalidOperationException($"No component projection for {fixturePackage} in {generated}. " +
+            $"Fixture outputs: {string.Join(", ", Directory.GetFiles(Path.Combine(project.FullName, ".jolt")))}");
     Check(Path.GetDirectoryName(projection)!, "symbols.json");
     var projectionStamp = Mark(projection);
     var componentOutput = Path.Combine(project.FullName, ".jolt", "App.mjs");
@@ -336,96 +343,96 @@ try
     File.WriteAllText(declaration, "// Public documentation moved.\n" + declarations);
     await Bindings("format", "count");
     if (File.ReadAllText(output) != expected || File.GetLastWriteTimeUtc(bindings) != bindingsStamp ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Length != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Length != 1)
         throw new InvalidOperationException("Changing declaration offsets must reuse the public C# cache entry.");
     File.Delete(output);
     await Run(["build", "."]);
     if (File.GetLastWriteTimeUtc(projection) != projectionStamp || File.ReadAllText(componentOutput) != componentText)
         throw new InvalidOperationException("Moving the declaration must reuse the component projection.");
-    var previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    var previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(declaration, declarations.Replace("=> R): R;", "=> R): S;", StringComparison.Ordinal));
     await Bindings("format", "count");
-    if (File.ReadAllText(output) == expected || Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Length != 2)
+    if (File.ReadAllText(output) == expected || FixtureFiles(publicCache, "Bindings.g.cs").Length != 2)
         throw new InvalidOperationException("Changing the declaration must regenerate the public signature.");
     File.Delete(output);
     await Run(["build", "."], "CS0019");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Changing the generic result must regenerate the component projection.");
 
-    var priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    var priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(declaration, declarations.Replace("Ref<string, string | null>", "Ref<string, 'initial'>", StringComparison.Ordinal));
     await Bindings("format", "count");
     var readonlyBindings = File.ReadLines(output).Single(line => line.Contains("@WideRef()", StringComparison.Ordinal));
     if (!readonlyBindings.Contains("VueReadonlyRef<string>", StringComparison.Ordinal) ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Count() != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Count() != 1)
         throw new InvalidOperationException("Changing the permitted Ref writes must generate a new readonly public binding.");
     File.Delete(output);
     await Run(["build", "."], "CS0200");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Changing the Ref write policy must regenerate the component projection.");
 
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(declaration, declarations.Replace("computed(): ComputedRef<string>", "computed(): Readonly<Ref<string>>",
         StringComparison.Ordinal));
     await Bindings("format", "count");
     if (!File.ReadAllText(output).Contains("VueReadonlyRef<string> @Computed()", StringComparison.Ordinal) ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Count() != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Count() != 1)
         throw new InvalidOperationException("Removing computed identity must generate a plain readonly public binding.");
     File.Delete(output);
     await Run(["build", "."], "CS1503");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Removing computed identity must regenerate the component projection.");
 
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(declaration, declarations.Replace("B extends boolean = false", "B extends boolean = true", StringComparison.Ordinal));
     await Bindings("format", "count");
     if (!File.ReadAllText(output).Contains("extern bool @SelectMode(string @label);", StringComparison.Ordinal) ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Count() != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Count() != 1)
         throw new InvalidOperationException("Changing the omitted flag's default must generate a new boolean public binding.");
     File.Delete(output);
     await Run(["build", "."], "CS0029");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Changing the omitted flag's default must regenerate the component projection.");
 
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(declaration, declarations.Replace("value?: T", "value: T", StringComparison.Ordinal));
     await Bindings("format", "count");
     var requiredBindings = File.ReadAllText(output);
     if (requiredBindings.Contains("@HasValue {", StringComparison.Ordinal) ||
         !requiredBindings.Split('\n').Any(line => line.Contains("public required ", StringComparison.Ordinal) &&
             line.Contains(" @Value {", StringComparison.Ordinal)) ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Count() != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Count() != 1)
         throw new InvalidOperationException("Making the generic patch value required must generate a new public binding.");
     File.Delete(output);
     await Run(["build", "."], "CS9035");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Making the generic patch value required must regenerate the component projection.");
 
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(declaration, declarations.Replace("shouldEmit?:", "canEmit?:", StringComparison.Ordinal));
     await Bindings("format", "count");
     var updatedModel = File.ReadAllText(output);
     if (!updatedModel.Contains("@CanEmit", StringComparison.Ordinal) ||
         updatedModel.Contains("@ShouldEmit", StringComparison.Ordinal) ||
-        Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Count() != 1)
+        FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Count() != 1)
         throw new InvalidOperationException("Renaming the dependent callback must regenerate the public binding.");
     File.Delete(output);
     await Run(["build", "."], "CS0117");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Renaming the dependent callback must regenerate the component projection.");
 
     File.WriteAllText(declaration, declarations);
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(sharedDeclaration, sharedSource.Replace("clear()", "reset()", StringComparison.Ordinal));
     await Bindings("format", "count");
     var updatedRef = File.ReadAllText(output);
-    var newBindingCount = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Count();
+    var newBindingCount = FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Count();
     var hasReset = updatedRef.Contains("\"@#reset\"", StringComparison.Ordinal);
     var hasClear = updatedRef.Contains("\"@#clear\"", StringComparison.Ordinal);
     if (!hasReset || hasClear || newBindingCount != 1)
@@ -433,18 +440,18 @@ try
             $"Reset present: {hasReset}, Clear present: {hasClear}, new entries: {newBindingCount}.");
     File.Delete(output);
     await Run(["build", "."], "CS1061");
-    if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Count() != 1)
+    if (FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Count() != 1)
         throw new InvalidOperationException("Changing the dependency ref method must regenerate the component projection.");
 
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(sharedDeclaration, sharedSource.Replace("locale?: string): boolean", "locale?: string): number", StringComparison.Ordinal));
     await Bindings("format", "count");
     var registryBindings = File.ReadAllText(output);
     if (!registryBindings.Contains("extern double @Matches(string @key);", StringComparison.Ordinal) ||
         registryBindings.Contains("extern bool @Matches(", StringComparison.Ordinal))
         throw new InvalidOperationException("Changing the linked registry result must regenerate the public signature.");
-    var registryBindingsPath = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Single();
+    var registryBindingsPath = FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Single();
     var registryBindingsStamp = Mark(registryBindingsPath);
     File.Delete(output);
     await Bindings("count", "format");
@@ -452,7 +459,7 @@ try
         throw new InvalidOperationException("The updated registry binding must restore its output from cache.");
     File.Delete(output);
     await Run(["build", "."], "CS0029");
-    var registryProjection = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Single();
+    var registryProjection = FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Single();
     var registryProjectionStamp = Mark(registryProjection);
     File.WriteAllText(app, source.Replace("bool ReadRegistry", "double ReadRegistry", StringComparison.Ordinal));
     var clientScript = Path.Combine(client.FullName, "client.js");
@@ -465,15 +472,15 @@ try
         throw new InvalidOperationException("The updated registry projection must restore cached component output.");
     File.WriteAllText(verification, File.ReadAllText(verification).Replace("ReadRegistry(), true", "ReadRegistry(), 5", StringComparison.Ordinal));
     await NodeModuleRunner.RunAsync(project.FullName, verification);
-    priorBindings = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
-    previousProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    priorBindings = FixtureFiles(publicCache, "Bindings.g.cs");
+    previousProjections = FixtureFiles(generated, "Projection.g.cs");
     File.WriteAllText(sharedDeclaration, deepSharedSource.Replace("locale?: string): boolean", "locale?: string): number", StringComparison.Ordinal));
     await Bindings("format", "count");
     var deepBindings = File.ReadAllText(output);
     if (!deepBindings.Contains("double @Amount", StringComparison.Ordinal) ||
         deepBindings.Contains("IVueRef<double> @Amount", StringComparison.Ordinal))
         throw new InvalidOperationException("The linked deep ref must expose the unwrapped numeric property.");
-    var deepBindingsPath = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(priorBindings).Single();
+    var deepBindingsPath = FixtureFiles(publicCache, "Bindings.g.cs").Except(priorBindings).Single();
     var deepBindingsStamp = Mark(deepBindingsPath);
     File.Delete(output);
     await Bindings("count", "format");
@@ -481,7 +488,7 @@ try
         throw new InvalidOperationException("The deep-ref binding must restore its cached source.");
     File.Delete(output);
     await Run(["build", "."]);
-    var deepProjection = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Except(previousProjections).Single();
+    var deepProjection = FixtureFiles(generated, "Projection.g.cs").Except(previousProjections).Single();
     var deepProjectionStamp = Mark(deepProjection);
     await Run(["build", "."]);
     if (File.GetLastWriteTimeUtc(deepProjection) != deepProjectionStamp)
@@ -491,12 +498,12 @@ try
     if (!guestBindings.Contains("@Guest {", StringComparison.Ordinal))
         throw new InvalidOperationException("Expected a typed Guest argument in the initial locale binding.");
     File.WriteAllText(localeDeclaration, visitorLocaleSource);
-    var beforeVisitor = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
+    var beforeVisitor = FixtureFiles(publicCache, "Bindings.g.cs");
     await Bindings("format", "count");
     var visitorBindings = File.ReadAllText(output);
     if (!visitorBindings.Contains("@Visitor {", StringComparison.Ordinal) || visitorBindings.Contains("@Guest {", StringComparison.Ordinal))
         throw new InvalidOperationException("The linked locale edit must replace Guest with Visitor in the public source.");
-    var visitorBinding = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(beforeVisitor).Single();
+    var visitorBinding = FixtureFiles(publicCache, "Bindings.g.cs").Except(beforeVisitor).Single();
     var visitorBindingStamp = Mark(visitorBinding);
     File.Delete(output);
     await Bindings("count", "format");
@@ -511,15 +518,15 @@ try
     File.WriteAllText(verification, File.ReadAllText(verification)
         .Replace("""[["A"],null]""", """[["A",false],2]""", StringComparison.Ordinal));
     await NodeModuleRunner.RunAsync(project.FullName, verification);
-    var localeProjections = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories);
+    var localeProjections = FixtureFiles(generated, "Projection.g.cs");
     var localeProjection = localeProjections.Single(path => File.ReadAllText(path).Contains("@Visitor", StringComparison.Ordinal) &&
         File.ReadAllText(path).Contains("double @Amount", StringComparison.Ordinal));
     var localeProjectionStamp = Mark(localeProjection);
     await Run(["build", "."]);
     if (File.GetLastWriteTimeUtc(localeProjection) != localeProjectionStamp ||
-        Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Length != localeProjections.Length)
+        FixtureFiles(generated, "Projection.g.cs").Length != localeProjections.Length)
         throw new InvalidOperationException("The updated locale component must reuse its cached projection.");
-    var beforeWrite = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories);
+    var beforeWrite = FixtureFiles(publicCache, "Bindings.g.cs");
     File.WriteAllText(localeDeclaration, updatedWriteLocaleSource);
     await Bindings("format", "count");
     var writeBindings = File.ReadAllText(output);
@@ -536,7 +543,7 @@ try
         otherNoticeDomain.Name == originalNoticeDomain.Name ||
         !otherNoticeDomain.Values.SetEquals(["brief", "formal"]))
         throw new InvalidOperationException("Locale enum names must survive a domain edit and distinguish same-path fields from different schemas.");
-    var writeBinding = Directory.GetFiles(publicCache, "Bindings.g.cs", SearchOption.AllDirectories).Except(beforeWrite).Single();
+    var writeBinding = FixtureFiles(publicCache, "Bindings.g.cs").Except(beforeWrite).Single();
     var writeBindingStamp = Mark(writeBinding);
     File.Delete(output);
     await Bindings("count", "format");
@@ -551,6 +558,14 @@ try
 }
 finally
 {
+    if (Directory.Exists(generated))
+        foreach (var entry in FixtureFiles(generated, "Bindings.g.cs")
+                     .Concat(FixtureFiles(generated, "Projection.g.cs")).Select(Path.GetDirectoryName).Distinct())
+        {
+            // Cache entries are direct children of the global projection directory.
+            if (entry is not null && string.Equals(Path.GetDirectoryName(entry), generated, StringComparison.OrdinalIgnoreCase))
+                Directory.Delete(entry, recursive: true);
+        }
     project.Delete(recursive: true);
 }
 
@@ -640,7 +655,7 @@ async Task VerifyDefinition(Action verifyCacheReuse)
             await Send("workspace/didChangeWatchedFiles", new { changes = new[] { new { uri = new Uri(sharedDeclaration).AbsoluteUri, type = 2 } } });
             await WaitDiagnostics(null);
         }
-        var projectionCount = Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Length;
+        var projectionCount = FixtureFiles(generated, "Projection.g.cs").Length;
         var reexport = Path.Combine(client.FullName, "formatted.d.ts");
         var original = File.ReadAllText(declaration);
         try
@@ -655,7 +670,7 @@ async Task VerifyDefinition(Action verifyCacheReuse)
             if (updated.ValueKind != JsonValueKind.Object || new Uri(updated.GetProperty("uri").GetString()!).LocalPath != reexport ||
                 updated.GetProperty("range").GetProperty("start").GetProperty("line").GetInt32() != 1)
                 throw new InvalidOperationException($"LSP definition must follow the saved re-export. Received {updated}");
-            if (Directory.GetFiles(generated, "Projection.g.cs", SearchOption.AllDirectories).Length != projectionCount)
+            if (FixtureFiles(generated, "Projection.g.cs").Length != projectionCount)
                 throw new InvalidOperationException("A moved definition must reuse the same component C# source.");
 
             File.WriteAllText(reexport, "export declare function format(value: number): string;\n");
@@ -747,6 +762,238 @@ async Task VerifyDefinition(Action verifyCacheReuse)
     }
 
     Task<JsonElement> ReadMessage() => ReadLsp(output, stop);
+}
+
+string[] FixtureFiles(string cache, string name) =>
+    Directory.EnumerateFiles(cache, name, SearchOption.AllDirectories)
+        .Where(path =>
+        {
+            var source = File.ReadAllText(path);
+            return source.Contains(fixturePackage, StringComparison.Ordinal) ||
+                source.Contains(fixtureNamespace, StringComparison.Ordinal);
+        }).ToArray();
+
+async Task VerifyGlobalCache()
+{
+    using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+    var stop = timeout.Token;
+    var portable = project.CreateSubdirectory("portable").FullName;
+    var generatedCache = project.CreateSubdirectory("generated").FullName;
+    var lockSource = File.ReadAllText(Path.Combine(root, "scripts", "csharp", "fixtures", "jolt-npm-runtime", "pnpm-lock.yaml"));
+    var lockedPackage = Regex.Match(lockSource, @"date-fns@4\.4\.0:\s+resolution: \{integrity: (sha512-[A-Za-z0-9+/=]+)\}").Groups[1].Value;
+    if (lockedPackage.Length == 0)
+        throw new InvalidOperationException("Missing the date-fns 4.4.0 integrity.");
+    var one = await Create("first");
+    var two = await Create("second");
+    var firstChecks = 0;
+    var first = await Read(one, () => firstChecks++);
+    if (firstChecks == 0)
+        throw new InvalidOperationException("Cold workspace did not exercise the TypeScript checker.");
+    var paths = Directory.GetFiles(portable, "*.json", SearchOption.AllDirectories);
+    if (paths.Length == 0)
+        throw new InvalidOperationException("Cold registry package did not publish portable metadata.");
+    var firstBindings = NpmProjectionCache.LoadBindings(generatedCache, [], [first], stop);
+    var firstComponent = NpmProjectionCache.LoadComponent(generatedCache, [], [first], CSharpParseOptions.Default, stop);
+    var files = Directory.GetFiles(generatedCache, "*", SearchOption.AllDirectories);
+    var times = files.Select(File.GetLastWriteTimeUtc).ToArray();
+    var second = await Read(two, () => throw new InvalidOperationException("Warm second workspace invoked the TypeScript checker."));
+    if (first.Definition is not { } localFirst || second.Definition is not { } localSecond ||
+        !Path.GetFullPath(localFirst.Path).StartsWith(one + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+        !Path.GetFullPath(localSecond.Path).StartsWith(two + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException("Portable metadata did not rebase definition paths to each local workspace.");
+    var secondBindings = NpmProjectionCache.LoadBindings(generatedCache, [], [second], stop);
+    var secondComponent = NpmProjectionCache.LoadComponent(generatedCache, [], [second], CSharpParseOptions.Default, stop);
+    if (firstBindings != secondBindings || firstComponent.Tree.ToString() != secondComponent.Tree.ToString() ||
+        Directory.GetFiles(generatedCache, "*", SearchOption.AllDirectories).Length != files.Length ||
+        !files.Select(File.GetLastWriteTimeUtc).SequenceEqual(times))
+        throw new InvalidOperationException("The second workspace did not reuse the immutable C# and component source.");
+
+    var firstModule = await BuildComponent(one);
+    var secondModule = await BuildComponent(two);
+    if (firstModule != secondModule || !secondModule.Contains("from 'date-fns'", StringComparison.Ordinal) &&
+        !secondModule.Contains("from \"date-fns\"", StringComparison.Ordinal))
+        throw new InvalidOperationException("Both Jolt projects must emit the same registry-backed component module.");
+
+    var declaration = localSecond.Path;
+    var declarationText = await File.ReadAllTextAsync(declaration, stop);
+    await ReplaceDeclaration(declaration, "// Local declaration offset\n" + declarationText);
+    var changedChecks = 0;
+    var changed = await Read(two, () => changedChecks++);
+    if (changedChecks == 0 || changed.Definition is not { } refreshed || refreshed.Start <= localSecond.Start)
+        throw new InvalidOperationException("Changed local declaration reused stale portable metadata.");
+    var firstAgain = await Read(one, () => throw new InvalidOperationException("The modified declaration displaced the original portable metadata."));
+    if (firstAgain.Definition != first.Definition)
+        throw new InvalidOperationException("The original workspace lost its local definition after a declaration variant was published.");
+    Console.WriteLine($"Independent locked date-fns workspaces reused metadata and generated C# with zero warm checker callbacks. Cold callbacks: {firstChecks}. Modified declaration callbacks: {changedChecks}. Both definition variants remained valid for their workspaces.");
+
+    await SetPeer(one, localFirst.Path, "string");
+    await SetPeer(two, localSecond.Path, "number");
+    var peerA = await Read(one, () => { });
+    var peerChecks = 0;
+    var peerB = await Read(two, () => peerChecks++);
+    if (peerChecks == 0 || peerA.Signatures.Single().ReturnType.Kind != "string" ||
+        peerB.Signatures.Single().ReturnType.Kind != "number")
+        throw new InvalidOperationException($"Distinct peer declarations must yield distinct projections. A: {peerA.Signatures.Single().ReturnType.Kind}, B: {peerB.Signatures.Single().ReturnType.Kind}, callbacks: {peerChecks}.");
+    var peerAAgain = await Read(one, () => throw new InvalidOperationException("The second peer displaced the first peer's snapshot."));
+    if (peerA.Signatures.Single().ReturnType != peerAAgain.Signatures.Single().ReturnType)
+        throw new InvalidOperationException("The first peer lost its return type after the second peer was queried.");
+    Console.WriteLine("Distinct installed peer declarations produced distinct return types and preserved both snapshots.");
+
+    const string documentedDeclarations = """
+        /**
+         * Text overload <with markup> & detail.
+         * @param label Text to read.
+         * @returns Text result.
+         */
+        export declare function addDays(label: string): string;
+        /**
+         * Numeric overload.
+         * @param amount Numeric input.
+         * @returns Numeric result.
+         */
+        export declare function addDays(amount: number, base?: number): number;
+        """;
+    await ReplaceDeclaration(localFirst.Path, documentedDeclarations);
+    await ReplaceDeclaration(localSecond.Path, documentedDeclarations);
+    var documented = await Read(one, () => { });
+    var documentedSources = Sources(documented);
+    CheckDocumentation(documentedSources, "Text result.");
+    var documentedWarm = await Read(two, () => throw new InvalidOperationException("The matching workspace did not reuse documented metadata."));
+    if (Sources(documentedWarm) != documentedSources)
+        throw new InvalidOperationException("The warm workspaces emitted different documentation.");
+
+    await ReplaceDeclaration(localSecond.Path, documentedDeclarations.Replace("Text result.", "Revised text result.", StringComparison.Ordinal));
+    var documentationChecks = 0;
+    var edited = await Read(two, () => documentationChecks++);
+    var editedSources = Sources(edited);
+    if (documentationChecks != 1 || editedSources.Bindings == documentedSources.Bindings ||
+        editedSources.Component == documentedSources.Component)
+        throw new InvalidOperationException("A docs-only edit did not refresh both generated source caches.");
+    CheckDocumentation(editedSources, "Revised text result.");
+
+    await ReplaceDeclaration(localSecond.Path, documentedDeclarations);
+    var restored = await Read(two, () => throw new InvalidOperationException("Restored declaration bytes did not reuse the original metadata."));
+    if (Sources(restored) != documentedSources)
+        throw new InvalidOperationException("Restored declarations emitted stale documentation.");
+    Console.WriteLine("Both generated C# projections kept overload-specific documentation, refreshed a docs-only edit, and reused the restored text across workspaces.");
+
+    (string Bindings, string Component) Sources(NpmValueExport value) => (
+        NpmProjectionCache.LoadBindings(generatedCache, [], [value], stop),
+        NpmProjectionCache.LoadComponent(generatedCache, [], [value], CSharpParseOptions.Default, stop).Tree.ToString());
+
+    void CheckDocumentation((string Bindings, string Component) sources, string textResult)
+    {
+        foreach (var generatedSource in new[] { sources.Bindings, sources.Component })
+        {
+            var methods = CSharpSyntaxTree.ParseText(generatedSource, cancellationToken: stop).GetRoot(stop).DescendantNodes()
+                .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>().Where(method => method.Identifier.ValueText == "AddDays")
+                .ToLookup(method => method.ParameterList.Parameters.First().Identifier.ValueText);
+            CheckMethod("label", "Text overload <with markup> & detail.", "Text to read.", textResult);
+            CheckMethod("amount", "Numeric overload.", "Numeric input.", "Numeric result.");
+            if (!methods["amount"].Any(method => method.ParameterList.Parameters.Any(parameter => parameter.Identifier.ValueText == "base")))
+                throw new InvalidOperationException("The generated numeric overload omitted the undocumented optional parameter.");
+            if (generatedSource.Contains(one, StringComparison.OrdinalIgnoreCase) ||
+                generatedSource.Contains(two, StringComparison.OrdinalIgnoreCase) ||
+                generatedSource.Contains("file://", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Shared generated source contains an absolute declaration link.");
+
+            void CheckMethod(string name, string summary, string parameter, string returns)
+            {
+                if (!methods.Contains(name))
+                    throw new InvalidOperationException($"Missing the overload for AddDays({name}).");
+                foreach (var method in methods[name])
+                {
+                    var lines = method.GetLeadingTrivia().ToFullString().Split('\n')
+                        .Select(line => line.Trim()).Where(line => line.StartsWith("///", StringComparison.Ordinal))
+                        .Select(line => line[3..]);
+                    var xml = XElement.Parse("<doc>" + string.Join('\n', lines) + "</doc>");
+                    var param = xml.Elements("param").SingleOrDefault();
+                    if (xml.Element("summary")?.Value.Trim() != summary ||
+                        param?.Attribute("name")?.Value != name || param?.Value.Trim() != parameter ||
+                        xml.Element("returns")?.Value.Trim() != returns)
+                        throw new InvalidOperationException($"Unexpected documentation for AddDays({name}): {xml}");
+                }
+            }
+        }
+    }
+
+    async Task ReplaceDeclaration(string path, string contents)
+    {
+        // An installed declaration may be hard-linked into the shared pnpm store.
+        await File.WriteAllTextAsync(path + ".next", contents, stop);
+        File.Move(path + ".next", path, overwrite: true);
+    }
+
+    async Task SetPeer(string directory, string path, string returnType)
+    {
+        // Install beside the package in pnpm's virtual store, the same resolution
+        // location a registry package's declared peer uses.
+        var scope = Path.GetDirectoryName(Path.GetDirectoryName(path))!;
+        var peer = Directory.CreateDirectory(Path.Combine(scope, "projection-cache-peer")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(peer, "package.json"),
+            """{"name":"projection-cache-peer","version":"1.0.0","types":"index.d.ts"}""", stop);
+        await File.WriteAllTextAsync(Path.Combine(peer, "index.d.ts"), $"export declare function getPeer(): {returnType};", stop);
+        await ReplaceDeclaration(path, """
+            import { getPeer } from 'projection-cache-peer';
+            export { getPeer as addDays };
+            """);
+    }
+
+    async Task<string> BuildComponent(string directory)
+    {
+        await File.WriteAllTextAsync(Path.Combine(directory, "App.jazor"), """
+            @using Dates = Npm.DateFns.Exports
+            <p>Calendar</p>
+            @code {
+                public static ECMAScript.Date Tomorrow(ECMAScript.Date today) => Dates.AddDays(today, 1);
+            }
+            """, stop);
+        var start = new ProcessStartInfo(cli) { WorkingDirectory = directory, UseShellExecute = false };
+        start.ArgumentList.Add("build");
+        start.ArgumentList.Add(".");
+        start.Environment["JazorPnpmStoreDirectory"] = store;
+        using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {cli}.");
+        try
+        {
+            await process.WaitForExitAsync(stop);
+            if (process.ExitCode != 0)
+                throw new InvalidOperationException($"Jolt build in {directory} exited with {process.ExitCode}.");
+        }
+        finally
+        {
+            await Stop(process);
+        }
+        return await File.ReadAllTextAsync(Path.Combine(directory, ".jolt", "App.mjs"), stop);
+    }
+
+    async Task<string> Create(string name)
+    {
+        var directory = project.CreateSubdirectory(name).FullName;
+        await File.WriteAllTextAsync(Path.Combine(directory, "package.json"),
+            $$$"""{"name":"cache-fixture-{{{name}}}","private":true,"type":"module","dependencies":{"date-fns":"4.4.0"}}""", stop);
+        await File.WriteAllTextAsync(Path.Combine(directory, "pnpm-lock.yaml"), $$"""
+            lockfileVersion: '9.0'
+            settings:
+              autoInstallPeers: true
+              excludeLinksFromLockfile: false
+            importers:
+              .:
+                dependencies:
+                  date-fns:
+                    specifier: 4.4.0
+                    version: 4.4.0
+            packages:
+              date-fns@4.4.0:
+                resolution: {integrity: {{lockedPackage}}}
+            snapshots:
+              date-fns@4.4.0: {}
+            """, stop);
+        return directory;
+    }
+
+    Task<NpmValueExport> Read(string directory, Action observe) =>
+        new NpmValueMetadataProvider(store) { PortableCacheDirectory = portable, ObserveChecker = observe }
+            .ReadValueAsync(Path.Combine(directory, "App.jazor"), "date-fns", "addDays", stop);
 }
 
 async Task VerifyWorkspaceLock()

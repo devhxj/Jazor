@@ -24,7 +24,7 @@ public static class NpmExportSelection
         if (direct.Length != 0)
             return direct;
 
-        // Prefixes only request metadata. A projected signature must confirm the managed suffix.
+        // Prefixes only request metadata. The projection must confirm the managed suffix.
         var candidates = new List<(string, string?)>();
         for (var cut = 1; cut < name.Length; cut++)
             if (char.IsUpper(name[cut]))
@@ -33,5 +33,14 @@ public static class NpmExportSelection
     }
 
     public static bool Matches(NpmValueExport value, string? suffix) =>
-        suffix is null || value.Signatures.Any(signature => signature.ManagedNameSuffix == suffix);
+        suffix is null || value.AttachedMemberType is not null && (value.AttachedMemberSuffix ?? "Members") == suffix ||
+        value.Signatures.Any(signature => signature.ManagedNameSuffix == suffix);
+
+    internal static string ReserveAttachedMemberSuffix(string name, HashSet<string> occupied)
+    {
+        var suffix = "Members";
+        for (var number = 2; !occupied.Add(name + suffix); number++)
+            suffix = "Members_" + number;
+        return suffix;
+    }
 }

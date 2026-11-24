@@ -8,24 +8,24 @@ public sealed partial class NpmValueMetadataProvider
         try
         {
             using var reader = new StringReader(request);
-            var project = reader.ReadLine()!;
+            var manifest = reader.ReadLine()!;
             var npmNamespace = reader.ReadLine()!;
             var store = reader.ReadLine();
-            var root = FindProject(project);
+            var root = Path.GetDirectoryName(manifest)!;
             var packages = ListPackageNames(root);
             var inputs = PackageInputs(root).ToHashSet(StringComparer.Ordinal);
             var provider = new NpmValueMetadataProvider(string.IsNullOrEmpty(store) ? null : store);
             var matches = await NpmExportSelection.FindModulesAsync(npmNamespace, packages, package =>
             {
                 inputs.UnionWith(NpmPackageExports.ManifestCandidates(root, package));
-                return provider.ListSpecifiersAsync(project, package, npmNamespace, cancellationToken);
+                return provider.ListSpecifiersAsync(manifest, package, npmNamespace, cancellationToken);
             }, validatePackageRoot: true);
 
             string[] names = [];
             var linked = new HashSet<string>(StringComparer.Ordinal);
             if (matches.Count == 1)
             {
-                var snapshot = await provider.ReadSnapshotAsync(project, matches[0], "value", null, cancellationToken);
+                var snapshot = await provider.ReadSnapshotAsync(manifest, matches[0], "editor", null, cancellationToken);
                 inputs.UnionWith(snapshot.Inputs);
                 if (snapshot.Realpaths is { } realpaths)
                     foreach (var (path, resolved) in realpaths)
@@ -43,14 +43,12 @@ public sealed partial class NpmValueMetadataProvider
                     .GroupBy(NpmNames.ValueNameFor, StringComparer.Ordinal)
                     .Where(group => group.Key != "Exports" && IsIdentifier(group.Key) && group.Count() == 1)
                     .Select(group => group.Key)
+                    .Concat(snapshot.Values!.Where(value => value.AttachedMemberSuffix is not null)
+                        .Select(value => NpmNames.ValueNameFor(value.ExportName) + value.AttachedMemberSuffix))
                     .Order(StringComparer.Ordinal)
                     .ToArray();
             }
 
-            // Include missing nearer manifests so creation of a nested npm project
-            // invalidates the index for the current MSBuild project.
-            for (var directory = new FileInfo(project).Directory!; directory.FullName != root; directory = directory.Parent!)
-                inputs.Add(Path.Combine(directory.FullName, "package.json"));
             await File.WriteAllLinesAsync(outputPath,
                 [string.Join("\t", names), .. inputs.Order(StringComparer.Ordinal).Select(path => linked.Contains(path) ? "*" + path : path)], cancellationToken);
             return 0;

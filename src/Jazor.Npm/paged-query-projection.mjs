@@ -227,13 +227,18 @@ export function readPagedQueries(ts, checker, probes, statements, diagnostics, v
         // or in the result, including a fixed page inside the return ref.
         const projections = result.get(probe.name) ?? [];
         if (!projections.some(candidate => candidate.parameters[0].name === projection.parameters[0].name) &&
-            earlier?.cursor !== probe.cursor && JSON.stringify(earlier?.projection) === JSON.stringify(projection)) {
+            earlier?.cursor !== probe.cursor && JSON.stringify(earlier?.projection, withoutDocumentation) ===
+                JSON.stringify(projection, withoutDocumentation)) {
             projections.push(projection);
             result.set(probe.name, projections);
         }
         witnesses.set(key, { cursor: probe.cursor, projection });
     }
     return result;
+}
+
+function withoutDocumentation(key, value) {
+    return key === 'documentation' || key === 'documentationFromCallableOwner' ? undefined : value;
 }
 
 function branches(type) {

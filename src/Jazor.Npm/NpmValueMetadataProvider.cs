@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Jazor.NodeHost;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -56,13 +57,18 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
 
     public async Task<IReadOnlyList<string>> ListSpecifiersAsync(string documentPath, string packageName,
         string? requestedNamespace, CancellationToken cancellationToken = default)
+        => await ListSpecifiersAsync(documentPath, packageName, requestedNamespace, null, cancellationToken);
+
+    internal async Task<IReadOnlyList<string>> ListSpecifiersAsync(string documentPath, string packageName,
+        string? requestedNamespace, Validation? validation, CancellationToken cancellationToken)
     {
         var project = FindProject(documentPath);
         var gate = ProjectGates.GetOrAdd(project, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken);
         try
         {
-            await RestoreAsync(project, ResolveStore(), cancellationToken);
+            if (await RestoreAsync(project, ResolveStore(), cancellationToken) != "")
+                validation?.Clear();
             var file = NpmPackageExports.ManifestCandidates(project, packageName).FirstOrDefault(File.Exists)
                 ?? throw new FileNotFoundException($"Could not find the installed package.json for '{packageName}' from '{project}'.");
             using var metadata = JsonDocument.Parse(await File.ReadAllTextAsync(file, cancellationToken));
@@ -212,12 +218,27 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
 
     private static NpmValueExport RemoveCollidingVariants(NpmValueExport export, IReadOnlyList<string> exports)
     {
-        if (!export.Signatures.Any(signature => signature.ManagedNameSuffix is not null))
+        if (export.AttachedMemberType is null && !export.Signatures.Any(signature => signature.ManagedNameSuffix is not null))
             return export;
         var name = NpmNames.ValueNameFor(export.ExportName);
         var names = exports.Select(NpmNames.ValueNameFor).ToHashSet(StringComparer.Ordinal);
-        return export with { Signatures = export.Signatures.Where(signature => signature.ManagedNameSuffix is null ||
-            IsIdentifier(name + signature.ManagedNameSuffix) && !names.Contains(name + signature.ManagedNameSuffix)).ToArray() };
+        var signatures = export.Signatures.Where(signature => signature.ManagedNameSuffix is null ||
+            IsIdentifier(name + signature.ManagedNameSuffix) && !names.Contains(name + signature.ManagedNameSuffix)).ToArray();
+        foreach (var signature in signatures)
+            names.Add(name + signature.ManagedNameSuffix);
+        // Attached members are an optional projection. An unrepresentable member
+        // must not prevent the existing callable overloads from binding.
+        var attachedMembers = export.AttachedMembers?.Where(member =>
+            IsIdentifier(NpmNames.ValueNameFor(member.Name)) && CheckType(member.Type) is null)
+            .GroupBy(member => NpmNames.ValueNameFor(member.Name), StringComparer.Ordinal)
+            .Where(group => group.Count() == 1).Select(group => group.Single()).ToArray();
+        return export with
+        {
+            Signatures = signatures,
+            AttachedMembers = attachedMembers,
+            AttachedMemberSuffix = attachedMembers is { Length: > 0 }
+                ? NpmExportSelection.ReserveAttachedMemberSuffix(name, names) : null,
+        };
     }
 
     private static string? GetProjectionError(NpmValueExport export, IReadOnlyList<string> exports)
@@ -294,14 +315,15 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
         storeDirectory ?? Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
         ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), _defaultStoreOwner, "pnpm-store"));
 
-    internal async Task<string> RestoreTypeScriptAsync(string store, CancellationToken cancellationToken, Type? resourceOwner = null)
+    internal async Task<string> RestoreTypeScriptAsync(string store, CancellationToken cancellationToken, Type? resourceOwner = null,
+        Validation? validation = null)
     {
-        var tools = await RestoreToolsAsync(store, cancellationToken, resourceOwner ?? typeof(NpmValueMetadataProvider), "");
+        var tools = await RestoreToolsAsync(store, cancellationToken, resourceOwner ?? typeof(NpmValueMetadataProvider), "", validation);
         return Path.Combine(tools, "node_modules", "typescript", "lib", "typescript.js");
     }
 
     private async Task<string> RestoreToolsAsync(string store, CancellationToken cancellationToken, Type resourceOwner,
-        string resourcePrefix)
+        string resourcePrefix, Validation? validation = null)
     {
         using var manifest = OpenResource("package.json");
         using var lockfile = OpenResource("pnpm-lock.yaml");
@@ -315,7 +337,8 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
             Directory.CreateDirectory(tools);
             WriteResource(manifest, Path.Combine(tools, "package.json"));
             WriteResource(lockfile, Path.Combine(tools, "pnpm-lock.yaml"));
-            await NodeToolchain.RestoreAsync(tools, store, cancellationToken, Console.Error, _engineCacheDirectory, standaloneTool: true);
+            if (await RestoreWithStampAsync(tools, store, cancellationToken, standaloneTool: true) != "")
+                validation?.Clear();
             return tools;
         }
         finally
@@ -347,7 +370,7 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
     }
 
     internal Task<string> RestoreAsync(string project, string store, CancellationToken cancellationToken)
-        => NodeToolchain.RestoreAsync(project, store, cancellationToken, Console.Error, _engineCacheDirectory);
+        => RestoreWithStampAsync(project, store, cancellationToken, standaloneTool: false);
 
     public static IReadOnlyList<string> ListPackageNames(string projectDirectory)
     {
@@ -369,7 +392,7 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
         return [];
     }
 
-    private static string FindProject(string documentPath)
+    internal static string FindProject(string documentPath)
     {
         for (var directory = new FileInfo(documentPath).Directory; directory is not null; directory = directory.Parent)
             if (File.Exists(Path.Combine(directory.FullName, "package.json")))
@@ -392,7 +415,11 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
 
     private sealed record ValueSnapshot(NpmValueExport? Value, IReadOnlyList<NpmValueExport>? Values,
         IReadOnlyList<string>? Exports, string[] Inputs, Dictionary<string, string>? Errors, string? ModulePath,
-        Dictionary<string, string>? Realpaths, bool NeedsLocaleTool = false) : IQuerySnapshot;
+        Dictionary<string, string>? Realpaths, bool NeedsLocaleTool = false) : IQuerySnapshot
+    {
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public Dictionary<string, string?>? ObservedInputs { get; set; }
+    }
 
 
     // metadata.mjs imports the package's projection modules. Extract from the
@@ -406,7 +433,12 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
     {
         resourceOwner ??= typeof(NpmValueMetadataProvider);
         var directory = Path.Combine(project, ".jazor", $"npm-metadata-{Guid.NewGuid():N}");
-        resources ??= entry == "metadata.mjs" ? MetadataModules : [entry];
+        resources ??= entry switch
+        {
+            "metadata.mjs" => MetadataModules,
+            "resolve-module.mjs" => [entry, "runtime-module.mjs"],
+            _ => [entry]
+        };
         Directory.CreateDirectory(directory);
         try
         {

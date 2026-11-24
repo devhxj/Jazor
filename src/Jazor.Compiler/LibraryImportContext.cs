@@ -73,13 +73,7 @@ public static class LibraryImportContext
                         { ContentHash = fields.Length > 3 ? fields[3] : null });
                 else throw new NotSupportedException("Invalid ordinary library implementation record: " + value);
             }
-            foreach (var group in assets.GroupBy(static asset => asset.AssemblyName).OrderBy(static group => group.Key, StringComparer.Ordinal))
-            {
-                var matches = group.Distinct().ToArray();
-                if (matches.Length != 1)
-                    throw new NotSupportedException($"Ordinary library '{group.Key}' requires exactly one resolved implementation asset for the selected TFM/RID; found {matches.Length}.");
-                builder.Add(matches[0]);
-            }
+            builder.AddRange(assets.Distinct().OrderBy(static asset => asset.AssemblyName, StringComparer.Ordinal));
         }
         return builder.ToImmutable();
     }

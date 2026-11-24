@@ -41,17 +41,23 @@ public static class JoltProjectLoader
         => new() { ObserveQueryInputs = observe };
 
     internal static async Task<JoltWorkspace> LoadAsync(string projectDirectory, NpmVueMetadataProvider provider,
-        IReadOnlyDictionary<string, string>? overlays = null, CancellationToken cancellationToken = default)
+        IReadOnlyDictionary<string, string>? overlays = null, CancellationToken cancellationToken = default,
+        IReadOnlyList<JoltSource>? previousSources = null)
     {
-        var workspace = await LoadSourcesAsync(projectDirectory, overlays, cancellationToken);
+        var workspace = await LoadSourcesAsync(projectDirectory, overlays, cancellationToken, previousSources);
         return await LoadNpmAsync(projectDirectory, workspace, provider, cancellationToken);
     }
 
-    public static async Task<JoltWorkspace> LoadSourcesAsync(string projectDirectory,
+    public static Task<JoltWorkspace> LoadSourcesAsync(string projectDirectory,
         IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken)
+        => LoadSourcesAsync(projectDirectory, overlays, cancellationToken, null);
+
+    internal static async Task<JoltWorkspace> LoadSourcesAsync(string projectDirectory,
+        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken, IReadOnlyList<JoltSource>? previousSources)
     {
         var root = Path.GetFullPath(projectDirectory);
         var sources = new SortedDictionary<string, JoltSource>(StringComparer.Ordinal);
+        var previous = previousSources?.ToDictionary(source => source.Path, StringComparer.Ordinal);
         var vuePaths = new SortedSet<string>(StringComparer.Ordinal);
         var vueSources = new Dictionary<string, string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         foreach (var path in Discover(root))
@@ -66,7 +72,7 @@ public static class JoltProjectLoader
                 continue;
             try
             {
-                sources[name] = new(name, await File.ReadAllTextAsync(path, cancellationToken));
+                sources[name] = Current(name, await File.ReadAllTextAsync(path, cancellationToken));
             }
             catch (FileNotFoundException)
             {
@@ -81,7 +87,7 @@ public static class JoltProjectLoader
                 if (name.StartsWith("../", StringComparison.Ordinal) || Path.IsPathRooted(name))
                     continue;
                 if (Path.GetExtension(name) is ".jazor")
-                    sources[name] = new(name, content);
+                    sources[name] = Current(name, content);
                 else if (Path.GetExtension(name) is ".vue" or ".ts" or ".tsx" or ".mts" or ".cts" or ".js" or ".jsx" or ".mjs")
                 {
                     vueSources[absolute] = content;
@@ -115,7 +121,7 @@ public static class JoltProjectLoader
 
         return new(sources.Values.ToArray(), new(rootNamespace) {
             CSharpSources = csharpSources,
-            Router = router, NpmProjectionCacheDirectory = Path.Combine(root, "obj", "Jolt", "projections"),
+            Router = router,
         }, [], packages.ToArray(),
             new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal))
         {
@@ -124,6 +130,11 @@ public static class JoltProjectLoader
         };
 
         string Relative(string path) => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+
+        // A retained source owns its Razor parse. Compare the actual text so a
+        // save with preserved timestamps or an unsaved editor overlay is observed.
+        JoltSource Current(string path, string content) =>
+            previous?.GetValueOrDefault(path) is { } last && last.Content == content ? last : new(path, content);
     }
 
     private static async Task<JoltSource[]> LoadCSharpSourcesAsync(string root, JsonElement entries,
@@ -232,6 +243,7 @@ public static class JoltProjectLoader
         NpmVueMetadataProvider provider, CancellationToken cancellationToken)
     {
         var root = Path.GetFullPath(projectDirectory);
+        var validation = new NpmValueMetadataProvider.Validation();
         var exports = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
         var valueNames = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
         var metadata = new Dictionary<(string Module, string Export), NpmVueComponent>();
@@ -239,6 +251,8 @@ public static class JoltProjectLoader
         var diagnostics = new List<Diagnostic>();
         var projectImports = JoltProjectImports.Parse(workspace.Sources, cancellationToken);
         var modules = new Dictionary<JoltImport, string?>();
+        var npmProjects = new Dictionary<string, string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var componentRequests = new List<NpmComponentRequest>();
         var valueAliases = new Dictionary<string, Dictionary<(string Alias, string Namespace), (string Module, string ImportPath)>>(StringComparer.Ordinal);
         foreach (var document in projectImports.Documents)
         {
@@ -262,27 +276,61 @@ public static class JoltProjectLoader
                     }
                     continue;
                 }
+                var importDirectory = Path.GetDirectoryName(importPath)!;
                 foreach (var export in exports[module])
                 {
                     var site = Array.Find(tags, e => e.Name == NpmNames.TagFor(module, export));
-                    if (site == null || metadata.ContainsKey((module, export)))
+                    if (site == null)
                         continue;
-                    try
-                    {
-                        metadata[(module, export)] = await provider.ReadAsync(importPath, module, export, cancellationToken);
-                    }
-                    catch (Exception ex) when (ex is not OperationCanceledException)
-                    {
-                        var lines = SourceText.From(document.Source).Lines;
-                        var location = Location.Create(document.Path, site.NameSpan, lines.GetLinePositionSpan(site.NameSpan));
-                        diagnostics.Add(Diagnostic.Create(ImportError, location, $"{module} ({export}): {ex.Message}"));
-                    }
+                    if (!npmProjects.TryGetValue(importDirectory, out var npmProject))
+                        try
+                        {
+                            npmProjects[importDirectory] = npmProject = NpmVueMetadataProvider.FindProject(importPath);
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            ReportComponentError(document, site.NameSpan, module, export, ex.Message);
+                            continue;
+                        }
+                    componentRequests.Add(new(npmProject, module, export, importPath, document, site.NameSpan));
                 }
             }
         }
+
+        // A batch shares the installed declaration graph. Apply its results in source
+        // order so another workspace can supply a contract after an earlier failure.
+        var requestsByProjectModule = componentRequests.ToLookup(request => (request.Project, request.Module));
+        var componentBatches = new Dictionary<(string Project, string Module), IReadOnlyDictionary<string, NpmVueComponentResult>>();
+        foreach (var request in componentRequests)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var (project, module, export, importPath, document, span) = request;
+            if (metadata.ContainsKey((module, export)))
+                continue;
+            var key = (project, module);
+            if (!componentBatches.TryGetValue(key, out var batch))
+            {
+                var names = requestsByProjectModule[key].Select(site => site.Export).Distinct(StringComparer.Ordinal)
+                    .Where(name => !metadata.ContainsKey((module, name))).ToArray();
+                try
+                {
+                    batch = await provider.ReadComponentsAsync(importPath, module, names, validation, cancellationToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    batch = names.ToDictionary(name => name, _ => new NpmVueComponentResult(null, ex.Message), StringComparer.Ordinal);
+                }
+                componentBatches.Add(key, batch);
+            }
+            var result = batch[export];
+            if (result.Component is { } component)
+                metadata.Add((module, export), component);
+            else
+                ReportComponentError(document, span, module, export, result.Error!);
+        }
         var componentOptions = workspace.Options with { NpmComponents = metadata.Values.ToArray() };
         var (vueComponents, vueUsesJolt) = await LoadVueAsync(workspace with { Options = componentOptions }, projectImports, provider, root,
-            diagnostics, cancellationToken);
+            diagnostics, validation, cancellationToken);
         componentOptions = componentOptions with { VueComponents = vueComponents };
         if (valueAliases.Count != 0)
         {
@@ -358,6 +406,13 @@ public static class JoltProjectLoader
             VueUsesJolt = vueUsesJolt,
         };
 
+        void ReportComponentError(JoltDocument document, TextSpan span, string module, string export, string error)
+        {
+            var lines = SourceText.From(document.Source).Lines;
+            var location = Location.Create(document.Path, span, lines.GetLinePositionSpan(span));
+            diagnostics.Add(Diagnostic.Create(ImportError, location, $"{module} ({export}): {error}"));
+        }
+
         async Task<string?> ResolveImportAsync(JoltImport import, string importPath)
         {
             var target = import.NpmNamespace!;
@@ -365,14 +420,14 @@ public static class JoltProjectLoader
             try
             {
                 var matches = await NpmExportSelection.FindModulesAsync(target, workspace.Packages,
-                    package => provider.ListSpecifiersAsync(importPath, package, target, cancellationToken));
+                    package => provider.ListSpecifiersAsync(importPath, package, target, validation, cancellationToken));
                 if (matches.Count == 1)
                 {
                     var module = matches[0];
                     if (import.IsNpmValue && !valueNames.ContainsKey(module))
                         valueNames[module] = await provider.ListValueExportsAsync(importPath, module, cancellationToken);
                     else if (!import.IsNpmValue && !exports.ContainsKey(module))
-                        exports[module] = await provider.ListExportsAsync(importPath, module, cancellationToken);
+                        exports[module] = await provider.ListExportsAsync(importPath, module, validation, cancellationToken);
                     return module;
                 }
                 message = matches.Count == 0
@@ -388,8 +443,12 @@ public static class JoltProjectLoader
         }
     }
 
+    private sealed record NpmComponentRequest(string Project, string Module, string Export, string ImportPath,
+        JoltDocument Document, TextSpan Span);
+
     private static async Task<(IReadOnlyList<NpmVueComponent> Components, bool UsesJolt)> LoadVueAsync(JoltWorkspace workspace, JoltProjectImports imports,
-        NpmVueMetadataProvider provider, string root, List<Diagnostic> diagnostics, CancellationToken cancellationToken)
+        NpmVueMetadataProvider provider, string root, List<Diagnostic> diagnostics, NpmValueMetadataProvider.Validation validation,
+        CancellationToken cancellationToken)
     {
         if (workspace.Sources.Count == 0 || workspace.VuePaths.Count == 0)
             return ([], false);
@@ -402,7 +461,7 @@ public static class JoltProjectLoader
         {
             snapshot = await provider.ReadLocalComponentSnapshotAsync(root, candidates.Select(candidate => candidate.Path).ToArray(),
                 workspace.VueSources, cancellationToken,
-                () => JoltProjectCompiler.ProjectAuthorDeclarations(workspace.Sources, workspace.Options, cancellationToken));
+                () => JoltProjectCompiler.ProjectAuthorDeclarations(workspace.Sources, workspace.Options, cancellationToken), validation);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {

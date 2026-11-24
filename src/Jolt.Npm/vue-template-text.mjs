@@ -1,29 +1,7 @@
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { readFileSync } from 'node:fs';
-
-export function readTypeScriptInput(file) {
-    let bytes;
-    try {
-        bytes = readFileSync(file);
-    } catch {
-        return undefined;
-    }
-    // Hash before byte swapping. Both Vue parsing paths must consume the same
-    // snapshot as TypeScript, including the pinned ts.sys.readFile BOM rules.
-    const hash = createHash('sha256').update(bytes).digest('hex').toUpperCase();
-    let text;
-    if (bytes[0] === 0xfe && bytes[1] === 0xff)
-        text = bytes.subarray(2, bytes.length & ~1).swap16().toString('utf16le');
-    else if (bytes[0] === 0xff && bytes[1] === 0xfe)
-        text = bytes.toString('utf16le', 2);
-    else {
-        const hasBom = bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
-        text = bytes.toString('utf8', hasBom ? 3 : 0);
-    }
-    return { path: path.resolve(file), hash, text };
-}
+import { readTypeScriptInput } from './typescript-input.mjs';
 
 export function templateTextSignature(typescript, source, definitionEnd) {
     const require = createRequire(path.resolve(typescript, '../../../package.json'));

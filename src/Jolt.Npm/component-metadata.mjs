@@ -1,15 +1,19 @@
 import { packageChecker } from './package-checker.mjs';
-import { contractTypes, readComponent } from './vue-contract.mjs';
+import { contractHelpers, contractAliases, readComponent } from './vue-contract.mjs';
 import { webIdlProjection } from './web-idl-projection.mjs';
 
-const [typescript, moduleSpecifier, exportName, webIdlCarriersJson] = globalThis.__jazorArguments;
-const { ts, source, program, host, inputs, modulePath, realpaths, definition, packageIdentity } =
+const [typescript, moduleSpecifier, exportNamesJson, webIdlCarriersJson] = globalThis.__jazorArguments;
+const exportNames = JSON.parse(exportNamesJson);
+// Keep per-component aliases in separate scopes while sharing the package and Vue imports.
+const { ts, source, program, host, snapshotInputs, definition, packageIdentity } =
     await packageChecker(import.meta.url, typescript, moduleSpecifier, () => `
         import * as packageExports from ${JSON.stringify(moduleSpecifier)};
         import type { VNodeProps, AllowedComponentProps, ComponentCustomProps } from 'vue';
         type VueProps = keyof (VNodeProps & AllowedComponentProps & ComponentCustomProps);
-        ${exportName ? `type Component = (typeof packageExports)[${JSON.stringify(exportName)}];
-            ${contractTypes('Component')}` : ''}
+        ${exportNames.length ? contractHelpers : ''}
+        ${exportNames.map((name, index) => `namespace Component${index} {
+            ${contractAliases(`(typeof packageExports)[${JSON.stringify(name)}]`)}
+        }`).join('\n')}
     `);
 const checker = program.getTypeChecker();
 const formatFlags = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope;
@@ -29,14 +33,25 @@ const isComponent = symbol => {
     });
 };
 let result;
-if (exportName) {
-    const symbol = aliases.find(symbol => symbol.name === exportName);
-    if (!symbol || !isComponent(symbol))
-        throw new Error(`'${moduleSpecifier}' has no supported Vue component export named '${exportName}'.`);
+if (exportNames.length) {
+    const exportsByName = new Map(aliases.map(symbol => [symbol.name, symbol]));
+    const scopes = source.statements.filter(ts.isModuleDeclaration);
     const { webType } = webIdlProjection(ts, program, source, host, JSON.parse(webIdlCarriersJson));
-    result = { component: readComponent(unalias(symbol), { ts, source, checker, typeOf, display, optional, definition,
-        identity: packageIdentity(), exportName, webType }) };
+    const identity = packageIdentity();
+    // Keep authored export names as values so snapshot path-field names remain unambiguous.
+    result = { components: exportNames.map((exportName, index) => {
+        try {
+            const symbol = exportsByName.get(exportName);
+            if (!symbol || !isComponent(symbol))
+                throw new Error(`'${moduleSpecifier}' has no supported Vue component export named '${exportName}'.`);
+            const component = readComponent(unalias(symbol), { ts, source, checker, typeOf, display, optional, definition,
+                identity, exportName, webType, scope: scopes[index].body });
+            return { exportName, result: { component } };
+        } catch (error) {
+            return { exportName, result: { error: error.message } };
+        }
+    }) };
 } else {
     result = { exports: aliases.filter(isComponent).map(symbol => symbol.name).sort() };
 }
-console.log(JSON.stringify({ ...result, inputs: [...inputs], modulePath, realpaths: Object.fromEntries(realpaths) }));
+console.log(JSON.stringify({ ...result, ...snapshotInputs() }));

@@ -76,6 +76,52 @@ public sealed class NpmValueTests
     private static readonly NpmValueType Number = new("number");
 
     [TestMethod]
+    public async Task Compile_CallableExportPreservesCallsAndAttachedReceivers()
+    {
+        const string source = """
+            @using Tool = Npm.Counter.Exports
+            <p>@(Tool.Send("a") + Tool.SendMembers.Success("b") + Tool.SendMembers.Label)</p>
+            """;
+        var send = Export("counter", "send", [new([new("text", Text, false)], Text)]) with
+        {
+            AttachedMembers =
+            [
+                new("success", new("method", Signatures: [new([new("text", Text, false)], Text)]), true),
+                new("label", Text, true),
+            ],
+        };
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], Options(send));
+
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var script = result.Modules.Single().Content;
+        var import = Regex.Match(script, "import \\{ send(?: as ([\\w$]+))? \\} from \"counter\";");
+        Assert.IsTrue(import.Success, script);
+        var receiver = import.Groups[1].Success ? import.Groups[1].Value : "send";
+        StringAssert.Contains(script, $"{receiver}(\"a\")");
+        StringAssert.Contains(script, $"{receiver}.success(\"b\")");
+        StringAssert.Contains(script, $"{receiver}.label");
+    }
+
+    [TestMethod]
+    public void GenerateSource_CallableCompanionYieldsToRealExport()
+    {
+        var send = Export("counter", "send", [new([], Text)]) with
+        {
+            AttachedMembers = [new("label", Text, true)],
+        };
+        var real = Export("counter", "sendMembers", [new([], Number)]);
+        var names = new[] { send.ExportName, real.ExportName }.ToLookup(NpmNames.ValueNameFor, StringComparer.Ordinal);
+        var request = NpmExportSelection.FindMembers(names, "SendMembers").Single();
+        Assert.AreEqual((real.ExportName, (string?)null), request);
+        var companionRequest = NpmExportSelection.FindMembers(names, "SendMembers_2").Single();
+        Assert.AreEqual((send.ExportName, "Members_2"), companionRequest);
+
+        var source = NpmBindings.GenerateSource([], [send, real]);
+        StringAssert.Contains(source, "SendMembers_2 { get; }");
+        StringAssert.Contains(source, "double @SendMembers()");
+    }
+
+    [TestMethod]
     public void Analyze_PreservesStringEnumLiteralsWithReadableMemberNames()
     {
         var greeting = new NpmValueType("stringEnum", Name: "Greeting",

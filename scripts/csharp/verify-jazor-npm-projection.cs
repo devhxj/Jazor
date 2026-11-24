@@ -55,6 +55,7 @@ try
             new XElement("TargetFramework", "net11.0"),
             new XElement("LangVersion", "preview"),
             new XElement("Nullable", "enable"),
+            packaged ? null : new XElement("_JazorToolPath", Path.Combine(analyzerDirectory, "Jazor.Emit.dll")),
             new XElement("DefineConstants", "$(DefineConstants);PROJECTION_ACTIVE"),
             new XElement("TreatWarningsAsErrors", "true"),
             new XElement("JazorPnpmStoreDirectory", store)),
@@ -62,9 +63,6 @@ try
             new XElement("PackageReference", new XAttribute("Include", "Jazor"),
                 new XAttribute("Version", $"[{packageVersion}]"))) : new XElement("ItemGroup",
             Reference("ECMAScript"), Reference("ECMAScript.Contract"),
-            new XElement("ProjectReference",
-                new XAttribute("Include", Path.Combine(repo, "src", "Jazor.Emit", "Jazor.Emit.csproj")),
-                new XAttribute("ReferenceOutputAssembly", "false")),
             new XElement("Analyzer", new XAttribute("Include", string.Join(';',
                 new[] { "Jazor.Compiler.dll", "Jazor.Common.dll", "ECMAScript.Contract.dll", "Acornima*.dll", "ICSharpCode.Decompiler.dll" }
                     .Select(file => Path.Combine(analyzerDirectory, file)))))),
@@ -168,9 +166,14 @@ try
     if (shadowed.ExitCode == 0 || !shadowed.Output.Contains("CS0246", StringComparison.Ordinal))
         throw new InvalidOperationException("A nearer empty manifest must shadow the parent projection." + Environment.NewLine + shadowed.Output);
     File.Delete(nestedManifest);
+    File.Delete(Path.Combine(nested, "Calendar.cs"));
+    var linkedProject = XElement.Load(nestedProject);
+    linkedProject.Add(new XElement("ItemGroup", new XElement("Compile", new XAttribute("Include", "../Calendar.cs"),
+        new XAttribute("Link", "Calendar.cs"))));
+    linkedProject.Save(nestedProject);
     var fallback = await RunAsync(nested, ["build", nestedProject, "--no-restore", "--nologo"]);
     if (fallback.ExitCode != 0)
-        throw new InvalidOperationException("Removing the shadowing manifest did not restore the parent projection." + Environment.NewLine + fallback.Output);
+        throw new InvalidOperationException("The nested project did not restore the parent projection for its linked source." + Environment.NewLine + fallback.Output);
     Directory.Delete(nested, recursive: true);
 
     var invalidSource = validSource.Replace("value.Start, value.Days", "value.Start, true", StringComparison.Ordinal);
@@ -249,11 +252,68 @@ try
 
     Console.WriteLine("Unchanged, conditional and removed npm imports passed SDK build verification.");
 
+    // A parent project compiles source from a nested npm workspace. The global
+    // alias lives beside the project, so discovery must follow the consuming file.
+    File.Delete(Path.Combine(scratch.FullName, "Plain.cs"));
+    File.Delete(manifest);
+    var rootLock = Path.Combine(scratch.FullName, "pnpm-lock.yaml");
+    var client = scratch.CreateSubdirectory("Client").FullName;
+    var clientManifest = Path.Combine(client, "package.json");
+    var clientLock = Path.Combine(client, "pnpm-lock.yaml");
+    File.Move(rootLock, clientLock);
+    await File.WriteAllTextAsync(clientManifest, """{"private":true,"type":"module","dependencies":{"date-fns":"4.4.0"}}""", stop);
+    await File.WriteAllTextAsync(Path.Combine(scratch.FullName, "GlobalImports.cs"),
+        "global using Dates = Npm.DateFns.Exports;", stop);
+    var clientSource = Path.Combine(client, "Calendar.cs");
+    await File.WriteAllTextAsync(clientSource, validSource.Replace("using Dates = Npm.DateFns.Exports;", "", StringComparison.Ordinal)
+        .Replace("using static Npm.DateFns.Exports;", "", StringComparison.Ordinal), stop);
+    var nestedWorkspace = await BuildAsync("--no-restore");
+    if (nestedWorkspace.ExitCode != 0 || !File.Exists(projectionFile) ||
+        !File.ReadAllText(projectionFile).Contains("AddDays", StringComparison.Ordinal))
+        throw new InvalidOperationException("The parent project failed to project the npm import used by nested source." +
+            Environment.NewLine + nestedWorkspace.Output);
+
+    var clientLockText = await File.ReadAllTextAsync(clientLock, stop);
+    var nestedProjectionText = await File.ReadAllTextAsync(projectionFile, stop);
+    await File.AppendAllTextAsync(clientLock, "\n# SDK regression: change only the lock fingerprint.\n", stop);
+    var changedLock = await BuildAsync("--no-restore");
+    if (changedLock.ExitCode != 0 || !File.Exists(projectionFile) ||
+        await File.ReadAllTextAsync(projectionFile, stop) != nestedProjectionText)
+        throw new InvalidOperationException("A comment-only edit to the nested lockfile must preserve the selected workspace's generated bindings." +
+            Environment.NewLine + changedLock.Output);
+    await File.WriteAllTextAsync(clientLock, clientLockText, stop);
+    var clientManifestText = await File.ReadAllTextAsync(clientManifest, stop);
+    await File.WriteAllTextAsync(clientManifest, """{"private":true,"type":"module"}""", stop);
+    var missingDependency = await BuildAsync("--no-restore");
+    if (missingDependency.ExitCode == 0 || !missingDependency.Output.Contains("CS0246", StringComparison.Ordinal)
+        || File.Exists(projectionFile))
+        throw new InvalidOperationException("Removing the nested dependency must invalidate the projection." +
+            Environment.NewLine + missingDependency.Output);
+    await File.WriteAllTextAsync(clientManifest, clientManifestText, stop);
+    var repairedWorkspace = await BuildAsync("--no-restore");
+    if (repairedWorkspace.ExitCode != 0)
+        throw new InvalidOperationException("Restoring the nested manifest did not restore the projection." +
+            Environment.NewLine + repairedWorkspace.Output);
+    var otherClient = scratch.CreateSubdirectory("OtherClient").FullName;
+    await File.WriteAllTextAsync(Path.Combine(otherClient, "package.json"), clientManifestText, stop);
+    await File.WriteAllTextAsync(Path.Combine(otherClient, "UseDates.cs"), """
+        public static class UseDates
+        {
+            public static ECMAScript.Date Shift(ECMAScript.Date date) => Dates.AddDays(date, 1);
+        }
+        """, stop);
+    var conflictingWorkspaces = await BuildAsync("--no-restore");
+    if (conflictingWorkspaces.ExitCode == 0 ||
+        !conflictingWorkspaces.Output.Contains("multiple npm workspaces", StringComparison.OrdinalIgnoreCase) ||
+        !conflictingWorkspaces.Output.Contains(clientManifest, StringComparison.OrdinalIgnoreCase) ||
+        !conflictingWorkspaces.Output.Contains(Path.Combine(otherClient, "package.json"), StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException("Active npm usage in two nested workspaces must diagnose both manifests." +
+            Environment.NewLine + conflictingWorkspaces.Output);
+    Console.WriteLine("Parent project projected a global npm alias used by nested source and responded to nested manifest changes.");
+
     if (packaged)
     {
         var plain = scratch.CreateSubdirectory("plain").FullName;
-        File.Delete(Path.Combine(scratch.FullName, "package.json"));
-        File.Delete(Path.Combine(scratch.FullName, "pnpm-lock.yaml"));
         var plainProject = Path.Combine(plain, "Plain.csproj");
         new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
             new XElement("PropertyGroup", new XElement("TargetFramework", "net11.0"),

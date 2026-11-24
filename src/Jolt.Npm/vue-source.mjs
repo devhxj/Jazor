@@ -2,7 +2,9 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { contractTypes, readComponent } from './vue-contract.mjs';
 import { webIdlProjection } from './web-idl-projection.mjs';
-import { readTypeScriptInput, templateTextSignature } from './vue-template-text.mjs';
+import { templateTextSignature } from './vue-template-text.mjs';
+import { readTypeScriptInput } from './typescript-input.mjs';
+import { declarationDocumentation } from './declaration-documentation.mjs';
 
 const [typescript, root, pathsJson, overlaysJson, declarationsJson, carriersJson] = globalThis.__jazorArguments;
 const carriers = JSON.parse(carriersJson);
@@ -197,7 +199,7 @@ function definition(node) {
     const start = target.getStart();
     const end = target.getEnd();
     if (!file.endsWith('.vue'))
-        return { path: path.resolve(file), start, length: end - start };
+        return { path: path.resolve(file), start, length: end - start, documentation: declarationDocumentation(ts, node) };
     const script = language.scripts.get(file);
     const service = script?.generated?.languagePlugin.typescript.getServiceScript(script.generated.root);
     if (!service)
@@ -205,5 +207,6 @@ function definition(node) {
     const map = language.maps.get(service.code, script);
     const leading = service.preventLeadingOffset ? 0 : script.snapshot.getLength();
     const [range] = map.toSourceRange(start - leading, end - leading, false);
-    return range ? { path: path.resolve(file), start: range[0], length: range[1] - range[0] } : null;
+    return range ? { path: path.resolve(file), start: range[0], length: range[1] - range[0],
+        documentation: declarationDocumentation(ts, node) } : null;
 }

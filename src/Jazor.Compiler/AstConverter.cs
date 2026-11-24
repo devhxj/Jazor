@@ -105,7 +105,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
     private readonly HashSet<string> _projectSourceImportKeys = new(StringComparer.Ordinal);
     private readonly ModuleNamePlan _moduleNamePlan = BuildModuleNamePlan(
         classSymbol,
-        classModel.Compilation,
+        classModel,
         options?.MemberFilter,
         options?.ModulePolicy ?? AstConverterModulePolicy.Default,
         options?.Profile ?? AstConverterProfile.Standard,
@@ -2478,7 +2478,7 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
 
     private static ModuleNamePlan BuildModuleNamePlan(
         INamedTypeSymbol classSymbol,
-        Compilation compilation,
+        SemanticModel classModel,
         Func<ISymbol, bool>? includeMember,
         AstConverterModulePolicy modulePolicy,
         AstConverterProfile profile,
@@ -2489,11 +2489,11 @@ public class AstConverter(INamedTypeSymbol classSymbol, SemanticModel classModel
         var declaredNames = BuildModuleDeclaredNames(classSymbol, localNames, includeMember, modulePolicy, profile);
         var reservedImportNames = BuildReservedImportNames(classSymbol, declaredNames, localNames, includeMember, modulePolicy);
         var moduleTypes = modulePolicy.EnumerateModuleTypes(classSymbol).ToArray();
-        var sourceTypes = SourceTypeClosure.Collect(compilation, moduleTypes, sourceDependencyFilter ?? includeMember,
-                includeDependency: modulePolicy.ShouldIncludeSourceDependency)
+        var sourceTypes = SourceTypeClosure.Collect(classModel.Compilation, moduleTypes, sourceDependencyFilter ?? includeMember,
+                includeDependency: modulePolicy.ShouldIncludeSourceDependency, rootModel: classModel)
             .Where(type => !moduleTypes.Any(root => IsWithin(type, root)))
             .ToImmutableArray();
-        SourceTypeClosure.ValidateModuleOwnership(compilation, classSymbol, sourceTypes);
+        SourceTypeClosure.ValidateModuleOwnership(classModel.Compilation, classSymbol, sourceTypes);
         var usedNames = new HashSet<string>(declaredNames.Values, StringComparer.Ordinal);
         if (declaredNameOverrides is not null)
             usedNames.UnionWith(declaredNameOverrides.Values);

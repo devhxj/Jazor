@@ -1,6 +1,7 @@
 using Jazor.Npm;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Xml.Linq;
 using Jolt.Compiler;
 using Jolt.Npm;
 using Jolt.Project;
@@ -51,9 +52,7 @@ internal sealed partial class LanguageFeatures(
             {
                 "textDocument/completion" => await CSharpCompletionAsync(generated, cancellationToken, version),
                 "textDocument/hover" => SymbolAt(generated, cancellationToken) is { } symbol
-                    ? Hover(NpmValueDefinition(symbol) is null
-                        ? symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)
-                        : symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))
+                    ? CSharpHover(symbol, cancellationToken)
                     : null,
                 "textDocument/definition" => CSharpDefinition(generated, cancellationToken),
                 "textDocument/signatureHelp" => SignatureHelp(generated, cancellationToken),
@@ -90,17 +89,17 @@ internal sealed partial class LanguageFeatures(
         {
             if (attribute is { Kind: JoltAttributeKind.Bind, Target: { } modelName } &&
                 NpmVueModels.Get(component).FirstOrDefault(candidate => MatchesProp(modelName, candidate.PropName)) is { } model)
-                return method == "textDocument/hover" ? Hover($"{attribute.Name}: {model.Type}") : FromNpm(model.Definition);
+                return method == "textDocument/hover" ? MarkupHover($"{attribute.Name}: {model.Type}", model.Definition) : FromNpm(model.Definition);
             var prop = component.Props.FirstOrDefault(item => MatchesProp(attribute.Name, item.Key));
             if (prop.Key is not null)
-                return method == "textDocument/hover" ? Hover($"{attribute.Name}: {prop.Value.Type}") : FromNpm(prop.Value.Definition);
+                return method == "textDocument/hover" ? MarkupHover($"{attribute.Name}: {prop.Value.Type}", prop.Value.Definition) : FromNpm(prop.Value.Definition);
             var evt = component.Events.FirstOrDefault(item => MatchesEvent(attribute.Name, item.Key));
             if (evt.Key is not null)
-                return method == "textDocument/hover" ? Hover(Signatures(evt.Key, evt.Value.Signatures)) : FromNpm(evt.Value.Definition);
+                return method == "textDocument/hover" ? MarkupHover(Signatures(evt.Key, evt.Value.Signatures), evt.Value.Definition) : FromNpm(evt.Value.Definition);
         }
         if (element.Name == "template" && attribute is { Name.Length: > 1 } && attribute.Name[0] == '#' &&
             parentComponent is not null && parentComponent.Slots.TryGetValue(attribute.Name[1..], out var slot))
-            return method == "textDocument/hover" ? Hover(Signatures(attribute.Name, slot.Signatures)) : FromNpm(slot.Definition);
+            return method == "textDocument/hover" ? MarkupHover(Signatures(attribute.Name, slot.Signatures), slot.Definition) : FromNpm(slot.Definition);
         if (method == "textDocument/hover" && element.Name == "template" && attribute is not null &&
             builtInParent?.Slots.Any(slot => attribute.Name == "#" + slot.Name) == true)
             return Hover($"Slot of Vue {builtInParent.Name}");
@@ -108,9 +107,17 @@ internal sealed partial class LanguageFeatures(
             return null;
         if (component is not null)
             return method == "textDocument/hover"
-                ? Hover(component.LocalPath ?? $"{component.ExportName} from {component.ModuleSpecifier}@{component.Version}")
+                ? MarkupHover(component.LocalPath ?? $"{component.ExportName} from {component.ModuleSpecifier}@{component.Version}", component.Definition)
                 : FromNpm(component.Definition);
         return local is not null && method == "textDocument/hover" ? Hover(element.Name) : null;
+    }
+
+    private static object MarkupHover(string label, NpmDefinition? definition)
+    {
+        var docs = definition?.Documentation;
+        if (docs is null) return Hover(label);
+        var deprecated = docs.Deprecated switch { null => null, "" => "Deprecated", var text => $"Deprecated — {text}" };
+        return Hover(string.Join("\n\n", new[] { label, docs.Summary, docs.Remarks, deprecated }.Where(part => !string.IsNullOrWhiteSpace(part))));
     }
 
     private async Task<object[]> CSharpCompletionAsync(int position, CancellationToken cancellationToken, int? version, int? sourceAfterTrailingDot = null)
@@ -334,6 +341,53 @@ internal sealed partial class LanguageFeatures(
     private NpmDefinition? NpmValueDefinition(ISymbol symbol) =>
         analysis.NpmValueDefinitions.GetValueOrDefault(symbol.OriginalDefinition);
 
+    private object CSharpHover(ISymbol symbol, CancellationToken cancellationToken)
+    {
+        if (NpmValueDefinition(symbol) is null)
+            return Hover(symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat));
+
+        var label = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        var documentation = FormatNpmDocumentation(ProjectedDocumentation(symbol, cancellationToken), includeParameters: true);
+        return Hover(documentation is null ? label : label + "\n\n" + documentation);
+    }
+
+    private static XElement? ProjectedDocumentation(ISymbol symbol, CancellationToken cancellationToken)
+    {
+        var xml = symbol.OriginalDefinition.GetDocumentationCommentXml(cancellationToken: cancellationToken);
+        return string.IsNullOrWhiteSpace(xml) ? null : XElement.Parse(xml, LoadOptions.PreserveWhitespace);
+    }
+
+    private static string? FormatNpmDocumentation(XElement? documentation, bool includeParameters)
+    {
+        if (documentation is null)
+            return null;
+        var sections = new List<string>();
+        foreach (var element in documentation.Elements())
+        {
+            var text = element.Value.Trim();
+            if (text.Length == 0)
+                continue;
+            switch (element.Name.LocalName)
+            {
+                case "summary":
+                case "remarks":
+                    sections.Add(text);
+                    break;
+                case "param" when includeParameters:
+                case "typeparam":
+                    sections.Add($"{element.Attribute("name")?.Value} — {text}");
+                    break;
+                case "returns":
+                    sections.Add("Returns\n" + text);
+                    break;
+                case "example":
+                    sections.Add("Example\n" + text);
+                    break;
+            }
+        }
+        return sections.Count == 0 ? null : string.Join("\n\n", sections);
+    }
+
     private object? SignatureHelp(int position, CancellationToken cancellationToken)
     {
         var model = projection.SemanticModel;
@@ -342,16 +396,39 @@ internal sealed partial class LanguageFeatures(
         if (call is null)
             return null;
         var methods = model.GetMemberGroup(call.Expression, cancellationToken).OfType<IMethodSymbol>().ToArray();
+        var selected = model.GetSymbolInfo(call, cancellationToken).Symbol as IMethodSymbol;
+        var arguments = call.ArgumentList.Arguments;
+        var activeParameter = arguments.GetSeparators().Count(separator => separator.SpanStart < position);
+        var activeSignature = 0;
+        if (selected is not null && NpmValueDefinition(selected) is not null)
+        {
+            activeSignature = Math.Max(0, Array.FindIndex(methods, method =>
+                SymbolEqualityComparer.Default.Equals(method.OriginalDefinition, selected.OriginalDefinition)));
+            if (activeParameter < arguments.Count && arguments[activeParameter].NameColon is { } name &&
+                selected.Parameters.FirstOrDefault(parameter => parameter.Name == name.Name.Identifier.ValueText) is { } boundParameter)
+                activeParameter = boundParameter.Ordinal;
+        }
         return methods.Length == 0 ? null : new
         {
-            signatures = methods.Select(method => new
-            {
-                label = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
-                parameters = method.Parameters.Select(parameter => new { label = parameter.ToDisplayString() }),
-            }),
-            activeSignature = 0,
-            activeParameter = call.ArgumentList.Arguments.GetSeparators().Count(separator => separator.SpanStart < position),
+            signatures = methods.Select(method => DescribeSignature(method, cancellationToken)).ToArray(),
+            activeSignature,
+            activeParameter,
         };
+    }
+
+    private object DescribeSignature(IMethodSymbol method, CancellationToken cancellationToken)
+    {
+        var label = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+        // Read the generated XML so overloads describe only their own projected parameters.
+        var xml = NpmValueDefinition(method) is null ? null : ProjectedDocumentation(method, cancellationToken);
+        var parameters = method.Parameters.Select(parameter =>
+        {
+            var label = parameter.ToDisplayString();
+            var description = xml?.Elements("param").FirstOrDefault(element => element.Attribute("name")?.Value == parameter.Name)?.Value.Trim();
+            return description is null ? (object)new { label } : new { label, documentation = description };
+        }).ToArray();
+        var documentation = FormatNpmDocumentation(xml, includeParameters: false);
+        return documentation is null ? new { label, parameters } : new { label, parameters, documentation };
     }
 
     private object[] MarkupCompletion(int offset, JoltElement? element, JoltAttribute? attribute, NpmVueComponent? component,

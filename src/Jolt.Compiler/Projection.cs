@@ -27,6 +27,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
     private string StateType => TypeParameters.Length == 0 ? StateName : $"{StateName}<{string.Join(", ", TypeParameters.Select(parameter => parameter.Name))}>";
     internal string ModuleName => "__Module" + Name;
     internal JoltDocument Document { get; } = document;
+    internal string GeneratedPath { get; } = document.Path + ".g.cs";
     internal SourceText Source { get; } = SourceText.From(document.Source);
     internal SourceText? GeneratedText { get; private set; }
     internal List<JoltProjectionSpan> Spans { get; } = [];
@@ -45,7 +46,9 @@ internal sealed partial class Projection(JoltDocument document, string name, str
     private readonly List<(TextSpan Generated, JoltExpression Source, ComponentProperty Property)> _literalChecks = [];
     private readonly List<(TextSpan Generated, JoltExpression Source, ComponentProperty Property)> _recordArrayChecks = [];
     private readonly List<(TextSpan Generated, (int Source, string Path) Site, ComponentContract Component, JoltAttribute?[] Explicit)> _typeProbes = [];
+    private (CSharpParseOptions Options, (JoltCode Block, ClassDeclarationSyntax Declaration)[] Blocks)? _authorCode;
     private IReadOnlyList<ComponentContract> _components = [];
+    internal IReadOnlyList<ComponentContract> VisibleComponents => _components;
     private bool _componentsAvailable;
     private IReadOnlyDictionary<(int Source, string Path), ComponentTypeBinding>? _typeArguments;
     private bool _probeTypeArguments;
@@ -126,17 +129,24 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         Write("}\n}\n");
         EmitReferenceContract();
         GeneratedText = SourceText.From(_code.ToString());
-        return CSharpSyntaxTree.ParseText(GeneratedText, parseOptions, Document.Path + ".g.cs");
+        return CSharpSyntaxTree.ParseText(GeneratedText, parseOptions, GeneratedPath);
     }
 
     private void EmitAuthorCode(CSharpParseOptions parseOptions)
     {
-        var instanceSpans = new List<TextSpan>();
-        foreach (var code in Document.Nodes.OfType<JoltCode>())
+        const string prefix = "class Component {\n";
+        // The author blocks stay fixed across declaration, probe and render projections.
+        // Reuse their syntax while writing a fresh projection and source map for each pass.
+        if (_authorCode is not { } author || author.Options != parseOptions)
         {
-            const string prefix = "class Component {\n";
-            var parsed = SyntaxFactory.ParseCompilationUnit(prefix + MaskInlineTemplates(code) + "\n}", options: parseOptions);
-            var declaration = (ClassDeclarationSyntax)parsed.Members[0];
+            author = (parseOptions, Document.Nodes.OfType<JoltCode>().Select(code =>
+                (code, (ClassDeclarationSyntax)SyntaxFactory.ParseCompilationUnit(prefix + MaskInlineTemplates(code) + "\n}",
+                    options: parseOptions).Members[0])).ToArray());
+            _authorCode = author;
+        }
+        var instanceSpans = new List<TextSpan>();
+        foreach (var (code, declaration) in author.Blocks)
+        {
             CollectExposedDeclarations(declaration, code.CodeSpan.Start - prefix.Length);
             int cursor = code.CodeSpan.Start;
             foreach (var member in declaration.Members.Where(IsModuleMember))
@@ -363,16 +373,40 @@ internal sealed partial class Projection(JoltDocument document, string name, str
 
     internal TextSpan? Map(TextSpan span)
     {
-        foreach (var entry in Spans)
+        // Copies are appended in generated order. A shared endpoint belongs to the
+        // first copy, including a zero-width one, as it does for diagnostic spans.
+        int first = 0, end = Spans.Count;
+        while (first < end)
         {
-            if (span.Start >= entry.Generated.Start && span.Start <= entry.Generated.End)
+            int mid = first + (end - first) / 2;
+            if (Spans[mid].Generated.End < span.Start)
+                first = mid + 1;
+            else
+                end = mid;
+        }
+        if (first < Spans.Count)
+        {
+            var entry = Spans[first];
+            if (entry.Generated.Start <= span.Start)
             {
                 int start = entry.Source.Start + span.Start - entry.Generated.Start;
                 return new TextSpan(start, Math.Min(span.Length, entry.Source.End - start));
             }
         }
-        return _anchors.Where(entry => entry.Generated.Contains(span.Start))
-            .OrderBy(entry => entry.Generated.Length).Select(entry => (TextSpan?)entry.Source).FirstOrDefault();
+
+        // Nested generated calls can anchor the same point. Keep the shortest
+        // containing anchor, with emission order breaking ties.
+        TextSpan? source = null;
+        int shortest = int.MaxValue;
+        foreach (var anchor in _anchors)
+        {
+            if (anchor.Generated.Length < shortest && anchor.Generated.Contains(span.Start))
+            {
+                shortest = anchor.Generated.Length;
+                source = anchor.Source;
+            }
+        }
+        return source;
     }
 
     private void EmitNodes(IEnumerable<JoltNode> nodes, string target)

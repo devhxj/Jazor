@@ -44,7 +44,7 @@ public sealed class OrdinaryLibraryImportPlan
     }
 
     private readonly Compilation _consumer;
-    private readonly Dictionary<string, LibraryImplementationReference> _inputs;
+    private readonly ILookup<string, LibraryImplementationReference> _inputs;
     private readonly Dictionary<string, RecoveredLibrary> _libraries = new(StringComparer.Ordinal);
     private readonly Queue<ISymbol> _pending = new();
     private readonly CancellationToken _cancellationToken;
@@ -56,7 +56,7 @@ public sealed class OrdinaryLibraryImportPlan
         RuntimeClassPrivateStorage privateStorage, CancellationToken cancellationToken)
     {
         _consumer = consumer;
-        _inputs = references.ToDictionary(static reference => reference.AssemblyName, StringComparer.Ordinal);
+        _inputs = references.Distinct().ToLookup(static reference => reference.AssemblyName, StringComparer.Ordinal);
         _cancellationToken = cancellationToken;
         _privateStorage = privateStorage;
     }
@@ -141,7 +141,7 @@ public sealed class OrdinaryLibraryImportPlan
     {
         if (member is null || member.ContainingType is null ||
             member.ContainingType.TypeKind == TypeKind.Delegate || member.ContainingType.IsRecord ||
-            !_inputs.ContainsKey(member.ContainingAssembly.Name) || HasExistingImplementation(member))
+            !_inputs.Contains(member.ContainingAssembly.Name) || HasExistingImplementation(member))
             return;
         member = member.OriginalDefinition;
         var library = GetOrRecover(member.ContainingAssembly);
@@ -286,7 +286,7 @@ public sealed class OrdinaryLibraryImportPlan
                         IPropertyReferenceOperation property => property.Property.GetMethod,
                         _ => null
                     };
-                    if (target?.ContainingAssembly is null || !_inputs.ContainsKey(target.ContainingAssembly.Name) ||
+                    if (target?.ContainingAssembly is null || !_inputs.Contains(target.ContainingAssembly.Name) ||
                         HasExistingImplementation(target)) continue;
                     if (!target.ContainingAssembly.Identity.Equals(member.ContainingAssembly.Identity) ||
                         LibrarySymbolIdentity.TypeName(target.ContainingType) != LibrarySymbolIdentity.TypeName(member.ContainingType))
@@ -302,7 +302,13 @@ public sealed class OrdinaryLibraryImportPlan
     private RecoveredLibrary GetOrRecover(IAssemblySymbol assembly)
     {
         if (_libraries.TryGetValue(assembly.Identity.ToString(), out var existing)) return existing;
-        var input = _inputs[assembly.Name];
+        // Portable hosts may carry several RID implementations for backend-only assemblies.
+        // Require an unambiguous asset only when the bound JS member needs recovery.
+        var candidates = _inputs[assembly.Name];
+        var count = candidates.Count();
+        if (count != 1)
+            throw new NotSupportedException($"Ordinary library '{assembly.Name}' requires exactly one resolved implementation asset for the selected TFM/RID; found {count}.");
+        var input = candidates.Single();
         // These are explicit, already restored local build inputs; no assembly probing or
         // network recovery is allowed during analysis. The build manifest tracks content.
 #pragma warning disable RS1035

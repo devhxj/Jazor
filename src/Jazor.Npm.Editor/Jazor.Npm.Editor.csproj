@@ -13,6 +13,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(CodeAnalysisVersion)" PrivateAssets="all" />
         <Compile Include="../Jazor.Npm/NpmEditorProjectionResult.cs" Link="NpmEditorProjectionResult.cs" />
         <Compile Include="../Jazor.Npm/NpmSourceRequests.cs" Link="NpmSourceRequests.cs" />
+        <Compile Include="../Jazor.Npm/NpmWorkspace.cs" Link="NpmWorkspace.cs" />
         <Compile Include="../Jazor.Npm/NpmNames.cs" Link="NpmNames.cs" />
         <Compile Include="../Jazor.Npm/NpmPackageExports.cs" Link="NpmPackageExports.cs" />
         <Compile Include="../Jazor.Compiler/IsExternalInit.cs" Link="IsExternalInit.cs" />

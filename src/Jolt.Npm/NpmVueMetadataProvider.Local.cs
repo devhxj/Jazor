@@ -16,6 +16,11 @@ public sealed partial class NpmVueMetadataProvider
     public async Task<LocalVueSnapshot> ReadLocalComponentSnapshotAsync(string projectDirectory,
         IReadOnlyList<string> paths, IReadOnlyDictionary<string, string> overlays, CancellationToken cancellationToken,
         Func<IReadOnlyDictionary<string, string>> projectDeclarations)
+        => await ReadLocalComponentSnapshotAsync(projectDirectory, paths, overlays, cancellationToken, projectDeclarations, null);
+
+    internal async Task<LocalVueSnapshot> ReadLocalComponentSnapshotAsync(string projectDirectory,
+        IReadOnlyList<string> paths, IReadOnlyDictionary<string, string> overlays, CancellationToken cancellationToken,
+        Func<IReadOnlyDictionary<string, string>> projectDeclarations, Validation? validation)
     {
         if (paths.Count == 0)
             return new([], false);
@@ -31,7 +36,8 @@ public sealed partial class NpmVueMetadataProvider
                 cached.Missing.All(path => !File.Exists(path)) && cached.MissingDirectories.All(path => !Directory.Exists(path)) &&
                 (cached.Declarations is null || cached.Declarations == SerializeDeclarations()))
             {
-                var changed = cached.Inputs.Select(input => (Path: input.Key, Previous: input.Value, Current: Fingerprint(input.Key)))
+                var changed = cached.Inputs.Select(input => (Path: input.Key, Previous: input.Value,
+                        Current: validation is null ? Fingerprint(input.Key) : validation.ReadFingerprint(input.Key)))
                     .Where(input => input.Previous != input.Current).ToArray();
                 if (changed.Length == 0)
                 {
@@ -42,7 +48,8 @@ public sealed partial class NpmVueMetadataProvider
                 {
                     var sources = changed.Select(input => new { input.Path, Fingerprint = input.Current, cached.Templates[input.Path].DefinitionEnd });
                     var signatures = await RunMetadataAsync(projectDirectory, "vue-template-text.mjs",
-                        [cached.TypeScript, JsonSerializer.Serialize(sources, JsonOptions)], cancellationToken, typeof(NpmVueMetadataProvider));
+                        [cached.TypeScript, JsonSerializer.Serialize(sources, JsonOptions)], cancellationToken, typeof(NpmVueMetadataProvider),
+                        ["vue-template-text.mjs", "typescript-input.mjs"]);
                     var refreshed = JsonSerializer.Deserialize<string?[]>(signatures, JsonOptions)!;
                     if (changed.Select(input => cached.Templates[input.Path].Signature).SequenceEqual(refreshed))
                     {
@@ -54,6 +61,7 @@ public sealed partial class NpmVueMetadataProvider
                 }
             }
 
+            validation?.Clear();
             var store = _values.ResolveStore();
             var typescript = await _values.RestoreTypeScriptAsync(store, cancellationToken, typeof(NpmVueMetadataProvider));
             await _values.RestoreAsync(projectDirectory, store, cancellationToken);
@@ -61,7 +69,7 @@ public sealed partial class NpmVueMetadataProvider
             {
                 IReadOnlyList<string> arguments = [typescript, projectDirectory, JsonSerializer.Serialize(paths), overlayJson, declarations, WebIdlCarriers.Metadata];
                 var result = await RunMetadataAsync(projectDirectory, "vue-source.mjs", arguments, cancellationToken,
-                    typeof(NpmVueMetadataProvider), ["vue-source.mjs", "vue-contract.mjs", "vue-template-text.mjs", "web-idl-projection.mjs"]);
+                    typeof(NpmVueMetadataProvider), ["vue-source.mjs", "vue-contract.mjs", "vue-template-text.mjs", "typescript-input.mjs", "declaration-documentation.mjs", "web-idl-projection.mjs"]);
                 return JsonSerializer.Deserialize<LocalQuery>(result, JsonOptions)!;
             }
             // Once an SFC imports Jolt, give the checker the current declarations on

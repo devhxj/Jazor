@@ -7,6 +7,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Jolt.Compiler.Test" />
         <InternalsVisibleTo Include="Jolt.Project" />
+        <InternalsVisibleTo Include="Jazor.NodeApiVerification" />
         <Compile Remove="verify.cs" />
         <ProjectReference Include="../Jazor.Npm/Jazor.Npm.csproj" />
         <EmbeddedResource Include="*.mjs" LogicalName="Jolt.Npm.%(Filename)%(Extension)" />

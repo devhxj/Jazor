@@ -24,9 +24,10 @@ static async Task<int> RunEmitAsync(string[] args)
         if (args is ["--sdk-npm-generate", var sourceOutput])
             return await NpmBuildProjection.RunGeneratorAsync(
                 await ReadNpmRequestAsync(cancellation.Token), sourceOutput, cancellation.Token);
-        if (args is ["--sdk-npm-editor-inputs", var projectDirectory, var editorInputs])
+        if (args is ["--sdk-npm-editor-inputs", var editorRequest, var editorInputs])
         {
-            await NpmLocalDeclarationInputs.WriteAsync(projectDirectory, editorInputs, cancellation.Token);
+            var request = await File.ReadAllLinesAsync(editorRequest, cancellation.Token);
+            await NpmLocalDeclarationInputs.WriteAsync(request[0], request[1..], editorInputs, cancellation.Token);
             return 0;
         }
 

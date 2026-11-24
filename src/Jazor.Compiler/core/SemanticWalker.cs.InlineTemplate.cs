@@ -180,6 +180,20 @@ public sealed partial class SemanticWalker
             return arguments[index];
         }
 
+        protected override object VisitCallExpression(CallExpression node)
+        {
+            // A quoted export can be a reserved word or an arbitrary ESM export name.
+            // Only the matching callee is replaced. All other string literals stay literal.
+            if (importedBinding is not null &&
+                node.Callee is StringLiteral export &&
+                string.Equals(export.Value, importedIdentifierName, StringComparison.Ordinal))
+            {
+                node = new CallExpression(importedBinding, node.Arguments, node.Optional);
+            }
+
+            return base.VisitCallExpression(node)!;
+        }
+
         protected override object VisitMemberExpression(MemberExpression node)
         {
             var @object = (Expression?) Visit(node.Object) ?? node.Object;

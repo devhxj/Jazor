@@ -691,7 +691,7 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
     // This catches differences in accessibility, constraints and overload resolution
     // that compiling the component and its synthesized facade together cannot expose.
     var componentTree = compilation.SyntaxTrees.Single(tree => tree.FilePath == "__JoltNpmValues.g.cs");
-    var publicSource = NpmBindings.GenerateCachedSource(project, [], projected);
+    var publicSource = NpmBindings.GenerateCachedSource([], projected);
     var publicTree = CSharpSyntaxTree.ParseText(publicSource, (CSharpParseOptions)componentTree.Options, "Bindings.g.cs");
     var library = CSharpCompilation.Create("SevenLibraryBindings", [publicTree], compilation.References,
         new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Error));

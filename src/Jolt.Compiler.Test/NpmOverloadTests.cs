@@ -19,35 +19,38 @@ public sealed class NpmOverloadTests
                 @code { private void Forward() { Client.Write(Client.Read()); } }
                 """;
             var cache = Path.Combine(project.FullName, "obj", "Jolt", "projections");
-            JoltAnalysis Analyze(int start, bool sameDeclaration)
+            JoltAnalysis Analyze(string workspace, int start, bool sameDeclaration)
             {
-                var definition = new NpmDefinition("node_modules/client/types.d.ts", start, 8);
+                var definition = new NpmDefinition(Path.Combine(workspace, "node_modules", "client", "types.d.ts"), start, 8);
                 var member = new NpmDefinition(definition.Path, start + 10, 5);
                 var output = new NpmValueType("object", Name: "Settings", TypeDefinition: definition,
                     Members: [new("label", new("string"), true, member)]);
                 var input = sameDeclaration ? output : output with { TypeDefinition = definition with { Start = start + 40 } };
                 NpmValueExport Export(string name, NpmValueSignature signature) =>
                     new("client", name, "client", "1.0", "index.js", "types.d.ts", null, [signature], null);
-                return JoltProjectCompiler.Analyze([new("App.jazor", source)], new()
-                {
-                    NpmProjectionCacheDirectory = cache,
-                    NpmValues = [Export("read", new([], output)), Export("write", new([new("value", input, false)], new("void")))],
-                });
+                NpmValueExport[] exports = [Export("read", new([], output)), Export("write", new([new("value", input, false)], new("void")))];
+                NpmProjectionCache.LoadComponent(cache, ["Npm.Client"], exports,
+                    new CSharpParseOptions(LanguageVersion.Preview), CancellationToken.None);
+                return JoltProjectCompiler.Analyze([new("App.jazor", source)], new() { NpmValues = exports });
             }
 
-            var initial = Analyze(20, true);
+            var firstWorkspace = Path.Combine(project.FullName, "first");
+            var movedWorkspace = Path.Combine(project.FullName, "second");
+            var initial = Analyze(firstWorkspace, 20, true);
             Assert.IsEmpty(initial.Diagnostics, string.Join(Environment.NewLine, initial.Diagnostics));
             var entry = Directory.GetFiles(cache, "Projection.g.cs", SearchOption.AllDirectories).Single();
             Assert.DoesNotContain('\r', File.ReadAllText(entry));
             File.SetLastWriteTimeUtc(entry, new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc));
             var written = File.GetLastWriteTimeUtc(entry);
-            var moved = Analyze(60, true);
+            var moved = Analyze(movedWorkspace, 60, true);
             Assert.IsEmpty(moved.Diagnostics, string.Join(Environment.NewLine, moved.Diagnostics));
             Assert.AreEqual(70, moved.NpmValueDefinitions.First(pair => pair.Key.Name == "Label").Value.Start);
+            Assert.AreEqual(Path.Combine(movedWorkspace, "node_modules", "client", "types.d.ts"),
+                moved.NpmValueDefinitions.First(pair => pair.Key.Name == "Label").Value.Path);
             Assert.AreEqual(entry, Directory.GetFiles(cache, "Projection.g.cs", SearchOption.AllDirectories).Single());
             Assert.AreEqual(written, File.GetLastWriteTimeUtc(entry));
 
-            var separate = Analyze(60, false);
+            var separate = Analyze(movedWorkspace, 60, false);
             Assert.IsTrue(separate.Diagnostics.Any(diagnostic => diagnostic.Id == "CS1503"));
             Assert.HasCount(2, Directory.GetFiles(cache, "Projection.g.cs", SearchOption.AllDirectories));
         }

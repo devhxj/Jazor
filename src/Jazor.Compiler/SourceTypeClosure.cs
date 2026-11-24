@@ -17,12 +17,16 @@ internal static class SourceTypeClosure
         Func<ISymbol, bool>? includeMember = null,
         CancellationToken cancellationToken = default,
         bool includeTypeAnnotations = false,
-        Func<INamedTypeSymbol, bool>? includeDependency = null)
+        Func<INamedTypeSymbol, bool>? includeDependency = null,
+        SemanticModel? rootModel = null)
     {
         var included = new HashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
         var rootTypes = roots.Select(static root => root.OriginalDefinition)
             .ToImmutableHashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
         var pending = new Queue<INamedTypeSymbol>();
+        var models = new Dictionary<SyntaxTree, SemanticModel>();
+        if (rootModel is { IgnoresAccessibility: false, IsSpeculativeSemanticModel: false })
+            models.Add(rootModel.SyntaxTree, rootModel);
         foreach (var root in rootTypes)
             Add(root, isRoot: true);
 
@@ -33,25 +37,29 @@ internal static class SourceTypeClosure
             foreach (var reference in type.DeclaringSyntaxReferences)
             {
                 var declaration = reference.GetSyntax(cancellationToken);
-                var model = compilation.GetSemanticModel(declaration.SyntaxTree);
-                foreach (var name in declaration.DescendantNodes(node =>
-                             includeMember is null || !rootTypes.Contains(type) ||
-                             node is not MemberDeclarationSyntax { Parent: TypeDeclarationSyntax } member ||
-                             model.GetDeclaredSymbol(member, cancellationToken) is not { } symbol ||
-                             includeMember(symbol)).OfType<SimpleNameSyntax>())
+                // Preserve Roslyn's member binding cache across declarations in one tree.
+                if (!models.TryGetValue(declaration.SyntaxTree, out var model))
                 {
-                    // Attributes describe declarations; their CLR implementation is not part
-                    // of the emitted module. Generic arguments remain compile-time annotations.
-                    if (name.Ancestors().Any(static ancestor => ancestor is AttributeSyntax))
-                        continue;
-                    if (!includeTypeAnnotations && name.Ancestors().Any(static ancestor => ancestor is InvocationExpressionSyntax
-                        { Expression: IdentifierNameSyntax { Identifier.ValueText: "nameof" } }))
-                        continue;
-                    if (!includeTypeAnnotations && name.Ancestors().Any(static ancestor => ancestor is TypeArgumentListSyntax))
-                        continue;
+                    model = compilation.GetSemanticModel(declaration.SyntaxTree);
+                    models.Add(declaration.SyntaxTree, model);
+                }
+                bool includeAllMembers = includeMember is null || !rootTypes.Contains(type);
+                foreach (var name in declaration.DescendantNodes(VisitChildren).OfType<SimpleNameSyntax>())
+                {
                     var symbol = model.GetSymbolInfo(name, cancellationToken).Symbol;
                     if (symbol is not null)
                         Add(symbol as INamedTypeSymbol ?? symbol.ContainingType);
+                }
+
+                bool VisitChildren(SyntaxNode node)
+                {
+                    // Skip metadata and erased annotations as subtrees. A generic
+                    // name itself is still a candidate for a runtime dependency.
+                    if (node is AttributeSyntax || !includeTypeAnnotations && node is
+                        TypeArgumentListSyntax or InvocationExpressionSyntax { Expression: IdentifierNameSyntax { Identifier.ValueText: "nameof" } })
+                        return false;
+                    return includeAllMembers || node is not MemberDeclarationSyntax { Parent: TypeDeclarationSyntax } member ||
+                        model.GetDeclaredSymbol(member, cancellationToken) is not { } symbol || includeMember!(symbol);
                 }
             }
         }

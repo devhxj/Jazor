@@ -5254,19 +5254,19 @@ public sealed class SemanticWalkerReferenceTest
 		var script = new SemanticWalker(true).Visit(block, argument)?.ToKnRECMAScript();
 
 		AssertScriptEqual(@"{
-  let field = Field;
-  let property = get_Property();
-  let method = Method(1);
-  let methodGroup = Method;
+  let field = i$fc461ec9e49f7139;
+  let property = i$49c7cce93a19befd();
+  let method = i$77473f4baf017488(1);
+  let methodGroup = i$77473f4baf017488;
   let fallback = Fallback(2);
 }", script);
 
 		var imports = argument.FlushImportSpecifiers()
 			.ToDictionary(static pair => pair.Key, static pair => pair.Value);
 		Assert.HasCount(4, imports, script);
-		AssertImport(imports, "./members/field", "Field", script);
-		AssertImport(imports, "./members/property", "get_Property", script);
-		AssertImport(imports, "./members/method", "Method", script);
+		AssertImport(imports, "./members/field", "Field as i$fc461ec9e49f7139", script);
+		AssertImport(imports, "./members/property", "get_Property as i$49c7cce93a19befd", script);
+		AssertImport(imports, "./members/method", "Method as i$77473f4baf017488", script);
 		AssertImport(imports, "./fallback-host", "Fallback", script);
 	}
 

@@ -51,7 +51,9 @@ internal sealed class GeneratedSourceMapWriter
 
         builder.Append(',');
         AppendPropertyName(builder, "mappings");
-        AppendString(builder, BuildMappings(sourceMap.Segments));
+        builder.Append('"');
+        AppendMappings(builder, sourceMap.Segments);
+        builder.Append('"');
 
         builder.Append('}');
         return builder.ToString();
@@ -146,12 +148,13 @@ internal sealed class GeneratedSourceMapWriter
         builder.Append('"');
     }
 
-    private static string BuildMappings(IReadOnlyList<GeneratedSourceMapSegment> segments)
+    // VLQ digits and mapping separators are JSON string-safe; write directly
+    // into the artifact so each source position adds no temporary strings.
+    private static void AppendMappings(StringBuilder builder, IReadOnlyList<GeneratedSourceMapSegment> segments)
     {
         if (segments.Count == 0)
-            return string.Empty;
+            return;
 
-        var builder = new StringBuilder();
         var generatedLine = 0;
         var previousGeneratedColumn = 0;
         var previousSourceIndex = 0;
@@ -176,10 +179,10 @@ internal sealed class GeneratedSourceMapWriter
                     builder.Append(',');
                 first = false;
 
-                builder.Append(EncodeVlq(segment.GeneratedColumn - previousGeneratedColumn));
-                builder.Append(EncodeVlq(segment.SourceIndex - previousSourceIndex));
-                builder.Append(EncodeVlq(segment.SourceLine - previousSourceLine));
-                builder.Append(EncodeVlq(segment.SourceColumn - previousSourceColumn));
+                AppendVlq(builder, segment.GeneratedColumn - previousGeneratedColumn);
+                AppendVlq(builder, segment.SourceIndex - previousSourceIndex);
+                AppendVlq(builder, segment.SourceLine - previousSourceLine);
+                AppendVlq(builder, segment.SourceColumn - previousSourceColumn);
 
                 previousGeneratedColumn = segment.GeneratedColumn;
                 previousSourceIndex = segment.SourceIndex;
@@ -187,14 +190,11 @@ internal sealed class GeneratedSourceMapWriter
                 previousSourceColumn = segment.SourceColumn;
             }
         }
-
-        return builder.ToString();
     }
 
-    private static string EncodeVlq(int value)
+    private static void AppendVlq(StringBuilder builder, int value)
     {
         var vlq = value < 0 ? ((-value) << 1) + 1 : value << 1;
-        var builder = new StringBuilder();
         do
         {
             var digit = vlq & 31;
@@ -205,7 +205,5 @@ internal sealed class GeneratedSourceMapWriter
             builder.Append(Base64Digits[digit]);
         }
         while (vlq > 0);
-
-        return builder.ToString();
     }
 }

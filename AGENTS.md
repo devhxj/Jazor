@@ -130,6 +130,7 @@ CLR inline/import tradeoff rule:
 - The acceptance bar is both robustness and maintainability: preserve observable semantics while keeping module code easy to read and review.
 
 Compiler support boundary rule:
+- For npm and host projections, express value alternatives with native C# unions and call forms with typed overloads or optional parameters. Preserve JavaScript argument count, interior omissions and explicit null independently. A projected overload that hides an interior slot owns the mapping to the original call. Do not introduce public attributes for undefined/default arguments or use nullable annotations to encode omitted slots. Keep ordinary C# default argument semantics intact.
 - Public host API constraints should be expressed in the C# surface first. Prefer explicit parameter/return types, closed union types, narrow interfaces, and shaped records over weakening the public contract to `object`, `object?`, or unconstrained generic fallbacks.
 - Do not add `object`/`object?` catch-all parameters or open generic fallback overloads on ECMAScript/host-facing APIs merely to mirror JavaScript `any` flexibility when the intended usage set can be represented in C#.
 - Type erasure in emitted JavaScript is not by itself a reason to weaken the authored C# API. If the goal is authoring-time strong typing, keep the stronger C# contract and let Roslyn overload/type checking enforce it.

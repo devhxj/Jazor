@@ -241,9 +241,14 @@ public partial class SemanticWalker
 			}
 		}
 
+		// Member-level external declarations can project multiple C# signatures for the
+		// same export. Bind those signatures consistently, including the inline variants.
 		return usesModuleCatalog
 			? context.BindModuleCatalogImportSpecifier(modulePath, importedName)
-			: context.BindExternalImportSpecifier(modulePath, importedName);
+			: context.BindExternalImportSpecifier(modulePath, importedName,
+				forceAlias: symbol is not ITypeSymbol &&
+					Util.GetECMAScriptModuleImportPath(symbol) is not null &&
+					Util.IsExternalECMAScriptImport(symbol));
 	}
 
 	private static bool ShouldFlattenRuntimeNestedType(ITypeSymbol symbol)
@@ -1361,14 +1366,20 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		var inlineArguments = CreateLegacyWhiteListArguments(method, arguments, instance);
 		var importedIdentifierName = default(string);
 		Identifier? importedBinding = null;
+		var importOwner = Util.GetECMAScriptModuleImportPath(method) is not null
+			? method
+			: method.AssociatedSymbol ?? method;
+		var memberImportPath = method.IsStatic
+			? Util.GetECMAScriptModuleImportPath(importOwner)
+			: null;
 		var modulePath = method.IsStatic
-			? Util.GetECMAScriptModuleImportPath(method) ?? GetModuleImportPath(method.ContainingType)
+			? memberImportPath ?? GetModuleImportPath(method.ContainingType)
 			: null;
 		if (!string.IsNullOrWhiteSpace(modulePath))
 		{
-			importedIdentifierName = Util.GetConfigOrSymbolName(method);
+			importedIdentifierName = Util.GetSymbolConfigName(method) ?? Util.GetConfigOrSymbolName(importOwner);
 			if (!string.IsNullOrWhiteSpace(importedIdentifierName))
-				importedBinding = BindResolvedModuleImport(argument, method.ContainingType, modulePath!, importedIdentifierName!);
+				importedBinding = BindResolvedModuleImport(argument, importOwner, modulePath!, importedIdentifierName!);
 		}
 
 		expression = InstantiateInlineTemplate(signature, inlineTemplate, inlineArguments, importedIdentifierName, importedBinding);
@@ -2513,6 +2524,19 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			return new SequenceExpression(NodeList.From(boundExtensionInitializations));
 		}
 
+		if (string.IsNullOrEmpty(alias) && operation.Method.IsStatic &&
+			Util.GetECMAScriptModuleImportPath(operation.Method) is not null &&
+			TryBuildEcmascriptInlineExpression(operation.Method, null, explicitArgs, argument, out var inline))
+		{
+			// A shorter projected method group replays the direct invocation's slot layout.
+			var forward = new ArrowFunctionExpression(NodeList.From<Node>(args), inline!, expression: true, async: false);
+			if (boundExtensionInitializations.Count == 0)
+				return WithOriginIfMissing(forward, operation);
+
+			boundExtensionInitializations.Add(forward);
+			return WithOriginIfMissing(new SequenceExpression(NodeList.From(boundExtensionInitializations)), operation);
+		}
+
 		if (string.IsNullOrEmpty(alias))
 			RejectUnsupportedRuntimeFallback(operation, operation.Method, "method reference", runtimeHostType);
 
@@ -2761,7 +2785,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				var argContext = arg.Parameter!.RefKind is RefKind.Out
 					? argument.With(Sense.OutParameter)
 					: argument;
-				var hostArgument = ReadUndefinedDefault(arg) ?? Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext);
+				var hostArgument = LowerOmittedHostArgument(arg) ?? Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext);
 				loweredArguments.Add(LowerBoundArgument(operation, arg, argument, hostArgument));
 			}
 
@@ -2796,7 +2820,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 				if (isTrailingEcmascriptDefaultArgument)
 					continue;
 
-				if ((ReadUndefinedDefault(arg) ?? Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext)) is Expression hostArgument)
+				if ((LowerOmittedHostArgument(arg) ?? Host?.RewriteInvocationArgumentPreorder(operation, arg, index, argContext)) is Expression hostArgument)
 				{
 					var hostLoweredArgument = LowerBoundArgument(operation, arg, argument, hostArgument);
 					if (arg.Parameter!.RefKind is RefKind.Out or RefKind.Ref)
@@ -2907,29 +2931,31 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		return NormalizeOptionalRead(operation.TargetMethod, expression);
 	}
 
-	private static Expression? ReadUndefinedDefault(IArgumentOperation argument) =>
+	// The standard [Optional] flag with no CLR default represents an unfilled host slot.
+	// Use void 0 so a lexical binding named undefined cannot affect the call.
+	private static Expression? LowerOmittedHostArgument(IArgumentOperation argument) =>
 		argument.ArgumentKind == ArgumentKind.DefaultValue &&
-		Util.HasAttribute(argument.Parameter!, "ECMAScript.ECMAScriptUndefinedDefaultAttribute")
+		argument.Parameter is { IsOptional: true, HasExplicitDefaultValue: false, ContainingSymbol: IMethodSymbol method } &&
+		Util.IsECMAScriptRuntimeSymbol(method)
 			? new NonUpdateUnaryExpression(Operator.Void, new NumericLiteral(0, "0"))
 			: null;
 
-	private static (int Index, bool? Value)[] ReadFixedArguments(IMethodSymbol method)
+	private static (int Index, bool Value)[] ReadFixedArguments(IMethodSymbol method)
 	{
 		var attributes = method.GetAttributes();
 		if (attributes.IsDefaultOrEmpty)
 			return [];
 		return attributes
-			.Where(attribute => attribute.AttributeClass?.ToDisplayString() is
-				"ECMAScript.ECMAScriptFixedBooleanArgumentAttribute" or "ECMAScript.ECMAScriptUndefinedArgumentAttribute")
-			.Select(attribute => ((int)attribute.ConstructorArguments[0].Value!, attribute.ConstructorArguments.Length == 2 ? (bool?)attribute.ConstructorArguments[1].Value : null))
-			.OrderBy(argument => argument.Item1)
+			.Where(attribute => attribute.AttributeClass?.ToDisplayString() == "ECMAScript.ECMAScriptFixedBooleanArgumentAttribute")
+			.Select(attribute => (Index: (int)attribute.ConstructorArguments[0].Value!, Value: (bool)attribute.ConstructorArguments[1].Value!))
+			.OrderBy(argument => argument.Index)
 			.ToArray();
 	}
 
-	private static void InsertFixedArguments(List<Expression> arguments, (int Index, bool? Value)[] fixedArguments)
+	private static void InsertFixedArguments(List<Expression> arguments, (int Index, bool Value)[] fixedArguments)
 	{
 		foreach (var (index, value) in fixedArguments)
-			arguments.Insert(index, value is bool boolean ? new BooleanLiteral(boolean, boolean ? "true" : "false") : CreateUndefined());
+			arguments.Insert(index, new BooleanLiteral(value, value ? "true" : "false"));
 	}
 
 	private static bool IsPartialRecordRead(IMethodSymbol method) =>

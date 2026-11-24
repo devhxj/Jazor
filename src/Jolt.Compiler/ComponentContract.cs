@@ -90,15 +90,22 @@ internal sealed record ComponentContract(
                 false,
                 group.SelectMany(SlotMembers)
                     .DistinctBy(attribute => attribute.Name)
-                    .Select(attribute => new ComponentProperty(attribute.Name, projection.GetSlotMemberType(attribute, model) ?? "object",
-                        false, Source: attribute.NameSpan)
+                    .Select(attribute =>
                     {
-                        LocalType = attribute.Value switch
+                        var type = attribute.Value switch
                         {
                             [JoltExpression expression] => model is null ? null : projection.GetExpressionTypeSymbol(expression, model),
                             [] => compilation.GetSpecialType(SpecialType.System_Boolean),
                             _ => compilation.GetSpecialType(SpecialType.System_String),
-                        },
+                        };
+                        var display = attribute.Value switch
+                        {
+                            [] => "bool",
+                            [JoltExpression] => type?.ToDisplayString(TypeDisplay) ?? "object",
+                            _ => "string",
+                        };
+                        return new ComponentProperty(attribute.Name, display,
+                            false, Source: attribute.NameSpan) { LocalType = type };
                     }).ToArray()))
             .ToArray();
 

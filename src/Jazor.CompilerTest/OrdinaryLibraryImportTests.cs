@@ -284,10 +284,29 @@ public sealed class OrdinaryLibraryImportTests
     }
 
     [TestMethod]
-    public void ImportManifest_AmbiguousImplementation_RejectsDuplicateAssetSelection()
+    public void ImportManifest_AmbiguousImplementation_RejectsOnlyWhenReachedFromModule()
     {
-        Assert.Throws<NotSupportedException>(() => LibraryImportContext.ReadInputs([
-            new ImportManifest("asset|Example|first.dll\nasset|Example|second.dll")], CancellationToken.None));
+        using var fixture = new Fixture("""
+            namespace Ordinary;
+            public static class State { public static int Read() => 3; }
+            """);
+        var inputs = LibraryImportContext.ReadInputs([
+            new ImportManifest("asset|Ordinary|first.dll\nasset|Ordinary|second.dll\nasset|Ordinary|first.dll")],
+            CancellationToken.None);
+        Assert.HasCount(2, inputs);
+        var consumer = fixture.Consumer("public static int Run() => 3;");
+        consumer = consumer.AddSyntaxTrees(CSharpSyntaxTree.ParseText(
+            "class Backend { int Read() => Ordinary.State.Read(); }",
+            (CSharpParseOptions)consumer.SyntaxTrees.Single().Options));
+        LibraryImportContext.Configure(consumer, inputs);
+        LibraryImportContext.AddRoots(consumer, [consumer.GetTypeByMetadataName("App")!]);
+        Assert.IsEmpty(LibraryImportContext.ForCompilation(consumer)!.BuildModules());
+
+        var caller = fixture.Consumer("public static int Run() => Ordinary.State.Read();");
+        LibraryImportContext.Configure(caller, inputs);
+        LibraryImportContext.AddRoots(caller, [caller.GetTypeByMetadataName("App")!]);
+        var failure = Assert.Throws<NotSupportedException>(() => LibraryImportContext.ForCompilation(caller));
+        StringAssert.Contains(failure.Message, "Ordinary library 'Ordinary' requires exactly one resolved implementation asset for the selected TFM/RID; found 2.");
     }
 
     [TestMethod]

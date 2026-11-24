@@ -31,7 +31,7 @@ let staticMessageReader;
 const needsLocaleTool = Symbol();
 const exportName = mode === 'values' ? undefined : query;
 let vueAvailable;
-const { ts, modulePath, entry, options, host, inputs, realpaths, source: initialSource,
+const { ts, modulePath, entry, options, host, snapshotInputs, source: initialSource,
     program: initialProgram, definition, replaceSource, packageIdentity } =
     await packageChecker(import.meta.url, typescript, moduleSpecifier, (ts, entry, options, host) => {
         vueAvailable = ts.resolveModuleName('vue', entry, options, host).resolvedModule;
@@ -40,11 +40,11 @@ const { ts, modulePath, entry, options, host, inputs, realpaths, source: initial
             type JoltStringDictionary = Record<string, string>;
             ${vueAvailable ? "type JoltVueObjectPlugin = import('vue').ObjectPlugin<[]>;" : ''}
         `;
-    }, (ts, modulePath, options, moduleType) => {
+    }, (ts, modulePath, options, moduleType, readInput) => {
         const exists = fs.existsSync(modulePath);
         const ambiguousJs = exists && modulePath.endsWith('.js') && moduleType == null;
         const lexicalEsm = ambiguousJs &&
-            ts.createSourceFile(modulePath, fs.readFileSync(modulePath, 'utf8'), options.target, true, ts.ScriptKind.JS)
+            ts.createSourceFile(modulePath, readInput(modulePath), options.target, true, ts.ScriptKind.JS)
                 .statements.some(statement => ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement) ||
                     ts.isExportAssignment(statement) && !statement.isExportEquals ||
                     statement.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword));
@@ -118,7 +118,16 @@ const undefinedableConstant = (type, unsupported = detail => { throw new Unsuppo
         return projected;
 };
 
-const requestedValues = mode === 'values' ? new Set(JSON.parse(query)) : new Set(exportName ? [exportName] : []);
+// Cold completion only needs to project callable exports that declare properties.
+// Read that subset in one checker session, using the same rules as a real call.
+const requestedValues = new Set(mode === 'values' ? JSON.parse(query) :
+    mode === 'editor' ? aliases.filter(alias => {
+        const symbol = valueSymbol(alias);
+        if (!symbol)
+            return false;
+        const type = typeOf(symbol);
+        return type.getCallSignatures().length && type.getProperties().length;
+    }).map(alias => alias.name) : exportName ? [exportName] : []);
 let dateTypes = dateArguments(ts, program, checker, source);
 const callsOf = alias => {
     const symbol = valueSymbol(alias);
@@ -341,7 +350,7 @@ try {
 }
 
 function writeResult() {
-    if (mode === 'values') {
+    if (mode === 'values' || mode === 'editor') {
         const values = [];
         const errors = new Map(Array.from(requestedValues, name =>
             [name, `'${moduleSpecifier}' has no export named '${name}'.`]));
@@ -357,16 +366,16 @@ function writeResult() {
                 errors.set(alias.name, error.message);
             }
         }
-        console.log(JSON.stringify({ values, errors: Object.fromEntries(errors), exports: valueCandidates(), inputs: [...inputs], modulePath, realpaths: Object.fromEntries(realpaths) }));
+        console.log(JSON.stringify({ values, errors: Object.fromEntries(errors), exports: valueCandidates(), ...snapshotInputs() }));
     } else if (!exportName) {
         const exports = valueCandidates();
-        console.log(JSON.stringify({ exports, inputs: [...inputs], modulePath, realpaths: Object.fromEntries(realpaths) }));
+        console.log(JSON.stringify({ exports, ...snapshotInputs() }));
     } else {
         const symbol = aliases.find(symbol => symbol.name === exportName);
         if (!symbol)
             throw new Error(`'${moduleSpecifier}' has no export named '${exportName}'.`);
         const value = readValue(symbol);
-        console.log(JSON.stringify({ value, exports: valueCandidates(), inputs: [...inputs], modulePath, realpaths: Object.fromEntries(realpaths) }));
+        console.log(JSON.stringify({ value, exports: valueCandidates(), ...snapshotInputs() }));
     }
 }
 
@@ -406,6 +415,37 @@ function isConstant(node) {
 }
 
 function readValue(alias) {
+    const value = readValueCore(alias);
+    const type = typeOf(valueSymbol(alias));
+    if (!type.getCallSignatures().length)
+        return value;
+    const attachedMembers = type.getProperties().flatMap(member => {
+        if (member.name.startsWith('__@'))
+            return [];
+        const memberType = checker.getTypeOfPropertyOfType(type, member.name);
+        const declaration = definition(member.valueDeclaration ?? member.declarations?.[0]);
+        const unsupported = detail => {
+            throw new UnsupportedValueError(detail);
+        };
+        const calls = memberType.getCallSignatures();
+        if (!calls.length) {
+            if (optional(member) && omitUndefined(memberType).getCallSignatures().length)
+                return [];
+            const projected = attempt(() => readType(memberType, new Set(), 'output', true, unsupported)).value;
+            return projected ? [{ name: member.name, type: projected, optional: optional(member), definition: declaration, readOnly: true }] : [];
+        }
+        if (optional(member) || calls.some(call => call.thisParameter))
+            return [];
+        const signatures = attempt(() => readSignatures(calls, unsupported, undefined, new Set(), true, true)).value;
+        return signatures?.length ? [{
+            ...methodMember(member.name, signatures),
+            definition: declaration ?? signatures[0].definition,
+        }] : [];
+    });
+    return attachedMembers.length ? { ...value, attachedMembers } : value;
+}
+
+function readValueCore(alias) {
     const symbol = valueSymbol(alias);
     const unsupported = (detail, position, node) => {
         const declaration = node && definition(node) ? node : symbol?.valueDeclaration ?? alias.declarations?.[0];
@@ -535,10 +575,13 @@ function readValue(alias) {
     if (symbol.flags & ts.SymbolFlags.ValueModule) {
         const members = checker.getExportsOfModule(symbol).flatMap(alias => {
             const member = valueSymbol(alias);
-            if (!member || !(member.flags & ts.SymbolFlags.Function))
+            if (!member || !(member.flags & ts.SymbolFlags.Function) && !isConstant(member.valueDeclaration))
                 return [];
-            const projected = attempt(() => readSignatures(typeOf(member).getCallSignatures(), unsupported, undefined, new Set(), true)).value;
-            return projected ? [methodMember(alias.name, projected)] : [];
+            const calls = typeOf(member).getCallSignatures();
+            if (!calls.length)
+                return [];
+            const projected = attempt(() => readSignatures(calls, unsupported, undefined, new Set(), true)).value;
+            return projected?.length ? [methodMember(alias.name, projected)] : [];
         });
         if (!members.length)
             unsupported('namespace has no supported methods');
@@ -879,7 +922,8 @@ function attempt(read) {
 
 function shapeKey(shape) {
     return JSON.stringify(shape, function (key, value) {
-        if (key === 'definition' || key === 'typeDefinition' && this.kind !== 'handle' && this.kind !== 'enum' ||
+        if (key === 'documentation' || key === 'documentationFromCallableOwner' || key === 'definition' ||
+            key === 'typeDefinition' && this.kind !== 'handle' && this.kind !== 'enum' ||
             key === 'members' && this.kind === 'handle' || key === 'name' && this.kind === 'object')
             return undefined;
         return value;
@@ -2645,6 +2689,18 @@ function readObjectMembers(type, properties, nested, position, partial, unsuppor
         }
         if (!projected.value && position === 'input' && partial)
             projected.value = readMethodOption(actualType, methodParameters ?? [], nested, unsupported);
+        if (!projected.value && position === 'input' && partial && actualType.isUnion()) {
+            // An input initializer can supply supported scalar arms while
+            // retaining the original field's requiredness.
+            const scalarArms = actualType.types.filter(branch => scalar(branch));
+            const boolean = checker.getBooleanType();
+            if (checker.isTypeAssignableTo(boolean, actualType) && !scalarArms.includes(boolean))
+                scalarArms.push(boolean);
+            if (scalarArms.length === 1)
+                projected.value = { kind: scalar(scalarArms[0]) };
+            else if (scalarArms.length > 1)
+                projected.value = readScalarUnion(checker.getUnionType(scalarArms));
+        }
         if (!projected.value && position === 'output' && !readOnly) {
             projected = attempt(() => readType(actualType, nested, 'output', partial, unsupported));
             readOnly = true;

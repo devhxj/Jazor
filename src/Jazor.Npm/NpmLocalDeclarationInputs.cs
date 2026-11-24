@@ -4,32 +4,40 @@ namespace Jazor.Npm;
 
 internal static class NpmLocalDeclarationInputs
 {
-    internal static async Task WriteAsync(string projectDirectory, string output, CancellationToken cancellationToken)
+    internal static async Task WriteAsync(string projectFile, IReadOnlyList<string> sourceFiles, string output,
+        CancellationToken cancellationToken)
     {
         var packages = new HashSet<string>(PathComparer);
+        var declarations = new HashSet<string>(PathComparer);
         var inputs = new SortedSet<string>(StringComparer.Ordinal);
-        // Workspace ownership can change with the C# buffer still open. Track the exact
-        // candidate manifests and locks, including missing paths between project and workspace.
-        var candidates = new List<string>();
-        string? activeManifest = null;
-        for (var directory = new DirectoryInfo(projectDirectory); directory is not null; directory = directory.Parent)
+        var ancestors = NpmWorkspace.PotentialManifests(projectFile, []).ToHashSet(PathComparer);
+        var projectDirectory = Path.GetDirectoryName(projectFile)!;
+        // Register source-local candidates even before there is a C# npm import. An edit
+        // can activate an already-open source's workspace without a new MSBuild evaluation.
+        var candidates = NpmWorkspace.PotentialManifests(projectFile, sourceFiles)
+            .Where(path => !ancestors.Contains(path)).ToList();
+        var pendingAncestors = new List<string>();
+        for (var parent = new DirectoryInfo(projectDirectory); parent is not null; parent = parent.Parent)
         {
-            var manifest = Path.Combine(directory.FullName, "package.json");
-            candidates.Add(manifest);
-            candidates.Add(Path.Combine(directory.FullName, "pnpm-lock.yaml"));
-            var hasManifest = File.Exists(manifest);
-            var workspace = Path.Combine(directory.FullName, "pnpm-workspace.yaml");
-            if (File.Exists(workspace))
-                candidates.Add(workspace);
-            else if (!hasManifest)
+            var manifest = Path.Combine(parent.FullName, "package.json");
+            pendingAncestors.Add(manifest);
+            if (!File.Exists(manifest) && !File.Exists(Path.Combine(parent.FullName, "pnpm-workspace.yaml")))
                 continue;
-            inputs.UnionWith(candidates);
-            candidates.Clear();
-            if (hasManifest)
-                activeManifest ??= manifest;
+            candidates.AddRange(pendingAncestors);
+            pendingAncestors.Clear();
         }
-        if (activeManifest is not null)
-            Visit(activeManifest, includeDeclarations: false);
+        candidates.Add(Path.Combine(projectDirectory, "package.json"));
+        foreach (var manifest in candidates)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var directory = Path.GetDirectoryName(manifest)!;
+            inputs.Add(manifest);
+            inputs.Add(Path.Combine(directory, "pnpm-lock.yaml"));
+            var workspace = Path.Combine(directory, "pnpm-workspace.yaml");
+            if (File.Exists(workspace))
+                inputs.Add(workspace);
+            Visit(manifest, includeDeclarations: false);
+        }
         var text = string.Join(Environment.NewLine, inputs);
         if (File.Exists(output) && await File.ReadAllTextAsync(output, cancellationToken) == text)
             return;
@@ -48,14 +56,17 @@ internal static class NpmLocalDeclarationInputs
         {
             cancellationToken.ThrowIfCancellationRequested();
             var directory = Path.GetDirectoryName(path)!;
-            if (!packages.Add(directory) || !File.Exists(path))
+            if (!File.Exists(path))
                 return;
-            if (includeDeclarations)
+            if (includeDeclarations && declarations.Add(directory))
             {
                 inputs.Add(path);
                 foreach (var file in FindDeclarations(directory, cancellationToken))
                     inputs.Add(file);
             }
+
+            if (!packages.Add(directory))
+                return;
 
             using var json = ReadDesignTimeManifest(path);
             if (json is null || json.RootElement.ValueKind != JsonValueKind.Object)

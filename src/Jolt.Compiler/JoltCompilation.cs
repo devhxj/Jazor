@@ -16,7 +16,6 @@ public sealed record JoltCompileOptions(
 {
     public IReadOnlyList<NpmValueExport> NpmValues { get; init; } = [];
     public IReadOnlyList<JoltSource> CSharpSources { get; init; } = [];
-    public string? NpmProjectionCacheDirectory { get; init; }
     public IReadOnlyList<NpmVueComponent> VueComponents { get; init; } = [];
     public string VueSourceRootRelative { get; init; } = ".";
     public bool Router { get; init; }

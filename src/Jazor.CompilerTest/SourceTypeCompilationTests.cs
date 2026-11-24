@@ -38,7 +38,7 @@ public sealed class SourceTypeCompilationTests
     }
 
     [TestMethod]
-    public async Task Convert_UndefinedArgumentPreservesLaterArgument()
+    public async Task Convert_ImportedInlineCallPreservesFixedSlotInMethodGroup()
     {
         var script = await Convert("""
             using ECMAScript;
@@ -46,17 +46,125 @@ public sealed class SourceTypeCompilationTests
             [ECMAScript]
             public static class Host
             {
-                [ECMAScriptUndefinedArgument(1)]
-                [ECMAScriptInline("__arg2 === void 0 ? __arg1 + __arg3 : -1")]
+                [ECMAScript("npm-example")]
+                [ECMAScriptName("default")]
+                [ECMAScriptInline("(\"default\")(__arg1, void 0, __arg2)")]
                 public static extern int Sum(int first, int last);
             }
 
             public static class TestModule
             {
                 public static int Run() => Host.Sum(4, 7);
+                public static System.Func<int, int, int> Capture() => Host.Sum;
             }
             """);
-        await AssertRun(script, 11);
+        StringAssert.Contains(script, " from \"npm-example\";");
+        StringAssert.Contains(script, "(4, void 0, 7)");
+        StringAssert.Contains(script, "=>");
+        Assert.AreEqual(2, script.Split("void 0").Length - 1);
+    }
+
+    [TestMethod]
+    public async Task Convert_ImportedInlineExtensionMethodGroup_CapturesReceiverAndPreservesArgumentSlots()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System;
+
+            [ECMAScript]
+            public sealed class Host;
+
+            [ECMAScript]
+            public static class HostExtensions
+            {
+                [ECMAScript("./host.mjs")]
+                [ECMAScriptName("default")]
+                [ECMAScriptInline("(\"default\")(__arg1, void 0, __arg2)")]
+                public static extern int Sum(this Host host, int last);
+            }
+
+            public static class TestModule
+            {
+                public static int Use(Host host)
+                {
+                    int calls = 0;
+                    Host Evaluate()
+                    {
+                        calls++;
+                        return host;
+                    }
+
+                    Func<int, int> captured = Evaluate().Sum;
+                    int created = calls;
+                    int result = captured(7) + captured(8);
+                    return created * 1000 + calls * 100 + result;
+                }
+            }
+            """);
+
+        await AssertRun(script + """
+
+            export function Run() {
+              const host = {value: 4};
+              return Use(host);
+            }
+            """, 1123, ("host.mjs", """
+            export default function (receiver, middle, last) {
+              if (arguments.length !== 3 || middle !== undefined)
+                throw new Error('incorrect forwarded arguments');
+              return receiver.value + last;
+            }
+            """));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task Convert_ExplicitMemberImports_ShareOneBindingAcrossUseOrder(bool inlineFirst)
+    {
+        var script = await Convert($$"""
+            using ECMAScript;
+            using System;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScript("npm-example")]
+                [ECMAScriptName("model")]
+                public static extern int Direct(int value);
+
+                [ECMAScript("npm-example")]
+                [ECMAScriptName("model")]
+                [ECMAScriptInline("model(__arg1, void 0)")]
+                public static extern int Inline(int value);
+
+                [ECMAScript("npm-example")]
+                [ECMAScriptName("model")]
+                public static extern Func<int, int> Getter { get; }
+
+                [ECMAScript("npm-example")]
+                [ECMAScriptName("model")]
+                public static extern int InlineGetter { [ECMAScriptInline("model(0, void 0)")] get; }
+            }
+
+            public static class TestModule
+            {
+                public static int Run() => {{(inlineFirst ? "Host.InlineGetter + Host.Inline(2) + Host.Direct(1)" : "Host.Direct(1) + Host.Inline(2) + Host.InlineGetter")}};
+                public static Func<int, int> Capture() => Host.Direct;
+                public static Func<int, int> CaptureInline() => Host.Inline;
+                public static Func<int, int> Read() => Host.Getter;
+            }
+            """);
+
+        var import = System.Text.RegularExpressions.Regex.Match(script, """import \{ model as (?<binding>\S+) \} from "npm-example";""");
+        Assert.IsTrue(import.Success, script);
+        Assert.AreEqual(1, script.Split(" from \"npm-example\";").Length - 1);
+        var binding = import.Groups["binding"].Value;
+        StringAssert.Contains(script, binding + "(1)");
+        StringAssert.Contains(script, binding + "(2, void 0)");
+        StringAssert.Contains(script, binding + "(0, void 0)");
+        Assert.AreEqual(2, script.Split($"return {binding};").Length - 1);
+        StringAssert.Contains(script, $"=> {binding}(");
     }
 
     [TestMethod]
@@ -559,7 +667,7 @@ public sealed class SourceTypeCompilationTests
             public class Host
             {
                 [ECMAScriptFixedBooleanArgument(2, false)]
-                public extern int Select(int value, [ECMAScriptUndefinedDefault] int? offset = null);
+                public extern int Select(int value, [System.Runtime.InteropServices.Optional] int? offset);
             }
 
             public static class TestModule
@@ -986,8 +1094,8 @@ public sealed class SourceTypeCompilationTests
                 public extern string? this[string key] { get; set; }
                 [ECMAScriptOptional]
                 public extern string? Read(string key);
-                public extern string Call([ECMAScriptUndefinedDefault] string? kind = null, string key = "");
-                public extern string Ordered(string first, [ECMAScriptUndefinedDefault] string? middle = null, string last = "", string trailing = "unused");
+                public extern string Call([System.Runtime.InteropServices.Optional] string? kind, string key = "");
+                public extern string Ordered(string first, [System.Runtime.InteropServices.Optional] string? middle, string last = "", string trailing = "unused");
             }
             public static class TestModule
             {
@@ -1014,6 +1122,46 @@ public sealed class SourceTypeCompilationTests
         StringAssert.Contains(script, "void 0");
         StringAssert.Contains(script, "__jz_optionalArgs");
         Assert.DoesNotContain("unused", script, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public async Task Convert_OptionalArguments_PreserveExplicitValuesAndClrDefaults()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System.Runtime.InteropServices;
+
+            [ECMAScript]
+            public class Host
+            {
+                public extern void Slots([Optional] int? first, [Optional] int? second);
+                public extern void HostDefault(int first = 7, int second = 8);
+            }
+
+            public static class TestModule
+            {
+                private static int ClrDefault(int first = 7, int second = 8) => first + second;
+
+                public static int Run(Host host, ECMAScript.Array<int> values)
+                {
+                    host.Slots();
+                    host.Slots(second: 0);
+                    host.Slots(null, 0);
+                    host.HostDefault(second: 0);
+                    values.Join();
+                    return ClrDefault(second: 0) + ClrDefault();
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, "host.Slots()");
+        StringAssert.Contains(script, "void 0");
+        StringAssert.Contains(script, "host.Slots(null, 0)");
+        StringAssert.Contains(script, "host.HostDefault((");
+        StringAssert.Contains(script, "values.join()");
+        StringAssert.Contains(script, "return ClrDefault((");
+        Assert.AreEqual(2, script.Split(" = 7, __arg$").Length - 1);
+        StringAssert.Contains(script, "ClrDefault(7, 8)");
     }
 
     [TestMethod]
@@ -1263,13 +1411,15 @@ public sealed class SourceTypeCompilationTests
         return first;
     }
 
-    private static async Task AssertRun(string script, int expected)
+    private static async Task AssertRun(string script, int expected, (string Name, string Content)? importedModule = null)
     {
         var root = Path.Combine(RepositoryTemp.Root, "source-types-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
             await File.WriteAllTextAsync(Path.Combine(root, "app.mjs"), script);
+            if (importedModule is { } module)
+                await File.WriteAllTextAsync(Path.Combine(root, module.Name), module.Content);
             var testPath = Path.Combine(root, "test.mjs");
             await File.WriteAllTextAsync(testPath, $$"""
                 import { Run } from './app.mjs';

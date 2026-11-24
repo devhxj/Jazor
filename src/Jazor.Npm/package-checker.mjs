@@ -1,13 +1,25 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { resolveRuntimeModule } from './runtime-module.mjs';
+import { readTypeScriptInput } from './typescript-input.mjs';
+import { declarationDocumentation } from './declaration-documentation.mjs';
 
 export async function packageChecker(entryUrl, typescript, moduleSpecifier, sourceText, validateRuntime) {
     const { default: ts } = await import(pathToFileURL(typescript));
-    const modulePath = fileURLToPath(import.meta.resolve(moduleSpecifier));
+    const inputs = new Set();
+    const reads = new Map();
+    function readInput(file) {
+        const key = path.resolve(file);
+        inputs.add(key);
+        if (!reads.has(key))
+            reads.set(key, readTypeScriptInput(key));
+        return reads.get(key)?.text;
+    }
+    const modulePath = resolveRuntimeModule(moduleSpecifier, entryUrl, import.meta.resolve, inputs, readInput);
     const root = path.resolve(path.dirname(fileURLToPath(entryUrl)), '../..');
     const entry = path.join(root, 'jazor-metadata.mts');
-    const inputs = new Set([modulePath]);
+    inputs.add(modulePath);
     const options = {
         target: ts.ScriptTarget.ES2022,
         module: ts.ModuleKind.ESNext,
@@ -24,13 +36,13 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
         inputs.add(manifest);
         if (!fs.existsSync(manifest))
             continue;
-        const metadata = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+        const metadata = JSON.parse(readInput(manifest));
         if (moduleType === undefined)
             moduleType = metadata.type ?? null;
         if (metadata.name)
             break;
     }
-    validateRuntime?.(ts, modulePath, options, moduleType);
+    validateRuntime?.(ts, modulePath, options, moduleType, readInput);
     const host = ts.createCompilerHost(options);
     const realpaths = new Map();
     const realpath = host.realpath.bind(host);
@@ -41,13 +53,7 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
         realpaths.set(path.resolve(file), path.resolve(resolved));
         return resolved;
     };
-    let source = ts.createSourceFile(entry, sourceText(ts, entry, options, host), options.target, true);
-    const readFile = host.readFile.bind(host);
-    host.readFile = file => {
-        inputs.add(path.resolve(file));
-        const result = readFile(file);
-        return result;
-    };
+    host.readFile = readInput;
     const getSourceFile = host.getSourceFile.bind(host);
     // TypeScript passes normalized slashes even when the host constructs a Windows path.
     const entryKey = host.getCanonicalFileName(path.normalize(entry));
@@ -65,20 +71,32 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
         inputs.add(path.resolve(directory));
         return directoryExists(directory);
     };
+    // Resolving optional peer imports also contributes inputs to a portable signature.
+    let source = ts.createSourceFile(entry, sourceText(ts, entry, options, host), options.target, true);
     const program = ts.createProgram([entry], options, host);
     const diagnostics = ts.getPreEmitDiagnostics(program);
     if (diagnostics.length)
         throw new Error(ts.formatDiagnostics(diagnostics, host));
 
+    const definitions = new WeakMap();
     const definition = node => {
         if (!node || isEntry(node.getSourceFile().fileName))
             return null;
+        if (definitions.has(node))
+            return definitions.get(node);
         const target = node.name ?? node;
-        return {
+        const result = {
             path: path.resolve(target.getSourceFile().fileName),
             start: target.getStart(),
             length: target.getWidth(),
+            documentation: declarationDocumentation(ts, node),
         };
+        // A callable variable or property can document every use of its call
+        // type. A function declaration's JSDoc belongs to that overload alone.
+        if (result.documentation && (ts.isVariableDeclaration(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node)))
+            result.documentationFromCallableOwner = true;
+        definitions.set(node, result);
+        return result;
     };
     function packageIdentity() {
         const resolution = ts.resolveModuleName(moduleSpecifier, entry, options, host).resolvedModule;
@@ -93,6 +111,12 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
         };
     }
 
-    return { ts, modulePath, entry, options, host, realpaths, inputs, program,
+    function snapshotInputs() {
+        return {
+            inputs: [...inputs], modulePath, realpaths: Object.fromEntries(realpaths),
+            observedInputs: Object.fromEntries([...reads].map(([file, input]) => [file, input?.hash ?? null])),
+        };
+    }
+    return { ts, modulePath, entry, options, host, snapshotInputs, program,
         source, definition, replaceSource: value => { source = value; }, packageIdentity };
 }

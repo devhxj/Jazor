@@ -11,6 +11,7 @@
         <InternalsVisibleTo Include="Jolt.Compiler" />
         <InternalsVisibleTo Include="Jolt.Compiler.Test" />
         <InternalsVisibleTo Include="Jolt.Npm" />
+        <InternalsVisibleTo Include="Jolt.Project" />
         <ProjectReference Include="../ECMAScript/ECMAScript.csproj" />
         <ProjectReference Include="../Jazor.Compiler/Jazor.Compiler.csproj" />
         <ProjectReference Include="../Jazor.NodeHost/Jazor.NodeHost.csproj" />

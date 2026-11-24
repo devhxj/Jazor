@@ -54,9 +54,12 @@ public sealed class JoltProjectImports
         => new(sources.OrderBy(source => source.Path, StringComparer.Ordinal).Select(source =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return ParsedSources.GetValue(source, static input =>
-                new Lazy<JoltDocument>(() => JoltParser.Parse(input.Content, input.Path))).Value;
+            return ParseDocument(source);
         }).ToArray());
+
+    internal static JoltDocument ParseDocument(JoltSource source) =>
+        ParsedSources.GetValue(source, static input =>
+            new Lazy<JoltDocument>(() => JoltParser.Parse(input.Content, input.Path))).Value;
 
     public static bool IsImportsFile(string path)
         => Path.GetFileName(Normalize(path)) == "_Imports.jazor";
