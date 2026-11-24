@@ -126,6 +126,28 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item -LiteralPath 'editors/jolt-visual-studio/bin/Release/net472/Jolt.VisualStudio.vsix' -Destination 'artifacts/Jolt.VisualStudio.vsix'
 
+      - name: Package Jolt Rider plugin
+        if: steps.release_ref.outputs.package_version != ''
+        id: rider
+        shell: pwsh
+        env:
+          JOLT_RIDER_VERSION: ${{ steps.release_ref.outputs.package_version }}
+        run: |
+          # Manual runs can still verify tags from before the Rider plugin.
+          if (-not (Test-Path -LiteralPath './scripts/csharp/pack-jolt-rider.cs')) { return }
+          $pluginPath = "artifacts/jolt-rider-$env:JOLT_RIDER_VERSION.zip"
+          dotnet run --file ./scripts/csharp/pack-jolt-rider.cs -- $env:JOLT_RIDER_VERSION $pluginPath
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "plugin_path=$pluginPath" >> $env:GITHUB_OUTPUT
+
+      - name: Upload Jolt Rider plugin artifact
+        if: steps.rider.outputs.plugin_path != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: jolt-rider-${{ steps.release_ref.outputs.package_version }}
+          path: ${{ steps.rider.outputs.plugin_path }}
+          if-no-files-found: error
+
       - name: Discover package version
         id: package
         shell: pwsh
@@ -204,6 +226,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOLT_RIDER_ASSET: ${{ steps.rider.outputs.plugin_path }}
         run: |
           $tag = '${{ steps.release_ref.outputs.release_ref }}'
           $notesPath = '${{ steps.release_notes.outputs.notes_path }}'
@@ -229,4 +252,6 @@ jobs:
             gh @releaseArguments
           }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          gh release upload $tag "artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix" 'artifacts/Jolt.VisualStudio.vsix' --clobber --repo '${{ github.repository }}'
+          $assets = @("artifacts/jolt-${{ steps.release_ref.outputs.package_version }}.vsix", 'artifacts/Jolt.VisualStudio.vsix')
+          if ($env:JOLT_RIDER_ASSET) { $assets += $env:JOLT_RIDER_ASSET }
+          gh release upload $tag @assets --clobber --repo '${{ github.repository }}'

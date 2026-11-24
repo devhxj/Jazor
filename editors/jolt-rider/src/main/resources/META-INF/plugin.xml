@@ -1,0 +1,15 @@
+<idea-plugin>
+    <id>org.jazor.jolt</id>
+    <name>Jolt</name>
+    <version>0.1.0</version>
+    <vendor>Jazor</vendor>
+    <description>Jolt editing support for .jazor files in JetBrains Rider.</description>
+    <idea-version since-build="263" until-build="263.*"/>
+    <depends>com.intellij.modules.rider</depends>
+    <depends>com.intellij.modules.lsp</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="JOLT" implementationClass="org.jazor.jolt.rider.JoltFileType"
+                  fieldName="INSTANCE" extensions="jazor"/>
+        <platform.lsp.integrationProvider implementation="org.jazor.jolt.rider.JoltLspProvider"/>
+    </extensions>
+</idea-plugin>

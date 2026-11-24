@@ -55,8 +55,9 @@ Each `.jazor` file becomes one ES module. The Vue component is the default expor
 | --- | --- |
 | VS Code | Install `jolt-2.7.0.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
 | Visual Studio 2026 on Windows x64 | Open `Jolt.VisualStudio.vsix` with the VSIX Installer. [Visual Studio setup](editors/jolt-visual-studio/README.md) |
+| JetBrains Rider 2026.3 | Install `jolt-rider-2.7.0.zip` from disk in **Settings → Plugins**. [Rider setup](editors/jolt-rider/README.md) |
 
-Get the CLI and your editor’s VSIX from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor` to try semantic highlighting, typed completion and go to definition. [2.7.0 release](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
+Get the CLI and your editor’s extension from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor`. [2.7.0 release](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
 
 `jolt build samples/Jolt.Counter` writes modules and source maps to `samples/Jolt.Counter/.jolt/`. `jolt bundle samples/Jolt.Counter` writes production assets to `samples/Jolt.Counter/dist/`.
 

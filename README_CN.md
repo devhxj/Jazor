@@ -55,6 +55,7 @@ jolt dev samples/Jolt.Counter --port 15658
 | --- | --- |
 | VS Code | 在扩展菜单中选择 **Install from VSIX**，安装 `jolt-2.7.0.vsix`。 [VS Code 配置](editors/jolt/README.md) |
 | Visual Studio 2026（Windows x64） | 双击 `Jolt.VisualStudio.vsix`，通过 VSIX Installer 安装。 [Visual Studio 配置](editors/jolt-visual-studio/README.md) |
+| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.0.zip`。 [Rider 配置](editors/jolt-rider/README.md) |
 
 从与 CLI 同一版本的发布页下载扩展，将 `samples/Jolt.Counter` 作为文件夹打开。在 `App.jazor` 中试用语义高亮、类型化补全和转到定义。 [2.7.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
 

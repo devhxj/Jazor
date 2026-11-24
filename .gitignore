@@ -458,6 +458,7 @@ cnblog/
 .wiki-smoke-*.log
 .tools/
 jazor/
+!/editors/jolt-rider/src/main/java/org/jazor/
 # The SDK build targets are authored source even on case-insensitive checkouts.
 !/src/Jazor/
 !/src/Jazor/build/

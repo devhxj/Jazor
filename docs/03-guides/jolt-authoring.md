@@ -34,6 +34,7 @@ jolt dev samples/Jolt.Counter --port 15658
 | --- | --- |
 | VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
+| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.0.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
 
 在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
 

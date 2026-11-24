@@ -10,6 +10,7 @@
 
 #### 新增功能
 
+- **发布补充。** JetBrains Rider 2026.3 可从磁盘安装 `jolt-rider-2.7.0.zip`，通过 Jolt 语言服务编辑 `.jazor` 文件。普通 `.cs` 文件仍由 Rider 的 C# 工具处理。[安装说明](editors/jolt-rider/README.md) by @devhxj
 - npm 投影支持传统 `module` ESM 入口、命名空间内可调用的 `const` 别名，以及函数导出的附属成员。例如，可通过 `ElMessageMembers.Success(text)` 调用 Element Plus 的成功提示。by @devhxj
 - 同一个 Web 工程中的浏览器 C# 可以从源码所在的子工作区使用 npm 投影。宿主打包目标可以依赖 `JazorDebug` 取得原始 ES 模块，再由 Jolt 生成部署资产。by @devhxj
 - 普通 C# 和 Jolt 编辑器可在悬停和参数提示中显示 npm 声明的 JSDoc。更新上游声明中的说明后，编辑器会刷新相关文档。by @devhxj
@@ -27,6 +28,7 @@
 
 New Features
 
+- **Release addition.** Install `jolt-rider-2.7.0.zip` from disk in JetBrains Rider 2026.3 to edit `.jazor` files with the Jolt language server. Ordinary `.cs` files continue to use Rider’s C# tooling. [Installation](editors/jolt-rider/README.md) by @devhxj
 - npm projection supports legacy `module` ESM entry points, callable `const` aliases in namespaces, and members attached to exported functions. For example, use `ElMessageMembers.Success(text)` to show an Element Plus success message. by @devhxj
 - Browser C# in a Web project can use npm projection from a child workspace that owns the source files. Host packaging targets can depend on `JazorDebug` to obtain raw ES modules before Jolt produces deployment assets. by @devhxj
 - Editors for ordinary C# and Jolt can show npm declaration JSDoc in hover and parameter help. Editing the upstream declaration documentation refreshes the displayed text. by @devhxj
