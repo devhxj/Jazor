@@ -3,7 +3,7 @@
 From the repository root, pack the Jolt CLI from this checkout into a local feed. Give the candidate a unique prerelease version to keep it separate from released tools.
 
 ```powershell
-$version = "2.6.0-local.$([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
+$version = "2.7.0-local.$([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
 $feed = Join-Path (Get-Location) '.tmp/jolt-aspnet-feed'
 dotnet pack src/Jolt.Cli/Jolt.Cli.csproj -p:MinVerVersionOverride=$version -o $feed
 cd samples/Jolt.AspNetCore

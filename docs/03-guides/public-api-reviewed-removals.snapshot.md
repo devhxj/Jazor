@@ -13,3 +13,14 @@ remains unchanged; all removed signatures stay visible in generated reports.
   - System.String TaskName
   - System.String get_TaskName()
   - Void set_TaskName(System.String)
+
+## Reviewed API removals for Jazor 2.7.0
+
+The maintainer approved removing the following two attributes in this MINOR
+release. See the 2.7.0 migration instructions in CHANGELOG.md. The frozen 1.0.0
+snapshot predates these types. The allowlist records their exact type entries.
+The constructors and `Index` signatures also occur on other public types.
+The comparison tool deduplicates those signatures across types.
+
+- type ECMAScript.ECMAScriptUndefinedArgumentAttribute
+- type ECMAScript.ECMAScriptUndefinedDefaultAttribute

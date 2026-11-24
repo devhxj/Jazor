@@ -4,10 +4,10 @@ This VSIX registers `.jazor` in Visual Studio 2026 (18.12 through 18.x) on Windo
 
 Install or update the existing `Jolt.VisualStudio.vsix` with Visual Studio closed. The migration candidate includes a C# editor component in this same installer. In an ordinary C# project that references the candidate Jazor NuGet package, F12 on a projected npm call opens the generated C# method. The navigation action in Quick Info opens the original TypeScript declaration at its line and column. These operations use the C# workspace and the project's Jazor projection.
 
-For `.jazor` authoring, install the matching Jolt CLI as well. The released 2.6.0 tools are available from the release page. [Jolt release](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)
+For `.jazor` authoring, install the matching Jolt CLI as well. The released 2.7.0 tools are available from the release page. [Jolt release](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
 
 ```powershell
-dotnet tool install --global Jazor.Jolt --version 2.6.0
+dotnet tool install --global Jazor.Jolt --version 2.7.0
 ```
 
 Use **File > Open > Folder** to open a Jolt project, then open a `.jazor` document. In Jolt Counter, try completion inside a C# expression, use **Go To Definition** on `CollapsibleRoot`, and edit a member name without saving to verify diagnostics. [Jolt Counter](../../samples/Jolt.Counter)

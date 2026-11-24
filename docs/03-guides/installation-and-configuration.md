@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-当前正式版本为 **2.6.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.6.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)
+当前正式版本为 **2.7.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.7.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
 
 开发新的 Jolt 组件时，直接在项目的 `package.json` 声明应用所需的 npm 包，在 `.jazor` 中导入投影的类型。Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 的手写绑定与 Jazor、Jolt 和 Style 一起发布。旧的七个应用级绑定仍可按 2.3.0 安装。 [投影用法与示例](./jolt-authoring.md#直接调用-npm-函数)
 
@@ -37,7 +37,7 @@ live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browse
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.6.0" />
+  <PackageReference Include="Jazor" Version="2.7.0" />
 </ItemGroup>
 ```
 
@@ -47,22 +47,22 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.6.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.6.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.6.0" />
+  <PackageReference Include="ECMAScript.Style" Version="2.7.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.7.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.7.0" />
 </ItemGroup>
 ```
 
 测试项目需要创建测试 Pinia 时，添加同版本的 Pinia Testing。 [测试用例](../../src/ECMAScript.Pinia.Testing.Test/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.6.0" />
+<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.7.0" />
 ```
 
 定义 Vue Devtools 插件的项目添加同版本的 Devtools 绑定。 [插件样例](../../samples/ECMAScript.Vue.Devtools.Plugin/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.6.0" />
+<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.0" />
 ```
 
 ## 配置产物输出

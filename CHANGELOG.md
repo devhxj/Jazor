@@ -4,6 +4,44 @@
 
 ## 2026-11-24
 
+### Jazor 2.7.0
+
+中文 | English
+
+#### 新增功能
+
+- npm 投影支持传统 `module` ESM 入口、命名空间内可调用的 `const` 别名，以及函数导出的附属成员。例如，可通过 `ElMessageMembers.Success(text)` 调用 Element Plus 的成功提示。by @devhxj
+- 同一个 Web 工程中的浏览器 C# 可以从源码所在的子工作区使用 npm 投影。宿主打包目标可以依赖 `JazorDebug` 取得原始 ES 模块，再由 Jolt 生成部署资产。by @devhxj
+- 普通 C# 和 Jolt 编辑器可在悬停和参数提示中显示 npm 声明的 JSDoc。更新上游声明中的说明后，编辑器会刷新相关文档。by @devhxj
+
+#### 体验优化
+
+- Jazor SDK 和 Jolt 共用用户级 npm 投影缓存。独立工作区可复用已验证的声明和生成代码，编辑器仍指向本项目实际安装的声明。by @devhxj
+- Jolt 可在一次 TypeScript 查询中读取同一包入口下多个 Vue 组件的契约。开发时，只改变渲染方法体的静态文字或普通属性编辑可以复用其他组件的语法树和模块，包括路由页面和布局。by @devhxj
+- Web 宿主可以还原仅供后端使用的多 RID 依赖。浏览器模块实际使用外部成员时，Jazor 会检查所需实现程序集的唯一性。by @devhxj
+
+#### 其他变更
+
+- **破坏性变更。** 移除 `ECMAScriptUndefinedDefaultAttribute` 和 `ECMAScriptUndefinedArgumentAttribute`。用新 SDK 重新生成 npm 绑定并重新编译包含这些绑定的 DLL。手写绑定如需区分省略实参与显式默认值，请在没有 CLR 默认值的可选形参上使用 `[System.Runtime.InteropServices.Optional]`。需要省略中间参数时，使用强类型重载，将实参转发到原有 JavaScript 参数位置。by @devhxj
+- 直接调用 Jolt 编译器的工具需移除对 `JoltCompileOptions.NpmProjectionCacheDirectory` 的赋值。Jazor 自动管理用户级投影缓存。by @devhxj
+
+New Features
+
+- npm projection supports legacy `module` ESM entry points, callable `const` aliases in namespaces, and members attached to exported functions. For example, use `ElMessageMembers.Success(text)` to show an Element Plus success message. by @devhxj
+- Browser C# in a Web project can use npm projection from a child workspace that owns the source files. Host packaging targets can depend on `JazorDebug` to obtain raw ES modules before Jolt produces deployment assets. by @devhxj
+- Editors for ordinary C# and Jolt can show npm declaration JSDoc in hover and parameter help. Editing the upstream declaration documentation refreshes the displayed text. by @devhxj
+
+Improvements
+
+- The Jazor SDK and Jolt share a user-level npm projection cache. Independent workspaces can reuse verified declarations and generated code, while editor navigation points to the package installed in the current project. by @devhxj
+- Jolt can read contracts for multiple Vue components from one package entry in a single TypeScript query. During development, edits to static text or ordinary properties that change only the render method body can reuse other components’ syntax trees and modules, including when editing routed pages and layouts. by @devhxj
+- Web hosts can restore multi-RID dependencies used only by the backend. Jazor checks that the required implementation assembly is unique when a browser module actually uses an external member. by @devhxj
+
+Chores
+
+- **Breaking change.** Removed `ECMAScriptUndefinedDefaultAttribute` and `ECMAScriptUndefinedArgumentAttribute`. Regenerate npm bindings with the new SDK and rebuild DLLs that contain them. In handwritten bindings, use `[System.Runtime.InteropServices.Optional]` on optional parameters with no CLR default value to distinguish an omitted argument from an explicit default. Use strongly typed overloads that forward arguments to their original JavaScript positions when an intermediate parameter must be omitted. by @devhxj
+- Tools that call the Jolt compiler directly should remove assignments to `JoltCompileOptions.NpmProjectionCacheDirectory`. Jazor manages the per-user projection cache automatically. by @devhxj
+
 ### Jazor 2.6.0
 
 中文 | English

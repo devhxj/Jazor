@@ -157,6 +157,8 @@ dotnet run --file scripts/csharp/verify-jazor-npm-editor.cs -- <Jazor.nupkg> --f
 dotnet run --file scripts/csharp/verify-jazor-npm-editor.cs -- <Jazor.nupkg> --repair-manifest Automatic
 dotnet run --file scripts/csharp/verify-jazor-npm-editor.cs -- <Jazor.nupkg> --repair-manifest Balanced
 dotnet run --file scripts/csharp/verify-jazor-npm-editor.cs -- <Jazor.nupkg> --nested-manifest
+dotnet run --file scripts/csharp/verify-jazor-npm-editor.cs -- <Jazor.nupkg> --source-workspace Automatic
+dotnet run --file scripts/csharp/verify-jazor-npm-editor.cs -- <Jazor.nupkg> --shared-cache Automatic
 dotnet run --file scripts/csharp/verify-jazor-npm-library.cs -- src/Jazor.Emit/bin/Debug/net11.0
 dotnet run --file scripts/csharp/verify-jazor-npm-library.cs -- <Jazor.nupkg>
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --filter "FullyQualifiedName~SdkFeedbackPublishTests|FullyQualifiedName~EmitOptionsTests"
@@ -164,6 +166,7 @@ dotnet run --file scripts/csharp/verify-jolt-binding-projection.cs
 dotnet run --file scripts/csharp/verify-jolt-npm-cache.cs
 dotnet run --file scripts/csharp/verify-jolt-package.cs -- --package-source <本地-Jolt-包源目录> --editor-features --browser <Chromium>
 dotnet run --file scripts/csharp/verify-jolt-projection-cache.cs -- <Jolt-apphost>
+dotnet run --file scripts/csharp/verify-jolt-projection-cache.cs -- <Jolt-apphost> --global-cache
 dotnet run --file scripts/csharp/verify-jolt-projection-cache.cs -- <Jolt-apphost> --external-link
 dotnet run --file scripts/csharp/verify-jolt-projection-cache.cs -- <Jolt-apphost> --workspace-lock
 dotnet run --file scripts/csharp/verify-jolt-public-projection.cs -- <Jolt-apphost>

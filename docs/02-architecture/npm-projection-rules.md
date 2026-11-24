@@ -6,18 +6,42 @@
 
 ## 输入、产物与职责
 
+普通 C# 优先使用消费项目目录或其祖先中最近的 `package.json`，链接进项目的源码也沿用该清单。项目路径上没有清单时，根据实际 npm 引用所在的项目内源码向上查找。例如 `Web.csproj` 编译 `frontend/Profile.cs` 时可以使用 `frontend/package.json` 和该工作区的锁文件。若不同源文件选出多个工作区，构建会在相应源码处报告冲突并列出清单路径。
+
 普通 C# 项目的首次设计时投影从关联的 `package.json` 提供可绑定的包根。例如 `date-fns` 对应 `Npm.DateFns.Exports`。即使首份 C# 文件没有导入 npm，随后输入的别名也能绑定到这个类型。入口按 npm 包名判断导出资格，按 C# 命名空间检测重名和既有类型。已安装且只公开子路径的包不会得到根类型。尚未安装的已声明依赖先提供根名，使用成员时再还原并检查实际导出。成员签名按需展开，公开子路径继续由导出索引解析。[编辑器生成器](../../src/Jazor.Npm.Editor/NpmEditorGenerator.cs) · [冷启动验证](../../scripts/csharp/verify-jazor-npm-editor.cs)
 
 | 阶段 | 输入与决定 | 产物及使用者 |
 | --- | --- | --- |
-| 解析公开入口 | 用项目锁文件与包的 exports 解析实际 ESM 入口，用同一项目的 TypeScript checker 解析声明、别名、重导出和重载顺序。区分类型导出与运行时值。 | 导入用作者看到的 specifier 和导出名，类型身份用解析后的声明。 |
+| 解析公开入口 | 按项目锁文件和包的 `exports` 解析公开入口与子路径。缺少 `exports` 的包根可通过传统打包器的 `module` 字段提供 ESM。元数据读取和缓存复核使用同一个入口解析器。 | 生成的导入保留公开包名或子路径。TypeScript checker 解析声明、别名和重载顺序。 |
 | 读取类型与关系 | 对每个公开调用签名建立泛型参数作用域，记录约束、默认值、各处引用，以及属性、索引、数组、回调、联合与宿主类型之间的关系。递归引用回到同一声明。 | 在现有 `NpmValueExport / NpmValueSignature / NpmValueType` 契约上传递已确定的 C# 形状。checker 的临时类型编号只在本次计算中使用。 |
 | 决定作者可用的签名 | 根据值的方向选宿主类型，求出参数、回调和返回类型的共同约束，再决定是否需要额外重载。对同一导出的所有候选一起处理重载冲突。 | 组件和公开 DLL 使用同一套成员名、可用操作和类型关系。编辑器用同一份声明位置索引提供定义跳转。 |
 | 编译具体调用 | Roslyn 绑定 C# 重载、类型实参、属性与实际参数。Jazor 根据已绑定的符号执行已有 Alias、Inline、Import 或 Compile 规则。 | 调用原 ESM 导出，保留接收者、对象身份、求值顺序和求值次数。Jolt CLI 写出组件模块，普通 C# 模块由 Jazor.Emit 物化，Vite 负责应用资源。 |
 
 一个签名可以提供若干可用的调用形式。凡是 C# 允许构造的输入，所选 TS 重载必须接受。凡是公开可读取的结果，必须覆盖该调用可能返回的值。允许缩小输入域、只公开结果的一部分。遗漏必填输入会使这条调用形式不可用。发生在嵌套节点的问题要记录到相应路径，例如 `options.select → return`，便于定位声明或补充有类型的适配器。[现有元数据](../../src/Jazor.Npm/NpmValueExport.cs) · [Jazor 编译边界](../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
+### 声明文档
+
+投影从选中的 TypeScript 声明读取 JSDoc。同名重载各自保留说明。普通正文或 `@summary` 生成 C# XML 摘要，`@description` 可提供摘要或补充说明。`@param`、`@typeParam` 或 `@template` 按生成签名中的参数名对应，隐藏的参数不出现在文档里。`@returns`、`@remarks`、`@example` 和 `@deprecated` 保留作者原文；弃用说明只影响文档。类型、属性和方法可以从各自的声明取得文档。原包没有提供说明时，编辑器仍可展示类型签名。
+
+例如 `date-fns` 的 `addDays` 在声明中解释了 `amount`。C# 作者写 `Dates.AddDays(today, 1)` 时，悬停可以看到包作者的摘要，参数帮助可以显示 `amount` 的含义。共享源码保存文档正文。普通 C# 编辑器在消费项目中为导出补上本机声明链接，Jolt 通过声明索引定位。[提取](../../src/Jazor.Npm/declaration-documentation.mjs) · [编辑器验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
+
 ## 值传递方向
+
+一个 JS 值可以同时提供函数调用、方法和数据属性。直接调用使用 `Exports.Fn(...)`，附属成员使用 `Exports.FnMembers`。两者引用同一个 JS 导出，`Exports.FnMembers.Save(x)` 发出 `fn.save(x)`，保留原来的接收者。若包已导出 `FnMembers`，生成的附属成员入口使用 `FnMembers_2`。命名空间通过 `const alias: typeof fn` 重导出的函数也按其调用签名投影。[生成规则](../../src/Jazor.Npm/NpmValueProjection.cs) · [运行用例](../../scripts/csharp/fixtures/jazor-npm-library/CellConsumer.cs)
+
+`union` 表示同一个参数或属性能接受的值。调用参数的数量与位置由重载和可选参数表达。JS 能观察到 `f(x)`、`f(x, undefined, y)` 与 `f(x, null, y)` 的区别。尾部省略要保持实参数量；后续位置仍有实参时，生成的投影负责保留中间空位；声明允许显式传入的 `null` 仍传为 `null`。跨 DLL 调用和方法组也遵循这套规则。
+
+只通过传统 `module` 字段提供 ESM 的包，需要使用支持该字段的打包器。直接在 Node 中执行未经打包的裸导入时，入口仍由 Node 和包自身的 `exports` 或 `main` 决定。
+
+例如 Element Plus 的 `ElMessage` 支持以下三种写法。选项中 `message` 的声明同时允许字符串、VNode 和返回 VNode 的函数；投影可保留能直接构造的字符串分支。对于同时接受字符串和数值的输入成员，两种可表达的标量可组成 C# 联合类型。必填成员仍须赋值。[输入类型规则](../../src/Jazor.Npm/metadata.mjs)
+
+```csharp
+using Element = Npm.ElementPlus.Exports;
+
+Element.ElMessage("提示");
+Element.ElMessageMembers.Success("已保存");
+Element.ElMessage(new Element.ElMessageOptionsInput { Message = "请检查", Type = Element.MessageType.Warning });
+```
 
 Vue 组件也按传值方向检查。表格的 `selection: [ids: string[]]` 事件将原数组交给 C# 的 `Action<string[]>`。只读数组和 `...ids: string[]` 分别约束写入和实参数量，不能按同一委托发射。运行时选项只有在 checker 确认来自 Vue 自身的 `ExtractPropTypes` 或 `ExtractPublicPropTypes` 且类型声明引用了 Vue 的 `PropType<T>` 时，才从选项恢复公开的 `T`。具名无参数槽可直接放入子元素，单个元素前后的换行缩进不会增加子节点。上游仅声明 `any` 的行槽或开放索引槽，可以在应用的本地 SFC 中给出行类型与具体槽名。[组件声明回归](../../src/Jolt.Npm/verify.cs) · [插槽渲染回归](../../src/Jolt.Compiler.Test/ProjectCompilerTests.cs)
 
@@ -168,12 +192,13 @@ VueUse 的 URL 参数默认值域是 `Record<string, string | string[]>`。同�
 
 ## 结构稳定的代码缓存
 
-项目保留两层缓存。第一层按项目、模块、导出选择和工具版本缓存 checker 元数据，验证锁文件、实际解析入口和参与解析的声明。第二层按归一化的导出选择、映射后的签名和生成工具身份缓存 C# 源码。组件与公开类库模式各有对应源码，每个消费者重新绑定自己的 Roslyn 符号。[元数据缓存](../../src/Jazor.Npm/NpmValueMetadataProvider.Cache.cs) · [代码缓存](../../src/Jazor.Npm/NpmProjectionCache.cs)
+用户级缓存分为两层。第一层保存可重定位的 checker 查询，复核当前项目的安装与声明输入；绑定到本地路径的查询使用项目缓存。第二层按导出选择、映射后的签名、声明文档和生成工具身份保存 C# 源码。组件与公开类库各有对应源码，每个消费者重新绑定自己的 Roslyn 符号。[元数据缓存](../../src/Jazor.Npm/NpmValueMetadataProvider.Cache.cs) · [代码缓存](../../src/Jazor.Npm/NpmProjectionCache.cs)
 
 | 变化 | 应观察到的行为 |
 | --- | --- |
 | 编辑模板、调整导出请求顺序、重启 CLI 或 LSP | 相同调用契约复用原 C#。稳定排序适用于无序集合，TS 重载顺序、元组位置、泛型绑定次序和有语义的参数顺序须保留。 |
-| TS 注释移动 | 更新定义位置，已有源码与声明索引重新绑定。绝对路径和行列用于导航，可影响公共类型名的包内声明身份参与源码键。 |
+| 空行或普通注释使声明移动 | 更新定义位置，已有源码与声明索引重新绑定。绝对路径和行列用于导航，可影响公共类型名的包内声明身份参与源码键。 |
+| 导出或成员的 JSDoc 内容变化 | 下次查询读取新文档，生成对应的 C# 缓存条目。类型身份和重载选择保持稳定。 |
 | 改变返回槽位、读写权限、缺省策略、枚举值、固定参数或宿主类型 | 新语义进入缓存键。不同实例化、规则版本或 ABI 将产生不同代码条目，后续构建复用新条目。 |
 | 多进程同时生成、输出目录丢失 | 同一源码键由先完成的进程原子发布。其他进程核对相同内容后直接复用，编辑器可以继续读取该文件。删除公开输出后，下次构建可以从缓存恢复 `Bindings.g.cs`。普通类库将它编入 DLL，消费者通过程序集中的成员属性恢复 ESM 入口与 JS 名称。 |
 

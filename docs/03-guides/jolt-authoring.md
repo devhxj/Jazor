@@ -9,11 +9,11 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 Jolt CLI 使用 .NET 11，发布包覆盖 Windows 和 glibc Linux 的 x64 与 ARM64。在克隆的仓库根目录执行以下命令。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.6.0
+dotnet tool install --global Jazor.Jolt --version 2.7.0
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.6.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
+已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.7.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
 
 | 命令 | 结果 |
 | --- | --- |
@@ -28,11 +28,11 @@ jolt dev samples/Jolt.Counter --port 15658
 
 ## 配置编辑器
 
-在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.6.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)
+在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.7.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
 
 | 编辑器 | 安装 |
 | --- | --- |
-| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.6.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
+| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
 
 在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
@@ -358,7 +358,7 @@ var (count, events) = form.DefineField(row => row.Count,
 
 ### 普通 C# 类库的公开投影
 
-普通 `.csproj` 直接引用Jazor 2.6.0，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
+普通 `.csproj` 直接引用Jazor 2.7.0，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
 
 对于项目打开时已有的依赖，VS Code C# 语言服务的 `Balanced` 模式可立即解析未保存的别名。首次调用尚未投影的 `Dates.AddDays` 时，成员处可能出现 `CS0117`。保存该文件即可获得方法签名。如果第二个参数传了 `true`，诊断会指向这个实参并报告 `CS1503`。
 
@@ -444,6 +444,8 @@ internal static class CellContracts
 
 ### 在 Vue 应用中使用普通 Jazor 类库的模块
 
+Web 宿主也可以直接编译应用目录中的 C# 浏览器模块。例如将 `JazorDir` 设为 `App/.jazor/modules`，让运行 `jolt bundle App` 的 MSBuild 目标在宿主构建后显式依赖 `JazorDebug`。保持 `JazorMode` 为空时，这个依赖会生成普通 ES 模块，发布目标只需收集 Jolt 生成的 `App/dist`。应用目录中的 `package.json` 与 `pnpm-lock.yaml` 同时用于 C# 的 npm 投影和 Jolt 打包。将该目录下的业务 `.cs` 列入宿主的 `Compile`，排除依赖、缓存与生成目录。
+
 如果解决方案已有可执行 .NET 宿主，宿主可以用普通 `ProjectReference` 引用类库，由 Jazor Emit 把宿主及其引用模块交付到前端目录。以下示例假定 `Host/`、`Library/` 和 `frontend/` 是同级目录，宿主和类库均直接引用 Jazor。宿主项目使用已有的设置：
 
 ```xml
@@ -472,15 +474,15 @@ import { Read } from './jazor/ui-message.mjs';
 
 ### 复用构建生成的投影
 
-`jolt build` 与语言服务 使用项目内的磁盘缓存。修改组件的模板或方法体时，只要使用的 npm 导出及类型契约相同，下一次构建就能读取上次生成的 C#。关闭编辑器或重启 CLI 后仍可命中。
+Jazor SDK、`jolt build` 和语言服务使用用户级投影缓存。Windows 下的根目录是 `%LOCALAPPDATA%/Jazor/cache`。两个项目通过相同规则解析出相同的 npm 契约时，可以复用已有签名和生成的 C#。缓存命中后，编辑器从当前项目的安装位置打开声明。
 
-| 项目中的位置 | 内容与用途 |
+| 位置 | 内容与用途 |
 | --- | --- |
-| `.jazor/cache/npm-metadata/` | 保存 npm 导出的签名、声明位置、解析入口和依赖指纹。读取前核对锁文件、实际模块入口、TypeScript 使用的文件及链接依赖解析后的目标。 |
-| `obj/Jolt/projections/<摘要>/Projection.g.cs` 与 `symbols.json` | 用于组件构建和编辑器。源码保存 C# 契约，符号表记录 C# 声明在该源码中的位置和对应的 npm 声明编号。跳转时从当前元数据取得 TypeScript 文件和位置。 |
-| `obj/Jazor/projections/<摘要>/Bindings.g.cs` | 保存普通类库构建使用的 npm 绑定。 |
+| 用户缓存下的 `npm-metadata/v1/` | npm 导出的签名和解析输入。可重定位的查询在启动 checker 前复核。项目内的 `.jazor/cache/npm-metadata/` 保存需要本地路径的查询。 |
+| 用户缓存下的 `projections/v1/<摘要>/` | 普通类库使用 `Bindings.g.cs`。Jolt 组件使用 `Projection.g.cs` 和 `symbols.json`，跳转时按声明编号找到当前的 TypeScript 文件和位置。 |
+| 工程的 `obj/<配置>/<TFM>/<工程名>.npm.g.cs` | 本次 C# 编译实际使用的投影，可以在这里检查某个调用生成了哪些重载。 |
 
-缓存由项目自行重建。交换模块或导出的顺序会命中同一份公开投影。给声明加注释只移动行号时，生成的 C# 和符号表仍可复用，编辑器按新行号跳转。修改参数类型或把原先共用的类型拆成两个独立声明时，构建会重新检查调用。生成文件可以由下一次构建恢复。[跨进程构建、输出恢复与编辑器跳转验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
+交换模块或导出的顺序会命中同一份公开投影。空行或普通注释只移动声明时，生成的 C# 和符号表仍可复用，编辑器按新行号跳转。修改已投影成员的 JSDoc 时，生成的 XML 文档和悬停说明会随之更新。修改参数类型或把原先共用的类型拆成两个独立声明时，构建会重新检查调用。生成文件可以由下一次构建恢复。[跨进程构建、输出恢复与编辑器跳转验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
 
 多个项目共用业务 API 时，在类库中声明公共 C# 门面，消费项目通过 `ProjectReference` 引用该类库。[跨程序集运行用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
