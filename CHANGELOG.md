@@ -2,6 +2,54 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-24
+
+### Jazor 2.6.0
+
+中文 | English
+
+#### 新增功能
+
+- 普通 C# 项目通过 Jazor SDK 按需投影 npm 导出，也可使用 pnpm 工作区的兄弟包。by @devhxj
+
+- 原有 `Jolt.VisualStudio.vsix` 同时交付普通 Jazor C# 的 npm 原声明导航。在投影成员上按 F12 可查看生成的 C#，悬停中的文件名命令用于打开本机 TypeScript 声明。普通 C# 项目直接引用 Jazor，导航使用 Visual Studio 已加载的 C# 工作区。[安装说明](editors/jolt-visual-studio/README.md) by @devhxj
+
+- 普通 Jazor 类库可把投影使用的 npm 依赖随 DLL 交付。独立宿主恢复生产者依赖，Jolt 开发与生产构建使用 Vue 应用锁定的包实例。项目引用支持通过 `dotnet watch` 把类库的修改送到已打开的页面。[作者示例](docs/03-guides/jolt-authoring.md#在-vue-应用中使用普通-jazor-类库的模块) by @devhxj
+- 普通 C# 项目引用 Jazor 并还原后，可在 `using Dates = Npm.` 处发现已声明的 `date-fns`，在 `Dates.` 处查看其导出。VS Code 的 C# 语言服务在 Automatic 下还会随编辑更新参数提示和诊断。只修改本地链接包中已跟踪的 TypeScript 声明时，签名和悬停提示中的源文件位置也会更新。[候选包编辑器验收](scripts/csharp/verify-jazor-npm-editor.cs) by @devhxj
+
+- Jolt 组件可通过 `jolt.csharpSources` 与宿主共用 DTO。npm 组件事件支持直接传入无参处理器、带类型的 DOM 事件及 Vue 的连字符事件名。只读记录数组、标量数组和常见标量联合可从组件公开声明推导。[列表页示例](docs/03-guides/jolt-authoring.md#在现有-vue-应用里迁移一个列表页) by @devhxj
+
+- 具体 Vue I18n Composer 的公开投影按语言生成完整替换和递归合并方法。组件与普通 C# 类库都能在更新资源后继续使用带类型的翻译方法。 by @devhxj
+
+#### 体验优化
+
+- 宿主启动 Jolt 开发服务时可传 `--stop-on-stdin-close` 并重定向标准输入。宿主关闭管道时 Jolt 会结束其 Vite 会话。外部启动的开发会话继续由其启动者管理。[ASP.NET Core 样例](samples/Jolt.AspNetCore/) by @devhxj
+- 引用 `ECMAScript.Vue` 的项目中，C# 方法可通过 Vue 的响应式代理读写实例私有字段。字段按声明类型区分，基类和派生类各自保留同名私有字段。[生成器回归](src/Jazor.CompilerTest/ESGeneratorScenarioCatalogTests.cs) by @devhxj
+- Jolt 的顶层全局 CSS 与 scoped CSS 随组件打包，单元素插槽忽略元素两侧的换行缩进。[作者指南](docs/03-guides/jolt-authoring.md) by @devhxj
+
+#### 迁移说明
+
+- `jolt bindings` 已移除。保留手写扩展，删除旧生成命令及其可重新生成的输出。在普通 C# 项目中添加 `using Npm…` 并运行 `dotnet build`。跨项目公开的 API 通过类库的 C# 门面声明。普通 npm 选项的有限数值联合现在使用封闭的数值类型。对于 date-fns，请给生成的共享类型设置 `Day` 和 `FirstWeekContainsDate` 别名，将 `DateFns.Day.Value1` 改为 `Day.Value1`。指定星期日使用 `Day.Value0`，一年首周所含日期使用声明中的 `Value1` 或 `Value4`。从数值转换到字符串枚举时，请使用已声明的枚举成员，或有对应成员的编译期常量。[迁移示例](scripts/csharp/fixtures/jolt-npm-runtime/App.jazor) by @devhxj
+- 本次工具链迁移按维护者指定的单次 MINOR 例外交付，迁移要求与发布门禁照常适用。by @devhxj
+
+New Features
+
+- In ordinary C# projects, reference Jazor directly, declare and lock npm dependencies, add `using Npm…`, and run `dotnet build`. This also supports packages within the same pnpm workspace. by @devhxj
+- Jazor libraries can ship npm dependency information with their DLLs. Standalone hosts restore the library dependencies, and Jolt uses the Vue application lockfile. Project-reference changes can update the page through `dotnet watch`. by @devhxj
+- The VS Code C# language service completes npm package and export names. Automatic mode updates signatures and diagnostics for unsaved edits. The existing Visual Studio extension also provides npm declaration navigation for ordinary C#. F12 opens the generated C# and hover offers the original TypeScript declaration. by @devhxj
+- Jolt components can share C# DTOs with a host through `jolt.csharpSources`. More npm event parameters, array types, and scalar unions can be inferred. Concrete Vue I18n composers support typed replacement and recursive merge of message trees. by @devhxj
+
+Improvements
+
+- Vue reactive proxies support private C# instance fields, including separate same-name fields in base and derived classes. Jolt bundles top-level global and scoped CSS and trims indentation surrounding single-element slots. by @devhxj
+- A host can start `jolt dev --stop-on-stdin-close` with redirected standard input and close the pipe to end its Vite session. by @devhxj
+
+Migration
+
+- Remove `jolt bindings` and its reproducible outputs, keep handwritten extensions, add `using Npm…` in the project that directly references Jazor, and run a clean build. Expose exports that downstream consumers need through a public C# facade. by @devhxj
+- Finite numeric unions now use closed types. Alias the projected shared types as `Day` and `FirstWeekContainsDate`. For date-fns, replace `DateFns.Day.Value1` with `Day.Value1`, use `Day.Value0` for Sunday, and use the declared `Value1` or `Value4` for the first week. For string enums, use a declared enum member or its corresponding compile-time constant. by @devhxj
+- The toolchain migration uses a one-time MINOR exception designated by the maintainer. Migration requirements and release gates still apply. by @devhxj
+
 ## 2026-11-22
 
 ### Jazor 2.5.0

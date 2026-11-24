@@ -11,6 +11,51 @@ namespace Jazor.EmitTest;
 public sealed class EmitBrowserEntryTests
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Collect_ProjectedDependenciesFollowSelectedModuleAndManagedReferences(bool selectUnrelated)
+    {
+        using var workspace = new Workspace();
+        var facade = CompileAssembly(workspace.Root, "Facade", """
+            [assembly: System.Reflection.AssemblyMetadata("Jazor.Npm.PackageDependency:widget", "4.2.0")]
+            public class Facade { }
+            """);
+        var root = CompileCatalog(workspace.Root, assemblyName: "Root", facade: facade);
+        var unrelated = CompileCatalog(workspace.Root, assemblyName: "Unrelated", dependency: "4.2.1");
+        var context = new EmitLoadContext(root);
+        try
+        {
+            var collector = new ModuleCollector(context);
+            collector.AddRootAssembly(root);
+            collector.AddAssembly(facade);
+            if (selectUnrelated)
+                collector.AddRootAssembly(unrelated);
+            else
+                collector.AddAssembly(unrelated);
+            var collection = collector.Collect(root);
+            Assert.IsTrue(collection.IsSuccess, collection.Error);
+            var imports = collection.Modules.SelectMany(module => module.PackageImports ?? []).Distinct(StringComparer.Ordinal).ToArray();
+            CollectionAssert.AreEqual(new[] { "widget" }, imports);
+            if (selectUnrelated)
+            {
+                var failure = Assert.Throws<LibraryException>(() => new LibraryMaterializer().Materialize(
+                    [], workspace.Output, BuildMode.Development, imports, projectedPackages: collection.ProjectedPackages));
+                Assert.AreEqual("JAZOR_LIBRARY_PACKAGE_CONFLICT", failure.Code);
+            }
+            else
+            {
+                var assets = new LibraryMaterializer().Materialize(
+                    [], workspace.Output, BuildMode.Development, imports, projectedPackages: collection.ProjectedPackages);
+                Assert.AreEqual("4.2.0", assets.PackageReferences["widget"].Version);
+            }
+        }
+        finally
+        {
+            context.Unload();
+        }
+    }
+
+    [TestMethod]
     public void ModuleWriter_ExplicitBrowserEntries_AreCanonicalAndLeaveAllModulesMaterialized()
     {
         using var workspace = new Workspace();
@@ -127,20 +172,27 @@ public sealed class EmitBrowserEntryTests
     private static ModuleRecord CreateModule(string assembly, string assemblyName, string path, string content)
         => new(assembly, assemblyName, path, path, path, content, ArtifactHash.ComputeSha256(content));
 
-    private static string CompileCatalog(string directory, string unusedContent = "export const unused = 'UNUSED_MODULE_SENTINEL';")
+    private static string CompileCatalog(string directory, string unusedContent = "export const unused = 'UNUSED_MODULE_SENTINEL';",
+        string assemblyName = "BrowserEntryHost", string? dependency = null, string? facade = null)
     {
         var declarations = new[]
         {
             (Path: "app.js", Content: "export const openEditor = () => import('./pages/editor.js');"),
             (Path: "pages/editor.js", Content: "export const editor = 'LAZY_EDITOR_SENTINEL';"),
             (Path: "unused.js", Content: unusedContent)
-        }.Select(module => $"new Module({Literal(module.Path)}, {Literal(module.Content)}, {Literal(ArtifactHash.ComputeSha256(module.Content))})");
+        }.Select(module => $"new Module({Literal(assemblyName == "BrowserEntryHost" ? module.Path : assemblyName + "/" + module.Path)}, {Literal(module.Content)}, {Literal(ArtifactHash.ComputeSha256(module.Content))})");
+        var metadata = dependency is null ? "" :
+            $"[assembly: System.Reflection.AssemblyMetadata(\"Jazor.Npm.PackageDependency:widget\", {Literal(dependency)})]";
+        var facadeReference = facade is null ? "" : "public static Facade? Reference => null;";
+        var packageImports = dependency is not null || facade is not null ? """new[] { "widget" }""" : "new string[0]";
         var source = $$"""
+            {{metadata}}
             namespace Jazor.Generated;
             internal static class ModuleCatalog
             {
                 internal const int SchemaVersion = 2;
-                internal const string AssemblyName = "BrowserEntryHost";
+                internal const string AssemblyName = {{Literal(assemblyName)}};
+                {{facadeReference}}
                 internal static System.Collections.IEnumerable GetModules() => new object[] { {{string.Join(",", declarations)}} };
                 private sealed class Module(string path, string content, string hash)
                 {
@@ -150,13 +202,22 @@ public sealed class EmitBrowserEntryTests
                     public string Content => content;
                     public string Hash => hash;
                     public string[] Dependencies => new string[0];
+                    public string[] PackageImports => {{packageImports}};
                 }
             }
             """;
-        var compilation = CSharpCompilation.Create("BrowserEntryHost",
+        return CompileAssembly(directory, assemblyName, source, facade);
+    }
+
+    private static string CompileAssembly(string directory, string assemblyName, string source, string? reference = null)
+    {
+        var references = Net110.References.All.Cast<MetadataReference>();
+        if (reference is not null)
+            references = references.Append(MetadataReference.CreateFromFile(reference));
+        var compilation = CSharpCompilation.Create(assemblyName,
             [CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview))],
-            Net110.References.All.Cast<MetadataReference>(), new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        var assembly = Path.Combine(directory, "BrowserEntryHost.dll");
+            references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var assembly = Path.Combine(directory, assemblyName + ".dll");
         using var stream = File.Create(assembly);
         var result = compilation.Emit(stream);
         Assert.IsTrue(result.Success, string.Join(Environment.NewLine, result.Diagnostics));

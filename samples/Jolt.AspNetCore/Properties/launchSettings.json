@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Jolt.AspNetCore": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "portal/frontend/index.html",
+      "applicationUrl": "http://localhost:5168",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

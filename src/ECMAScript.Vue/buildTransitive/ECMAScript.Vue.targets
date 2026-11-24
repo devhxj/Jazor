@@ -1,4 +1,10 @@
 <Project>
+  <PropertyGroup>
+    <_JazorRuntimeClassPrivateStorage>ProxySafeMangledProperties</_JazorRuntimeClassPrivateStorage>
+  </PropertyGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="_JazorRuntimeClassPrivateStorage" />
+  </ItemGroup>
   <ItemGroup>
     <JazorLibraryManifest Include="$(MSBuildThisFileDirectory)..\jazor\vue3\manifest.json" />
   </ItemGroup>

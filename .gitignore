@@ -458,6 +458,9 @@ cnblog/
 .wiki-smoke-*.log
 .tools/
 jazor/
+# The SDK build targets are authored source even on case-insensitive checkouts.
+!/src/Jazor/
+!/src/Jazor/build/
 # Repository-local Codex skills are source files, not Jazor build output.
 !.agent/
 !.agent/jazor/

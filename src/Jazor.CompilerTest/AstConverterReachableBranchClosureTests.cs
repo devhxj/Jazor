@@ -986,6 +986,8 @@ public sealed class AstConverterReachableBranchClosureTests
                 {
                     private string Prefix { get; } = prefix;
 
+                    private int shadow = 1;
+                    public int ReadBase() => shadow;
                     public string ReadPrefix() => Prefix;
                 }
 
@@ -995,6 +997,8 @@ public sealed class AstConverterReachableBranchClosureTests
 
                     private string Value { get; set; } = "ready";
 
+                    private int shadow = 2;
+                    public int ReadDerived() => shadow;
                     public string ReadValue() => Value;
 
                     public event Action? Changed;
@@ -1014,6 +1018,14 @@ public sealed class AstConverterReachableBranchClosureTests
         StringAssert.Contains(script, "$jazor$private$", StringComparison.Ordinal);
         StringAssert.Contains(script, "$jazor$private$$jazorPrimary_", StringComparison.Ordinal);
         StringAssert.Contains(script, "$jazor$private$$event_store_", StringComparison.Ordinal);
+        var shadowKeys = System.Text.RegularExpressions.Regex.Matches(
+                script, @"\$jazor\$private\$shadow\$[0-9A-Za-z]+")
+            .Select(match => match.Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+        Assert.HasCount(2, shadowKeys);
+        foreach (var key in shadowKeys)
+            StringAssert.Contains(script, "return this." + key, StringComparison.Ordinal);
         StringAssert.Contains(script, "get Value()", StringComparison.Ordinal);
         StringAssert.Contains(script, "set Value(value)", StringComparison.Ordinal);
         Assert.DoesNotContain("#", script, StringComparison.Ordinal);

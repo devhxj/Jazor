@@ -4,7 +4,7 @@
 
 ## 核心模型
 
-最终宿主拥有一个标准前端项目根 `jazor/`。Emit 把编译结果和绑定声明接入该项目，共享 NodeApi 宿主在进程内调用 pnpm、Vite 与 Vue SSR API。运行条件与升级步骤见[工具链指南](../03-guides/toolchain-migration.md)。
+普通 C# 类库通过 DLL 内的 `ModuleCatalog` 交付模块。下图展示最终宿主选择 `debug` 或 `release` 后，Emit 在 `JazorDir` 写入的项目布局。Jolt 应用使用自己的前端项目根和 Vite 配置。[模块交付](../../src/Jazor.Emit/README.md) · [工具链指南](../03-guides/toolchain-migration.md)
 
 **交接边界**：Jazor 物化标准项目并拥有内嵌环境生命周期；包解析由 pnpm、HMR/debug/bundle 由 Vite、渲染由 Vue SSR 负责。编译器不重写工具的解析或运行语义。
 
@@ -78,6 +78,10 @@ ECMAScriptModule.RelativePath -> jazor/<RelativePath>
 项目内模块根据 importer 与目标文件的最终位置写出 `./` 或 `../` specifier。源码、source map 和源码直接引用的 CSS、worker、字体、图片或 wasm 保持稳定相对路径。
 
 `ModuleCatalog` 提供模块内容、相对路径、Entries、package imports、source map 与本地资源位置。最终宿主的 Emit 将这些内容写入项目。
+
+普通 C# 类库使用 npm 投影时，生成器把导入的 specifier 和已安装包的精确版本写入 DLL 的 `AssemblyMetadata`。使用 npm 别名时一并保存真实包名。Emit 从选中模块所在的程序集及其托管引用收集这份信息，包括只提供 C# 类型的契约 DLL。实际模块导入决定要恢复的依赖；同一导入若有冲突的安装身份，构建会报告冲突。类库发布到其他工程时，生产者机器上的 `link:` 路径不能充当可还原的包身份。[生成位置](../../src/Jazor.Npm/NpmValueProjection.cs) · [依赖闭包](../../src/Jazor.Emit/ModuleCollector.cs)
+
+独立宿主按 DLL 的依赖身份恢复标准项目。Jolt 应用消费这个项目中的 ESM 时，将 Emit 已登记的第三方导入交给应用根目录解析，使应用与类库共享应用锁定的 npm 实例。相对导入的 CLR 模块仍跟随交付目录。已用两个宿主安装同一 NuGet 文件，在应用与生产者同时装有不同版本的 `date-fns` 时检查函数身份。[打包消费者验收](../../scripts/csharp/verify-jazor-module-handoff.cs)
 
 ## 绑定契约
 
@@ -266,7 +270,7 @@ B：通过 ProjectReference/PackageReference 使用 A
 | `Jazor.Compiler` | C# 语义、import 收集、source origin、source map 与 `ModuleCatalog` |
 | `ECMAScript` 源码库 | 提供可写入项目的 MJS 源码与本地资源 |
 | `ECMAScript.*` binding | 提供强类型 API、标准 specifier 和精确 npm/JSR identity |
-| `Jazor.Emit` | 生成 `jazor/` 项目、写出源码与入口、生成 `package.json`、协调恢复和检查 |
+| `Jazor.Emit` | 写出 C# 模块、依赖的运行时资源与 source map。独立宿主还可以让 Emit 创建前端项目、写出入口并协调恢复和检查。 |
 | NodeApi / pnpm API | restore、`node_modules`、`pnpm-lock.yaml`；经 Acornima / Vite 检查入口 |
 | 标准前端工具（当前 Vite） | package resolution、conditions、`sideEffects`、ESM/CSS/asset tree shaking |
 | NodeApi / Vue SSR | 开发时从已恢复项目渲染；发布时从 `ssr/` 运行闭包渲染 |

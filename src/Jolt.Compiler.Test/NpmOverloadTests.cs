@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jolt.Npm;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +18,7 @@ public sealed class NpmOverloadTests
                 @using Client = Npm.Client.Exports
                 @code { private void Forward() { Client.Write(Client.Read()); } }
                 """;
-            var cache = JoltNpmBindings.CacheDirectory(project.FullName);
+            var cache = Path.Combine(project.FullName, "obj", "Jolt", "projections");
             JoltAnalysis Analyze(int start, bool sameDeclaration)
             {
                 var definition = new NpmDefinition("node_modules/client/types.d.ts", start, 8);
@@ -158,5 +159,5 @@ public sealed class NpmOverloadTests
     }
 
     private static IEnumerable<MethodDeclarationSyntax> ProjectedMethods(IReadOnlyList<NpmValueExport> exports) =>
-        CSharpSyntaxTree.ParseText(JoltNpmBindings.GenerateSource(exports)).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>();
+        CSharpSyntaxTree.ParseText(NpmBindings.GenerateSource([], exports)).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>();
 }

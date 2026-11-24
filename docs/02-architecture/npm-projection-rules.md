@@ -1,8 +1,12 @@
-# Jolt npm 类型投影与值传递规范
+# Jazor npm 类型投影与值传递规范
 
 本文规定从锁定的 TypeScript 公开声明生成 C# 的目标算法，适用于 `.jazor`、编辑器和普通 `.cs` 类库。Vue、Vue Router、Pinia、Pinia Testing 和 Vue Devtools 继续提供手写绑定。七个应用库提供调用语料，逐库的支持状态和未通过的场景记录在[验收计划](../04-roadmap/p3-vue-application-bindings-plan.md)。
 
+普通 C# 的 `using` 和组件的 `@using` 共享 Jazor 的 npm 值投影。Jolt 消费这些声明来检查 Vue 组件和模板。普通 C# 的首次构建顺序和设计时输入见[职责设定](./jazor-jolt-boundaries.md)。
+
 ## 输入、产物与职责
+
+普通 C# 项目的首次设计时投影从关联的 `package.json` 提供可绑定的包根。例如 `date-fns` 对应 `Npm.DateFns.Exports`。即使首份 C# 文件没有导入 npm，随后输入的别名也能绑定到这个类型。入口按 npm 包名判断导出资格，按 C# 命名空间检测重名和既有类型。已安装且只公开子路径的包不会得到根类型。尚未安装的已声明依赖先提供根名，使用成员时再还原并检查实际导出。成员签名按需展开，公开子路径继续由导出索引解析。[编辑器生成器](../../src/Jazor.Npm.Editor/NpmEditorGenerator.cs) · [冷启动验证](../../scripts/csharp/verify-jazor-npm-editor.cs)
 
 | 阶段 | 输入与决定 | 产物及使用者 |
 | --- | --- | --- |
@@ -11,9 +15,11 @@
 | 决定作者可用的签名 | 根据值的方向选宿主类型，求出参数、回调和返回类型的共同约束，再决定是否需要额外重载。对同一导出的所有候选一起处理重载冲突。 | 组件和公开 DLL 使用同一套成员名、可用操作和类型关系。编辑器用同一份声明位置索引提供定义跳转。 |
 | 编译具体调用 | Roslyn 绑定 C# 重载、类型实参、属性与实际参数。Jazor 根据已绑定的符号执行已有 Alias、Inline、Import 或 Compile 规则。 | 调用原 ESM 导出，保留接收者、对象身份、求值顺序和求值次数。Jolt CLI 写出组件模块，普通 C# 模块由 Jazor.Emit 物化，Vite 负责应用资源。 |
 
-一个签名可以提供若干可用的调用形式。凡是 C# 允许构造的输入，所选 TS 重载必须接受。凡是公开可读取的结果，必须覆盖该调用可能返回的值。允许缩小输入域、只公开结果的一部分。遗漏必填输入会使这条调用形式不可用。发生在嵌套节点的问题要记录到相应路径，例如 `options.select → return`，便于定位声明或补充有类型的适配器。[现有元数据](../../src/Jolt.Npm/NpmValueExport.cs) · [Jazor 编译边界](../../src/Jazor.Compiler/ImplementationPrinciples.md)
+一个签名可以提供若干可用的调用形式。凡是 C# 允许构造的输入，所选 TS 重载必须接受。凡是公开可读取的结果，必须覆盖该调用可能返回的值。允许缩小输入域、只公开结果的一部分。遗漏必填输入会使这条调用形式不可用。发生在嵌套节点的问题要记录到相应路径，例如 `options.select → return`，便于定位声明或补充有类型的适配器。[现有元数据](../../src/Jazor.Npm/NpmValueExport.cs) · [Jazor 编译边界](../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
 ## 值传递方向
+
+Vue 组件也按传值方向检查。表格的 `selection: [ids: string[]]` 事件将原数组交给 C# 的 `Action<string[]>`。只读数组和 `...ids: string[]` 分别约束写入和实参数量，不能按同一委托发射。运行时选项只有在 checker 确认来自 Vue 自身的 `ExtractPropTypes` 或 `ExtractPublicPropTypes` 且类型声明引用了 Vue 的 `PropType<T>` 时，才从选项恢复公开的 `T`。具名无参数槽可直接放入子元素，单个元素前后的换行缩进不会增加子节点。上游仅声明 `any` 的行槽或开放索引槽，可以在应用的本地 SFC 中给出行类型与具体槽名。[组件声明回归](../../src/Jolt.Npm/verify.cs) · [插槽渲染回归](../../src/Jolt.Compiler.Test/ProjectCompilerTests.cs)
 
 以应用为观察点，**输入**表示应用给 npm 的值，**输出**表示 npm 给应用的值。沿类型结构递归，以下规则可组合任意层数。
 
@@ -43,15 +49,15 @@ double count = Fixture.Transform(input, value => value.Count);
 | 标准 Map、Set、RegExp 和类型化数组 | 优先复用 ECMAScript 的 `Map<TKey, TValue>`、`Set<T>`、`RegExp` 和相应类型化数组。只读视图仅开放原声明可用的操作。带索引签名的 JS 对象沿用字典规则，`Map.get` 和普通属性读取各自保留原协议。 |
 | 对象、接口、交叉类型 | 描述数据的输入生成结构记录，按需区分只读结果与可构造输入。合并交叉成员时同时满足各组成声明。带行为、递归身份或需要回传的对象可生成宿主句柄。接口和类型参数在 JS 中擦除。 |
 | 数组、元组、字典 | `ReadonlyArray<T>` 公开只读元素，允许写入的数组保留元素不变性。元组保留位置、长度及可选项。一个元组参数发射一个 JS 实参，展开参数依据 rest 声明处理。字典按键域和值域生成索引访问，缺键按声明及已知宿主读取协议处理。 |
-| 有限字面量、枚举、联合 | 封闭字符串域保留每个 wire 值，数值枚举保留原值。互不可赋值的分支优先用 C# 原生 union。分支可相互赋值且需要精确选择时使用带标签的宿主契约。允许多种输入调用方式时可用重载。输出联合只允许读取各分支共有的成员，或依据已证明的判别值收窄。 |
+| 有限字面量、枚举、联合 | 封闭字符串域保留每个 wire 值。普通选项字段中的有限数字联合保留所有声明值，以静态成员向 JavaScript 传入原数值；具名 TypeScript 数值枚举保留枚举成员。互不可赋值的分支优先用 C# 原生 union。分支可相互赋值且需要精确选择时使用带标签的宿主契约。允许多种输入调用方式时可用重载。输出联合只允许读取各分支共有的成员，或依据已证明的判别值收窄。 |
 | `null`、`undefined`、可省略 | 参数缺席、对象键缺席、值为 `null` 和读取时的 `undefined` 分开记录。末尾省略减少 JS 实参数量，具名后参前的空位发射 `undefined`，显式 `null` 保留。只读可缺省值可在 C# 观察为 `null`，用空值判断保留 `0`、`false` 与空字符串。若调用需区分两种空值，须有能表达该区别的输入契约。 |
 | 泛型、索引访问、映射、条件及模板字面量类型 | 先按下一节解析其类型关系。封闭后回到本表，可保留的开放关系生成受约束泛型。仅凭 `any`、`unknown` 或任意字符串不能产生具体的结果元素、属性或插值键。 |
 | `unknown`、`any`、`never` 与类型谓词 | 输入域允许任意值时，可公开能由现有宿主表示的输入。输出域未知时可只保留同一值的传递能力，具体成员操作需有声明。联合中的 `never` 分支可消去。类型谓词可公开布尔结果，进一步的 C# 类型收窄须有对应的宿主判别协议。 |
 | 函数、重载、命名空间、构造签名 | 独立函数从 ESM 入口导入。对象方法、可调用对象和构造器分别保留绑定接收者、调用和 `new` 的协议。对照 Jazor 已有 lowering，只有可端到端发射的操作才进入公开契约。 |
 
-同一命名类型跨调用传递时，比较解析后的包与声明身份、泛型实参、可读写成员和用途。例如 date-fns 的 `IntervalToDuration` 返回值可以直接交给接受同一时长结构的 `FormatDuration`。若接收方能写入比结果视图更宽的值，则不能据此共享可写类型。Monaco 的模型、DOM 元素及 Vue ref 通过同一宿主句柄传递。强类型转发通常只需要生成 C# 签名，JavaScript 无需复制对象。[共享类型与宿主发射](../../src/Jolt.Compiler/JoltNpmValueProjection.cs)
+同一命名类型跨调用传递时，比较解析后的包与声明身份、泛型实参、可读写成员和用途。例如 date-fns 的 `IntervalToDuration` 返回值可以直接交给接受同一时长结构的 `FormatDuration`。若接收方能写入比结果视图更宽的值，则不能据此共享可写类型。Monaco 的模型、DOM 元素及 Vue ref 通过同一宿主句柄传递。强类型转发通常只需要生成 C# 签名，JavaScript 无需复制对象。[共享类型与宿主发射](../../src/Jazor.Npm/NpmValueProjection.cs)
 
-Jazor.CLR 的内部值载体由静态适配签名推导，继续由核心编译器管理。npm 投影采用公开的 JavaScript 宿主契约，例如 TypeScript 的 Date 对应 ECMAScript.Date。跨语言调用使用 Number 或 BigInt 时，整数位宽、溢出与窄化仍遵循 Jazor 的使用点规则。[宿主类型清单](../../src/Jolt.Npm/WebIdlCarriers.cs) · [CLR 类型映射原则](../../src/Jazor.Compiler/ImplementationPrinciples.md)
+Jazor.CLR 的内部值载体由静态适配签名推导，继续由核心编译器管理。npm 投影采用公开的 JavaScript 宿主契约，例如 TypeScript 的 Date 对应 ECMAScript.Date。跨语言调用使用 Number 或 BigInt 时，整数位宽、溢出与窄化仍遵循 Jazor 的使用点规则。[宿主类型清单](../../src/Jazor.Npm/WebIdlCarriers.cs) · [CLR 类型映射原则](../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
 对于 `T | undefined`，先确定 `T` 的声明域。引用类型可映射为可空引用，值类型需要 `Nullable<T>` 及相应的值类型约束。无约束的 C# `T?` 在 `T = double` 时无法表示缺值。优先保留单一泛型入口，只对实际影响缺省读取的独立槽位划分类别。若读写须使用不同视图，可由可区分的选项类型或签名承载。单靠 `where` 和返回类型不能区分 C# 重载。独立槽位分别求解，公开签名按可观察差异合并，不预生成所有标量的笛卡儿积。
 
@@ -104,11 +110,36 @@ Jazor.CLR 的内部值载体由静态适配签名推导，继续由核心编译�
 | 分页选项中的 `select?: (data: InfiniteData<Page, Cursor>) => Result`，结果读取 `Result` | 省略回调沿用声明默认结果。选择原数据可以保留游标类型，选择页标题则应得到标题的类型。 | 默认结果的 `pageParams: unknown[]` 只能保留已知信息。显式选择的游标要从 C# 直接读出，并能拒绝错误的元素类型。 |
 | 表单 setter 的路径和写入值由同一记录及同一个路径参数决定 | 目标写法为 `form.SetFieldValue(x => x.Details!.Count, 0, false)`。Roslyn 绑定数据属性，Jazor 将各段实际 JS 名编码为原 API 要求的路径，npm 完成更新。 | 验证选择器根与叶类型，拒绝计算 getter 和把字段拓宽为 `object` 后传任意值。含路径分隔符的属性别名须按声明协议编码。确保接收者和值各求值一次。 |
 
-Vue I18n 的消息树可给出 `checkout.receipt` 这样的资源路径。叶子的类型为 `string` 时，同一声明可容纳 `Hello {guest}` 或 `Total {amount}`。要按消息约束插值名，需要消费者的静态资源文本或显式资源契约。运行时加载的文本沿用通用命名参数字典。[锁定包消费夹具](../../scripts/csharp/fixtures/jolt-binding-projection/I18nPlugin.jazor)
+Vue I18n 的静态入口从公开的 `Composer<typeof messages>` 读取语言表。投影器遇到需要解析的消息字面量时，才还原锁定的 `@intlify/message-compiler` 11.4.12。消息解析器遍历同一键的所有语言及复数分支，生成一份 C# 调用契约。插值接受字符串、数值和布尔值。语言表中的原始值可单独按叶类型读取，例如 `composer.Messages.Value.En!.Config.Enabled`。普通 npm 查询只还原 TypeScript。[静态投影](../../src/Jazor.Npm/static-locale-projection.mjs) · [消息解析工具锁](../../src/Jazor.Npm/tooling/locale/pnpm-lock.yaml) · [组件与普通 C# 验收](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+
+| 声明中的消息 | 生成的 C# 调用 | 原 Composer 收到的实参 |
+| --- | --- | --- |
+| `welcome: 'Hello {guest}'` | `composer.TWelcome(new() { Guest = "Ada" })` | `t("welcome", { guest: "Ada" })` |
+| `value: '{1} / {0} / {1}'` | `composer.TValue(0d, false)` | `t("value", [0, false])` |
+| `plural: 'None \| One \| Many'` | `composer.TPlural(2d)` | `t("plural", 2)` |
+| `namedPlural: '{guest} has none \| {guest} has {n} \| {guest} has {count}'` | `composer.TNamedPlural(new() { Guest = "Ada" }, 2d)` | `t("namedPlural", { guest: "Ada" }, 2)` |
+
+位置参数按索引去重，跨语言合并后须从零连续。复数选择值由调用者传入，`n` 和 `count` 由 Vue I18n 填入。列表与复数并用时，生成 `t(key, [value0, …], plural)`。宽化为 `string`、语法错误、链接消息、索引有缺口、命名与位置插值混用或方法名冲突时，该键保留动态入口。
+
+语言缺键时，快捷方法继续走 Vue I18n 的 locale 回退；回退关闭时结果遵循已配置的缺键行为。直接读语言表可区分该语言的原始资源与回退结果。运行时加载和自定义 resolver 的 `Tm(string)` 保留 `UnknownValue`。具名资源的类型必须随所选 npm 入口进入 TypeScript 声明图，单独放在应用中的 JSON 文件不触发该投影。
+
+### 具体 Composer 的资源写入
+
+从同一个 `Composer<Messages>` 的资源槽和公开写方法推导每种语言的输入。比如 `MergeLocaleMessageEs(patch)` 发出 `composer.mergeLocaleMessage("es", patch)`。记录初始化只发出指定的字段，保留 Vue I18n 对原实例的替换、递归合并与响应式更新语义。
+
+| 声明和操作 | 生成的约束 |
+| --- | --- |
+| 完整替换某个 locale | 每层对象保留 TypeScript 必填和可选字段。遇到无法表示的必填字段，该语言仅公开能够安全生成的其他操作。 |
+| 合并已存在的必填对象 | 每层都可省略字段。只更新标题会保留同层的说明文字、布尔值及其他子树。 |
+| 合并可选或可空对象 | 可以省略整个子对象。一旦提供对象，须填齐其必填子字段，因为 Vue I18n 可能需要在该处建立新对象。显式的 `null` 依照声明中的可空域生成。 |
+| 消息是字符串字面量或有限联合 | 写入使用原声明的字符串枚举。翻译方法从可选文本和各语言的所有插值分支推导参数。至少一个必填 locale 提供该键时才生成快捷方法。 |
+| 资源是宽化标量或有限数值 | `string`、`number`、`boolean` 分别接受 C# 的 `string`、`double`、`bool`。数值字面量域生成发出原值的静态成员，单一布尔字面量使用 `ECMAScript.True.Value` 或 `ECMAScript.False.Value`。 |
+
+例如把 `title: 'Hola {guest}' | 'Buenas {guest}'` 写成另一项已声明的文案后，仍可调用 `TPanelTitle(new() { Guest = "Ada" })`。需要在运行时写入任意文案的字段可声明为 `string`，通过 `T(key, ...)` 翻译。声明更新后，元数据快照、生成源码及编辑器诊断使用新的值域。[写入投影](../../src/Jazor.Npm/static-locale-projection.mjs) · [组件与 DLL 用例](../../scripts/csharp/verify-jolt-i18n-plugin.cs) · [缓存验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
 
 ### 返回对象上的方法与异步取值
 
-同一回调既能注册又能解除时，两个参数必须能接收同一个委托。对于把泛型载荷作为 rest 元组的事件钩子，先让 checker 以单元素元组 `[T]` 实例化，再检查订阅、退订和触发是否引用同一载荷。由此生成的 `CreateEventHook<string[]>()` 一次传一个数组。注册与退订直接传原回调，订阅句柄保留自己的接收者。上游触发结果是 `Promise<unknown[]>`，这一投影提供等待完成的 `IPromise`。[事件钩子读取规则](../../src/Jolt.Npm/event-hook-projection.mjs) · [消费用例](../../scripts/csharp/fixtures/jolt-npm-runtime/EventHook.jazor)
+同一回调既能注册又能解除时，两个参数必须能接收同一个委托。对于把泛型载荷作为 rest 元组的事件钩子，先让 checker 以单元素元组 `[T]` 实例化，再检查订阅、退订和触发是否引用同一载荷。由此生成的 `CreateEventHook<string[]>()` 一次传一个数组。注册与退订直接传原回调，订阅句柄保留自己的接收者。上游触发结果是 `Promise<unknown[]>`，这一投影提供等待完成的 `IPromise`。[事件钩子读取规则](../../src/Jazor.Npm/event-hook-projection.mjs) · [消费用例](../../scripts/csharp/fixtures/jolt-npm-runtime/EventHook.jazor)
 
 对于 `copy(text: string | (() => Promise<string | undefined>)): Promise<void>`，同一个调用位置允许传文本，也允许 npm 稍后调用取值函数。投影为两个实例方法重载。直接值和回调返回值必须属于声明允许的域。回调可以承诺总是兑现为字符串，Jazor 将回调本身传给 npm，调用时机由 npm 决定。只有原方法允许省略参数时才生成无参调用。通过方法组调用仍须保留原对象作为接收者。
 
@@ -137,7 +168,7 @@ VueUse 的 URL 参数默认值域是 `Record<string, string | string[]>`。同�
 
 ## 结构稳定的代码缓存
 
-项目保留两层缓存。第一层按项目、模块、导出选择和工具版本缓存 checker 元数据，验证锁文件、实际解析入口和参与解析的声明。第二层按归一化的导出选择、映射后的签名和生成工具身份缓存 C# 源码。组件与公开类库模式各有对应源码，每个消费者重新绑定自己的 Roslyn 符号。[元数据缓存](../../src/Jolt.Npm/NpmVueMetadataProvider.Cache.cs) · [代码缓存](../../src/Jolt.Compiler/JoltNpmProjectionCache.cs)
+项目保留两层缓存。第一层按项目、模块、导出选择和工具版本缓存 checker 元数据，验证锁文件、实际解析入口和参与解析的声明。第二层按归一化的导出选择、映射后的签名和生成工具身份缓存 C# 源码。组件与公开类库模式各有对应源码，每个消费者重新绑定自己的 Roslyn 符号。[元数据缓存](../../src/Jazor.Npm/NpmValueMetadataProvider.Cache.cs) · [代码缓存](../../src/Jazor.Npm/NpmProjectionCache.cs)
 
 | 变化 | 应观察到的行为 |
 | --- | --- |
@@ -161,15 +192,25 @@ VueUse 的 URL 参数默认值域是 `Record<string, string | string[]>`。同�
 
 更新回调的输入缺值与输出缺值方向相反。公开 DLL 在回调参数上保存这个约定。编译器在调用点捕获委托一次，调用它时把旧值的 `undefined` 转为 `null`，把作者返回的 `null` 转回 `undefined`。普通直接调用、具名实参重排和已绑定的方法组均使用这一规则。已存的记录按原 JS 对象回传，直接值的重载接受标量或结构记录，普通 C# 记录可以由 updater 返回。[回调与缺值规则](../../src/Jazor.Compiler/core/SemanticWalker.cs.Argument.cs) · [公开类库使用](../../scripts/csharp/verify-jolt-public-projection.cs)
 
-对于默认 schema 为 `never` 的条件声明，先求出接收者的实际泛型实参，再检查默认选中分支和可写域。Vue I18n 的动态消息树允许公开为 `VueProps` 并回传给另一个 locale。若声明给索引值或某个键指定了更窄的类型，写入面也要相应收窄。普通字符串 locale 对应的值可以是空对象，因此仅凭 locale 无法给调用方提供固定成员。[声明判定](../../src/Jolt.Npm/locale-message-projection.mjs) · [替换、合并与读取](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+对于默认 schema 为 `never` 的条件声明，先求出接收者的实际泛型实参，再检查默认选中分支和可写域。Vue I18n 的动态消息树允许公开为 `VueProps` 并回传给另一个 locale。若声明给索引值或某个键指定了更窄的类型，写入面也要相应收窄。普通字符串 locale 对应的值可以是空对象，因此仅凭 locale 无法给调用方提供固定成员。[声明判定](../../src/Jazor.Npm/locale-message-projection.mjs) · [替换、合并与读取](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+
+当接收者上的 getter 通过 `NonNullable<Resources>[Locale]` 读取资源，且只读 computed 按 `[K in keyof Resources]: Resources[K]` 暴露同一泛型槽时，投影保留按 locale 索引的只读表。Vue I18n 的消息、日期格式和数字格式分别关联接收者的三个泛型槽。索引缺席读为 `null`，命中时取得与对应 getter 相同的对象。资源表中的叶类型由资源 schema 决定。`tm(key)` 还受消息解析器、locale 回退链和缺键返回空对象的语义影响，动态字符串键返回原资源的 `UnknownValue`，作者可用 `AsString` 或 `GetOwn` 检查实际结果。具体 Composer 的资源属性可直接读取已声明的叶类型。[声明读取](../../src/Jazor.Npm/locale-message-projection.mjs) · [三类资源表验收](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+
+对闭合集合 `string | string[] | Record<string, string[]> | false`，字符串、数组、映射和布尔字面量分别保留为原生 union 的四个分支。C# 的 `ECMAScript.False.Value` 发射为 JS 的 `false`。映射分支按自己的键读取，缺席或继承的键返回 `null`。生成的类型可用于选项、可写 computed 和普通可写属性。[生成规则](../../src/Jazor.Npm/NpmValueProjection.cs) · [组合式与 Legacy 实例](../../scripts/csharp/fixtures/jolt-binding-projection/I18nPlugin.jazor)
+
+声明明确给出 `Ref<unknown>` 时，可公开该 ref 的只读视图。初始的 `undefined` 和 `null` 读为 C# 的 `null`。其余值保留在 `UnknownValue` 中，只有在读取时才检查实际类型。VueUse 的异步状态可以用同一个 ref 读回被拒绝的 Error 原对象、字符串、零或 `false`。声明为 `any` 的 ref 仍缺少这条输出约束。[宿主值读取](../../src/ECMAScript/internal/UnknownValue.cs) · [VueUse 与公开 DLL 验收](../../scripts/csharp/verify-jolt-async-vue-refs.cs)
 
 库的事件声明也决定回调参数。`IEvent<void>` 可以由 C# 的无参 `Action` 订阅。布局事件的回调读取上游给出的尺寸，查询布局时可使用同一具名只读结构。两种事件都使用上游返回的订阅句柄释放资源。Monaco 执行编辑器命令时还需传齐 `source`、`handlerId` 和 `payload`，最后一个声明为 `unknown` 的实参可用结构记录提供。[Chromium 事件与命令验证](../../scripts/csharp/fixtures/jolt-monaco-browser/main.js)
 
 ## 实施与验收
 
-对单一调用签名，如果必填实参能确定全部开放类型参数，读取器直接生成投影。回调的返回值可提供推断依据，回调形参可从其他实参获得上下文类型。可表示的尾部可选参数按原顺序保留。例如 `mapItems<T, U>(items: readonly T[], select: (item: T) => U): readonly U[]` 保留输入元素 `T`，并从回调推断结果元素 `U`。VueUse 的 `refThrottled<T>(value: Ref<T>, delay?, trailing?, leading?)` 和它的别名也由这条规则处理。只传入 ref 与显式传入零延迟各自遵循上游行为。[直接签名读取](../../src/Jolt.Npm/metadata.mjs) · [VueUse 运行用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Getters.jazor)
+以 Jero 的实际调用补充声明形状。基本输入为标量、字面量、联合、对象、函数与容器，随后用 checker 证明泛型槽位、键和路径依赖、条件分支及重载顺序。具名类型按解析后的包和声明定位，实例化实参及读写域参与兼容性判断。
 
-命名接口或对象类型别名的声明形参和导出函数的形参各有独立作用域。例如 `swap<A,B>(v: Pair<A,B>): Pair<B,A>` 只生成一个 `Pair` 声明，两处使用分别排列实参。具有必填数据属性的泛型记录可用于构造、读取和跨包回传，包含通过只读数组引用自身的树和相互引用且类型实参有限的记录。可写字段生成 `required ... { get; set; }`，只读字段生成 `required ... { get; init; }`。链接包和重导出按类型所属包名、版本、声明文件的包内路径和限定名称确定共享身份。结果对象可以直接传给另一导出，普通类库与组件都能读取对方写入的字段。[命名记录读取](../../src/Jolt.Npm/named-record-projection.mjs) · [公开 DLL 消费](../../scripts/csharp/verify-jolt-public-projection.cs)
+目前日期、查询客户端、分页查询、表单路径和提交仍有专用读取器。先将其中可独立复现的声明关系交给通用规则，每次迁移都保留旧消费场景作为回归。Vue ref 身份与解包、DOM 事件、插件注册和 Vue I18n 消息解释仍需声明身份或具体宿主协议作为依据。[读取器入口](../../src/Jazor.Npm/metadata.mjs)
+
+对单一调用签名，如果必填实参能确定全部开放类型参数，读取器直接生成投影。回调的返回值可提供推断依据，回调形参可从其他实参获得上下文类型。可表示的尾部可选参数按原顺序保留。例如 `mapItems<T, U>(items: readonly T[], select: (item: T) => U): readonly U[]` 保留输入元素 `T`，并从回调推断结果元素 `U`。VueUse 的 `refThrottled<T>(value: Ref<T>, delay?, trailing?, leading?)` 和它的别名也由这条规则处理。只传入 ref 与显式传入零延迟各自遵循上游行为。[直接签名读取](../../src/Jazor.Npm/metadata.mjs) · [VueUse 运行用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Getters.jazor)
+
+命名接口或对象类型别名的声明形参和导出函数的形参各有独立作用域。例如 `swap<A,B>(v: Pair<A,B>): Pair<B,A>` 只生成一个 `Pair` 声明，两处使用分别排列实参。具有必填数据属性的泛型记录可用于构造、读取和跨包回传，包含通过只读数组引用自身的树和相互引用且类型实参有限的记录。可写字段生成 `required ... { get; set; }`，只读字段生成 `required ... { get; init; }`。链接包和重导出按类型所属包名、版本、声明文件的包内路径和限定名称确定共享身份。结果对象可以直接传给另一导出，普通类库与组件都能读取对方写入的字段。[命名记录读取](../../src/Jazor.Npm/named-record-projection.mjs) · [公开 DLL 消费](../../scripts/csharp/verify-jolt-public-projection.cs)
 
 直接传递的 Vue 容器从 Vue 自身的类型声明识别。`Ref<T>` 的读写域相同时可在两侧写入，`Readonly<Ref<T>>` 提供只读视图，`ComputedRef<T>` 保留 computed 宿主身份。带有不同 setter 类型的 ref 由专门的读写规则检查。将同一可写 ref 通过两个 npm 函数分别取得可写和只读视图，向前者写入的数值可以从后者读出。两个视图在 JavaScript 中指向同一对象。[宿主与泛型回归](../../src/Jolt.Npm/verify.cs)
 
@@ -179,19 +220,19 @@ Vue 的 `Ref<R, W>` 分开声明 getter 和 setter。两侧类型可独立表示
 
 当两个 npm 模块分别返回和接收 `Ref<SwitchState>`，且二者引用同一个字符串字面量类型别名时，一起生成这两个模块的投影会得到一个共享的 C# 枚举。身份包含声明所在包、版本和包内位置。调用者可将取得的 ref 直接交给另一个包，原 JS ref 和允许写入的取值域都保留下来。只选择消费模块的独立生成也包含它所需的枚举。[跨模块生成测试](../../src/Jolt.Compiler.Test/NpmHandleTests.cs) · [公开 DLL 调用](../../scripts/csharp/verify-jolt-public-projection.cs)
 
-若参数要求 Vue 的 `WritableComputedRef<R, W>`，还须保留 computed 的声明身份。读写域相同时复用手写的 `VueWritableComputedRef<T>`。读写域不同时使用双泛型 computed 类型，按同一条可赋值规则决定能否用 `Value` 写回。这样，手写的 `Vue.Computed` 和从 npm 得到的可写 computed 都能传给 `forward<R,W>(value: WritableComputedRef<R,W>)`。普通 `Ref` 即使值类型相同也会在传参处产生诊断。各次调用都使用同一 JS 对象。[Vue 宿主类型](../../src/ECMAScript.Vue/Types/Vue.Types.Structural.cs) · [生成签名](../../src/Jolt.Compiler/JoltNpmValueProjection.cs)
+若参数要求 Vue 的 `WritableComputedRef<R, W>`，还须保留 computed 的声明身份。读写域相同时复用手写的 `VueWritableComputedRef<T>`。读写域不同时使用双泛型 computed 类型，按同一条可赋值规则决定能否用 `Value` 写回。这样，手写的 `Vue.Computed` 和从 npm 得到的可写 computed 都能传给 `forward<R,W>(value: WritableComputedRef<R,W>)`。普通 `Ref` 即使值类型相同也会在传参处产生诊断。各次调用都使用同一 JS 对象。[Vue 宿主类型](../../src/ECMAScript.Vue/Types/Vue.Types.Structural.cs) · [生成签名](../../src/Jazor.Npm/NpmValueProjection.cs)
 
 对于返回的普通 `Ref<R, R | null | undefined>`，只要两处 `R` 相同，就用一个允许读写空值的 `Value`。锁定的 VueUse 15.0.0 中，给 `useStorage` 的返回值写入 `null` 后，同步读取也会得到 `null`，因此数值存储的读取类型为 `double?`。JS 的 `undefined` 在 getter 处归一化为 C# 的 `null`。将 ref 作为函数输入时，还要能够接受库写入的完整值域。[存储操作](../../scripts/csharp/fixtures/jolt-npm-runtime/Storage.jazor) · [客户端断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-storage.mjs)
 
 当标准 `Pick` 或 `Partial<Pick<…>>` 能解析出有限字段时，投影保留各字段的泛型值、只读性与可缺席性。例如 `type CountPatch<T> = Partial<Pick<Source<T>, "count">>` 中的 `count?: number`，C# 可用 `new() { Count = 0 }` 和 `new()` 分别提供显式零或省略该键。读取结果的 `Count` 为 `double?`。同一模块的两个导出若使用同一命名映射、相同类型实参及兼容字段，可直接将取回的映射对象传给接收方。对直接引用类型参数的可选字段，沿用前述存在性检查。开放键集与可写 ref 内的映射视图仍需确定读写表示。[有限映射回归](../../src/Jolt.Npm/verify.cs) · [跨程序集使用](../../scripts/csharp/verify-jolt-public-projection.cs)
 
-第二批已覆盖一个选项记录和一个结果记录之间的两个独立类型参数。生成器为可缺省的值类型槽位加上 `struct` 约束，使 `T?` 在生成的 DLL 中仍是 `Nullable<T>`。例如 Vue Query 的 `MutateAsync(0)` 完成后，同一次调用可读到 `Variables.Value == 0`、`Data.Value == false`。这两个属性在调用前都可读为 `null`。[签名特化](../../src/Jolt.Compiler/JoltNpmValueProjection.cs) · [真实包调用](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
+第二批已覆盖一个选项记录和一个结果记录之间的两个独立类型参数。生成器为可缺省的值类型槽位加上 `struct` 约束，使 `T?` 在生成的 DLL 中仍是 `Nullable<T>`。例如 Vue Query 的 `MutateAsync(0)` 完成后，同一次调用可读到 `Variables.Value == 0`、`Data.Value == false`。这两个属性在调用前都可读为 `null`。[签名特化](../../src/Jazor.Npm/NpmValueProjection.cs) · [真实包调用](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
 
 第三批已覆盖分页选择结果和表单记录的连续属性路径。分页选择器的参数保留页与游标类型，其返回的 DTO 成为结果 ref 的读取类型。通过回调和 ref 共享的类型参数可以识别改名为 `projectView` 的选择器；分页上下文仍使用 `queryKey`、`pages` 等成员约定。缺省值规则也适用于选择结果为 `bool` 的实际查询，SSR 和客户端都能区分加载前的 `null` 与加载后的 `false`。[声明回归](../../src/Jolt.Npm/verify.cs) · [运行夹具](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
 
-普通对象的单键访问由 `K extends keyof T` 与同一声明的 `T[K]` 决定。公开 getter 的结果与 setter 的值都使用选中字段的 C# 类型。对于实际名为 `pricing.total` 的字段，`Fixture.Assign(entry, x => x.FlatTotal, 0)` 发射字符串实参 `"pricing.total"`，由 npm 使用完整键索引对象。此入口只接受一段结构属性，普通 C# 记录可直接传入。[声明读取](../../src/Jolt.Npm/dependent-path.mjs) · [消费用例](../../scripts/csharp/verify-jolt-public-projection.cs)
+普通对象的单键访问由 `K extends keyof T` 与同一声明的 `T[K]` 决定。公开 getter 的结果与 setter 的值都使用选中字段的 C# 类型。对于实际名为 `pricing.total` 的字段，`Fixture.Assign(entry, x => x.FlatTotal, 0)` 发射字符串实参 `"pricing.total"`，由 npm 使用完整键索引对象。此入口只接受一段结构属性，普通 C# 记录可直接传入。[声明读取](../../src/Jazor.Npm/dependent-path.mjs) · [消费用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
-当 `T[K]` 出现在返回的 Vue ref 中时，先解析宿主类型，再把该槽位绑定到所选属性。例如 VueUse 的两个 `useVModel` 重载都接受 props 和显式 key。两者在这两个实参上接受相同的记录和键域，省略余下参数时按上游顺序选择第一个，返回 `WritableComputedRef<P[K]>`。投影器检查键的约束、根记录与结果槽位，以及可能接收这组实参的其他重载。针对特定键的早期重载会使通用入口失去依据。[单键投影](../../src/Jolt.Npm/dependent-path.mjs)
+当 `T[K]` 出现在返回的 Vue ref 中时，先解析宿主类型，再把该槽位绑定到所选属性。例如 VueUse 的两个 `useVModel` 重载都接受 props 和显式 key。两者在这两个实参上接受相同的记录和键域，省略余下参数时按上游顺序选择第一个，返回 `WritableComputedRef<P[K]>`。投影器检查键的约束、根记录与结果槽位，以及可能接收这组实参的其他重载。针对特定键的早期重载会使通用入口失去依据。[单键投影](../../src/Jazor.Npm/dependent-path.mjs)
 
 同一调用中的选项要与键一起求解。以锁定的 VueUse 声明为例，选择 `Amount` 后，`defaultValue?: P[K]` 的输入、`shouldEmit?: (v: P[K]) => boolean` 的回调形参和 computed 的读写值都使用该属性的类型。属性值仅在运行时发生改变，C# 推断依赖的是选择器的返回类型。对其他包的同形声明，根、键与索引按 checker 符号对应，字段名来自实际选项声明。
 
@@ -199,7 +240,17 @@ Vue 的 `Ref<R, W>` 分开声明 getter 和 setter。两侧类型可独立表示
 | --- | --- | --- |
 | 显式 key、选项含默认值或回调 | 选项的索引值绑定到选择器。区分不提供默认值、显式 `0` 与显式 `false`。 | 选择器发射为单一 JS 键。保留原实参位置，例如 `useVModel(props, "amount", undefined, options)`。 |
 | 选项决定重载 | 只有判别字段能随构造的选项确定时，才为该分支提供固定判别值的签名。省略整个选项时仍按 TS 重载顺序选取结果。 | 默认 computed 和显式 passive 的返回值分别绑定到各自宿主。回调返回 `false` 的事件不得到达父组件。 |
-| `Ref<UnwrapRef<P[K]>>` | 同时检查索引来自当前键及 `UnwrapRef` 来自 Vue。字符串、布尔和数值字段使用标量重载。对于封闭的嵌套数据记录，使用点逐层检查 Vue 深层解包是否保留原 C# 属性类型。 | passive 返回普通 ref。验证父组件替换整个记录后，子组件能读取新值，子组件赋值只向父组件回传一次。若记录里嵌有 ref，诊断指出具体字段。 |
+| `Ref<UnwrapRef<P[K]>>` | 索引必须来自所选键，`UnwrapRef` 必须来自 Vue 的声明。标量使用对应的重载。对于消费者定义的记录，Roslyn 在调用处检查哪些位置能保留原类型。 | 形状稳定时可读取、写回整个记录或数组。普通属性直接包含 ref 时可选用记录视图，按键链接到原属性。 |
+
+同一个 `{ count: Ref<number> }` 在不同位置有不同的消费类型。包声明已给出具体 DTO 时，先让 TypeScript 求出实际读取类型，再生成 C# 成员。对于消费者自己的 DTO，生成文件只缓存泛型契约，具体属性名及 nullability 由使用点的 Roslyn 符号决定。[声明读取](../../src/Jazor.Npm/metadata.mjs) · [调用处校验](../../src/Jazor.Compiler/PropertyPathSelector.cs)
+
+| 数据所在位置 | C# 读取 | 写入与回传 |
+| --- | --- | --- |
+| 深响应式对象的普通属性 `count: Ref<number>` | 具体 npm 声明生成数值属性。消费者的记录视图可用 `Vue.ToRef(view, x => x.Count)` 链接到当前对象的直接属性。 | 向链接的 `Value` 写入数值。Vue 的 `toRef(source, key)` 也处理浅代理与原始对象上的 ref。父组件替换整个对象后，从新的视图取链接。 |
+| 单维或交错数组的整数索引 | `items[0]` 保留原 ref，可读 `items[0].Value`。元素本身是普通对象时继续检查其属性。 | 给 `items[0].Value` 赋值会修改原 ref，给 `items[0]` 赋新 ref 会替换该槽。 |
+| 浅 ref 的 payload | 读取 `shallow.Value` 得到声明的 payload。若其中有 `Count: IVueRef<double>`，继续读 `Count.Value`。 | 具体声明保留浅层宿主类型。可写的完整视图可写回同一个外层 ref。 |
+
+`Deep = true` 控制 passive watcher 是否观察内部变更。它与 Vue 对属性的解包规则独立。记录和记录视图重载可携带声明中独立的布尔、字符串和数值选项，回调和依赖 payload 的默认值需要各自的读写证明。[VueUse 挂载与回传](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-model.mjs)
 
 ```csharp
 var amount = VueUse.UseVModel(props, x => x.Amount, new()
@@ -210,19 +261,35 @@ var amount = VueUse.UseVModel(props, x => x.Amount, new()
 var draft = VueUse.UseVModelWithPassiveTrue(props, x => x.Amount, new() { DefaultValue = 0d });
 ```
 
-对于普通记录，`UseVModelWithPassiveTrueRecord(props, x => x.Record, new())` 使用上游的 `passive: true`。目前可用的载荷是非泛型的密封记录类，属性由嵌套的同类记录及 `string`、`double`、`bool` 组成。父组件替换记录后，`draft.Value.Info.Label` 可以直接读到新字符串。若 `Info` 内含 Vue ref，Vue 会解包这个成员，原 DTO 的成员类型已经不同，需要给读取和写入分别建模。克隆选项在默认 computed 入口可使用 `UseVModelWithCloneCallback`。显式 `emit` 的锁定参数为 `(name: Name, ...args: any[]) => void`，单凭声明只能推出事件名的约束。[组件用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor) · [使用点验证](../../src/Jazor.Compiler/PropertyPathSelector.cs)
+对于普通记录，`UseVModelWithPassiveTrueRecord` 支持深层解包后仍能按原 C# 类型使用的记录和数组。记录里的直接 ref 可通过 `UseVModelWithPassiveTrueRecordView` 读取；选择下一层记录用 `Select(x => x.Info)`，再用 `Vue.ToRef(info, x => x.Count)` 获取可写标量链接。具体 npm 声明若返回 `Ref<UnwrapRef<R>, R | UnwrapRef<R>>`，且原始记录可完整构造，则 `Value` 接受解包视图，`WriteValue` 接受带 ref 的原始 DTO。两种赋值写入同一 JS 属性。`UseAsyncStateWithShallowTrue` 的泛型返回则须从原始声明证明所选布尔分支保留数据槽，并以含 ref 的 DTO 验证。[具体 DTO 回传](../../scripts/csharp/fixtures/jolt-binding-projection/ConcreteVueRefs.jazor) · [使用点验证](../../src/Jazor.Compiler/PropertyPathSelector.cs)
+
+显式 `emit` 按回调声明生成。`(name: string, value: P[K]) => void` 把第二个参数与属性选择器的 `TValue` 关联。VueUse 的 `(name: Name, ...args: any[]) => void` 只约束事件名，可变载荷在 C# 中是 `UnknownValue?[]`。Jazor 在委托边界收集所有实参，保留长度、顺序、`0` 和 `false`，将 JS 的 `null` 和 `undefined` 都读作 `null`。跨程序集调用从参数属性恢复同一约定。[公开 DLL 验收](../../scripts/csharp/verify-jolt-public-projection.cs) · [模型挂载](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-model.mjs)
 
 同一规则遇到 `ComputedRef<P[K]>` 会返回只读的 `VueComputedRef<TValue>`。若所选属性依赖存在性检查或需要把缺席的 JS 值转换为 C# 的 `null`，通过 ref 的间接读取会绕过该属性的 getter。编译器在选择器处给出诊断，作者可改为直接读取该属性。该约束随投影写入公开 DLL。[使用点检查](../../src/Jazor.Compiler/PropertyPathSelector.cs) · [元数据回归](../../src/Jolt.Npm/verify.cs)
 
-表单读取器识别两种已验证的递归路径声明。对于匹配的表单，Jazor 使用 Roslyn 的属性符号生成路径实参。内联选择器可使用嵌套字段的实际 JS 名。顶层字面键 `invoice.total` 编码为 VeeValidate 的 `[invoice.total]`，顶层 `invoice[label]` 直接传递。嵌套段中的分隔符、数组下标以及会被上游解释为下标的字面键仍需独立契约。普通记录的单键 API 则按完整键名索引。写入非空引用字段时也检查实际值的可空流状态。[公共消费用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs) · [路径使用点](../../src/Jazor.Compiler/PropertyPathSelector.cs)
+表单读取器识别两种已验证的递归路径声明。对于匹配的表单，Jazor 使用 Roslyn 的属性符号生成路径实参。内联选择器可使用嵌套字段的实际 JS 名。顶层字面键 `invoice.total` 编码为 VeeValidate 的 `[invoice.total]`，顶层 `invoice[label]` 直接传递。嵌套段中的分隔符以及会被上游解释为下标的字面键仍需独立契约。普通记录的单键 API 则按完整键名索引。写入非空引用字段时也检查实际值的可空流状态。[公共消费用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs) · [路径使用点](../../src/Jazor.Compiler/PropertyPathSelector.cs)
 
-若返回声明为 `B extends true ? Detail : number`，且唯一的布尔泛型 `B extends boolean` 对应一个独立的判别参数，读取器分别以 `true` 和 `false` 实例化同一个 TS 签名。对 `selectMode(label, enabled, count)`，C# 的 `SelectModeWithEnabledTrue(label, count)` 返回详情对象，`SelectModeWithEnabledFalse(label, count)` 返回数值。程序集元数据携带布尔值和原参数位置，直接调用和方法组转换都能调用原导出。判别参数可省略且后面都是可选参数时，原方法名还可表示调用到判别参数之前就结束，返回该省略方式的确切类型。其他实参参与判别值推断时，需要先证明这些实参和结果的关联。真实导出名优先，特化名称全部被占用时会给出诊断。[布尔条件投影](../../src/Jolt.Npm/finite-boolean-projection.mjs) · [消费用例](../../scripts/csharp/verify-jolt-public-projection.cs)
+数组路径和该路径的值分开推导。先检查路径声明能否从数组元素递归构造 `[index]` 和后续属性，再检查具体方法怎样取得叶类型。VeeValidate 4.15.1 的 `ValidateField` 只需要合法路径。`DefineField` 另有一个可独立指定的值类型参数，Jazor 可从选择器推导它。`SetFieldValue` 的值完全由上游 `PathValue` 决定，该版本对 `rows[0].count` 算出 `never`，写入这类字段应使用 `DefineField` 返回的模型。下标接受 C# 一维数组上的非负整型常量，交错数组的每个下标单独编码。
+
+表单工厂允许省略选项、显式指定输入 DTO 且其余泛型有默认值时，通过 checker 验证这次无参调用，生成 `UseForm<TInput>()`。当选项中有唯一的成员接收该 DTO 或其保留键和值的部分映射时，另行验证只提供完整初值的调用，生成 `UseForm<TInput>(new() { InitialValues = dto })`。对 `type-fest` 的 `PartialDeep<T>` 按实际声明身份和类型实参识别，因为 checker 在泛型尚未实例化时无法化简该条件类型。映射到布尔标志或错误信息的字段表不满足初值关系。[入口识别](../../src/Jazor.Npm/schema-form-projection.mjs)
+
+完整初值只约束创建时传给 npm 的实参。VeeValidate 在字段卸载后可以删除该键。实时 `Values`、schema 解析器收到的值和提交失败上下文均按 `PartialRecord<TInput>` 读取；绑定到具体 schema 的成功提交回调收到解析器产出的 `TOutput`。父表单注入入口的返回值另允许缺席。[运行夹具](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor) · [独立 DLL](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
+对批量写入、错误表和提交回调分别验证输入输出关系。稀疏表单可接收输入 DTO，调用 `SetValues` 时可按声明省略校验标志，`Errors` 和 `ErrorBag` 只读，缺席的键返回 `null`。无 schema 创建时，成功提交的值沿用稀疏输入视图。注入时，父组件可能提供转换后的值，因此只有显式提供两个记录类型的上下文才生成带类型的成功提交回调，其结果按 `PartialRecord<TOutput>` 读取。失败上下文的值和错误始终与输入 DTO 关联。[独立 DLL](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs) · [父子组件](../../scripts/csharp/fixtures/jolt-npm-runtime/FormScope.jazor)
+
+对 `[Ref<TValue>, Ref<BaseProps & TExtras>]` 这样的声明，省略配置会选中 extras 的默认类型。投影保留原数组和两个 ref，可以在 C# 直接解构。稀疏表单中，模型读取保留缺席，写入仅接受选定字段的值类型。事件 props 按已证明的基础成员提供只读视图。若配置的对象分支可接收可选标量，则可传入已证明的布尔标志或字符串。若 `props(state)` 的返回槽与元组第二项交叉类型里的 extras 相同，再提供关联 `TField`、`TProps` 的重载。回调按原字段类型读取可缺席的状态值。合并后的 props 允许 extras 覆盖同名事件，因此第二个 ref 按回调返回的 DTO 读取。[声明规则](../../src/Jazor.Npm/schema-form-projection.mjs) · [公开类库用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
+若配置参数另有 `(state) => options` 分支，则从该回调的返回类型读取配置。若返回的 `props` 字段正好引用结果里的 extras 类型槽，生成的配置要求作者填入 `TProps`。只有回调使用该分支，静态配置保留目标类型 `new()` 的重载优先级。[声明读取](../../src/Jazor.Npm/path-tuple-options.mjs)
+
+对于 `Partial<{ [P in Path<TInput>]: string | string[] | undefined }>`，初始化器把经过类型检查的 DTO 选择器编译成原包使用的平坦路径键。写入 `null` 会保留自有键并传递 `undefined`，省略键则保持缺席。普通方法调用及方法组也从程序集参数元数据区分允许 `null` 与允许 `undefined` 的实参。[表单成员推导](../../src/Jazor.Npm/common-form-members.mjs) · [编译用例](../../src/Jolt.Compiler.Test/NpmFormPathMapTests.cs)
+
+若返回声明为 `B extends true ? Detail : number`，且唯一的布尔泛型 `B extends boolean` 对应一个独立的判别参数，读取器分别以 `true` 和 `false` 实例化同一个 TS 签名。对 `selectMode(label, enabled, count)`，C# 的 `SelectModeWithEnabledTrue(label, count)` 返回详情对象，`SelectModeWithEnabledFalse(label, count)` 返回数值。程序集元数据携带布尔值和原参数位置，直接调用和方法组转换都能调用原导出。判别参数可省略且后面都是可选参数时，原方法名还可表示调用到判别参数之前就结束，返回该省略方式的确切类型。其他实参参与判别值推断时，需要先证明这些实参和结果的关联。真实导出名优先，特化名称全部被占用时会给出诊断。[布尔条件投影](../../src/Jazor.Npm/finite-boolean-projection.mjs) · [消费用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
 | 批次 | 一次实现的规则 | 交付条件 |
 | --- | --- | --- |
 | 1. 开放泛型的直接传递 | 在公共签名读取路径处理独立类型参数穿过函数值和标准 Promise 的可表达子集。覆盖普通输入、回调输入、回调返回与导出结果。 | 同一规则处理重命名声明和不同槽位排列。生成的 C# 可推断类型，跨程序集消费能运行。约束、未知结果和条件类型保持原声明边界。 |
 | 2. 容器、可写性与缺省 | 将已有 ref、数组、记录和异步结果投影接到同一个泛型作用域和方向规则上，统一计算读写和可空约束。 | VueUse、Vue Query、Floating UI 共用规则。验证 mutation 的两个可缺省结果、ref 身份和数组回写。 |
 | 3. 依赖键与条件返回 | 按符号求解键、路径、回调选择结果和有限判别。把当前专项读取器里相同的关系迁移到公共规则。 | VeeValidate 路径与值类型相关，分页默认和显式选择有各自结果，I18n 两种模式保持准确。 |
-| 4. 七库整体验收与替换 | 对照每个手写调用所用的参数、可读写成员和下一次调用，合并可被通用规则完整覆盖的专项分支。 | 七库组件与 DLL 使用同一批 C# 调用。执行涉及 SSR、客户端响应式更新、资源清理及 Monaco worker 的真实场景，列出仍缺的操作。 |
+| 4. 消费者与缓存 | 用 Jero 的实际调用及七库回归语料验证跨调用类型身份、可写性和 JS 行为。 | 组件与独立 DLL 能消费同一契约，真实 ESM 可执行，缓存命中与失效后的构建和编辑器结果一致。 |
 
 每批按规则运行同一组声明测试、Roslyn 正负消费、JS 行为和缓存验证。改名覆盖相同结构，近似声明覆盖语义变化。覆盖率分开记录导出、实际可绑定的调用链和已运行的场景，定位未覆盖的参数关系或操作。[声明门禁](../../src/Jolt.Npm/verify.cs) · [独立类库](../../scripts/csharp/verify-jolt-public-projection.cs) · [七库对照](../../scripts/csharp/verify-jolt-binding-projection.cs) · [缓存验收](../../scripts/csharp/verify-jolt-projection-cache.cs)

@@ -34,7 +34,9 @@ public sealed class RuntimeClassPrivateStorageScenarioTests
         var backingField = runtimeHost.GetMembers("<Value>k__BackingField").OfType<IFieldSymbol>().Single();
         var valueHash = Format.HashName(value.OriginalDefinition.ToDisplayString(Format.NameFormat));
 
-        Assert.AreEqual("$jazor$private$secret", RuntimeClassPrivateStorageNames.GetProxySafeFieldName(secret));
+        var secretKey = "$jazor$private$secret$" + Format.HashName(runtimeHost.ToDisplayString(Format.NameFormat)).TrimStart('_');
+
+        Assert.AreEqual(secretKey, RuntimeClassPrivateStorageNames.GetProxySafeFieldName(secret));
         Assert.AreEqual("Shared", RuntimeClassPrivateStorageNames.GetProxySafeFieldName(
             runtimeHost.GetMembers("Shared").OfType<IFieldSymbol>().Single()));
         Assert.AreEqual("Visible", RuntimeClassPrivateStorageNames.GetProxySafeFieldName(
@@ -49,7 +51,7 @@ public sealed class RuntimeClassPrivateStorageScenarioTests
                 secret,
                 "secret"));
         Assert.AreEqual(
-            "$jazor$private$secret",
+            secretKey,
             RuntimeClassPrivateStorageNames.GetFieldStorageName(
                 RuntimeClassPrivateStorage.ProxySafeMangledProperties,
                 secret,

@@ -13,10 +13,10 @@ internal sealed class NodeViteServer : IAsyncDisposable
         _bridge = NodeToolchain.MaterializeBridge(projectDirectory);
     }
 
-    public Task<string> StartAsync(string projectDirectory, string host, int port, string @base,
-        CancellationToken cancellationToken = default, bool jolt = false)
+    public Task<string> StartAsync(string projectDirectory, string host, int port, string? @base,
+        CancellationToken cancellationToken = default, string? pluginsModule = null)
         => _environment.InvokeAsync(_bridge, "startVite", cancellationToken,
-            JsonSerializer.Serialize(new { projectDirectory, host, port, @base, jolt }));
+            JsonSerializer.Serialize(new { projectDirectory, host, port, @base, pluginsModule }));
 
     public ValueTask DisposeAsync() => StopAsync(CancellationToken.None);
 

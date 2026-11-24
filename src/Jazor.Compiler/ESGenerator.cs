@@ -68,15 +68,26 @@ public sealed class ESGenerator : IIncrementalGenerator
             transform: static (syntaxContext, _) => CreateCandidate(syntaxContext));
 
         var inputs = context.AdditionalTextsProvider.Where(static file => file.Path.EndsWith(".jazorimports", StringComparison.OrdinalIgnoreCase)).Collect();
-        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect()).Combine(inputs);
+        // External reactive hosts can invoke ordinary catalog classes through a Proxy receiver.
+        var settings = context.AnalyzerConfigOptionsProvider.Select(static (options, _) => (
+            ProxySafe: options.GlobalOptions.TryGetValue("build_property._JazorRuntimeClassPrivateStorage", out var value) &&
+                string.Equals(value, nameof(RuntimeClassPrivateStorage.ProxySafeMangledProperties), StringComparison.Ordinal),
+            LiveNpm: options.GlobalOptions.TryGetValue("build_property._JazorNpmEditorTool", out var editor) &&
+                !string.IsNullOrEmpty(editor)));
+        var combined = context.CompilationProvider.Combine(moduleCandidates.Collect()).Combine(inputs).Combine(settings);
         context.RegisterSourceOutput(combined, static (outputContext, source) =>
         {
-            var ((compilation, candidates), files) = source;
+            var (((compilation, candidates), files), options) = source;
             try
             {
                 var implementationInputs = LibraryImportContext.ReadInputs(files, outputContext.CancellationToken);
+                var storage = options.ProxySafe
+                    ? RuntimeClassPrivateStorage.ProxySafeMangledProperties
+                    : RuntimeClassPrivateStorage.JavaScriptPrivateFields;
                 LibraryImportContext.Configure(compilation, implementationInputs);
-                EmitCatalogs(outputContext, compilation, candidates);
+                if (options.ProxySafe)
+                    LibraryImportContext.AddRoots(compilation, [], storage);
+                EmitCatalogs(outputContext, compilation, candidates, storage, options.LiveNpm);
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception exception)
@@ -96,7 +107,8 @@ public sealed class ESGenerator : IIncrementalGenerator
     private static void EmitCatalogs(
         SourceProductionContext context,
         Compilation compilation,
-        ImmutableArray<ModuleCandidate> candidates)
+        ImmutableArray<ModuleCandidate> candidates,
+        RuntimeClassPrivateStorage storage, bool liveNpm)
     {
         if (candidates.IsDefaultOrEmpty)
             return;
@@ -111,14 +123,15 @@ public sealed class ESGenerator : IIncrementalGenerator
             moduleCatalogCandidates.Add(candidate);
         }
 
-        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates);
+        EmitModuleCatalog(context, compilation, assemblyName, moduleCatalogCandidates, storage, liveNpm);
     }
 
     private static void EmitModuleCatalog(
         SourceProductionContext context,
         Compilation compilation,
         string assemblyName,
-        IReadOnlyList<ModuleCandidate> candidates)
+        IReadOnlyList<ModuleCandidate> candidates,
+        RuntimeClassPrivateStorage storage, bool liveNpm)
     {
         if (candidates.Count == 0)
             return;
@@ -190,6 +203,7 @@ public sealed class ESGenerator : IIncrementalGenerator
                     candidate.SemanticModel,
                     new AstConverterOptions(
                         AstConverterProfile.ClrRuntime,
+                        RuntimeClassPrivateStorage: storage,
                         CurrentModuleOutputPath: plan.RelativePath));
                 var module = converter.Convert().GetAwaiter().GetResult();
                 // Catalog/manifest records the declared project file path. A module body uses
@@ -275,8 +289,14 @@ public sealed class ESGenerator : IIncrementalGenerator
                     sourceMapContent,
                     sourceMapContent is null ? null : ComputeSha256Hex(sourceMapContent)));
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
+                // A sibling generator supplies npm symbols to the editor's final compilation.
+                // Its absence here can yield IInvalidOperation even when the final call binds.
+                // Leave binding diagnostics to Roslyn; unsupported bound operations still report.
+                if (liveNpm && ex is OperationTransformationException { Kind: OperationKind.Invalid })
+                    continue;
                 context.ReportDiagnostic(Diagnostic.Create(
                     ModuleGenerationFailed,
                     candidate.Location,

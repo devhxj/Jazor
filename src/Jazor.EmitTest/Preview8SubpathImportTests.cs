@@ -9,6 +9,73 @@ namespace Jazor.EmitTest;
 public sealed class Preview8SubpathImportTests
 {
     [TestMethod]
+    public void Materialize_UnresolvedManifestEdgeConflictsWithProjectedRoot()
+    {
+        using var workspace = new Workspace();
+        var manifest = CreateManifest("binding", "1.0.0", "npm");
+        manifest["imports"] = new JsonObject
+        {
+            ["binding"] = new JsonObject { ["type"] = "module", ["path"] = "binding", ["dependencies"] = new JsonArray("widget") }
+        };
+        manifest["packages"] = new JsonObject
+        {
+            ["widget"] = new JsonObject { ["source"] = "npm", ["version"] = "4.2.1" }
+        };
+        var exception = Assert.Throws<LibraryException>(() => new LibraryMaterializer().Materialize(
+            [workspace.WriteManifest(manifest)], workspace.Output, BuildMode.Development,
+            ["binding", "widget"], projectedPackages: [new("widget", "4.2.0")]));
+        Assert.AreEqual("JAZOR_LIBRARY_PACKAGE_CONFLICT", exception.Code);
+        StringAssert.Contains(exception.Message, "manifest supplies npm version '4.2.1'");
+    }
+
+    [TestMethod]
+    public void Materialize_ProjectedBareSubpathRestoresOnlySelectedPackage()
+    {
+        using var workspace = new Workspace();
+        var result = new LibraryMaterializer().Materialize([], workspace.Output, BuildMode.Production,
+            ["@example/widget/feature"], projectedPackages: [
+                new("@example/widget/feature", "4.2.0"),
+                new("unused", "1.0.0")
+            ]);
+
+        LibraryPackageWriter.WritePackageProject(workspace.Output, result);
+        using var package = JsonDocument.Parse(File.ReadAllText(Path.Combine(workspace.Output, "package.json")));
+        var dependencies = package.RootElement.GetProperty("dependencies");
+        Assert.AreEqual("4.2.0", dependencies.GetProperty("@example/widget").GetString());
+        Assert.IsFalse(dependencies.TryGetProperty("unused", out _));
+        Assert.IsFalse(dependencies.TryGetProperty("@example/widget/feature", out _));
+    }
+
+    [TestMethod]
+    public void Materialize_ProjectedBareImportWithMultipleVersionsReportsConflict()
+    {
+        using var workspace = new Workspace();
+        var exception = Assert.Throws<LibraryException>(() => new LibraryMaterializer().Materialize(
+            [], workspace.Output, BuildMode.Production, ["widget"], projectedPackages: [
+                new("widget", "4.2.1"),
+                new("widget", "4.2.0")
+            ]));
+
+        Assert.AreEqual("JAZOR_LIBRARY_PACKAGE_CONFLICT", exception.Code);
+        StringAssert.Contains(exception.Message, "'widget' requires conflicting npm dependencies: 4.2.0, 4.2.1.");
+        Assert.IsFalse(Directory.Exists(workspace.Output));
+    }
+
+    [TestMethod]
+    public void Materialize_ProjectedAliasReusesMatchingManifestIntegrity()
+    {
+        using var workspace = new Workspace();
+        const string alias = "npm:@sxzz/popperjs-es@2.11.8";
+        var manifest = workspace.WriteManifest("provider", "2.11.8", ["@popperjs/core/lib"],
+            "@popperjs/core", alias, "sha512-alias");
+        var result = new LibraryMaterializer().Materialize([manifest], workspace.Output, BuildMode.Production,
+            ["@popperjs/core/lib"], projectedPackages: [new("@popperjs/core/lib", alias)]);
+
+        Assert.AreEqual(alias, result.PackageReferences["@popperjs/core/lib"].Version);
+        Assert.AreEqual("sha512-alias", result.PackageReferences["@popperjs/core/lib"].Integrity);
+    }
+
+    [TestMethod]
     public void Materialize_UndeclaredSubpath_StillFailsWhenPackageIdentityExists()
     {
         using var workspace = new Workspace();

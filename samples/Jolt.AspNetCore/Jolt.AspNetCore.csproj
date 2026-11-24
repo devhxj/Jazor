@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DefaultItemExcludes>$(DefaultItemExcludes);frontend/**</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
+    <Content Include="frontend/dist/**/*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="RequireFrontendBundle" BeforeTargets="ComputeFilesToPublish" Condition="!Exists('frontend/dist/index.html')">
+    <Error Text="Bundle the Jolt frontend before publishing. See README.md." />
+  </Target>
+</Project>

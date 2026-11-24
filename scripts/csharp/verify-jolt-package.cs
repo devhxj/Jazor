@@ -61,6 +61,8 @@ try
             "Microsoft.CodeAnalysis.Razor.Compiler.dll",
             "Microsoft.AspNetCore.Razor.Utilities.Shared.dll",
             "Microsoft.JavaScript.NodeApi.dll",
+            "Jazor.Npm.dll",
+            "Jolt.Vite.dll",
             "ECMAScript.Vue.dll",
             "ECMAScript.Pinia.dll",
             "ECMAScript.Pinia.Testing.dll",
@@ -92,6 +94,13 @@ try
     var output = Path.Combine(consumer, ".jolt");
     var npmStore = Path.GetFullPath(Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
         ?? Path.Combine(scratch.FullName, "npm-store"));
+    var help = await RunInstalledAsync("--help", captureOutput: true);
+    if (!help.Contains("Usage: jolt build", StringComparison.Ordinal) ||
+        !help.Contains("--stop-on-stdin-close", StringComparison.Ordinal) ||
+        help.Contains("bindings", StringComparison.OrdinalIgnoreCase))
+        throw new InvalidOperationException($"Unexpected help from installed Jolt.\n{help}");
+    await RunInstalledAsync("bindings", expectedError: "Usage: jolt build");
+    await RunInstalledAsync("build", expectedError: "Usage: jolt build", extraArgument: "--stop-on-stdin-close");
     await RunInstalledAsync("build");
     var app = await File.ReadAllTextAsync(Path.Combine(output, "App.mjs"));
     if (!app.Contains("reka-ui", StringComparison.Ordinal)
@@ -126,6 +135,8 @@ try
             ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", appHost]);
         await RunProcessAsync("dotnet", root, npmStore,
             ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", "--local-vue", appHost]);
+        await RunProcessAsync("dotnet", root, npmStore,
+            ["run", "--file", Path.Combine(root, "scripts", "csharp", "verify-jolt-projection-cache.cs"), "--", appHost, "--external-link"]);
         await RunProcessAsync("dotnet", root, npmStore,
             ["run", "--file", Path.Combine(root, "src", "Jolt.LanguageServer", "verify.cs"), "--", "--router", appHost]);
     }
@@ -181,8 +192,15 @@ try
 
     Console.WriteLine($"Verified {packageId} {version} for {rid} and inspected the four RID packages.");
 
-    Task RunInstalledAsync(string verb) => RunProcessAsync(commandPath, consumer, npmStore,
-        OperatingSystem.IsWindows() ? ["/d", "/c", "jolt.cmd", verb, "."] : [verb, "."], tools);
+    Task<string> RunInstalledAsync(string verb, bool captureOutput = false, string? expectedError = null, string? extraArgument = null)
+    {
+        string[] arguments = verb == "--help" ? [verb] : [verb, "."];
+        if (extraArgument is not null)
+            arguments = [.. arguments, extraArgument];
+        return RunProcessAsync(commandPath, consumer, npmStore,
+            OperatingSystem.IsWindows() ? ["/d", "/c", "jolt.cmd", .. arguments] : arguments,
+            tools, expectedError: expectedError, captureOutput: captureOutput);
+    }
 }
 finally
 {
@@ -222,8 +240,8 @@ static async Task VerifyHandwrittenBindingsAsync(string appHost, string root, st
     await RunProcessAsync(appHost, project, npmStore, ["build"], expectedError: "error CS1503");
 }
 
-static async Task RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments,
-    string? toolDirectory = null, string? packageCache = null, string? expectedError = null)
+static async Task<string> RunProcessAsync(string program, string workingDirectory, string? npmStore, string[] arguments,
+    string? toolDirectory = null, string? packageCache = null, string? expectedError = null, bool captureOutput = false)
 {
     var start = new ProcessStartInfo(program) { WorkingDirectory = workingDirectory, UseShellExecute = false };
     if (toolDirectory is not null)
@@ -232,7 +250,7 @@ static async Task RunProcessAsync(string program, string workingDirectory, strin
         start.Environment["JazorPnpmStoreDirectory"] = npmStore;
     if (packageCache is not null)
         start.Environment["NUGET_PACKAGES"] = packageCache;
-    if (expectedError is not null)
+    if (captureOutput || expectedError is not null)
     {
         start.RedirectStandardOutput = true;
         start.RedirectStandardError = true;
@@ -240,16 +258,16 @@ static async Task RunProcessAsync(string program, string workingDirectory, strin
     foreach (var argument in arguments)
         start.ArgumentList.Add(argument);
     using var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start {program}.");
-    var output = expectedError is null ? Task.FromResult("") : process.StandardOutput.ReadToEndAsync();
-    var errors = expectedError is null ? Task.FromResult("") : process.StandardError.ReadToEndAsync();
+    var output = start.RedirectStandardOutput ? process.StandardOutput.ReadToEndAsync() : Task.FromResult("");
+    var errors = start.RedirectStandardError ? process.StandardError.ReadToEndAsync() : Task.FromResult("");
     await process.WaitForExitAsync();
+    var diagnostics = await output + await errors;
     if (expectedError is not null)
     {
-        var diagnostics = await output + await errors;
         if (process.ExitCode == 0 || !diagnostics.Contains(expectedError, StringComparison.Ordinal))
             throw new InvalidOperationException($"Expected {expectedError} from {program}.\n{diagnostics}");
-        return;
     }
-    if (process.ExitCode != 0)
-        throw new InvalidOperationException($"{program} {string.Join(' ', arguments)} returned exit code {process.ExitCode}.");
+    else if (process.ExitCode != 0)
+        throw new InvalidOperationException($"{program} {string.Join(' ', arguments)} returned exit code {process.ExitCode}.\n{diagnostics}");
+    return diagnostics;
 }

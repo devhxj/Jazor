@@ -6,11 +6,9 @@
     </PropertyGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Jolt.Compiler.Test" />
+        <InternalsVisibleTo Include="Jolt.Project" />
         <Compile Remove="verify.cs" />
-        <ProjectReference Include="../Jazor.NodeHost/Jazor.NodeHost.csproj" />
-        <ProjectReference Include="../ECMAScript/ECMAScript.csproj" />
-        <Reference Include="Microsoft.CodeAnalysis" HintPath="$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.dll" />
-        <Reference Include="Microsoft.CodeAnalysis.CSharp" HintPath="$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.CSharp.dll" />
+        <ProjectReference Include="../Jazor.Npm/Jazor.Npm.csproj" />
         <EmbeddedResource Include="*.mjs" LogicalName="Jolt.Npm.%(Filename)%(Extension)" />
         <EmbeddedResource Include="tooling/package.json" LogicalName="Jolt.Npm.package.json" />
         <EmbeddedResource Include="tooling/pnpm-lock.yaml" LogicalName="Jolt.Npm.pnpm-lock.yaml" />

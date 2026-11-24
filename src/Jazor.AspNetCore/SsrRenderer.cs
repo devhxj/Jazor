@@ -15,6 +15,7 @@ namespace Jazor.AspNetCore;
 /// </summary>
 internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
 {
+    private static readonly EmbeddedNodeModule RenderModule = new(typeof(SsrRenderer), "ssr.cjs");
     internal static readonly JsonSerializerOptions JsonOptions = new()
     {
         Encoder = JavaScriptEncoder.Default
@@ -317,7 +318,7 @@ internal sealed class SsrRenderer : IJazorSsrRenderer, IAsyncDisposable
                 // Cancellation retires this environment and joins its JS thread
                 // before releasing capacity. Never replay a render whose hooks
                 // may already have produced side effects.
-                var html = await NodeToolchain.RenderAsync(_environment!, _artifacts.RootPath, request, cancellationToken).ConfigureAwait(false);
+                var html = await RenderModule.InvokeAsync(_environment!, _artifacts.RootPath, "render", cancellationToken, request).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 return html;
             }

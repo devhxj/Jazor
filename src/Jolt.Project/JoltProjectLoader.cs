@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using System.Text.Json;
 using Jolt.Compiler;
 using Jolt.Npm;
@@ -6,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Jolt.Project;
 
@@ -34,6 +36,9 @@ public static class JoltProjectLoader
     public static Task<JoltWorkspace> LoadAsync(string projectDirectory,
         IReadOnlyDictionary<string, string>? overlays = null, CancellationToken cancellationToken = default)
         => LoadAsync(projectDirectory, Metadata, overlays, cancellationToken);
+
+    internal static NpmVueMetadataProvider CreateDevMetadataProvider(Action<IReadOnlyDictionary<string, string?>> observe)
+        => new() { ObserveQueryInputs = observe };
 
     internal static async Task<JoltWorkspace> LoadAsync(string projectDirectory, NpmVueMetadataProvider provider,
         IReadOnlyDictionary<string, string>? overlays = null, CancellationToken cancellationToken = default)
@@ -75,7 +80,7 @@ public static class JoltProjectLoader
                 var name = Relative(absolute);
                 if (name.StartsWith("../", StringComparison.Ordinal) || Path.IsPathRooted(name))
                     continue;
-                if (name.EndsWith(".jazor", StringComparison.OrdinalIgnoreCase))
+                if (Path.GetExtension(name) is ".jazor")
                     sources[name] = new(name, content);
                 else if (Path.GetExtension(name) is ".vue" or ".ts" or ".tsx" or ".mts" or ".cts" or ".js" or ".jsx" or ".mjs")
                 {
@@ -88,6 +93,7 @@ public static class JoltProjectLoader
         var manifest = Path.Combine(root, "package.json");
         var packages = new SortedSet<string>(StringComparer.Ordinal);
         var rootNamespace = "App";
+        IReadOnlyList<JoltSource> csharpSources = [];
         bool router = false;
         if (File.Exists(manifest))
         {
@@ -98,6 +104,8 @@ public static class JoltProjectLoader
                 if (options.TryGetProperty("rootNamespace", out var ns))
                     rootNamespace = ns.GetString() ?? rootNamespace;
                 router = options.TryGetProperty("router", out var routing) && routing.ValueKind == JsonValueKind.True;
+                if (options.TryGetProperty("csharpSources", out var configuredSources))
+                    csharpSources = await LoadCSharpSourcesAsync(root, configuredSources, overlays, cancellationToken);
             }
             foreach (var group in new[] { "dependencies", "devDependencies", "peerDependencies", "optionalDependencies" })
                 if (project.TryGetProperty(group, out var deps))
@@ -106,7 +114,8 @@ public static class JoltProjectLoader
         }
 
         return new(sources.Values.ToArray(), new(rootNamespace) {
-            Router = router, NpmProjectionCacheDirectory = JoltNpmBindings.CacheDirectory(root),
+            CSharpSources = csharpSources,
+            Router = router, NpmProjectionCacheDirectory = Path.Combine(root, "obj", "Jolt", "projections"),
         }, [], packages.ToArray(),
             new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal))
         {
@@ -117,10 +126,109 @@ public static class JoltProjectLoader
         string Relative(string path) => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
     }
 
+    private static async Task<JoltSource[]> LoadCSharpSourcesAsync(string root, JsonElement entries,
+        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken)
+    {
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var comparer = StringComparer.FromComparison(comparison);
+        var explicitPaths = new HashSet<string>(comparer);
+        var matcher = new Matcher(comparison);
+        var hasPatterns = false;
+        foreach (var item in entries.EnumerateArray())
+        {
+            var configured = item.GetString()?.Replace('\\', '/');
+            if (string.IsNullOrWhiteSpace(configured) || Path.IsPathRooted(configured) || configured.Contains(':') ||
+                !configured.EndsWith(".cs", StringComparison.Ordinal))
+                throw InvalidSource(configured);
+            if (configured.Contains('*'))
+            {
+                if (configured.Split('/').Contains("..", StringComparer.Ordinal))
+                    throw InvalidSource(configured);
+                matcher.AddInclude(configured);
+                hasPatterns = true;
+                continue;
+            }
+
+            var relative = Relative(Path.GetFullPath(configured, root));
+            if (!IsProjectRelative(relative))
+                throw InvalidSource(configured);
+            explicitPaths.Add(relative);
+        }
+
+        var currentSources = new Dictionary<string, string>(comparer);
+        if (overlays is not null)
+            foreach (var (path, text) in overlays)
+            {
+                var relative = Relative(Path.GetFullPath(path, root));
+                if (IsProjectRelative(relative) && relative.EndsWith(".cs", StringComparison.Ordinal))
+                    currentSources[relative] = text;
+            }
+
+        var candidates = new HashSet<string>(comparer);
+        if (hasPatterns)
+        {
+            foreach (var file in Discover(root, csharp: true))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                candidates.Add(Relative(file));
+            }
+            foreach (var relative in currentSources.Keys)
+                if (IsCSharpDiscoveryPath(root, relative))
+                    candidates.Add(relative);
+        }
+
+        // A literal keeps its missing-file error even when it also matches an include pattern.
+        var paths = new HashSet<string>(explicitPaths, comparer);
+        if (hasPatterns)
+            paths.UnionWith(matcher.Match(root, candidates).Files.Select(file => file.Path));
+        var sources = new List<JoltSource>(paths.Count);
+        foreach (var relative in paths.Order(StringComparer.Ordinal))
+        {
+            var path = Path.GetFullPath(relative, root);
+            try
+            {
+                var content = currentSources.TryGetValue(relative, out var current) ? current :
+                    await File.ReadAllTextAsync(path, cancellationToken);
+                sources.Add(new(path, content));
+            }
+            catch (IOException error) when (!explicitPaths.Contains(relative) && error is FileNotFoundException or DirectoryNotFoundException)
+            {
+                // Glob results can disappear while the editor is reporting a rename.
+            }
+        }
+        return sources.ToArray();
+
+        string Relative(string path) => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
+    }
+
+    private static bool IsProjectRelative(string path) =>
+        path != ".." && !path.StartsWith("../", StringComparison.Ordinal) && !Path.IsPathRooted(path);
+
+    private static InvalidDataException InvalidSource(string? configured) =>
+        new($"Invalid jolt.csharpSources entry '{configured}'. Expected a project-relative .cs file or glob.");
+
+    private static bool IsCSharpDiscoveryPath(string root, string relative)
+    {
+        var parts = relative.Split('/');
+        var path = root;
+        for (var index = 0; index < parts.Length; index++)
+        {
+            var part = parts[index];
+            if (part.StartsWith('.') || (index < parts.Length - 1 && Excluded.Contains(part)))
+                return false;
+            path = Path.Combine(path, part);
+            var attributes = new FileInfo(path).Attributes;
+            if (attributes != (FileAttributes)(-1) &&
+                (attributes & (FileAttributes.Hidden | FileAttributes.ReparsePoint)) != 0)
+                return false;
+        }
+        return true;
+    }
+
     public static Task<JoltWorkspace> LoadNpmAsync(string projectDirectory, JoltWorkspace workspace, CancellationToken cancellationToken)
         => LoadNpmAsync(projectDirectory, workspace, Metadata, cancellationToken);
 
-    private static async Task<JoltWorkspace> LoadNpmAsync(string projectDirectory, JoltWorkspace workspace,
+    internal static async Task<JoltWorkspace> LoadNpmAsync(string projectDirectory, JoltWorkspace workspace,
         NpmVueMetadataProvider provider, CancellationToken cancellationToken)
     {
         var root = Path.GetFullPath(projectDirectory);
@@ -206,25 +314,13 @@ public static class JoltProjectLoader
                     if (!seen.Add(sourceSpan))
                         continue;
                     var moduleNames = namesByModule[import.Module];
-                    var matches = moduleNames[name.ValueText].ToArray();
+                    var matches = NpmExportSelection.FindMembers(moduleNames, name.ValueText);
                     var site = Location.Create(projected.Document.Path, sourceSpan, lines.GetLinePositionSpan(sourceSpan));
-                    if (matches.Length == 1)
-                        requests.Add((import.Module, matches[0], import.ImportPath, site, null));
-                    else if (matches.Length > 1)
+                    if (matches.Count > 1 && matches[0].Suffix is null)
                         diagnostics.Add(Diagnostic.Create(ImportError, site,
-                            $"'{name.ValueText}' matches multiple exports of '{import.Module}': {string.Join(", ", matches)}."));
+                            $"'{name.ValueText}' matches multiple exports of '{import.Module}': {string.Join(", ", matches.Select(match => match.Export))}."));
                     else
-                    {
-                        // A specialized method can be the only reference to its export.
-                        // A matching prefix is only a candidate until its signature confirms the suffix.
-                        for (var cut = 1; cut < name.ValueText.Length; cut++)
-                        {
-                            if (!char.IsUpper(name.ValueText[cut]))
-                                continue;
-                            foreach (var candidate in moduleNames[name.ValueText[..cut]])
-                                requests.Add((import.Module, candidate, import.ImportPath, site, name.ValueText[cut..]));
-                        }
-                    }
+                        requests.AddRange(matches.Select(match => (import.Module, match.Export, import.ImportPath, site, match.Suffix)));
                 }
             }
             // Resolve all selected exports against one snapshot per module. Import
@@ -246,8 +342,7 @@ public static class JoltProjectLoader
                     projections = new([], names.ToDictionary(name => name, _ => ex.Message, StringComparer.Ordinal));
                 }
                 foreach (var value in projections.Values)
-                    if (sitesByExport[(module, value.ExportName)].Any(site => site.Variant is null ||
-                        value.Signatures.Any(signature => signature.ManagedNameSuffix == site.Variant)))
+                    if (sitesByExport[(module, value.ExportName)].Any(site => NpmExportSelection.Matches(value, site.Variant)))
                         values.Add((module, value.ExportName), value);
                 foreach (var (export, error) in projections.Errors)
                     foreach (var request in sitesByExport[(module, export)].Where(site => site.Variant is null))
@@ -269,16 +364,8 @@ public static class JoltProjectLoader
             string message;
             try
             {
-                var matches = new List<string>();
-                foreach (var package in workspace.Packages)
-                {
-                    var ns = NpmNames.NamespaceFor(package);
-                    if (ns == target)
-                        matches.Add(package);
-                    else if (target.StartsWith(ns + ".", StringComparison.Ordinal))
-                        matches.AddRange((await provider.ListSpecifiersAsync(importPath, package, target, cancellationToken))
-                            .Where(spec => NpmNames.NamespaceFor(spec) == target));
-                }
+                var matches = await NpmExportSelection.FindModulesAsync(target, workspace.Packages,
+                    package => provider.ListSpecifiersAsync(importPath, package, target, cancellationToken));
                 if (matches.Count == 1)
                 {
                     var module = matches[0];
@@ -369,17 +456,21 @@ public static class JoltProjectLoader
         return await Metadata.ReadValuesAsync(importPath, match.Key, names, cancellationToken);
     }
 
-    private static IEnumerable<string> Discover(string root)
+    private static IEnumerable<string> Discover(string root, bool csharp = false)
     {
         var directories = new Stack<string>();
         directories.Push(root);
         while (directories.TryPop(out var directory))
         {
-            foreach (var file in Directory.EnumerateFiles(directory))
-                if (Path.GetExtension(file) is ".jazor" or ".vue")
-                    yield return file;
+            foreach (var file in new DirectoryInfo(directory).EnumerateFiles())
+                if (csharp
+                    ? file.Extension == ".cs" && !file.Name.StartsWith('.') &&
+                        (file.Attributes & (FileAttributes.Hidden | FileAttributes.ReparsePoint)) == 0
+                    : file.Extension is ".jazor" or ".vue")
+                    yield return file.FullName;
             foreach (var child in new DirectoryInfo(directory).EnumerateDirectories())
-                if (!child.Name.StartsWith('.') && !Excluded.Contains(child.Name) && !child.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                if (!child.Name.StartsWith('.') && !Excluded.Contains(child.Name) &&
+                    (child.Attributes & (csharp ? FileAttributes.Hidden | FileAttributes.ReparsePoint : FileAttributes.ReparsePoint)) == 0)
                     directories.Push(child.FullName);
         }
     }

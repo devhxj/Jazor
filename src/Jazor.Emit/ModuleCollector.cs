@@ -257,10 +257,8 @@ internal sealed class ModuleCollector(
             .ThenBy(static module => module.Id, StringComparer.Ordinal)
             .ToArray();
 
-        // Every assembly supplied through --assembly-list is an explicit project input. Its
-        // catalog modules must remain available to the same standard JS project graph even
-        // when the host assembly also has an entry module; otherwise referenced component
-        // modules are mistaken for missing library imports.
+        // Start from host and explicit module roots. Copy-local assemblies supply their
+        // dependencies. A host with no module roots exposes the discovered catalog modules.
         var roots = rootModules.Length > 0
             ? rootModules
             : discoveredModules.ToArray();
@@ -345,7 +343,29 @@ internal sealed class ModuleCollector(
             assemblies.Count,
             catalogCount,
             orderedModules,
-            orderedAssets);
+            orderedAssets,
+            ReadSelectedProjectedPackages(assemblies, orderedModules));
+    }
+
+    private static IReadOnlyCollection<ProjectedNpmPackage> ReadSelectedProjectedPackages(
+        IReadOnlyList<Assembly> assemblies, IReadOnlyList<ModuleRecord> modules)
+    {
+        var byPath = assemblies.ToDictionary(assembly => assembly.Location, StringComparer.OrdinalIgnoreCase);
+        var byName = assemblies.ToDictionary(assembly => assembly.GetName().Name!, StringComparer.OrdinalIgnoreCase);
+        var pending = new Queue<Assembly>(modules.Select(module => byPath[module.SourceAssemblyPath]).Distinct());
+        var visited = new HashSet<Assembly>();
+        var packages = new HashSet<ProjectedNpmPackage>();
+        while (pending.TryDequeue(out var assembly))
+        {
+            if (!visited.Add(assembly))
+                continue;
+            packages.UnionWith(CatalogReader.ReadProjectedPackages(assembly));
+            // An ordinary facade assembly can carry the npm identity without owning a catalog.
+            foreach (var reference in assembly.GetReferencedAssemblies())
+                if (byName.TryGetValue(reference.Name!, out var dependency))
+                    pending.Enqueue(dependency);
+        }
+        return packages;
     }
 
     private static bool SamePath(string left, string right)
@@ -412,6 +432,8 @@ internal sealed record ModuleRecord(
     HmrMetadata? Hmr = null,
     IReadOnlyList<string>? Dependencies = null);
 
+internal sealed record ProjectedNpmPackage(string Specifier, string Dependency);
+
 /// <summary>Outcome of catalog collection before files are materialized.</summary>
 internal sealed record CollectResult(
     bool IsSuccess,
@@ -420,14 +442,16 @@ internal sealed record CollectResult(
     int AssemblyCount,
     int CatalogCount,
     IReadOnlyList<ModuleRecord> Modules,
-    IReadOnlyList<AssetEntry> Assets)
+    IReadOnlyList<AssetEntry> Assets,
+    IReadOnlyCollection<ProjectedNpmPackage>? ProjectedPackages = null)
 {
     public static CollectResult Success(
         int assemblyCount,
         int catalogCount,
         IReadOnlyList<ModuleRecord> modules,
-        IReadOnlyList<AssetEntry> assets)
-        => new(true, 0, null, assemblyCount, catalogCount, modules, assets);
+        IReadOnlyList<AssetEntry> assets,
+        IReadOnlyCollection<ProjectedNpmPackage> projectedPackages)
+        => new(true, 0, null, assemblyCount, catalogCount, modules, assets, projectedPackages);
 
     public static CollectResult Fail(int exitCode, string error)
         => new(false, exitCode, error, 0, 0, [], []);

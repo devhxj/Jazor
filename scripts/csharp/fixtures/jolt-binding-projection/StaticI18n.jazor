@@ -1,0 +1,95 @@
+@using I18n = Npm.StaticI18nFixture.Exports
+@using ECMAScript
+@using SpanishTitle = Jolt.Generated.Npm.Exports.SpanishPanelTitle_98FDFB990253
+@using SpanishScore = Jolt.Generated.Npm.Exports.SpanishPanelScore_1A28DA94C57C
+
+<p>@Text()</p>
+
+@code {
+    private Func<string> Text = () => "";
+
+    [Setup]
+    private void Translate()
+    {
+        var composer = I18n.OpenComposer(true);
+        Text = () => composer.TWelcome(new() { Guest = "Ada" }) + " / " + composer.TCheckoutTitle()
+            + " / " + composer.TIndexed("a") + " / " + composer.TValue(0d, false)
+            + " / " + composer.TPlural(0d) + " / " + composer.TPlural(1d) + " / " + composer.TPlural(2d)
+            + " / " + composer.TNamedPlural(new() { Guest = "Ada" }, 0d)
+            + " / " + composer.TNamedPlural(new() { Guest = "Ada" }, 1d)
+            + " / " + composer.TNamedPlural(new() { Guest = "Ada" }, 2d)
+            + " / " + composer.TListPlural("ignored", 0d)
+            + " / " + composer.TListPlural(0d, 1d)
+            + " / " + composer.TListPlural(false, 2d);
+    }
+
+    public static string Missing() =>
+        I18n.OpenComposer(false).Tm("fallback.title").AsString ?? "missing";
+
+    public static string Fallback() =>
+        I18n.OpenComposer(true).Tm("fallback.title").AsString ?? "missing";
+
+    public static bool TypedResources() =>
+        I18n.OpenComposer(true).Messages.Value.En!.Config.Enabled;
+
+    public static string ScalarArguments() =>
+        I18n.OpenComposer(true).TStatus(new() { Count = 0d, Active = false });
+
+    public static string Grammar()
+    {
+        var composer = I18n.OpenComposer(true);
+        return composer.TPlain() + " / " + composer.TEscaped() + " / " +
+            composer.T("widened", new Vue.VueDictionary<string> { ["value"] = "text" });
+    }
+
+    public static string ChineseMessage() =>
+        I18n.OpenComposer(true).T欢迎();
+
+    public static string RawMessages()
+    {
+        var composer = I18n.OpenComposer(true);
+        return composer.Tm("sparse").AsString + " / " + composer.Tm("mixed").AsString + " / " +
+            composer.T("linked") + " / " + composer.Tm("malformed").AsString;
+    }
+
+    public static string Resolve() =>
+        I18n.OpenDynamicComposer().Tm("resolver-key").AsString ?? "missing";
+
+    public static string WriteSpanish()
+    {
+        var composer = I18n.OpenComposer(false);
+        composer.Locale.Value = I18n.StringChoiceOfEnOrEsOrFrOrPt.Es;
+        composer.SetLocaleMessageEs(new() {
+            Panel = new() { Title = SpanishTitle.HolaGuest, Caption = "Reemplazo", Enabled = ECMAScript.False.Value, Score = SpanishScore.Value0 },
+        });
+        composer.MergeLocaleMessageEs(new() { Extra = new() { First = "uno", Second = "dos" } });
+        var replaced = composer.TPanelTitle(new() { Guest = "Ada" });
+        composer.MergeLocaleMessageEs(new() { Panel = new() { Title = SpanishTitle.BuenasGuest } });
+        return replaced + " / " + composer.TPanelTitle(new() { Guest = "Ada" })
+            + " / " + composer.Tm("panel.caption").AsString
+            + " / " + (composer.Tm("panel.enabled").AsBoolean == false ? "false" : "wrong")
+            + " / " + composer.Tm("extra.first").AsString + " / " + composer.Tm("extra.second").AsString;
+    }
+
+    public static Vue.VueDictionary<object?> WriteNullable()
+    {
+        var composer = I18n.OpenComposer(false);
+        composer.Locale.Value = I18n.StringChoiceOfEnOrEsOrFrOrPt.Es;
+        composer.MergeLocaleMessageEs(new() { Nullable = new() { First = "uno", Second = "dos" } });
+        var created = composer.Tm("nullable.first").AsString + " / " + composer.Tm("nullable.second").AsString;
+        composer.MergeLocaleMessageEs(new() { Nullable = null });
+        return new()
+        {
+            ["created"] = created,
+            ["messages"] = composer.Messages.Value.Es,
+        };
+    }
+
+    public static UnknownValue WriteEnglish()
+    {
+        var composer = I18n.OpenComposer(false);
+        composer.Locale.Value = I18n.StringChoiceOfEnOrEsOrFrOrPt.En;
+        composer.MergeLocaleMessageEn(new() { Config = new() { Caption = "Updated" } });
+        return composer.Tm("config");
+    }
+}

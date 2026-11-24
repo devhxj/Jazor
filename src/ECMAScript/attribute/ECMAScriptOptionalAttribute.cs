@@ -1,5 +1,5 @@
 namespace ECMAScript;
 
-/// <summary>Projects an undefined JavaScript property value or method result as C# null.</summary>
-[AttributeUsage(AttributeTargets.Property | AttributeTargets.Method, Inherited = false)]
+/// <summary>Reads JavaScript undefined as C# null, or passes a null argument as JavaScript undefined.</summary>
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter, Inherited = false)]
 public sealed class ECMAScriptOptionalAttribute : Attribute;

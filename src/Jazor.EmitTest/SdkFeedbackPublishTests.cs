@@ -47,6 +47,20 @@ public sealed class SdkFeedbackPublishTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow("<JazorMode>none</JazorMode>")]
+    public async Task Publish_CustomDirectoryWithDefaultOrDisabledModeSkipsEmit(string mode)
+    {
+        using var workspace = new Workspace();
+        var project = workspace.CreateProject("<JazorDir>frontend</JazorDir>" + mode);
+        var result = await RunAsync(workspace.Root, ["publish", project, "-nologo", "-o", "published"]);
+        Assert.AreEqual(0, result.ExitCode, result.Output);
+        Assert.IsTrue(File.Exists(Path.Combine(workspace.Root, "published", "Fixture.dll")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, "frontend")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(workspace.Root, "published", "jazor")));
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task Publish_RuntimeClosureContainsChunksAndSsrExportsAndSupportsSourceMapOptIn(bool includeSourceMaps)

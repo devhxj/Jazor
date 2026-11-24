@@ -1,75 +1,31 @@
 # Jazor.Emit
 
-`Jazor.Emit` 是宿主构建边界的唯一物化器。它不参与 C# 或 Razor 语义 lowering，只读取
-已确定的类库 carrier 和 package metadata，并把选定的资源闭包写入最终 `JazorDir`：
+Jazor.Emit 将 C# 编译器写入程序集的 `Jazor.Generated.ModuleCatalog` 交付给 JavaScript 项目。模块内容、相对路径、依赖和 source map 来自 catalog。运行时源码和静态资源来自显式声明的资源清单。
 
-| carrier | 内容 | 来源 |
-| --- | --- | --- |
-| JS resource library | package metadata + ESM/CSS/worker/static 资源；资源来自 npm、JSR 或明确声明的 embedded carrier | Vue、Vuetify、Pinia、`ECMAScript` 等已有 JavaScript 资源包 |
-| 纯 Jazor library | 程序集内 `Jazor.Generated.ModuleCatalog`（ECMAScriptCode） | `Jazor.Compiler` 从 C# 生成的模块 |
+## 类库与宿主
 
-这两种 carrier 是并列的一等输入。Emit 可以在内存中把它们归一化为资源记录和 package graph
-来做去重、依赖闭包和冲突校验，并生成标准 `jazor/package.json`。源码 carrier 按声明路径写入项目；
-共享 NodeApi 宿主调用固定 pnpm API，恢复 `node_modules` 并生成 `pnpm-lock.yaml`。运行条件与升级步骤见[工具链指南](../../docs/03-guides/toolchain-migration.md)，发布消费者和平台门禁见[当前状态](../../docs/04-roadmap/current-status.md)。
+普通 C# 类库构建时将 ESM 和 source map 放入 DLL 的 `ModuleCatalog`。最终可执行项目或 Web 宿主直接引用 Jazor，由 MSBuild 根据宿主的 `JazorMode` 调用 Emit。以下配置在宿主的默认目录 `jazor/` 写出开发项目。
 
-## 唯一调用边界
-
-MSBuild 只收集：
-
-- 根程序集和引用程序集路径；
-- JS resource 包传递下来的 package metadata locator；
-- `JazorMode`、`JazorDir`、source root、SSR 选项、目标 RID 与 SDK runtime graph。
-
-随后每个构建 profile 只调用一次默认 Emit 入口。Emit 在最终项目目录就地完成：
-
-1. 读取所有 `Jazor.Generated.ModuleCatalog`；
-2. 读取并校验显式 package metadata，收集 npm/JSR identity 与 embedded carrier；
-3. 按模块/package/resource 声明解析依赖闭包、版本、路径和 hash；
-4. 生成模块、source map、资源、标准入口与 package project；增量/诊断状态单独写入 `obj`；
-5. Release 时在进程内调用 Vite build API，使用作者拥有的 Vite 配置和输出布局；SSR 同时构建自足 `ssr/` 运行闭包；
-6. 工具失败时返回原始错误，由下一次构建继续收敛。
-
-单文件使用原子替换；不做整目录 staging 或回滚。项目文件变动可直接被标准开发服务器观察。
-
-## CLI
-
-默认入口同时覆盖 Debug、Release 和可选 SSR：
-
-```text
-dotnet Jazor.Emit.dll \
-  --root <root.dll> \
-  --assembly <reference.dll> \
-  --out <jazor-dir> \
-  --write-manifest <obj>/jazor-manifest.json \
-  --mode debug|release \
-  --source-root <project-root> \
-  --ssr true|false \
-  --library-manifest <package>/manifest.json
+```xml
+<PropertyGroup>
+  <JazorMode>debug</JazorMode>
+</PropertyGroup>
 ```
 
-Windows 使用随包 `Jazor.Emit.<build-host-rid>.exe`（`CETCompat=false`）启动，其他平台使用托管 DLL；MSBuild 自动选择构建机工具，目标 RID 继续单独传给资源解析。`--deno` / `JazorDenoPath` 已移除。可用 `--pnpm-store <目录>` 或 MSBuild `JazorPnpmStoreDirectory` 显式选择共享 store；未设置时使用用户本地应用数据目录中的 Jazor store。
+项目留空或显式设置 `none` 时，MSBuild 跳过 Emit。`JazorDir` 只指定输出位置。`debug` 写出模块、map、资源、标准入口及 `package.json`，并在进程内恢复依赖。`release` 还调用 Vite 生成生产资源。启用 Emit 的宿主在发布时生成生产输出。
 
-`--assembly` 和 `--library-manifest` 可以重复。路径、版本、资源类型和依赖由 package metadata
-显式声明；Emit 使用 metadata 指向的 carrier 和 package identity 建立 graph，并保持
-相对模块、CSS、worker、static 和 license 资源的 owner 关系。第三方运行时代码保持在恢复的
-`node_modules`，embedded carrier 的选中文件进入项目源码目录。
+## 直接调用与 Jolt 构建
 
-`toolchain` 和 `manifest materialize` 不再是构建入口。新项目初始化 Vite 配置；已有项目的
-scripts、devDependencies 和构建配置保留。内嵌构建支持 `vite build` 和 `vite build --config ssr.vite.config.js`，其他 shell script 返回明确迁移诊断；将构建定制放入 Vite 配置，不会静默忽略自定义命令。
-NetPack 已从默认实现移除。Emit 不生成运行时 import map 或私有包投影。
+直接调用 Emit CLI 时，省略 `--mode` 默认执行开发构建。`debug` 和 `development` 选择开发构建，`release` 和 `production` 选择生产构建。用 `--root`、`--out` 和 `--write-manifest` 分别指定根程序集、前端输出目录和增量状态文件。
 
-## 输出
+用 `--assembly` 指定可供解析依赖的程序集，`--module-assembly` 可添加额外的模块根。`--source-root` 用于定位 catalog 引用的本地资源。`--write-manifest` 指向生成目录以外的构建状态文件。内容不变的模块和 map 保留时间戳。
 
-Debug 输出生成模块、source map、标准 `package.json`、恢复后的 `node_modules` 与 `pnpm-lock.yaml`；Emit
-增量/诊断 manifest 写入 `obj`，不属于运行项目；显式
-`embedded-mjs` carrier 按声明写入 `clr/` 等源码目录。Release 在同一项目运行生产构建，默认 Vite 输出
-`dist/`；启用 `--ssr` 时增加开发用 `ssr-entry.js` 和 `hydration.js`，Release 另构建 `ssr/ssr-entry.js`、本地 chunks 与 `ssr/package.json`。Production 通过 NodeApi 导入该 bundle，无需恢复根 lock 或 `node_modules`；Development 优先当前源码图。输出
-文件属于宿主 profile，上游 npm/JSR package 的 exports、sideEffects 和依赖关系保持在共享图中。
+`--library-manifest` 提供运行时资源声明，`--browser-entry` 指定浏览器入口，`--ssr true` 启用服务端渲染。Windows 上 MSBuild 按构建机 RID 选择 `CETCompat=false` 的 Emit apphost。[工具链指南](../../docs/03-guides/toolchain-migration.md) · [宿主项目配置](../../docs/03-guides/installation-and-configuration.md)
 
-Folder Publish 只复制 `dist/**` 和启用 SSR 时的 `ssr/**`，默认排除 source map；需要发布 map 时设置 `JazorPublishSourceMaps=true`。源码、标准项目和恢复后的依赖继续保留在本地 `JazorDir`。
+Jolt 应用使用 `jolt bundle <project>` 从自己的入口、锁文件和 Vite 配置打包。引用 `ECMAScript.Vue` 的 C# 项目由该包向编译器传递适合 `reactive` 的字段存储策略。
 
 ## 验证
 
-```text
+```sh
 dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj --no-restore
 ```

@@ -33,7 +33,7 @@ Jolt 从 npm 包的公开 TypeScript 声明绑定组件参数、事件和插槽�
 
 映射算法统一使用公开声明、类型参数的绑定作用域和输入输出方向，规则覆盖组件、编辑器和普通类库。设计与实施批次见 [npm 类型投影与值传递规范](./npm-projection-rules.md)。
 
-推导一个导出时，先由 TypeScript checker 确定声明身份、泛型实参和每个值的流向。函数实参由 C# 传给 npm，返回值由 npm 交给 C#，回调的形参和返回值再次交换方向。可写属性和 ref 同时涉及读和写。投影器据此选择已有宿主类型、可构造的输入记录、只读结果、闭合 union 或重载。Roslyn 检查具体调用，Jazor 根据绑定的符号发射 ESM。[声明推导](../../src/Jolt.Npm/metadata.mjs) · [C# 投影](../../src/Jolt.Compiler/JoltNpmValueProjection.cs) · [编译器语义](../../src/Jazor.Compiler/ImplementationPrinciples.md)
+推导一个导出时，先由 TypeScript checker 确定声明身份、泛型实参和每个值的流向。函数实参由 C# 传给 npm，返回值由 npm 交给 C#，回调的形参和返回值再次交换方向。可写属性和 ref 同时涉及读和写。投影器据此选择已有宿主类型、可构造的输入记录、只读结果、闭合 union 或重载。Roslyn 检查具体调用，Jazor 根据绑定的符号发射 ESM。[声明推导](../../src/Jazor.Npm/metadata.mjs) · [C# 投影](../../src/Jazor.Npm/NpmValueProjection.cs) · [编译器语义](../../src/Jazor.Compiler/ImplementationPrinciples.md)
 
 | 作者需要传递的值 | 投影和发射规则 |
 | --- | --- |
@@ -50,6 +50,8 @@ Jolt 从 npm 包的公开 TypeScript 声明绑定组件参数、事件和插槽�
 
 ## 用现有绑定检验自动投影
 
+Jero 的实际消费调用决定优先验证哪些声明形状。现有七个应用级绑定用于回归。每个缺口先核对锁定版本的声明，再用改名同构夹具检验类型推导能否复用。凡涉及 Vue ref、DOM 或插件注册等宿主语义，须从声明身份和实际协议证明其行为。
+
 手写绑定提供需要支持的业务用法，上游声明决定当前版本的参数、返回类型和可写性。VueUse 的 `isClient` 在上游是布尔常量，C# 直接读取 `VueUse.IsClient`。改变旧名称、签名或类型身份时，验收使用新的作者写法。
 
 检验一项能力时分别记录以下结果。
@@ -58,6 +60,6 @@ Jolt 从 npm 包的公开 TypeScript 声明绑定组件参数、事件和插槽�
 2. 常用 C# 调用能否通过 Roslyn，能写入什么值，返回值保留了哪些可继续使用的成员。可选参数和泛型重载应逐个调用形式检验。
 3. 发射的 ESM 是否以正确的实参、接收者和导出名调用锁定版本的包，实际返回值能否继续交给下一个 API 使用。
 
-通用类型规则属于 Jolt 的 npm 元数据和 C# 投影层。浏览器对象、JavaScript 日期和 Vue 响应式值复用已有宿主类型。组件挂载、请求级状态、CSS 和 worker 入口由应用或专门的集成负责。普通 C# 类库通过 `jolt bindings` 将同一份声明写入项目，公开成员携带 ESM 入口与导出名。第二个项目引用编译后的类型即可产生对应的 JavaScript 导入。[跨程序集运行验证](../../scripts/csharp/verify-jolt-public-projection.cs)
+通用类型规则属于 Jazor 的 npm 元数据和 C# 投影层。浏览器对象、JavaScript 日期和 Vue 响应式值复用已有宿主类型。组件挂载、请求级状态、CSS 和 worker 入口由应用或专门的集成负责。普通 C# 类库在构建时根据 `using Npm…` 取得声明，公开成员携带 ESM 入口与导出名。第二个项目引用编译后的类型即可产生对应的 JavaScript 导入。[跨程序集运行验证](../../scripts/csharp/verify-jolt-public-projection.cs)
 
 项目级 API 和示例位于各绑定项目的 README；包选择与配置见 [安装与配置](../03-guides/installation-and-configuration.md)。

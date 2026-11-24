@@ -630,9 +630,9 @@ public static class StringModule
 
 	/// <summary>
 	/// C#: str.ToString()
-	/// JS: str (no-op, string already a string)
+	/// JS: str.toString() preserves receiver evaluation and null receiver failure.
 	/// </summary>
-	[Jazor(Op.Allowed, "override string.ToString()")]
+	[Jazor(Op.Alias, "override string.ToString()", "toString")]
 	public extern static string _3158320a4854cc16(string instance);
 
 	///<summary>Returns this instance of <see cref="T:System.String" />; no actual conversion is performed.</summary>

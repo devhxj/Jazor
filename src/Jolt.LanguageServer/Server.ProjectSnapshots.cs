@@ -19,9 +19,26 @@ public sealed partial class Server
         lock (_projectsLock)
         {
             if (!_projects.TryGetValue(directory, out var project))
+            {
                 _projects[directory] = project = new(directory);
+                var observedProject = project;
+                project.Declarations.Changed = () => OnExternalDeclarationsChanged(observedProject);
+            }
             return project;
         }
+    }
+
+    private void OnExternalDeclarationsChanged(ProjectState project)
+    {
+        lock (_projectsLock)
+        {
+            if (_shutdown || _lifetime.IsCancellationRequested)
+                return;
+            project.Version = null;
+            project.SourceVersion++;
+            project.DependencyVersion++;
+        }
+        _ = ValidateChangesAsync([project], _lifetime);
     }
 
     private ProjectState[] Invalidate(string path, bool fileSystem = false)
@@ -101,6 +118,7 @@ public sealed partial class Server
             if (!hasMetadata)
             {
                 project.NpmKey = null;
+                project.Declarations.Reset();
             }
             else if (project.NpmKey != key || project.Npm is null || VueNeedsAuthorSources(project.Npm) ||
                 project.Npm.Metadata is { IsCompletedSuccessfully: true } failed && failed.Result.Diagnostics.Count > 0 &&
@@ -108,7 +126,7 @@ public sealed partial class Server
             {
                 project.NpmKey = key;
                 var preceding = project.Npm;
-                var work = new NpmWork(workspace.Sources);
+                var work = new NpmWork(workspace.Sources, workspace.Options.CSharpSources);
                 work.Metadata = Task.Run(async () =>
                 {
                     if (preceding is not null)
@@ -116,7 +134,7 @@ public sealed partial class Server
                     lock (_projectsLock)
                         if (project.Npm != work || project.NpmKey != key)
                             throw new OperationCanceledException("A newer npm input superseded this request.");
-                    return await JoltProjectLoader.LoadNpmAsync(project.Directory, workspace, _lifetime);
+                    return await LoadObservedNpmAsync(work);
                 }, _lifetime);
                 project.Npm = work;
             }
@@ -140,7 +158,8 @@ public sealed partial class Server
             if (previous.Metadata.IsCompletedSuccessfully && !previous.Metadata.Result.VueUsesJolt)
                 return false;
             // The local metadata provider compares the actual declarations before invoking TS again.
-            return !workspace.Sources.SequenceEqual(previous.AuthorSources);
+            return !workspace.Sources.SequenceEqual(previous.AuthorSources) ||
+                !workspace.Options.CSharpSources.SequenceEqual(previous.CSharpSources);
         }
 
         ProjectSnapshot Analyze(JoltWorkspace input) =>
@@ -156,7 +175,7 @@ public sealed partial class Server
                 lock (_projectsLock)
                     if (project.SourceVersion != sourceVersion)
                         throw new OperationCanceledException("The project changed while loading npm metadata.");
-                result = await JoltProjectLoader.LoadNpmAsync(project.Directory, workspace, _lifetime);
+                result = await LoadObservedNpmAsync(work);
             }
             return Analyze(workspace with
             {
@@ -173,6 +192,29 @@ public sealed partial class Server
                 VueUsesJolt = result.VueUsesJolt,
             }) with { NpmIdentity = work };
         }
+
+        async Task<JoltWorkspace> LoadObservedNpmAsync(NpmWork work)
+        {
+            await project.MetadataGate.WaitAsync(_lifetime);
+            try
+            {
+                lock (_projectsLock)
+                    if (project.Npm != work || project.NpmKey != key)
+                        throw new OperationCanceledException("A newer npm input superseded this request.");
+                project.Declarations.Begin();
+                var result = await JoltProjectLoader.LoadNpmAsync(project.Directory, workspace, project.MetadataProvider, _lifetime);
+                // Commit only observations from the still-current metadata load.
+                lock (_projectsLock)
+                    if (!_lifetime.IsCancellationRequested && project.Npm == work && project.NpmKey == key &&
+                        project.DependencyVersion == dependencyVersion)
+                        project.Declarations.Complete(result.Diagnostics.Count == 0);
+                return result;
+            }
+            finally
+            {
+                project.MetadataGate.Release();
+            }
+        }
     }
 
     private static bool IsJazor(string path) => path.EndsWith(".jazor", StringComparison.OrdinalIgnoreCase);
@@ -183,9 +225,19 @@ public sealed partial class Server
         return relative != ".." && !relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) && !Path.IsPathRooted(relative);
     }
 
-    private sealed class ProjectState(string directory)
+    private sealed class ProjectState
     {
-        internal string Directory { get; } = directory;
+        internal ProjectState(string directory)
+        {
+            Directory = directory;
+            Declarations = new(directory);
+            MetadataProvider = JoltProjectLoader.CreateDevMetadataProvider(Declarations.Observe);
+        }
+
+        internal string Directory { get; }
+        internal JoltExternalDeclarations Declarations { get; }
+        internal Jolt.Npm.NpmVueMetadataProvider MetadataProvider { get; }
+        internal SemaphoreSlim MetadataGate { get; } = new(1);
         internal int SourceVersion { get; set; }
         internal int DependencyVersion { get; set; }
         internal VersionedProject? Version { get; set; }
@@ -195,9 +247,10 @@ public sealed partial class Server
         internal CancellationTokenSource? Validation { get; set; }
     }
 
-    private sealed class NpmWork(IReadOnlyList<JoltSource> authorSources)
+    private sealed class NpmWork(IReadOnlyList<JoltSource> authorSources, IReadOnlyList<JoltSource> csharpSources)
     {
         internal IReadOnlyList<JoltSource> AuthorSources { get; } = authorSources;
+        internal IReadOnlyList<JoltSource> CSharpSources { get; } = csharpSources;
         internal Task<JoltWorkspace> Metadata { get; set; } = null!;
     }
 

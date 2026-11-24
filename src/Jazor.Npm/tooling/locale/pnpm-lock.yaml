@@ -1,0 +1,38 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@intlify/message-compiler':
+        specifier: 11.4.12
+        version: 11.4.12
+
+packages:
+
+  '@intlify/message-compiler@11.4.12':
+    resolution: {integrity: sha512-kBczk9r44fdBYnkC5tXRWa/UaA+e9NglXE3cX7jPnDd2nHzoFHYrKGfIbn8JFZpMA9omexZZo2WxOpTvlHdjsw==}
+    engines: {node: '>= 22'}
+
+  '@intlify/shared@11.4.12':
+    resolution: {integrity: sha512-ojfehaXMFrGFcSnK3cJPaMxlrSXT8FwZUG9H4i+WKX4OFD4Yl1WKdTmfwoC0REnwIfTrnt1QhRtd8kwi/te6bQ==}
+    engines: {node: '>= 22'}
+
+  source-map-js@1.2.3:
+    resolution: {integrity: sha512-xj+WrAkyv5Qp+t7r9N5HvCBu7g1qOe6CKRNpq22X1GGcPEQADFU54v5qsPVs3/vrUFQ7XivFrcAVKA2stI0kWA==}
+    engines: {node: '>=0.10.0'}
+
+snapshots:
+
+  '@intlify/message-compiler@11.4.12':
+    dependencies:
+      '@intlify/shared': 11.4.12
+      source-map-js: 1.2.3
+
+  '@intlify/shared@11.4.12': {}
+
+  source-map-js@1.2.3: {}

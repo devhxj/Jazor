@@ -1837,7 +1837,7 @@ public sealed class CompilerLoweringCoverageRegressionTests
                 autoBackingField,
                 "fallback"));
         Assert.AreEqual(
-            "$jazor$private$explicitFallback",
+            "$jazor$private$explicitFallback$" + Jazor.Common.Format.HashName(explicitField.ContainingType.ToDisplayString(Jazor.Common.Format.NameFormat)).TrimStart('_'),
             RuntimeClassPrivateStorageNames.GetFieldStorageName(
                 RuntimeClassPrivateStorage.ProxySafeMangledProperties,
                 explicitField,

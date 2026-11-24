@@ -13,6 +13,31 @@ namespace Jazor.CompilerTest;
 public sealed class SourceTypeCompilationTests
 {
     [TestMethod]
+    public async Task Convert_StringToStringUsesNativeMemberAndEvaluatesReceiverOnce()
+    {
+        var script = await Convert("""
+            public static class TestModule
+            {
+                public static int Run()
+                {
+                    int calls = 0;
+                    string Next()
+                    {
+                        calls++;
+                        return "value";
+                    }
+
+                    var converted = Next().ToString();
+                    return converted == "value" ? calls : -1;
+                }
+            }
+            """);
+
+        StringAssert.Contains(script, ".toString()");
+        await AssertRun(script, 1);
+    }
+
+    [TestMethod]
     public async Task Convert_UndefinedArgumentPreservesLaterArgument()
     {
         var script = await Convert("""
@@ -94,11 +119,30 @@ public sealed class SourceTypeCompilationTests
     [DataRow("row => row.Nested.Dot", "segments must be nonempty")]
     [DataRow("row => row.Nested.Brackets", "segments must be nonempty")]
     [DataRow("row => row.Nested.ClosingBracket", "segments must be nonempty")]
+    [DataRow("row => row.Items[0].Alias", "\"items[0].wire\"")]
+    [DataRow("row => row.Items[First + 1].Leaves[2].Name", "\"items[1].leaves[2].Name\"")]
+    [DataRow("row => row.Items[First + 1].Items[2].Alias", "array type already traversed")]
+    [DataRow("row => row.Items[0].Items[1].Alias", "array type already traversed", true, false)]
+    [DataRow("row => row.Branches[0].Next[1].Label", "array type already traversed", true, false)]
+    [DataRow("row => row.Branches[0].Next[1]", "array type already traversed", true, false)]
+    [DataRow("row => row.Branches[0].Next", "\"Branches[0].children\"", true, false)]
+    [DataRow("row => row.DerivedBranches[0].Next[1].Label", "array type already traversed", true, false)]
+    [DataRow("row => row.WritableBranches[0].Next[1].Label", "\"WritableBranches[0].children[1].Label\"", true, false)]
+    [DataRow("row => row.Items[0]", "\"items[0]\"")]
+    [DataRow("row => row.Items[-1].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[uint.MaxValue].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[other.Position].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[^1].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Grid[0, 0].Alias", "requires a nonnegative integral constant")]
+    [DataRow("row => row.Items[0].Alias", "operation does not support indexed paths", false)]
+    [DataRow("row => row[0].Alias", "requires a lambda")]
+    [DataRow("row => row.Items[0].Dot", "segments must be nonempty")]
     [DataRow("row => row.Calculated", "requires a lambda")]
     [DataRow("row => other.Alias", "requires a lambda")]
     [DataRow("Selector", "requires a lambda")]
     [DataRow("row => { var selected = row.Alias; return selected; }", "requires a lambda")]
-    public async Task Convert_FormFieldSelector_EncodesLiteralAndNestedPaths(string selector, string expected)
+    public async Task Convert_FormFieldSelector_EncodesLiteralAndNestedPaths(
+        string selector, string expected, bool arrayIndices = true, bool veeValidatePath = true)
     {
         var source = $$"""
             using System;
@@ -110,11 +154,30 @@ public sealed class SourceTypeCompilationTests
             {
                 [ECMAScriptInline("__arg2")]
                 public static extern string Path<T, TValue>(
-                    T source, [ECMAScriptPropertyPath(VeeValidatePath = true)] Func<T, TValue> key);
+                    T source, [ECMAScriptPropertyPath(VeeValidatePath = {{(veeValidatePath ? "true" : "false")}},
+                        ArrayIndices = {{(arrayIndices ? "true" : "false")}})] Func<T, TValue> key);
             }
 
             public static class TestModule
             {
+                public sealed record Leaf(string Name);
+                public sealed record Branch(
+                    [property: Description("@#children")] Stem[] Next, string Label);
+                public sealed record Stem(
+                    [property: Description("@#children")] Branch[] Children, string Label);
+                public record Labeled(string Label) : Vue.VueProps;
+                public sealed record DerivedBranch(
+                    string Label, [property: Description("@#children")] DerivedStem[] Next) : Labeled(Label);
+                public sealed record DerivedStem(
+                    string Label, [property: Description("@#children")] DerivedBranch[] Children) : Labeled(Label);
+                public sealed record WritableBranch(string Label) : Vue.VueProps
+                {
+                    [Description("@#children")] public ReadOnlyStem[] Next { get; set; } = [];
+                }
+                public sealed record ReadOnlyStem(string Label) : Vue.VueProps
+                {
+                    [Description("@#children")] public WritableBranch[] Children { get; } = [];
+                }
                 public sealed record Data(
                     [property: Description("@#nested")] Data Nested,
                     [property: Description("@#wire")] string Alias,
@@ -126,11 +189,20 @@ public sealed class SourceTypeCompilationTests
                     [property: Description("@#a.b]")] string DotClosingBracket,
                     [property: Description("@#a.b\nc")] string DotNewline,
                     [property: Description("@#item]")] string ClosingBracket,
-                    [property: Description("@#")] string Fallback)
+                    [property: Description("@#")] string Fallback,
+                    [property: Description("@#items")] Data[] Items,
+                    [property: Description("@#leaves")] Leaf[] Leaves,
+                    Branch[] Branches,
+                    DerivedBranch[] DerivedBranches,
+                    WritableBranch[] WritableBranches,
+                    Data[,] Grid,
+                    int Position)
                 {
                     public string Calculated => Alias;
+                    public Data this[int index] => Items[index];
                 }
 
+                private const int First = 0;
                 private static string Selector(Data row) => row.Alias;
                 public static string Run(Data row, Data other) => Host.Path(row, {{selector}});
             }
@@ -149,10 +221,13 @@ public sealed class SourceTypeCompilationTests
 
     [TestMethod]
     [DataRow("Plain", null)]
+    [DataRow("WithVueProps", null)]
+    [DataRow("WithCustomVueProps", "Value")]
     [DataRow("WithField", "Value.Number")]
     [DataRow("WithComputed", "Value.Number")]
     [DataRow("WithRef", "Value.Number")]
-    [DataRow("WithOptional", "Value.Number")]
+    [DataRow("WithOptional", null)]
+    [DataRow("WithInvalidOptional", "Value.Number")]
     [DataRow("WithRequired", "Value.Number")]
     [DataRow("WithProxyKey", "Value.Number")]
     [DataRow("WithProto", "Value.Number")]
@@ -161,7 +236,18 @@ public sealed class SourceTypeCompilationTests
     [DataRow("WithReactive", "Value.Number")]
     [DataRow("WithReadonly", "Value.Number")]
     [DataRow("WithSkip", "Value.Number")]
-    [DataRow("WithNullableNested", "Value.Nested")]
+    [DataRow("WithNullableNested", null)]
+    [DataRow("WithRef[]", "Value[].Number")]
+    [DataRow("Plain[][]", null)]
+    [DataRow("WithOptional[]", null)]
+    [DataRow("WithShallowRef", "Value.Ref")]
+    [DataRow("Vue.IVueRef<double>[]", null)]
+    [DataRow("Vue.VueReadonlyOptionalRef<double>[]", null)]
+    [DataRow("Plain?", null)]
+    [DataRow("Plain[]?", null)]
+    [DataRow("Vue.VueShallowRef<WithRef>[][]", null)]
+    [DataRow("RefLike[]", "Value[]")]
+    [DataRow("Plain[,]", "Value")]
     [DataRow("Recursive", "Value.Next")]
     [DataRow("OpenRecord", "Value")]
     [DataRow("Generic<double>", "Value")]
@@ -187,6 +273,9 @@ public sealed class SourceTypeCompilationTests
             public static class TestModule
             {
                 public sealed record Leaf(string Text, double Number, bool Enabled);
+                public sealed record WithVueProps(Vue.IVueRef<double>[] Values) : Vue.VueProps;
+                public record CustomVueProps : Vue.VueProps;
+                public sealed record WithCustomVueProps(double Value) : CustomVueProps;
                 public sealed record Plain(Leaf First, Leaf Second)
                 {
                     public const string Kind = "plain";
@@ -194,7 +283,10 @@ public sealed class SourceTypeCompilationTests
                 public sealed record WithField { public double Number; }
                 public sealed record WithComputed(double Initial) { public double Number => Initial; }
                 public sealed record WithRef(Vue.IVueRef<double> Number);
+                public sealed record WithShallowRef(Vue.VueShallowRef<WithRef> Ref);
+                public sealed class RefLike { public double Value { get; set; } }
                 public sealed record WithOptional([property: ECMAScriptOptional] double? Number);
+                public sealed record WithInvalidOptional([property: ECMAScriptOptional] double Number);
                 public sealed record WithRequired([property: ECMAScriptRequiredRead] double Number);
                 public sealed record WithProxyKey([property: Description("@#__v_isRef")] bool Number);
                 public sealed record WithProto([property: Description("@#__proto__")] bool Number);
@@ -224,6 +316,53 @@ public sealed class SourceTypeCompilationTests
             var exception = await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source));
             StringAssert.Contains(exception.Message, $"Passive Vue model property '{invalidMember}'");
         }
+    }
+
+    [TestMethod]
+    [DataRow("Payload", "Root", null)]
+    [DataRow("VuePayload", "Root", null)]
+    [DataRow("DerivedVuePayload", "Root", "requires a non-null structural record")]
+    [DataRow("Payload?", "Root", "requires a non-null structural record")]
+    [DataRow("Reserved", "Root", "requires a non-null structural record")]
+    [DataRow("Empty", "Root", "requires a non-null structural record")]
+    [DataRow("IVueRef<double>", "ToRef", null)]
+    [DataRow("VueShallowRef<double>", "ToRef", "but the call expects")]
+    public async Task Convert_VueViewSelectors_ValidateRootAndRefType(string payload, string method, string? error)
+    {
+        var source = $$"""
+            #nullable enable
+            using System;
+            using System.ComponentModel;
+            using ECMAScript;
+            using static ECMAScript.Vue;
+
+            [ECMAScript]
+            public static class Host
+            {
+                [ECMAScriptInline("__arg2")]
+                public static extern string Root<T, TValue>(
+                    T source, [ECMAScriptPropertyPath(true, RequireRecordView = true)] Func<T, TValue> key);
+                [ECMAScriptInline("__arg2")]
+                public static extern string ToRef<T>(
+                    T source, [ECMAScriptPropertyPath(true, IndirectRead = true)] Func<T, IVueRef<double>> key);
+            }
+
+            public static class TestModule
+            {
+                public sealed record Payload(IVueRef<double> State);
+                public sealed record VuePayload(IVueRef<double> State) : VueProps;
+                public record IntermediateVuePayload : VueProps;
+                public sealed record DerivedVuePayload(IVueRef<double> State) : IntermediateVuePayload;
+                public sealed record Reserved([property: Description("@#__v_isRef")] bool Marker);
+                public sealed record Empty;
+                public sealed record Data([property: Description("@#payload")] {{payload}} Value);
+                public static string Run(Data row) => Host.{{method}}(row, item => item.Value);
+            }
+            """;
+        if (error is null)
+            StringAssert.Contains(await Convert(source), "\"payload\"");
+        else
+            StringAssert.Contains((await Assert.ThrowsAsync<OperationTransformationException>(() => Convert(source))).Message, error);
     }
 
     [TestMethod]
@@ -836,6 +975,55 @@ public sealed class SourceTypeCompilationTests
         Assert.AreEqual(2, script.Split("$callback($value ?? null) ?? void 0").Length - 1, script);
         Assert.AreEqual(1, script.Split("supply()").Length - 1, script);
         StringAssert.Contains(script, ".bind(store)");
+    }
+
+    [TestMethod]
+    public async Task Convert_RestCallbackCapturesDelegateAndNormalizesArguments()
+    {
+        var script = await Convert("""
+            using ECMAScript;
+            using System;
+            [ECMAScript]
+            public class Host
+            {
+                [ECMAScriptName("register")]
+                public extern int Register([ECMAScriptRestCallback] Func<string, UnknownValue?[], int> callback);
+            }
+            public static class TestModule
+            {
+                public static int Direct(Host host, Func<Func<string, UnknownValue?[], int>> supply) =>
+                    host.Register(supply());
+                public static Func<Func<string, UnknownValue?[], int>, int> Capture(Host host) => host.Register;
+            }
+            """);
+
+        Assert.AreEqual(2, script.Split("...$args").Length - 1, script);
+        Assert.AreEqual(2, script.Split("$args.map(").Length - 1, script);
+        Assert.AreEqual(1, script.Split("supply()").Length - 1, script);
+        StringAssert.Contains(script, ".bind(host)");
+
+        await AssertRun(script + """
+
+            export function Run() {
+              let supplyCalls = 0;
+              const marker = {};
+              const host = {
+                register(callback) {
+                  if (this !== host) throw new Error('lost host receiver');
+                  return callback('empty') + callback('many', undefined, null, 0, false, marker);
+                }
+              };
+              const callback = (name, args) => {
+                if (name === 'empty' && args.length === 0) return 1;
+                if (name === 'many' && args.length === 5 && args[0] === null && args[1] === null &&
+                    args[2] === 0 && args[3] === false && args[4] === marker) return 2;
+                throw new Error('unexpected callback arguments');
+              };
+              const direct = Direct(host, () => { supplyCalls++; return callback; });
+              const forwarded = Capture(host)(callback);
+              return direct + forwarded + supplyCalls;
+            }
+            """, 7);
     }
 
     [TestMethod]

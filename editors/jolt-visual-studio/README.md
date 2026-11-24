@@ -2,10 +2,12 @@
 
 This VSIX registers `.jazor` in Visual Studio 2026 (18.12 through 18.x) on Windows x64. TextMate highlights markup and directives. The Jolt language service adds Roslyn symbol coloring and distinguishes resolved component tags and props from HTML. Completion uses C# symbol kinds and descriptions, lists component parameter types, and puts required parameters first.
 
-Install the CLI and close Visual Studio before opening `Jolt.VisualStudio.vsix`. Download the VSIX from the matching GitHub release. [Jolt release](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)
+Install or update the existing `Jolt.VisualStudio.vsix` with Visual Studio closed. The migration candidate includes a C# editor component in this same installer. In an ordinary C# project that references the candidate Jazor NuGet package, F12 on a projected npm call opens the generated C# method. The navigation action in Quick Info opens the original TypeScript declaration at its line and column. These operations use the C# workspace and the project's Jazor projection.
+
+For `.jazor` authoring, install the matching Jolt CLI as well. The released 2.6.0 tools are available from the release page. [Jolt release](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)
 
 ```powershell
-dotnet tool install --global Jazor.Jolt --version 2.5.0
+dotnet tool install --global Jazor.Jolt --version 2.6.0
 ```
 
 Use **File > Open > Folder** to open a Jolt project, then open a `.jazor` document. In Jolt Counter, try completion inside a C# expression, use **Go To Definition** on `CollapsibleRoot`, and edit a member name without saving to verify diagnostics. [Jolt Counter](../../samples/Jolt.Counter)

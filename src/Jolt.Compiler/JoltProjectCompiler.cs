@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jazor.Compiler;
 using Jolt.Syntax;
 using Jolt.Npm;
@@ -101,7 +102,7 @@ public static class JoltProjectCompiler
     }
 
     private static (List<BoundDocument> Documents, List<Diagnostic> Diagnostics, JoltLocalComponent[] LocalComponents,
-        JoltNpmValueLowering? NpmValues, string? RouterModule) Build(
+        NpmValueLowering? NpmValues, string? RouterModule) Build(
         IEnumerable<JoltSource> sources, JoltCompileOptions options, CancellationToken cancellationToken)
     {
         var diagnostics = new List<Diagnostic>();
@@ -161,10 +162,12 @@ public static class JoltProjectCompiler
             .Where(import => import.IsNpmValue).Select(import => import.NpmNamespace!).Distinct(StringComparer.Ordinal).ToArray();
         var valueProjection = valueNamespaces.Length != 0 || options.NpmValues.Count != 0
             ? options.NpmProjectionCacheDirectory is { } cache && options.NpmValues.Count != 0
-                ? JoltNpmProjectionCache.LoadComponent(cache, valueNamespaces, options.NpmValues, ParseOptions, cancellationToken)
-                : new JoltNpmValueProjection(valueNamespaces, options.NpmValues, ParseOptions)
+                ? NpmProjectionCache.LoadComponent(cache, valueNamespaces, options.NpmValues, ParseOptions, cancellationToken)
+                : new NpmValueProjection(valueNamespaces, options.NpmValues, ParseOptions)
             : null;
         var sharedTrees = new List<SyntaxTree> { Authoring };
+        sharedTrees.AddRange(options.CSharpSources.Select(source => CSharpSyntaxTree.ParseText(
+            source.Content, ParseOptions, source.Path, cancellationToken: cancellationToken)));
         if (valueProjection is not null)
             sharedTrees.Add(valueProjection.Tree);
         if (options.VueComponents.Count != 0)
@@ -282,6 +285,7 @@ public static class JoltProjectCompiler
                 }
             }
             projection.CheckLiterals(model);
+            projection.CheckRecordArrays(model);
             projection.CheckBindings(model);
             projection.CheckSlotOutlets(model);
             var module = compilation.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}")!;

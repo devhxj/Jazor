@@ -1654,7 +1654,7 @@ public partial class SemanticWalker
 				var invocationOp = (IInvocationOperation)initializer;
 				if (TryBuildObjectLiteralAddProperty(invocationOp, argument, out var addProperty))
 				{
-					if (expandRecordMembers &&
+					if (expandRecordMembers && !PropertyPathSelector.IsPathParameter(invocationOp.Arguments[0].Parameter!) &&
 						ShouldOmitStaticNullObjectLiteralMember(
 							invocationOp.Arguments[1].Value,
 							null,
@@ -1734,8 +1734,17 @@ public partial class SemanticWalker
 		if (!IsObjectLiteralAddInvocation(invocation))
 			return false;
 
-		var keyType = invocation.Arguments[0].Parameter!.Type;
-		if (!TryTranslateObjectLiteralPropertyKey(invocation.Arguments[0].Value, keyType, argument, out var key, out var computed))
+		var keyArgument = invocation.Arguments[0];
+		var selector = PropertyPathSelector.IsPathParameter(keyArgument.Parameter!);
+		Expression key;
+		bool computed;
+		if (selector)
+		{
+			key = LowerBoundArgument(invocation, keyArgument, argument).Value;
+			// A computed key keeps even "__proto__" an own data property.
+			computed = true;
+		}
+		else if (!TryTranslateObjectLiteralPropertyKey(keyArgument.Value, keyArgument.Parameter!.Type, argument, out key, out computed))
 		{
 			RejectUnsupportedDynamicObjectLiteralKey(
 				invocation.Arguments[0].Value,
@@ -1745,6 +1754,7 @@ public partial class SemanticWalker
 		}
 
 		var value = TranslateTupleForTarget(invocation.Arguments[1].Value, invocation.Arguments[1].Parameter!.Type, argument);
+		value = AdaptArgument(invocation.Arguments[1].Parameter!, value);
 		var property = new ObjectProperty(
 			PropertyKind.Init,
 			key: key,
@@ -1775,7 +1785,8 @@ public partial class SemanticWalker
 		}
 
 		var keyType = targetMethod.Parameters[0].Type;
-		if (keyType.SpecialType != SpecialType.System_String &&
+		if (!PropertyPathSelector.IsPathParameter(targetMethod.Parameters[0]) &&
+			keyType.SpecialType != SpecialType.System_String &&
 			!IsObjectLiteralNumericKeyType(keyType) &&
 			!IsObjectLiteralComputedKeyType(keyType))
 		{

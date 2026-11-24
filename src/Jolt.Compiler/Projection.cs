@@ -1,6 +1,9 @@
+using Jazor.Npm;
 using System.Globalization;
 using System.Text;
 using Jolt.Syntax;
+using Jazor.Common;
+using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -37,9 +40,10 @@ internal sealed partial class Projection(JoltDocument document, string name, str
     private readonly List<string> _methods = [];
     private readonly List<string> _scopes = [];
     internal Dictionary<(string Scope, string Member), (string Path, TextSpan Span)> SlotMemberOrigins { get; } = [];
-    internal Dictionary<(string Scope, string Member), Jolt.Npm.NpmDefinition> ExternalSlotMemberOrigins { get; } = [];
+    internal Dictionary<(string Scope, string Member), NpmDefinition> ExternalSlotMemberOrigins { get; } = [];
     private readonly List<(TextSpan Generated, TextSpan Source)> _anchors = [];
     private readonly List<(TextSpan Generated, JoltExpression Source, ComponentProperty Property)> _literalChecks = [];
+    private readonly List<(TextSpan Generated, JoltExpression Source, ComponentProperty Property)> _recordArrayChecks = [];
     private readonly List<(TextSpan Generated, (int Source, string Path) Site, ComponentContract Component, JoltAttribute?[] Explicit)> _typeProbes = [];
     private IReadOnlyList<ComponentContract> _components = [];
     private bool _componentsAvailable;
@@ -61,6 +65,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         ExternalSlotMemberOrigins.Clear();
         _anchors.Clear();
         _literalChecks.Clear();
+        _recordArrayChecks.Clear();
         _bindingChecks.Clear();
         _insideBoundSelect = false;
         _referenceChecks.Clear();
@@ -208,11 +213,87 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         {
             var expression = root.FindNode(check.Generated, getInnermostNodeForTie: true);
             var value = model.GetConstantValue(expression);
+            if (check.Property.InputNullable && value is { HasValue: true, Value: null })
+                continue;
+            var type = model.GetTypeInfo(expression).Type;
+            // A mixed domain restricts only its string branch. The generated
+            // C# parameter still checks conversion for numeric and boolean inputs.
+            if (check.Property.InputDomain is { } domain && domain.Contains('|') &&
+                (type?.SpecialType == SpecialType.System_Boolean && domain.Contains("boolean", StringComparison.Ordinal) ||
+                    domain.Contains("number", StringComparison.Ordinal) && type?.SpecialType is
+                        SpecialType.System_SByte or SpecialType.System_Byte or SpecialType.System_Int16 or
+                        SpecialType.System_UInt16 or SpecialType.System_Int32 or SpecialType.System_UInt32 or
+                        SpecialType.System_Int64 or SpecialType.System_UInt64 or SpecialType.System_Single or
+                        SpecialType.System_Double))
+                continue;
             if (value is { HasValue: true, Value: string literal } &&
                 check.Property.Literals!.Contains(literal, StringComparer.Ordinal))
                 continue;
             Report("JOLT1006", check.Source.CodeSpan, $"Prop '{check.Property.Name}' expects a constant from {string.Join(", ", check.Property.Literals!)}.");
         }
+    }
+
+    internal void CheckRecordArrays(SemanticModel model)
+    {
+        var root = model.SyntaxTree.GetRoot();
+        foreach (var check in _recordArrayChecks)
+        {
+            var expression = root.FindNode(check.Generated, getInnermostNodeForTie: true);
+            var input = model.GetTypeInfo(expression);
+            if (input.Type?.TypeKind == TypeKind.Error)
+                continue;
+            if (input.Type is IArrayTypeSymbol { IsSZArray: true, ElementType: INamedTypeSymbol
+                { IsRecord: true, IsValueType: false, NullableAnnotation: not NullableAnnotation.Annotated } record } &&
+                input.Nullability.FlowState != NullableFlowState.MaybeNull &&
+                check.Property.InputRecordFields!.All(field => MatchesField(record, field.Key, field.Value)))
+                continue;
+            Report("JOLT1014", check.Source.CodeSpan,
+                $"Prop '{check.Property.Name}' expects a non-null array of structural records with the declared Vue fields.");
+        }
+    }
+
+    private static bool MatchesField(INamedTypeSymbol record, string name, string kind)
+    {
+        for (var current = record; current is { IsRecord: true }; current = current.BaseType)
+        foreach (var member in current.GetMembers())
+        {
+            if (!StructuralRecordSupport.IsStructuralRecordMember(member) ||
+                Util.GetConfigOrSymbolName(member) != name)
+                continue;
+            if (member.DeclaredAccessibility != Accessibility.Public)
+                return false;
+            var type = member switch
+            {
+                IPropertySymbol property when property.GetMethod?.DeclaredAccessibility == Accessibility.Public &&
+                    !property.GetAttributes().Any(attribute =>
+                        attribute.AttributeClass?.ToDisplayString() == "ECMAScript.SpreadAttribute") &&
+                    (property.IsRequired || property.DeclaringSyntaxReferences.Any(reference =>
+                        reference.GetSyntax() is ParameterSyntax { Default: null })) => property.Type,
+                IFieldSymbol { IsRequired: true } field => field.Type,
+                _ => null,
+            };
+            // A required field may contain null only when the Vue field admits it.
+            if (kind.EndsWith("?", StringComparison.Ordinal))
+            {
+                kind = kind.Substring(0, kind.Length - 1);
+                if (type is INamedTypeSymbol nullable &&
+                    nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+                    type = nullable.TypeArguments[0];
+                else if (type?.SpecialType == SpecialType.System_String &&
+                    type.NullableAnnotation == NullableAnnotation.Annotated)
+                    return kind == "string";
+            }
+            return kind switch
+            {
+                "string" => type is { SpecialType: SpecialType.System_String, NullableAnnotation: NullableAnnotation.NotAnnotated },
+                "boolean" => type?.SpecialType == SpecialType.System_Boolean,
+                "number" => type?.SpecialType is SpecialType.System_Byte or SpecialType.System_SByte or
+                    SpecialType.System_Int16 or SpecialType.System_UInt16 or SpecialType.System_Int32 or
+                    SpecialType.System_UInt32 or SpecialType.System_Single or SpecialType.System_Double,
+                _ => false,
+            };
+        }
+        return false;
     }
 
     internal IReadOnlyDictionary<(int Source, string Path), ComponentTypeBinding> BindTypeArguments(SemanticModel model)
@@ -587,7 +668,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             var kind = attribute.Kind;
             var eventName = attribute.Target;
             if (kind == JoltAttributeKind.EventModifier && component is not null &&
-                component.Properties.Any(property => property.Name == ComponentContract.EventProperty(attribute.Name[3..])))
+                component.Properties.Any(property => property.Name == ComponentContract.VueEventProperty(attribute.Name[3..])))
             {
                 // A Vue component can declare a colon in its public event name.
                 kind = JoltAttributeKind.Event;
@@ -619,7 +700,8 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             }
 
             var domEvent = kind == JoltAttributeKind.Event;
-            string input = domEvent ? ComponentContract.EventProperty(eventName!) : attribute.Name;
+            string input = !domEvent ? attribute.Name : component is null
+                ? ComponentContract.EventProperty(eventName!) : ComponentContract.VueEventProperty(eventName!);
             var property = component?.Properties.FirstOrDefault(prop => prop.Name == input) ??
                 component?.Properties.FirstOrDefault(prop => string.Equals(prop.Name, input, StringComparison.OrdinalIgnoreCase));
             var name = property?.Name ?? input;
@@ -630,9 +712,20 @@ internal sealed partial class Projection(JoltDocument document, string name, str
                 EmitDomEvent(attribute, name, element);
                 continue;
             }
-            if (component is not null && property is null)
+            // Vue accepts class and style on component VNodes, including components
+            // that consume $attrs themselves. Keep real declared props authoritative.
+            string? vueAttributeType = component is { IsVueBuiltIn: false } && property is null && !domEvent
+                ? name switch
+                {
+                    "class" => "global::ECMAScript.Vue.VueClassValue",
+                    "style" => "global::ECMAScript.Vue.VueStyleValue",
+                    _ => null,
+                }
+                : null;
+            if (component is not null && property is null && vueAttributeType is null)
                 Report("JOLT1004", attribute.NameSpan, $"Component '{component.Name}' has no prop or event '{attribute.Name}'.");
-            if (component?.Npm is { } npm && property is { Type: null })
+            if (component?.Npm is { } npm && property is { Type: null } &&
+                (property.InputRecordFields is null || attribute.Value is not [JoltExpression]))
                 Report("JOLT1014", attribute.NameSpan,
                     $"{npm.DisplayName} member '{property.Name}' has an unsupported type ({property.Unsupported}).");
             if (component is { Npm: null, IsVueBuiltIn: false } && property is not null)
@@ -646,7 +739,19 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             bool multiple = component is null && name.Equals("multiple", StringComparison.OrdinalIgnoreCase) &&
                 form == JoltFormBinding.SelectMultiple;
             string propName = stringValue ? "value" : multiple ? "multiple" : name;
-            Call(new(IntrinsicKind.Prop, span, propName), "object", $"{property?.Type ?? (stringValue ? "string" : "object?")} value");
+            var intrinsic = new Intrinsic(IntrinsicKind.Prop, span, propName);
+            if (property?.InputRecordFields is not null && attribute.Value is [JoltExpression])
+                Call(intrinsic, "object", "TRecord[] value", "<TRecord>");
+            else
+            {
+                var method = Call(intrinsic, "object", $"{property?.Type ?? vueAttributeType ?? (stringValue ? "string" : "object?")} value");
+                if (domEvent && property is { HasEventPayload: true })
+                {
+                    // Vue listeners may ignore all emitted arguments. Prefer the typed handler
+                    // when the author supplies an overloaded method group covering both forms.
+                    _methods.Add($"[global::System.Runtime.CompilerServices.OverloadResolutionPriority(-1)] private static object {method}(global::System.Action value) => throw new global::System.NotImplementedException();\n");
+                }
+            }
             if (multiple)
                 Write("true");
             else
@@ -695,6 +800,8 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         {
             int generatedStart = _code.Length;
             Copy(expression.CodeSpan);
+            if (property?.InputRecordFields is not null)
+                _recordArrayChecks.Add((TextSpan.FromBounds(generatedStart, _code.Length), expression, property));
             if (property?.Literals is { Count: > 0 })
                 _literalChecks.Add((TextSpan.FromBounds(generatedStart, _code.Length), expression, property));
             return;
@@ -817,6 +924,20 @@ internal sealed partial class Projection(JoltDocument document, string name, str
     {
         if (component == VueBuiltIns.Transition && name == "default")
             nodes = TransitionChildren(nodes, span);
+        else
+        {
+            // Single-child consumers inspect the slot array itself. Newline indentation
+            // around its element is formatting, while inline spaces and entities are authored text.
+            var children = nodes as IReadOnlyList<JoltNode> ?? nodes.ToArray();
+            var first = 0;
+            var last = children.Count - 1;
+            while (first <= last && IsSlotIndent(children[first]))
+                first++;
+            while (last >= first && IsSlotIndent(children[last]))
+                last--;
+            if (first == last && children[first] is JoltElement)
+                nodes = [children[first]];
+        }
         var slot = component.Slots.FirstOrDefault(candidate => candidate.Name == name);
         if (slot is null)
             Report("JOLT1007", span, $"Component '{component.Name}' has no slot '{name}'.");
@@ -850,6 +971,10 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         EmitSlotBody(nodes, parameter: parameterNode);
         Write("), ");
     }
+
+    private bool IsSlotIndent(JoltNode node)
+        => node is JoltText text && string.IsNullOrWhiteSpace(text.Text) && text.Text.IndexOfAny(['\r', '\n']) >= 0 &&
+            string.IsNullOrWhiteSpace(Source.ToString(text.Span));
 
     private static string ScopeMember(ComponentContract component, string slot, ComponentProperty member)
     {
@@ -898,14 +1023,15 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         Write(");\n");
     }
 
-    private void Call(Intrinsic intrinsic, string result, string parameters)
+    private string Call(Intrinsic intrinsic, string result, string parameters, string generic = "")
     {
         string name = IntrinsicPrefix + Intrinsics.Count;
         Intrinsics.Add(name, intrinsic);
-        _methods.Add($"private static {result} {name}({parameters}) => throw new global::System.NotImplementedException();\n");
+        _methods.Add($"private static {result} {name}{generic}({parameters}) => throw new global::System.NotImplementedException();\n");
         if (intrinsic.Kind != IntrinsicKind.Array)
             _anchors.Add((new TextSpan(_code.Length, name.Length), intrinsic.Span));
         Write(name + "(");
+        return name;
     }
 
     private void Copy(TextSpan span)

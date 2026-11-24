@@ -2,13 +2,13 @@
 
 > 本页说明 Jazor SDK、ECMAScript 绑定与 ASP.NET Core 宿主的包选择及 MSBuild 配置。Jolt CLI 和编辑器的安装步骤见 [Jolt 作者指南](./jolt-authoring.md)。
 >
-> 说明：ECMAScript 自有 MJS 与 `Jazor.Generated.ModuleCatalog` 提供项目源码，`ECMAScript.*` binding 提供 npm/JSR identity 与标准 ESM specifier。最终宿主在 MSBuild 中调用 `Jazor.Emit`，生成标准 `jazor/` 项目并恢复依赖。
+> Jolt 应用用 Vite 管理前端入口、依赖和生产构建。普通 C# 类库可以通过 Emit 将模块写入该应用的生成目录；使用独立 Emit 宿主时可由宿主生成完整的前端项目。
 >
 > 工具链使用进程内 NodeApi/pnpm/Vite。运行条件与旧项目升级步骤见[工具链指南](./toolchain-migration.md)；历史版本使用对应 tag 的文档。
 
 ## 前置条件
 
-当前正式版本为 **2.5.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.5.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)
+当前正式版本为 **2.6.0**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.6.0 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)
 
 开发新的 Jolt 组件时，直接在项目的 `package.json` 声明应用所需的 npm 包，在 `.jazor` 中导入投影的类型。Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 的手写绑定与 Jazor、Jolt 和 Style 一起发布。旧的七个应用级绑定仍可按 2.3.0 安装。 [投影用法与示例](./jolt-authoring.md#直接调用-npm-函数)
 
@@ -31,13 +31,13 @@ live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browse
 | 使用测试 Pinia 和 action spy | `Jazor`、`ECMAScript.Pinia.Testing` | 在测试项目中按需引用 |
 | 开发 Vue Devtools 插件 | `Jazor`、`ECMAScript.Vue.Devtools` | 在定义插件的项目中按需引用 |
 | 在 `.jazor` 使用 npm 函数或 composable | `Jazor.Jolt` 和项目 npm 依赖 | 可投影的调用范围见[作者指南](./jolt-authoring.md#直接调用-npm-函数) |
-| 在普通 `.cs` 类库使用应用级 npm 库 | 2.3.0 有独立绑定包的库可使用该版本 | `jolt bindings` 可生成公开 C# 声明，编入类库后供其他项目引用。[生成与消费](./jolt-authoring.md#普通-c-类库的公开投影) |
+| 在普通 `.cs` 类库使用应用级 npm 库 | 当前源码或本地候选 Jazor SDK，及项目锁定的 npm 依赖 | 在 VS Code 的 C# 编辑器输入 `using Dates = Npm.DateFns.Exports;` 和 `Dates.` 可补全成员，`dotnet build` 独立生成构建所需声明。[生成与消费](./jolt-authoring.md#普通-c-类库的公开投影) |
 
 核心包示例：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.5.0" />
+  <PackageReference Include="Jazor" Version="2.6.0" />
 </ItemGroup>
 ```
 
@@ -47,22 +47,22 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.5.0" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.5.0" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.5.0" />
+  <PackageReference Include="ECMAScript.Style" Version="2.6.0" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.6.0" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.6.0" />
 </ItemGroup>
 ```
 
 测试项目需要创建测试 Pinia 时，添加同版本的 Pinia Testing。 [测试用例](../../src/ECMAScript.Pinia.Testing.Test/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.5.0" />
+<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.6.0" />
 ```
 
 定义 Vue Devtools 插件的项目添加同版本的 Devtools 绑定。 [插件样例](../../samples/ECMAScript.Vue.Devtools.Plugin/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.5.0" />
+<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.6.0" />
 ```
 
 ## 配置产物输出
@@ -77,7 +77,9 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 路径必须是生成 `ModuleCatalog` 中的模块路径，可以声明多个启动根。省略时沿用原有入口集合；显式选择仅影响浏览器入口，所有作者模块仍被物化并执行语法与 Vite 模块图检查，SSR/hydration 根独立。路由页面可通过字面量 `import()` 按需加载。页面或编辑器若仍被启动模块静态导入，就仍属于首屏闭包。
 
-输出配置放在最终可执行项目或 Web 宿主中。类库通常保留默认的 `JazorMode=none`；源码类库通过 `ModuleCatalog` 或源码 locator 传递模块，binding 通过 metadata 传递 npm/JSR identity 与入口。最终宿主调用 Emit 写出源码、入口和 `package.json`，再通过进程内 pnpm API 恢复 `node_modules` 并生成或验证 `pnpm-lock.yaml`。
+### 独立前端宿主
+
+选择由 Emit 创建前端项目时，在最终可执行项目或 Web 宿主配置 `JazorMode`。其引用的类库可直接通过 DLL 内的 `ModuleCatalog` 传递模块。宿主调用 Emit 写出源码、入口和 `package.json`，再通过进程内 pnpm API 恢复依赖。
 
 多项目和 NuGet 类库遵循“谁使用，谁直接引用”：定义模块的类库直接引用 `Jazor`；最终宿主直接引用并配置 Emit。工具资产在类库包中使用 `PrivateAssets="all"` 隔离。生成模块随 `ModuleCatalog` 传播，binding declaration 随 manifest locator 传播。完整规则见[类库与标准前端项目契约](../02-architecture/library-artifact-contract.md)。
 
@@ -90,8 +92,8 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
-| `JazorMode` | `none` | `none` 不输出；`debug` 生成标准 JS 项目、模块和 source map；`release` 另调用 Vite build API；默认值在 targets 中设置，允许项目体用空值条件设置模式 |
-| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 最终输出目录；相对路径以项目目录解析；保留此目录中的作者 `.cs` 输入，只排除生成资源 |
+| `JazorMode` | `none` | 项目留空时使用默认值，模块随 DLL 交付。最终宿主选 `debug` 生成开发项目，选 `release` 生成生产资源。 |
+| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 指定宿主启用 Emit 后的输出目录。 |
 | `JazorSSR` | `false` | 生成开发 SSR 入口；Release 另构建 `ssr/` 运行闭包 |
 | `JazorPnpmStoreDirectory` | 用户本地 Jazor store | 共享 pnpm store；不要求生产部署恢复依赖 |
 | `JazorPublishSourceMaps` | `false` | 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |

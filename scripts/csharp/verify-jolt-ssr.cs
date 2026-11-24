@@ -35,10 +35,22 @@ try
             performance.mark('jolt-hydration-end');
             """, StringComparison.Ordinal), stop);
     }
+    await File.WriteAllTextAsync(Path.Combine(work.FullName, "frontend", "vite.config.js"), """
+        import { appendFileSync } from 'node:fs';
+        import { defineConfig } from 'vite';
+        export default defineConfig({
+            plugins: [{ name: 'fixture-build-count', buildStart() {
+                appendFileSync(new URL('../vite-builds.log', import.meta.url), this.environment.name + '\n');
+            } }]
+        });
+        """, stop);
     await Run(cli, "bundle", "frontend", "--ssr", "entry-server.ts");
 
     var published = Path.Combine(work.FullName, "published");
     await Run("dotnet", "publish", "Jolt.Mixed.Ssr.csproj", "--configuration", benchmark ? "Release" : "Debug", "--output", published);
+    var builds = await File.ReadAllLinesAsync(Path.Combine(work.FullName, "vite-builds.log"), stop);
+    Require(builds.SequenceEqual(["client", "ssr"]), $"Expected one client and one server build. Observed: {string.Join(", ", builds)}.");
+    Console.WriteLine("Vite built the SSR client and server once each across Jolt bundle and .NET publish.");
     var host = Path.Combine(published, OperatingSystem.IsWindows() ? "Jolt.Mixed.Ssr.exe" : "Jolt.Mixed.Ssr");
     var origin = new TaskCompletionSource<Uri>(TaskCreationOptions.RunContinuationsAsynchronously);
     using var server = Start(host, ["--urls", "http://127.0.0.1:0"]);

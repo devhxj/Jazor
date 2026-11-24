@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="tooling/ssr.cjs" LogicalName="Jazor.AspNetCore.ssr.cjs" />
   </ItemGroup>
 
   <ItemGroup>

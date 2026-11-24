@@ -1,0 +1,40 @@
+@using Fixture = Npm.RefFixture.Exports
+
+<p>Concrete Vue refs</p>
+
+@code {
+    public static bool WriteConcrete()
+    {
+        var fixture = Fixture.CreateConcrete();
+        var deep = fixture.Deep;
+        var shallow = fixture.Shallow;
+        var reactive = fixture.Reactive;
+        deep.Value = deep.Value;
+        shallow.Value = shallow.Value;
+        deep.Value.Enabled = false;
+        deep.Value.Nested.Count = 0;
+        deep.Value.Items[0].Value = 0;
+        shallow.Value.Enabled.Value = false;
+        shallow.Value.Nested.Count.Value = 0;
+        shallow.Value.Items[0].Value = 0;
+        reactive.Enabled.Value = false;
+        reactive.Nested.Count.Value = 0;
+        reactive.Items[0].Value = 0;
+        fixture.Check();
+        var original = !deep.Value.Enabled && deep.Value.Nested.Count == 0 && deep.Value.Items[0].Value == 0 &&
+            !shallow.Value.Enabled.Value && shallow.Value.Nested.Count.Value == 0 && shallow.Value.Items[0].Value == 0 &&
+            !reactive.Enabled.Value && reactive.Nested.Count.Value == 0 && reactive.Items[0].Value == 0;
+        var replacement = fixture.Replacement;
+        deep.WriteValue = new() {
+            Enabled = replacement.Enabled,
+            Nested = new() { Count = replacement.Nested.Count },
+            Items = replacement.Items,
+            Immutable = 8,
+        };
+        var replaced = deep.Value.Enabled && deep.Value.Nested.Count == 2 && deep.Value.Items[0].Value == 3;
+        deep.Value.Enabled = false;
+        deep.Value.Nested.Count = 4;
+        fixture.CheckReplacement();
+        return original && replaced && !deep.Value.Enabled && deep.Value.Nested.Count == 4;
+    }
+}

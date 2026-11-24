@@ -158,12 +158,15 @@ static IReadOnlyList<string> GetRequiredPaths(string packageId)
         [
             Path.Combine("build", "Jazor.props"),
             Path.Combine("build", "Jazor.targets"),
+            Path.Combine("build", "Jazor.Npm.targets"),
             Path.Combine("buildTransitive", "Jazor.Resources.targets"),
             Path.Combine("tools", "net11.0", "analyzers", "Jazor.Analyzer.dll"),
             Path.Combine("tools", "net11.0", "analyzers", "Jazor.Compiler.dll"),
             Path.Combine("lib", "net11.0", "ECMAScript.dll"),
             Path.Combine("lib", "net11.0", "Jazor.Compiler.dll"),
             Path.Combine("tools", "net11.0", "Jazor.Emit.dll"),
+            Path.Combine("tools", "net11.0", "Jazor.Npm.dll"),
+            Path.Combine("tools", "net11.0", "editor", "Jazor.Npm.Editor.dll"),
             Path.Combine("tools", "net11.0", "Jazor.Emit.runtimeconfig.json")
         ]).ToArray(),
         "ECMAScript.Vue" => commonPaths.Concat(

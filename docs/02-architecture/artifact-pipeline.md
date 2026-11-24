@@ -2,9 +2,13 @@
 
 > 适用范围：当前编译模块、ECMAScript 源码、npm/JSR 绑定、Emit、进程内 NodeApi、Vite、SSR 与 HMR。运行条件与升级步骤见[工具链指南](../03-guides/toolchain-migration.md)，类库边界见[类库与标准前端项目契约](./library-artifact-contract.md)。
 
-## 一个项目根
+## Jolt 应用的构建入口
 
-最终宿主的前端项目统一位于 `jazor/`：
+Jolt 将 `.jazor` 编译为 Vue 组件模块。`jolt bundle` 使用应用自己的入口、包描述、锁文件和 Vite 配置。普通 C# 类库把模块和 source map 随 DLL 内的 `ModuleCatalog` 交付给最终宿主。[类库契约](./library-artifact-contract.md)
+
+## Emit 管理的前端项目
+
+显式选择 `debug` 或 `release` 时，最终宿主的项目布局如下。
 
 ```text
 ModuleCatalog + ECMAScript 源码 + binding declarations
@@ -60,7 +64,7 @@ NodeApi、LibNode、pnpm 引擎版本集中在 `Directory.Build.props`。当前�
 
 Vite 沿标准 ESM 图解析 package exports、conditions、sideEffects、CSS、worker 与静态资源。共享 helper 和必要副作用保留，未到达的导出与资源由构建器裁剪。
 
-开发服务器由 ASP.NET Core 生命周期拥有，在进程内 NodeApi environment 中启动与关闭。ASP.NET Core 代理 HTTP/WebSocket，Vite 负责模块解析、source map 与 HMR；不要求另开终端执行 dev 命令。
+独立模块宿主可以用 ASP.NET Core 的既有开发服务在进程内启动和关闭通用 Vite。Vue 开发由 `jolt dev` 启动 Vite、Vue 插件和组件监听。ASP.NET Core 可以连接已有的 Jolt，也可以通过项目的本地工具清单启动 Jolt，然后代理同一会话的 HTTP 和 WebSocket。[Vue 宿主示例](../../samples/Jolt.AspNetCore/) · [附接与启动验收](../../scripts/csharp/verify-development-hmr.cs)
 
 ## SSR 环境池
 
@@ -74,7 +78,7 @@ SSR 不再通过 loopback HTTP 或 package task 启动，`TaskName` 设置已移
 
 ## 确定性与交付
 
-`JazorMode=debug` 保留源码与 maps；`release` 从同一项目根生成浏览器运行闭包；`JazorSSR=true` 增加 SSR 输出。最终可执行项目拥有这些配置，类库只传播自己的 carrier。
+普通类库在程序集内交付模块，最终可执行宿主通过 `debug` 或 `release` 配置输出，可选 `JazorSSR=true`。Jolt 调用 Vite 生成 Vue 应用的分发产物，ASP.NET Core 或部署工具负责发布。两类项目共同使用普通模块的目标路径见[职责设定](./jazor-jolt-boundaries.md)。
 
 相同源码、SDK、固定运行时、依赖身份和构建选项应产生稳定路径、入口、声明、lock 与 bundle 元数据。模块按稳定路径与内容去重；外部包版本或资源冲突在恢复前失败。相同外部包可由多个不同绑定声明，但其身份与资源边必须一致。
 

@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using System.Text.RegularExpressions;
 using Jolt.Compiler;
 using Jolt.Npm;
@@ -9,6 +10,43 @@ namespace Jolt.Compiler.Test;
 public sealed class NpmValueTests
 {
     [TestMethod]
+    public void GenerateSource_GenericSparseDictionaryDoesNotUseVue()
+    {
+        var element = new NpmValueType("typeParameter", Name: "T");
+        var read = new NpmValueType("readonlyDictionary", Name: "Lookup", ElementType: element);
+        var write = new NpmValueType("writableDictionary", Name: "Table", ElementType: element);
+        var source = NpmBindings.GenerateSource([], [
+            Export("counter", "read", [new([], read, TypeParameters: ["T"])]),
+            Export("counter", "write", [new([], write, TypeParameters: ["T"])])
+        ]);
+
+        Assert.DoesNotContain("ECMAScript.Vue", source);
+        StringAssert.Contains(source, "class Lookup<@T>");
+        StringAssert.Contains(source, "class Table<@T>");
+        StringAssert.Contains(source, "extern global::ECMAScript.NullableValue<@T>? this[string key]");
+        StringAssert.Contains(source, "Set(string key, @T value)");
+    }
+
+    [TestMethod]
+    public async Task Compile_StringDictionaryUsesStructuralLiteralAndKeepsVueRefProjection()
+    {
+        const string source = """
+            @using Tool = Npm.Counter.Exports
+            <p>@(Tool.Save(new() { ["key"] = "value" }) + Tool.Current().Value)</p>
+            """;
+        var dictionary = new NpmValueType("inputDictionary", ElementType: Text);
+        var result = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], Options(
+            Export("counter", "save", [new([new("values", dictionary, false)], Text)]),
+            Export("counter", "current", [new([], new("ref", ElementType: Text, ReadOnly: true))])));
+
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var script = result.Modules.Single().Content;
+        StringAssert.Contains(script, "key:");
+        StringAssert.Contains(script, ".value");
+        Assert.DoesNotContain("new Map(", script);
+    }
+
+    [TestMethod]
     public void GenerateSource_PreservesRealExportOverVariantFromAnotherSpecifier()
     {
         var factory = Export("sample/feature-api", "createPlugin", [
@@ -17,7 +55,7 @@ public sealed class NpmValueTests
             new([], Text, ManagedNameSuffix: "WithModeFalse"),
         ]);
         var real = Export("sample/feature_api", "createPluginWithModeTrue", [new([], Number)]);
-        var source = JoltNpmBindings.GenerateSource([factory, real]);
+        var source = NpmBindings.GenerateSource([], [factory, real]);
         var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
             .Split(Path.PathSeparator).Select(path => MetadataReference.CreateFromFile(path));
         var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("PublicFacade",
@@ -36,6 +74,29 @@ public sealed class NpmValueTests
 
     private static readonly NpmValueType Text = new("string");
     private static readonly NpmValueType Number = new("number");
+
+    [TestMethod]
+    public void Analyze_PreservesStringEnumLiteralsWithReadableMemberNames()
+    {
+        var greeting = new NpmValueType("stringEnum", Name: "Greeting",
+            StringLiterals: ["Salut {guest}!", "SalutGuest", "Salut? guest", "你好，访客", "!!!"]);
+        var analysis = JoltProjectCompiler.Analyze([new("App.jazor", "<p />")],
+            Options(Export("messages", "greet", [new([], greeting)])));
+        Assert.IsEmpty(analysis.Diagnostics, string.Join(Environment.NewLine, analysis.Diagnostics));
+        var facade = analysis.Documents.Single().SemanticModel.Compilation.GetTypeByMetadataName("Npm.Messages.Exports")!;
+        var method = (IMethodSymbol)facade.GetMembers("Greet").Single();
+        void AssertLiteral(string name, string literal)
+        {
+            var field = (IFieldSymbol)method.ReturnType.GetMembers(name).Single();
+            Assert.AreEqual(literal, field.GetAttributes()
+                .Single(attribute => attribute.AttributeClass?.Name == "ECMAScriptNameAttribute").ConstructorArguments[0].Value);
+        }
+        AssertLiteral("SalutGuest_2", "Salut {guest}!");
+        AssertLiteral("SalutGuest", "SalutGuest");
+        AssertLiteral("SalutGuest_3", "Salut? guest");
+        AssertLiteral("你好访客", "你好，访客");
+        AssertLiteral("Value", "!!!");
+    }
 
     [TestMethod]
     public void Analyze_ReusesOnlyMatchingNumericEnumDomains()

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Reflection;
 using Jazor.Common;
+using Jazor.Npm;
 
 namespace Jazor.Emit;
 
@@ -42,6 +43,12 @@ internal static class CatalogReader
                 .ThenBy(static asset => asset.SourcePath, StringComparer.Ordinal)
                 .ToArray());
     }
+
+    internal static IEnumerable<ProjectedNpmPackage> ReadProjectedPackages(Assembly assembly) =>
+        assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Where(item => item.Key.StartsWith(NpmValueProjection.PackageDependencyMetadataPrefix, StringComparison.Ordinal) &&
+                           !string.IsNullOrWhiteSpace(item.Value))
+            .Select(item => new ProjectedNpmPackage(item.Key[NpmValueProjection.PackageDependencyMetadataPrefix.Length..], item.Value!));
 
     private static IReadOnlyList<ModuleRecord> ReadModules(
         Assembly assembly,

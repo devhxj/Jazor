@@ -6,6 +6,21 @@ namespace Jazor.EmitTest;
 public sealed class EmitOptionsTests
 {
     [TestMethod]
+    [DataRow(null, false)]
+    [DataRow("debug", false)]
+    [DataRow("development", false)]
+    [DataRow("release", true)]
+    [DataRow("production", true)]
+    public void TryParse_SelectsHostMode(string? value, bool production)
+    {
+        string[] mode = value is null ? [] : ["--mode", value];
+        Assert.IsTrue(EmitOptions.TryParse(
+            ["--root", "root.dll", "--out", "out", "--write-manifest", "state.json", .. mode],
+            out var options, out var error), error);
+        Assert.AreEqual(production ? BuildMode.Production : BuildMode.Development, options!.Mode);
+    }
+
+    [TestMethod]
     public void TryParse_BrowserEntries_PreserveRelativeCatalogPaths()
     {
         var listPath = Path.Combine(RepositoryTemp.Root, "browser-entries-" + Guid.NewGuid().ToString("N") + ".txt");

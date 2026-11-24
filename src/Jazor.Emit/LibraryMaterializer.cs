@@ -24,7 +24,8 @@ internal sealed class LibraryMaterializer
         string destinationRoot,
         BuildMode mode,
         IEnumerable<string>? requiredImports = null,
-        IEnumerable<string>? providedModulePaths = null)
+        IEnumerable<string>? providedModulePaths = null,
+        IEnumerable<ProjectedNpmPackage>? projectedPackages = null)
     {
         ArgumentNullException.ThrowIfNull(manifestPaths);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationRoot);
@@ -43,12 +44,15 @@ internal sealed class LibraryMaterializer
 
         var importIndex = CreateImportIndex(manifests);
         var unresolvedExternalPackages = new Dictionary<string, LibraryPackageReference>(StringComparer.Ordinal);
+        var projectedDependencies = (projectedPackages ?? []).ToLookup(package => package.Specifier,
+            package => package.Dependency, StringComparer.Ordinal);
         var selectedImports = SelectImports(
             importIndex,
             mode,
             requiredImports,
             providedModulePaths,
-            unresolvedExternalPackages);
+            unresolvedExternalPackages,
+            projectedDependencies);
         var selectedManifests = ResolveManifestClosure(selectedImports, manifests);
         var providersById = selectedManifests.ToDictionary(static manifest => manifest.LibraryId, StringComparer.Ordinal);
         selectedManifests = OrderByDependencies(selectedManifests, providersById);
@@ -121,6 +125,11 @@ internal sealed class LibraryMaterializer
 
             packageReferences[reference.Name] = reference;
         }
+        foreach (var specifier in selectedImports.Select(selection => selection.Specifier))
+        {
+            if (projectedDependencies.Contains(specifier))
+                RequireCompatibleProjectedVersion(specifier, packageReferences[specifier], projectedDependencies);
+        }
         plan.Commit();
         return new LibraryAssets(
             new Dictionary<string, string>(plan.ImportPaths, StringComparer.Ordinal),
@@ -132,6 +141,17 @@ internal sealed class LibraryMaterializer
             plan.MaterializedPaths.ToArray(),
             selectedManifests.Select(static manifest => manifest.SourcePath).ToArray(),
             packageReferences);
+
+    }
+
+    private static void RequireCompatibleProjectedVersion(string specifier, LibraryPackageReference reference,
+        ILookup<string, string> projectedDependencies)
+    {
+        var dependencies = projectedDependencies[specifier].Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        if (dependencies.Length != 0 && (reference.Source != "npm" || dependencies.Any(dependency => dependency != reference.Version)))
+            throw new LibraryException("JAZOR_LIBRARY_PACKAGE_CONFLICT",
+                $"Projected import '{specifier}' requires npm dependency {string.Join(", ", dependencies)}, " +
+                $"but its manifest supplies {reference.Source} version '{reference.Version}'.");
     }
 
     private static LibraryPackageReference ResolvePackageReference(
@@ -340,7 +360,8 @@ internal sealed class LibraryMaterializer
         BuildMode mode,
         IEnumerable<string>? requiredImports,
         IEnumerable<string>? providedModulePaths,
-        IDictionary<string, LibraryPackageReference>? unresolvedExternalPackages)
+        IDictionary<string, LibraryPackageReference> unresolvedExternalPackages,
+        ILookup<string, string> projectedDependencies)
     {
         var requested = requiredImports is null
             ? importsBySpecifier.Keys
@@ -400,7 +421,18 @@ internal sealed class LibraryMaterializer
                 var reference = ownerSelection?.Manifest.GetPackageReference(specifier);
                 if (reference is not null && reference.Source is "npm" or "jsr")
                 {
-                    unresolvedExternalPackages?.TryAdd(reference.Name, reference);
+                    RequireCompatibleProjectedVersion(specifier, reference, projectedDependencies);
+                    AddExternal(reference);
+                    return;
+                }
+
+                var dependencies = projectedDependencies[specifier].Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+                if (dependencies.Length > 1)
+                    throw new LibraryException("JAZOR_LIBRARY_PACKAGE_CONFLICT",
+                        $"Projected import '{specifier}' requires conflicting npm dependencies: {string.Join(", ", dependencies)}.");
+                if (dependencies.Length == 1)
+                {
+                    AddExternal(new LibraryPackageReference(LibraryPackageIdentity.GetPackageName(specifier), dependencies[0], "npm"));
                     return;
                 }
 
@@ -428,6 +460,14 @@ internal sealed class LibraryMaterializer
                 Add(dependency, packageEdge: true, ownerSelection: selection);
             visiting.Remove(specifier);
             selected.Add(specifier, selection);
+        }
+
+        void AddExternal(LibraryPackageReference reference)
+        {
+            if (unresolvedExternalPackages.TryGetValue(reference.Name, out var existing) && !Equals(existing, reference))
+                throw new LibraryException("JAZOR_LIBRARY_PACKAGE_CONFLICT",
+                    $"Package '{reference.Name}' resolves to conflicting external identities '{existing.Version}' and '{reference.Version}'.");
+            unresolvedExternalPackages[reference.Name] = reference;
         }
 
         foreach (var specifier in requested

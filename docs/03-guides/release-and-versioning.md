@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前版本：[2.5.0（2026-11-22）](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.6.0（2026-11-24）](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -35,6 +35,10 @@
 ### 1.2.0 类型语义调整例外
 
 维护者明确指定本轮 ECMAScript 标注与 class/record 调整以 `1.2.0` 发布。普通源码免许可属于新增能力；去除 class 的隐式对象字面量创建、将 `ErrorOptions`、`PropertyDescriptorRef` 与 WebIDL callback literal 改为 record 仍有破坏性影响，必须按 CHANGELOG 迁移。这是单次 MINOR 通道例外，不改变后续 MAJOR 规则，不覆盖冻结 API 基线，也不跳过发布门禁。
+
+### 2.6.0 Jazor 与 Jolt 工具链边界调整例外
+
+维护者指定本次工具链迁移以 2.6.0 发布。移除 `jolt bindings` 及随附的公开生成入口，普通 C# 改由 Jazor SDK 在构建中按使用点投影。依赖旧生成文件或命令的项目应按 [CHANGELOG](../../CHANGELOG.md#jazor-260) 更新构建与公开门面。这是单次 MINOR 例外，后续 MAJOR 规则、冻结基线和发布门禁照常适用。
 
 ## 发版节奏
 

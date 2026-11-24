@@ -128,10 +128,19 @@ internal static class JazorViteProxy
             var result = await source.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (result.MessageType == WebSocketMessageType.Close)
             {
-                await destination.CloseOutputAsync(
-                    result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
-                    result.CloseStatusDescription,
-                    cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    if (destination.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                        await destination.CloseOutputAsync(
+                            result.CloseStatus ?? WebSocketCloseStatus.NormalClosure,
+                            result.CloseStatusDescription,
+                            cancellationToken).ConfigureAwait(false);
+                }
+                catch (WebSocketException exception) when (exception.WebSocketErrorCode == WebSocketError.InvalidState &&
+                    destination.State is WebSocketState.CloseSent or WebSocketState.Closed or WebSocketState.Aborted)
+                {
+                    // The peer can finish or abort while the other relay forwards its close.
+                }
                 return;
             }
 

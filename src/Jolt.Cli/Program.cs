@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 using var stop = new CancellationTokenSource();
 Console.CancelKeyPress += (_, eventArgs) => { eventArgs.Cancel = true; stop.Cancel(); };
-const string usage = "Usage: jolt build [project] [--output directory] | dev [project] [--port port] | bundle [project] [--ssr server-entry] | library [project] [--output directory] | lsp\n       " + NpmBindingsCommand.Usage;
+const string usage = "Usage: jolt build [project] [--output directory] | dev [project] [--port port] [--stop-on-stdin-close] | bundle [project] [--ssr server-entry] | library [project] [--output directory] | lsp";
 try
 {
     if (args is ["lsp"])
@@ -19,23 +19,39 @@ try
         Console.WriteLine(usage);
         return 0;
     }
-    if (args[0] == "bindings")
-        return await NpmBindingsCommand.RunAsync(args[1..], stop.Token);
     var index = 1;
     var project = Path.GetFullPath(index < args.Length && !args[index].StartsWith('-') ? args[index++] : ".");
     var output = Path.Combine(project, args[0] == "library" ? "dist" : ".jolt");
     var port = JoltViteToolchain.DefaultPort;
+    var stopOnStdinClose = false;
+    using var externalDeclarations = args[0] == "dev" ? new JoltExternalDeclarations(project) : null;
+    var devMetadata = externalDeclarations is null ? null : JoltProjectLoader.CreateDevMetadataProvider(externalDeclarations.Observe);
     string? serverEntry = null;
     if (args[0] is "build" or "library" && args.Length == index + 2 && args[index] == "--output")
     {
         output = Path.GetFullPath(args[index + 1]);
         index += 2;
     }
-    if (args[0] == "dev" && args.Length == index + 2 && args[index] == "--port" &&
-        int.TryParse(args[index + 1], out var parsedPort) && parsedPort is >= 0 and <= 65535)
+    if (args[0] == "dev")
     {
-        port = parsedPort;
-        index += 2;
+        var portSpecified = false;
+        while (index < args.Length)
+        {
+            if (args[index] == "--stop-on-stdin-close" && !stopOnStdinClose)
+            {
+                stopOnStdinClose = true;
+                index++;
+            }
+            else if (!portSpecified && args[index] == "--port" && index + 1 < args.Length &&
+                int.TryParse(args[index + 1], out var parsedPort) && parsedPort is >= 0 and <= 65535)
+            {
+                port = parsedPort;
+                portSpecified = true;
+                index += 2;
+            }
+            else
+                throw new ArgumentException(usage);
+        }
     }
     if (args[0] == "bundle" && args.Length == index + 2 && args[index] == "--ssr" &&
         !string.IsNullOrWhiteSpace(args[index + 1]) && !args[index + 1].StartsWith('-'))
@@ -59,7 +75,9 @@ try
             Console.WriteLine($"Bundled SSR client and server to {Path.Combine(project, "dist")}");
             return 0;
         case "dev":
-            await using (var server = await JoltViteToolchain.ServeAsync(project, Compile, port: port,
+            if (stopOnStdinClose)
+                JoltDevInput.StopOnClose(stop);
+            await using (var server = await JoltViteToolchain.ServeAsync(project, Compile, notify => externalDeclarations!.Changed = notify, port: port,
                 cancellationToken: stop.Token, reportError: ex => Console.Error.WriteLine(ex.Message)))
             {
                 Console.WriteLine(server.Origin);
@@ -72,7 +90,20 @@ try
 
     async Task<bool> Compile(CancellationToken cancellationToken)
     {
-        var workspace = await JoltProjectLoader.LoadAsync(project, cancellationToken: cancellationToken);
+        externalDeclarations?.Begin();
+        JoltWorkspace workspace;
+        var loaded = false;
+        try
+        {
+            workspace = devMetadata is null
+                ? await JoltProjectLoader.LoadAsync(project, cancellationToken: cancellationToken)
+                : await JoltProjectLoader.LoadAsync(project, devMetadata, cancellationToken: cancellationToken);
+            loaded = !workspace.Diagnostics.Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
+        }
+        finally
+        {
+            externalDeclarations?.Complete(loaded);
+        }
         var result = await CompileModules(workspace, output, cancellationToken);
         if (result is null)
             return false;

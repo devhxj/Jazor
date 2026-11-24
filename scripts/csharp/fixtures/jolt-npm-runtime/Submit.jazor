@@ -5,22 +5,24 @@
 
 @code {
     [Parameter] public bool Provide { get; set; }
-    public record Input(string Address, double Count) : ECMAScript.Vue.VueProps;
+    public record Row(double Count);
+    public record Input(string Address, double Count, Row[] Rows) : ECMAScript.Vue.VueProps;
+    public record Output(string SubmittedAddress) : ECMAScript.Vue.VueProps;
     private string _result = "waiting";
 
     [Setup]
     private void Configure()
     {
         if (Provide)
-            Vee.UseForm<Input, Input>(new() {
-                InitialValues = new Input("submitted", 0),
+            Vee.UseForm<Input, Output>(new() {
+                InitialValues = new Input("submitted", 0, [new(1)]),
                 ValidationSchema = new() { Type = Vee.TypedSchemaDiscriminator.VVTypedSchema,
-                    Parse = values => ECMAScript.Promise<Vee.TypedSchemaResult<Input>>.Resolve(
-                        new Vee.TypedSchemaResult<Input> { Value = values, Errors = [] })
+                    Parse = values => ECMAScript.Promise<Vee.TypedSchemaResult<Output>>.Resolve(
+                        new Vee.TypedSchemaResult<Output> { Value = new(values.Get(value => value.Address) ?? ""), Errors = [] })
                 }
             });
         var submittedAddress = "";
-        var submit = Vee.UseSubmitForm<Input>(values => { submittedAddress = values.Address; });
+        var submit = Vee.UseSubmitForm<Output>(values => { submittedAddress = values.SubmittedAddress; });
         ECMAScript.Vue.OnMounted(() => {
             var pending = submit();
             if (ECMAScript.Global.IsUndefined(pending))

@@ -2,6 +2,32 @@
 
 > 本页解释当前分层为何形成；当前实现与路线图以现行架构和状态文档为依据。
 
+## 2026-11-23 Jero 从 RazorVue 迁到原生 Jolt
+
+Jero 在保留 ASP.NET Core 后端、C# 页面状态和 API 客户端的前提下，移除了前端的 RazorVue 组件、桥接生成和运行时。最终验收使用原生 Jolt 的 Release 发布目录。下面记录迁移中实际遇到的问题，以及每个问题该在哪一层处理。
+
+| 遇到的问题 | 原因与处理 | 验证方法 |
+| --- | --- | --- |
+| 换成 `.jazor` 后页面能打开，仍可能依赖旧宿主 | 过渡版由 RazorVue 启动和挂载。最终由 Jero 的 `main.ts`、Vue Router 和 AppShell 接管会话、菜单、标签、锁屏与实时连接。路由离开时释放页面资源。 | 检查发布入口、JS 和 `Zero.Web.deps.json` 中的旧运行时标记，再从深链接进入页面。 |
+| 普通 C# 类库与 Jolt 都需要向同一个前端交付代码 | 浏览器侧 C# 编入 `Zero.Browser`。迁移验证使用本地候选包 `2.6.0-local.2` 从类库直接写出模块。正式 SDK 通过 DLL 内的 `ModuleCatalog` 交付类库代码。 | 候选包收集了 113 个模块，发布后从浏览器调用了 C# 页面方法。Jolt 直接消费类库 catalog 的路径仍待验收。[类库契约](../02-architecture/library-artifact-contract.md) |
+| Vue 代理上的 C# 页面方法无法读取 JS 私有字段 | `reactive(state)` 会让方法通过代理访问 `this`，原生 `#field` 要求接收者是声明该字段的实例。Vue 契约包选择代理可读写的字段存储，应用直接引用该包即可。 | 检查普通类库与 Vue 类库的字段生成，验证同名私有字段独立读写，再在页面上触发状态更新。[生成器回归](../../src/Jazor.CompilerTest/ESGeneratorScenarioCatalogTests.cs) |
+| 站内信、配置页接入 Element Plus 和本地 SFC 时出现 `JOLT1004`、`JOLT1014` | 迁移暴露了组件 `class`、`MouseEvent`、只读结构数组、可空字段及 `string[]` 事件载荷的投影缺口。Jolt 根据声明生成类型。Jero 通过 `jolt.csharpSources` 共用 DTO，直接把行数组传给 SFC，用 `Action<string[]>` 接收选择事件。表格插槽上游只给出 `any` 时，由知道列结构的本地 SFC 声明行类型。 | 检查编译和编辑器是否读取同一 DTO，再点击站内信行，核对提交的消息 ID。[共享源码回归](../../src/Jolt.Compiler.Test/SharedCSharpSourcesTests.cs) · [组件运行验收](../../scripts/csharp/verify-zero-jolt.cs) |
+| 再次构建时，已安装包的声明改动未使元数据缓存失效 | 缓存需要跟踪 TypeScript 实际读取的声明文件和链接目标。仅靠入口或版本号会漏掉被重导出的文件。 | 保持包版本不变，只改被重导出的字段类型，下一次读取应得到新类型；输入不变时应复用磁盘缓存。[组件缓存回归](../../scripts/csharp/verify-jolt-npm-component-cache.cs) |
+| 配置表格一勾选就丢失选择 | 平台配置和租户配置在父组件重渲染时重建行数组及行对象，Element Plus 收到了新数据。改成只在数据加载时构造表格行。语言文本页将六个表格必需字段标为 `required`，直接传原 DTO 数组。 | 在真实表格里勾选行，检查批量操作，再执行搜索和重置。这类问题在单次静态渲染中看不出来。 |
+| 审批流选中节点后显示坐标时报错 | 坐标已经是字符串，页面再次调用 `string.ToString()`。旧映射生成了带哈希的 JS 方法名。页面直接传坐标，CLR 将该成员映射到原生 `toString`。 | 浏览器检查选中节点后的坐标；编译器回归检查 JS 方法名以及接收者只求值一次。[编译器回归](../../src/Jazor.CompilerTest/SourceTypeCompilationTests.cs) |
+| 开发机上的工具能启动，换到 Jero 构建时却依赖另一份源码树 | Jero 将编译器和 Vue 契约作为 NuGet 引用，通过本地 .NET 工具清单选择同版本 Jolt。应用发布由 MSBuild 调用已还原的工具。 | 在独立目录还原工具和项目，再发布 `Zero.Web/Zero.Web.csproj`。 |
+| 生产部署的深链接、资源缓存和重型插件需要分别验证 | 宿主按 PathBase 提供 Vite 入口和带哈希的资源，为页面路由返回 HTML，保留缺失 API 和静态文件的 404。Monaco、VForm 和打印设计器按需加载，并处理弹窗在加载完成前关闭的情况。 | 宿主测试覆盖根路径和 `/docs`。Chromium 检查首屏资源、加载失败、关闭后重新打开及路由卸载重挂。 |
+
+**验收范围。** 当时的 Jero 源码有 55 个 `.jazor` 文件、51 个路由入口模块。Jero 的 `scripts/csharp/verify-jolt-routes.cs` 对最终发布核对了 63 条 Vue Router 路径，并验证了选行、审批流、通知、认证和编辑器等交互。`scripts/csharp/verify-entry-loading.cs` 的 5 项首屏与延迟加载检查通过。浏览器使用隔离 SQLite 和模拟会话、业务 API；真实后端写入、线上登录和生产负载下的性能仍需单独验证。
+
+**未闭环的是 Jazor 全量 CLR 资源生成。** 字符串白名单及其定向回归已更新。执行 `dotnet run --project src/Jazor.Compiler.Generator/Jazor.Compiler.Generator.csproj` 时，资源阶段仍在四个模块报出三类诊断：
+
+- `DateTimeModule`、`DateTimeOffsetModule` 的若干 `ref/out` 实参可能指向同一存储位置，当前 lowering 无法证明它们彼此独立。
+- `GregorianCalendarModule` 从 `object` 判定 `GregorianCalendarTypes`，数值枚举在 JS 中擦除后无法恢复 CLR 装箱类型。
+- `RuntimeModule` 尝试构造 `ProxyMutationHandler<Array<TItem>>`，该类型没有 JS 运行时构造名。
+
+生成器遇错时没有写出部分资源。Jero 验收使用仓库已有的 CLR 资源。工具链这项工作的完成条件是官方生成器能完整重建资源，再用新资源重跑 Jero 原生发布和浏览器验收。[运行时资源生成器](../../src/Jazor.Compiler.Generator/ClrRuntimeCatalogEmitter.cs)
+
 ## 2026-11-19 Jolt 编辑器与组件能力
 
 Jolt 完成后台 npm 声明初始化、跨文件引用和改名、格式化及快捷修复。候选包在 Windows x64 上验证 VS Code 和 Visual Studio 的编辑流程，并在 Chrome 验证本地泛型组件、Reka UI `ListboxVirtualizer`、scoped CSS、热更新和 ES 模块导出。Visual Studio 的实测改名场景覆盖跨文件参数，组件文件改名在 VS Code 中验证。旧实施计划和候选性能数字见 [Git 历史](https://github.com/devhxj/Jazor/blob/v2.2.0-preview.1/docs/04-roadmap/jolt-editor-implementation-plan.md)。发布能力见 [当前状态](../04-roadmap/current-status.md#jolt-作者面)。

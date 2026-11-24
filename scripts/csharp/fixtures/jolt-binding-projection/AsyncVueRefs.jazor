@@ -5,6 +5,7 @@
 
 @code {
     public record Row(string Label, double Rank) : ECMAScript.Vue.VueProps;
+    public sealed record NestedRow([property: ECMAScript.ECMAScriptName("nested")] ECMAScript.Vue.IVueRef<double> Nested);
 
     public static Vue.VueReadonlyRef<double> ReadNumber() =>
         VueUse.ComputedAsync(() => Promise<double>.Resolve(42), 10);
@@ -18,11 +19,29 @@
     public static Vue.VueReadonlyRef<double> LoadState() =>
         VueUse.UseAsyncState(Promise<double>.Resolve(23), 11).State;
 
+    public static Vue.VueReadonlyOptionalRef<UnknownValue?> LoadError(IPromise<double> pending) =>
+        VueUse.UseAsyncState(pending, 11).Error;
+
+    public static Error? ReadError(UnknownValue? value) => value?.AsError;
+    public static string? ReadRejectedText(UnknownValue? value) => value?.AsString;
+    public static bool? ReadRejectedBoolean(UnknownValue? value) => value?.AsBoolean;
+    public static double? ReadRejectedNumber(UnknownValue? value) => value?.AsNumber;
+
     [Parameter] public Action<bool, string>? Observe { get; set; }
+    [Parameter] public Vue.IVueRef<double>? Nested { get; set; }
+    [Parameter] public Action<Vue.IVueRef<double>>? ObserveNested { get; set; }
 
     [Setup]
     private void LoadRow()
     {
+        var nested = Nested;
+        var observeNested = ObserveNested;
+        if (nested is not null && observeNested is not null)
+        {
+            var seeded = new NestedRow(nested);
+            var shallow = VueUse.UseAsyncStateWithShallowTrue(Promise<NestedRow>.Resolve(seeded), seeded, new() { Immediate = false });
+            observeNested(shallow.State.Value.Nested);
+        }
         var observe = Observe;
         if (observe is null)
             return;

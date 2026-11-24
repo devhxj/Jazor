@@ -1,5 +1,4 @@
 using Jazor.AspNetCore;
-using Jazor.NodeHost;
 using Microsoft.JavaScript.NodeApi;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -88,13 +87,14 @@ public sealed class JoltSsrHostingTests
                 }
                 """);
             File.WriteAllText(Path.Combine(source.FullName, "vue-version.mjs"), "export { version } from 'vue';");
-            await NodeToolchain.RestoreAsync(source.FullName, Path.Combine(RepositoryTemp.Root, "nodeapi-store"), timeout.Token);
-            await NodeToolchain.BuildJoltSsrAsync(source.FullName, entry, Path.Combine(source.FullName, "dist"), timeout.Token);
+            var store = Path.Combine(RepositoryTemp.Root, "nodeapi-store");
+            Task<bool> Build() => Jolt.Vite.JoltViteToolchain.BuildSsrAsync(source.FullName, entry,
+                _ => Task.FromResult(true), store, timeout.Token);
+            Assert.IsTrue(await Build());
 
             File.WriteAllText(Path.Combine(source.FullName, "vite.config.mjs"),
                 """export default { build: { rolldownOptions: { external: ['vue'] } } };""");
-            var error = await Assert.ThrowsExactlyAsync<JSException>(() =>
-                NodeToolchain.BuildJoltSsrAsync(source.FullName, entry, Path.Combine(source.FullName, "rejected"), timeout.Token));
+            var error = await Assert.ThrowsExactlyAsync<JSException>(() => Build());
             StringAssert.Contains(error.Message, "imports 'vue' outside the server bundle");
             StringAssert.Contains(error.Message, "Vite's SSR or Rolldown externals");
         }

@@ -41,6 +41,8 @@
     <None Include="build\Jazor.props" Pack="true" PackagePath="build\Jazor.props" />
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
     <None Include="build\Jazor.LibraryImports.targets" Pack="true" PackagePath="build\Jazor.LibraryImports.targets" />
+    <None Include="build\Jazor.Npm.targets" Pack="true" PackagePath="build\Jazor.Npm.targets" />
+    <None Include="$(JazorPackageBuildOutputRoot)Jazor.Npm.Editor\bin\$(Configuration)\netstandard2.0\Jazor.Npm.Editor.dll" Pack="true" PackagePath="tools/net11.0/editor/%(Filename)%(Extension)" />
     <None Include="buildTransitive\Jazor.Resources.targets"
           Pack="true"
           PackagePath="buildTransitive\Jazor.Resources.targets" />
@@ -95,8 +97,6 @@
          analyzer dependency closure only for direct Jazor references. -->
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Analyzer\bin\$(Configuration)\netstandard2.0\Jazor.Analyzer.pdb" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
-    <None Include="$(JazorPackageBuildOutputRoot)ECMAScript\bin\$(Configuration)\net11.0\ECMAScript.pdb" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Compiler\bin\$(Configuration)\netstandard2.0\Jazor.Compiler.pdb" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
     <None Include="$(JazorPackageBuildOutputRoot)ECMAScript.Contract\bin\$(Configuration)\netstandard2.0\ECMAScript.Contract.dll" Pack="true" PackagePath="tools/net11.0/analyzers/%(Filename)%(Extension)" />
@@ -116,6 +116,8 @@
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Compiler\Jazor.Compiler.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.NodeHost\Jazor.NodeHost.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Npm\Jazor.Npm.csproj" />
+    <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.Npm.Editor\Jazor.Npm.Editor.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore\Jazor.AspNetCore.csproj" />
     <_JazorPackageBuildProject Include="$(MSBuildThisFileDirectory)..\Jazor.AspNetCore.Dev\Jazor.AspNetCore.Dev.csproj" />
     <_JazorEmitProject Include="$(MSBuildThisFileDirectory)..\Jazor.Emit\Jazor.Emit.csproj" />

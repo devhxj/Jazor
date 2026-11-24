@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="Jolt.Cli" />
+    <EmbeddedResource Include="tooling/jolt-vite.cjs" LogicalName="Jolt.Vite.jolt-vite.cjs" />
     <ProjectReference Include="../Jazor.NodeHost/Jazor.NodeHost.csproj" />
   </ItemGroup>
 </Project>

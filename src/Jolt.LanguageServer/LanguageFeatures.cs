@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Jolt.Compiler;
@@ -605,7 +606,7 @@ internal sealed partial class LanguageFeatures(
         return projection.Imports.Contains(@namespace, StringComparer.Ordinal);
     }
 
-    private static string EventName(string name) => "on" + Pascal(name);
+    private static string EventName(string name) => ComponentContract.VueEventProperty(name);
     private static bool MatchesProp(string authored, string name) => authored.Equals(name, StringComparison.OrdinalIgnoreCase);
     private static bool MatchesEvent(string authored, string name) =>
         authored.Equals(EventName(name), StringComparison.OrdinalIgnoreCase) ||

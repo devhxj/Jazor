@@ -6,6 +6,7 @@
 using Jazor.NodeHost;
 using Jolt.Compiler;
 using Jolt.Npm;
+using Jazor.Npm;
 
 var root = Path.GetFullPath("samples/JazorComponentProbe/Npm");
 var provider = new NpmVueMetadataProvider(Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
@@ -84,12 +85,57 @@ try
             export type Instrument<T> = Ref<T> & { read(): T };
             """);
     }
-    await File.WriteAllTextAsync(Path.Combine(package, "index.js"), "export default { render() {} };");
+    await File.WriteAllTextAsync(Path.Combine(package, "index.js"),
+        "export default { render() {} }; export const PointerWidget = {}, ShadowPointerWidget = {}, OptionsWidget = {}, RecordWidget = {};");
     await File.WriteAllTextAsync(Path.Combine(package, "index.d.ts"), """
-        import type { DefineComponent } from 'vue';
+        import type { DefineComponent, ExtractPublicPropTypes, PropType } from 'vue';
         interface WidgetProps { tone: 'quiet' | 'strong'; }
         declare const Widget: DefineComponent<WidgetProps>;
         export default Widget;
+        type Installable<C> = C & { install(): void };
+        interface MouseEvent { unrelated: string }
+        type Component<T> = abstract new () => {
+            $props: {
+                tone?: 'quiet' | 'strong';
+                width?: number | string;
+                fixed?: boolean | 'left' | 'right';
+                pageSizes?: number[];
+                rows?: ReadonlyArray<Readonly<{ id: string; rank: number; note: string | null; score: number | null; visible: boolean | null }>>;
+                optionalRows?: ReadonlyArray<Readonly<{ note?: string | null }>>;
+                undefinedRows?: ReadonlyArray<Readonly<{ note: string | null | undefined }>>;
+                mixedRows?: ReadonlyArray<Readonly<{ note: string | number | null }>>;
+                literalRows?: ReadonlyArray<Readonly<{ note: 'brief' | null }>>;
+                showTooltip?: boolean | Partial<{ placement: string }>;
+            };
+            $emit: {
+                (event: 'click', payload: T): void;
+                (event: 'selection', ids: string[]): void;
+                (event: 'snapshot', ids: readonly string[]): void;
+                (event: 'spread', ...ids: string[]): void;
+            };
+            $slots: {};
+        };
+        export declare const PointerWidget: Installable<Component<globalThis.MouseEvent>>;
+        export declare const ShadowPointerWidget: Installable<Component<MouseEvent>>;
+        type Selection = string | number;
+        type RuntimeOption<T> = { readonly type: PropType<T>; readonly required: false; readonly validator: ((value: unknown) => boolean) | undefined };
+        export declare const OptionsWidget: abstract new () => {
+            $props: ExtractPublicPropTypes<{
+                readonly selected: RuntimeOption<Selection>;
+                readonly label: RuntimeOption<string>;
+            }>;
+            $emit: {
+                (event: 'update:selected', selection: Selection): void;
+                (event: 'unsafe', selection: any): void;
+                (event: 'more', selection: string | number | { name: string }): void;
+            };
+            $slots: { default?: (scope: {}) => unknown };
+        };
+        export declare const RecordWidget: abstract new () => {
+            $props: { selected?: RuntimeOption<Selection> };
+            $emit: (event: 'update:selected', selection: Selection) => void;
+            $slots: {};
+        };
         """);
     await File.WriteAllTextAsync(Path.Combine(package, "values.js"), """
         export const count = 3;
@@ -98,6 +144,7 @@ try
         export function generic(value) { return value; }
         export function overloadedCallback(callback) { callback(3); }
         export function readonlyShallow() { return { value: 3 }; }
+        export function finiteOptions(options) { return options.ratio; }
         """);
     await File.WriteAllTextAsync(Path.Combine(package, "values.d.ts"), """
         import type { ShallowRef } from 'vue';
@@ -108,6 +155,9 @@ try
         export declare function generic<T>(value: T): T;
         export declare function overloadedCallback(callback: { (value: string): void; (value: number): void }): void;
         export declare function readonlyShallow(): Readonly<ShallowRef<number>>;
+        export declare enum NumericMode { First = 1, Second = 2 }
+        type Ratio = -0.25 | 0.5 | 1.5;
+        export declare function finiteOptions(options: { ratio: Ratio; mode: NumericMode }): number;
         export type { echo as TypeOnly };
         """);
     await File.WriteAllTextAsync(Path.Combine(package, "other.js"), """
@@ -263,6 +313,10 @@ try
         export function restoreRequired() { return () => {}; }
         export function inspectDraft() { return () => Promise.resolve({ approved: true, problems: [] }); }
         export function currentDraft() { return undefined; }
+        export function startDraft() { return {}; }
+        export function startRequiredDraft() { return {}; }
+        export function startFilteredDraft() { return {}; }
+        export function startUnspecifiedDraft() { return {}; }
         export function narrowDraft() { return undefined; }
         export function inspectOpaque() { return () => Promise.resolve({}); }
         export function trackRows() { return {}; }
@@ -273,6 +327,13 @@ try
         """);
     await File.WriteAllTextAsync(Path.Combine(package, "other.d.ts"), """
         import type { ComputedRef, Ref } from 'vue';
+        export declare function readOpaque(): Ref<unknown>;
+        export declare function readUnspecified(): Ref<any>;
+        export declare function startDeferred<T>(load: Promise<T> | (() => Promise<T>), initial: T): {
+            current: Ref<T>;
+            rejected: Ref<unknown>;
+            unchecked: Ref<any>;
+        } & PromiseLike<{ current: Ref<T> }>;
         type PulseArgs<T> = T extends unknown[] ? T : [T];
         type PulseListener<T> = (...args: PulseArgs<T>) => void;
         export declare function makePulse<T>(): {
@@ -313,10 +374,26 @@ try
             accept: (entity: TDestination) => TResult,
             reject?: (incident: { draft: TSource; problems: Sparse<Record<keyof TSource, string>> }) => void
         ) => (signal?: globalThis.Event) => Promise<TResult | undefined>;
+        interface ControlEvents {
+            onBlur: () => void;
+            onInput: () => void;
+            onChange: () => void;
+        }
+        interface ControlSetup<TValue, TExtras> {
+            check?: boolean;
+            enrich?: (snapshot: { current?: TValue; changed: boolean; notes: readonly string[] }) => TExtras;
+        }
+        type DeferredControlSetup<TValue, TExtras> = (snapshot: { current?: TValue; changed: boolean }) => {
+            attributes?: TExtras;
+            readonly refresh?: boolean;
+            opaque?: unknown;
+        };
         interface DraftHandle<TSource, TDestination> {
             snapshot: TSource;
             notices: ComputedRef<Sparse<Record<keyof TSource, string>>>;
             groupedNotices: Ref<Sparse<Record<keyof TSource, string[]>>>;
+            conditionalScalarNotices: ComputedRef<Sparse<Record<keyof TSource, TSource extends { joltInput: string } ? string : number>>>;
+            fieldScalarNotices: ComputedRef<Sparse<{ [K in keyof TSource]: TSource[K] }>>;
             conditionalGroups: Ref<Partial<Record<keyof TSource, TSource extends { joltInput: string } ? string[] : number[]>>>;
             fieldGroups: Ref<Partial<{ [K in keyof TSource]: TSource[K][] }>>;
             transformedGroups: Ref<Sparse<Record<keyof TDestination, string[]>>>;
@@ -328,6 +405,22 @@ try
             revise<TKey extends DraftRoute<TSource>>(key: TKey, next: DraftValue<TSource, TKey>, amend?: boolean): void;
             disregard<TKey extends DraftRoute<TSource>>(key: TKey, next: unknown, amend?: boolean): void;
             reviseFiltered<TKey extends FilteredRoute<TSource>>(key: TKey, next: DraftValue<TSource, TKey>, amend?: boolean): void;
+            attach<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>>(key: TKey, config?: unknown): [Ref<TValue>, Ref<ControlEvents>];
+            attachConfigured<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>>(key: TKey,
+                setup?: { caption?: string | Ref<string>; check?: boolean; flag?: true; props?: () => object } | (() => object)): [Ref<TValue>, Ref<ControlEvents>];
+            attachProps<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>, TExtras extends Draft = Draft>(key: TKey,
+                setup?: ControlSetup<TValue, TExtras> | DeferredControlSetup<TValue, TExtras>): [Ref<TValue>, Ref<ControlEvents & TExtras>];
+            attachWrongState<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>, TExtras extends Draft = Draft>(key: TKey,
+                setup?: ControlSetup<TSource, TExtras> | DeferredControlSetup<TSource, TExtras>): [Ref<TValue>, Ref<ControlEvents & TExtras>];
+            attachWrongProps<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>, TExtras extends Draft = Draft>(key: TKey,
+                setup?: ControlSetup<TValue, Draft> | DeferredControlSetup<TValue, Draft>): [Ref<TValue>, Ref<ControlEvents & TExtras>];
+            attachRestrictedSetup<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>, TExtras extends Draft = Draft>(key: TKey,
+                setup?: (state: { current?: TValue }) => { attributes?: TExtras; requiredToken: symbol }): [Ref<TValue>, Ref<ControlEvents & TExtras>];
+            attachWidened<TKey extends DraftRoute<TSource>, TValue = string>(key: TKey): [Ref<TValue>, Ref<ControlEvents>];
+            attachTransformed<TKey extends DraftRoute<TDestination>, TValue = DraftValue<TDestination, TKey>>(key: TKey): [Ref<TValue>, Ref<ControlEvents>];
+            attachReversed<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>>(key: TKey): [Ref<ControlEvents>, Ref<TValue>];
+            attachUnrefed<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>>(key: TKey): [Ref<TValue>, ControlEvents];
+            attachRequiredConfig<TKey extends DraftRoute<TSource>, TValue = DraftValue<TSource, TKey>>(key: TKey, config: { marker: string }): [Ref<TValue>, Ref<ControlEvents>];
         }
         interface ActiveDraft<TSource, TDestination> extends DraftHandle<TSource, TDestination> {
             recheck(): Promise<{ accepted: boolean }>;
@@ -358,6 +451,19 @@ try
         ): DraftHandle<TSource, TDestination>;
         export declare function currentDraft<TSource extends Draft = Draft,
             TDestination extends Draft = TSource>(): ActiveDraft<TSource, TDestination> | undefined;
+        export declare function startDraft<TSource extends Draft = Draft>(
+            options?: { startingPoint?: Sparse<TSource> }): Omit<ActiveDraft<TSource, TSource>,
+                'revise' | 'transformedGroups' | 'transformedNotices' | 'attachTransformed' | 'reviewTransformed'> & {
+                revise<TKey extends DraftRoute<TSource>>(key: TKey, next: DraftValue<TSource, TKey>): void;
+            };
+        export declare function startRequiredDraft<TSource extends Draft = Draft>(
+            options: { startingPoint: Sparse<TSource> }): ActiveDraft<TSource, TSource>;
+        type FilteredSeed<T> = T extends { joltInput: string } ? T : never;
+        export declare function startFilteredDraft<TSource extends Draft = Draft>(
+            options?: { startingPoint?: FilteredSeed<TSource>; marks?: { [K in keyof TSource]?: boolean } }
+        ): ActiveDraft<TSource, TSource>;
+        export declare function startUnspecifiedDraft<TSource extends Draft, TDestination extends Draft>(
+            options?: { startingPoint?: Sparse<TSource> }): ActiveDraft<TSource, TDestination>;
         export declare function narrowDraft<TSource extends { joltInput: string } = { joltInput: string },
             TDestination extends Draft = TSource>(): ActiveDraft<TSource, TDestination> | undefined;
         export declare function collectNotices<TSource extends Draft = Draft>(): ComputedRef<Sparse<Record<keyof TSource, string>>>;
@@ -390,6 +496,16 @@ try
         export declare function readColumn<TEntry, TColumn extends keyof TEntry>(entry: TEntry, column: TColumn): TEntry[TColumn];
         export declare function columnHandle<P extends object, K extends keyof P, Name extends string>(entry: P, key?: K, emit?: (name: Name) => void): import('vue').WritableComputedRef<P[K]>;
         export declare function columnHandle<P extends object, K extends keyof P>(entry: P, key?: K, options?: boolean): Ref<NonNullable<P[K]>>;
+        export declare function connectCell<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce: (notice: string, payload: Row[Cell]) => void): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function spreadCell<Row extends object, Cell extends keyof Row, Notice extends string>(row: Row, cell: Cell, announce?: (notice: Notice, ...payload: unknown[]) => void): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function wrongCell<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce?: (notice: string, payload: Row[keyof Row]) => void): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function narrowNotice<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce?: (notice: 'changed', payload: Row[Cell]) => void): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function wrongRest<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce?: (notice: string, ...payload: number[]) => void): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function wrongResult<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce?: (notice: string, payload: Row[Cell]) => boolean): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function shadowedCell<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce?: (notice: string, payload: Row[Cell]) => void): string;
+        export declare function shadowedCell<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce?: (notice: string, payload: Row[Cell]) => void): import('vue').WritableComputedRef<Row[Cell]>;
+        export declare function functionShadowedCell<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce: Function): string;
+        export declare function functionShadowedCell<Row extends object, Cell extends keyof Row>(row: Row, cell: Cell, announce: (notice: string, payload: Row[Cell]) => void): import('vue').WritableComputedRef<Row[Cell]>;
         export declare function observedColumn<P, K extends keyof P>(entry: P, key: K): ComputedRef<P[K]>;
         interface ColumnBehavior<T, B extends boolean> {
             fallback?: T;
@@ -398,6 +514,11 @@ try
         }
         export declare function trackColumn<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[K]>;
         export declare function trackColumn<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], false>): import('vue').WritableComputedRef<P[K]>;
+        type WatchColumn<B extends boolean> = { observe?: B; subtree?: boolean; name?: string };
+        export declare function watchColumn<P extends object, K extends keyof P>(entry: P, key: K, options: WatchColumn<false>): import('vue').WritableComputedRef<P[K]>;
+        export declare function watchColumn<P extends object, K extends keyof P>(entry: P, key: K, options: WatchColumn<true>): Ref<import('vue').UnwrapRef<P[K]>>;
+        type UnwrapRef<T> = T extends { leaf: infer S } ? S : T;
+        export declare function watchLookalike<P extends object, K extends keyof P>(entry: P, key: K, options: WatchColumn<true>): Ref<UnwrapRef<P[K]>>;
         export declare function wrongBehaviorSlot<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[keyof P], true>): Ref<P[K]>;
         export declare function requiredBehaviorHole<P extends object, K extends keyof P>(entry: P, key: K, notify: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[K]>;
         export declare function changedBehaviorReturn<P extends object, K extends keyof P>(entry: P, key: K, notify?: () => void, behavior?: ColumnBehavior<P[K], true>): Ref<P[keyof P]>;
@@ -459,7 +580,7 @@ try
         export declare function assess<T>(id: string, evaluate: (candidate: T) => Verdict | Promise<Verdict>,
             settings: { seed: T }): { current: Ref<T> };
         export declare function assessOptional<T = unknown>(id: string, evaluate?: string | ((candidate: T) => Verdict),
-            settings?: { seed: T }): { current: Ref<T>; readonly evaluated: boolean; label: string | Ref<string>; accept(candidate: T): void };
+            settings?: { seed?: T; evaluateOnMount?: boolean }): { current: Ref<T>; readonly evaluated: boolean; label: string | Ref<string>; accept(candidate: T): void };
         export declare function assessImmediately<T>(id: string, evaluate: (candidate: T) => string,
             settings: { seed: T }): { current: Ref<T> };
         export declare function assessDeferred<T>(id: number, evaluate: (candidate: T) => Promise<number>,
@@ -741,6 +862,19 @@ try
         export declare function keepGenericRef<T>(source: Ref<T>): Ref<T>;
         export declare function receiveComputed<T>(source: Calculated<T>): T;
         interface ExtendedRef<T> extends Ref<T> { reset(): void }
+        interface VueProjectionPayload {
+            title: Ref<string>;
+            nested: { count: Ref<number> };
+            items: Ref<number>[];
+        }
+        export declare function buildDeepPayload(): Ref<import('vue').UnwrapRef<VueProjectionPayload>, VueProjectionPayload | import('vue').UnwrapRef<VueProjectionPayload>>;
+        type ShallowPayload = import('vue').ShallowRef<VueProjectionPayload>;
+        export declare function buildShallowPayload(): ShallowPayload;
+        export declare function buildSymmetricPayload(): Ref<import('vue').UnwrapRef<VueProjectionPayload>>;
+        export declare function buildWiderPayload(): Ref<import('vue').UnwrapRef<VueProjectionPayload>, VueProjectionPayload | import('vue').UnwrapRef<VueProjectionPayload> | string>;
+        type UnwrapRefSimple<T> = { [Key in keyof T]: T[Key] };
+        export declare function buildImitationPayload(): Ref<UnwrapRefSimple<VueProjectionPayload>>;
+        export declare function buildReactivePayload(): import('vue').ShallowReactive<VueProjectionPayload>;
         type SignalMode = 'enabled' | 'disabled';
         type GaugeReading = Ref<SignalMode> & {
             readonly status: ComputedRef<SignalMode>;
@@ -841,6 +975,96 @@ try
         export declare function paint(settings: { tone: "" | "warm-tone" | "warm_tone" }): string;
         """);
     var document = Path.Combine(project, "views", "Widget.jazor");
+    await File.WriteAllTextAsync(Path.Combine(project, "Pointer.vue"), """
+        <script setup lang="ts">
+        interface MouseEvent { label: string }
+        defineEmits<{ click: [value: globalThis.MouseEvent]; picked: [value: MouseEvent] }>()
+        </script>
+        <template><button /></template>
+        """);
+    var localPointer = (await provider.ReadLocalComponentsAsync(project, ["Pointer.vue"],
+        new Dictionary<string, string>(), default, () => new Dictionary<string, string>())).Single();
+    Check(localPointer.Component?.Events["click"].Signatures is [[{ WebType: "MouseEvent" }]] &&
+        localPointer.Component.Events["picked"].Signatures is [[{ WebType: null }]],
+        $"local Vue events preserve standard DOM identity and distinct local namesakes: {localPointer.Error}");
+    var pointer = await provider.ReadAsync(document, "component-fixture", "PointerWidget");
+    var shadowPointer = await provider.ReadAsync(document, "component-fixture", "ShadowPointerWidget");
+    Check(pointer.Events["click"].Signatures is [[{ WebType: "MouseEvent" }]] &&
+        shadowPointer.Events["click"].Signatures is [[{ WebType: null }]],
+        "installable component event payloads use standard DOM declaration identity");
+    Check(pointer.Props["width"] is { InputType: "number|string", LiteralValues: [] } &&
+        pointer.Props["fixed"] is { InputType: "boolean|string", LiteralValues: var fixedValues } &&
+        fixedValues.Order(StringComparer.Ordinal).SequenceEqual(["left", "right"]) &&
+        pointer.Props["pageSizes"].InputType == "number[]" && pointer.Props["showTooltip"].InputType == "boolean",
+        "component input projection keeps supported branches of the checked declaration");
+    const string pointerSource = """
+        @using Npm.ComponentFixture
+        <PointerWidget Tone="quiet" Width="140px" Fixed="@Pinned" PageSizes="@(new double[] { 10, 25 })" ShowTooltip="@true" @onclick="@Click" />
+        <PointerWidget Width="@(140)" Fixed="left" Rows="@Entries" @onselection="@Selection" />
+        @code {
+            public sealed record Entry(string id, int rank, string? note, int? score, bool? visible);
+            private Entry[] Entries = [new("x", 1, null, null, null)];
+            private bool Pinned = true;
+            private void Click(ECMAScript.MouseEvent payload) {}
+            private void Selection(string[] ids) {}
+        }
+        """;
+    var pointerOutput = await JoltProjectCompiler.CompileAsync([new("Pointer.jazor", pointerSource)],
+        new JoltCompileOptions(NpmComponents: [pointer]));
+    Check(pointerOutput.Diagnostics.Count == 0 &&
+        pointerOutput.Modules.Single().Content.Contains("\"onClick\": this.Click.bind(this)", StringComparison.Ordinal) &&
+        pointerOutput.Modules.Single().Content.Contains("\"rows\": this.$jazor$private$Entries", StringComparison.Ordinal) &&
+        pointerOutput.Modules.Single().Content.Contains("\"onSelection\": this.Selection.bind(this)", StringComparison.Ordinal) &&
+        pointer.Events["snapshot"].Signatures is [[{ ValueDomain: null }]] &&
+        pointer.Events["spread"].Signatures is [[{ ValueDomain: null }]],
+        "component callbacks forward the original DOM event");
+    var wrongRowsOutput = await JoltProjectCompiler.CompileAsync(
+        [new("Pointer.jazor", pointerSource.Replace("int rank", "int wrongRank", StringComparison.Ordinal))],
+        new JoltCompileOptions(NpmComponents: [pointer]));
+    Check(wrongRowsOutput.Diagnostics.Any(item => item.Id == "JOLT1014"),
+        "readonly DTO arrays match declared Vue field names, independently of the record name");
+    Check(pointer.Props["rows"].InputRecordFields is { } rowFields &&
+        rowFields["note"] == "string?" && rowFields["score"] == "number?" && rowFields["visible"] == "boolean?",
+        "required nullable primitive fields stay distinct from non-null fields");
+    Check(pointer.Props["optionalRows"].InputRecordFields is null &&
+        pointer.Props["undefinedRows"].InputRecordFields is null &&
+        pointer.Props["mixedRows"].InputRecordFields is null &&
+        pointer.Props["literalRows"].InputRecordFields is null,
+        "optional fields, undefined, mixed domains and literal restrictions are not nullable primitives");
+    var nullableRequired = await JoltProjectCompiler.CompileAsync(
+        [new("Pointer.jazor", pointerSource.Replace("int rank", "int? rank", StringComparison.Ordinal))],
+        new JoltCompileOptions(NpmComponents: [pointer]));
+    Check(nullableRequired.Diagnostics.Any(item => item.Id == "JOLT1014"),
+        "a nullable CLR field cannot satisfy a non-null Vue field");
+    var shadowPointerOutput = await JoltProjectCompiler.CompileAsync(
+        [new("Pointer.jazor", pointerSource.Replace("<PointerWidget", "<ShadowPointerWidget", StringComparison.Ordinal))],
+        new JoltCompileOptions(NpmComponents: [shadowPointer]));
+    Check(shadowPointerOutput.Diagnostics.Any(item => item.Id == "JOLT1014"), "a namesake event type has no DOM carrier");
+    var wrongPointerOutput = await JoltProjectCompiler.CompileAsync(
+        [new("Pointer.jazor", pointerSource.Replace("Fixed=\"left\"", "Fixed=\"middle\"", StringComparison.Ordinal))],
+        new JoltCompileOptions(NpmComponents: [pointer]));
+    Check(wrongPointerOutput.Diagnostics.Any(item => item.Id == "JOLT1006"), "mixed props preserve their string literal domain");
+    var optionsWidget = await provider.ReadAsync(document, "component-fixture", "OptionsWidget");
+    var recordWidget = await provider.ReadAsync(document, "component-fixture", "RecordWidget");
+    Check(optionsWidget.Props["selected"] is { InputType: "number|string", Required: false } &&
+        optionsWidget.Props["label"].InputType == "string" &&
+        optionsWidget.Slots["default"].Signatures is [[]] &&
+        optionsWidget.Events["update:selected"].Signatures is [[{ ValueDomain: "number|string" }]] &&
+        optionsWidget.Events["unsafe"].Signatures is [[{ ValueDomain: null }]] &&
+        optionsWidget.Events["more"].Signatures is [[{ ValueDomain: null }]] &&
+        recordWidget.Props["selected"].InputType is null,
+        "only Vue-extracted runtime options reveal their PropType payload and output unions stay closed");
+    const string optionsSource = """
+        @using Npm.ComponentFixture
+        <OptionsWidget Selected="@(2d)" Label="Label" @onupdate:selected="@Change"><span>Default</span></OptionsWidget>
+        @code {
+            private void Change(ECMAScript.Vue.VueStringNumberValue selected) {}
+        }
+        """;
+    var optionsOutput = await JoltProjectCompiler.CompileAsync([new("Options.jazor", optionsSource)],
+        new JoltCompileOptions(NpmComponents: [optionsWidget]));
+    Check(optionsOutput.Diagnostics.Count == 0 && optionsOutput.Modules.Single().Content.Contains("\"onUpdate:selected\"", StringComparison.Ordinal),
+        $"Vue runtime props and scalar event unions compile: {string.Join(", ", optionsOutput.Diagnostics)}");
     var registrations = await provider.ReadValuesAsync(document, "component-fixture/other", ["assemble", "conditional", "configure", "dubious", "emptyRegistration"]);
     Check(registrations is [{ ExportName: "assemble", Signatures: [{ Parameters: [{ Type.Members:
         [{ Name: "specialized", Type.Kind: "boolean" }, { Name: "tag", Type.Kind: "string" },
@@ -880,12 +1104,24 @@ try
     Check(first.PackageName == "component-fixture", "subpath package identity");
     Check(first.Props["tone"].Required && first.Props["tone"].LiteralValues.SequenceEqual(["quiet", "strong"]), "required literal-union prop");
     Check(first.Definition is { Length: > 0 } && File.Exists(first.Definition.Path), "export definition");
-    File.AppendAllText(first.DeclarationPath, "\n");
+    // pnpm restores file: dependencies from their source directory before lookup.
+    // Change the source of the installed declaration so a restore cannot undo the edit.
+    var widgetDeclaration = Path.Combine(package, "index.d.ts");
+    var originalWidget = await File.ReadAllTextAsync(widgetDeclaration);
+    await File.WriteAllTextAsync(widgetDeclaration, originalWidget.Replace(
+        "interface WidgetProps { tone:", "interface WidgetProps { refreshed?: boolean; tone:", StringComparison.Ordinal));
     var second = await provider.ReadAsync(document, "component-fixture/widgets", "default");
-    Check(!ReferenceEquals(first, second), "installed declaration content invalidation");
+    Check(second.Props.ContainsKey("refreshed") && !first.Props.ContainsKey("refreshed"),
+        "installed declaration content invalidation");
 
     var candidates = await provider.ListValueExportsAsync(document, "component-fixture/values");
-    Check(candidates.SequenceEqual(["count", "default", "echo", "generic", "overloadedCallback", "readonlyShallow"]), "runtime value candidate discovery");
+    Check(candidates.SequenceEqual(["count", "default", "echo", "finiteOptions", "generic", "overloadedCallback", "readonlyShallow"]), "runtime value candidate discovery");
+    var finiteOptions = await provider.ReadValueAsync(document, "component-fixture/values", "finiteOptions");
+    Check(finiteOptions.Signatures is [{ Parameters: [{ Type.Members: { } finiteMembers }] }] &&
+        finiteMembers.Any(member => member is { Name: "ratio", Type: { Kind: "numberLiterals", Name: "Ratio",
+            NumberLiterals: [-0.25, 0.5, 1.5] } }) &&
+        finiteMembers.Any(member => member is { Name: "mode", Type.Kind: "enum" }),
+        "finite fractional inputs preserve their literals and declared enums have a separate projection");
     var projections = await provider.ReadValueProjectionsAsync(document, "component-fixture/values",
         ["count", "default", "echo", "generic", "overloadedCallback", "readonlyShallow", "TypeOnly", "absent"]);
     var batch = projections.Values;
@@ -1050,7 +1286,7 @@ try
         chooseVersion.Parameters[1].Type.TypeIdentity == "[\"versioned-data\",\"2.0.0\",\"shape.d.ts\",\"Sample\"]" &&
         chooseVersion.ReturnType.TypeIdentity == chooseVersion.Parameters[1].Type.TypeIdentity,
         "an identical record in a different version receives a separate stable declaration identity");
-    Check(JoltNpmBindings.GenerateSource(recordExports.Values).Split("public sealed record Sample_").Length == 5,
+    Check(NpmBindings.GenerateSource([], recordExports.Values).Split("public sealed record Sample_").Length == 5,
         "the public projection emits distinct carriers for each package version and namespace");
     var makeTree = recordExports.Values.Single(export => export.ExportName == "makeTree").Signatures.Single().ReturnType;
     var passTree = recordExports.Values.Single(export => export.ExportName == "passTree").Signatures.Single();
@@ -1595,6 +1831,40 @@ try
         ["transferRef", "keepGenericRef", "receiveComputed", "receiveExtendedRef", "receiveAsymmetricRef", "receiveShadowRef",
             "passIndependentRef", "receiveNarrowRef"]))
         .ToDictionary(value => value.ExportName);
+    var depth = await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["buildDeepPayload", "buildShallowPayload", "buildSymmetricPayload", "buildWiderPayload", "buildImitationPayload", "buildReactivePayload"]);
+    Check(depth.Single(value => value.ExportName == "buildDeepPayload").Signatures is [{
+        ReturnType: { Kind: "ref", ReadOnly: false, WriteType: { Kind: "object", Name: "VueProjectionPayload", Members: [
+            { Name: "title", Type: { Kind: "ref", ElementType.Kind: "string" } },
+            { Name: "nested", Type.Members: [{ Name: "count", Type: { Kind: "ref", ElementType.Kind: "number" } }] },
+            { Name: "items", Type: { Kind: "array", ElementType: { Kind: "ref", ElementType.Kind: "number" } } },
+        ] }, ElementType.Members: [
+            { Name: "title", Type.Kind: "string" },
+            { Name: "nested", Type.Members: [{ Name: "count", Type.Kind: "number" }] },
+            { Name: "items", Type: { Kind: "array", ElementType: { Kind: "ref", ElementType.Kind: "number" } } },
+        ] },
+    }], "deep Vue records unwrap property reads and preserve raw record writes");
+    Check(depth.Single(value => value.ExportName == "buildShallowPayload").Signatures is [{
+        ReturnType: { Kind: "ref", Name: "VueShallowRef", ReadOnly: false, ElementType.Members: [
+            { Name: "title", Type: { Kind: "ref", ElementType.Kind: "string" } },
+            { Name: "nested", Type.Members: [{ Name: "count", Type: { Kind: "ref", ElementType.Kind: "number" } }] },
+            { Name: "items", Type: { Kind: "array", ElementType: { Kind: "ref", ElementType.Kind: "number" } } },
+        ] },
+    }], "shallow Vue records preserve their writable brand and nested ref values");
+    Check(depth.Single(value => value.ExportName == "buildSymmetricPayload").Signatures is [{
+        ReturnType: { Kind: "ref", ReadOnly: false, WriteType: null, ElementType.Members: [{ Name: "title", Type.Kind: "string" }, ..] },
+    }] && depth.Single(value => value.ExportName == "buildWiderPayload").Signatures is [{
+        ReturnType: { Kind: "ref", ReadOnly: false, WriteType: null, ElementType.Members: [{ Name: "title", Type.Kind: "string" }, ..] },
+    }] && depth.Single(value => value.ExportName == "buildImitationPayload").Signatures is [{
+        ReturnType: { Kind: "ref", ReadOnly: true, ElementType.Members: [{ Name: "title", Type.Kind: "ref" }, ..] },
+    }], "Vue record unwrapping is identified by its declaration and supports a symmetric setter");
+    Check(depth.Single(value => value.ExportName == "buildReactivePayload").Signatures is [{
+        ReturnType: { Kind: "object", Name: "VueProjectionPayload", Members: [
+            { Name: "title", Type: { Kind: "ref", ElementType.Kind: "string" } },
+            { Name: "nested", Type.Members: [{ Name: "count", Type: { Kind: "ref", ElementType.Kind: "number" } }] },
+            { Name: "items", Type: { Kind: "array", ElementType: { Kind: "ref", ElementType.Kind: "number" } } },
+        ] },
+    }], "shallow reactive Vue records preserve inner refs and hide the private brand");
     Check(genericRefs["transferRef"].Signatures is [{ TypeParameters: ["S", "R"], Parameters: [
         { Type: { Kind: "ref", ReadOnly: true, Name: null, ElementType: { Kind: "typeParameter", Name: "S" } } },
         { Type.Signatures: [{ Parameters: [{ Type.Name: "S" }], ReturnType: { Name: "VueComputedRef", ElementType.Name: "R" } }] },
@@ -1704,6 +1974,16 @@ try
     Check(painted.Diagnostics.Count == 0 && painted.Modules.Single().Content.Contains("warm_tone", StringComparison.Ordinal),
         "colliding string-enum names preserve the exact upstream wire literal: " + string.Join(", ", painted.Diagnostics));
     var optionalNumbers = await provider.ReadValueAsync(document, "component-fixture/other", "optionalNumbers");
+    var opaqueRefs = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
+        ["readOpaque", "readUnspecified", "startDeferred"]);
+    Check(opaqueRefs.Errors.ContainsKey("readUnspecified") &&
+        opaqueRefs.Values.Single(value => value.ExportName == "readOpaque").Signatures is [
+            { ReturnType: { Kind: "ref", ReadOnly: true, ElementType: { Kind: "undefinedable", ElementType.Kind: "unknownValue" } } }] &&
+        opaqueRefs.Values.Single(value => value.ExportName == "startDeferred").Signatures is [
+            { ScalarResultTypeParameter: "T", ReturnType.Members: [
+                { Name: "current", Type.ElementType.Kind: "typeParameter" },
+                { Name: "rejected", ReadOnly: true, Type: { Kind: "ref", ReadOnly: true, ElementType: { Kind: "undefinedable", ElementType.Kind: "unknownValue" } } }] }],
+        "explicit unknown ref results expose the same read-only optional view through ordinary and correlated signatures");
     Check(optionalNumbers.Signatures is [{ ReturnType.Members: [
         { Name: "absent", Optional: true, ReadOnly: true, Type.Kind: "number" },
         { Name: "nullable", Optional: true, ReadOnly: false, Type: { Kind: "nullable", ElementType.Kind: "number" } }] }],
@@ -1779,15 +2059,21 @@ try
         !validators.ContainsKey("dispatchCustom"),
         "a generic callback is exposed only in the sync and async forms proved by TypeScript");
     var optionalValidators = validators["assessOptional"].Signatures;
-    Check(optionalValidators.Any(signature => signature is { TypeParameters: null, Parameters.Count: 2 }) &&
+    Check(optionalValidators.Any(signature => signature.TypeParameters is null &&
+            signature.Parameters.Count >= 2 && signature.Parameters[1].Type.Kind == "string") &&
         optionalValidators.Any(signature => signature is { TypeParameters: ["TValue"], Parameters.Count: 1 } &&
             signature.ReturnType.Members!.Any(member => member is { Name: "current", Type.ElementType.Kind: "nullableSlot" }) &&
             signature.ReturnType.Members!.Any(member => member is { Name: "label", Type.Kind: "union" })) &&
         optionalValidators.Any(signature => signature.Parameters is [_, { OptionalCallback: true }] &&
             signature.Parameters[1].Type.Signatures!.Single().Parameters[0].Type.Kind == "nullableSlot") &&
+        optionalValidators.Any(signature => signature.ManagedNameSuffix == "WithOptionalValue" &&
+            signature.Parameters is [_, { OptionalCallback: true }, { Type.Kind: "object" }]) &&
         optionalValidators.Any(signature => signature.Parameters is [_, _, { Type.Kind: "object" }] &&
             signature.ReturnType.Members!.Any(member => member is { Name: "current", Type.ElementType.Kind: "typeParameter" })),
-        "the renamed validator preserves the string-or-ref label and distinguishes missing-value and initialized calls");
+        "the renamed validator preserves the string-or-ref label and distinguishes missing-value and initialized calls: " +
+        string.Join(" | ", optionalValidators.Select(signature => $"{signature.ManagedNameSuffix}<{string.Join(",", signature.TypeParameters ?? [])}> " +
+            $"({string.Join(",", signature.Parameters.Select(p => $"{p.Type.Kind}/{p.OptionalCallback}"))}) " +
+            string.Join(",", signature.ReturnType.Members!.Select(member => $"{member.Name}:{member.Type.Kind}/{member.Type.ElementType?.Kind}")))));
 
     static NpmValueType GetResult(NpmValueSignature signature) =>
         signature.Parameters[1].Type.Signatures!.Single().ReturnType;
@@ -1798,18 +2084,18 @@ try
             { Name: "startingPoint", Type.Kind: "recordTypeParameter" },
             { Name: "adapter", Type.Members: [
                 { Name: "marker", Type.StringLiterals: ["transformed-draft"] },
-                { Name: "decode", Type.Signatures: [{ ReturnType.ElementType.Members: [
+                { Name: "decode", Type.Signatures: [{ Parameters: [{ Type: { Kind: "partialRecord", ElementType.Name: "TInput" } }], ReturnType.ElementType.Members: [
                     { Name: "entity", Type.Kind: "recordTypeParameter", Optional: false },
                     { Name: "issues", Type.ElementType.Members: [{ Name: "trail" }, { Name: "notes" }] }] }] }] }] }] &&
         draft.ReturnType.Members is [
-            { Name: "snapshot" },
+            { Name: "snapshot", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } },
             { Name: "notices", ReadOnly: true, Type: { Kind: "ref", Name: "VueComputedRef", ReadOnly: true,
                 ElementType: { Kind: "readonlyDictionary", ElementType.Kind: "string" } } },
             { Name: "groupedNotices", Type: { Kind: "ref", ReadOnly: true,
                 ElementType: { Kind: "readonlyDictionary", ElementType: { Kind: "array", ElementType.Kind: "string" } } } },
             { Name: "commit", Type.Kind: "method", Type.Signatures: [{ Parameters: [{ Name: "accept" }] }, { Parameters: [
                 { Name: "accept" }, { Name: "reject", Type.Signatures: [{ Parameters: [
-                    { Type.Members: [{ Name: "draft" }, { Name: "problems", Type.Kind: "readonlyDictionary" }] }] }] }] }] },
+                    { Type.Members: [{ Name: "draft", Type.Kind: "partialRecord" }, { Name: "problems", Type.Kind: "readonlyDictionary" }] }] }] }] }] },
             { Name: "replace", Type.Kind: "method" },
             { Name: "revise", Type.Signatures: [{
                 TypeParameters: [var fieldType],
@@ -1817,10 +2103,83 @@ try
                     { Type: { Kind: "propertyPath", VeeValidatePath: false, ElementType: { Kind: "recordTypeParameter", Name: "TInput" },
                         Variants: [{ Kind: "typeParameter", Name: var selectorType }] } },
                     { Type: { Kind: "typeParameter", Name: var valueType } },
-                    { Optional: true, Type.Kind: "boolean" }] }] }] &&
+                    { Optional: true, Type.Kind: "boolean" }] }] },
+            { Name: "attach", Type: { Kind: "method", Signatures: [{
+                TypeParameters: [var attachedField],
+                Parameters: [{ Type: { Kind: "propertyPath", VeeValidatePath: false, ArrayIndices: false,
+                    ElementType: { Kind: "recordTypeParameter", Name: "TInput" },
+                    Variants: [{ Kind: "typeParameter", Name: var attachedPath }] } }],
+                ReturnType: { Kind: "tupleView", Members: [
+                    { Name: "Item1", ReadOnly: true, Type: { Kind: "ref",
+                        ElementType: { Kind: "nullableSlot", ElementType.Name: var modelRead },
+                        WriteType: { Kind: "typeParameter", Name: var modelWrite } } },
+                    { Name: "Item2", ReadOnly: true, Type: { Kind: "ref", ReadOnly: true, WriteType: null, ElementType.Members: var callbacks } }
+                ] }
+            }] } },
+            { Name: "attachConfigured" },
+            { Name: "attachProps" },
+            { Name: "attachWrongState" },
+            { Name: "attachWrongProps" },
+            { Name: "attachRestrictedSetup" }
+        ] &&
+        attachedField == attachedPath && attachedPath == modelRead && modelRead == modelWrite &&
+        callbacks is { Count: 3 } &&
+        callbacks.Select(member => member.Name).Order(StringComparer.Ordinal).SequenceEqual(["onBlur", "onChange", "onInput"]) &&
+        callbacks.All(member => member.Type.Signatures is [{ Parameters: [], ReturnType.Kind: "void" }]) &&
         fieldType == selectorType && selectorType == valueType,
-        "renamed form members preserve computed errors and tie the nested selector to the replacement type");
-    var draftBindings = JoltNpmBindings.GenerateSource(draftExports);
+        "renamed form members preserve computed errors and tie nested selectors to replacements and control refs. " +
+        $"Members: {string.Join(", ", draftExports.SelectMany(value => value.Signatures)
+            .SelectMany(signature => signature.ReturnType.Members ?? []).Select(member => member.Name))}");
+    Check(draftExports.Single(value => value.ExportName == "assembleDraft").Signatures.SelectMany(signature => signature.ReturnType.Members ?? [])
+        .Any(member => member is { Name: "attachConfigured", Type.Signatures: [
+            { Parameters: [{ Type.Kind: "propertyPath" }] },
+            { Parameters: [{ Type.Kind: "propertyPath" }, { Optional: false, Type.Members: [
+                { Name: "caption", Optional: true, Type.Kind: "string" },
+                { Name: "check", Optional: true, Type.Kind: "boolean" }] }] }
+        ] }), "renamed field binding accepts optional static string and boolean options");
+    var draftFields = draftExports.Single(value => value.ExportName == "assembleDraft").Signatures.Single().ReturnType.Members!;
+    Check(draftFields.SingleOrDefault(member => member.Name == "attachProps")?.Type.Signatures is [_, _, {
+        TypeParameters: ["TField", "TProps"],
+        Parameters: [{ Type.Kind: "propertyPath" }, { Type.Members: [
+            { Name: "check", Optional: true, Type.Kind: "boolean" },
+            { Name: "enrich", Optional: false, Type.Signatures: [{
+                Parameters: [{ Name: "snapshot", Type.Members: [
+                    { Name: "current", ReadOnly: true, Optional: true,
+                        Type: { Kind: "nullableSlot", ElementType.Name: "TField" } },
+                    { Name: "changed", ReadOnly: true, Type.Kind: "boolean" },
+                    { Name: "notes", ReadOnly: true, Type: { Kind: "array", ReadOnly: true, ElementType.Kind: "string" } }
+                ] }],
+                ReturnType: { Kind: "recordTypeParameter", Name: "TProps" }
+            }] }
+        ] }],
+        ReturnType.Members: [_, { Type: { Kind: "ref", ReadOnly: true,
+            ElementType: { Kind: "recordTypeParameter", Name: "TProps" } } }]
+    }, _, _] && new[] { "attachWrongState", "attachWrongProps" }.All(name =>
+        draftFields.SingleOrDefault(member => member.Name == name)?.Type.Signatures?.Take(2).ToArray() is [
+            { Parameters: [{ Type.Kind: "propertyPath" }] },
+            { Parameters: [{ Type.Kind: "propertyPath" }, { Type.Members: [{ Name: "check", Type.Kind: "boolean" }] }] }]),
+        "renamed field props callbacks preserve the selected field state and correlate the result with the readonly ref only for matching slots");
+    Check(draftFields.Single(member => member.Name == "attachProps").Type.Signatures is [_, _, _, {
+        TypeParameters: ["TField"], OverloadPriority: -1, Parameters: [_, { Type.Signatures: [{
+            Parameters: [{ Type.Members: [{ Name: "current", Type.ElementType.Name: "TField" }, { Name: "changed" }] }],
+            ReturnType.Members: [{ Name: "refresh", Type.Kind: "boolean", Optional: true, ReadOnly: false }]
+        }] }], ReturnType.Members: [_, { Type: { Kind: "ref", ReadOnly: true, ElementType.Members: { Count: 3 } } }]
+    }, {
+        TypeParameters: ["TField", "TProps"], OverloadPriority: -1, Parameters: [_, { Type.Signatures: [{
+            ReturnType.Members: [
+                { Name: "refresh", Type.Kind: "boolean", Optional: true },
+                { Name: "attributes", Type: { Kind: "recordTypeParameter", Name: "TProps" }, Optional: false }
+            ]
+        }] }], ReturnType.Members: [_, { Type: { Kind: "ref", ReadOnly: true, ElementType.Name: "TProps" } }]
+    }] && draftFields.Single(member => member.Name == "attachWrongState").Type.Signatures is [_, _] &&
+        draftFields.Single(member => member.Name == "attachWrongProps").Type.Signatures is [_, _, {
+            TypeParameters: ["TField"], Parameters: [_, { Type.Signatures: [{
+                ReturnType.Members: [{ Name: "refresh", Type.Kind: "boolean" }]
+            }] }]
+        }] && draftFields.Single(member => member.Name == "attachRestrictedSetup").Type.Signatures is [
+            { Parameters: [{ Type.Kind: "propertyPath" }] }
+        ], "renamed lazy config ties its state to the selector and supplies typed props only when the return object can be constructed");
+    var draftBindings = NpmBindings.GenerateSource([], draftExports);
     Check(draftBindings.Contains("[global::ECMAScript.ECMAScriptPropertyPath] global::System.Func<@TInput, ", StringComparison.Ordinal) &&
         draftBindings.Contains("@Revise<", StringComparison.Ordinal),
         "the standalone C# facade marks the selector parameter and retains its type relationship");
@@ -1839,6 +2198,28 @@ try
     ] && indexedHandles.Errors.Keys.Order(StringComparer.Ordinal).SequenceEqual(
         ["changedHandleIndex", "reorderedHandle", "requiredHandleTail", "specializedHandle"]),
         "indexed Vue results require the exact selected field and preserve two-argument overload order");
+    var explicitCells = (await provider.ReadValuesAsync(document, "component-fixture/other",
+        ["connectCell", "spreadCell", "wrongCell", "narrowNotice", "wrongRest", "wrongResult", "shadowedCell", "functionShadowedCell"]))
+        .ToDictionary(value => value.ExportName);
+    Check(explicitCells["connectCell"].Signatures is [{
+        Parameters: [_, { Type.Kind: "propertyKey" }, { Name: "announce", RestCallback: false, Type.Signatures: [{
+            Parameters: [{ Type.Kind: "string" }, { Type: { Kind: "typeParameter", Name: "TValue" } }],
+            ReturnType.Kind: "void",
+        }] }],
+        ReturnType: { Name: "VueWritableComputedRef", ElementType.Name: "TValue" },
+    }], "required renamed callbacks use the exact selected property domain");
+    Check(explicitCells["spreadCell"].Signatures is [{ Parameters.Count: 2 }, {
+        Parameters: [_, { Type.Kind: "propertyKey" }, { Name: "announce", RestCallback: true, Type.Signatures: [{
+            Parameters: [{ Type.Kind: "string" }, { Type: {
+                Kind: "recordArray", ElementType: { Kind: "undefinedable", ElementType.Kind: "unknownValue" },
+            } }],
+            ReturnType.Kind: "void",
+        }] }],
+    }], "rest callbacks preserve omission and represent unknown JavaScript arguments");
+    Check(new[] { "wrongCell", "narrowNotice", "wrongRest", "wrongResult", "shadowedCell", "functionShadowedCell" }
+        .All(name => !explicitCells.TryGetValue(name, out var value) ||
+            value.Signatures.All(signature => signature.Parameters.Count == 2)),
+        "incompatible callbacks and shadowed return types do not project explicit callbacks");
     var columnBehaviors = await provider.ReadValueProjectionsAsync(document, "component-fixture/other",
         ["trackColumn", "wrongBehaviorSlot", "requiredBehaviorHole", "changedBehaviorReturn", "competingBehavior"]);
     var tracked = columnBehaviors.Values.Single(value => value.ExportName == "trackColumn").Signatures;
@@ -1862,6 +2243,16 @@ try
     Check(columnBehaviors.Values.Where(value => value.ExportName != "trackColumn")
         .All(value => value.Signatures.All(signature => signature.Parameters.All(parameter => !parameter.FixedUndefined))),
         "mismatched indexed slots, required holes, changed results, and competing earlier overloads reject fixed behavior");
+    var proxyColumns = await provider.ReadValuesAsync(document, "component-fixture/other", ["watchColumn", "watchLookalike"]);
+    var views = proxyColumns.Single(value => value.ExportName == "watchColumn").Signatures;
+    Check(views.Any(signature => signature is { ManagedNameSuffix: "WithObserveTrueRecordView",
+        ReturnType: { Kind: "ref", ReadOnly: true, ElementType: { Kind: "unwrappedRecord", ElementType.Name: "TValue" } },
+        Parameters: [_, { Type.RequireRecordView: true }, { Type.Members: var settings }] } &&
+            settings!.Any(member => member is { Name: "subtree", Type.Kind: "boolean" })) &&
+        views.Any(signature => signature.Parameters.Any(parameter => parameter.Type.RequirePlainRecord)) &&
+        proxyColumns.Where(value => value.ExportName == "watchLookalike").SelectMany(value => value.Signatures)
+            .All(signature => signature.Parameters.All(parameter => !parameter.Type.RequireRecordView && !parameter.Type.RequirePlainRecord)),
+        "the Vue UnwrapRef of the selected slot yields a stable DTO and a record view, retaining independent options");
     var indexedAccess = (await provider.ReadValuesAsync(document, "component-fixture/other",
         ["readColumn", "putCell", "readRequired", "readTextKeys", "readMismatched", "putUnrelated", "readExtra", "readNested"]))
         .ToDictionary(value => value.ExportName);
@@ -1879,17 +2270,58 @@ try
     var draftContext = await provider.ReadValuesAsync(document, "component-fixture/other",
         ["collectNotices", "collectSnapshot", "writeNotices", "markReview", "patchUnchecked", "markNarrow",
             "restoreDraft", "restoreRequired", "inspectDraft", "inspectOpaque", "trackRows", "trackSeededRows",
-            "currentDraft", "narrowDraft",
+            "currentDraft", "narrowDraft", "startDraft", "startRequiredDraft", "startFilteredDraft", "startUnspecifiedDraft",
             "replaceRecord", "replaceSelected", "replaceRequired", "selectCurrent", "selectConstrained", "selectDefault"]);
     var draftByName = draftContext.ToDictionary(value => value.ExportName);
-    Check(draftByName["currentDraft"].Signatures is [{ Parameters: [], TypeParameters: ["TInput"],
-        ReturnType: { Kind: "undefinedable", ElementType.Members: [
-            { Name: "snapshot", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } },
-            { Name: "revise", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }, _, _] }] },
-            { Name: "recheck", Type.Signatures: [{ Parameters: [], ReturnType.ElementType.Members: [{ Name: "accepted", Type.Kind: "boolean" }] }] },
-            { Name: "review", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }],
-                ReturnType.ElementType.Members: [{ Name: "accepted", Type.Kind: "boolean" }, { Name: "notes", Type.ElementType.Kind: "string" }] }] },
-        ] } }] && (!draftByName.TryGetValue("narrowDraft", out var narrowDraft) ||
+    foreach (var name in new[] { "startDraft", "startRequiredDraft" })
+    {
+        var seeded = draftByName[name].Signatures.Single(signature => signature is
+            { Parameters: [{ Type.Members: [{ Name: "startingPoint", Optional: false, Type.Name: "TInput" }] }], TypeParameters: ["TInput"] });
+        Check(seeded.ReturnType.Members!.Any(member => member is { Name: "snapshot", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } }),
+            $"{name} requires a complete initial DTO and keeps live fields sparse");
+    }
+    Check(!draftByName.TryGetValue("startFilteredDraft", out var filteredSeed) ||
+        filteredSeed.Signatures.All(signature => signature.TypeParameters is null || signature.Parameters.Count == 0),
+        "conditional inputs and maps of flags cannot initialize an arbitrary DTO");
+    var startedForm = draftByName["startDraft"].Signatures.Single(signature =>
+        signature is { Parameters: [], TypeParameters: ["TInput"] }).ReturnType.Members!;
+    var ambientForm = draftByName["currentDraft"].Signatures.Single(signature =>
+        signature is { Parameters: [], TypeParameters: ["TInput"] }).ReturnType.ElementType!.Members!;
+    Check(startedForm.Concat(ambientForm).Count(member => member is {
+        Name: "groupedNotices", Type: { Kind: "ref", ReadOnly: true,
+            ElementType: { Kind: "readonlyDictionary", ElementType: { Kind: "array", ElementType.Kind: "string" } } }
+    }) == 2 &&
+        startedForm.Concat(ambientForm).Count(member => member is {
+            Name: "replace", Type.Signatures: [{ Parameters: [{ Type.Name: "TInput" }, ..] }]
+        }) == 2 &&
+        startedForm.Concat(ambientForm).All(member => member.Name is not
+            ("conditionalGroups" or "fieldGroups" or "conditionalScalarNotices" or "fieldScalarNotices")) &&
+        ambientForm.All(member => member.Name is not ("commit" or "transformedGroups" or "transformedNotices")) &&
+        HasSparseSubmission(startedForm, "commit", "TInput", "draft") &&
+        HasSparseSubmission(draftByName["currentDraft"].Signatures.Single(signature =>
+            signature.TypeParameters is ["TInput", "TOutput"]).ReturnType.ElementType!.Members!,
+            "commit", "TOutput", "draft"),
+        "renamed unseeded forms retain fixed bags and input patches without inventing ambient submission output. " +
+        $"Created members: {string.Join(", ", startedForm.Select(member => member.Name))}. " +
+        $"Ambient members: {string.Join(", ", ambientForm.Select(member => member.Name))}");
+    Check(draftByName.TryGetValue("startDraft", out var startDraft) && startDraft.Signatures.Any(signature =>
+        signature is { Parameters: [], TypeParameters: ["TInput"], ReturnType.Kind: "object" } &&
+        signature.ReturnType.Members is { } members &&
+        members.Any(member => member is { Name: "snapshot", Type.Kind: "partialRecord" }) &&
+        members.Any(member => member is { Name: "revise", Type.Signatures: [{
+            Parameters: [{ Type.Kind: "propertyPath" }, { Type.Kind: "typeParameter" }]
+        }] })) &&
+        new[] { "startRequiredDraft", "startUnspecifiedDraft" }.All(name =>
+            !draftByName.TryGetValue(name, out var candidate) ||
+            candidate.Signatures.All(signature => signature.Parameters.Count != 0 || signature.TypeParameters is null)),
+        "renamed form creation requires optional options and defaulted type parameters");
+    Check(draftByName["currentDraft"].Signatures.All(signature => signature.ReturnType.Kind == "undefinedable") &&
+        ambientForm.Any(member => member is { Name: "snapshot", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } }) &&
+        ambientForm.Any(member => member is { Name: "revise", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }, _, _] }] }) &&
+        ambientForm.Any(member => member is { Name: "recheck", Type.Signatures: [{ Parameters: [], ReturnType.ElementType.Members: [{ Name: "accepted", Type.Kind: "boolean" }] }] }) &&
+        ambientForm.Any(member => member is { Name: "review", Type.Signatures: [{ Parameters: [{ Type: { Kind: "propertyPath", ArrayIndices: false } }],
+                ReturnType.ElementType.Members: [{ Name: "accepted", Type.Kind: "boolean" }, { Name: "notes", Type.ElementType.Kind: "string" }] }] }) &&
+        (!draftByName.TryGetValue("narrowDraft", out var narrowDraft) ||
             narrowDraft.Signatures.All(signature => signature.TypeParameters is null)),
         "a renamed ambient form preserves absence, sparse values and correlated validation, and rejects unmapped record constraints");
     var selections = draftByName["selectCurrent"].Signatures;
@@ -1975,6 +2407,19 @@ try
                 [{ Kind: "array", ElementType.Kind: "string" }, { Kind: "string" }] } } },
     ], "URL parameters expose a writable sparse string or repeated-string result for both supported arities");
     var windowFocus = await provider.ReadValueAsync(document, "@vueuse/core", "useWindowFocus");
+    var vueModel = await provider.ReadValueAsync(document, "@vueuse/core", "useVModel");
+    Check(vueModel.Signatures.Any(signature => signature is {
+        Parameters: [_, { Type.Kind: "propertyKey" }, { RestCallback: true }],
+        ReturnType.Name: "VueWritableComputedRef",
+        OverloadPriority: -1,
+    }) && vueModel.Signatures.Any(signature => signature is {
+        Parameters: [_, { Type.RequirePlainRecord: true }, { RestCallback: true }, { Type.Kind: "object" }],
+    }) && vueModel.Signatures.Any(signature => signature is {
+        Parameters: [_, { Type.RequireRecordView: true }, { RestCallback: true }, { Type.Kind: "object" }],
+    }) && vueModel.Signatures.Any(signature => signature is {
+        Parameters: [_, { Type.Kind: "propertyKey" }, { RestCallback: true }, { Type.Kind: "object" }],
+        ManagedNameSuffix: "WithCloneCallback",
+    }), "VueUse projects explicit model emits with computed, clone and passive options");
     Check(mediaQuery.Signatures.Count == 3 &&
         mediaQuery.Signatures.All(signature => signature.Parameters is [_, { Optional: true, Type.Kind: "object" }] &&
             signature.ReturnType is { Kind: "ref", Name: "VueComputedRef", ReadOnly: true, ElementType.Kind: "boolean" }) &&
@@ -2061,9 +2506,12 @@ try
             "useIsFieldTouched", "useFieldArray", "useResetForm", "useValidateField", "useValidateForm", "useSubmitForm", "useSetFieldValue", "useFormContext"]);
     var formOptions = new JoltCompileOptions { NpmValues = formExports };
     var formContextSignatures = formExports.Single(value => value.ExportName == "useFormContext").Signatures;
+    var typedContext = formContextSignatures.SingleOrDefault(signature => signature.TypeParameters is ["TInput"])?.ReturnType.ElementType?.Members ?? [];
+    var explicitContext = formContextSignatures.Single(signature => signature.TypeParameters is ["TInput", "TOutput"]);
     Check(formContextSignatures is [
         { Parameters: [], TypeParameters: null, ReturnType: { Kind: "undefinedable", ElementType.Members: { } status } },
-        { Parameters: [], TypeParameters: ["TInput"], ReturnType: { Kind: "undefinedable", ElementType.Members: { } typedContext } },
+        { Parameters: [], TypeParameters: ["TInput"], ReturnType.Kind: "undefinedable" },
+        { Parameters: [], TypeParameters: ["TInput", "TOutput"], ReturnType.Kind: "undefinedable" },
     ] && status.Any(member => member is { Name: "name", Type.Kind: "string" }) &&
         status.Any(member => member is { Name: "submitCount", Type: { Kind: "ref", ElementType.Kind: "number" } }) &&
         status.Any(member => member is { Name: "isSubmitting", Type: { Kind: "ref", ElementType.Kind: "boolean" } }) &&
@@ -2072,6 +2520,93 @@ try
         typedContext.Any(member => member is { Name: "validateField", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }] }] }),
         "both ambient context overloads preserve provider absence, declared status and the input DTO path");
     var formSignatures = formExports.Single(value => value.ExportName == "useForm").Signatures;
+    var typedForm = formSignatures.Single(signature => signature.TypeParameters is ["TInput", "TOutput"]).ReturnType;
+    var unseededForm = formSignatures.Single(signature => signature is { Parameters: [], TypeParameters: ["TInput"] }).ReturnType;
+    foreach (var commonMembers in formSignatures.Where(signature => signature.TypeParameters?.Contains("TInput") == true)
+        .Select(signature => signature.ReturnType.Members!)
+        .Concat(formContextSignatures.Where(signature => signature.TypeParameters?.Contains("TInput") == true)
+            .Select(signature => signature.ReturnType.ElementType!.Members!)))
+    {
+        Check(commonMembers.Any(member => member is { Name: "name", Type.Kind: "string" }) &&
+            commonMembers.Any(member => member is { Name: "submitCount", Type: { Kind: "ref", ReadOnly: true, ElementType.Kind: "number" } }) &&
+            commonMembers.Any(member => member is { Name: "isSubmitting", Type: { Kind: "ref", ReadOnly: true, ElementType.Kind: "boolean" } }) &&
+            commonMembers.Any(member => member is { Name: "isValidating", Type: { Kind: "ref", ReadOnly: true, ElementType.Kind: "boolean" } }) &&
+            commonMembers.Any(member => member is { Name: "meta", Type: { Kind: "ref", ReadOnly: true, ElementType.Members: { } meta } } &&
+            meta.Any(state => state is { Name: "dirty", Type.Kind: "boolean" })) &&
+            commonMembers.Any(member => member is { Name: "setFieldTouched", Type.Signatures: [{ TypeParameters: ["TField"],
+                Parameters: [{ Type: { Kind: "propertyPath", VeeValidatePath: true, ArrayIndices: true } }, { Type.Kind: "boolean" }] }] }) &&
+            commonMembers.Any(member => member is { Name: "setFieldError", Type.Signatures: [{ TypeParameters: ["TField"],
+                Parameters: [{ Type.Kind: "propertyPath" }, { Optional: false, Type: { Kind: "undefinedable", ElementType.Kind: "union" } }] }] }) &&
+            commonMembers.Any(member => member is { Name: "setErrors", Type.Signatures: [{
+                Parameters: [{ Type: { Kind: "formPathMap", TypeArguments: [{ Name: "TInput" }],
+                    ElementType: { Kind: "undefinedable", ElementType.Kind: "union" }, ArrayIndices: true } }] }] }) &&
+            commonMembers.Any(member => member is { Name: "resetForm", Type.Signatures: [{
+                Parameters: [{ Optional: true, Type.Members: [{ Name: "submitCount", Optional: true, Type.Kind: "number" }] },
+                    { Optional: true, Type.Members: [{ Name: "force", Optional: true, Type.Kind: "boolean" }] }] }] }),
+            "typed forms preserve common live state, selector-based mutations, checked error paths and optional reset options");
+    }
+    var seededForm = formSignatures.Single(signature => signature is { Parameters: [{ Type.Members:
+        [{ Name: "initialValues", Optional: false, Type.Name: "TInput" }] }], TypeParameters: ["TInput"] }).ReturnType;
+    Check(HasSparseSubmission(seededForm.Members!, "handleSubmit", "TInput", "values"),
+        "seeded forms keep raw submission values sparse after fields unregister");
+    foreach (var formMembers in new[] { unseededForm.Members!, typedContext, explicitContext.ReturnType.ElementType!.Members! })
+    {
+        Check(formMembers.Any(member => member is { Name: "errorBag", Type: { Kind: "ref", ReadOnly: true,
+            ElementType: { Kind: "readonlyDictionary", ElementType: { Kind: "array", ElementType.Kind: "string" } } } }) &&
+            formMembers.Any(member => member is { Name: "setValues", Type.Signatures: [{
+                Parameters: [{ Type.Name: "TInput" }, { Optional: true, Type.Kind: "boolean" }]
+            }] }), "unseeded and ambient forms preserve readonly error bags and typed input patches");
+    }
+    Check(typedContext.All(member => member.Name != "handleSubmit") &&
+        HasSparseSubmission(unseededForm.Members!, "handleSubmit", "TInput", "values") &&
+        HasSparseSubmission(explicitContext.ReturnType.ElementType!.Members!, "handleSubmit", "TOutput", "values"),
+        "submission keeps input values sparse and separates an explicit ambient output");
+    Check(formSignatures.Any(signature => signature is { Parameters: [], TypeParameters: ["TInput"], ReturnType.Kind: "object" } &&
+        signature.ReturnType.Members is { } members &&
+        members.Any(member => member is { Name: "values", Type: { Kind: "partialRecord", ElementType.Name: "TInput" } }) &&
+        members.Any(member => member is { Name: "setFieldValue", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }, ..] }] }) &&
+        members.Any(member => member is { Name: "validateField", Type.Signatures: [{ Parameters: [{ Type.Kind: "propertyPath" }],
+            ReturnType.Kind: "promise" }] }) &&
+        members.Any(member => member is { Name: "defineField", Type.Signatures: { } signatures } &&
+            signatures.Any(call => call is { Parameters: [_], ReturnType.Kind: "tupleView" }))),
+        "typed no-options form creation supplies a non-null result with sparse values and correlated field operations");
+    Check(typedForm.Members?.SingleOrDefault(member => member.Name == "defineField")?.Type.Signatures is [{
+        Parameters: [{ Type: { Kind: "propertyPath", VeeValidatePath: true, ArrayIndices: true } }],
+        ReturnType.Kind: "tupleView"
+    }, { Parameters: [{ Type.Kind: "propertyPath" }, { Type.Kind: "object" }], ReturnType.Kind: "tupleView" },
+    {
+        TypeParameters: ["TField", "TProps"],
+        Parameters: [{ Type.Kind: "propertyPath" }, { Type.Members: var callbackConfig }],
+        ReturnType.Members: [_, { Name: "Item2", Type.ElementType: { Kind: "recordTypeParameter", Name: "TProps" } }]
+    }, {
+        TypeParameters: ["TField"],
+        Parameters: [{ Type.Kind: "propertyPath" }, { Type.Signatures: [{ ReturnType.Members: var lazyScalars }] }]
+    }, {
+        TypeParameters: ["TField", "TProps"],
+        Parameters: [{ Type.Kind: "propertyPath" }, { Type.Signatures: [{ ReturnType.Members: var lazyProps }] }],
+        ReturnType.Members: [_, { Name: "Item2", Type: { ReadOnly: true,
+            ElementType: { Kind: "recordTypeParameter", Name: "TProps" } } }]
+    }] && lazyScalars?.Select(member => member.Name).Order(StringComparer.Ordinal).SequenceEqual(
+        ["validateOnBlur", "validateOnChange", "validateOnInput", "validateOnModelUpdate"]) == true &&
+        lazyProps?.SingleOrDefault(member => member.Name == "props") is
+            { Optional: false, Type: { Kind: "recordTypeParameter", Name: "TProps" } } &&
+        callbackConfig!.Any(member => member is {
+        Name: "props", Optional: false, Type.Signatures: [{
+            Parameters: [{ Type.Members: var stateMembers }],
+            ReturnType: { Kind: "recordTypeParameter", Name: "TProps" }
+        }]
+    } && stateMembers!.Any(state => state is {
+        Name: "value", Type: { Kind: "nullableSlot", ElementType.Name: "TField" }
+    })) &&
+        typedForm.Members?.SingleOrDefault(member => member.Name == "setFieldValue")?.Type.Signatures is [{
+        Parameters: [{ Type: { Kind: "propertyPath", VeeValidatePath: true, ArrayIndices: false } }, ..]
+    }] && typedForm.Members?.SingleOrDefault(member => member.Name == "validateField")?.Type.Signatures is [{
+        Parameters: [{ Type: { Kind: "propertyPath", VeeValidatePath: true, ArrayIndices: true } }],
+        ReturnType.Kind: "promise"
+    }] && formExports.Single(value => value.ExportName == "useFormContext").Signatures.Any(signature =>
+        signature.ReturnType.ElementType?.Members?.SingleOrDefault(member => member.Name == "validateField")?.Type.Signatures is [{
+        Parameters: [{ Type: { Kind: "propertyPath", VeeValidatePath: true, ArrayIndices: true } }]
+    }]), "locked field binding and validation support indexed paths while the setter preserves its narrower path domain");
     Check(formSignatures.Count(signature => signature is { TypeParameters: null, Parameters: [] }) == 1 &&
         formSignatures.Count(signature => signature is { TypeParameters: ["TInput", "TOutput"], Parameters: [{ Optional: false }] }) == 1,
         "the typed-schema projection preserves the separate parameterless call");
@@ -2089,7 +2624,7 @@ try
         (formSource.Replace("form.HandleSubmit(values =>", "form.HandleSubmit((RegistrationInput values) =>", StringComparison.Ordinal), "CS1661"),
         (formSource.Replace("Parse = values =>", "Parse = (RegistrationOutput values) =>", StringComparison.Ordinal), "CS1661"),
         (formSource.Replace("Value = new(0),", "", StringComparison.Ordinal), "CS9035"),
-        (formSource.Replace("form.Values.Address", "form.Values.AddressLength", StringComparison.Ordinal), "CS1061"),
+        (formSource.Replace("var errors = form.Errors;", "var invalidAddress = form.Values.Address; var errors = form.Errors;", StringComparison.Ordinal), "CS1061"),
         (formSource.Replace("var unruled = VeeValidate.UseField(\"unruled\");", "var unruled = VeeValidate.UseField(\"unruled\"); var untypedValue = unruled.Value;", StringComparison.Ordinal), "CS1061"),
         (formSource.Replace("var unruled = VeeValidate.UseField(\"unruled\");", "var unruled = VeeValidate.UseField(\"unruled\"); unruled.SetValue(1);", StringComparison.Ordinal), "CS1061"),
         (formSource.Replace("var missingPath = VeeValidate.UseFieldValue<string>(\"missing-path\");", "var missingPath = VeeValidate.UseFieldValue<string>(\"missing-path\"); missingPath.Value = \"invalid\";", StringComparison.Ordinal), "CS0200"),
@@ -2128,6 +2663,75 @@ finally
     temporary.Delete(recursive: true);
 }
 Console.WriteLine("Verified npm component and value metadata, public subpaths, declarations, and version invalidation.");
+
+var toolingStore = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ?? Path.GetFullPath(".tmp/nodeapi-store");
+var toolingLock = Path.GetFullPath("src/Jazor.Npm/tooling/pnpm-lock.yaml");
+var toolingVersion = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(toolingLock)));
+var writerCheck = Directory.CreateTempSubdirectory("jolt-locale-writer-");
+try
+{
+    var script = Path.Combine(writerCheck.FullName, "verify.mjs");
+    await File.WriteAllTextAsync(script, """
+        import assert from 'node:assert/strict';
+        import { pathToFileURL } from 'node:url';
+        const [typescript, recognizer] = globalThis.__jazorArguments;
+        const { default: ts } = await import(pathToFileURL(typescript));
+        const { readStaticLocaleWriter } = await import(pathToFileURL(recognizer));
+        const declarations = `
+            declare const marker: unique symbol;
+            type Empty<T> = T extends { [marker]?: never } ? true : false;
+            type Absent<T> = [T] extends [never] ? true : false;
+            type Languages<T, K = keyof T> = K extends string ? K : never;
+            interface Composer<M> {
+                setLocaleMessage<S = never, L extends string = string,
+                    K extends Languages<NonNullable<M>> = Languages<NonNullable<M>>,
+                    P = Absent<S> extends true ? Empty<M> extends true ? {} : NonNullable<M>[K] : S,
+                    V extends P = P>(locale: L | K, message: V): void;
+            }
+            declare const concrete: Composer<{ en: { title: string } }>;
+        `;
+        function accepts(text, locale = 'en') {
+            const options = { strict: true };
+            const host = ts.createCompilerHost(options);
+            const original = host.getSourceFile;
+            host.getSourceFile = (file, version, ...args) => file === 'composer.ts' ?
+                ts.createSourceFile(file, text, version, true) : original(file, version, ...args);
+            const program = ts.createProgram(['composer.ts'], options, host);
+            assert.deepEqual(program.getSemanticDiagnostics(), []);
+            const checker = program.getTypeChecker();
+            const file = program.getSourceFile('composer.ts');
+            const declaration = file.statements.at(-1).declarationList.declarations[0];
+            const type = checker.getTypeAtLocation(declaration);
+            const method = checker.getTypeOfPropertyOfType(type, 'setLocaleMessage');
+            const acceptsLocale = readStaticLocaleWriter(ts, checker, method.getCallSignatures(), type.target.getSymbol(), 'setLocaleMessage', checker.getTypeArguments(type)[0]);
+            return Boolean(acceptsLocale && acceptsLocale(locale));
+        }
+        assert.equal(accepts(declarations), true);
+        const mixedKeys = declarations.replace('Composer<{ en: { title: string } }>', 'Composer<{ 42: { title: string }; en: { title: string } }>');
+        assert.equal(accepts(mixedKeys), true);
+        assert.equal(accepts(mixedKeys, '42'), false);
+        assert.equal(accepts(declarations.replace('Languages<T, K = keyof T> = K extends string ? K : never', 'Languages<T> = Extract<keyof T, string>')), true);
+        assert.equal(accepts(declarations.replace('T extends { [marker]?: never } ? true : false', 'T extends unknown ? true : false')), false);
+        """);
+    await NodeModuleRunner.RunAsync(writerCheck.FullName, script, [
+        Path.Combine(toolingStore, "npm-metadata", toolingVersion, "node_modules", "typescript", "lib", "typescript.js"),
+        Path.GetFullPath("src/Jazor.Npm/locale-message-projection.mjs"),
+    ]);
+}
+finally
+{
+    writerCheck.Delete(recursive: true);
+}
+
+static bool HasSparseSubmission(IReadOnlyList<NpmValueMember> members, string name, string output, string valuesName) =>
+    members.SingleOrDefault(member => member.Name == name)?.Type.Signatures is [_, {
+        Parameters: [
+            { Type.Signatures: [{ Parameters: [{ Type: { Kind: "partialRecord", ElementType.Name: var success } }] }] },
+            { Type.Signatures: [{ Parameters: [{ Type.Members: var failure }] }] }
+        ],
+        ReturnType.Signatures: [{ Parameters: [], ReturnType: { Kind: "promise", ElementType.Kind: "void" } }]
+    }] && success == output && failure?.Any(member => member.Name == valuesName &&
+        member.Type is { Kind: "partialRecord", ElementType.Name: "TInput" }) == true;
 
 static void Check(bool value, string description)
 {

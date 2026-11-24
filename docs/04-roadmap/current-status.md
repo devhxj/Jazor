@@ -1,24 +1,30 @@
 # 当前状态
 
-> 当前版本：[2.5.0（2026-11-22）](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.6.0（2026-11-24）](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 
 ## Jolt 作者面
 
-| 范围 | 2.5.0 已发布能力 |
+| 范围 | 2.6.0 已发布能力 |
 | --- | --- |
 | 编译与构建 | `.jazor` 模板与 C#、本地组件、npm 公开 TypeScript 声明与 ESM、源码映射、Vite 开发与生产构建 |
 | 组件契约 | 类型化参数、回调、插槽、受约束的泛型参数、本地和 npm 命名模型、原生表单绑定、DOM 事件、`@key`、`@ref` 与 `<style scoped>` |
 | 混合项目与组件库 | 同一 Vite 项目双向引用 `.vue` 和 `.jazor`，通过 `jolt library` 分发 ESM、TypeScript 声明和样式 |
 | npm 与应用组合 | 类型化 npm 函数和标量常量、每实例 `[Setup]`、Vue 内置组件、可选路由指令和 ASP.NET Core 生产 SSR |
-| npm 声明投影 | `jolt bindings` 可为普通 .NET 类库生成公开 C# 声明，构建和编辑器可跨进程复用项目内的投影结果 |
+| npm 声明投影 | Vue 组件按需读取项目依赖并缓存投影，普通类库通过 C# 使用点按需生成投影 |
 | 编辑器 | VS Code 与 Visual Studio 扩展。语义高亮、补全、诊断、定义、引用、改名、格式化与快捷修复 |
 | 模块导出 | Vue 组件为默认导出，公开静态方法和字段以及公开常量为具名导出 |
 
 运行方式、类型边界及编辑器配置见 [Jolt 作者指南](../03-guides/jolt-authoring.md)。
 
+普通 `.cs` 项目可通过 `using` 按需投影 npm 导出。构建使用 Jazor 工具和进程内 TypeScript checker，Jolt 的组件路径复用同一算法。Windows 上的 VS Code C# 语言服务已验证未保存文件的成员补全。在 Automatic 下还验证了参数提示、类型诊断、错误恢复，以及链接包声明修改后的签名和原始位置更新。F12 打开生成的 C#，悬停提示提供原始 TypeScript 声明的链接。[编辑器验收](../../scripts/csharp/verify-jazor-npm-editor.cs) · [职责与实施状态](./jazor-jolt-migration.md)
+
+用发行前的同一 SDK 候选包，Windows VS Code 和 Visual Studio 2026 Insiders 均已从成员悬停打开本项目的 `addDays.d.ts`，光标定位到声明行和列。桌面 VS 使用现有 `Jolt.VisualStudio.vsix` 的 0.1.9 候选版，安装一次即可使用 C# 导航与原有 `.jazor` 编辑功能。[组合扩展](../../editors/jolt-visual-studio/README.md)
+
 ## 已交付的核心能力
+
+迁移工作区另外验证了相同的 Jazor 类库包在独立宿主和 Vue 应用中执行。Jolt 使用应用的 npm 包实例。ASP.NET Core 可附接外部 Jolt 或启动本地工具，Chromium 在两种路径中均通过代理完成热更新。Windows 桌面 Visual Studio 的 F5 和 Shift+F5 已验证自启会话可更新页面并释放端口。生产 SPA 在点击后从发布子路径获取独立的 JS 模块；从打包到 Folder Publish，SPA 构建一次，SSR 两端各构建一次。[类库交付验收](../../scripts/csharp/verify-jazor-module-handoff.cs) · [宿主代理验收](../../scripts/csharp/verify-development-hmr.cs) · [SSR 验收](../../scripts/csharp/verify-jolt-ssr.cs)
 
 | 能力 | 当前范围 | 权威入口 |
 | --- | --- | --- |
@@ -41,9 +47,11 @@
 
 ## 生态与参考应用
 
-构建和编辑器按项目复用磁盘上的 npm 声明快照、C# 投影及定义位置。普通 C# 项目可以用 `jolt bindings` 将公开投影写入类库，其他项目通过项目引用复用同一套类型。跨进程验收覆盖并发首次生成、重启后的命中、删除输出后恢复，以及上游声明修改后的重新诊断。[缓存与输出位置](../03-guides/jolt-authoring.md#复用构建生成的投影) · [缓存验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
+构建和编辑器按项目复用磁盘上的 npm 声明快照、C# 投影及定义位置。普通 C# 项目通过 `using Npm…` 获得构建投影，其他项目可通过项目引用使用公共 C# 门面。跨进程验收覆盖并发首次生成、重启命中、输出恢复与上游声明改动。公开声明和组件投影另已验证冷、热缓存的取消及重试。组件会先准备源码和定义索引，写完索引后再发布供读者识别完整条目的源码。[缓存与输出位置](../03-guides/jolt-authoring.md#复用构建生成的投影) · [缓存验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
 
 开放泛型可穿过回调、Promise、只读数组、Vue ref 和命名数据记录。普通 C# 与 `.jazor` 的跨包用例检查同一记录、递归子节点和 ref 的读写可见性。有限 `Pick` 和 `Partial<Pick<…>>` 的结果可传回同一模块中接收相同映射的函数，并区分字段缺席与数值 `0`。独立的可选布尔判别可以按上游默认类型提供省略入口，另有对应显式真、假的精确返回类型。上游只修改泛型默认值时，缓存验收也会重新检查旧调用。Vue I18n 已验证通过生成绑定切换 locale 后的客户端重渲染。[投影规范](../02-architecture/npm-projection-rules.md) · [七库验收计划](./p3-vue-application-bindings-plan.md)
+
+Vue 深层 ref 投影已覆盖普通对象属性、数组元素和浅层容器。VueUse 的 `UseVModel` 可接收显式更新回调。具名资源包返回具体 Vue I18n Composer 时，可按语言读取强类型叶，消息字面量确定命名参数、位置参数及复数选择值。按语言替换和合并资源后，原翻译方法仍可直接调用。链接声明改动 ref 深度、插值、列表参数数量或可写字段后，公开绑定和同一编辑器会话均会更新。 [普通类库与 Vue 运行](../../scripts/csharp/verify-jolt-async-vue-refs.cs) · [静态资源 SSR](../../scripts/csharp/verify-jolt-i18n-plugin.cs) · [缓存与 LSP](../../scripts/csharp/verify-jolt-projection-cache.cs)
 
 Vue、Vue Router、Pinia、Pinia Testing 和 Vue Devtools 的手写绑定随 SDK 发布，Style 提供 Jazor 的样式功能。七个应用级绑定已移出 2.4.0 的默认发布清单。已有项目仍可使用 2.3.0 的包。Jolt 的投影验收沿用这些绑定的业务用例，逐项记录真实调用、浏览器交互和适用的 SSR 或 worker。 [npm 投影验收计划](./p3-vue-application-bindings-plan.md)
 
@@ -53,7 +61,9 @@ Vue Query 的 `UseQuery` 把异步回调的结果类型传给数据 ref，`UseMu
 
 Monaco 浏览器用例通过投影的 `CreateModel`、`Create` 和 `SetModel` 将同一模型装入编辑器。应用定义 worker 的 RPC 接口并提供 worker 入口。投影的 `WithSyncedResources` 同步该模型后，worker 读取镜像中的文本并返回给页面，随后组件释放 worker、编辑器和模型。Chrome 实测还能从模型变更事件读到版本号，解除订阅后再修改模型，回调次数保持不变。C# 还可写入带严重度、消息及范围的 marker 数组，按 owner 和模型读取，再清除一个 owner。Chromium 检查了另一 owner 的标记仍然存在，并从编辑器 DOM 读到 C# 主题指定的背景色。 [Monaco 用例](../../scripts/csharp/fixtures/jolt-monaco-browser/)
 
-普通 C# 类库可用 `jolt bindings` 生成公开投影。独立消费项目已验证同一个 date-fns `Interval` 跨导出传递、es-toolkit 的 `retry` 与 `withTimeout` 传递应用记录、真实 ESM 调用、默认导出、标量常量、显式 null 与缺省字段。Vue I18n 的两个模式在只引用投影 DLL 的消费者中也已实际运行。七库盘点把组件消费用例再对着公开 DLL 编译一次，并列出手写重载和类型成员，按 Roslyn 在代表性用例中选中的具体方法、属性或枚举成员记录编译证据。 [独立类库验收](../../scripts/csharp/verify-jolt-public-projection.cs) · [七库对照](../../scripts/csharp/verify-jolt-binding-projection.cs)
+带类型的表单可以从空状态或指定初值创建，使用记录选择器设置和清除字段错误，也可以给数组字段传入按状态变化的配置。最后一个同名字段卸载后，实时值及无 schema 的提交值都反映字段缺席。注入的表单可声明父级 schema 的提交输出类型。Vue I18n 的消息、日期格式和数字格式可按语言读取，动态消息资源使用与 VueUse 异步拒绝原因共用的 `UnknownValue` 检查实际值。[作者指南](../03-guides/jolt-authoring.md) · [七库验收范围](./p3-vue-application-bindings-plan.md#投影边界)
+
+普通 C# 类库可通过 `using Npm…` 在构建中生成投影。独立消费项目已验证同一个 date-fns `Interval` 跨导出传递、es-toolkit 的 `retry` 与 `withTimeout` 传递应用记录、真实 ESM 调用、默认导出、标量常量、显式 null 与缺省字段。Vue I18n 的两个模式在只引用投影 DLL 的消费者中也已实际运行。七库盘点把组件消费用例再对着公开 DLL 编译一次，并列出手写重载和类型成员，按 Roslyn 在代表性用例中选中的具体方法、属性或枚举成员记录编译证据。 [独立类库验收](../../scripts/csharp/verify-jolt-public-projection.cs) · [七库对照](../../scripts/csharp/verify-jolt-binding-projection.cs)
 
 [Jolt Counter](../../samples/Jolt.Counter/README.md) 验证 npm 组件、父子组件回调、开发服务和生产构建。
 

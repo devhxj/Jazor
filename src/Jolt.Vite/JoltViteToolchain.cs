@@ -6,11 +6,13 @@ namespace Jolt.Vite;
 
 public static class JoltViteToolchain
 {
+    private static readonly EmbeddedNodeModule ViteModule = new(typeof(JoltViteToolchain), "jolt-vite.cjs");
+
     public const int DefaultPort = 15658;
 
     public static Task BuildLibraryAsync(string projectDirectory, string generatedDirectory,
         string outputDirectory, IReadOnlyList<string> modulePaths, CancellationToken cancellationToken)
-        => NodeToolchain.BuildJoltLibraryAsync(projectDirectory, generatedDirectory, outputDirectory, modulePaths, cancellationToken);
+        => InvokeBuildAsync(projectDirectory, "buildJoltLibrary", new { projectDirectory, generatedDirectory, outputDirectory, modulePaths }, cancellationToken);
 
     public static async Task<bool> BuildAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
         string? storeDirectory = null, CancellationToken cancellationToken = default)
@@ -20,7 +22,7 @@ public static class JoltViteToolchain
         if (!await compile(cancellationToken))
             return false;
 
-        await NodeToolchain.BuildAsync(projectDirectory, ssr: false, cancellationToken, jolt: true);
+        await InvokeBuildAsync(projectDirectory, "build", new { projectDirectory }, cancellationToken);
         return true;
     }
 
@@ -49,7 +51,7 @@ public static class JoltViteToolchain
         try
         {
             // Publish the client and server as one generation after both builds succeed.
-            await NodeToolchain.BuildJoltSsrAsync(projectDirectory, entry, staging, cancellationToken);
+            await InvokeBuildAsync(projectDirectory, "buildJoltSsr", new { projectDirectory, serverEntry = entry, outputDirectory = staging }, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(destination))
                 Directory.Move(destination, previousOutput);
@@ -77,6 +79,11 @@ public static class JoltViteToolchain
     public static async Task<JoltViteServer> ServeAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
         string? storeDirectory = null, string host = "127.0.0.1", int port = DefaultPort,
         CancellationToken cancellationToken = default, Action<Exception>? reportError = null)
+        => await ServeAsync(projectDirectory, compile, null, storeDirectory, host, port, cancellationToken, reportError);
+
+    internal static async Task<JoltViteServer> ServeAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
+        Action<Action>? subscribeExternal, string? storeDirectory = null, string host = "127.0.0.1", int port = DefaultPort,
+        CancellationToken cancellationToken = default, Action<Exception>? reportError = null)
     {
         projectDirectory = Path.GetFullPath(projectDirectory);
         await RestoreAsync(projectDirectory, storeDirectory, cancellationToken);
@@ -94,7 +101,8 @@ public static class JoltViteToolchain
         {
             IncludeSubdirectories = true,
             NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName,
-            Filters = { "*.jazor", "*.vue", "*.ts", "*.tsx", "*.mts", "*.cts" },
+            InternalBufferSize = 64 * 1024,
+            Filters = { "*.jazor", "*.vue", "*.ts", "*.tsx", "*.mts", "*.cts", "*.cs", "package.json" },
         };
         var dependencyWatcher = new FileSystemWatcher(projectDirectory)
         {
@@ -129,6 +137,12 @@ public static class JoltViteToolchain
             changes.Writer.TryWrite(true);
         }
 
+        subscribeExternal?.Invoke(() =>
+        {
+            Interlocked.Exchange(ref sourceChanged, 1);
+            changes.Writer.TryWrite(true);
+        });
+
         NodeViteServer? vite = null;
         try
         {
@@ -138,7 +152,8 @@ public static class JoltViteToolchain
                 throw new InvalidOperationException("The initial Jolt compilation failed.");
 
             vite = new NodeViteServer(projectDirectory);
-            var result = await vite.StartAsync(projectDirectory, host, port, "/", cancellationToken, jolt: true);
+            // The author’s Vite base also drives asset URLs and the HMR socket behind a proxy.
+            var result = await vite.StartAsync(projectDirectory, host, port, null, cancellationToken, ViteModule.Materialize(projectDirectory));
             using var response = JsonDocument.Parse(result);
             var origin = new Uri(response.RootElement.GetProperty("origin").GetString()!);
             return new JoltViteServer(origin, vite, [watcher, dependencyWatcher], changes.Reader, RebuildAsync, reportError);
@@ -186,11 +201,15 @@ public static class JoltViteToolchain
 
         bool IsSource(string path)
         {
-            if (Path.GetExtension(path).ToLowerInvariant() is not (".jazor" or ".vue" or ".ts" or ".tsx" or ".mts" or ".cts"))
+            if (Path.GetFileName(path) != "package.json" &&
+                Path.GetExtension(path).ToLowerInvariant() is not (".jazor" or ".vue" or ".ts" or ".tsx" or ".mts" or ".cts" or ".cs"))
                 return false;
             var relative = Path.GetRelativePath(projectDirectory, path);
+            // The dependency watcher already accounts for root manifest edits and pnpm rewrites.
+            if (relative.Equals("package.json", StringComparison.Ordinal))
+                return false;
             return !relative.Split(Path.DirectorySeparatorChar).Any(part =>
-                part is "node_modules" or ".jolt" or "dist" or ".git" or ".jazor");
+                part is "node_modules" or ".jolt" or "dist" or ".git" or ".jazor" or "bin" or "obj");
         }
     }
 
@@ -215,8 +234,18 @@ public static class JoltViteToolchain
     public static async Task<Dictionary<string, JoltCompiledStyle>> CompileScopedStylesAsync(string projectDirectory,
         IReadOnlyDictionary<string, string> styles, CancellationToken cancellationToken)
         => JsonSerializer.Deserialize<Dictionary<string, JoltCompiledStyle>>(
-            await NodeToolchain.CompileJoltStylesAsync(projectDirectory, styles, cancellationToken),
+            await InvokeBuildAsync(projectDirectory, "compileJoltStyles", new { projectDirectory, styles }, cancellationToken),
             JsonSerializerOptions.Web)!;
+
+    private static async Task<string> InvokeBuildAsync(string projectDirectory, string operation,
+        object request, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var environment = new NodeEnvironment(projectDirectory);
+        // The shared loader selects the correct native Vite runtime. Vue options belong to this module.
+        return await environment.InvokeAsync(ViteModule.Materialize(projectDirectory), operation, cancellationToken,
+            JsonSerializer.Serialize(request), NodeToolchain.MaterializeBridge(projectDirectory));
+    }
 }
 
 public sealed record JoltCompiledStyle(string Code, IReadOnlyList<string> Assets);

@@ -12,6 +12,7 @@
 | --- | --- | --- | --- |
 | **P0：首批切片已交付** | [#4：ILSpy 按需导入普通 C# / NuGet DLL](https://github.com/devhxj/Jazor/issues/4) | 解除普通托管类库只有签名、没有可编译实现的核心采用障碍，直接扩大现有 C# 代码的复用范围；1.4.2 已实现普通 DLL/NuGet 自动导入、成员闭包与共享模块 | 实现资产与 ref/lib 配对、原始/恢复符号对应、静态直接调用的成员闭包；无关不支持成员不阻断；真实 DLL/NuGet 的 JS 与 .NET 结果对照及隔离 consumer 验证 |
 | **当前主线** | [#138：Jolt 组件和语义编辑](../03-guides/jolt-authoring.md) | 以顶层标记和 C# 编写 Vue 组件，直接使用项目依赖中的 npm 组件 | 用同一应用验证组件组合、编辑器、浏览器和隔离工具包消费者 |
+| **工具链职责调整** | [通用投影与 Vue 开发会话](./jazor-jolt-migration.md) | 普通 C# 构建、VS Code 未保存源码和 Jolt 组件共用投影规则 | 验证桌面 Visual Studio 的成员签名与编辑反馈，以及 Vue CLI 与 F5 对同一开发会话的复用 |
 
 ## 作者体验与交付证据
 
@@ -45,18 +46,13 @@ SSR state envelope、认证快照/browser provider、单一显式构造函数的
 
 每个新增 lowering 先明确求值顺序、副作用、结果、使用点语义、确定性与失败边界，再由 Compiler / CLR / Analyzer 按职责实现。仅为擦除类型注解增加 blanket rejection 不属于实现路线。
 
-## Vue 应用生态绑定
+## npm 声明投影
 
-Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 的手写绑定持续维护并随 SDK 发布。DateFns、VueUse、FloatingUi、VeeValidate、VueI18n、VueQuery 和 Monaco 的现有绑定及测试提供自动投影的业务用例，验收覆盖浏览器及适用的 SSR 和 worker。 [npm 投影计划](./p3-vue-application-bindings-plan.md)
+下一阶段由 Jero 的真实消费调用驱动。先保留能复现问题的锁定包入口、公开声明和调用，再提取影响调用的最小声明关系。按类型构造、泛型关联、重载选择、具名身份和宿主协议组织实现。Vue、Vue Router、Pinia、Pinia Testing 和 Vue Devtools 继续维护手写宿主契约。七个应用级手写绑定及其样例作为回归语料。
 
-以七个手写库的完整公开 API 和消费代码为参考，按声明中的类型关系归集差距。优先选会阻断跨调用传值的规则，用锁定包验证实际行为，再用其他包或独立声明验证规则可复用。已能生成的导出也要检查其重载、选项、返回成员和错误输入。[映射规则与验收](./p3-vue-application-bindings-plan.md#从手写设计提取映射规则) · [七库对照检查](../../scripts/csharp/verify-jolt-binding-projection.cs)
-
-| 目标调用 | 下一步验收 |
-| --- | --- |
-| date-fns 的区间选项，VueUse 的 ref 与 getter | 已验证 `EachDayOfInterval` 的 `Step`、混合数组传给 `Min` 和 `Max`，以及 `UseMediaQuery` 的字符串、ref 和 getter 调用。已从事件名推导键盘和鼠标两类回调。通用和专用回调均已验证分发与清理，独立类库已将法语 locale 传给 `FormatDistance`。后续检查其他 DOM 事件目标和日期上下文选项。 |
-| Floating UI、表单和查询 | 已验证 Floating UI 的箭头定位、同步与异步字段验证、异步查询到数据 ref，以及 mutation 输入到返回值。带类型的表单已区分原始输入与成功提交结果。查询用例已在三个活跃查询上验证按 key 精确或前缀失效及主动重取。DOM 入口的 `autoUpdate` 已验证清理后停止响应 resize。Vue 入口的双 ref 也已验证换锚点后重新定位。`WhileElementsMounted` 会在替换锚点时移除旧监听器。含记录的混合查询键与按页号的并发重取已通过缓存断言。DOM 与 Vue 跨入口的 middleware 已通过定位和清理用例。字段数组和表单写入已通过 SSR。记录选择器已能读取嵌套字段，后续扩展到嵌套写入与数组索引。无限查询已验证数字游标、两页记录与终止条件，显式结果类型下的 `PageParams` 仍待覆盖。 |
-| Vue 插件和本地化 | 已运行 Vue Query 对象插件与 Vue I18n 泛型工厂的 C# 注册。初始化模式已能约束全局 `Locale` 的读写方式，下一步检查嵌套消息如何约束插值键。命名插值已支持字符串字典，本地作用域与一层嵌套消息已通过独立应用 SSR。 |
-| 普通 C# 类库生成公开绑定 | `jolt bindings` 已通过独立的类库与第二个消费项目构建，并执行了消费端生成的 ESM。后续随七库扩展的泛型和实例类型复用这条门禁。[消费验证](../../scripts/csharp/verify-jolt-public-projection.cs) |
+1. 优先处理阻断 Jero 跨调用传值、回调或组合调用的声明关系。从包的真实声明抽取同构改名夹具，再用只改变一个约束的近似声明验证拒绝行为。
+2. 公共投影需要维持 C# 绑定和 JavaScript 调用的一致性。检查读写域、参数省略、重载优先级和类型身份，并用独立 DLL 消费者和真实 ESM 执行验证。
+3. 对同一调用检查冷缓存、命中与失效。编辑器解析和构建使用一致的投影契约。记录 Jero 涉及的实际阻断、调用用例和通过的运行场景。[投影验收计划](./p3-vue-application-bindings-plan.md)
 
 ## Jolt 开发顺序
 

@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jolt.Npm;
 using Jolt.Syntax;
 using Microsoft.CodeAnalysis;
@@ -11,6 +12,10 @@ internal sealed record ComponentProperty(string Name, string? Type, bool Require
 {
     internal ITypeSymbol? LocalType { get; init; }
     internal IReadOnlyDictionary<string, string>? LiteralExpressions { get; init; }
+    internal string? InputDomain { get; init; }
+    internal IReadOnlyDictionary<string, string>? InputRecordFields { get; init; }
+    internal bool InputNullable { get; init; }
+    internal bool HasEventPayload { get; init; }
 }
 internal sealed record ComponentSlot(string Name, bool Required, IReadOnlyList<ComponentProperty>? Scope = null, string? Unsupported = null);
 internal sealed record ComponentTypeParameter(string Name, string Constraint = "", IReadOnlyList<string>? NpmConstraint = null);
@@ -149,13 +154,22 @@ internal sealed record ComponentContract(
     {
         var parameter = component.TypeParameter?.Name;
         var props = component.Props.Select(entry => new ComponentProperty(
-            entry.Key, ToCSharpType(entry.Value.Type, parameter), entry.Value.Required, entry.Value.LiteralValues, entry.Value.Type));
+            entry.Key, InputType(entry.Value.InputType) is { } input
+                ? input + (entry.Value.InputNullable ? "?" : "")
+                : ToCSharpType(entry.Value.Type, parameter),
+            entry.Value.Required, entry.Value.LiteralValues, entry.Value.Type)
+        {
+            InputDomain = entry.Value.InputType,
+            InputRecordFields = entry.Value.InputRecordFields,
+            InputNullable = entry.Value.InputNullable,
+        });
         var events = component.Events.Select(entry =>
         {
             var signatures = entry.Value.Signatures;
             var type = signatures.Count == 1 ? DelegateType(signatures[0], parameter) : null;
-            return new ComponentProperty(EventProperty(entry.Key), type, false,
-                Unsupported: signatures.Count == 1 ? Describe(signatures[0]) : "multiple or missing signatures");
+            return new ComponentProperty(VueEventProperty(entry.Key), type, false,
+                Unsupported: signatures.Count == 1 ? Describe(signatures[0]) : "multiple or missing signatures")
+                { HasEventPayload = type is not null && signatures[0].Count > 0 };
         });
         var slots = component.Slots.Select(entry =>
         {
@@ -179,6 +193,11 @@ internal sealed record ComponentContract(
 
     internal static string EventProperty(string name) => name.Length == 0 ? "on" : "on" + char.ToUpperInvariant(name[0]) + name[1..];
 
+    // Vue template listeners on components use toHandlerKey(camelize(event)).
+    // A component may inspect vnode.props before deciding whether to emit.
+    internal static string VueEventProperty(string name) => EventProperty(
+        Regex.Replace(name, "-([a-zA-Z0-9_])", match => match.Groups[1].Value.ToUpperInvariant()));
+
     internal ModelBinding? FindModel(string name)
     {
         if (Npm is null)
@@ -196,7 +215,7 @@ internal sealed record ComponentContract(
                 model = match;
         }
         return model is null ? null : new ModelBinding(
-            model.PropName, EventProperty(model.EventName), ToCSharpType(model.Type)!);
+            model.PropName, VueEventProperty(model.EventName), ToCSharpType(model.Type)!);
     }
 
     internal static string? Text(JoltAttribute? attribute) => attribute is { Value.Length: 1 } && attribute.Value[0] is JoltText text
@@ -209,7 +228,9 @@ internal sealed record ComponentContract(
     {
         if (parameters.Count == 0)
             return "global::System.Action";
-        var types = parameters.Select(parameter => ToCSharpType(parameter.Type, typeParameter)).ToArray();
+        var types = parameters.Select(parameter => parameter.WebType is { } host
+            ? $"global::ECMAScript.{host}"
+            : InputType(parameter.ValueDomain) ?? ToCSharpType(parameter.Type, typeParameter)).ToArray();
         if (types.Length > 16 || types.Any(type => type is null))
             return null;
         return "global::System.Action<" + string.Join(", ", types) + ">";
@@ -218,6 +239,21 @@ internal sealed record ComponentContract(
     private static IReadOnlyList<ComponentProperty>? GetScope(NpmVueParameter parameter, string? typeParameter)
         => parameter.Properties?.Select(member =>
             new ComponentProperty(member.Key, ToCSharpType(member.Value, typeParameter), false, Unsupported: member.Value)).ToArray();
+
+    private static string? InputType(string? type) => type switch
+    {
+        "boolean" => "bool",
+        "number" => "double",
+        "string" => "string",
+        "boolean[]" => "bool[]",
+        "number[]" => "double[]",
+        "string[]" => "string[]",
+        "number|string" => "global::ECMAScript.Vue.VueStringNumberValue",
+        "boolean|string" => "global::ECMAScript.Vue.VueBooleanStringValue",
+        "boolean|number" => "global::ECMAScript.Vue.VueBooleanNumberValue",
+        "boolean|number|string" => "global::ECMAScript.Vue.VueBooleanStringNumberValue",
+        _ => null,
+    };
 
     private static string? ToCSharpType(string type, string? typeParameter = null)
     {

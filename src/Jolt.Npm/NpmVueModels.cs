@@ -1,3 +1,4 @@
+using Jazor.Npm;
 namespace Jolt.Npm;
 
 public sealed record NpmVueModel(string PropName, string EventName, string Type, NpmDefinition? Definition);

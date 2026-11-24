@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jolt.Npm;
 using Jolt.Syntax;
 using Jazor.Common.SourceMaps;
@@ -14,6 +15,7 @@ public sealed record JoltCompileOptions(
     IReadOnlyList<MetadataReference>? References = null)
 {
     public IReadOnlyList<NpmValueExport> NpmValues { get; init; } = [];
+    public IReadOnlyList<JoltSource> CSharpSources { get; init; } = [];
     public string? NpmProjectionCacheDirectory { get; init; }
     public IReadOnlyList<NpmVueComponent> VueComponents { get; init; } = [];
     public string VueSourceRootRelative { get; init; } = ".";

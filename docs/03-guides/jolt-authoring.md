@@ -9,15 +9,15 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 Jolt CLI 使用 .NET 11，发布包覆盖 Windows 和 glibc Linux 的 x64 与 ARM64。在克隆的仓库根目录执行以下命令。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.5.0
+dotnet tool install --global Jazor.Jolt --version 2.6.0
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.5.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
+已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.6.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
 
 | 命令 | 结果 |
 | --- | --- |
-| `jolt dev <project>` | 启动 Vite 并监听作者文件。当前源码默认使用 `http://127.0.0.1:15658/`，可用 `--port <端口>` 覆盖。 |
+| `jolt dev <project>` | 启动 Vite 并监听作者文件。默认使用 `http://127.0.0.1:15658/`，可用 `--port <端口>` 覆盖。宿主自启时可传 `--stop-on-stdin-close` 并持有标准输入的写端，关闭写端会让 Jolt 停止 Vite 并退出。 |
 | `jolt build <project>` | 在 `.jolt/` 生成组件模块、源码映射与模块清单。可用 `--output <目录>` 指定输出。 |
 | `jolt bundle <project>` | 用项目的 Vite 配置生成生产资源。计数器示例输出到 `dist/`。 |
 | `jolt bundle <project> --ssr <server-entry>` | 从同一次组件编译生成 `dist/client` 和 `dist/server`。服务端入口相对于项目根目录解析。 |
@@ -28,11 +28,11 @@ jolt dev samples/Jolt.Counter --port 15658
 
 ## 配置编辑器
 
-在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.5.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.5.0)
+在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.6.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.6.0)
 
 | 编辑器 | 安装 |
 | --- | --- |
-| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.5.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
+| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.6.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
 
 在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
@@ -54,6 +54,36 @@ jolt dev samples/Jolt.Counter --port 15658
 ```
 
 命名约定区分包、子路径和导出。例如 `@scope/ui-kit/button` 的显式公开子路径对应 `Npm.Scope.UiKit.Button`。组件的具名导出沿用导出名，默认组件用路径末段的 PascalCase 名称。编译和编辑器读取已还原包的公开声明，运行时使用对应的 ESM 导出。同项目的 `.vue` 文件遵循本地目录命名空间规则。 [npm 元数据与范围](../../src/Jolt.Npm/README.md) · [混编样例](../../samples/Jolt.Mixed/App.vue)
+
+### 在现有 Vue 应用里迁移一个列表页
+
+以下写法需要当前源码构建的 Jolt CLI。宿主保留原有路由和 API 客户端，Jolt 页面接收查询结果和回调。按钮可以直接引用无参方法。分页事件保留 Vue 声明中的名称，Roslyn 会按声明校验回调的参数。
+
+```razor
+@using Npm.ElementPlus
+
+<ElCard Header="站内信" class="zero-list-card">
+    <ElButton @onclick="Refresh">刷新</ElButton>
+    <ElPagination CurrentPage="@Page" Total="@Total" PageSize="20"
+                  PageSizes="@(new double[] { 20, 50 })"
+                  @oncurrent-change="ChangePage" />
+</ElCard>
+
+@code {
+    [Parameter] public int Page { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+}
+```
+
+这里的 `@oncurrent-change` 生成 `onCurrentChange`。Element Plus 在决定是否展示分页控件时会检查该监听器。需要读取点击位置时，`ElButton` 的处理器可以接收 `ECMAScript.MouseEvent`。组件上的 `class` 和 `style` 接受 Vue 对应的属性类型。[事件与渲染回归](../../src/Jolt.Compiler.Test/ProjectCompilerTests.cs)
+
+当宿主和 Jolt 都消费同一数据传输类型时，将它放在共享的普通 C# 文件中。在组件项目的 `package.json` 里通过 `"jolt": { "csharpSources": ["Contracts/Notice.cs"] }` 列出源码，让 .NET 宿主项目也编译该文件。构建和编辑器按同一份定义检查字段。在本地 SFC 中可以声明 `rows: readonly Readonly<{ id: string; title: string }>[]`，在 Jolt 中直接传入 `public sealed record Notice(string id, string title)` 的数组。投影按字段的 JavaScript 名称、是否必有值和标量类型核对，额外字段可留给业务代码使用，渲染时传递原数组。[共享源码测试](../../src/Jolt.Compiler.Test/SharedCSharpSourcesTests.cs) · [npm 与 SFC 契约验收](../../src/Jolt.Npm/verify.cs)
+
+`csharpSources` 也接受相对于 `package.json` 所在目录的 glob。比如用 `["**/*Contracts.cs"]` 匹配根目录和各级子目录中的契约文件，或用 `["Contracts/*.cs"]` 只匹配 `Contracts` 目录中的 C# 文件。可以混用路径与 glob，重复匹配的文件只编译一次。显式路径缺失时报错，glob 没有命中时得到空集合。glob 跳过隐藏项、文件和目录链接，以及 `bin`、`obj`、`dist` 和 `node_modules`。匹配的未保存编辑以及新建文件同样参与编辑器检查。
+
+表格列的插槽若在上游声明里只公开 `any`，应用可以在一个本地 SFC 内声明实际的行类型，对外只公开只读行数组和带类型的详情事件。Jero 的站内信列表在这层完成列渲染，再将点中的消息 ID 传回宿主的已读接口。[组件运行验收](../../scripts/csharp/verify-zero-jolt.cs)
 
 ### 直接调用 npm 函数
 
@@ -112,7 +142,7 @@ var text = Dates.FormatISO(start, new() {
 });
 ```
 
-同一个区间还可用于判断日期和计算时长。把两个导出一起投影后，`FormatDuration` 可以直接接收 `IntervalToDuration` 返回的对象。这条调用也适用于用 `jolt bindings` 生成公开声明的普通 C# 类库。[跨程序集运行示例](../../scripts/csharp/verify-jolt-public-projection.cs)
+同一个区间还可用于判断日期和计算时长。把两个导出一起投影后，`FormatDuration` 可以直接接收 `IntervalToDuration` 返回的对象。这条调用也适用于通过构建取得 npm 投影的普通 C# 类库。[跨程序集运行示例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
 ```csharp
 var interval = new Dates.Interval { Start = start, End = end };
@@ -141,7 +171,48 @@ composer.MergeLocaleMessage("fr", new Vue.VueDictionary {
 composer.SetLocaleMessage("fr-CA", composer.GetLocaleMessage("fr"));
 ```
 
+检查某个 locale 是否有资源时，用 `composer.Messages.Value[locale]`。缺席读为 `null`。命中时取回原消息对象，可以直接再传给 `composer.SetLocaleMessage("fr-CA", messages)`。`GetLocaleMessage(locale)` 对缺席的 locale 返回空对象。[真实包用例](../../scripts/csharp/fixtures/jolt-binding-projection/I18nPlugin.jazor)
+
+日期与数字格式也能按语言读取。`composer.DatetimeFormats.Value["en"]` 和 `composer.NumberFormats.Value["en"]` 分别读取相应格式表，缺席返回 `null`。要替换配置，可用 `SetDateTimeFormat` 和 `SetNumberFormat`。例如下面的组合式 Composer 依次设置回退语言、按语言选择的回退表和关闭回退。Legacy 模式直接给 `global.FallbackLocale` 赋同样的值。[格式表与实际回退查找](../../scripts/csharp/fixtures/jolt-binding-projection/I18nPlugin.jazor)
+
+```csharp
+composer.FallbackLocale.Value = new string[] { "fr", "en" };
+composer.FallbackLocale.Value = new Vue.VueDictionary<string[]> { ["de"] = ["en"] };
+string[]? fromGerman = composer.FallbackLocale.Value.Get("de");
+composer.FallbackLocale.Value = ECMAScript.False.Value;
+```
+
 手上已经有原始消息文本时，可以用 `composer.Rt("Resolved {'message'}")` 按 Vue I18n 的消息语法求值，得到 `"Resolved message"`。按资源键查找仍使用 `composer.T("checkout.receipt")`。[独立 DLL 与 SSR 用例](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+
+需要原始资源时，`composer.Tm("menu").GetOwn("save")?.AsString` 会读取嵌套的文本。动态键和自定义解析器可能返回数值、对象或函数，`AsString` 只在实际值为字符串时取值。缺键时 Vue I18n 返回的空对象也通过同一入口读取。[动态资源用例](../../scripts/csharp/fixtures/jolt-binding-projection/I18nPlugin.jazor)
+
+如果 npm 工厂的公开声明返回 `Composer<typeof messages>`，资源字面量也能参与类型检查。例如法语资源含有 `welcome: 'Bonjour {guest}'`，英语资源还提供 `checkout.title`，Jolt 会生成下面的调用。法语缺少标题时，启用英语回退的 Composer 仍从英语表取值。更改消息的参数名后，重新生成的 C# 会在仍使用旧属性名的调用处报错。[组件示例](../../scripts/csharp/fixtures/jolt-binding-projection/StaticI18n.jazor) · [独立类库及 SSR](../../scripts/csharp/verify-jolt-i18n-plugin.cs)
+
+```csharp
+var composer = I18n.OpenComposer(true);
+var greeting = composer.TWelcome(new() { Guest = "Ada" });
+var title = composer.TCheckoutTitle();
+var item = composer.TIndexed("a");                        // 'Item {0}' → "Item a"
+var quantity = composer.TPlural(2d);                     // 'None | One | Many' → "Many"
+var owner = composer.TNamedPlural(new() { Guest = "Ada" }, 2d);
+var enabled = composer.Messages.Value.En?.Config.Enabled;
+```
+
+同一个 Composer 也可以按语言写回资源。下面的西班牙语标题在包中声明为 `'Hola {guest}' | 'Buenas {guest}'`。`SpanishTitle` 是生成枚举的 C# 别名，两种文案都能使用同一个翻译方法。
+
+```csharp
+composer.Locale.Value = I18n.StringChoiceOfEnOrEsOrFrOrPt.Es;
+composer.SetLocaleMessageEs(new() {
+    Panel = new() { Title = SpanishTitle.HolaGuest, Caption = "Reemplazo",
+        Enabled = ECMAScript.False.Value, Score = SpanishScore.Value0 }
+});
+composer.MergeLocaleMessageEs(new() { Panel = new() { Title = SpanishTitle.BuenasGuest } });
+var text = composer.TPanelTitle(new() { Guest = "Ada" }); // "Buenas Ada"
+```
+
+完整替换时，漏填必填的 `Caption` 会得到 C# 编译错误。合并时，省略它会保留已有文字。如果某个嵌套对象在资源声明中可缺席，首次提供这个对象时要填齐其必填字段。[完整组件及类型别名](../../scripts/csharp/fixtures/jolt-binding-projection/StaticI18n.jazor)
+
+VueUse 的异步操作可以用任意 JavaScript 值拒绝。对 `UseAsyncState` 返回的 `state`，用 `var reason = state.Error.Value;` 读当前原因，`reason?.AsError?.Message` 读 Error 的消息，`reason?.AsString` 读字符串原因。`AsNumber` 和 `AsBoolean` 保留 `0` 与 `false`。[异步状态用例](../../scripts/csharp/fixtures/jolt-binding-projection/AsyncVueRefs.jazor)
 
 Vue Query 的异步查询可以返回项目自己的记录。例如在 `[Setup]` 中创建查询后，`query.Data.Value?.Label` 会检查记录字段，首次加载前允许为空。
 
@@ -187,13 +258,31 @@ var feed = Query.UseInfiniteQuery(new Query.UseInfiniteQueryNumberOptionsInput<Q
 
 如果需要在 C# 结果里使用游标，可以在 `UseInfiniteQueryNumberSelectedOptionsInput<QueryData, SelectedPage>` 设置 `Select = data => new SelectedPage(data.Pages[0].Label, data.PageParams[0])`。这里 `SelectedPage` 是作者定义的 `record SelectedPage(string Label, double Cursor)`。选项的 `Select` 为必填项，同时决定 `Data.Value` 的类型。查询尚未取得数据时，该值可为空。[组件用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Query.jazor)
 
-VeeValidate 的带类型表单可以分别声明输入记录和提交记录，两者继承 `ECMAScript.Vue.VueProps`。例如 `UseForm<RegistrationInput, RegistrationOutput>` 的解析器接收含 `Address` 的输入，成功处理器收到含 `AddressLength` 的转换结果，失败处理器从 `invalid.Values.Address` 和 `invalid.Errors[nameof(RegistrationInput.Address)]` 读取原值与错误。此投影要求解析器在每个分支都填写结果记录和错误数组。
+VeeValidate 的带类型表单可以分别声明输入记录和提交记录，两者继承 `ECMAScript.Vue.VueProps`。`UseForm<RegistrationInput, RegistrationOutput>` 的解析器通过 `values.Get(row => row.Address)` 读取当前字段，在每个分支都填写结果记录和错误数组。成功处理器直接读取转换后的 `output.AddressLength`，失败处理器用 `invalid.Values.Get(row => row.Address)` 和 `invalid.Errors[nameof(RegistrationInput.Address)]` 取得原值与错误。
 
-在 `[Setup]` 中保留表单实例，就能用 `form.Values.Address` 读取当前输入。读取字段错误时，`form.Errors.Value[nameof(RegistrationInput.Address)]` 返回 `string?`，字段通过校验后返回 `null`。使用 Vue 注入的当前表单时，`Vee.UseFormErrors()` 也提供相同的只读错误表。需要强类型输入记录的代码应使用对应表单实例的 `Values`，其类型由创建该实例时的输入记录决定。[完整表单用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+只需要初值时，使用单泛型表单。即使初值包含所有字段，VeeValidate 默认仍会在最后一个同名字段卸载时移除其值。从旧版生成的绑定迁移时，把实时输入和 schema 解析回调中的 `values.Address` 改为 `values.Get(row => row.Address)`，数值和布尔字段使用 `GetValue`。可用 `Vee.UseFormErrors()` 读取注入表单的首条错误。[完整表单用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+
+```csharp
+public sealed record Input(double Count, bool Enabled) : ECMAScript.Vue.VueProps;
+
+// 在 [Setup] 中
+var form = Vee.UseForm<Input>(new() { InitialValues = new(0, false) });
+double? count = form.Values.GetValue(row => row.Count);
+bool? enabled = form.Values.GetValue(row => row.Enabled);
+```
 
 读取 VeeValidate 当前字段时可以保留标量的可空类型。调用方提供与表单字段匹配的类型参数。在 `[Setup]` 中写 `double? quantity = Vee.UseFieldValue<double>("quantity").Value;`，缺少这个字段时读到 `null`，字段已有的零会读成 `0`。布尔字段同样保留 `false`。[字段读取用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
 
-需要展示同一字段的所有错误时，带 schema 的表单可以用 `string[]? messages = form.ErrorBag.Value["email"];`。同一字段的两条消息会按原顺序返回，缺席的字段读为 `null`。只显示首条错误时用 `form.Errors.Value["email"]`。[设置并读取多条消息](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+需要展示同一字段的所有错误时，可从创建或注入的泛型表单读取 `form.ErrorBag.Value["email"]`。同一字段的两条消息按原顺序返回，缺席的字段读为 `null`。只显示首条错误时用 `form.Errors.Value["email"]`。[创建的表单](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor) · [注入的表单](../../scripts/csharp/fixtures/jolt-npm-runtime/FormScope.jazor)
+
+在上面的 `Input` 表单中可以用选择器批量设置错误。下面的调用为数量写入两条消息，并清除启用状态的旧错误。其他字段保留原有错误。若把 `Count` 改成 DTO 上不存在的属性，生成程序集的消费者会收到 C# 编译错误。[独立 DLL 的正反例](../../scripts/csharp/fixtures/jolt-binding-projection/OverloadOperationConsumer.cs)
+
+```csharp
+form.SetErrors(new() {
+    { row => row.Count, new string[] { "数量过低", "请重新输入" } },
+    { row => row.Enabled, null },
+});
+```
 
 创建字段时，路径、规则和初值可以分别提供。下面的数量字段在首次校验时可以为空。调用 `SetValue(0, false)` 写入零，第二个实参让 VeeValidate 跳过这次写入的自动校验。若创建时同时提供校验器和必填初值，校验器直接接收字段类型，记录字段可以直接访问其属性。[独立类库中的字段调用](../../scripts/csharp/verify-jolt-public-projection.cs) · [记录与异步校验器](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
 
@@ -202,6 +291,20 @@ var quantity = Vee.UseField<double>("quantity", value => value is null ? "请填
 quantity.SetValue(0, false);
 var enabled = Vee.UseField<bool>("enabled", options: new() { InitialValue = false });
 ```
+
+在 `[Setup]` 中调用 `Vee.UseForm<Input>()` 可以直接创建有类型的空表单，无需配置初值和 schema。它会提供给子组件，尚未写入的数值字段可通过 `form.Values.GetValue(row => row.Count)` 读为 `null`。给字段写入 `0` 后，同一个读取会得到 `0`。[独立 C# 类库用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
+空表单的成功提交回调仍可能收到缺少字段的记录。假设 `Input` 包含 `double Count` 和 `bool Enabled`，下面的处理能区分 `Enabled` 缺席和显式写入的 `false`。批量写入时，`SetValues` 接收输入 DTO，实际可省略哪些属性由 DTO 的构造方式决定。[普通 C# 消费与执行](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
+```csharp
+var form = Vee.UseForm<Input>();
+bool? submitted = null;
+var submit = form.HandleSubmit(values => { submitted = values.GetValue(row => row.Enabled); });
+form.SetValues(new Input(0, false), false);
+var pending = submit(); // pending 完成后，submitted 为 false
+```
+
+若父表单的 schema 把 `Input.Address` 转为 `Output.SubmittedAddress`，子组件用 `Vee.UseFormContext<Input, Output>()` 声明这份约定。上下文存在时，可在 `HandleSubmit` 的成功回调中用 `values.Get(row => row.SubmittedAddress)` 读结果。失败回调的 `Values` 和 `Errors` 仍对应输入。带完整初值和 schema 创建的表单可在成功回调里直接读 `values.SubmittedAddress`。[跨组件提交与转换](../../scripts/csharp/fixtures/jolt-npm-runtime/FormScope.jazor)
 
 子组件可以在 `[Setup]` 中用 `UseFormContext<Input>()` 获取父表单。这里的 `Input` 是和父表单约定的输入记录。独立挂载子组件时，上下文可为 `null`。即使在表单内，字段也可能尚未注册，因此数值通过 `GetValue` 读为可空值。写入和校验使用同一个属性选择器。[父子组件挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/FormScope.jazor)
 
@@ -224,9 +327,50 @@ double? count = values.GetValue(row => row.Details!.Count);
 bool? enabled = values.GetValue(row => row.Details!.Enabled);
 ```
 
-带类型的表单实例可以写 `form.SetFieldValue(row => row.Details!.EmailAddress, "updated", false)`。当两段属性的 JavaScript 名分别为 `contact`、`address` 时，发射的调用传入 `"contact.address"`。值的类型随叶属性确定，数值字段可直接写入 `0`。给显式指定为 `string` 的字段传 `null` 遵循 Roslyn 的可空告警规则。选择器由连续的记录数据属性组成，每段 JavaScript 名为非空，且不含 `.`、`[` 或 `]`。数组下标和字典键需要额外的路径协议。[普通类库用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+带类型的表单实例可以写 `form.SetFieldValue(row => row.Details!.EmailAddress, "updated", false)`。当两段属性的 JavaScript 名分别为 `contact`、`address` 时，发射的调用传入 `"contact.address"`。值的类型随叶属性确定，数值字段可直接写入 `0`。给显式指定为 `string` 的字段传 `null` 遵循 Roslyn 的可空告警规则。选择器由连续的记录数据属性组成，每段 JavaScript 名为非空，且不含 `.`、`[` 或 `]`。锁定的 VeeValidate 4.15.1 对数组元素的写入使用下面的字段模型。[普通类库用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
+对于 `Contacts` 数组，可以在带类型的表单或注入的表单上下文中用 `DefineField` 同时取出字段模型和输入事件。假设 `Count` 的类型是 `double`，字段尚未创建时 `previous` 为 `null`，已写入的 `0` 仍是 `0`。下标可用整数常量，编译后直接传入路径字符串。
+
+```csharp
+var (count, props) = form.DefineField(row => row.Contacts![0].Count);
+double? previous = count.Value?.Value;
+count.WriteValue = 4d;
+props.Value.OnBlur();
+```
+
+`form` 来自 `UseFormContext<Input>()` 时，应先判断上下文是否存在。创建的表单和注入的上下文都能用 `form.ValidateField(row => row.Contacts![0].Count)` 校验同一条路径。静态配置可以传 `new() { Label = "数量", ValidateOnBlur = false }`。需要根据字段状态生成自定义属性时，在组件或类库中声明 `public sealed record FieldProps(double Count) : Vue.VueProps;`，然后用下面的重载。[真实表单用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+
+```csharp
+var (model, attributes) = form.DefineField<double, FieldProps>(row => row.Contacts![0].Count,
+    new() { Props = state => new FieldProps(state.Value?.Value ?? 0) });
+model.WriteValue = 4;
+double current = attributes.Value.Count;
+```
+
+回调产生的字段可以覆盖基础事件名。这个重载按 `FieldProps` 的实际类型读取合并后的对象。省略 `Props` 的重载保留 `OnBlur()` 等基础事件。[覆盖同名字段的 DLL 用例](../../scripts/csharp/fixtures/jolt-binding-projection/CorrelatedConsumer.cs)
+
+校验时机也可以随字段状态变化。下面的输入框在用户首次离开后才开始随模型更新触发校验。函数式配置在每次读取时可以按当前状态返回新的配置。[字段事件与校验用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Vee.jazor)
+
+```csharp
+var (count, events) = form.DefineField(row => row.Count,
+    state => new() { ValidateOnBlur = false, ValidateOnModelUpdate = state.Touched });
+```
 
 ### 普通 C# 类库的公开投影
+
+普通 `.csproj` 直接引用Jazor 2.6.0，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
+
+对于项目打开时已有的依赖，VS Code C# 语言服务的 `Balanced` 模式可立即解析未保存的别名。首次调用尚未投影的 `Dates.AddDays` 时，成员处可能出现 `CS0117`。保存该文件即可获得方法签名。如果第二个参数传了 `true`，诊断会指向这个实参并报告 `CS1503`。
+
+项目打开后才加入 `date-fns` 时，更新 `package.json` 和锁文件即可继续编辑。如果类库原先没有 npm 清单，可以在 `.csproj` 所在目录首次创建这两个文件。两种情况都已在真实的 VS Code C# 语言服务上验证。在 `Balanced` 和 `Automatic` 下，都可以在未保存的 C# 文件中从 `Npm.` 选到 `DateFns`，再从 `Npm.DateFns.` 选到 `Exports`。写好别名后，`Dates.` 会列出 `AddDays` 等实际导出。
+
+如果先写了 `using` 再加包，`Automatic` 会自行清除导入错误，`Balanced` 下保存当前 C# 文件一次即可刷新绑定和方法签名。移除依赖后，两个模式也在各自的刷新时机撤去包名和成员补全，并在旧 `using` 处报告缺失的命名空间。VS Code 的模式由 `dotnet.server.sourceGeneratorExecution` 控制。[候选包编辑器验证](../../scripts/csharp/verify-jazor-npm-editor.cs)
+
+子项目可以使用父目录的 `package.json`。如果在子项目目录创建自己的清单和锁文件，构建和 Automatic 编辑器随即使用子项目声明的依赖。删除这两份文件后，项目又能使用父清单中的包。已验证这个切换过程中的补全、调用签名及原 C# 文件的未保存编辑。[嵌套工作区验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
+
+开发本地 `link:` 包时，修改已有的 `.d.ts` 会刷新普通 C# 的签名。如果将入口改为重导出一份新建的声明文件，C# 会读到新的签名；要让它继续感知这份新文件自己的后续修改，需要让项目重新求值，使该文件进入 Roslyn 的设计时输入。已验证保存一次实际改动的 `.csproj` 后，原来未保存的 C# 调用立即得到更新的签名。[普通 C# 编辑器验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
+
+在 `.jazor` 编辑器中，链接包可以位于项目根目录之外。将包入口改为重导出另一份声明后，打开的组件会按新签名报错，F12 跟随仍能绑定的调用定位到新文件。组件也可以通过一个本地 `.vue` 间接依赖链接包的 prop 类型。在 `jolt dev` 中只改动这个 prop 的声明就会重新检查组件；修复后原页面继续运行。[编辑器与前端会话验收](../04-roadmap/jazor-jolt-migration.md#5-统一-vue-开发会话保留通用模块运行能力)
 
 如果 npm 函数声明为 `mapItems<T, U>(items: readonly T[], select: (item: T) => U): readonly U[]`，可直接传入普通 C# 数组。下例的 `items` 是 `CatalogItem[]`，`Name` 为字符串。第一次调用推断出字符串元素，第二次将返回的只读数组直接交回 npm，推断出数值元素。两次调用都保留传入数组的 JavaScript 身份。[组件与独立类库消费用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
@@ -254,14 +398,7 @@ public static class Jobs
 }
 ```
 
-在有 `package.json` 和 `pnpm-lock.yaml` 的目录运行 Jolt CLI。每组 `--export` 属于其前面的 `--module`。在同一次调用中列出要一起使用的模块和导出，让它们共享来自同一 TypeScript 声明的生成类型。
-
-```sh
-jolt bindings --module date-fns --export add --export formatDuration --export formatDistance --module date-fns/locale --export fr --output Generated/Dates.g.cs
-dotnet build
-```
-
-类库使用 .NET 11、C# preview，并引用与该工具版本配套的 ECMAScript 宿主类型。投影中使用 Vue ref 时还需引用 ECMAScript.Vue。默认 SDK 项目会编入项目目录中的 `.g.cs`。锁文件或所需导出变更后重新运行生成命令。第二个项目引用这个类库后，可以在普通 C# 源文件中写出以下调用。
+普通 C# 项目使用 .NET 11、C# preview 和 Jazor SDK。在项目中声明 npm 依赖并锁定 `pnpm-lock.yaml`，然后在 `.cs` 中通过 `using Npm…` 引入入口，运行 `dotnet build`。使用 Vue ref 的投影需要引用 `ECMAScript.Vue`。
 
 ```csharp
 using Dates = Npm.DateFns.Exports;
@@ -276,21 +413,78 @@ string french = Dates.FormatDistance(new ECMAScript.Date(2026, 0, 17),
 
 调用由 Jazor 编译为 ESM，执行环境需能解析相应的 npm 包。在独立消费者验收中，生成的模块调用真实 date-fns 后得到 `2 days`。[独立构建和运行用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
+#### 在桌面 Visual Studio 验收普通 C# 编辑反馈
+
+使用临时解决方案和当前候选 Jazor 包。项目目标为 `net11.0`，语言版本为 `preview`，直接引用该包，并在 `package.json` 和 `pnpm-lock.yaml` 中锁定 `date-fns`。先只保存空的 `Calendar.cs`，打开解决方案并等待 NuGet 还原和项目加载完成。以下按 C# 源生成器的 Automatic 模式操作。桌面 VS 缺省使用 Balanced，输入新调用后先保存一次，再检查成员签名与 F12。
+
+1. 输入 `using Dates = Npm.`，按 Ctrl+Space 查看 `DateFns`。继续输入 `Npm.DateFns.` 查看 `Exports`，完成 `using Dates = Npm.DateFns.Exports;`。
+2. 在类内写一个调用 `Dates.AddDays(new ECMAScript.Date(2024, 0, 31), 2)` 的方法。输入 `Dates.` 时检查 `AddDays`，再检查调用签名。把 `2` 改为 `true`，检查 `CS1503` 是否出现在该参数；改回 `2`，检查诊断清除。用另一个编辑器或终端读取 `Calendar.cs`，确认磁盘上仍是原来的空文件。
+3. 在已绑定的 `AddDays` 上按 F12，核对生成 C# 中的方法签名。要打开本机原声明，桌面 Visual Studio 安装或更新现有 `Jolt.VisualStudio.vsix` 后，使用悬停中带文件名和行号的 `Open addDays.d.ts at line 48`。VS Code 使用悬停中的 `Open TypeScript declaration`。`.jazor` 中的 F12 直接定位到原始声明。[Visual Studio 安装说明](../../editors/jolt-visual-studio/README.md)
+4. 若要验证外部声明刷新，增加一个用 pnpm `link:` 指向的本地包，让入口重导出另一份 `.d.ts` 中的函数。在打开的 C# 文件中调用该导出并保留未保存状态。单独修改被重导出的声明，将参数从 `string` 改为 `bool`，检查签名、诊断与快速信息链接是否刷新。
+
+候选 SDK `.12` 已在独立桌面配置验证 Automatic 的未保存补全与成员 F12，以及 Balanced 保存后的参数帮助和成员 F12。[迁移验收记录](../04-roadmap/jazor-jolt-migration.md) · [独立 Roslyn LSP 验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
+
+#### 在多个 DLL 之间传递同一条 npm 记录
+
+当一个类库返回 npm 记录，另一个类库在公开方法中接收这个记录时，让它们引用**同一个定义该类型的程序集**。可以沿用已有的普通 C# 类库。如果所有者只负责共享类型，可以像下面的 `CellContracts` 一样，用 `nameof` 选出公开签名所需的 npm 导出。项目引用 Jazor，并在 npm 清单中声明相应的包。生成器从包的 TypeScript 声明推导完整签名。
+
+```csharp
+using Wire = Npm.WireCells.Exports;
+
+internal static class CellContracts
+{
+    internal const string Factory = nameof(Wire.MakeCell);
+    internal const string Label = nameof(Wire.ReadLabel);
+}
+```
+
+两个业务类库各自通过普通 `ProjectReference` 引用该项目。A 可以用 `Wire.MakeCell` 创建记录，B 可以在强类型方法中用 `Wire.ReadLabel` 接收它。最终消费者只需引用 A 和 B，即可写 `SharedCellProducerB.Label(SharedCellProducerA.Create("hello"))`。验收检查了三份 DLL 的类型引用都指向 `CellContracts`，并执行了生成的 ESM。契约项目只交付 .NET 声明，实际调用所在的业务模块会直接从 `wire-cells` 导入函数。[契约声明](../../scripts/csharp/fixtures/jazor-npm-library/CellContracts.cs) · [跨 DLL 构建及运行验收](../../scripts/csharp/verify-jazor-npm-library.cs)
+
+如果两份已编译的 DLL 分别定义了自己的 `Cell<T>`，把 A 的结果直接传给要求 B 自有类型的方法会报 `CS1503`。迁移时将两边都要用的导出选入同一契约项目，让两个业务库引用它再重新构建。契约项目中只选了部分导出时，使用同一 `Exports` 的下游项目要调用其他导出，也需要先在所有者中选入相应成员。
+
+### 在 Vue 应用中使用普通 Jazor 类库的模块
+
+如果解决方案已有可执行 .NET 宿主，宿主可以用普通 `ProjectReference` 引用类库，由 Jazor Emit 把宿主及其引用模块交付到前端目录。以下示例假定 `Host/`、`Library/` 和 `frontend/` 是同级目录，宿主和类库均直接引用 Jazor。宿主项目使用已有的设置：
+
+```xml
+<PropertyGroup>
+  <JazorMode>debug</JazorMode>
+  <JazorDir>$(MSBuildProjectDirectory)/../frontend/jazor/</JazorDir>
+</PropertyGroup>
+<ItemGroup>
+  <ProjectReference Include="../Library/Library.csproj" />
+</ItemGroup>
+```
+
+类库中的 `Greeting.Read()` 导出到 `messages/greeting.mjs`。宿主的 `ui-message.mjs` 模块在 C# 中调用它。运行 `dotnet build Host/Host.csproj` 后，Vue SFC 即可通过普通 ESM 导入使用宿主模块；Jolt 组件通过 prop 接收结果：
+
+```vue
+<script setup>
+import Message from './Message.jazor';
+import { Read } from './jazor/ui-message.mjs';
+</script>
+<template><Message :Text="Read()" /></template>
+```
+
+开发时运行 `jolt dev frontend`。在另一个终端运行 `dotnet watch --project Host/Host.csproj --no-hot-reload run`。保存 `Library/Greeting.cs` 后，.NET 会重建引用和宿主，Emit 更新 `frontend/jazor/` 中的模块，已打开的页面随 Vite 更新。准备分发时，先构建宿主交付 ESM，再运行 `jolt bundle frontend`，由 Jolt 从作者的入口生成 `frontend/dist/`。示例把 `JazorDir` 指向单独的子目录，因为 Emit 会在其中写自己的入口、包清单和锁文件。[项目引用的自动重建与页面状态验收](../../scripts/csharp/verify-jolt-mixed.cs)
+
+换成 `PackageReference` 时，宿主按同一流程交付 DLL 中的模块。如果模块使用了投影的 npm 包，例如 `date-fns`，请在 Vue 应用的 `package.json` 和锁文件中声明应用要运行的版本。这样，从应用直接导入的 `addDays` 与经过 C# 类库导出的 `addDays` 在开发和生产中都是同一个函数；独立 Jazor 宿主则可以使用生产者锁定的版本。[同一 NuGet 的两种宿主验收](../../scripts/csharp/verify-jazor-module-handoff.cs)
+
 ### 复用构建生成的投影
 
-`jolt build`、语言服务和 `jolt bindings` 使用项目内的磁盘缓存。修改组件的模板或方法体时，只要使用的 npm 导出及类型契约相同，下一次构建就能读取上次生成的 C#。关闭编辑器或重启 CLI 后仍可命中。
+`jolt build` 与语言服务 使用项目内的磁盘缓存。修改组件的模板或方法体时，只要使用的 npm 导出及类型契约相同，下一次构建就能读取上次生成的 C#。关闭编辑器或重启 CLI 后仍可命中。
 
 | 项目中的位置 | 内容与用途 |
 | --- | --- |
 | `.jazor/cache/npm-metadata/` | 保存 npm 导出的签名、声明位置、解析入口和依赖指纹。读取前核对锁文件、实际模块入口、TypeScript 使用的文件及链接依赖解析后的目标。 |
 | `obj/Jolt/projections/<摘要>/Projection.g.cs` 与 `symbols.json` | 用于组件构建和编辑器。源码保存 C# 契约，符号表记录 C# 声明在该源码中的位置和对应的 npm 声明编号。跳转时从当前元数据取得 TypeScript 文件和位置。 |
-| `obj/Jolt/projections/<摘要>/Bindings.g.cs` | 保存普通类库可编译的公开投影。`jolt bindings --output` 将其写入指定位置，相同内容保留输出文件的时间戳。 |
+| `obj/Jazor/projections/<摘要>/Bindings.g.cs` | 保存普通类库构建使用的 npm 绑定。 |
 
-缓存由项目自行重建。交换模块或导出的顺序会命中同一份公开投影。给声明加注释只移动行号时，生成的 C# 和符号表仍可复用，编辑器按新行号跳转。修改参数类型或把原先共用的类型拆成两个独立声明时，构建会重新检查调用。删除 `--output` 指定的文件后，重新运行原命令即可从缓存恢复。[跨进程构建、输出恢复与编辑器跳转验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
+缓存由项目自行重建。交换模块或导出的顺序会命中同一份公开投影。给声明加注释只移动行号时，生成的 C# 和符号表仍可复用，编辑器按新行号跳转。修改参数类型或把原先共用的类型拆成两个独立声明时，构建会重新检查调用。生成文件可以由下一次构建恢复。[跨进程构建、输出恢复与编辑器跳转验收](../../scripts/csharp/verify-jolt-projection-cache.cs)
 
-多个项目要传递同一种生成类型时，在一个类库中运行 `jolt bindings`，消费项目通过 `ProjectReference` 引用它。像 `date-fns/locale` 和 `date-fns` 这样共享同一声明的入口，在一次命令中生成，让 locale 的生产者与消费者使用同一个 C# 类型。独立的包可以分别输出到类库中的不同文件。[跨程序集运行用例](../../scripts/csharp/verify-jolt-public-projection.cs)
+多个项目共用业务 API 时，在类库中声明公共 C# 门面，消费项目通过 `ProjectReference` 引用该类库。[跨程序集运行用例](../../scripts/csharp/verify-jolt-public-projection.cs)
 
-如果两个包共享泛型记录，消费方通常可以让 C# 推断生成的类型。例如一个包导出 `createEnvelope<T>(value: T): Envelope<T>`，另一个包导入同一声明并导出 `forwardEnvelope<T>(value: Envelope<T>): Envelope<T>`。将这两个模块放进同一次 `jolt bindings` 调用后，普通 C# 和组件都能这样写。
+如果两个包共享泛型记录，消费方通常可以让 C# 推断生成的类型。例如一个包导出 `createEnvelope<T>(value: T): Envelope<T>`，另一个包导入同一声明并导出 `forwardEnvelope<T>(value: Envelope<T>): Envelope<T>`。在同一个项目中导入两个模块后，普通 C# 和组件都能这样写。
 
 ```csharp
 var entry = Fixture.CreateEnvelope("initial");
@@ -362,6 +556,16 @@ double current = model.Value;
 model.Value = 0;
 ```
 
+要自己处理更新事件，可在选择器后直接传入回调。VueUse 声明了事件名和可变数量的参数，生成的 `args` 类型是 `ECMAScript.UnknownValue?[]`。例如，在收到 `update:amount` 时只接受数值更新，可以这样写。[组件示例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
+
+```csharp
+var model = VueUse.UseVModel(props, x => x.SomeProperty, (name, args) =>
+{
+    if (name == "update:amount" && args.Length == 1 && args[0]?.AsNumber is double amount)
+        SaveAmount(amount);
+});
+```
+
 同一个选择器也决定选项的类型。例如输入框允许数值为零，同时忽略负数提交时，可以这样绑定。父组件没有提供值时，组件读到 `0`。给 `amount.Value` 写入负数时，父组件收不到更新事件。[挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
 
 ```csharp
@@ -374,7 +578,23 @@ var amount = VueUse.UseVModel(props, x => x.SomeProperty, new()
 
 若要通过 Vue watcher 同步本地值，调用 `UseVModelWithPassiveTrue(props, x => x.SomeProperty, new() { DefaultValue = 0d })`。该写法支持 `string`、`bool` 和 `double` 属性。赋值后可在下一次 Vue 更新周期观察父组件的变化。[双向同步断言](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-model.mjs)
 
-若 prop 是带嵌套数据的密封记录，可以使用 `var draft = VueUse.UseVModelWithPassiveTrueRecord(props, x => x.Record, new());`。组件通过 `draft.Value.Info.Label` 读取，给 `draft.Value` 赋新记录会通知父组件。这个入口接受以字符串、布尔和 `double` 为叶子的非泛型密封记录，选择含有 Vue ref 的字段时，诊断会指出其属性路径。[记录示例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
+若 prop 是非泛型密封记录或一维、交错数组，可以用 `UseVModelWithPassiveTrueRecord`。例如 `Counts` 声明为 `IVueRef<double>[]` 时，下面的两种赋值分别修改原 ref 和替换数组元素。设置 `Deep = true` 后，父组件也能收到内部修改的更新事件。[组件和记录定义](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
+
+```csharp
+var draft = VueUse.UseVModelWithPassiveTrueRecord(props, x => x.Refs, new() { Deep = true });
+draft.Value.Rows[0].Counts[0].Value = 0;
+draft.Value.Rows[0].Counts[0] = ECMAScript.Vue.Ref(9d);
+```
+
+如果 `Count` 是记录本身的 `IVueRef<double>` 属性，使用记录视图。选择器保留 C# 属性类型并发射实际的 JavaScript 键。直接属性支持 `IVueRef<double>`、`IVueRef<bool>` 和 `IVueRef<string>`。每个链接跟随创建它时的对象。父组件替换整条记录后，通过 `model.Value` 取得当前对象再选择属性。[深代理、浅代理与原始对象的挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/verify-model.mjs)
+
+```csharp
+var model = VueUse.UseVModelWithPassiveTrueRecordView(props, x => x.View, new() { Deep = true });
+var count = ECMAScript.Vue.ToRef(model.Value, x => x.Count);
+count.Value = 0;
+```
+
+嵌套记录用 `model.Value.Select(x => x.Nested)` 选择当前对象，再把结果交给 `Vue.ToRef`。两层选择器各自使用 DTO 上的 JavaScript 别名。在 npm 声明已给出具体输入和返回记录的情况下，生成的 `Value` 直接提供解包后的属性。若 setter 还接受原始 DTO，可通过 `WriteValue` 传入带 ref 的新记录。[类型化的读写用例](../../scripts/csharp/fixtures/jolt-binding-projection/ConcreteVueRefs.jazor)
 
 `UseVModelWithCloneCallback` 的克隆回调通过选项 `CloneValue` 传入。选择数值属性时，`CloneValue = value => value + 1` 的参数与返回值都是 `double`。父组件的值通过 computed getter 时执行回调。[挂载用例](../../scripts/csharp/fixtures/jolt-npm-runtime/Model.jazor)
 
@@ -580,7 +800,7 @@ npm 消费已验证 Reka UI 2.11.0 的 `ListboxVirtualizer`。它从 `Options` �
 
 ### 组件样式
 
-在文件顶层写 `<style scoped>`。Jolt 为组件模块分配稳定的 scope ID，`jolt dev` 和 `jolt bundle` 复用 Vue 的样式转换。已验证同名选择器隔离、父组件对其子组件根节点的样式、`:slotted()` 和样式热更新。当前作者入口支持原生 CSS 样式块。 [浏览器验收样例](../../samples/Jolt.Counter/README.md)
+在文件顶层写无属性的 `<style>` 以随组件模块交付全局 CSS，或用 `<style scoped>` 限定选择器作用域。两种块按源码顺序交付，嵌套的样式元素仍按普通标记发射。CSS 可直接写 `@media`，从 RazorVue 迁移的 `@@media` 也会在字符串和注释之外还原。Jolt 为组件模块分配稳定的 scope ID，`jolt dev` 和 `jolt bundle` 复用 Vue 的样式转换。已验证同名选择器隔离、父组件对其子组件根节点的样式、`:slotted()` 和样式热更新。当前作者入口支持原生 CSS 样式块。 [浏览器验收样例](../../samples/Jolt.Counter/README.md)
 
 ## Vue 项目集成
 
@@ -640,7 +860,7 @@ const router = createRouter({ history, routes })
 
 ### 将组件库交付给普通 Vue 或 TSX 项目
 
-让库的 `package.json` 提供包名、版本和 Vue 版本范围，执行 `jolt library <项目目录>`。产物包含 npm 清单、以 Vue 为 peer dependency 的 ESM、公开类型及转换后的 scoped CSS。例如，本仓库的 `Meter` 可从包根具名导入，也可从独立子路径默认导入。不同目录有同名组件时按子路径选择。 [组件源码](../../scripts/csharp/fixtures/jolt-library/library/Meter.jazor) · [示例库清单](../../scripts/csharp/fixtures/jolt-library/library/package.json)
+让库的 `package.json` 提供包名、版本和 Vue 版本范围，执行 `jolt library <项目目录>`。产物包含 npm 清单、以 Vue 为 peer dependency 的 ESM、公开类型及转换后的组件 CSS。例如，本仓库的 `Meter` 可从包根具名导入，也可从独立子路径默认导入。不同目录有同名组件时按子路径选择。 [组件源码](../../scripts/csharp/fixtures/jolt-library/library/Meter.jazor) · [示例库清单](../../scripts/csharp/fixtures/jolt-library/library/package.json)
 
 ```ts
 import { Meter } from '@jazor/library-meter-fixture';

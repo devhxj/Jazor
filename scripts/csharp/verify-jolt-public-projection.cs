@@ -1,6 +1,7 @@
 #:property AssemblyName=Jazor.NodeApiVerification
 #:property CETCompat=false
 #:property PublishAot=false
+#:project ../../src/Jazor.Npm/Jazor.Npm.csproj
 #:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 
 using System.Collections;
@@ -9,6 +10,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Jazor.NodeHost;
+using Jazor.Npm;
 
 if (args is not [var executable])
     throw new ArgumentException("Usage: verify-jolt-public-projection.cs <Jolt CLI apphost>");
@@ -37,6 +39,22 @@ try
         export function hasNullDraftValue(draft) { return Object.hasOwn(draft, "value") && draft.value === null; }
         export const hasNullNullableDraftValue = hasNullDraftValue;
         import { computed, ref } from "vue";
+        export function observeField(props, key, emit, options) {
+            if (key !== "count" || options !== undefined)
+                throw new Error("Expected the selected model key and omitted options");
+            return computed({
+                get: () => props[key],
+                set: () => {
+                    if (props[key] > 0)
+                        emit("update:count", null, undefined, 0, false);
+                    else
+                        emit("update:count");
+                },
+            });
+        }
+        export function watchField(props, key, publish) {
+            return computed({ get: () => props[key], set: value => publish('changed', value) });
+        }
         export function makeMeter(initial) {
             const meter = ref(initial);
             meter.replace = function(next) {
@@ -94,6 +112,11 @@ try
             return [count, options === null ? "null" : "object", label, arguments.length].join("|");
         }
         export function transform(value, project) { return project(value); }
+        export function compareProjection(value, project) {
+            if (typeof value === "string")
+                return project(value) + 1;
+            return project(value * 2);
+        }
         export function lookup(target, key) { return target[key]; }
         export function assign(target, key, value) { target[key] = value; }
         const mappedArrays = new WeakSet();
@@ -114,6 +137,12 @@ try
         """);
     File.WriteAllText(Path.Combine(localPackage.FullName, "fixture.d.ts"), """
         import type { ComputedRef, Ref, WritableComputedRef } from "vue";
+        import type { UseVModelOptions } from "@vueuse/core";
+        export declare function observeField<P extends object, K extends keyof P, Name extends string>(
+            props: P, key?: K, emit?: (name: Name, ...args: any[]) => void,
+            options?: UseVModelOptions<P[K], false>): WritableComputedRef<P[K]>;
+        export declare function watchField<Row extends object, Field extends keyof Row>(
+            row: Row, field: Field, publish: (event: string, value: Row[Field]) => void): WritableComputedRef<Row[Field]>;
         export type SwitchState = "enabled" | "disabled";
         export type SwitchSignal = Ref<SwitchState> & {
             readonly source: Ref<SwitchState>;
@@ -147,6 +176,7 @@ try
             missing?: number;
         };
         export declare function unprojectable(): symbol;
+        export declare function unprojectableInput(value: symbol): string;
         export declare function tryRead(present: boolean): number | undefined;
         export declare function readBox(present: boolean): { readonly value: number | undefined };
         export declare function takeReads(): number;
@@ -154,6 +184,8 @@ try
         export declare const zero: number | undefined;
         export declare function optionalArguments(count?: number, options?: string | null, label?: string): string;
         export declare function transform<TInput, TOutput>(value: TInput, project: (value: TInput) => TOutput): TOutput;
+        export declare function compareProjection(value: string, project: (value: string) => number): number;
+        export declare function compareProjection<T>(value: number, project: (value: number) => T): T;
         export declare function lookup<T, K extends keyof T>(target: T, key: K): T[K];
         export declare function assign<T, K extends keyof T>(target: T, key: K, value: T[K]): void;
         export declare function mapItems<T, U>(items: readonly T[], select: (value: T) => U): readonly U[];
@@ -197,53 +229,39 @@ try
     var consumer = scratch.CreateSubdirectory("Consumer");
     var source = Path.Combine(library.FullName, "Dates.g.cs");
     string[] dateExports = ["add", "formatDistance", "formatDuration", "formatISO", "isWithinInterval", "intervalToDuration"];
-    var dateArguments = new[] { "--module", "date-fns" }.Concat(dateExports.SelectMany(export => new[] { "--export", export })).ToArray();
-    string[] localeArguments = ["--module", "date-fns/locale", "--export", "fr"];
-    await GenerateAsync([.. dateArguments, .. localeArguments]);
+    var dates = ("date-fns", dateExports);
+    (string, string[]) locale = ("date-fns/locale", ["fr"]);
+    await GenerateAsync(source, [dates, locale]);
     var first = await File.ReadAllTextAsync(source);
     if (first.Contains('\r'))
         throw new InvalidOperationException("Generated bindings must use LF line endings.");
     File.SetLastWriteTimeUtc(source, new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc));
     var timestamp = File.GetLastWriteTimeUtc(source);
-    await GenerateAsync([.. localeArguments, "--module", "date-fns",
-        .. dateExports.Reverse().SelectMany(export => new[] { "--export", export })]);
+    await GenerateAsync(source, [locale, ("date-fns", dateExports.Reverse().ToArray())]);
     if (await File.ReadAllTextAsync(source) != first || File.GetLastWriteTimeUtc(source) != timestamp)
         throw new InvalidOperationException("Reordered exports rewrote an identical public projection.");
-    await RunAsync(cli, scratch.FullName, ["bindings", .. dateArguments, .. localeArguments,
-        "--export", "noSuchExport", "--output", source], expectedError: "'date-fns/locale' has no export named 'noSuchExport'");
-    await RunAsync(cli, scratch.FullName, ["bindings", .. dateArguments, "--module", "projection-fixture",
-        "--export", "unprojectable", "--output", source],
-        expectedError: "Unsupported npm value export 'unprojectable' from 'projection-fixture': type 'symbol'.");
+    await GenerateAsync(source, [dates, ("date-fns/locale", ["fr", "noSuchExport"])], expectedError: "'date-fns/locale' has no export named 'noSuchExport'");
+    await GenerateAsync(source, [dates, ("projection-fixture", ["unprojectable"])],
+        expectedError: "Unsupported npm value export 'unprojectable' from 'projection-fixture': type 'symbol'. Failed at return type. TypeScript declaration:");
+    var diagnosticProvider = new NpmValueMetadataProvider(store);
+    var diagnosticResult = await diagnosticProvider.ReadValueProjectionsAsync(manifestPath, "projection-fixture",
+        ["unprojectable", "unprojectableInput"]);
+    if (diagnosticResult.Errors.Count != 2 ||
+        !diagnosticResult.Errors["unprojectableInput"].Contains("Failed at parameter 'value'.", StringComparison.Ordinal) ||
+        diagnosticResult.Errors.Values.Any(error => !Regex.IsMatch(error, @"fixture\.d\.ts\([1-9]\d*,[1-9]\d*\)")))
+        throw new InvalidOperationException(string.Join(Environment.NewLine, diagnosticResult.Errors.Values));
+    Console.WriteLine("Verified unsupported return and parameter diagnostics include the original TypeScript declaration location.");
     if (await File.ReadAllTextAsync(source) != first || File.GetLastWriteTimeUtc(source) != timestamp)
         throw new InvalidOperationException("A failed generation changed the existing public projection.");
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "projection-fixture", "--export", "default", "--export", "optionalArguments",
-        "--export", "tryRead", "--export", "readBox", "--export", "takeReads", "--export", "absent", "--export", "zero",
-        "--export", "transform", "--export", "mapItems", "--export", "lookup", "--export", "assign",
-        "--export", "createEnvelope", "--export", "persistCurrent", "--export", "pickCount", "--export", "acceptCount", "--export", "buildTree",
-        "--export", "createDraft", "--export", "hasDraftValue", "--export", "hasNullDraftValue",
-        "--export", "numberLabel", "--export", "booleanLabel", "--export", "nullableWriter", "--export", "computedLabel", "--export", "switchSignal",
-        "--export", "makeMeter",
-        "--export", "hasNullNullableDraftValue",
-        "--module", "projection-transfer", "--export", "forwardEnvelope", "--export", "viewCurrent", "--export", "selectMode",
-        "--export", "forwardTree", "--export", "selectOptional",
-        "--export", "forwardDraft", "--export", "forwardNullableDraft",
-        "--export", "forwardSlot", "--export", "forwardComputed", "--export", "persistSignal",
-        "--export", "forwardMeter",
-        "--output", Path.Combine(library.FullName, "Fixture.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "@vueuse/core", "--export", "isClient", "--export", "useStorage", "--export", "useVModel", "--export", "useColorMode", "--export", "createEventHook",
-        "--output", Path.Combine(library.FullName, "VueUse.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "@tanstack/vue-query", "--export", "useQuery", "--export", "VueQueryPlugin",
-        "--export", "useMutation", "--export", "useInfiniteQuery", "--export", "useQueryClient",
-        "--output", Path.Combine(library.FullName, "Query.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "vee-validate", "--export", "useForm", "--export", "useField",
-        "--output", Path.Combine(library.FullName, "Form.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "vue-i18n", "--export", "createI18n",
-        "--output", Path.Combine(library.FullName, "Messages.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "es-toolkit/compat", "--export", "truncate",
-        "--output", Path.Combine(library.FullName, "Text.g.cs")]);
-    await RunAsync(cli, scratch.FullName, ["bindings", "--module", "es-toolkit/promise", "--export", "withTimeout",
-        "--module", "es-toolkit/function", "--export", "retry",
-        "--output", Path.Combine(library.FullName, "Async.g.cs")]);
+    await GenerateAsync(Path.Combine(library.FullName, "Fixture.g.cs"), [("projection-fixture", ["default", "optionalArguments", "tryRead", "readBox", "takeReads", "absent", "zero", "transform", "mapItems", "lookup", "assign", "createEnvelope", "persistCurrent", "pickCount", "acceptCount", "buildTree", "createDraft", "hasDraftValue", "hasNullDraftValue", "numberLabel", "booleanLabel", "nullableWriter", "computedLabel", "switchSignal", "makeMeter", "observeField", "watchField", "hasNullNullableDraftValue"]),
+        ("projection-transfer", ["forwardEnvelope", "viewCurrent", "selectMode", "forwardTree", "selectOptional", "forwardDraft", "forwardNullableDraft", "forwardSlot", "forwardComputed", "persistSignal", "forwardMeter"])]);
+    await GenerateAsync(Path.Combine(library.FullName, "VueUse.g.cs"), [("@vueuse/core", ["isClient", "useStorage", "useVModel", "useColorMode", "createEventHook"])]);
+    await GenerateAsync(Path.Combine(library.FullName, "Query.g.cs"), [("@tanstack/vue-query", ["useQuery", "VueQueryPlugin", "useMutation", "useInfiniteQuery", "useQueryClient"])]);
+    await GenerateAsync(Path.Combine(library.FullName, "Form.g.cs"), [("vee-validate", ["useForm", "useField"])]);
+    await GenerateAsync(Path.Combine(library.FullName, "Messages.g.cs"), [("vue-i18n", ["createI18n"])]);
+    await GenerateAsync(Path.Combine(library.FullName, "Text.g.cs"), [("es-toolkit/compat", ["truncate"])]);
+    await GenerateAsync(Path.Combine(library.FullName, "Async.g.cs"), [("es-toolkit/promise", ["withTimeout"]),
+        ("es-toolkit/function", ["retry"])]);
 
     // Use the selected tool build's host contracts and source generator. The consumer
     // only references the projection through the compiled library's public metadata.
@@ -525,7 +543,20 @@ try
     File.WriteAllText(Path.Combine(scratch.FullName, "Keys.jazor"),
         "@using Fixture = Npm.ProjectionFixture.Exports\n\n<p>@ReadAndWriteKeys()</p>\n\n@code {\n" +
         keyedProperties.Replace("public static string ReadAndWriteKeys()", "private string ReadAndWriteKeys()") + "\n}\n");
+    // Compile the identical typed calls through both authoring entry points.
+    const string compareProjection = """
+        public static string ReadProjection()
+        {
+            double length = Fixture.CompareProjection("typed", (string value) => (double)value.Length);
+            string result = Fixture.CompareProjection(3d, (double value) => value == 6d ? "doubled" : "unexpected");
+            return result + "/" + length;
+        }
+        """;
+    File.WriteAllText(Path.Combine(scratch.FullName, "ProjectionParity.jazor"),
+        "@using Fixture = Npm.ProjectionFixture.Exports\n\n<p>@ReadProjection()</p>\n\n@code {\n" +
+        compareProjection + "\n}\n");
     await RunAsync(cli, scratch.FullName, ["build"]);
+    VerifyProjectionImport(File.ReadAllText(Path.Combine(scratch.FullName, ".jolt", "ProjectionParity.mjs")));
     var caller = Path.Combine(consumer.FullName, "Calendar.cs");
     const string calendar = """
         using Dates = Npm.DateFns.Exports;
@@ -597,6 +628,38 @@ try
                 double passiveValue = passive.Value;
                 return object.ReferenceEquals(direct, forwarded)
                     && observed == 0d && current == 4d && passiveValue == 4d;
+            }
+
+            public sealed record RefProperty(ECMAScript.Vue.IVueRef<double> Count) : ECMAScript.Vue.VueProps;
+            public sealed record ArrayRefs(ECMAScript.Vue.IVueRef<double>[] Items,
+                ECMAScript.Vue.VueShallowRef<RefProperty>[] Shallow) : ECMAScript.Vue.VueProps;
+            public sealed record ArrayModel(ArrayRefs Rows, RefProperty Direct) : ECMAScript.Vue.VueProps;
+
+            public static bool CheckPassiveModelRefs()
+            {
+                ECMAScript.Vue.IVueRef<double> count = ECMAScript.Vue.Ref(4d);
+                var direct = new RefProperty(count);
+                var shallow = ECMAScript.Vue.ShallowRef(direct);
+                var props = new ArrayModel(new ArrayRefs([count], [shallow]), direct);
+                var passive = VueUse.UseVModelWithPassiveTrueRecord(props, value => value.Rows, new());
+                passive.Value.Items[0].Value = 7d;
+                return object.ReferenceEquals(passive.Value.Items[0], count)
+                    && object.ReferenceEquals(passive.Value.Shallow[0], shallow)
+                    && object.ReferenceEquals(passive.Value.Shallow[0].Value, direct)
+                    && object.ReferenceEquals(passive.Value.Shallow[0].Value.Count, count)
+                    && count.Value == 7d;
+            }
+
+            public static bool CheckPassiveModelView()
+            {
+                ECMAScript.Vue.IVueRef<double> count = ECMAScript.Vue.Ref(4d);
+                var direct = new RefProperty(count);
+                var props = new ArrayModel(new ArrayRefs([], []), direct);
+                var view = VueUse.UseVModelWithPassiveTrueRecordView(props, value => value.Direct, new()).Value;
+                ECMAScript.Vue.IVueRef<double> selected = ECMAScript.Vue.ToRef(view, value => value.Count);
+                bool read = selected.Value == 4d;
+                selected.Value = 8d;
+                return read && count.Value == 8d;
             }
 
             public static bool CheckColorMode()
@@ -775,7 +838,32 @@ try
         """;
     File.WriteAllText(fieldPath, fieldSource);
     var correlatedPath = Path.Combine(consumer.FullName, "CorrelatedConsumer.cs");
-    var correlatedSource = File.ReadAllText(Path.Combine(fixture, "..", "jolt-binding-projection", "CorrelatedConsumer.cs"));
+    var correlatedSource = File.ReadAllText(Path.Combine(fixture, "..", "jolt-binding-projection", "CorrelatedConsumer.cs"))
+        .Replace("    public static string ReadStorage()", """
+                public static UnknownValue?[] ReadRestEmit(bool multiple)
+                {
+                    UnknownValue?[] captured = [null];
+                    var props = new UnmountInput(multiple ? 4d : 0d, true);
+                    var model = Npm.ProjectionFixture.Exports.ObserveField(props, p => p.Count, (name, payload) =>
+                    {
+                        if (name == "update:count")
+                            captured = payload;
+                    });
+                    model.Value = 7d;
+                    return captured;
+                }
+
+                public static double ReadTypedEmit()
+                {
+                    double observed = -1d;
+                    var model = Npm.ProjectionFixture.Exports.WatchField(new EmptyInput(4d, true), p => p.Count,
+                        (name, value) => { if (name == "changed") observed = value; });
+                    model.Value = 0d;
+                    return observed;
+                }
+
+                public static string ReadStorage()
+            """, StringComparison.Ordinal);
     File.WriteAllText(correlatedPath, correlatedSource);
     var keyedPath = Path.Combine(consumer.FullName, "KeyedConsumer.cs");
     var keyedSource = """
@@ -800,20 +888,50 @@ try
         }
         """.Replace("// DIRECT_GENERICS", directGenerics);
     File.WriteAllText(directPath, directSource);
+    var paritySdk = scratch.CreateSubdirectory("ParitySdk");
+    File.WriteAllText(Path.Combine(paritySdk.FullName, "ParitySdk.csproj"), """
+        <Project Sdk="Microsoft.NET.Sdk">
+          <ItemGroup>
+            <ProjectReference Include="REPOSITORY/src/Jazor.Emit/Jazor.Emit.csproj" ReferenceOutputAssembly="false" />
+            <Analyzer Include="$(JoltToolDirectory)/Jazor.Compiler.dll;$(JoltToolDirectory)/Jazor.Common.dll;$(JoltToolDirectory)/ECMAScript.Contract.dll;$(JoltToolDirectory)/Acornima*.dll;$(JoltToolDirectory)/ICSharpCode.Decompiler.dll" />
+          </ItemGroup>
+          <Import Project="REPOSITORY/src/Jazor/build/Jazor.targets" />
+        </Project>
+        """.Replace("REPOSITORY", System.Security.SecurityElement.Escape(root), StringComparison.Ordinal));
+    File.WriteAllText(Path.Combine(paritySdk.FullName, "ProjectionParity.cs"), """
+        using Fixture = Npm.ProjectionFixture.Exports;
+
+        [ECMAScript.ECMAScriptModule("projection-parity.mjs")]
+        public static class ProjectionParity
+        {
+            // SAME_CALLS
+        }
+        """.Replace("// SAME_CALLS", compareProjection, StringComparison.Ordinal));
+    await BuildAsync(paritySdk);
     await BuildAsync(library);
     await BuildAsync(consumer);
     var assembly = Assembly.Load(File.ReadAllBytes(Path.Combine(consumer.FullName, "bin", "Debug", "net11.0", "Consumer.dll")));
     var catalog = assembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: true)!;
     var modules = (IEnumerable)catalog.GetMethod("GetModules", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, null)!;
-    foreach (var module in modules.Cast<object>())
+    var parityAssembly = Assembly.Load(File.ReadAllBytes(Path.Combine(paritySdk.FullName, "bin", "Debug", "net11.0", "ParitySdk.dll")));
+    var parityCatalog = parityAssembly.GetType("Jazor.Generated.ModuleCatalog", throwOnError: true)!;
+    var parityModules = (IEnumerable)parityCatalog.GetMethod("GetModules", BindingFlags.NonPublic | BindingFlags.Static)!.Invoke(null, null)!;
+    foreach (var module in modules.Cast<object>().Concat(parityModules.Cast<object>()))
     {
         var js = (string)module.GetType().GetProperty("Content")!.GetValue(module)!;
         var name = (string)module.GetType().GetProperty("RelativePath")!.GetValue(module)!;
+        if (name == "projection-parity.mjs")
+            VerifyProjectionImport(js);
         if (name == "query-probe.mjs" && !js.Contains("from \"@tanstack/vue-query\"", StringComparison.Ordinal))
             throw new InvalidOperationException("The generated query module is missing its Vue Query import.");
         if (name == "messages-probe.mjs" && new[] { "false", "true" }.Any(mode =>
             !Regex.IsMatch(js, $"""["']?\blegacy["']?\s*:\s*{mode}\b""")))
             throw new InvalidOperationException($"Expected both Vue I18n option literals from assembly metadata.\n{js}");
+        if (name == "correlated-consumer.mjs" &&
+            (!js.Contains("label: \"Contact count\"", StringComparison.Ordinal) ||
+             !js.Contains("validateOnBlur: false", StringComparison.Ordinal) ||
+             !js.Contains("validateOnModelUpdate: false", StringComparison.Ordinal)))
+            throw new InvalidOperationException($"Expected the field binding label and disabled validation flags in the generated module.\n{js}");
         if (name == "correlated-consumer.mjs" &&
             (!Regex.IsMatch(js, """useStorage\(\((?<key>[\w$]+)\s*=\s*["']named-storage["'],\s*(?<initial>[\w$]+)\s*=\s*["']configured["'],\s*(?<options>[\w$]+)\s*=\s*\{\s*["']?writeDefaults["']?\s*:\s*false\s*\},\s*(?<gap>[\w$]+)\s*=\s*(?:void\s+0|undefined),\s*\k<key>\),\s*\k<initial>,\s*\k<gap>,\s*\k<options>\)""") ||
              !Regex.IsMatch(js, """\(["']default-storage["'],\s*["']default["']\)""")))
@@ -823,13 +941,22 @@ try
     var verify = Path.Combine(scratch.FullName, "verify.mjs");
     File.WriteAllText(verify, """
         import assert from "node:assert/strict";
-        import { createSSRApp, h } from "vue";
+        import { createRenderer, createSSRApp, h, nextTick, ref } from "vue";
         import { renderToString } from "vue/server-renderer";
-        import { BookingLength, CalendarDate, CheckColorMode, CheckModelOptions, FrenchDistance, IsClient, Label, LoadTitle, MapCatalog, OptionalArguments, OptionalResults, Preview, TransformResult, Upper } from "./calendar.mjs";
+        import { ReadProjection } from "./projection-parity.mjs";
+        import ProjectionParity, { ReadProjection as ReadJoltProjection } from "./.jolt/ProjectionParity.mjs";
+        assert.equal(ReadProjection(), "doubled/6");
+        assert.equal(ReadJoltProjection(), "doubled/6");
+        assert.match(await renderToString(createSSRApp(ProjectionParity)), /<p>doubled\/6<\/p>/);
+        import { BookingLength, CalendarDate, CheckColorMode, CheckModelOptions, CheckPassiveModelRefs, CheckPassiveModelView, FrenchDistance, IsClient, Label, LoadTitle, MapCatalog, OptionalArguments, OptionalResults, Preview, TransformResult, Upper } from "./calendar.mjs";
         import { FetchCache, Install, RemoveCache, Start } from "./query-probe.mjs";
         import { ReadFields, ReadName, ValidateMissing } from "./field-probe.mjs";
         import { Composition, Legacy } from "./messages-probe.mjs";
-        import { ReadPageParams, ReadStorage, ReadVariables, WriteForm } from "./correlated-consumer.mjs";
+        import { ReadPageParams, ReadRestEmit, ReadStorage, ReadTypedEmit, ReadVariables, ReadVueUseEmit, TrackSeededField, WriteEmptyForm, WriteForm, WriteSeededForm } from "./correlated-consumer.mjs";
+        assert.deepEqual(ReadRestEmit(false), []);
+        assert.deepEqual(ReadRestEmit(true), [null, null, 0, false]);
+        assert.deepEqual(ReadVueUseEmit(), [0]);
+        assert.equal(ReadTypedEmit(), 0);
         import { OptionalResults as JoltOptionalResults } from "./.jolt/Optional.mjs";
         import { Locale } from "./.jolt/Mode.mjs";
         import { TransformResult as JoltTransformResult } from "./.jolt/Transform.mjs";
@@ -845,7 +972,36 @@ try
         import { ReadAndWriteKeys } from "./keyed-consumer.mjs";
         import Keys from "./.jolt/Keys.mjs";
         import { useQueryClient } from "@tanstack/vue-query";
-        import { defineRule } from "vee-validate";
+        import { defineRule, useField } from "vee-validate";
+        const field = { setup() {
+            useField("count");
+            return () => null;
+        } };
+        const showField = ref(true);
+        let readSeededField;
+        const parent = { setup() {
+            readSeededField = TrackSeededField();
+            return () => showField.value ? h(field) : null;
+        } };
+        // Only comment nodes are rendered. Vue owns the component lifecycle.
+        const renderer = createRenderer({
+            createComment: () => ({}),
+            insert(node, parent) { node.parent = parent; },
+            remove(node) { delete node.parent; },
+            parentNode: node => node.parent,
+            nextSibling: () => null,
+        });
+        const mountedForm = renderer.createApp(parent);
+        mountedForm.mount({});
+        try {
+            assert.equal(await readSeededField(), "0/false");
+            showField.value = false;
+            await nextTick();
+            await nextTick();
+            assert.equal(await readSeededField(), "missing/false");
+        } finally {
+            mountedForm.unmount();
+        }
         assert.equal(Label(), "1 year, 2 days");
         assert.equal(Upper(), "1 YEAR, 2 DAYS");
         assert.equal(IsClient(), false);
@@ -907,6 +1063,23 @@ try
         assert.equal(JoltWritableComputed(), true);
         assert.throws(ReadOmittedDraft);
         assert.throws(JoltReadOmittedDraft);
+        let emptyForm;
+        const emptyFormApp = createSSRApp({
+            setup() {
+                emptyForm = WriteEmptyForm();
+                return () => h("p");
+            },
+        });
+        await renderToString(emptyFormApp);
+        assert.equal(await emptyForm, "missing/0/2");
+        let seededForm;
+        await renderToString(createSSRApp({
+            setup() {
+                seededForm = WriteSeededForm();
+                return () => h("p");
+            },
+        }));
+        assert.equal(await seededForm, "0/false/5");
         assert.equal(ReadAndWriteKeys(), "7/0/after/9");
         assert.equal(await renderToString(createSSRApp(Keys)), "<p>7/0/after/9</p>");
         const observations = [];
@@ -919,9 +1092,11 @@ try
                 ReadVariables(value => variables.push(value));
                 ReadPageParams((parameter, label) => pages.push([parameter, label]),
                     (pending, success) => pageStates.push([pending, success]));
-                assert.equal(WriteForm(), "updated/0");
+                assert.equal(WriteForm(), "updated/0/3/4/custom-blur");
                 assert.equal(ReadStorage(), "configured/default");
                 assert.equal(CheckModelOptions(), true);
+                assert.equal(CheckPassiveModelRefs(), true);
+                assert.equal(CheckPassiveModelView(), true);
                 assert.equal(CheckColorMode(), true);
                 return () => h("p");
             },
@@ -944,7 +1119,13 @@ try
         client.clear();
         """);
     await NodeModuleRunner.RunAsync(scratch.FullName, verify);
+    Console.WriteLine("The SDK and Jolt selected the same typed npm overloads, emitted the same named import, and executed both calls. Vue also rendered their result.");
 
+    File.WriteAllText(caller, calendar.Replace(
+        "var passive = VueUse.UseVModelWithPassiveTrueRecord(props, value => value.Rows, new());",
+        "var rejected = VueUse.UseVModelWithPassiveTrueRecord(props, value => value.Direct, new());\n" +
+        "                var passive = VueUse.UseVModelWithPassiveTrueRecord(props, value => value.Rows, new());"));
+    await BuildAsync(consumer, expectedError: "must preserve its authored type under Vue's deep proxy reads");
     File.WriteAllText(caller, calendar.Replace("Days = 2", """Days = "two" """));
     await BuildAsync(consumer, expectedError: "CS0029");
     File.WriteAllText(caller, calendar.Replace("Dates.IntervalToDuration(interval)", "Dates.IntervalToDuration(start)"));
@@ -962,6 +1143,12 @@ try
     File.WriteAllText(caller, calendarSource);
     File.WriteAllText(correlatedPath, correlatedSource.Replace("EmailAddress, \"updated\"", "EmailAddress, false"));
     await BuildAsync(consumer, expectedError: "CS0411");
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("count.WriteValue = 3", """count.WriteValue = "three" """));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("ValidateOnBlur = false,", """ValidateOnBlur = "off","""));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("ValidateOnBlur = false", """ValidateOnBlur = "false" """));
+    await BuildAsync(consumer, expectedError: "CS0029");
     File.WriteAllText(correlatedPath, correlatedSource.Replace("double? variables =", "double variables ="));
     await BuildAsync(consumer, expectedError: "CS0266");
     File.WriteAllText(correlatedPath, correlatedSource.Replace("double pageParam =", "string pageParam ="));
@@ -1010,6 +1197,9 @@ try
     File.WriteAllText(caller, calendarSource.Replace("mode.Value = VueUse.StringChoiceOfAutoOrDarkOrLight.Dark", "mode.Value = \"outside-domain\""));
     await BuildAsync(consumer, expectedError: "CS0029");
     File.WriteAllText(caller, calendarSource);
+    File.WriteAllText(correlatedPath, correlatedSource.Replace("captured = payload;", "{ double number = payload[0]!; }", StringComparison.Ordinal));
+    await BuildAsync(consumer, expectedError: "CS0029");
+    File.WriteAllText(correlatedPath, correlatedSource);
     File.WriteAllText(directPath, directSource.Replace("Transfer.ForwardMeter(meter)", "Transfer.ForwardMeter<double>(ECMAScript.Vue.Ref(5d))"));
     await BuildAsync(consumer, expectedError: "CS1503");
     File.WriteAllText(directPath, directSource.Replace("Transfer.ForwardMeter(meter)", "Transfer.ForwardMeter<string>(meter)"));
@@ -1039,7 +1229,28 @@ try
     Console.WriteLine("The independent C# consumer verified nested form writes, optional mutation variables, and selected infinite-query page parameters.");
     Console.WriteLine("The independent C# consumer ran both Vue I18n modes, Vue Query plugin registration, date-fns with a shared locale, and the inferred DTO through es-toolkit retry and withTimeout. The generic transform returned string and numeric results from C# and Jolt, and the C# compiler rejected an incompatible callback.");
 
-    Task GenerateAsync(string[] arguments) => RunAsync(cli, scratch.FullName, ["bindings", .. arguments, "--output", source]);
+    async Task GenerateAsync(string output, (string Module, string[] Exports)[] requests, string? expectedError = null)
+    {
+        var provider = new NpmValueMetadataProvider(store);
+        var exports = new List<NpmValueExport>();
+        foreach (var (module, names) in requests)
+        {
+            var projection = await provider.ReadValueProjectionsAsync(manifestPath, module, names);
+            if (projection.Errors.Count != 0)
+            {
+                if (expectedError is not null && projection.Errors.Values.Any(error => error.Contains(expectedError, StringComparison.Ordinal)))
+                    return;
+                throw new InvalidOperationException(string.Join(Environment.NewLine, projection.Errors.Values));
+            }
+            exports.AddRange(projection.Values);
+        }
+
+        if (expectedError is not null)
+            throw new InvalidOperationException($"Expected a projection error containing {expectedError}.");
+        var text = NpmBindings.GenerateCachedSource(scratch.FullName, [], exports);
+        if (!File.Exists(output) || await File.ReadAllTextAsync(output) != text)
+            await File.WriteAllTextAsync(output, text);
+    }
 
     Task BuildAsync(DirectoryInfo project, string? expectedError = null) => RunAsync("dotnet", project.FullName,
         ["build", "-v:q", "-p:JoltToolDirectory=" + Path.GetDirectoryName(cli)], expectedError);
@@ -1047,6 +1258,12 @@ try
 finally
 {
     scratch.Delete(recursive: true);
+}
+
+static void VerifyProjectionImport(string js)
+{
+    if (!Regex.IsMatch(js, """import\s*\{[^}]*\bcompareProjection\b[^}]*\}\s*from\s*"projection-fixture";"""))
+        throw new InvalidOperationException($"Expected the named compareProjection import from projection-fixture.\n{js}");
 }
 
 static async Task RunAsync(string executable, string directory, string[] arguments, string? expectedError = null)

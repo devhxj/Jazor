@@ -46,7 +46,10 @@ public sealed record JoltBlock(ImmutableArray<JoltNode> Children, TextSpan Span)
 public sealed record JoltUsing(string Code, TextSpan CodeSpan, TextSpan Span) : JoltNode(Span);
 public sealed record JoltRouteDirective(string Name, TextSpan NameSpan, string Argument, TextSpan ArgumentSpan, TextSpan Span) : JoltNode(Span);
 public sealed record JoltCode(string Code, TextSpan CodeSpan, TextSpan Span) : JoltNode(Span);
-public sealed record JoltScopedStyle(string Css, TextSpan CssSpan, TextSpan Span) : JoltNode(Span);
+public sealed record JoltScopedStyle(string Css, TextSpan CssSpan, TextSpan Span) : JoltNode(Span)
+{
+    public bool Scoped { get; init; } = true;
+}
 public sealed record JoltTypeParameter(string Name, TextSpan NameSpan, TextSpan Span) : JoltNode(Span)
 {
     public TextSpan? ConstraintSpan { get; init; }

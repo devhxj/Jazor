@@ -26,6 +26,7 @@
     <ProjectReference Include="..\ECMAScript.Style\ECMAScript.Style.csproj" />
     <ProjectReference Include="..\ECMAScript.Contract\ECMAScript.Contract.csproj" />
     <ProjectReference Include="..\Jazor.Emit\Jazor.Emit.csproj" />
+    <ProjectReference Include="..\Jolt.Vite\Jolt.Vite.csproj" />
     <ProjectReference Include="..\Jazor.Analyzer\Jazor.Analyzer.csproj" />
   </ItemGroup>
 

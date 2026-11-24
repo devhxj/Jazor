@@ -1,9 +1,11 @@
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { contractTypes, readComponent } from './vue-contract.mjs';
+import { webIdlProjection } from './web-idl-projection.mjs';
 import { readTypeScriptInput, templateTextSignature } from './vue-template-text.mjs';
 
-const [typescript, root, pathsJson, overlaysJson, declarationsJson] = globalThis.__jazorArguments;
+const [typescript, root, pathsJson, overlaysJson, declarationsJson, carriersJson] = globalThis.__jazorArguments;
+const carriers = JSON.parse(carriersJson);
 const require = createRequire(typescript);
 const ts = require(typescript);
 const toolRequire = createRequire(path.resolve(typescript, '../../../package.json'));
@@ -133,7 +135,8 @@ const contracts = paths.map((relative, index) => {
         if (!instance?.getProperty('$props') && !context)
             throw new Error('The default export has no Vue component type.');
         const identity = { moduleSpecifier: './' + relative, packageName: '', version: '', modulePath, declarationPath: modulePath };
-        const component = readComponent(symbol, { ts, source, checker, typeOf, display, optional, definition, identity, exportName: 'default' });
+        const { webType } = webIdlProjection(ts, program, source, host, carriers);
+        const component = readComponent(symbol, { ts, source, checker, typeOf, display, optional, definition, identity, exportName: 'default', webType, webType });
         const setup = sourceScript?.generated?.root.sfc.scriptSetup;
         component.definition ??= { path: path.resolve(modulePath), start: setup?.start ?? 0, length: 0 };
         if (setup) {

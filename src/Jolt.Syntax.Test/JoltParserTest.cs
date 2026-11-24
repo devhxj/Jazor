@@ -312,16 +312,23 @@ public sealed class JoltParserTest
     {
         const string source = """
             <style>.a::after { content: "&amp;"; }</style>
+            <div><style>.nested::after { content: "&lt;"; }</style></div>
             <script>const spelling = "&lt;";</script>
             <p>@(Pick<Dictionary<string, int>>(Nested(1)))</p><p>@(Pick<int>(2))</p>
             <button @onclick="Handler.OnClick" />
             """;
-        var document = JoltParser.Parse(source, "Demo.razor");
+        var document = JoltParser.Parse(source, "Demo.jazor");
         Assert.IsEmpty(document.Diagnostics);
+        var stylesheet = document.Nodes.OfType<JoltScopedStyle>().Single();
+        Assert.IsFalse(stylesheet.Scoped);
+        Assert.AreEqual(""".a::after { content: "&amp;"; }""", stylesheet.Css);
+        Assert.AreEqual(stylesheet.Css, Slice(source, stylesheet.CssSpan));
         var elements = document.Nodes.OfType<JoltElement>().ToArray();
-        Assert.AreEqual(""".a::after { content: "&amp;"; }""", string.Concat(elements[0].Children.OfType<JoltText>().Select(item => item.Text)));
+        CollectionAssert.AreEqual(new[] { "div", "script", "p", "p", "button" }, elements.Select(item => item.Name).ToArray());
+        var nestedStyle = elements[0].Children.OfType<JoltElement>().Single();
+        Assert.AreEqual("style", nestedStyle.Name);
+        Assert.AreEqual(""".nested::after { content: "&lt;"; }""", string.Concat(nestedStyle.Children.OfType<JoltText>().Select(item => item.Text)));
         Assert.AreEqual("""const spelling = "&lt;";""", string.Concat(elements[1].Children.OfType<JoltText>().Select(item => item.Text)));
-        CollectionAssert.AreEqual(new[] { "style", "script", "p", "p", "button" }, elements.Select(item => item.Name).ToArray());
         Assert.AreEqual("<p>@(Pick<Dictionary<string, int>>(Nested(1)))</p>", Slice(source, elements[2].Span));
         var nested = elements[2].Children.OfType<JoltExpression>().Single();
         Assert.AreEqual("Pick<Dictionary<string, int>>(Nested(1))", Slice(source, nested.CodeSpan));

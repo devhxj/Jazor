@@ -2398,8 +2398,8 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 	{
 		var reference = TranslateMethodReference(operation, argument);
 		var fixedArguments = ReadFixedArguments(operation.Method);
-		var adaptsCallback = operation.Method.Parameters.Any(HasOptionalCallback);
-		if (reference is not Expression callee || fixedArguments.Length == 0 && !adaptsCallback && !Util.HasOptionalRead(operation.Method))
+		var adaptsArguments = operation.Method.Parameters.Any(NeedsArgumentAdapter);
+		if (reference is not Expression callee || fixedArguments.Length == 0 && !adaptsArguments && !Util.HasOptionalRead(operation.Method))
 			return reference;
 
 		// Capture the already-bound callable when the method group is created.
@@ -2408,7 +2408,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 		var supplied = new Identifier("__jz_optionalArgs");
 		List<Expression> forwarded;
 		NodeList<Node> parameters;
-		if (fixedArguments.Length == 0 && !adaptsCallback)
+		if (fixedArguments.Length == 0 && !adaptsArguments)
 		{
 			forwarded = [new SpreadElement(supplied)];
 			parameters = NodeList.From<Node>(new RestElement(supplied));
@@ -2418,7 +2418,7 @@ private static bool HasPreserveAttribute(IParameterSymbol parameter)
 			var identifiers = Enumerable.Range(0, operation.Method.Parameters.Length)
 				.Select(index => new Identifier($"__jz_fixedArg{index}")).ToArray();
 			parameters = NodeList.From<Node>(identifiers);
-			forwarded = identifiers.Select((value, index) => AdaptOptionalCallback(operation.Method.Parameters[index], value)).ToList();
+			forwarded = identifiers.Select((value, index) => AdaptArgument(operation.Method.Parameters[index], value)).ToList();
 			InsertFixedArguments(forwarded, fixedArguments);
 		}
 		var invoke = new CallExpression(target, NodeList.From(forwarded), optional: false);

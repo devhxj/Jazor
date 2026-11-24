@@ -6,6 +6,7 @@
   </Configurations>
   <Folder Name="/generator/">
     <Project Path="src/Jazor.NodeHost/Jazor.NodeHost.csproj" />
+    <Project Path="src/Jazor.Npm/Jazor.Npm.csproj" />
     <Project Path="src/ECMAScript.Vue.Generator/ECMAScript.Vue.Generator.csproj" />
     <Project Path="src/ECMAScript.WebIDL.Generator/ECMAScript.WebIDL.Generator.csproj" />
     <Project Path="src/Jazor.CLR.Generator/Jazor.CLR.Generator.csproj" />
@@ -55,6 +56,7 @@
   <Project Path="src/ECMAScript.VueRoute/ECMAScript.VueRoute.csproj" />
   <Project Path="src/ECMAScript/ECMAScript.csproj" />
   <Project Path="src/Jazor.Analyzer/Jazor.Analyzer.csproj" />
+  <Project Path="src/Jazor.Npm.Editor/Jazor.Npm.Editor.csproj" />
   <Project Path="src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
   <Project Path="src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
   <Project Path="src/Jazor.CLR/Jazor.CLR.csproj" />

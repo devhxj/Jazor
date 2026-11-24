@@ -4,7 +4,7 @@ import { renderToString } from 'vue/server-renderer';
 import { provideSSRWidth } from '@vueuse/core';
 import { offset } from '@floating-ui/dom';
 import { JSDOM } from 'jsdom';
-import App, { ReadFrenchDistance, ReadWeekDefaults } from './.jolt/App.mjs';
+import App, { ReadFrenchDistance, ReadSundayDefault, ReadWeekDefaults } from './.jolt/App.mjs';
 import { getDefaultOptions, setDefaultOptions } from 'date-fns';
 import { defineRule } from 'vee-validate';
 import Vee from './.jolt/Vee.mjs';
@@ -20,6 +20,7 @@ const html = await renderToString(app);
 const previousDefaults = getDefaultOptions();
 try {
     assert.equal(ReadWeekDefaults(), 14);
+    assert.equal(ReadSundayDefault(), 0);
     assert.equal(ReadFrenchDistance(), '2 jours|2 jours');
 } finally {
     setDefaultOptions({
@@ -70,10 +71,11 @@ assert.match(fields, /<output id="context-form-errors">invalid-form\|cleared<\/o
 assert.match(fields, /<output id="bulk-errors">one\|two\|three\|cleared\|cleared<\/output>/);
 assert.match(fields, /<output id="bulk-touched">touched\|untouched<\/output>/);
 assert.match(fields, /<output id="form-control">invalid\|invalid-form\|invalid-form<\/output>/);
-assert.match(fields, /<output id="form-array">first\|third\|prepended\|updated\|inserted\|pushed\|replacement<\/output>/);
+assert.match(fields, /<output id="form-array">first\|third\|prepended\|updated\|inserted\|pushed\|replacement\|getter-path<\/output>/);
 assert.match(fields, /<output id="form-writes">field\|updated@example.test\|0\|literal\|ada@example.test<\/output>/);
 assert.match(fields, /<output id="form-partial">invalid\|missing<\/output>/);
 assert.match(fields, /<output id="form-partial-nested">nested@example\.test\|0\|false\|missing\|missing<\/output>/);
+assert.match(fields, /<output id="form-defined-field">0\|missing\|4\|touched\|deferred\|invalid-contact-count<\/output>/);
 console.log('VeeValidate awaited the validator and called both submission handlers with the schema input and output.');
 
 const { window } = new JSDOM('<div id="reference"></div><div id="floating"><div id="arrow"></div></div>');

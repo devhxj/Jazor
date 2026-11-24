@@ -1,16 +1,18 @@
 @using Messages = Npm.VueI18n.Exports
 @using ECMAScript
 
-<p>@Text()<span id="known-key">@KnownKey()</span></p>
+<p>@Text()<span id="known-key">@KnownKey()</span><span id="resolver-key">@ResolveKey()</span></p>
 
 @code {
     private Func<string> Text = () => "";
     private Func<string> KnownKey = () => "";
+    private Func<string?> ResolveKey = () => null;
 
     [Setup]
     private void Translate()
     {
         var composer = Messages.UseI18n();
+        ResolveKey = () => composer.Tm("resolver-key").AsString;
         var local = Messages.UseI18n(new() {
             UseScope = Npm.VueI18n.Exports.I18nScope.Local,
             InheritLocale = false,
@@ -84,9 +86,53 @@
         var before = global.Locale + "/" + global.T("greeting");
         global.Locale = "fr";
         var after = global.Locale + "/" + global.T("greeting");
+        global.FallbackLocale = "en";
+        var fallback = global.FallbackLocale.AsString;
         plugin.Dispose();
-        return before + "/" + after;
+        return before + "/" + after + "/" + fallback;
     }
+
+    public static string Fallback()
+    {
+        var plugin = Messages.CreateI18nWithLegacyFalse(new() {
+            Locale = "de",
+            FallbackLocale = "en",
+            Messages = new() {
+                ["en"] = new() { ["target"] = "English" },
+                ["fr"] = new() { ["target"] = "French" },
+            },
+        });
+        var global = plugin.Global;
+        var text = global.FallbackLocale.Value.AsString + "/" + global.T("target");
+        global.FallbackLocale.Value = new string[] { "fr" };
+        text += "/" + global.FallbackLocale.Value.AsArray![0] + "/" + global.T("target");
+        global.FallbackLocale.Value = new Vue.VueDictionary<string[]> { ["de"] = ["en"] };
+        text += "/" + global.FallbackLocale.Value.Get("de")![0] + "/" + global.T("target");
+        var missing = global.FallbackLocale.Value.Get("constructor") is null;
+        global.FallbackLocale.Value = False.Value;
+        text += "/" + (missing && global.FallbackLocale.Value.IsDisabled ? global.T("target") : "wrong");
+        plugin.Dispose();
+        return text;
+    }
+
+    public static bool DynamicMessages(Vue.VueDictionary<Messages.StringDictionaryOrString> values, bool legacy)
+    {
+        if (legacy)
+        {
+            var plugin = Messages.CreateI18nWithLegacyTrue(new() { Locale = "de", FallbackLocale = "en", Messages = new() { ["en"] = values } });
+            return plugin.Global.Tm("plain").AsString == "text" &&
+                plugin.Global.Tm("nested").GetOwn("leaf")?.AsString == "leaf" &&
+                plugin.Global.Tm("missing").AsString is null && plugin.Global.Tm("number").AsString is null &&
+                plugin.Global.Tm("number").AsNumber == 7 && plugin.Global.Tm("callable").AsString is null;
+        }
+        var composer = Messages.CreateI18nWithLegacyFalse(new() { Locale = "de", FallbackLocale = "en" }).Global;
+        composer.SetLocaleMessage("en", values);
+        return composer.Tm("plain").AsString == "text" &&
+            composer.Tm("nested").GetOwn("leaf")?.AsString == "leaf" &&
+            composer.Tm("missing").AsString is null && composer.Tm("number").AsString is null &&
+            composer.Tm("number").AsNumber == 7 && composer.Tm("callable").AsString is null;
+    }
+
 
     public static Vue.VueProps MessageTree(Vue.VueProps messages, string locale)
     {
@@ -102,13 +148,40 @@
         });
         composer.SetLocaleMessage("fr", merged);
         composer.Locale.Value = "fr";
+        var listed = composer.Messages.Value["fr"];
         var result = new Vue.VueDictionary {
             ["merged"] = composer.T("nested.added"),
             ["original"] = composer.T("nested.original"),
             ["resolved"] = composer.Rt("Resolved {'message'}"),
             ["replacement"] = composer.GetLocaleMessage("en"),
             ["roundTrip"] = composer.GetLocaleMessage("fr"),
+            ["listed"] = listed!,
+            ["missingFromMap"] = composer.Messages.Value[locale] is null,
             ["requested"] = composer.GetLocaleMessage(locale),
+        };
+        plugin.Dispose();
+        return result;
+    }
+
+    public static Vue.VueProps FormatMaps(string locale)
+    {
+        var plugin = Messages.CreateI18nWithLegacyFalse(new() { Locale = "en" });
+        var composer = plugin.Global;
+        composer.SetDateTimeFormat("en", new Vue.VueDictionary {
+            ["short"] = new Vue.VueDictionary { ["year"] = "numeric" },
+        });
+        composer.SetNumberFormat("en", new Vue.VueDictionary {
+            ["currency"] = new Vue.VueDictionary { ["style"] = "currency", ["currency"] = "USD" },
+        });
+        var datetime = composer.DatetimeFormats.Value["en"];
+        var number = composer.NumberFormats.Value["en"];
+        var result = new Vue.VueDictionary {
+            ["datetime"] = datetime!,
+            ["number"] = number!,
+            ["datetimeFromGetter"] = composer.GetDateTimeFormat("en"),
+            ["numberFromGetter"] = composer.GetNumberFormat("en"),
+            ["missingDatetime"] = composer.DatetimeFormats.Value[locale] is null,
+            ["missingNumber"] = composer.NumberFormats.Value[locale] is null,
         };
         plugin.Dispose();
         return result;

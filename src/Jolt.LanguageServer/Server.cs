@@ -31,39 +31,56 @@ public sealed partial class Server(Stream input, Stream output)
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _lifetime = lifetime.Token;
         var pending = new List<Task>();
-        while (await _transport.ReadAsync(cancellationToken) is { } message)
+        try
         {
-            pending.RemoveAll(task => task.IsCompletedSuccessfully);
-            if (!message.TryGetProperty("method", out var methodValue))
-                continue;
-            var method = methodValue.GetString()!;
-            message.TryGetProperty("params", out var args);
-            if (method == "exit")
-                break;
-
-            if (message.TryGetProperty("id", out var id))
-            {
-                var request = RespondAsync(id, method, args, cancellationToken);
-                if (method is "initialize" or "shutdown")
-                    await request;
-                else
-                    pending.Add(request);
-                continue;
-            }
-
-            if (method == "$/cancelRequest")
-            {
-                if (_requests.TryGetValue(args.GetProperty("id").GetRawText(), out var request))
-                    request.Cancel();
-                continue;
-            }
-            if (!_shutdown)
-                pending.Add(NotifyAsync(method, args, cancellationToken));
+            await ReadMessagesAsync();
         }
-        await lifetime.CancelAsync();
-        foreach (var request in _requests.Values)
-            request.Cancel();
-        await Task.WhenAll(pending);
+        finally
+        {
+            await lifetime.CancelAsync();
+            lock (_projectsLock)
+                foreach (var project in _projects.Values)
+                    project.Declarations.Dispose();
+            foreach (var request in _requests.Values)
+            {
+                try { await request.CancelAsync(); }
+                catch (ObjectDisposedException) { }
+            }
+            await Task.WhenAll(pending);
+        }
+
+        async Task ReadMessagesAsync()
+        {
+            while (await _transport.ReadAsync(cancellationToken) is { } message)
+            {
+                pending.RemoveAll(task => task.IsCompletedSuccessfully);
+                if (!message.TryGetProperty("method", out var methodValue))
+                    continue;
+                var method = methodValue.GetString()!;
+                message.TryGetProperty("params", out var args);
+                if (method == "exit")
+                    break;
+
+                if (message.TryGetProperty("id", out var id))
+                {
+                    var request = RespondAsync(id, method, args, cancellationToken);
+                    if (method is "initialize" or "shutdown")
+                        await request;
+                    else
+                        pending.Add(request);
+                    continue;
+                }
+
+                if (method == "$/cancelRequest")
+                {
+                    if (_requests.TryGetValue(args.GetProperty("id").GetRawText(), out var request))
+                        request.Cancel();
+                    continue;
+                }
+                if (!_shutdown)
+                    pending.Add(NotifyAsync(method, args, cancellationToken));
+            }
+        }
     }
 
     private async Task RespondAsync(JsonElement id, string method, JsonElement args, CancellationToken stopping)
@@ -267,6 +284,21 @@ public sealed partial class Server(Stream input, Stream output)
                 default:
                     return;
             }
+            await ValidateChangesAsync(affected, stopping);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception error)
+        {
+            Console.Error.WriteLine(error);
+        }
+    }
+
+    private async Task ValidateChangesAsync(IEnumerable<ProjectState> affected, CancellationToken stopping)
+    {
+        try
+        {
             await Task.WhenAll(affected.Select(ValidateAsync));
 
             async Task ValidateAsync(ProjectState project)

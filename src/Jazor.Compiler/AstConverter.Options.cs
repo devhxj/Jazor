@@ -71,9 +71,10 @@ public static class RuntimeClassPrivateStorageNames
         // than depend on a module-name-plan implementation detail.
         // Roslyn only associates compiler-generated property backing fields with their property;
         // an associated property field is therefore already an implicit backing declaration.
+        // Distinct declaring types may store the same field name on one derived instance.
         var canonicalName = field.AssociatedSymbol is IPropertySymbol property
             ? Format.HashName(property.OriginalDefinition.ToDisplayString(Format.NameFormat))
-            : fallbackName;
+            : fallbackName + "$" + Format.HashName(field.OriginalDefinition.ContainingType.ToDisplayString(Format.NameFormat)).TrimStart('_');
         return ProxySafePrefix + canonicalName;
     }
 

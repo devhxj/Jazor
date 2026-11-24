@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jolt.Npm;
 
 namespace Jolt.Compiler.Test;

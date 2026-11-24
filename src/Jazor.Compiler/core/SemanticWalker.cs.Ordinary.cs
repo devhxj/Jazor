@@ -545,6 +545,22 @@ public partial class SemanticWalker
 				operation,
 				"Expression tree lambda conversions are not supported. Use an executable delegate/Enumerable API instead of System.Linq.Expressions.Expression<TDelegate> or IQueryable<T>.");
 
+		if (operation.Type is INamedTypeSymbol { TypeKind: TypeKind.Enum } stringEnum &&
+			Util.IsStringEnumType(stringEnum) && operation.Operand.Type is { } sourceType &&
+			!SymbolEqualityComparer.Default.Equals(sourceType, stringEnum) &&
+			(IntegralWidth(sourceType).Bits != 0 || sourceType.SpecialType is SpecialType.System_Char or
+				SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal))
+		{
+			// A string enum is erased to the wire string. The underlying integer
+			// can supply that string only through a Roslyn-bound member constant.
+			if (operation.ConstantValue is { HasValue: true, Value: { } constant } &&
+				TryBuildStringEnumValueLiteral(stringEnum, constant, out var literal))
+				return WithOriginIfMissing(literal, operation);
+
+			return HandleTransformationFailure<Node>(operation,
+				$"Conversion to string enum '{stringEnum.ToDisplayString()}' requires a compile-time constant with a declared member mapping. Use a declared enum member.");
+		}
+
 		// tuple 在这里做“边界重映射”：
 		// 语义仍按位置对应，但一旦目标静态视图名字不同，就显式生成新的对象协议。
 		// 这里只处理 Roslyn 明确表示出来的 conversion；其他边界（参数、赋值、初始化器）

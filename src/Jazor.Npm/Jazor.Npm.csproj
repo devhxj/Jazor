@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Jazor.Emit" />
+        <InternalsVisibleTo Include="Jazor.NodeApiVerification" />
+        <InternalsVisibleTo Include="Jolt.Compiler" />
+        <InternalsVisibleTo Include="Jolt.Compiler.Test" />
+        <InternalsVisibleTo Include="Jolt.Npm" />
+        <ProjectReference Include="../ECMAScript/ECMAScript.csproj" />
+        <ProjectReference Include="../Jazor.Compiler/Jazor.Compiler.csproj" />
+        <ProjectReference Include="../Jazor.NodeHost/Jazor.NodeHost.csproj" />
+        <Reference Include="Microsoft.CodeAnalysis" HintPath="$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.dll" />
+        <Reference Include="Microsoft.CodeAnalysis.CSharp" HintPath="$(MSBuildSDKsPath)/../Roslyn/bincore/Microsoft.CodeAnalysis.CSharp.dll" />
+        <EmbeddedResource Include="*.mjs" LogicalName="Jazor.Npm.%(Filename)%(Extension)" />
+        <EmbeddedResource Include="tooling/package.json" LogicalName="Jazor.Npm.package.json" />
+        <EmbeddedResource Include="tooling/pnpm-lock.yaml" LogicalName="Jazor.Npm.pnpm-lock.yaml" />
+        <EmbeddedResource Include="tooling/locale/package.json" LogicalName="Jazor.Npm.locale.package.json" />
+        <EmbeddedResource Include="tooling/locale/pnpm-lock.yaml" LogicalName="Jazor.Npm.locale.pnpm-lock.yaml" />
+    </ItemGroup>
+</Project>

@@ -293,7 +293,7 @@ public sealed class CompilerPureBoundarySweepTests
         var holder = compilation.GetTypeByMetadataName("Holder")!;
         var field = holder.GetMembers("Field").OfType<IFieldSymbol>().Single();
         var backingField = holder.GetMembers("<Property>k__BackingField").OfType<IFieldSymbol>().Single();
-        Assert.AreEqual("$jazor$private$Field", RuntimeClassPrivateStorageNames.GetFieldStorageName(
+        Assert.AreEqual("$jazor$private$Field$" + Jazor.Common.Format.HashName(field.ContainingType.ToDisplayString(Jazor.Common.Format.NameFormat)).TrimStart('_'), RuntimeClassPrivateStorageNames.GetFieldStorageName(
             RuntimeClassPrivateStorage.ProxySafeMangledProperties,
             field,
             "Field"));

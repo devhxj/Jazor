@@ -10,30 +10,54 @@
 <button id="edit-passive" @onclick="EditPassive">Edit passive</button>
 <output id="record">@_record.Value.Info.Label</output>
 <button id="edit-record" @onclick="EditRecord">Edit record</button>
+<output id="refs">@_refs.Value.Rows[0].Counts[0].Value</output>
+<output id="shallow-refs">@(_refs.Value.Rows[0].States[0].Value.Enabled.Value ? "true" : "false")</output>
+<button id="edit-refs" @onclick="EditRefs">Edit refs</button>
+<button id="replace-ref" @onclick="ReplaceRef">Replace ref</button>
+<output id="view-count">@ReadViewCount()</output>
+<output id="nested-view-count">@ReadNestedViewCount()</output>
+<button id="edit-view" @onclick="EditView">Edit view</button>
 
 @code {
     public record ModelProps(
         [property: ECMAScript.ECMAScriptName("amount")] double SomeProperty,
         [property: ECMAScript.ECMAScriptName("computedAmount")] double ComputedAmount,
         [property: ECMAScript.ECMAScriptName("passiveAmount")] double PassiveAmount,
-        [property: ECMAScript.ECMAScriptName("payload")] Payload Record);
+        [property: ECMAScript.ECMAScriptName("payload")] Payload Record,
+        [property: ECMAScript.ECMAScriptName("refs")] RefPayload Refs,
+        [property: ECMAScript.ECMAScriptName("view")] ViewPayload View);
 
     public sealed record Details([property: ECMAScript.ECMAScriptName("label")] string Label);
 
     public sealed record Payload([property: ECMAScript.ECMAScriptName("info")] Details Info);
+    public sealed record RefPayload([property: ECMAScript.ECMAScriptName("rows")] RefRow[] Rows);
+    public sealed record RefRow(
+        [property: ECMAScript.ECMAScriptName("counts")] IVueRef<double>[] Counts,
+        [property: ECMAScript.ECMAScriptName("states")] VueShallowRef<RefState>[] States);
+    public sealed record RefState([property: ECMAScript.ECMAScriptName("enabled")] IVueRef<bool> Enabled);
+    public sealed record ViewPayload(
+        [property: ECMAScript.ECMAScriptName("count")] IVueRef<double> Count,
+        [property: ECMAScript.ECMAScriptName("details")] ViewDetails Nested);
+    public sealed record ViewDetails([property: ECMAScript.ECMAScriptName("nestedCount")] IVueRef<double> Count);
 
     [Parameter, EditorRequired]
     public System.Func<ModelProps> GetProps { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public System.Action<string, double, double?> ReportEmit { get; set; } = default!;
 
     private VueWritableComputedRef<double> _model = default!;
     private VueWritableComputedRef<double> _computed = default!;
     private IVueRef<double> _passive = default!;
     private IVueRef<Payload> _record = default!;
+    private IVueRef<RefPayload> _refs = default!;
+    private VueReadonlyRef<VueUnwrappedRecord<ViewPayload>> _view = default!;
 
     [Setup]
     private void Bind()
     {
-        _model = VueUse.UseVModel(GetProps(), x => x.SomeProperty);
+        _model = VueUse.UseVModel(GetProps(), x => x.SomeProperty,
+            (string name, ECMAScript.UnknownValue?[] args) => ReportEmit(name, args.Length, args[0]?.AsNumber));
         _computed = VueUse.UseVModelWithCloneCallback(GetProps(), x => x.ComputedAmount, new()
         {
             CloneValue = (double value) => value + 1,
@@ -41,13 +65,16 @@
             EventName = "update:accepted",
             ShouldEmit = value => value >= 0,
         });
-        _passive = VueUse.UseVModelWithPassiveTrue(GetProps(), x => x.PassiveAmount, new()
+        _passive = VueUse.UseVModelWithPassiveTrue(GetProps(), x => x.PassiveAmount,
+            (string name, ECMAScript.UnknownValue?[] args) => ReportEmit(name, args.Length, args[0]?.AsNumber), new()
         {
             DefaultValue = 0d,
             Deep = true,
             CloneValue = true,
         });
         _record = VueUse.UseVModelWithPassiveTrueRecord(GetProps(), x => x.Record, new());
+        _refs = VueUse.UseVModelWithPassiveTrueRecord(GetProps(), x => x.Refs, new() { Deep = true });
+        _view = VueUse.UseVModelWithPassiveTrueRecordView(GetProps(), x => x.View, new() { Deep = true });
     }
 
     private void Write()
@@ -59,7 +86,26 @@
 
     private void Accept() => _computed.Value = 4;
 
-    private void EditPassive() => _passive.Value = 8;
+    private void EditPassive() => _passive.Value = 0;
 
     private void EditRecord() => _record.Value = new Payload(new Details("child"));
+
+    private void EditRefs()
+    {
+        _refs.Value.Rows[0].Counts[0].Value = 0;
+        _refs.Value.Rows[0].States[0].Value.Enabled.Value = false;
+    }
+
+    private void ReplaceRef() => _refs.Value.Rows[0].Counts[0] = Ref(9d);
+
+    private double ReadViewCount() => ECMAScript.Vue.ToRef(_view.Value, x => x.Count).Value;
+
+    private double ReadNestedViewCount() =>
+        ECMAScript.Vue.ToRef(_view.Value.Select(x => x.Nested), x => x.Count).Value;
+
+    private void EditView()
+    {
+        ECMAScript.Vue.ToRef(_view.Value, x => x.Count).Value = 0;
+        ECMAScript.Vue.ToRef(_view.Value.Select(x => x.Nested), x => x.Count).Value = 0;
+    }
 }

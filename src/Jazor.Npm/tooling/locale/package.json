@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "dependencies": {
+    "@intlify/message-compiler": "11.4.12"
+  }
+}

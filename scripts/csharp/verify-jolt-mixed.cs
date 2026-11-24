@@ -4,15 +4,19 @@
 #:property CETCompat=false
 #:property PublishAot=false
 #:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
+#:project ../../src/Jazor.Common/Jazor.Common.csproj
 
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Channels;
+using System.Xml.Linq;
 using Jazor.NodeHost;
+using Jazor.Common.SourceMaps;
 
 if (args is ["--build-consumer", var directory])
 {
@@ -21,14 +25,15 @@ if (args is ["--build-consumer", var directory])
     return;
 }
 
-var rounds = args is [_, _, "--benchmark", var count] && int.TryParse(count, out var parsed) ? parsed : 0;
-if (args.Length != 2 && (rounds is < 1 or > 100))
-    throw new ArgumentException("Usage: verify-jolt-mixed.cs <Jolt CLI apphost> <Chromium executable> [--benchmark <1-100 rounds>]");
-
-var appHost = Path.GetFullPath(args[0]);
-var browser = Path.GetFullPath(args[1]);
 var scriptDirectory = Path.GetDirectoryName(ScriptPath())!;
 var repo = Path.GetFullPath(Path.Combine(scriptDirectory, "..", ".."));
+var rounds = args is [_, _, "--benchmark", var count] && int.TryParse(count, out var parsed) ? parsed : 0;
+var handoffPackage = args is [_, _, "--module-handoff", var nupkg] ? Path.GetFullPath(nupkg, repo) : null;
+if (args.Length != 2 && handoffPackage is null && (rounds is < 1 or > 100))
+    throw new ArgumentException("Usage: verify-jolt-mixed.cs <Jolt CLI apphost> <Chromium executable> [--benchmark <1-100 rounds> | --module-handoff <Jazor.nupkg>]");
+
+var appHost = Path.GetFullPath(args[0], repo);
+var browser = Path.GetFullPath(args[1], repo);
 var sample = Path.Combine(repo, "samples", "Jolt.Mixed");
 var browserCheck = Path.Combine(repo, "samples", "Jolt.Counter", "verify-browser.cs");
 var bridge = Path.Combine(scriptDirectory, "fixtures", "vue-typecheck.cjs");
@@ -36,9 +41,15 @@ var store = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ?? Pat
 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(240 + 20 * rounds));
 var stop = deadline.Token;
 var scratchRoot = Directory.CreateDirectory(Path.Combine(repo, ".tmp"));
-var project = Directory.CreateDirectory(Path.Combine(scratchRoot.FullName, $"jolt-mixed-{Guid.NewGuid():N}"));
+var scratch = scratchRoot.CreateSubdirectory($"jolt-mixed-{Guid.NewGuid():N}");
+var project = handoffPackage is null ? scratch : scratch.CreateSubdirectory("frontend");
 try
 {
+    if (handoffPackage is not null)
+    {
+        await CheckModuleHandoff(handoffPackage);
+        return;
+    }
     // Copy only authored inputs so a previous local dev/build cannot seed this run.
     foreach (var relative in new[] { "package.json", "pnpm-lock.yaml", "index.html", "main.ts", "probe.tsx", "App.vue",
         "tsconfig.json", "editors/MixedEditor.jazor", "editors/NameInput.vue", "editors/draft.svg" })
@@ -171,7 +182,132 @@ try
 }
 finally
 {
-    project.Delete(recursive: true);
+    scratch.Delete(recursive: true);
+}
+
+async Task CheckModuleHandoff(string package)
+{
+    using var archive = ZipFile.OpenRead(package);
+    using var spec = archive.GetEntry("Jazor.nuspec")!.Open();
+    var nuspec = XElement.Load(spec);
+    var ns = nuspec.Name.Namespace;
+    var version = nuspec.Element(ns + "metadata")!.Element(ns + "version")!.Value;
+    new XElement("configuration",
+        new XElement("packageSources", new XElement("clear"),
+            new XElement("add", new XAttribute("key", "candidate"), new XAttribute("value", Path.GetDirectoryName(package)!)),
+            new XElement("add", new XAttribute("key", "nuget.org"), new XAttribute("value", "https://api.nuget.org/v3/index.json"))),
+        new XElement("packageSourceMapping",
+            new XElement("packageSource", new XAttribute("key", "candidate"), new XElement("package", new XAttribute("pattern", "Jazor"))),
+            new XElement("packageSource", new XAttribute("key", "nuget.org"), new XElement("package", new XAttribute("pattern", "*")))))
+        .Save(Path.Combine(scratch.FullName, "NuGet.Config"));
+    var library = scratch.CreateSubdirectory("Library").FullName;
+    var host = scratch.CreateSubdirectory("Host").FullName;
+    WriteProject(library, "Library");
+    WriteProject(host, "Host",
+        new XElement("PropertyGroup", new XElement("OutputType", "Exe"), new XElement("JazorMode", "debug"),
+            new XElement("JazorDir", "$(MSBuildProjectDirectory)/../frontend/jazor/")),
+        new XElement("ItemGroup", new XElement("ProjectReference", new XAttribute("Include", "../Library/Library.csproj"))));
+    await File.WriteAllTextAsync(Path.Combine(library, "Greeting.cs"), """
+        [ECMAScript.ECMAScriptModule("messages/greeting.mjs")]
+        public static class Greeting { public static string Read() => "from DLL v1"; }
+        """, stop);
+    await File.WriteAllTextAsync(Path.Combine(host, "Program.cs"), """
+        public static class Program { public static void Main() { } }
+        [ECMAScript.ECMAScriptModule("ui-message.mjs")]
+        public static class UiMessage { public static string Read() => Greeting.Read(); }
+        """, stop);
+
+    foreach (var file in new[] { "package.json", "pnpm-lock.yaml", "index.html" })
+        File.Copy(Path.Combine(sample, file), Path.Combine(project.FullName, file));
+    await File.WriteAllTextAsync(Path.Combine(project.FullName, "main.ts"), """
+        import { createApp } from 'vue';
+        import App from './App.vue';
+        createApp(App).mount('#app');
+        """, stop);
+    await File.WriteAllTextAsync(Path.Combine(project.FullName, "App.vue"), """
+        <script setup>
+        import Message from './Message.jazor';
+        import { Read } from './jazor/ui-message.mjs';
+        </script>
+        <template><Message :Text="Read()" /></template>
+        """, stop);
+    var component = Path.Combine(project.FullName, "Message.jazor");
+    await File.WriteAllTextAsync(component, """
+        <output id="module-value">@Text</output>
+        @code { [Parameter] public string Text { get; set; } = ""; }
+        """, stop);
+    var authored = new[] { "main.ts", "App.vue", "Message.jazor", "index.html", "package.json", "pnpm-lock.yaml" }
+        .ToDictionary(file => file, file => File.ReadAllText(Path.Combine(project.FullName, file)));
+
+    var watchStart = Start("dotnet", "watch", "--project", Path.Combine(host, "Host.csproj"), "--no-hot-reload", "run");
+    watchStart.Environment["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
+    using var watch = new ObservedProcess(watchStart);
+    await watch.WaitFor(line => line.Contains("Exited", StringComparison.Ordinal), stop);
+    var delivery = Path.Combine(project.FullName, "jazor");
+    var greeting = Path.Combine(delivery, "messages", "greeting.mjs");
+    var bridge = Path.Combine(delivery, "ui-message.mjs");
+    var map = greeting + ".map";
+    Require((await File.ReadAllTextAsync(bridge, stop)).Contains("./messages/greeting.mjs", StringComparison.Ordinal),
+        "The host module did not import the referenced library module.");
+    var original = await File.ReadAllTextAsync(greeting, stop);
+    VerifyGreetingMap(original, await File.ReadAllTextAsync(map, stop), "from DLL v1");
+    var bridgeTime = File.GetLastWriteTimeUtc(bridge);
+    using (var server = new ObservedProcess(Start(appHost, "dev", ".", "--port", AvailablePort())))
+    {
+        var origin = await server.WaitFor(IsLocalOrigin, stop);
+        await RequireSuccess("dotnet", "run", "--file", browserCheck, "--", browser, origin, scratch.FullName, "--module-handoff");
+    }
+    await watch.WaitFor(line => line.Contains("Exited", StringComparison.Ordinal), stop);
+    var updated = await File.ReadAllTextAsync(greeting, stop);
+    VerifyGreetingMap(updated, await File.ReadAllTextAsync(map, stop), "from DLL v2");
+    Require(updated != original && File.GetLastWriteTimeUtc(bridge) == bridgeTime,
+        "Expected the library edit to update its delivered module and preserve the unchanged importing module.");
+    // Rename the library module and rebuild the consuming host. Emit owns its previous
+    // module/map pair, while the application may keep unrelated files in the same directory.
+    var librarySource = Path.Combine(library, "Greeting.cs");
+    var updatedSource = await File.ReadAllTextAsync(librarySource, stop);
+    var keep = Path.Combine(delivery, "messages", "keep.txt");
+    await File.WriteAllTextAsync(keep, "application-owned", stop);
+    await File.WriteAllTextAsync(librarySource, updatedSource.Replace("messages/greeting.mjs", "messages/renamed.mjs", StringComparison.Ordinal), stop);
+    await watch.WaitFor(line => line.Contains("Exited", StringComparison.Ordinal), stop);
+    Require(!File.Exists(greeting) && !File.Exists(map) &&
+        File.Exists(Path.Combine(delivery, "messages", "renamed.mjs.map")) &&
+        (await File.ReadAllTextAsync(bridge, stop)).Contains("./messages/renamed.mjs", StringComparison.Ordinal) &&
+        await File.ReadAllTextAsync(keep, stop) == "application-owned",
+        "The renamed DLL module did not replace its previous module/map and preserve the neighboring file.");
+    await RequireSuccess(appHost, "bundle", ".");
+    await CheckProduction("--module-handoff");
+    foreach (var (name, content) in authored)
+        Require(await File.ReadAllTextAsync(Path.Combine(project.FullName, name), stop) == content, $"The handoff changed frontend/{name}.");
+    Console.WriteLine("Verified DLL catalog, source map, dotnet watch rebuild and update in the open Jolt page, and the standalone production bundle.");
+
+    static void VerifyGreetingMap(string js, string json, string value)
+    {
+        var lines = js.ReplaceLineEndings("\n").Split('\n');
+        var literal = JsonSerializer.Serialize(value);
+        var line = Array.FindIndex(lines, text => text.Contains("return " + literal, StringComparison.Ordinal));
+        Require(line >= 0, "Missing the projected greeting return.");
+        var column = lines[line].IndexOf(literal, StringComparison.Ordinal);
+        var map = new SourceMapReader().Read(json);
+        var segment = map.Segments.Where(segment => segment.GeneratedLine == line && segment.GeneratedColumn <= column)
+            .OrderByDescending(segment => segment.GeneratedColumn).FirstOrDefault();
+        Require(segment is not null, "The emitted greeting literal has no mapped source position.");
+        var source = map.Sources[segment!.SourceIndex];
+        var authored = (source.Content ?? "").ReplaceLineEndings("\n").Split('\n');
+        var authoredLine = Array.FindIndex(authored, text => text.Contains("Read() => " + literal, StringComparison.Ordinal));
+        Require(source.Path.EndsWith("Greeting.cs", StringComparison.Ordinal) && authoredLine >= 0 &&
+            segment.SourceLine == authoredLine && segment.SourceColumn < authored[authoredLine].Length,
+            $"The emitted greeting maps to {source.Path}:{segment.SourceLine + 1}:{segment.SourceColumn + 1}, expected Greeting.cs:{authoredLine + 1}.");
+    }
+
+    void WriteProject(string directory, string name, params XElement[] extra)
+    {
+        new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+            new XElement("PropertyGroup", new XElement("TargetFramework", "net11.0"), new XElement("LangVersion", "preview"),
+                new XElement("JazorPnpmStoreDirectory", store)),
+            new XElement("ItemGroup", new XElement("PackageReference", new XAttribute("Include", "Jazor"),
+                new XAttribute("Version", "[" + version + "]"))), extra).Save(Path.Combine(directory, name + ".csproj"));
+    }
 }
 
 ProcessStartInfo Start(string file, params string[] arguments)
@@ -215,12 +351,13 @@ async Task RequireSuccess(string file, params string[] arguments)
     Require(result.ExitCode == 0, $"{file} {string.Join(' ', arguments)} exited with code {result.ExitCode}.");
 }
 
-async Task CheckProduction()
+async Task CheckProduction(string browserMode = "--mixed")
 {
     var dist = Path.Combine(project.FullName, "dist");
     var assets = Path.Combine(dist, "assets");
-    Require(Directory.EnumerateFiles(assets, "*.js").Any() && Directory.EnumerateFiles(assets, "*.css").Any(),
-        "Expected Vite to produce JavaScript and stylesheet assets.");
+    Require(Directory.EnumerateFiles(assets, "*.js").Any(), "Expected a JavaScript bundle.");
+    if (browserMode == "--mixed")
+        Require(Directory.EnumerateFiles(assets, "*.css").Any(), "Expected the mixed component stylesheet.");
     var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = dist });
     builder.Logging.SetMinimumLevel(LogLevel.Warning);
     await using var production = builder.Build();
@@ -228,7 +365,7 @@ async Task CheckProduction()
     production.UseDefaultFiles();
     production.UseStaticFiles();
     await production.StartAsync(stop);
-    await RequireSuccess("dotnet", "run", "--file", browserCheck, "--", browser, production.Urls.Single(), "--mixed");
+    await RequireSuccess("dotnet", "run", "--file", browserCheck, "--", browser, production.Urls.Single(), browserMode);
 }
 
 async Task<(int ExitCode, string Diagnostics)> CheckVue()

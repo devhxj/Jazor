@@ -1,15 +1,22 @@
-namespace Jolt.Npm;
+using Jazor.Npm;
 
-public sealed record NpmDefinition(string Path, int Start, int Length);
+namespace Jolt.Npm;
 
 public sealed record NpmVueProp(
     string Type,
     bool Required,
     IReadOnlyList<string> LiteralValues,
-    NpmDefinition? Definition);
+    NpmDefinition? Definition)
+{
+    public string? InputType { get; init; }
+    public IReadOnlyDictionary<string, string>? InputRecordFields { get; init; }
+    public bool InputNullable { get; init; }
+}
 
 public sealed record NpmVueParameter(string Name, string Type, IReadOnlyDictionary<string, string>? Properties = null)
 {
+    public string? WebType { get; init; }
+    public string? ValueDomain { get; init; }
     public IReadOnlyDictionary<string, NpmDefinition>? PropertyDefinitions { get; init; }
 }
 

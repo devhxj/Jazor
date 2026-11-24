@@ -3,14 +3,16 @@
 <output id="form-scope">@_result</output>
 
 @code {
-    public record Input(string Address, double Count, double Missing) : ECMAScript.Vue.VueProps;
+    public record Row(double Count);
+    public record Input(string Address, double Count, double Missing, Row[] Rows) : ECMAScript.Vue.VueProps;
+    public record Output(string SubmittedAddress) : ECMAScript.Vue.VueProps;
     private string _result = "waiting";
 
     [Setup]
     private void Configure()
     {
         var formState = Vee.UseFormContext();
-        var context = Vee.UseFormContext<Input>();
+        var context = Vee.UseFormContext<Input, Output>();
         if (context == null)
         {
             _result = formState == null ? "missing" : "invalid";
@@ -23,14 +25,31 @@
             return;
         }
 
+        var setErrors = Vee.UseSetFormErrors();
         ECMAScript.Vue.OnMounted(() => {
             var initial = context.Values.Get(value => value.Address);
             var missing = context.Values.GetValue(value => value.Missing);
             var count = context.Values.GetValue(value => value.Count);
-            context.SetFieldValue(value => value.Count, 2d, false);
+            context.SetValues(new Input(initial!, 2, 0, [new(1)]), false);
             var updated = context.Values.GetValue(value => value.Count);
-            context.ValidateField(value => value.Count).Then(field => context.Validate().Then(form => {
-                _result = field.Valid && form.Valid && missing == null && count == 0 && updated == 2 ? initial + "|updated" : "invalid";
+            var submittedAddress = "";
+            var submit = context.HandleSubmit(values => {
+                submittedAddress = values.Get(value => value.SubmittedAddress) ?? "missing";
+            });
+            var (rowCount, rowProps) = context.DefineField(value => value.Rows[0].Count,
+                state => new() { ValidateOnBlur = state.Touched, ValidateOnModelUpdate = false });
+            rowProps.Value.OnBlur();
+            rowCount.WriteValue = 3;
+            context.ValidateField(value => value.Rows[0].Count).Then(field => context.Validate().Then(form => {
+                return submit().Then(() => {
+                    setErrors(new() { ["Address"] = new[] { "first", "second" } });
+                    var messages = context.ErrorBag.Value["Address"];
+                    _result = field.Valid && form.Valid && missing == null && count == 0 && updated == 2 &&
+                        rowCount.Value?.Value == 3 &&
+                        messages is not null && messages.Length == 2 && messages[1] == "second" && context.Errors.Value["Address"] == "first" &&
+                        context.ErrorBag.Value["missing"] is null && submittedAddress == initial
+                        ? initial + "|updated" : "invalid";
+                });
             }));
         });
     }

@@ -678,6 +678,22 @@ public static partial class Vue
 		public extern T Value { get; set; }
 	}
 
+	/// <summary>A Vue ref that can read as null before initialization and accepts a distinct write type.</summary>
+	[ECMAScript]
+	public sealed class VueSplitOptionalRef<TRead, TWrite>
+	{
+		private VueSplitOptionalRef() { }
+
+		/// <summary>Reads the tracked value, normalizing an absent JavaScript value to null.</summary>
+		[Description("@#value")]
+		[ECMAScriptOptional]
+		public extern TRead Value { get; }
+
+		/// <summary>Writes a value to the original reactive ref.</summary>
+		[Description("@#value")]
+		public extern TWrite WriteValue { set; }
+	}
+
 	/// <summary>
 	/// Vue <c>computed(getter)</c> 产生的只读计算引用。与更广泛的 <see cref="VueReadonlyRef{T}"/> 契约保持区分，以便库界面可以保留专门保证计算语义的官方 API。
 	/// A readonly computed ref produced by Vue's <c>computed(getter)</c>. This remains

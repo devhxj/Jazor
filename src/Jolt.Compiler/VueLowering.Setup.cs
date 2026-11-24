@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Acornima.Ast;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
@@ -24,7 +25,7 @@ internal sealed partial class VueLowering
             return null;
         if (!_refStorage.TryGetValue(field, out var storesRef))
         {
-            storesRef = JoltNpmValueProjection.ContainsVueRef(field.Type);
+            storesRef = NpmValueProjection.ContainsVueRef(field.Type);
             _refStorage.Add(field, storesRef);
         }
         if (!storesRef)

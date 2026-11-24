@@ -57,6 +57,33 @@ public sealed class AttributesDirectiveTests
     }
 
     [TestMethod]
+    public async Task Compile_ComponentVNodeAttributesUseVueValueTypesAndPreserveDeclaredProps()
+    {
+        var child = new JoltSource("Tile.jazor", "<article />");
+        var result = await JoltProjectCompiler.CompileAsync([
+            child,
+            new("Page.jazor", """<Tile class="highlight" style="padding:0" />"""),
+        ]);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var js = result.Modules.Single(module => module.Name == "Page").Content;
+        StringAssert.Contains(js, "\"class\": \"highlight\"");
+        StringAssert.Contains(js, "\"style\": \"padding:0\"");
+
+        foreach (var (markup, component, diagnostic) in new[]
+        {
+            ("""<Tile style="@(42)" />""", child, "CS1503"),
+            ("""<Tile clas="typo" />""", child, "JOLT1004"),
+            ("""<Tile class="highlight" />""", new JoltSource("Tile.jazor",
+                "<article />\n@code { [Parameter] public bool Class { get; set; } }"), "CS1503"),
+        })
+        {
+            var analysis = JoltProjectCompiler.Analyze([component, new("Page.jazor", markup)]);
+            Assert.IsTrue(analysis.Diagnostics.Any(item => item.Id == diagnostic),
+                markup + Environment.NewLine + string.Join(Environment.NewLine, analysis.Diagnostics));
+        }
+    }
+
+    [TestMethod]
     public async Task Compile_AcceptsForwardedVueAttributeBag()
     {
         var result = await JoltProjectCompiler.CompileAsync([

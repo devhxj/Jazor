@@ -7,6 +7,9 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectCapability Include="CreateVsixContainer" />
+        <!-- Ship both MEF components in the existing extension. C# navigation loads independently of the Jolt language client. -->
+        <ProjectReference Include="../jazor-visual-studio/Jazor.VisualStudio.csproj"
+                          ReferenceOutputAssembly="false" IncludeOutputGroupsInVSIX="BuiltProjectOutputGroup" />
         <Reference Include="System.ComponentModel.Composition" />
         <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Client" Version="17.14.60" ExcludeAssets="runtime" />
         <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="17.14.249" ExcludeAssets="runtime" />

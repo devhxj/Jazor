@@ -23,9 +23,7 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 </ItemGroup>
 ```
 
-纯 Jazor 类库（开发者编写 C# 并声明 `[ECMAScriptModule]`）直接引用 `Jazor`。类库保留默认
-`JazorMode=none`，自身生成模块写入 DLL 内的 `ModuleCatalog`；最终可执行或 Web 宿主负责
-收集程序集 catalog 与传递的资源 manifest 并输出产物。
+纯 Jazor 类库直接引用 `Jazor`，通过 DLL 内的 `ModuleCatalog` 交付模块和 source map。使用 Vue 响应式代理的项目引用 `ECMAScript.Vue`，该包向编译器选择代理可访问的私有字段存储。[宿主输出](../Jazor.Emit/README.md)
 
 定义 module 的类库应隔离这项工具引用：
 

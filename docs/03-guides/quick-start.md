@@ -4,7 +4,7 @@
 
 本指南用两个 .NET 项目演示如何将类库中的 C# 模块生成 `.mjs` 并写入宿主输出目录。编写 Vue 应用请看 [Jolt 作者指南](./jolt-authoring.md)。
 
-示例使用 `2.5.0`。Jolt 项目通过 npm 依赖使用应用库，普通 .NET 类库可用 `jolt bindings` 生成公开 C# 声明。 [投影用法](./jolt-authoring.md#普通-c-类库的公开投影)
+示例使用 `2.6.0`。Jolt 项目通过 npm 依赖使用应用库，普通 .NET 类库可通过 `using Npm…` 在构建时获得 npm 声明。 [投影用法](./jolt-authoring.md#普通-c-类库的公开投影)
 
 ## 1. 创建模块库
 
@@ -12,7 +12,7 @@
 
 ```bash
 dotnet new classlib -n Sample.Modules
-dotnet add Sample.Modules package Jazor --version 2.5.0
+dotnet add Sample.Modules package Jazor --version 2.6.0
 ```
 
 在类库中声明一个 ECMAScript 模块：
@@ -38,7 +38,7 @@ public static class Greetings
 ```bash
 dotnet new web -n Sample.Host
 dotnet add Sample.Host reference Sample.Modules
-dotnet add Sample.Host package Jazor --version 2.5.0
+dotnet add Sample.Host package Jazor --version 2.6.0
 ```
 
 在 `Sample.Host.csproj` 配置 debug 输出：

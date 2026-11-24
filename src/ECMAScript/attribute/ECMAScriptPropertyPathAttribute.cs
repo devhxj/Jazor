@@ -17,9 +17,15 @@ public sealed class ECMAScriptPropertyPathAttribute : Attribute
     /// <summary>Uses vee-validate's bracket syntax for literal field paths.</summary>
     public bool VeeValidatePath { get; set; }
 
+    /// <summary>Allows constant JavaScript array indices in a nested path.</summary>
+    public bool ArrayIndices { get; set; }
+
     /// <summary>Whether a returned container reads the selected property indirectly.</summary>
     public bool IndirectRead { get; set; }
 
-    /// <summary>Requires a record payload whose data shape survives Vue's deep ref unwrapping.</summary>
+    /// <summary>Requires a structural record or array payload that preserves its data shape under Vue's deep proxy reads.</summary>
     public bool RequirePlainRecord { get; set; }
+
+    /// <summary>Requires a non-null structural record as the root of a Vue unwrapped view.</summary>
+    public bool RequireRecordView { get; set; }
 }

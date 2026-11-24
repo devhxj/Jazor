@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using System.Text.Json;
 using Jolt.Compiler;
 using Jolt.Npm;
@@ -54,6 +55,26 @@ public sealed class ProjectCompilerTests
     }
 
     [TestMethod]
+    public async Task Compile_SingleChildSlotIgnoresIndentationAndRetainsAuthoredSpacing()
+    {
+        async Task<string> RenderModule(string content)
+        {
+            var result = await JoltProjectCompiler.CompileAsync([
+                new("App.jazor", $"<Panel><template #reference>{content}</template></Panel>"),
+                new("Panel.jazor", "<div><slot name=\"reference\" /></div>"),
+            ]);
+            Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+            return result.Modules[0].Content;
+        }
+
+        var compact = await RenderModule("<button>Open</button>");
+        StringAssert.Contains(compact, "\"button\"");
+        Assert.AreEqual(compact, await RenderModule("\n    <button>Open</button>\n"));
+        Assert.AreNotEqual(compact, await RenderModule("&nbsp;<button>Open</button>"));
+        Assert.AreNotEqual(await RenderModule("<i /><b />"), await RenderModule("<i /> <b />"));
+    }
+
+    [TestMethod]
     public async Task Compile_ResolvesDefaultAndExplicitNamedChildrenAndReportsAmbiguity()
     {
         const string panel = """<section><slot name="header" /><slot /></section>""";
@@ -68,6 +89,30 @@ public sealed class ProjectCompilerTests
         var diagnostic = result.Diagnostics.Single();
         StringAssert.Contains(diagnostic.GetMessage(), "both a child component and a slot");
         Assert.AreEqual("Header", source.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+    }
+
+    [TestMethod]
+    public async Task Compile_MixedStyleBlocksKeepSourceOrderAndNestedStyles()
+    {
+        var result = await JoltProjectCompiler.CompileAsync([new("Panel.jazor", """
+            <style>.first { content: "@@media"; } /* @@media */</style>
+            <div><style>.nested { color: green }</style></div>
+            <style scoped>@media (width > 1px) { .middle { color: blue } }</style>
+            <style>@@media (width > 2px) { .last { color: black } }</style>
+            """)]);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var module = result.Modules.Single();
+        const string header = "/* jolt-style-blocks */\n";
+        using var blocks = System.Text.Json.JsonDocument.Parse(module.ScopedCss![header.Length..]);
+        var styles = blocks.RootElement.EnumerateArray().ToArray();
+        Assert.HasCount(3, styles);
+        StringAssert.Contains(styles[0].GetProperty("css").GetString()!, "content: \"@@media\"; } /* @@media */");
+        Assert.AreEqual(System.Text.Json.JsonValueKind.Null, styles[0].GetProperty("scope").ValueKind);
+        StringAssert.Contains(styles[1].GetProperty("scope").GetString()!, "data-v-");
+        StringAssert.Contains(styles[1].GetProperty("css").GetString()!, "@media (width > 1px)");
+        StringAssert.Contains(styles[2].GetProperty("css").GetString()!, "@media (width > 2px)");
+        StringAssert.Contains(module.Content, ".nested");
+        Assert.IsFalse(module.Content.Contains(".first", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -218,6 +263,54 @@ public sealed class ProjectCompilerTests
         Assert.AreEqual(0, result.Diagnostics.Count, string.Join(Environment.NewLine, result.Diagnostics));
         StringAssert.Contains(result.Modules[0].Content, "scope[\"value\"] + 1");
         StringAssert.Contains(result.Modules[1].Content, "\"value\": number");
+    }
+
+    [TestMethod]
+    public async Task Compile_ComponentEventMayIgnorePayloadOrSelectTypedOverload()
+    {
+        var definition = new NpmDefinition("widget.d.ts", 0, 1);
+        var changed = new NpmVueEvent([[new("page", "number")]], definition);
+        var widget = new NpmVueComponent("widgets", "Meter", "widgets", "1.0.0", "index.mjs", "widget.d.ts",
+            definition, new Dictionary<string, NpmVueProp>(),
+            new Dictionary<string, NpmVueEvent> { ["changed"] = changed }, new Dictionary<string, NpmVueSlot>());
+        const string page = """
+            @using Npm.Widgets
+            <Meter @onchanged="Refresh" /><Meter @onchanged="Select" /><Meter @onchanged="@(() => Refresh())" />
+            @code {
+                [Parameter] public Action Refresh { get; set; } = default!;
+                private void Select() { }
+                [ECMAScript.ECMAScriptName("selectPage")] private void Select(double page) { }
+            }
+            """;
+        var options = new JoltCompileOptions(NpmComponents: [widget]);
+        var result = await JoltProjectCompiler.CompileAsync([new("Page.jazor", page)], options);
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        StringAssert.Contains(result.Modules.Single().Content, "\"onChanged\"");
+        StringAssert.Contains(result.Modules.Single().Content, "this.selectPage.bind(this)");
+        var invalid = await JoltProjectCompiler.CompileAsync(
+            [new("Page.jazor", page.Replace("Action Refresh", "Action<string> Refresh"))], options);
+        Assert.IsTrue(invalid.Diagnostics.Count > 0);
+        Assert.IsEmpty(invalid.Modules);
+    }
+
+    [TestMethod]
+    public async Task Compile_ComponentEventNamesMatchVueListenerProps()
+    {
+        var definition = new NpmDefinition("widget.d.ts", 0, 1);
+        var eventType = new NpmVueEvent([[new("value", "number")]], definition);
+        var widget = new NpmVueComponent("widgets", "Meter", "widgets", "1.0.0", "index.mjs", "widget.d.ts",
+            definition, new Dictionary<string, NpmVueProp>(),
+            new Dictionary<string, NpmVueEvent> { ["level-change"] = eventType, ["update:step-size"] = eventType },
+            new Dictionary<string, NpmVueSlot>());
+        var result = await JoltProjectCompiler.CompileAsync([new("Page.jazor", """
+            @using Npm.Widgets
+            <Meter @onlevel-change="Update" @onupdate:step-size="Update" />
+            @code { private void Update(double value) { } }
+            """)], new JoltCompileOptions(NpmComponents: [widget]));
+        Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
+        var module = result.Modules.Single().Content;
+        StringAssert.Contains(module, "\"onLevelChange\"");
+        StringAssert.Contains(module, "\"onUpdate:stepSize\"");
     }
 
     [TestMethod]

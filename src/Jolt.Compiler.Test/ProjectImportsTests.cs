@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jolt.Npm;
 using Jolt.Project;
 
@@ -97,6 +98,62 @@ public sealed class ProjectImportsTests
             Assert.AreEqual("Pages/_Imports.jazor", line.Path);
             Assert.AreEqual(1, line.StartLinePosition.Line);
             Assert.AreEqual("Npm.Missing", overlay.Substring(diagnostic.Location.SourceSpan.Start, diagnostic.Location.SourceSpan.Length));
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadAsync_ReportsAmbiguousNpmNamespaceForDisjointPackageExports()
+    {
+        var directory = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-npm-imports-" + Guid.NewGuid()));
+        try
+        {
+            foreach (var (name, export) in new[] { ("wire-cells", "read"), ("wire_cells", "write") })
+            {
+                var package = directory.CreateSubdirectory(name);
+                await File.WriteAllTextAsync(Path.Combine(package.FullName, "package.json"), $$$$"""
+                    {"name":"{{{{name}}}}","version":"1.0.0","type":"module","exports":{".":{"types":"./index.d.ts","default":"./index.js"}}}
+                    """);
+                await File.WriteAllTextAsync(Path.Combine(package.FullName, "index.d.ts"),
+                    $"export declare function {export}(): string;");
+                await File.WriteAllTextAsync(Path.Combine(package.FullName, "index.js"),
+                    $"export function {export}() {{ return '{export}'; }}");
+            }
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "package.json"), """
+                {"private":true,"dependencies":{"wire_cells":"link:./wire_cells","wire-cells":"link:./wire-cells"}}
+                """);
+            await File.WriteAllTextAsync(Path.Combine(directory.FullName, "pnpm-lock.yaml"), """
+                lockfileVersion: '9.0'
+                settings:
+                  autoInstallPeers: true
+                  excludeLinksFromLockfile: false
+                importers:
+                  .:
+                    dependencies:
+                      wire-cells:
+                        specifier: link:./wire-cells
+                        version: link:wire-cells
+                      wire_cells:
+                        specifier: link:./wire_cells
+                        version: link:wire_cells
+                """);
+            var document = Path.Combine(directory.FullName, "Page.jazor");
+            await File.WriteAllTextAsync(document, "@using Cells = Npm.WireCells.Exports\n<p>@Cells.Read()</p>");
+
+            const string npmNamespace = "Npm.WireCells";
+            var provider = new NpmValueMetadataProvider();
+            var matches = await NpmExportSelection.FindModulesAsync(npmNamespace, ["wire_cells", "wire-cells"],
+                package => provider.ListSpecifiersAsync(document, package, npmNamespace), validatePackageRoot: true);
+            CollectionAssert.AreEqual(new[] { "wire-cells", "wire_cells" }, matches.ToArray());
+
+            var workspace = await JoltProjectLoader.LoadAsync(directory.FullName);
+            var diagnostic = workspace.Diagnostics.Single();
+            Assert.AreEqual("JOLT1001", diagnostic.Id);
+            StringAssert.Contains(diagnostic.GetMessage(),
+                "Npm.WireCells matches multiple npm specifiers: wire-cells, wire_cells.");
         }
         finally
         {

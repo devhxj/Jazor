@@ -1,5 +1,7 @@
 @using DateFns = Npm.DateFns.Exports
 @using DateLocales = Npm.DateFns.Locale.Exports
+@using Day = Jolt.Generated.Npm.Exports.Day_52CA005722D8
+@using FirstWeekContainsDate = Jolt.Generated.Npm.Exports.FirstWeekContainsDate_7B490EA3DBE4
 @using VueUse = Npm.Vueuse.Core.Exports
 
 <output id="online">@(_online ? "online" : "offline")</output>
@@ -36,11 +38,17 @@
     public static double ReadWeekDefaults()
     {
         DateFns.SetDefaultOptions(new() {
-            WeekStartsOn = DateFns.Day.Value1,
-            FirstWeekContainsDate = DateFns.FirstWeekContainsDate.Value4
+            WeekStartsOn = Day.Value1,
+            FirstWeekContainsDate = FirstWeekContainsDate.Value4
         });
         return (DateFns.GetDefaultOptions().WeekStartsOn ?? 0) * 10 +
             (DateFns.GetDefaultOptions().FirstWeekContainsDate ?? 0);
+    }
+
+    public static double ReadSundayDefault()
+    {
+        DateFns.SetDefaultOptions(new() { WeekStartsOn = Day.Value0 });
+        return DateFns.GetDefaultOptions().WeekStartsOn ?? -1;
     }
 
     private bool _online;

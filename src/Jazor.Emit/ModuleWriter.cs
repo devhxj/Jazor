@@ -463,7 +463,7 @@ internal sealed class ModuleWriter
                     }
                 }
 
-                return WriteResult.Success(written, skipped, deleted);
+                return WriteResult.Success(written, skipped, deleted, manifest);
             }
             catch (Exception ex)
             {
@@ -514,18 +514,20 @@ internal sealed class ModuleWriter
     }
 }
 
-/// <summary>Counts files affected by one materialization operation.</summary>
+/// <summary>Returns the committed manifest to the host and counts the affected files.</summary>
 internal sealed record WriteResult(
-    bool IsSuccess,
     int ExitCode,
     string? Error,
     int Written,
     int Skipped,
-    int Deleted)
+    int Deleted,
+    ManifestModel? Manifest)
 {
-    public static WriteResult Success(int written, int skipped, int deleted)
-        => new(true, 0, null, written, skipped, deleted);
+    public bool IsSuccess => Manifest is not null;
+
+    public static WriteResult Success(int written, int skipped, int deleted, ManifestModel manifest)
+        => new(0, null, written, skipped, deleted, manifest);
 
     public static WriteResult Fail(int exitCode, string error)
-        => new(false, exitCode, error, 0, 0, 0);
+        => new(exitCode, error, 0, 0, 0, null);
 }

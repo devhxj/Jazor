@@ -382,6 +382,19 @@ async Task BenchmarkMixedAsync(double initializeMs)
     await WaitForDiagnosticsAsync(null);
     var firstDiagnosticsMs = firstCheck.Elapsed.TotalMilliseconds;
 
+    // Time the first typed completion against the validated snapshot, before any edit warmup.
+    var firstCompletion = Stopwatch.StartNew();
+    await Send("textDocument/completion", new
+    {
+        textDocument = new { uri = authorUri },
+        position = new { line = authorLine, character = limitStart + 2 },
+    }, 2);
+    var items = await Response(2);
+    var firstCompletionMs = firstCompletion.Elapsed.TotalMilliseconds;
+    if (!items.EnumerateArray().Any(item => item.GetProperty("label").GetString() == "Limit" &&
+        item.GetProperty("kind").GetInt32() == 10))
+        throw new InvalidOperationException("Missing Limit property in first mixed-component completion.");
+
     var typo = new List<double>(benchmarkRounds);
     var typoRepair = new List<double>(benchmarkRounds);
     var propChange = new List<double>(benchmarkRounds);
@@ -406,6 +419,7 @@ async Task BenchmarkMixedAsync(double initializeMs)
         warmupRounds = 1,
         initializeMs,
         firstDiagnosticsMs,
+        firstCompletionMs,
         typo = Summary(typo),
         typoRepair = Summary(typoRepair),
         vuePropChange = Summary(propChange),

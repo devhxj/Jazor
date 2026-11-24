@@ -209,18 +209,20 @@ public static class JoltParser
 
         private JoltNode ScopedStyle(JoltNode node)
         {
-            if (node is not JoltElement { Name: "style", ClosingNameSpan: { } closing } element ||
-                !element.Attributes.Any(attribute => attribute.Name == "scoped"))
+            if (node is not JoltElement { Name: "style", ClosingNameSpan: { } closing } element)
                 return node;
-            if (element.Attributes is not [{ Name: "scoped", Value.Length: 0 }])
+            var scoped = element.Attributes.Any(attribute => attribute.Name == "scoped");
+            if (!scoped && element.Attributes.Length != 0)
+                return node;
+            if (scoped && element.Attributes is not [{ Name: "scoped", Value.Length: 0 }])
             {
                 _diagnostics.Add(new("JOLT1019", "Use a plain stylesheet inside <style scoped>.", DiagnosticSeverity.Error, element.NameSpan));
                 return node;
             }
-            var cssStart = source.IndexOf('>', element.Attributes[0].Span.End) + 1;
+            var cssStart = source.IndexOf('>', element.NameSpan.End) + 1;
             var css = TextSpan.FromBounds(cssStart, closing.Start - 2);
             // Slice the raw author text so CSS retains comments, escapes and entities.
-            return new JoltScopedStyle(Slice(css), css, element.Span);
+            return new JoltScopedStyle(Slice(css), css, element.Span) { Scoped = scoped };
         }
 
         private ImmutableArray<JoltNode> ConvertBody(IEnumerable<IntermediateNode> body, bool decodeEntities = true)

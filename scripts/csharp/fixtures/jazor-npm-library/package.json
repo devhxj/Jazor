@@ -1,0 +1,1 @@
+{"private":true,"type":"module","dependencies":{"wire-cells":"link:./wire-cells","cell-ops":"link:./cell-ops"}}

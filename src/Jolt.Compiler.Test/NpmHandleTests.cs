@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using Jolt.Npm;
 
 namespace Jolt.Compiler.Test;
@@ -49,7 +50,7 @@ public sealed class NpmHandleTests
             [new([new("value", reference, false)], reference)], null);
 
         static string[] EnumNames(params NpmValueExport[] exports) =>
-            Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(JoltNpmBindings.GenerateSource(exports))
+            Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(NpmBindings.GenerateSource([], exports))
                 .GetRoot().DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.EnumDeclarationSyntax>()
                 .Select(declaration => declaration.Identifier.ValueText).ToArray();
 
@@ -121,7 +122,7 @@ public sealed class NpmHandleTests
         var invalid = JoltProjectCompiler.Analyze([new("App.jazor", source)], options with { NpmValues = [producer, incompatible] });
         Assert.IsTrue(invalid.Diagnostics.Any(diagnostic => diagnostic.Id == "CS1503"));
 
-        var standaloneSource = JoltNpmBindings.GenerateSource([consumer]);
+        var standaloneSource = NpmBindings.GenerateSource([], [consumer]);
         var declaration = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(standaloneSource)
             .GetRoot().DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax>()
             .Single(type => type.Identifier.ValueText.StartsWith("Signal_", StringComparison.Ordinal));
@@ -150,7 +151,7 @@ public sealed class NpmHandleTests
                 private void Save() => Tool.Save(new() { CloneValue_2 = true, CloneValue = false });
             }
             """;
-        var facade = JoltNpmBindings.GenerateSource([export]);
+        var facade = NpmBindings.GenerateSource([], [export]);
         StringAssert.Contains(facade, "@CloneValue_2");
         StringAssert.Contains(facade, "@CloneValue {");
         var compiled = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], new() { NpmValues = [export] });
@@ -388,7 +389,7 @@ public sealed class NpmHandleTests
         StringAssert.Contains(js, "(1, true)");
         StringAssert.Contains(js, "(1, void 0, true)");
         StringAssert.Contains(js, "(__jz_fixedArg0, true, __jz_fixedArg1)");
-        StringAssert.Contains(JoltNpmBindings.GenerateSource([export]), "ECMAScriptFixedBooleanArgument(1, true)");
+        StringAssert.Contains(NpmBindings.GenerateSource([], [export]), "ECMAScriptFixedBooleanArgument(1, true)");
     }
 
     [TestMethod]
@@ -418,7 +419,7 @@ public sealed class NpmHandleTests
             """;
         var compiled = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], new() { NpmValues = exports });
         Assert.IsEmpty(compiled.Diagnostics, string.Join(Environment.NewLine, compiled.Diagnostics));
-        var generated = JoltNpmBindings.GenerateSource(exports);
+        var generated = NpmBindings.GenerateSource([], exports);
         Assert.AreEqual(2, generated.Split("@AcceptCount(", StringSplitOptions.None).Length - 1);
     }
 
@@ -445,7 +446,7 @@ public sealed class NpmHandleTests
             """;
         var compiled = await JoltProjectCompiler.CompileAsync([new("App.jazor", source)], new() { NpmValues = exports });
         Assert.IsEmpty(compiled.Diagnostics, string.Join(Environment.NewLine, compiled.Diagnostics));
-        var generated = JoltNpmBindings.GenerateSource(exports);
+        var generated = NpmBindings.GenerateSource([], exports);
         Assert.AreEqual(2, generated.Split("@Accept<", StringSplitOptions.None).Length - 1);
         StringAssert.Contains(generated, "PatchResult<@UConsumer, @TConsumer> @patch");
     }
@@ -468,7 +469,7 @@ public sealed class NpmHandleTests
             ],
         };
         var make = new NpmValueExport("sample", "make", "sample", "1.0.0", "index.js", "index.d.ts", null, [new([], root)], null);
-        var rootType = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(JoltNpmBindings.GenerateSource([make]))
+        var rootType = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(NpmBindings.GenerateSource([], [make]))
             .GetRoot().DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
             .Single().ReturnType.ToString();
         const string source = """
@@ -486,7 +487,7 @@ public sealed class NpmHandleTests
         Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
         var module = result.Modules.Single().Content;
         StringAssert.Contains(module, "shallowReactive as $joltShallowReactive");
-        StringAssert.Contains(module, """$joltShallowReactive($joltToRaw(this))["$jazor$private$Root"]""");
+        StringAssert.Contains(module, """$joltShallowReactive($joltToRaw(this))["$jazor$private$Root$""");
         StringAssert.Contains(module, ".value");
     }
 
@@ -509,8 +510,8 @@ public sealed class NpmHandleTests
             ExportName = "read",
             Signatures = [new([new("input", shape, false)], argument, TypeParameters: ["TValue"])],
         };
-        var source = JoltNpmBindings.GenerateSource([wrap, read]);
-        Assert.AreEqual(source, JoltNpmBindings.GenerateSource([read, wrap]));
+        var source = NpmBindings.GenerateSource([], [wrap, read]);
+        Assert.AreEqual(source, NpmBindings.GenerateSource([], [read, wrap]));
         Assert.AreEqual(2, source.Split("public sealed record Envelope_", StringSplitOptions.None).Length);
         StringAssert.Contains(source, "VueReadonlyRef<global::Jolt.Generated.Npm.Exports.Envelope_");
         StringAssert.Contains(source, "required @TItem @Item { get; init; }");
@@ -524,10 +525,10 @@ public sealed class NpmHandleTests
         NpmValueExport Export(string package, string type) =>
             new(package, "read", package, "1.0.0", "index.js", "index.d.ts", null, [new([], new("handle",
                 Name: type, TypeDefinition: new($"C:/repo/node_modules/{package}/index.d.ts", 1, 5)))], null);
-        var first = JoltNpmBindings.GenerateSource([Export("first", "First")]);
-        var second = JoltNpmBindings.GenerateSource([Export("second", "Second")]);
+        var first = NpmBindings.GenerateSource([], [Export("first", "First")]);
+        var second = NpmBindings.GenerateSource([], [Export("second", "Second")]);
         var scalar = Export("scalar", "Unused") with { Signatures = [new([], new("string"))] };
-        var third = JoltNpmBindings.GenerateSource([scalar]);
+        var third = NpmBindings.GenerateSource([], [scalar]);
         Assert.IsFalse(third.Contains("namespace Jolt.Generated.Npm", StringComparison.Ordinal));
 
         var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
@@ -555,7 +556,7 @@ public sealed class NpmHandleTests
             PackageName = "generated",
         };
         string ReturnType(string method, params NpmValueExport[] exports) =>
-            Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(JoltNpmBindings.GenerateSource(exports))
+            Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(NpmBindings.GenerateSource([], exports))
                 .GetRoot().DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
                 .Single(declaration => declaration.Identifier.ValueText == method).ReturnType.ToString();
 
@@ -588,7 +589,7 @@ public sealed class NpmHandleTests
                 [new([new("options", new("object", Name: definition is null ? null : "Settings",
                     TypeDefinition: definition, Members: [new(member, new("string"), false)]), false)], new("void"))], null);
         string[] ParameterTypes(string method, params NpmValueExport[] exports) =>
-            Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(JoltNpmBindings.GenerateSource(exports))
+            Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(NpmBindings.GenerateSource([], exports))
                 .GetRoot().DescendantNodes().OfType<Microsoft.CodeAnalysis.CSharp.Syntax.MethodDeclarationSyntax>()
                 .Where(declaration => declaration.Identifier.ValueText == method)
                 .Select(declaration => declaration.ParameterList.Parameters.Single().Type!.ToString()).ToArray();
@@ -739,7 +740,7 @@ public sealed class NpmHandleTests
             ExportName = "lens",
             Signatures = [lookup with { ReturnType = new("ref", Name: "VueComputedRef", ElementType: value, ReadOnly: true) }],
         };
-        var facade = JoltNpmBindings.GenerateSource([export, lens]);
+        var facade = NpmBindings.GenerateSource([], [export, lens]);
         var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
             .Split(Path.PathSeparator).Select(path => Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(path));
         var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create("KeySelectors",
@@ -911,8 +912,12 @@ public sealed class NpmHandleTests
             new() { NpmValues = [Export("getData", optional), Export("getLoop", loop)] });
         Assert.IsEmpty(result.Diagnostics, string.Join(Environment.NewLine, result.Diagnostics));
         var js = result.Modules.Single().Content;
-        const string storage = """$joltShallowReactive($joltToRaw(this))["$jazor$private$Data"]""";
-        StringAssert.Contains(js, """$jazor$private$Data = i$""");
+        const string storagePrefix = """$joltShallowReactive($joltToRaw(this))["$jazor$private$Data$""";
+        var storageStart = js.IndexOf(storagePrefix, StringComparison.Ordinal);
+        Assert.IsTrue(storageStart >= 0, js);
+        var storageEnd = js.IndexOf("\"]", storageStart + storagePrefix.Length, StringComparison.Ordinal) + 2;
+        var storage = js[storageStart..storageEnd];
+        StringAssert.Contains(js, storage[(storage.IndexOf('"') + 1)..^2] + " = i$");
         StringAssert.Contains(js, storage + " = i$");
         Assert.AreEqual(3, js.Split(storage + """["value"] ?? null""", StringSplitOptions.None).Length - 1);
         StringAssert.Contains(js, ".next.label");

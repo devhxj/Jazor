@@ -72,6 +72,9 @@ public sealed class SdkTargetsTests
         Assert.IsFalse(resourceTargets.Contains("<Analyzer", StringComparison.Ordinal), resourceTargets);
         StringAssert.Contains(vueTargets, "JazorLibraryManifest", StringComparison.Ordinal);
         StringAssert.Contains(vueTargets, "manifest.json", StringComparison.Ordinal);
+        StringAssert.Contains(vueTargets, "ProxySafeMangledProperties", StringComparison.Ordinal);
+        StringAssert.Contains(vueTargets, "CompilerVisibleProperty Include=\"_JazorRuntimeClassPrivateStorage\"", StringComparison.Ordinal);
+        Assert.IsFalse(targets.Contains("_JazorRuntimeClassPrivateStorage", StringComparison.Ordinal));
         Assert.IsFalse(vueTargets.Contains("%(Analyzer.Filename)", StringComparison.Ordinal), vueTargets);
         Assert.IsFalse(vueTargets.Contains("%(Analyzer.Extension)", StringComparison.Ordinal), vueTargets);
     }

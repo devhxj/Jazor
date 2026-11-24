@@ -34,7 +34,8 @@ public sealed class SetupTests
         var render = module.IndexOf("""["__JoltRender"]["call"]($setup["joltState"])""", StringComparison.Ordinal);
         Assert.IsTrue(props >= 0 && props < slots && slots < setup && setup < render, module);
         StringAssert.Contains(module, "shallowReactive as $joltShallowReactive");
-        StringAssert.Contains(module, """$joltShallowReactive($joltToRaw(this))["$jazor$private$field"] = this.Count""");
+        StringAssert.Contains(module, """$joltShallowReactive($joltToRaw(this))["$jazor$private$field$""");
+        StringAssert.Contains(module, """] = this.Count""");
         StringAssert.Contains(module, "onScopeDispose");
         StringAssert.Contains(module, ".value");
     }

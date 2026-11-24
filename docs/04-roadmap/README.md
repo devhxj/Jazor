@@ -9,6 +9,7 @@
 | 判断某项能力是否已经可以使用 | [当前状态](./current-status.md) |
 | 核对语法审计中 35 个 bug 的实现与诊断边界 | [逐项修复记录](./compiler-syntax-bug-fixes.md)（1.3.0） |
 | 了解下一阶段的优先级、边界和完成条件 | [下一阶段](./next-development.md) |
+| 实施通用投影迁出和 Vue 开发会话调整 | [Jazor 与 Jolt 调整方案](./jazor-jolt-migration.md) |
 | 理解普通源码、class/record 与宿主标注 | [类型指南](../03-guides/type-semantics.md) |
 | 使用普通 C# / NuGet DLL 自动导入 | [普通类库导入](./ordinary-nuget-compilation-research.md)（1.4.2 有界切片） |
 | 查看 C# 的具体支持边界及逐项 GitHub issue | [语法与 issue 索引](./csharp-syntax-gap-audit.md)（英文，区分已关闭 bug 与开放扩展） |

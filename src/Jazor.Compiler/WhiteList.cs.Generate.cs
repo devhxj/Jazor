@@ -2584,7 +2584,7 @@ internal static partial class WhiteList
 		members["string.ToCharArray(int, int)"] = new(Op.Inline, "__arg1.substring(__arg2, __arg2 + __arg3).split(\"\")");
 		members["static string.IsNullOrEmpty(string)"] = new(Op.Inline, "!__arg1");
 		members["static string.IsNullOrWhiteSpace(string)"] = new(Op.Inline, "!__arg1?.trim()");
-		members["override string.ToString()"] = new(Op.Allowed);
+		members["override string.ToString()"] = new(Op.Alias, "toString");
 		members["string.ToString(System.IFormatProvider)"] = new(Op.Inline, "__arg1");
 		members["string.GetTypeCode()"] = new(Op.Inline, "18");
 		members["string.IsNormalized()"] = new(Op.Import, "_f645a0207f41fd4a", "./clr/System/StringModule.js");

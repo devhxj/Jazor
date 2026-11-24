@@ -21,16 +21,23 @@ if (args is ["--prepare", var directory])
 var features = args.Contains("--features", StringComparer.Ordinal);
 var editableOnly = args.Contains("--editable-only", StringComparer.Ordinal);
 var monaco = args.Contains("--monaco", StringComparer.Ordinal);
+var moduleHandoff = args.Contains("--module-handoff", StringComparer.Ordinal);
+const string moduleValueOption = "--expect-module-value=";
+var moduleValue = args.SingleOrDefault(argument => argument.StartsWith(moduleValueOption, StringComparison.Ordinal));
+var proxyHmr = args.Contains("--proxy-hmr", StringComparer.Ordinal);
+var publishedCounter = args.Contains("--published-counter", StringComparer.Ordinal);
+var publishedLazy = args.Contains("--published-lazy", StringComparer.Ordinal);
+var correlated = args.Contains("--correlated", StringComparer.Ordinal);
 const string mixedBenchmarkOption = "--mixed-benchmark=";
 var mixedBenchmark = args.SingleOrDefault(argument => argument.StartsWith(mixedBenchmarkOption, StringComparison.Ordinal));
 var mixedRounds = mixedBenchmark is null ? 0 : int.Parse(mixedBenchmark[mixedBenchmarkOption.Length..], CultureInfo.InvariantCulture);
 var mixed = args.Contains("--mixed", StringComparer.Ordinal) || mixedBenchmark is not null;
 var ssrBenchmark = args.Contains("--ssr-benchmark", StringComparer.Ordinal);
 var ssr = args.Contains("--ssr", StringComparer.Ordinal) || ssrBenchmark;
-args = args.Where(argument => argument != mixedBenchmark && argument is not ("--features" or "--editable-only" or "--mixed" or "--ssr" or "--ssr-benchmark" or "--monaco")).ToArray();
-if (args.Length is < 2 or > 3 || (editableOnly || ssr) && args.Length != 2 ||
+args = args.Where(argument => argument != mixedBenchmark && argument != moduleValue && argument is not ("--features" or "--editable-only" or "--mixed" or "--ssr" or "--ssr-benchmark" or "--monaco" or "--module-handoff" or "--proxy-hmr" or "--correlated" or "--published-counter" or "--published-lazy")).ToArray();
+if (args.Length is < 2 or > 3 || (editableOnly || ssr) && args.Length != 2 || proxyHmr && args.Length != 3 ||
     mixedBenchmark is not null && (args.Length != 3 || mixedRounds is < 1 or > 100))
-    throw new ArgumentException("Usage: verify-browser.cs <browser-executable> <app-url> [component-source] [--features | --editable-only | --mixed | --mixed-benchmark=<rounds> | --ssr | --monaco]");
+    throw new ArgumentException("Usage: verify-browser.cs <browser-executable> <app-url> [component-source or module handoff scratch root] [--features | --editable-only | --mixed | --mixed-benchmark=<rounds> | --ssr | --monaco | --module-handoff | --proxy-hmr]");
 
 var origin = new Uri(args[1]);
 var profile = Directory.CreateTempSubdirectory("jolt-browser-");
@@ -41,7 +48,7 @@ try
         $"--user-data-dir={profile.FullName}", "about:blank" })
         start.ArgumentList.Add(arg);
     using var browser = Process.Start(start) ?? throw new InvalidOperationException("Could not start Chromium.");
-    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(45 + 20 * mixedRounds));
+    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(correlated ? 120 : 45 + 20 * mixedRounds));
     try
     {
         var token = timeout.Token;
@@ -75,10 +82,13 @@ try
 
         var nextId = 0;
         var browserErrors = new List<string>();
-        if (ssr)
+        if (ssr || proxyHmr)
         {
             await SendAsync("Runtime.enable", new { });
             await SendAsync("Page.enable", new { });
+        }
+        if (ssr)
+        {
             // Install before navigation so the captured nodes come from the HTML parser.
             await SendAsync("Page.addScriptToEvaluateOnNewDocument", new
             {
@@ -98,9 +108,78 @@ try
                     """
             });
         }
+        if (proxyHmr)
+        {
+            await SendAsync("Page.addScriptToEvaluateOnNewDocument", new
+            {
+                source = """
+                    window.WebSocket = class extends WebSocket {
+                        constructor(url, protocols) {
+                            const address = new URL(url, location.href);
+                            const base = location.pathname.slice(0, location.pathname.lastIndexOf('/') + 1);
+                            if (address.host !== location.host || !address.pathname.startsWith(base))
+                                throw new Error('HMR socket bypassed the ASP.NET proxy: ' + address.href);
+                            super(url, protocols);
+                            this.addEventListener('open', () => { window.proxyHmrConnected = true; });
+                        }
+                    };
+                    """
+            });
+        }
         if (!ssrBenchmark)
             await SendAsync("Page.navigate", new { url = origin.ToString() });
-        if (mixed || ssr || monaco)
+        if (publishedCounter)
+        {
+            if (proxyHmr)
+                await CheckAsync("Vite connected to ASP.NET's WebSocket endpoint", "window.proxyHmrConnected === true");
+            await CheckAsync("the published counter", "document.querySelector('#count')?.textContent === '0'");
+            await EvaluateAsync("document.querySelector('#increment').click()");
+            await CheckAsync("the published counter after a click", "document.querySelector('#count')?.textContent === '1'");
+            if (publishedLazy)
+            {
+                const string fetched = "performance.getEntriesByType('resource').some(entry => new URL(entry.name).pathname.startsWith('/portal/frontend/assets/lazy-proof-'))";
+                await CheckAsync("the lazy chunk is absent before activation",
+                    $"document.querySelector('#load-lazy')?.textContent === 'Load optional module' && !({fetched})");
+                await EvaluateAsync("document.querySelector('#load-lazy').click()");
+                await CheckAsync("the delayed chunk was fetched and executed",
+                    $"document.querySelector('#load-lazy')?.textContent === 'from the lazy chunk' && ({fetched}) && document.querySelector('#count')?.textContent === '1'");
+            }
+            if (proxyHmr)
+            {
+                await EvaluateAsync("window.joltBrowserSentinel = true");
+                var path = args[2];
+                var original = await File.ReadAllTextAsync(path, token);
+                try
+                {
+                    var updated = original.Replace("<h1>Jolt counter</h1>", "<h1>Updated counter</h1>", StringComparison.Ordinal);
+                    if (updated == original)
+                        throw new InvalidOperationException($"Did not find the counter title in {path}.");
+                    await File.WriteAllTextAsync(path, updated, token);
+                    await CheckAsync("proxy HMR updated the heading and kept the counter",
+                        "document.querySelector('h1')?.textContent === 'Updated counter' && document.querySelector('#count')?.textContent === '1' && window.joltBrowserSentinel === true");
+                }
+                finally
+                {
+                    await File.WriteAllTextAsync(path, original);
+                }
+            }
+            await CloseBrowserAsync();
+            return;
+        }
+        if (moduleValue is not null)
+        {
+            var expected = moduleValue[moduleValueOption.Length..];
+            const string renderedValue = "document.querySelector('#module-value')?.textContent";
+            await CheckAsync("the packaged C# library output", $"{renderedValue} !== undefined");
+            var result = await SendAsync("Runtime.evaluate", new { expression = renderedValue, returnByValue = true });
+            var actual = result.GetProperty("result").GetProperty("value").GetString();
+            if (!string.Equals(actual, expected, StringComparison.Ordinal))
+                throw new InvalidOperationException($"Expected packaged module value '{expected}', observed '{actual}'.");
+            Console.WriteLine($"Chromium rendered packaged module value '{actual}'.");
+            await CloseBrowserAsync();
+            return;
+        }
+        if (mixed || ssr || monaco || moduleHandoff)
         {
             if (ssrBenchmark)
                 await BenchmarkSsrAsync();
@@ -117,20 +196,44 @@ try
                     """);
                 Console.WriteLine("Verified Monaco model identity, string ID and detachment, worker, disposal, theme and marker owners in Chromium.");
             }
+            else if (moduleHandoff)
+                await VerifyModuleHandoffAsync(args.Length == 3 ? args[2] : null);
             else
                 await VerifyMixedAsync(args.Length == 3 ? args[2] : null);
-            // Let Chrome release its profile databases before deleting the profile.
-            await socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new { id = ++nextId, method = "Browser.close" }),
-                WebSocketMessageType.Text, endOfMessage: true, token);
-            using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-            try
-            {
-                await browser.WaitForExitAsync(shutdown.Token);
-            }
-            catch (OperationCanceledException) when (shutdown.IsCancellationRequested)
-            {
-                // The common cleanup stops a browser that does not respond.
-            }
+            await CloseBrowserAsync();
+            return;
+        }
+        if (correlated)
+        {
+            await CheckAsync("both old DTO values", """
+                document.querySelector('#left')?.textContent === 'before' &&
+                document.querySelector('#right')?.textContent === 'before'
+                """);
+            await EvaluateAsync("""
+                window.dtoUpdates = [];
+                new MutationObserver(() => {
+                    const pair = ['#left', '#right'].map(id => document.querySelector(id)?.textContent).join(':');
+                    if (pair !== window.dtoUpdates.at(-1)) window.dtoUpdates.push(pair);
+                }).observe(document.querySelector('#app'), { childList: true, subtree: true, characterData: true });
+                true
+                """);
+            File.Move(args[2] + ".next", args[2], overwrite: true);
+            await CheckAsync("both new DTO values", """
+                document.querySelector('#left')?.textContent === 'after' &&
+                document.querySelector('#right')?.textContent === 'after'
+                """);
+            await Task.Delay(750, token);
+            await CheckAsync("one coherent DTO update without reloading", "JSON.stringify(window.dtoUpdates) === '[\"after:after\"]'");
+            Console.WriteLine("Verified a single correlated DTO update in Chromium.");
+            await File.WriteAllTextAsync(args[2] + ".browser-ready", "", token);
+            await RetryAsync(() => Task.FromResult(File.Exists(args[2] + ".browser-recover")), token);
+            await CheckAsync("the SFC and linked npm call on the original page after declaration recovery", """
+                document.querySelector('#card')?.textContent.trim() === 'Recovered Hello' &&
+                document.querySelector('#linked')?.textContent === 'external declaration' &&
+                document.querySelector('#left')?.textContent === 'after' &&
+                document.querySelector('#right')?.textContent === 'after' &&
+                window.dtoUpdates !== undefined
+                """);
             return;
         }
         if (editableOnly)
@@ -138,7 +241,9 @@ try
             await VerifyEditableListAsync();
             return;
         }
-        await RetryAsync(() => EvaluateAsync("document.querySelector('#count')?.textContent === '0' && document.querySelector('#increment')?.textContent.trim() === 'Increment one' && document.querySelector('#scope')?.textContent === 'closed'"), token);
+        await CheckAsync("the initial counter", "document.querySelector('#count')?.textContent === '0' && document.querySelector('#increment')?.textContent.trim() === 'Increment one' && document.querySelector('#scope')?.textContent === 'closed'");
+        if (proxyHmr)
+            await CheckAsync("Vite connected to ASP.NET's WebSocket endpoint", "window.proxyHmrConnected === true");
         await EvaluateAsync("document.querySelector('#increment').click(); window.joltBrowserSentinel = true");
         await RetryAsync(() => EvaluateAsync("document.querySelector('#count')?.textContent === '1' && document.querySelector('#indicator [data-state]')?.dataset.state === 'open' && document.querySelector('#scope')?.textContent === 'open'"), token);
         Console.WriteLine("Counter click updated the parent count and Reka UI state.");
@@ -184,6 +289,58 @@ try
             {
                 await File.WriteAllTextAsync(file, original);
             }
+        }
+        if (proxyHmr)
+            await CloseBrowserAsync();
+
+        async Task CloseBrowserAsync()
+        {
+            // Let Chrome release its profile databases before deleting the profile.
+            await socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new { id = ++nextId, method = "Browser.close" }),
+                WebSocketMessageType.Text, endOfMessage: true, token);
+            using var shutdown = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            try
+            {
+                await browser.WaitForExitAsync(shutdown.Token);
+            }
+            catch (OperationCanceledException) when (shutdown.IsCancellationRequested)
+            {
+                // The common cleanup stops a browser that does not respond.
+            }
+        }
+
+        async Task VerifyModuleHandoffAsync(string? directory)
+        {
+            if (directory is not null)
+            {
+                await CheckAsync("the initial value from the referenced DLL",
+                    "document.querySelector('#module-value')?.textContent.trim() === 'from DLL v1'");
+                await EvaluateAsync("window.jazorModuleHandoffPage = true");
+                var source = Path.Combine(directory, "Library", "Greeting.cs");
+                var initial = await File.ReadAllTextAsync(source, token);
+                var updated = initial.Replace("from DLL v1", "from DLL v2", StringComparison.Ordinal);
+                if (updated == initial)
+                    throw new InvalidOperationException($"Expected the original DLL greeting in {source}.");
+                var staging = source + "." + Guid.NewGuid().ToString("N") + ".tmp";
+                try
+                {
+                    await File.WriteAllTextAsync(staging, updated, token);
+                    File.Move(staging, source, overwrite: true);
+                }
+                finally
+                {
+                    File.Delete(staging);
+                }
+
+            }
+
+            await CheckAsync("the updated value from the referenced DLL",
+                "document.querySelector('#module-value')?.textContent.trim() === 'from DLL v2'");
+            if (directory is not null && !await EvaluateAsync("window.jazorModuleHandoffPage === true"))
+                throw new InvalidOperationException("The DLL edit caused a full navigation instead of updating the open page.");
+            Console.WriteLine(directory is null
+                ? "Verified the referenced DLL module in the production page."
+                : "The open page showed the rebuilt DLL module.");
         }
 
         async Task VerifyMixedAsync(string? directory)

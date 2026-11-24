@@ -1,4 +1,5 @@
 #!/usr/bin/env dotnet run
+#:sdk Microsoft.NET.Sdk.Web
 #:property AssemblyName=Jazor.NodeApiVerification
 #:property CETCompat=false
 #:property PublishAot=false
@@ -98,7 +99,8 @@ try
             .Replace("Format = DateFns.ISOStringFormat.Basic", "Format = \"basic\"", StringComparison.Ordinal)
             .Replace("), 1).GetDate()", "), true).GetDate()", StringComparison.Ordinal)
             .Replace("DateFns.Min(choices)", "DateFns.Min(new ECMAScript.Date[] { date })", StringComparison.Ordinal)
-            .Replace("DateFns.Day.Value1", "DateFns.FirstWeekContainsDate.Value4", StringComparison.Ordinal)
+            .Replace("WeekStartsOn = Day.Value1", "WeekStartsOn = FirstWeekContainsDate.Value4", StringComparison.Ordinal)
+            .Replace("FirstWeekContainsDate = FirstWeekContainsDate.Value4", "FirstWeekContainsDate = 0", StringComparison.Ordinal)
             .Replace("Locale = DateLocales.Fr", "Locale = start", StringComparison.Ordinal), stop);
     var eventComponent = Path.Combine(project.FullName, "Events.jazor");
     var eventSource = await File.ReadAllTextAsync(eventComponent, stop);
@@ -133,14 +135,15 @@ try
         @"Vee\.jazor.*CS1660.*string", @"Vee\.jazor.*CS0029.*double.*bool", @"Vee\.jazor.*CS1503.*bool.*string",
         @"Vee\.jazor.*CS0029.*bool.*double", @"InvalidInitialValue\.jazor.*CS0029",
         @"App\.jazor.*CS1955", @"App\.jazor.*CS1503.*ECMAScript\.Date\[\]", @"App\.jazor.*CS1503.*bool",
-        @"App\.jazor.*CS0266", @"App\.jazor.*CS0029.*ISOStringFormat", @"App\.jazor.*CS0029.*Locale",
+        @"App\.jazor.*CS0029.*FirstWeekContainsDate.*Day", @"App\.jazor.*CS0029.*int.*FirstWeekContainsDate",
+        @"App\.jazor.*CS0029.*ISOStringFormat", @"App\.jazor.*CS0029.*Locale",
         @"Query\.jazor.*CS0266", @"Query\.jazor.*CS1503", @"Query\.jazor.*CS0029.*ECMAScript\.Date",
         @"Query\.jazor.*CS0029.*bool.*double", @"Query\.jazor.*CS0029.*string.*double",
         @"Events\.jazor.*CS0117.*Click",
         @"Model\.jazor.*CS0029.*bool.*double",
         @"Clipboard\.jazor.*CS1503.*bool",
         @"Model\.jazor.*CS1662",
-        @"Model\.jazor.*Record\.Info\.RawCount.*Vue unwraps nested refs",
+        @"Model\.jazor.*Record\.Info\.RawCount.*Vue unwraps refs at ordinary object keys",
         @"UrlParams\.jazor.*CS1503.*bool",
     ];
     var missing = expected.Where(pattern => !Regex.IsMatch(invalid.Output, pattern)).ToArray();
@@ -174,36 +177,84 @@ async Task VerifyMonaco(string browser)
     listener.Stop();
     var dev = StartInfo(cli, workspace, "dev", ".", "--port", port);
     dev.RedirectStandardOutput = true;
-    using var server = Process.Start(dev) ?? throw new InvalidOperationException("Could not start Jolt.");
-    try
+    using (var server = Process.Start(dev) ?? throw new InvalidOperationException("Could not start Jolt."))
     {
-        while (await server.StandardOutput.ReadLineAsync(stop) is { } line)
+        try
         {
-            Console.WriteLine(line);
-            if (Uri.TryCreate(line, UriKind.Absolute, out var origin) && origin.Scheme == "http" && origin.IsLoopback)
+            Uri? origin = null;
+            while (await server.StandardOutput.ReadLineAsync(stop) is { } line)
             {
-                var driver = Path.Combine(repo, "samples", "Jolt.Counter", "verify-browser.cs");
-                using var check = Process.Start(StartInfo("dotnet", workspace, "run", "--file", driver,
-                    "--", browser, origin.AbsoluteUri, "--monaco"))
-                    ?? throw new InvalidOperationException("Could not start the Chromium check.");
-                try
+                Console.WriteLine(line);
+                if (Uri.TryCreate(line, UriKind.Absolute, out var candidate) && candidate.Scheme == "http" && candidate.IsLoopback)
                 {
-                    await check.WaitForExitAsync(stop);
-                    if (check.ExitCode != 0)
-                        throw new InvalidOperationException($"Monaco browser check exited with code {check.ExitCode}.");
+                    origin = candidate;
+                    break;
                 }
-                finally
-                {
-                    await Stop(check);
-                }
-                return;
             }
+            await VerifyBrowserAsync(origin ?? throw new InvalidOperationException("Jolt stopped before starting the Monaco development server."));
         }
-        throw new InvalidOperationException("Jolt stopped before starting the Monaco development server.");
+        finally
+        {
+            await Stop(server);
+        }
     }
-    finally
+
+    using (var bundle = Process.Start(StartInfo(cli, workspace, "bundle", "."))
+        ?? throw new InvalidOperationException("Could not start the Monaco production bundle build."))
     {
-        await Stop(server);
+        try
+        {
+            await bundle.WaitForExitAsync(stop);
+            if (bundle.ExitCode != 0)
+                throw new InvalidOperationException($"Monaco production bundle build exited with code {bundle.ExitCode}.");
+        }
+        finally
+        {
+            await Stop(bundle);
+        }
+    }
+
+    var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = Path.Combine(workspace, "dist") });
+    await using var production = builder.Build();
+    production.Urls.Add("http://127.0.0.1:0");
+    int workerResponses = 0;
+    production.Use(async (context, next) =>
+    {
+        // A fetch of the same URL by the page would not prove Chromium loaded a worker.
+        if (context.Request.Headers["Sec-Fetch-Dest"] == "worker" && context.Request.Path.StartsWithSegments("/assets"))
+            context.Response.OnStarting(() =>
+            {
+                if (context.Response.StatusCode == 200)
+                    Interlocked.Increment(ref workerResponses);
+                return Task.CompletedTask;
+            });
+        await next(context);
+    });
+    production.UseDefaultFiles();
+    production.UseStaticFiles();
+    await production.StartAsync(stop);
+    await VerifyBrowserAsync(new Uri(production.Urls.Single()));
+    if (Volatile.Read(ref workerResponses) == 0)
+        throw new InvalidOperationException("Chromium did not fetch the bundled Monaco worker from the production server.");
+    await production.StopAsync(stop);
+    Console.WriteLine("Verified production Monaco worker loading and model synchronization in Chromium.");
+
+    async Task VerifyBrowserAsync(Uri origin)
+    {
+        var driver = Path.Combine(repo, "samples", "Jolt.Counter", "verify-browser.cs");
+        using var check = Process.Start(StartInfo("dotnet", workspace, "run", "--file", driver,
+            "--", browser, origin.AbsoluteUri, "--monaco"))
+            ?? throw new InvalidOperationException("Could not start the Chromium check.");
+        try
+        {
+            await check.WaitForExitAsync(stop);
+            if (check.ExitCode != 0)
+                throw new InvalidOperationException($"Monaco browser check exited with code {check.ExitCode} at {origin}.");
+        }
+        finally
+        {
+            await Stop(check);
+        }
     }
 }
 

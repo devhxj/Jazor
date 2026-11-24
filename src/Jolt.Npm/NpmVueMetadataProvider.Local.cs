@@ -1,5 +1,6 @@
 using System.Text.Json;
-using Jazor.NodeHost;
+using Jazor.Npm;
+using static Jazor.Npm.NpmValueMetadataProvider;
 
 namespace Jolt.Npm;
 
@@ -33,29 +34,34 @@ public sealed partial class NpmVueMetadataProvider
                 var changed = cached.Inputs.Select(input => (Path: input.Key, Previous: input.Value, Current: Fingerprint(input.Key)))
                     .Where(input => input.Previous != input.Current).ToArray();
                 if (changed.Length == 0)
+                {
+                    _values.ReportInputs(cached.Inputs, cached.TypeScript);
                     return new(cached.Contracts, cached.Declarations is not null);
+                }
                 if (changed.All(input => input.Current is not null && cached.Templates.ContainsKey(input.Path)))
                 {
                     var sources = changed.Select(input => new { input.Path, Fingerprint = input.Current, cached.Templates[input.Path].DefinitionEnd });
                     var signatures = await RunMetadataAsync(projectDirectory, "vue-template-text.mjs",
-                        [cached.TypeScript, JsonSerializer.Serialize(sources, JsonOptions)], cancellationToken);
+                        [cached.TypeScript, JsonSerializer.Serialize(sources, JsonOptions)], cancellationToken, typeof(NpmVueMetadataProvider));
                     var refreshed = JsonSerializer.Deserialize<string?[]>(signatures, JsonOptions)!;
                     if (changed.Select(input => cached.Templates[input.Path].Signature).SequenceEqual(refreshed))
                     {
                         foreach (var input in changed)
                             cached.Inputs[input.Path] = input.Current;
+                        _values.ReportInputs(cached.Inputs, cached.TypeScript);
                         return new(cached.Contracts, cached.Declarations is not null);
                     }
                 }
             }
 
-            var store = ResolveStore();
-            var typescript = await RestoreTypeScriptAsync(store, cancellationToken);
-            await RestoreAsync(projectDirectory, store, cancellationToken);
+            var store = _values.ResolveStore();
+            var typescript = await _values.RestoreTypeScriptAsync(store, cancellationToken, typeof(NpmVueMetadataProvider));
+            await _values.RestoreAsync(projectDirectory, store, cancellationToken);
             async Task<LocalQuery> ReadAsync(string declarations)
             {
-                IReadOnlyList<string> arguments = [typescript, projectDirectory, JsonSerializer.Serialize(paths), overlayJson, declarations];
-                var result = await RunMetadataAsync(projectDirectory, "vue-source.mjs", arguments, cancellationToken);
+                IReadOnlyList<string> arguments = [typescript, projectDirectory, JsonSerializer.Serialize(paths), overlayJson, declarations, WebIdlCarriers.Metadata];
+                var result = await RunMetadataAsync(projectDirectory, "vue-source.mjs", arguments, cancellationToken,
+                    typeof(NpmVueMetadataProvider), ["vue-source.mjs", "vue-contract.mjs", "vue-template-text.mjs", "web-idl-projection.mjs"]);
                 return JsonSerializer.Deserialize<LocalQuery>(result, JsonOptions)!;
             }
             // Once an SFC imports Jolt, give the checker the current declarations on
@@ -65,14 +71,14 @@ public sealed partial class NpmVueMetadataProvider
             var snapshot = await ReadAsync(declarationsJson ?? "{}");
             if (snapshot.UsesJolt && declarationsJson is null)
                 snapshot = await ReadAsync(SerializeDeclarations());
+            var inputs = snapshot.Inputs.Concat(PackageInputs(projectDirectory)).Distinct(StringComparer.Ordinal);
+            var fingerprints = snapshot.Fingerprints;
+            foreach (var path in inputs)
+                if (!fingerprints.ContainsKey(path))
+                    fingerprints[path] = Fingerprint(path);
+            _values.ReportInputs(fingerprints, typescript);
             if (snapshot.Contracts.All(contract => contract.Error is null))
             {
-                var inputs = snapshot.Inputs.Concat(new[] { "package.json", "pnpm-lock.yaml", ".npmrc" }
-                    .Select(name => Path.Combine(projectDirectory, name))).Distinct(StringComparer.Ordinal);
-                var fingerprints = snapshot.Fingerprints;
-                foreach (var path in inputs)
-                    if (!fingerprints.ContainsKey(path))
-                        fingerprints[path] = Fingerprint(path);
                 _localCache[projectDirectory] = new(paths.ToArray(), overlayJson, snapshot.UsesJolt ? declarationsJson : null,
                     snapshot.Contracts, fingerprints, snapshot.Missing, snapshot.MissingDirectories, typescript, snapshot.Templates);
             }
@@ -91,40 +97,6 @@ public sealed partial class NpmVueMetadataProvider
         Dictionary<string, string?> Inputs, string[] Missing, string[] MissingDirectories, string TypeScript,
         Dictionary<string, TemplateSignature> Templates);
 
-    // metadata.mjs imports the package's projection modules. Extract from the
-    // same embedded resource set as MSBuild so newly added imports resolve.
-    private static readonly string[] MetadataModules = typeof(NpmVueMetadataProvider).Assembly.GetManifestResourceNames()
-        .Where(name => name.StartsWith("Jolt.Npm.", StringComparison.Ordinal) && name.EndsWith(".mjs", StringComparison.Ordinal))
-        .Select(name => name["Jolt.Npm.".Length..]).ToArray();
-
-    private static async Task<string> RunMetadataAsync(string project, string entry, IReadOnlyList<string> arguments,
-        CancellationToken cancellationToken)
-    {
-        var directory = Path.Combine(project, ".jazor", $"vue-metadata-{Guid.NewGuid():N}");
-        string[] resources = entry switch
-        {
-            "vue-source.mjs" => [entry, "vue-contract.mjs", "vue-template-text.mjs"],
-            "metadata.mjs" => MetadataModules,
-            _ => [entry],
-        };
-        Directory.CreateDirectory(directory);
-        try
-        {
-            foreach (var file in resources)
-            {
-                using var source = typeof(NpmVueMetadataProvider).Assembly.GetManifestResourceStream("Jolt.Npm." + file)!;
-                await using var output = File.Create(Path.Combine(directory, file));
-                await source.CopyToAsync(output, cancellationToken);
-            }
-            return await NodeModuleRunner.RunAsync(project, Path.Combine(directory, entry), arguments, cancellationToken);
-        }
-        finally
-        {
-            foreach (var file in resources)
-                File.Delete(Path.Combine(directory, file));
-            Directory.Delete(directory);
-        }
-    }
 }
 
 public sealed record LocalVueContract(string Path, NpmVueComponent? Component, string? Error);

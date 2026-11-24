@@ -7,6 +7,7 @@
 using System.Text.Json;
 using Jazor.NodeHost;
 using Jolt.Compiler;
+using Jazor.Npm;
 using Jolt.Npm;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -70,6 +71,7 @@ try
     var projectedAuthoredCount = 0;
     var authoredArityCount = 0;
     var projectedArityCount = 0;
+    var overloadOperations = new Dictionary<string, SortedSet<string>>(StringComparer.Ordinal);
     foreach (var binding in bindings)
     {
         var bindingDirectory = Path.Combine(root, "src", $"ECMAScript.{binding.Library}");
@@ -117,10 +119,10 @@ try
         Console.WriteLine($"  Unsupported projections [{string.Join(", ", matching.Except(projected.Keys))}]");
         Require(authored.Keys.All(projected.ContainsKey), $"Missing reference exports in {specifier}: " +
             string.Join(", ", authored.Keys.Except(projected.Keys)));
-        var (expectedArities, supportedArities) = PrintArityCoverage(authored, projected, inventory);
+        var (expectedArities, supportedArities) = PrintArityCoverage(specifier, authored, projected, inventory);
         authoredArityCount += expectedArities;
         projectedArityCount += supportedArities;
-        PrintReturnMemberCoverage(Path.Combine(bindingDirectory, "Types"), authored, projected, inventory);
+        overloadOperations.Add(specifier, PrintReturnMemberCoverage(specifier, Path.Combine(bindingDirectory, "Types"), authored, projected, inventory));
         foreach (var (name, members) in authored)
         {
             Console.WriteLine($"  {name}");
@@ -168,7 +170,7 @@ try
     var frenchLocale = await provider.ReadValueAsync(document, "date-fns/locale", "fr");
     Console.WriteLine($"{projectedAuthoredCount}/{authoredCount} distinct top-level names from the seven handwritten bindings have a projection. Each name counts once across its overloads.");
     Console.WriteLine($"{projectedArityCount}/{authoredArityCount} distinct callable paths and positional argument counts have a projection. Roslyn sample bindings are reported separately.");
-    VerifyGeneratedFacades(project, allProjected, [.. floatingDom, frenchLocale]);
+    VerifyGeneratedFacades(project, allProjected, [.. floatingDom, frenchLocale], overloadOperations);
 }
 finally
 {
@@ -268,11 +270,13 @@ static SortedDictionary<string, List<AuthoredMember>> ReadAuthoredExports(string
 }
 
 static (int Expected, int Supported) PrintArityCoverage(
+    string specifier,
     SortedDictionary<string, List<AuthoredMember>> authored,
     Dictionary<string, NpmValueExport> projected,
     Dictionary<string, DeclarationExport> inventory)
 {
     int expected = 0, supported = 0;
+    var shapeDifferences = new List<string>();
     foreach (var (name, members) in authored)
     {
         var value = projected.GetValueOrDefault(name);
@@ -296,20 +300,47 @@ static (int Expected, int Supported) PrintArityCoverage(
                 expected++;
                 if (signatures?.Any(signature => CoversUpstreamArity(signature, arity.Key)) == true)
                     supported++;
-                else
+                else if (specifier == "@vueuse/core" && name is ("isClient" or "isIOS" or "isWorker") &&
+                    !isNamespace && arity.Key == 0 && value is { ConstantType.Kind: "boolean", Signatures: [] } &&
+                    inventory.GetValueOrDefault(name)?.Kind == "value")
                 {
-                    Console.WriteLine($"  Missing argument count {path}({arity.Key}) at {string.Join(", ", arity.Select(call => call.Location).Distinct())}");
-                    // VueUse's former zero-argument predicates are booleans in the locked
-                    // package. The fixtures read these values directly in both authoring modes.
-                    Require(!isNamespace && arity.Key == 0 && value?.ConstantType?.Kind == "boolean" &&
-                        value.Signatures.Count == 0 && inventory.GetValueOrDefault(name)?.Kind == "value",
-                        $"The projection lost the reference call {path}({arity.Key}).");
+                    // Preserve the handwritten callable denominator even though the locked
+                    // VueUse declarations re-export these values from @vueuse/shared.
+                    shapeDifferences.Add($"{path}(0) at {string.Join(", ", arity.Select(call => call.Location).Distinct())}");
                 }
+                else
+                    throw new InvalidOperationException($"Missing argument count in {specifier}#{path}({arity.Key}) " +
+                        $"at {string.Join(", ", arity.Select(call => call.Location).Distinct())}.");
             }
         }
     }
     Console.WriteLine($"  Positional argument counts {supported}/{expected}");
+    if (shapeDifferences.Count > 0)
+        Console.WriteLine($"  Upstream export shape differences ({shapeDifferences.Count}, boolean constants in @vueuse/shared) " +
+            $"[{string.Join(", ", shapeDifferences)}]");
     return (expected, supported);
+}
+
+static void VerifyMissingReturnOperations(string specifier, SortedDictionary<string, SortedSet<string>> missing)
+{
+    foreach (var (operation, locations) in missing)
+    {
+        var reason = (specifier, operation) switch
+        {
+            ("@vueuse/core", "useTimeoutFn(2).isActive (read)" or "useTimeoutFn(2).pause (call)" or
+                "useTimeoutFn(2).resume (call)") =>
+                "@vueuse/shared/dist/index.d.ts declares UseTimeoutFnReturn as Stoppable<Parameters<CallbackFn> | []>. " +
+                "The three handwritten members belong to Pausable.",
+            ("vee-validate", "useFieldArray(1).path (read)") =>
+                "vee-validate/dist/vee-validate.d.ts declares path on PrivateFieldArrayContext. " +
+                "useFieldArray returns public FieldArrayContext.",
+            _ => null
+        };
+        var location = $"{specifier}#{operation} at {string.Join(", ", locations)}";
+        if (reason is null)
+            throw new InvalidOperationException($"Unexpected missing first-level return operation {location}.");
+        Console.WriteLine($"    {location}. {reason}");
+    }
 }
 
 static bool CoversUpstreamArity(NpmValueSignature signature, int arity)
@@ -321,7 +352,8 @@ static bool CoversUpstreamArity(NpmValueSignature signature, int arity)
             parameter.Optional && parameter.FixedBoolean is null && !parameter.FixedUndefined);
 }
 
-static void PrintReturnMemberCoverage(
+static SortedSet<string> PrintReturnMemberCoverage(
+    string specifier,
     string directory,
     SortedDictionary<string, List<AuthoredMember>> authored,
     Dictionary<string, NpmValueExport> projected,
@@ -343,7 +375,8 @@ static void PrintReturnMemberCoverage(
         .Where(type => type is { Kind: "handle", TypeDefinition: not null, Members.Count: > 0 })
         .ToLookup(type => (type.TypeDefinition, type.ProtocolKey, type.TypeIdentity));
     var present = new SortedSet<string>(StringComparer.Ordinal);
-    var missing = new SortedSet<string>(StringComparer.Ordinal);
+    var missing = new SortedDictionary<string, SortedSet<string>>(StringComparer.Ordinal);
+    var overloadDependent = new SortedSet<string>(StringComparer.Ordinal);
     var unassessed = new SortedSet<string>(StringComparer.Ordinal);
     foreach (var (export, declarations) in authored)
     {
@@ -425,20 +458,27 @@ static void PrintReturnMemberCoverage(
                                 pair.First.Kind == "enrichedRef" &&
                                 (operation == "read" || !pair.First.ReadOnly));
                         if (supported == 0)
-                            missing.Add(memberPath);
+                        {
+                            if (!missing.TryGetValue(memberPath, out var locations))
+                                missing.Add(memberPath, locations = new(StringComparer.Ordinal));
+                            locations.Add(declaration.Location);
+                        }
                         else if (supported == matches.Length)
                             present.Add(memberPath);
                         else
-                            unassessed.Add($"{memberPath} (depends on overload)");
+                            overloadDependent.Add(memberPath);
                     }
                 }
             }
         }
     }
     Console.WriteLine($"  First-level return operation presence {present.Count}");
-    Console.WriteLine($"  Missing first-level return operations ({missing.Count}) [{string.Join(", ", missing)}]");
+    Console.WriteLine($"  Missing first-level return operations ({missing.Count}) [{string.Join(", ", missing.Keys)}]");
+    Console.WriteLine($"  Overload-dependent first-level operations ({overloadDependent.Count}) [{string.Join(", ", overloadDependent)}]");
     Console.WriteLine($"  Unassessed first-level returns ({unassessed.Count}) [{string.Join(", ", unassessed)}]");
     Console.WriteLine("  Scope covers explicitly mapped operations on public Types and their resolved local bases. Parameter domains and nested return operations are outside this comparison.");
+    VerifyMissingReturnOperations(specifier, missing);
+    return overloadDependent;
 
     NpmValueType ResolveResultMembers(NpmValueType type)
     {
@@ -551,7 +591,8 @@ static string DescribeType(NpmValueType type)
     return type.Name ?? type.Kind;
 }
 
-static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary, IReadOnlyList<NpmValueExport> additional)
+static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary, IReadOnlyList<NpmValueExport> additional,
+    Dictionary<string, SortedSet<string>> overloadOperations)
 {
     var projected = primary.Concat(additional).ToArray();
     const string source = """
@@ -650,7 +691,7 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
     // This catches differences in accessibility, constraints and overload resolution
     // that compiling the component and its synthesized facade together cannot expose.
     var componentTree = compilation.SyntaxTrees.Single(tree => tree.FilePath == "__JoltNpmValues.g.cs");
-    var publicSource = JoltNpmBindings.GenerateCachedSource(project, projected);
+    var publicSource = NpmBindings.GenerateCachedSource(project, [], projected);
     var publicTree = CSharpSyntaxTree.ParseText(publicSource, (CSharpParseOptions)componentTree.Options, "Bindings.g.cs");
     var library = CSharpCompilation.Create("SevenLibraryBindings", [publicTree], compilation.References,
         new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, generalDiagnosticOption: ReportDiagnostic.Error));
@@ -671,6 +712,8 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
             HasStringAttribute(member, "ECMAScript.ECMAScriptNameAttribute", export.ExportName)) == true,
             $"The public binding assembly is missing the projected declaration for {export.ModuleSpecifier}#{export.ExportName}.");
     }
+    VerifyOverloadOperations(consumer, (CSharpParseOptions)componentTree.Options,
+        Path.Combine(fixtures, "jolt-binding-projection", "OverloadOperationConsumer.cs"), overloadOperations);
     var consumerErrors = consumer.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
     Require(consumerErrors.Length == 0, $"Calls against the public binding assembly failed.{Environment.NewLine}" +
         string.Join(Environment.NewLine, consumerErrors.Select(diagnostic => diagnostic.ToString())));
@@ -692,6 +735,109 @@ static void VerifyGeneratedFacades(string project, List<NpmValueExport> primary,
     ReportCallEvidence(analysis);
     Console.WriteLine($"Roslyn compiled the pooled facade for {primary.Count} npm exports across the seven libraries " +
         $"and {additional.Count} additional exports from {string.Join(", ", additional.Select(value => value.ModuleSpecifier).Distinct())}.");
+}
+
+static void VerifyOverloadOperations(CSharpCompilation consumer, CSharpParseOptions options, string path,
+    Dictionary<string, SortedSet<string>> inventory)
+{
+    var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(path), options, path);
+    var compilation = consumer.AddSyntaxTrees(tree);
+    var model = compilation.GetSemanticModel(tree);
+    var evidence = new Dictionary<(string Module, string Key), SortedSet<string>>();
+    foreach (var method in tree.GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>())
+    {
+        var declaration = method.DescendantNodes().OfType<VariableDeclaratorSyntax>()
+            .FirstOrDefault(node => node.Identifier.ValueText == "result");
+        if (declaration?.Initializer?.Value is not InvocationExpressionSyntax invocation ||
+            model.GetOperation(invocation) is not IInvocationOperation selected ||
+            selected.TargetMethod is not { ContainingAssembly.Name: "SevenLibraryBindings" } factory)
+            continue;
+        var receiver = model.GetDeclaredSymbol(declaration);
+        var module = ReadAttribute(factory, "ECMAScript.ECMAScriptAttribute")!;
+        var export = ReadAttribute(factory, "ECMAScript.ECMAScriptNameAttribute");
+        var group = $"{export}({invocation.ArgumentList.Arguments.Count})";
+        foreach (var expression in method.DescendantNodes().OfType<MemberAccessExpressionSyntax>())
+        {
+            if (!SymbolEqualityComparer.Default.Equals(model.GetSymbolInfo(expression.Expression).Symbol, receiver) ||
+                model.GetSymbolInfo(expression).Symbol is not { ContainingAssembly.Name: "SevenLibraryBindings" } member ||
+                ReadAttribute(member, "System.ComponentModel.DescriptionAttribute") is not { } alias ||
+                !alias.StartsWith("@#", StringComparison.Ordinal))
+                continue;
+            var operation = expression.Parent switch
+            {
+                InvocationExpressionSyntax call when call.Expression == expression &&
+                    model.GetOperation(call) is IInvocationOperation => "call",
+                AssignmentExpressionSyntax assignment when assignment.Left == expression => "write",
+                _ when member is IPropertySymbol => "read",
+                _ => null
+            };
+            if (operation is null)
+                continue;
+            var key = (module, $"{group}.{alias[2..]} ({operation})");
+            if (!evidence.TryGetValue(key, out var selectedSymbols))
+                evidence.Add(key, selectedSymbols = new(StringComparer.Ordinal));
+            selectedSymbols.Add($"{method.Identifier.ValueText} selected {factory.ToDisplayString()} and {member.ToDisplayString()}");
+        }
+    }
+
+    var uncovered = new List<string>();
+    // Changes in the overload inventory can move operations into the common
+    // surface. Preserve the initial 62 operations as regression targets.
+    var baselineKeys = new Dictionary<string, string[]>(StringComparer.Ordinal)
+    {
+        ["useField(1)"] = ["name (read)", "setValue (call)", "value (read)"],
+        ["useFieldArray(1)"] = ["insert (call)", "prepend (call)", "push (call)", "replace (call)", "update (call)"],
+        ["useForm(0)"] = ["defineField (call)", "errorBag (read)", "handleSubmit (call)", "isSubmitting (read)",
+            "isValidating (read)", "meta (read)", "name (read)", "resetForm (call)", "setErrors (call)",
+            "setFieldError (call)", "setFieldTouched (call)", "setFieldValue (call)", "setValues (call)",
+            "submitCount (read)", "validateField (call)", "values (read)"],
+    };
+    var baseline = baselineKeys.SelectMany(group => group.Value.Select(key => $"{group.Key}.{key}"))
+        .Concat(new[] { "useField(2)", "useField(3)" }.SelectMany(group => baselineKeys["useField(1)"].Select(key => $"{group}.{key}")))
+        .Concat(new[] { "useForm(1)", "useFormContext(0)" }.SelectMany(group => baselineKeys["useForm(0)"].Select(key => $"{group}.{key}")));
+    foreach (var (module, keys) in inventory)
+    {
+        var required = module == "vee-validate" ? keys.Union(baseline) : keys;
+        var group = required.GroupBy(key => key[..key.IndexOf('.')]);
+        Console.WriteLine($"  {module} public Roslyn overload-dependent coverage");
+        foreach (var operations in group)
+        {
+            var missing = operations.Where(key => !evidence.ContainsKey((module, key))).ToArray();
+            Console.WriteLine($"    {operations.Key} {operations.Count() - missing.Length}/{operations.Count()}");
+            foreach (var key in operations.Except(missing))
+                Console.WriteLine($"      {key}{(keys.Contains(key) ? "" : " [common surface]")} [{string.Join(" | ", evidence[(module, key)])}]");
+            uncovered.AddRange(missing.Select(key => $"{module} {key}"));
+        }
+    }
+    var errors = model.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+    Require(uncovered.Count == 0 && errors.Length == 0,
+        $"Missing public overload operation evidence [{string.Join(", ", uncovered)}].{Environment.NewLine}" +
+        string.Join(Environment.NewLine, errors.Select(diagnostic => diagnostic.ToString())));
+
+    var source = File.ReadAllText(path);
+    foreach (var (original, replacement, code) in new[]
+    {
+        ("""result.SetValue("new", false)""", "result.SetValue(1, false)", "CS1503"),
+        ("""result.Replace([""])""", "result.Replace([1])", "CS0029"),
+        ("""(Input value) => value.Email, "invalid" """.TrimEnd(), """(Input value) => value.Absent, "invalid" """.TrimEnd(), "CS1061"),
+        ("""(Input value) => value.Email, "invalid" """.TrimEnd(), "(Input value) => value.Email, 1", "CS1503"),
+        ("""InitialValues = new("initial", 0)""", """InitialValues = new("initial", "zero")""", "CS1503"),
+    })
+    {
+        var offset = source.IndexOf(original, StringComparison.Ordinal);
+        Require(offset >= 0, $"Public overload negative probe could not find {original}.");
+        var changed = source.Remove(offset, original.Length).Insert(offset, replacement);
+        var invalidTree = CSharpSyntaxTree.ParseText(changed, options, path);
+        var invalid = compilation.ReplaceSyntaxTree(tree, invalidTree).GetSemanticModel(invalidTree);
+        var span = new TextSpan(offset, replacement.Length);
+        Require(invalid.GetDiagnostics().Any(diagnostic => diagnostic.Id == code &&
+            diagnostic.Location.SourceSpan.IntersectsWith(span)), $"Expected {code} from {replacement}.");
+        Console.WriteLine($"  Public Roslyn negative probe {code} for {replacement}");
+    }
+
+    static string? ReadAttribute(ISymbol symbol, string attribute) =>
+        symbol.GetAttributes().SingleOrDefault(data => data.AttributeClass?.ToDisplayString() == attribute)
+            ?.ConstructorArguments.FirstOrDefault().Value as string;
 }
 
 static bool HasStringAttribute(ISymbol symbol, string attribute, string value) =>

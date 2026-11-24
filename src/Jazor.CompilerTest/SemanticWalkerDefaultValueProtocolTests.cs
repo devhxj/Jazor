@@ -62,6 +62,33 @@ public sealed class SemanticWalkerDefaultValueProtocolTests
     }
 
     [TestMethod]
+    public void Visit_StringEnumNumericConstants_UseDeclaredMappings()
+    {
+        var block = GetBlockOperation("""
+            StringState zero = 0;
+            StringState one = (StringState)1;
+            StringState forwarded = (StringState)one;
+            var numeric = (Int32Kind)123;
+            """);
+        var script = VisitBlock(block);
+        StringAssert.Contains(script, "zero = \"none\"");
+        StringAssert.Contains(script, "one = \"Ready\"");
+        StringAssert.Contains(script, "forwarded = one");
+        StringAssert.Contains(script, "numeric = 123");
+    }
+
+    [TestMethod]
+    [DataRow("var state = (StringState)123;")]
+    [DataRow("int number = 0; var state = (StringState)number;")]
+    public void Visit_StringEnumNumericConversionWithoutMapping_ReportsFailure(string body)
+    {
+        var block = GetBlockOperation(body);
+        var exception = Assert.Throws<OperationTransformationException>(() =>
+            new SemanticWalker(true).Visit(block, new SenseArgument()));
+        StringAssert.Contains(exception.Message, "requires a compile-time constant with a declared member mapping");
+    }
+
+    [TestMethod]
     public void Visit_DefaultStringEnumWithoutZeroMember_ReportsMappingFailure()
     {
         var block = GetBlockOperation("var state = default(StringStateWithoutZero);");

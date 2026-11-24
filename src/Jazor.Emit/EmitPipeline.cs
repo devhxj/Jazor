@@ -65,30 +65,18 @@ internal sealed class EmitPipeline
                 manifestPath,
                 collection.Modules,
                 browserEntries);
-            if (!moduleWrite.IsSuccess)
+            if (moduleWrite.Manifest is not { } applicationManifest)
                 return Fail(moduleWrite.ExitCode, moduleWrite.Error!);
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var applicationManifest = ManifestModel.TryLoad(manifestPath)
-                ?? throw new InvalidOperationException("Emit did not produce the application manifest.");
             var entryPaths = ProjectEntryWriter.Write(
                 outputRoot,
                 applicationManifest.Entries,
                 options.EnableSsr,
                 applicationManifest.Modules.Where(module => module.Hmr is not null)
                     .Select(module => module.RelativePath).ToArray());
-            var packageImports = GetPackageImports(applicationManifest);
-            if (options.EnableSsr)
-            {
-                // SSR uses the same restored package graph as the browser profile. Include its
-                // runtime packages before writing package.json so no second restore can occur.
-                packageImports = packageImports
-                    .Concat([SsrVueSpecifier, SsrRendererSpecifier])
-                    .Distinct(StringComparer.Ordinal)
-                    .OrderBy(static value => value, StringComparer.Ordinal)
-                    .ToArray();
-            }
+            var browserImports = GetPackageImports(applicationManifest);
 
             CopyCatalogAssets(outputRoot, validatedAssets, cancellationToken);
 
@@ -100,20 +88,23 @@ internal sealed class EmitPipeline
                 options.LibraryManifests,
                 outputRoot,
                 options.Mode,
-                GetPackageImports(applicationManifest),
-                applicationManifest.Modules.Select(static module => module.RelativePath));
+                browserImports,
+                applicationManifest.Modules.Select(static module => module.RelativePath),
+                collection.ProjectedPackages);
             var packageLibraries = browserLibraries;
             if (options.EnableSsr)
             {
-                // SSR uses the wider package closure in the same project root; there is no second
-                // workspace to merge from. The browser view stays limited to browser roots via
-                // the browserLibraries computed above.
+                // SSR adds its runtime packages to the same project before the single pnpm restore.
+                var ssrImports = browserImports.Concat([SsrVueSpecifier, SsrRendererSpecifier])
+                    .Distinct(StringComparer.Ordinal)
+                    .OrderBy(static value => value, StringComparer.Ordinal);
                 packageLibraries = materializer.Materialize(
                     options.LibraryManifests,
                     outputRoot,
                     options.Mode,
-                    packageImports,
-                    applicationManifest.Modules.Select(static module => module.RelativePath));
+                    ssrImports,
+                    applicationManifest.Modules.Select(static module => module.RelativePath),
+                    collection.ProjectedPackages);
             }
             // Standard JavaScript tooling and NodeApi consume this same package.json/node_modules from jazor/.
             LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);

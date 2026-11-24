@@ -1,0 +1,15 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+  .:
+    dependencies:
+      cell-ops:
+        specifier: link:./cell-ops
+        version: link:cell-ops
+      wire-cells:
+        specifier: link:./wire-cells
+        version: link:wire-cells

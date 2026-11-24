@@ -78,8 +78,8 @@ internal sealed partial class VueLowering(Projection projection, ComponentContra
         string path = ModulePath(contract.Path);
         var statements = new List<Statement>();
         var styles = projection.Document.Nodes.OfType<JoltScopedStyle>().ToArray();
-        var scope = styles.Length == 0 ? null : ScopedStyleId(path);
-        if (scope is not null)
+        var scope = styles.Any(style => style.Scoped) ? ScopedStyleId(path) : null;
+        if (styles.Length != 0)
             statements.Add(ImportDeclarationFactory.CreateSideEffect("./" + Path.GetFileNameWithoutExtension(path) + ".jolt.css"));
         var vueImports = new List<ImportSpecifier>
         {
@@ -221,13 +221,21 @@ internal sealed partial class VueLowering(Projection projection, ComponentContra
             ClrImports = clrImports.Count == 0 ? [] : clrImports.ToArray(),
             LocalVueImports = _aliases.Keys.Select(component => component.Npm?.LocalPath).OfType<string>()
                 .Order(StringComparer.Ordinal).ToArray(),
-            ScopedCss = scope is null ? null : $"/* {scope} */\n" + string.Join("\n", styles.Select(style => style.Css)),
+            ScopedCss = styles.Length == 0 ? null : styles.All(style => style.Scoped)
+                ? $"/* {scope} */\n" + string.Join("\n", styles.Select(style => NormalizeStyle(style.Css)))
+                : "/* jolt-style-blocks */\n" + System.Text.Json.JsonSerializer.Serialize(
+                    styles.Select(style => new { scope = style.Scoped ? scope : null, css = NormalizeStyle(style.Css) })),
             TypeScriptDeclaration = declaration.Content,
             TypeScriptSourceMap = declaration.SourceMap,
         };
     }
 
     internal static string ModulePath(string source) => Path.ChangeExtension(source.Replace('\\', '/'), ".mjs");
+
+    private static string NormalizeStyle(string css) =>
+        System.Text.RegularExpressions.Regex.Replace(css,
+            """/\*[\s\S]*?(?:\*/|$)|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|\\[\s\S]|@@(?=[a-zA-Z-])""",
+            match => match.Value == "@@" ? "@" : match.Value);
 
     private static string ScopedStyleId(string modulePath) =>
         "data-v-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(modulePath)).AsSpan(0, 6));

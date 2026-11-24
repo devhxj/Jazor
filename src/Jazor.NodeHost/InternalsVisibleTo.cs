@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("ECMAScript.WebIDL.Generator")]
 [assembly: InternalsVisibleTo("ECMAScript.WebIDL.NodeApiVerification")]
 [assembly: InternalsVisibleTo("Jazor.NodeApiVerification")]
-[assembly: InternalsVisibleTo("Jolt.Npm")]
+[assembly: InternalsVisibleTo("Jazor.Npm")]
 [assembly: InternalsVisibleTo("Jazor.Emit")]
 [assembly: InternalsVisibleTo("Jolt.Vite")]
 [assembly: InternalsVisibleTo("Jazor.AspNetCore")]

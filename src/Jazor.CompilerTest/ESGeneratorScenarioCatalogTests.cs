@@ -2,12 +2,66 @@ using Jazor.ComplierTest;
 using Jazor.Compiler;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Jazor.CompilerTest;
 
 [TestClass]
 public sealed class ESGeneratorScenarioCatalogTests
 {
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void RunGenerator_UsesConfiguredPrivateStorageForCatalogClasses(bool proxySafeClasses)
+    {
+        const string source = """
+            using ECMAScript;
+
+            [ECMAScriptModule("state.js")]
+            public static class App
+            {
+                public static AppState Create() => new();
+
+                public sealed class AppState
+                {
+                    private int value = 1;
+                    public int Increment() => ++value;
+                }
+            }
+            """;
+        var syntax = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions, "State.cs");
+        var references = TestMetadataReferences.Net11.Add(
+            MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
+        var compilation = CSharpCompilation.Create("ProxyCatalog", [syntax], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        AssertNoCompilationErrors(compilation, nameof(RunGenerator_UsesConfiguredPrivateStorageForCatalogClasses), "input");
+        var driver = CSharpGeneratorDriver.Create([new ESGenerator().AsSourceGenerator()],
+            parseOptions: TestMetadataReferences.PreviewParseOptions,
+            optionsProvider: new CatalogOptionsProvider(proxySafeClasses)).RunGenerators(compilation);
+        var result = driver.GetRunResult();
+        Assert.HasCount(0, result.Diagnostics, FormatDiagnostics(nameof(RunGenerator_UsesConfiguredPrivateStorageForCatalogClasses), result.Diagnostics));
+        var catalog = GetGeneratedSource(result, "Jazor.Generated.ModuleCatalog.g.cs");
+        StringAssert.Contains(catalog, proxySafeClasses ? "this.$jazor$private$value$" : "this.#value", StringComparison.Ordinal);
+    }
+
+    private sealed class CatalogOptionsProvider(bool proxySafeClasses) : AnalyzerConfigOptionsProvider
+    {
+        public override AnalyzerConfigOptions GlobalOptions { get; } = new CatalogOptions(proxySafeClasses);
+
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => GlobalOptions;
+
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => GlobalOptions;
+    }
+
+    private sealed class CatalogOptions(bool proxySafeClasses) : AnalyzerConfigOptions
+    {
+        public override bool TryGetValue(string key, out string value)
+        {
+            value = proxySafeClasses ? nameof(RuntimeClassPrivateStorage.ProxySafeMangledProperties) : "";
+            return proxySafeClasses && key == "build_property._JazorRuntimeClassPrivateStorage";
+        }
+    }
+
     public static IEnumerable<TestDataRow<ESGeneratorScenario>> Cases
         => ESGeneratorScenarioCatalog.All.Select(static testCase =>
             new TestDataRow<ESGeneratorScenario>(testCase)

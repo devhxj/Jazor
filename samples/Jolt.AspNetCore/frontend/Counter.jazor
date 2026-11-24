@@ -1,0 +1,10 @@
+<main>
+    <h1>Jolt counter</h1>
+    <button id="increment" type="button" @onclick="@Increment">Increment</button>
+    <output id="count">@Count</output>
+</main>
+
+@code {
+    private int Count;
+    private void Increment() => Count++;
+}

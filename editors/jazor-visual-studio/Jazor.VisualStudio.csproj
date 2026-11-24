@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="System.ComponentModel.Composition" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="4.14.0" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="17.14.249" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="17.14.40264" PrivateAssets="all" ExcludeAssets="runtime" />
+    </ItemGroup>
+</Project>

@@ -1,3 +1,4 @@
+using Jazor.Npm;
 using System.Text.Json;
 using Jolt.Compiler;
 using Jolt.Syntax;
@@ -78,7 +79,7 @@ internal sealed partial class LanguageFeatures
             {
                 var visible = projection.LocalComponents.Select(component => component.Name).Concat(
                     workspace.Options.NpmComponents?.Where(component => UsesPackage(component.ModuleSpecifier))
-                        .Select(component => Jolt.Npm.NpmNames.TagFor(component.ModuleSpecifier, component.ExportName)) ?? []);
+                        .Select(component => NpmNames.TagFor(component.ModuleSpecifier, component.ExportName)) ?? []);
                 foreach (var candidate in ImportCandidates(site.Name, visible).Where(candidate => candidate.Name == site.Name))
                     Add("Add @using " + candidate.Namespace, ImportEdit(site.NameSpan, candidate.Namespace), diagnostic);
             }

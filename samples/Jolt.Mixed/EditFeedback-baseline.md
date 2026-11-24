@@ -175,3 +175,110 @@ vuePropRepair  1641.6, 1337.4, 1343.2, 1347.4, 1322.1, 1310.4, 1343.1, 1655.0, 1
 ```
 
 </details>
+
+## 普通 C# npm 构建与编辑反馈
+
+2026-11-24 在 Windows 11 10.0.26300、Intel Core i5-12500H、.NET SDK 11.0.100 上测量。每次使用独立工作区和锁定的 date-fns 4.4.0，共用预热的 pnpm 内容存储。工作区的 npm 声明与投影缓存从空目录开始。下面是当前工具链的绝对耗时，缺少同机同夹具的迁移前样本。
+
+| 普通 C# SDK 构建 | 样本数 | 耗时 (ms) |
+| --- | ---: | ---: |
+| 首次构建（含 NuGet 还原） | 1 | 33152.1 |
+| 同一工作区无改动再次构建（带 --no-restore） | 1 | 13919.0 |
+
+使用 [SDK 投影验收](../../scripts/csharp/verify-jazor-npm-projection.cs)，输入为本地 Debug Jazor.Emit 构建（DLL SHA-256 为 584279b88dbfbcff9cd662b1f99c1ae35171c9a135da6c68ed6f848b6f69f022）。在两次 BuildAsync 调用外计时。无改动构建打开 MSBuild normal 日志，记录到一次 --sdk-npm-inputs 工具调用。Calendar.npm.g.cs、Calendar.npm.inputs、Calendar.dll 三个文件的写入时间戳均保持不变。计数针对 SDK 工具进程。该探针没有直接计数进程内 TypeScript checker 的构造，也没有跟踪每一个文件的写入。
+
+使用 [Roslyn 编辑器验收](../../scripts/csharp/verify-jazor-npm-editor.cs) 与 VS Code C# 扩展 11.7.18 附带的独立 Roslyn LSP 进程，Automatic 模式，输入 Jazor.2.6.0-editor.20261123.11.nupkg（SHA-256 为 d1b15d9180f43ae07e099444677486590a971b0cdc75857282ad6af5d1f01228）。计时从发完编辑通知后第一次发出请求开始，到首次收到匹配结果为止。探针在未匹配时每隔 300 ms 再发请求。两次独立运行的首个 npm 包名补全分别为 248.8、607.1 ms。增加 date-fns 依赖并等待其命名空间可用后，首次出现 AddDays 的补全分别为 6736.3、6948.3 ms。后一轮交替改错和修复各十次。第一个错误和修复分别为 921.7、363.8 ms，余下九次按最近秩统计。
+
+| 普通 C# npm 编辑反馈 | 样本数 | p50 (ms) | p95 (ms) |
+| --- | ---: | ---: | ---: |
+| 把 AddDays 的天数改成 true，等到 CS1503 | 9 | 119.1 | 269.6 |
+| 把 true 改回 2，等到错误消失 | 9 | 116.4 | 192.4 |
+
+复测时在 ExpectEventuallyAsync 的匹配分支记录现有 Stopwatch，在 AddDays 签名检查之后循环执行原有的错误及修复步骤。热轮次原始样本如下。
+
+```text
+CS1503  269.6, 107.4, 217.7, 107.8, 117.7, 91.1, 120.8, 119.1, 137.2
+修复    128.7, 165.1, 128.5, 110.7, 105.2, 111.0, 84.7, 116.4, 192.4
+```
+
+此夹具覆盖普通 C# 项目。混编应用的 DOM 更新和 Vite 实例数本轮没有重测。
+## v2.5.0 与迁移工作区的同夹具浏览器对照
+
+2026-11-24 在同一 Windows 11 10.0.26300、i5-12500H、.NET SDK 11.0.100 和 Edge 158.0.4370.33 上顺序运行两批。先从 v2.5.0（8dd3462075e585bc53d89f63fde7c7586af3890a）的 Git archive 在隔离目录构建 Release CLI，再构建并测试迁移工作区的 Release CLI。两批均从本工作区运行 verify-jolt-mixed.cs，传入对应 apphost、同一个 Edge 和 --benchmark 10。脚本复制同一份锁定夹具到新目录，并用独立浏览器配置启动。两批初始还原都从已预热的内容存储复用 51 个包，未下载。样例组件源码与锁文件在两个版本之间相同。
+
+| CLI | 工作区还原 (ms) | Dev Ready (ms) | 首次 .jazor 保存 (ms) | 首次 .vue 保存 (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| v2.5.0 | 766.9 | 5290.4 | 249.8 | 11.7 |
+| 迁移工作区 | 601.4 | 5357.2 | 282.5 | 11.6 |
+
+| CLI | 热保存到 DOM 更新 | 样本数 | p50 (ms) | p95 (ms) |
+| --- | --- | ---: | ---: | ---: |
+| v2.5.0 | .jazor | 10 | 379.0 | 511.3 |
+| 迁移工作区 | .jazor | 10 | 385.4 | 445.9 |
+| v2.5.0 | .vue | 10 | 13.0 | 15.9 |
+| 迁移工作区 | .vue | 10 | 13.3 | 17.0 |
+
+两批均通过 DOM 更新和输入状态检查。十个样本的最近秩 p95 对应该批最大值。该对照每版本只有一批，可复现测试条件，尚不足以判断尾延迟是否稳定变化。每批各启动一个 CLI dev 命令并观测到一个监听地址。该浏览器探针没有直接计数进程内 Vite 实例与 TypeScript checker 构造。
+
+Jolt.Cli.dll 的 SHA-256 依次为 ce71cfaabc0709831dd9649bf6d51e90ca91f2de22a0664d37d0226aef227b90 和 5c6a00330f29fa747b7593a0e6ecf47cfb70c3602052d7dafd7b4d6f22cbffde。工作区 Jolt.Vite.dll 的 SHA-256 为 bda12026bd1028703cbe06d2a980c1cd71f27a96a6b5ebb7768c09af3328f0d2。
+
+```text
+v2.5.0 .jazor  379.0, 411.6, 372.4, 511.3, 413.2, 397.7, 390.7, 344.1, 352.6, 317.6
+工作区 .jazor  421.7, 443.1, 406.9, 445.9, 385.4, 356.7, 341.8, 386.7, 333.6, 329.6
+v2.5.0 .vue     13.0,  13.7,  15.8,  15.9,  12.7,  11.0,  11.9,  13.9,  13.3,  11.6
+工作区 .vue     13.3,  13.2,  17.0,  13.4,  11.6,  14.9,  12.5,  14.4,  11.6,  13.4
+```
+
+### 在隔离源码副本计数 checker 与 Vite
+
+沿用上述机器、SDK 和本地 pnpm 存储。普通 C# 两种情况各用一个新工作区，保留相同的 date-fns 锁文件。无导入的变体将 Calendar.cs 替换为 public class Calendar { }。有导入的变体保留验收脚本的 using、AddDays 调用和条件导入。首次构建含还原，第二次在同一目录执行无改动的 build --no-restore。
+
+| 普通 C# 源码 | 构建 | ts.createProgram 调用 | Calendar.npm.g.cs |
+| --- | --- | ---: | --- |
+| 有实际 npm 导入与调用 | 首次 | 3 | 创建 |
+| 有实际 npm 导入与调用 | 无改动第二次 | 0 | 时间戳未变 |
+| 无 npm 导入 | 首次 | 0 | 无文件 |
+| 无 npm 导入 | 无改动第二次 | 0 | 无文件 |
+
+计数单位是两处调用点各自执行一次，包含 TS 探测时重新创建 Program 的路径。记录点是 src/Jazor.Npm/package-checker.mjs 和 metadata.mjs 内的 ts.createProgram。SDK 验收还检查无改动时 Calendar.npm.inputs 和 Calendar.dll 的写入时间戳。文件检查范围限于这些产物。
+
+复现时复制 src、Directory.Build.props、Directory.Build.targets 与 global.json 到独立目录，跳过 bin、obj、node_modules 和旧缓存。在该副本的两处 ts.createProgram 和 src/Jazor.NodeHost/tooling/toolchain.cjs 的每处 vite.createServer 前追加一行至 JazorPerfTrace 指定的绝对路径，按方法名分别计数。在副本下以相同目录层级保留一份 verify-jazor-npm-projection.cs，在首构建与无改动构建之间读取并清空 trace；另一次只替换初始 Calendar.cs 并在两次 build 后退出。设置 JazorPnpmStoreDirectory 指向预热存储。
+
+```powershell
+dotnet build <副本>/src/Jazor.Emit/Jazor.Emit.csproj
+dotnet run --file <副本>/scripts/csharp/verify-jazor-npm-projection.cs
+dotnet build <副本>/src/Jolt.Cli/Jolt.Cli.csproj -c Release
+dotnet run --file scripts/csharp/verify-jolt-mixed.cs -- <副本>/src/Jolt.Cli/bin/Release/net11.0/Jolt.Cli.exe $chromium --benchmark 5
+```
+
+清空 trace 后运行混编浏览器夹具，启动、首次交替编辑以及随后五轮交替编辑合计调用 vite.createServer 一次。DOM 和输入状态检查通过。该数量针对混编开发夹具。埋点批次的耗时未纳入上面的版本对照。
+
+### v2.5.0 与迁移候选版的同夹具编辑器对照
+
+2026-11-24 在上述机器上顺序使用两个 Release apphost，各运行一次 `dotnet run --file src/Jolt.LanguageServer/verify.cs -- --benchmark-mixed 10 <apphost>`。两次都复制同一份混编夹具和锁文件到独立目录，复用已预热的 pnpm 内容存储。先打开 Vue 和 Jazor 文档，等到首个无错误诊断，再单独计时首次补全请求，检查响应中有属性类型的 `Limit` 候选。编辑阶段先预热一轮，每项随后取十个样本，按最近秩计算 p50 和 p95。[探针](../../src/Jolt.LanguageServer/verify.cs)
+
+| 单次请求或编辑 (ms) | v2.5.0 | 迁移候选版 |
+| --- | ---: | ---: |
+| 启动到初始化响应 | 139.4 | 138.7 |
+| 打开文档到首次无错误诊断 | 4705.3 | 4563.3 |
+| 首次属性补全请求到响应 | 1962.6 | 2003.1 |
+| 模板标识符拼错到 CS0103，p50 / p95 | 169.6 / 190.2 | 162.9 / 190.9 |
+| 恢复标识符到错误消失，p50 / p95 | 169.9 / 201.8 | 168.7 / 198.2 |
+| 修改 SFC prop 类型到 CS1503，p50 / p95 | 1440.7 / 1477.3 | 1405.6 / 1524.4 |
+| 恢复 prop 类型到错误消失，p50 / p95 | 1379.1 / 1564.5 | 1373.9 / 1516.0 |
+
+两个版本首次补全各测一次。每批热样本的 p95 对应最大值，判断尾延迟趋势需要独立重复采样。两份 Jolt.LanguageServer.dll 的 SHA-256 依次为 `7f6402c920c759bae240b2313e8c03bb5363c8ed678974ccadd08052a5bf8954` 和 `530e82f9aeb8a600c23dc6d72001be7fce4440dcf4458710e40898232cb57e10`。
+
+### 同一普通 C# 夹具的冷构建流程对照
+
+在同一台 Windows 11、i5-12500H、.NET SDK 11.0.100 机器上，依次运行三对独立工作区。两边使用相同的 net11.0 / C# preview 项目和 Calendar.cs。方法体为 Dates.AddDays(new Date(2024, 0, 31), 2).GetDate()，别名为 using Dates = Npm.DateFns.Exports。npm 清单和锁文件固定 date-fns 4.4.0。pnpm 内容存储与本机 NuGet 包缓存已预热，各工作区没有 node_modules、.jazor、obj 或 bin。各轮先运行旧版，再运行新版。
+
+旧版使用从 v2.5.0 源码构建的 Release CLI 与已安装的 NuGet Jazor 2.5.0。先执行 jolt bindings . --module date-fns --export addDays --output Dates.g.cs，再执行 dotnet build。新版直接引用 Jazor.2.6.0-migration.20261124.9，并执行同样的 dotnet build；候选包 SHA-256 为 824a34b6d3ec3aee98ac0f29d35e7866551d3f906f0393bec5aac6b4bf760da1。各进程从启动计时至退出。两边的 dotnet build 都包含 NuGet 项目还原，并在测试项目中关闭 NuGetAudit。
+
+| 轮次 | 2.5.0 显式生成 (ms) | 2.5.0 后续构建 (ms) | 2.5.0 合计 (ms) | .9 隐式投影加构建 (ms) |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 5640.6 | 2449.2 | 8089.9 | 14318.3 |
+| 2 | 6638.3 | 1119.9 | 7758.1 | 11109.2 |
+| 3 | 8764.2 | 3181.1 | 11945.3 | 11081.9 |
+
+所有构建均成功。旧版在编译前生成实体 C# 文件，新版由 SDK 根据调用点生成投影。这组数据衡量各自的完整工作流，包括进程启动和项目还原，无法把耗时差归因到某个内部阶段。三个样本也不足以估计稳定尾延迟。

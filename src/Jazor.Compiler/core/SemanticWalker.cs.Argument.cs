@@ -51,7 +51,7 @@ public partial class SemanticWalker
                 rewrittenValue = new StringLiteral(path, SymbolDisplay.FormatLiteral(path, true));
             }
             var value = rewrittenValue ?? TranslateTupleForTarget(operation.Value, parameter.Type, argumentContext);
-            return new LoweredBoundArgument(operation, AdaptOptionalCallback(parameter, value), null);
+            return new LoweredBoundArgument(operation, AdaptArgument(parameter, value), null);
         }
 
         if (operation.Value is IDiscardOperation)
@@ -108,13 +108,21 @@ public partial class SemanticWalker
     private static bool HasOptionalCallback(IParameterSymbol parameter) =>
         Util.HasAttribute(parameter, "ECMAScript.ECMAScriptOptionalCallbackAttribute");
 
-    private static Expression AdaptOptionalCallback(IParameterSymbol parameter, Expression value)
+    private static bool HasRestCallback(IParameterSymbol parameter) =>
+        Util.HasAttribute(parameter, "ECMAScript.ECMAScriptRestCallbackAttribute");
+
+    private static bool NeedsArgumentAdapter(IParameterSymbol parameter) =>
+        Util.HasOptionalRead(parameter) || HasOptionalCallback(parameter) || HasRestCallback(parameter);
+
+    private static Expression AdaptArgument(IParameterSymbol parameter, Expression value)
     {
+        if (Util.HasOptionalRead(parameter))
+            return new LogicalExpression(Operator.NullishCoalescing, value, CreateUndefined());
+        if (HasRestCallback(parameter))
+            return AdaptRestCallback(value);
         if (!HasOptionalCallback(parameter))
             return value;
 
-        // Capture the supplied delegate at the call site, even if npm keeps it
-        // for later. The two directions use different missing-value conventions.
         var callback = new Identifier("$callback");
         var incoming = new Identifier("$value");
         var read = new LogicalExpression(Operator.NullishCoalescing, incoming, Null);
@@ -122,6 +130,29 @@ public partial class SemanticWalker
         var written = new LogicalExpression(Operator.NullishCoalescing, invoke,
             new NonUpdateUnaryExpression(Operator.Void, new NumericLiteral(0, "0")));
         var adapter = new ArrowFunctionExpression(NodeList.From<Node>(incoming), written, expression: true, async: false);
+        return CaptureCallback(value, callback, adapter);
+    }
+
+    private static Expression AdaptRestCallback(Expression value)
+    {
+        var callback = new Identifier("$callback");
+        var name = new Identifier("$name");
+        var args = new Identifier("$args");
+        var item = new Identifier("$value");
+        var normalize = new ArrowFunctionExpression(NodeList.From<Node>(item),
+            new LogicalExpression(Operator.NullishCoalescing, item, Null), expression: true, async: false);
+        var map = new MemberExpression(args, new Identifier("map"), computed: false, optional: false);
+        var normalizedArgs = new CallExpression(map, NodeList.From<Expression>(normalize), optional: false);
+        var invoke = new CallExpression(callback, NodeList.From<Expression>(name, normalizedArgs), optional: false);
+        var adapter = new ArrowFunctionExpression(NodeList.From<Node>(name, new RestElement(args)),
+            invoke, expression: true, async: false);
+        return CaptureCallback(value, callback, adapter);
+    }
+
+    private static Expression CaptureCallback(Expression value, Identifier callback, ArrowFunctionExpression adapter)
+    {
+        // Evaluate the supplied delegate at the original argument position. The host
+        // may retain the adapter and invoke it multiple times.
         var capture = new ArrowFunctionExpression(NodeList.From<Node>(callback), adapter, expression: true, async: false);
         return new CallExpression(capture, NodeList.From(value), optional: false);
     }
