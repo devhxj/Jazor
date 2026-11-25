@@ -1,0 +1,11 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Notice
+
+<div id="@Id" contenteditable="true" innerHTML="@Html" @oninput="Input"
+     style="min-height:320px;padding:14px;outline:none;line-height:1.7;word-break:break-word;background:white;"></div>
+
+@code {
+    [Parameter] public string Id { get; set; } = default!;
+    [Parameter] public string Html { get; set; } = default!;
+    [Parameter] public Action Input { get; set; } = default!;
+}

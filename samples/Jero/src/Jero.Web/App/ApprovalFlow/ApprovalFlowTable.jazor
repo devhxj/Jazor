@@ -1,0 +1,63 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.ApprovalFlow
+
+<ElTable @attributes="@(new TableData<ApprovalFlowTableRow>(Rows))" stripe="true" border="true" RowKey="id" EmptyText="暂无审批流程">
+            <ElTableColumn type="index" label="序号" width="70" align="center" />
+            <ElTableColumn prop="code" label="编号" MinWidth="130" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="name" label="名称" MinWidth="170" ShowOverflowTooltip="true" />
+            <ElTableColumn label="状态" width="110" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<ApprovalFlowTableRow>)(object)cell).row; }
+                    <ElTag @attributes="@(new TableTagProps(row.statusTag == "success" ? "success" : row.statusTag == "warning" ? "warning" : "info"))">@(row.status)</ElTag>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn label="表单路由" MinWidth="210" ShowOverflowTooltip="true">
+                <template #default context="cell">@{ var row = ((TableSlot<ApprovalFlowTableRow>)(object)cell).row; }
+                    @(row.formRoute)
+                </template>
+            </ElTableColumn>
+            <ElTableColumn label="流程摘要" MinWidth="160">
+                <template #default context="cell">@{ var row = ((TableSlot<ApprovalFlowTableRow>)(object)cell).row; }
+                    @(row.flowSummary)
+                </template>
+            </ElTableColumn>
+            <ElTableColumn prop="remark" label="备注" MinWidth="180" ShowOverflowTooltip="true" />
+            <ElTableColumn label="修改记录" width="105" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<ApprovalFlowTableRow>)(object)cell).row; }
+                    <ElButton link="true" type="primary" @onclick='@(() => OnOpenAudit(row.id))'>详情</ElButton>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn label="操作" width="500" align="center" fixed="right">
+                <template #default context="cell">@{ var row = ((TableSlot<ApprovalFlowTableRow>)(object)cell).row; }
+                    <div class="approval-flow-actions">
+                        <ElButton link="true" type="primary" @onclick='@(() => OnOpenDetail(row.id))'>查看</ElButton>
+                        <ElButton link="true" type="primary" @onclick='@(() => OnOpenEdit(row.id))'>基础信息</ElButton>
+                        <ElButton link="true" type="primary" @onclick='@(() => OnOpenFormConfig(row.id))'>表单配置</ElButton>
+                        <ElButton link="true" type="primary" @onclick='@(() => OnOpenDesigner(row.id))'>流程设计</ElButton>
+                        <ElButton link="true" type="warning" @onclick='@(() => OnOpenPublishContract(row.id))'>发布/状态</ElButton>
+                        <ElButton link="true" type="primary" @onclick='@(() => OnOpenRecordContract(row.id))'>记录</ElButton>
+                        <ElPopconfirm title='@("确定删除审批流【" + row.name + "】吗？删除后不可恢复。")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.id))'>
+                            <template #reference>
+                                <ElButton link="true" type="danger">删除</ElButton>
+                            </template>
+                        </ElPopconfirm>
+                    </div>
+                </template>
+            </ElTableColumn>
+        </ElTable>
+
+<style>
+.approval-flow-actions { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:4px 8px; }
+</style>
+
+@code {
+    [Parameter] public ApprovalFlowTableRow[] Rows { get; set; } = [];
+    [Parameter] public Action<string> OnOpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenDetail { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenFormConfig { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenDesigner { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenPublishContract { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenRecordContract { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+}

@@ -1,0 +1,317 @@
+@using Npm.ElementPlus
+@using App.Components
+@using Jero.Web.App.LangText
+
+<ElCard Header="语言文本" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        翻译文本管理，支持查询、分页排序、批量删除、Excel 导入导出以及新增、编辑、删除。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="关键字">
+                <ElInput ModelValue="@Keyword"
+                         @onupdate:modelValue="SetKeyword"
+                         Placeholder="实体名、字段名、语言代码、翻译内容"
+                         Clearable="true" />
+            </ElFormItem>
+            @if (ShowAdvanced)
+            {
+                <ElFormItem Label="所属实体名">
+                    <ElInput ModelValue="@EntityName"
+                             @onupdate:modelValue="SetEntityName"
+                             Placeholder="请输入所属实体名"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem Label="所属实体 ID">
+                    <ElInput ModelValue="@EntityId"
+                             @onupdate:modelValue="SetEntityId"
+                             Placeholder="请输入正整数 ID"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem Label="字段名">
+                    <ElInput ModelValue="@FieldName"
+                             @onupdate:modelValue="SetFieldName"
+                             Placeholder="请输入字段名"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem Label="语言代码">
+                    <ElInput ModelValue="@LangCode"
+                             @onupdate:modelValue="SetLangCode"
+                             Placeholder="请输入语言代码"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem Label="翻译内容">
+                    <ElInput ModelValue="@Content"
+                             @onupdate:modelValue="SetContent"
+                             Placeholder="请输入翻译内容"
+                             Clearable="true" />
+                </ElFormItem>
+            }
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+                <ElButton @onclick="ToggleAdvanced">
+                    @(ShowAdvanced ? "收起高级查询" : "展开高级查询")
+                </ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="OpenCreate">新增</ElButton>
+                }
+                @if (CanBatchDelete && SelectedCount > 0)
+                {
+                    <ElPopconfirm Title="@("确定批量删除所选的 " + SelectedCount + " 条翻译记录吗？")"
+                                  ConfirmButtonText="确定"
+                                  CancelButtonText="取消"
+                                  @onconfirm="BatchDelete">
+                        <template #reference>
+                            <ElButton Type="danger">批量删除</ElButton>
+                        </template>
+                    </ElPopconfirm>
+                }
+                @if (CanImport)
+                {
+                    <ElButton @onclick="OpenImport">导入</ElButton>
+                }
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                @if (CanExport)
+                {
+                    <LangTextExport Disabled="@Exporting" HasSelection="@(SelectedCount > 0)"
+                                    OnExportPage="@ExportPage" OnCommand="@ExportCommand" />
+                }
+                <ElButton @onclick="Refresh" Loading="@Loading">刷新</ElButton>
+            </div>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载翻译文本…</ElText>
+        }
+
+        <div class="jero-list-scroll">
+            <LangTextTable Rows="@Rows" CanEdit="@CanEdit" CanDelete="@CanDelete" CanSelect="@(CanBatchDelete || CanExport)"
+                           OnOpenAudit="@OpenAudit" OnOpenEdit="@OpenEdit" OnDelete="@Delete"
+                           OnSort="@Sort" OnSelection="@SelectionChanged" />
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@PageSizes"
+                              Layout="total, sizes, prev, pager, next, jumper"
+                              Background="true"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="760px"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="110px">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;">
+            <ElFormItem Label="所属实体名">
+                <ElInput ModelValue="@EditEntityName"
+                         @onupdate:modelValue="SetEditEntityName"
+                         Maxlength="255"
+                         Placeholder="请输入所属实体名"
+                         Clearable="true"
+                         Disabled="@FormLoading" />
+            </ElFormItem>
+            <ElFormItem Label="所属实体 ID">
+                <ElInput ModelValue="@EditEntityId"
+                         @onupdate:modelValue="SetEditEntityId"
+                         Placeholder="请输入正整数 ID"
+                         Clearable="true"
+                         Disabled="@FormLoading" />
+            </ElFormItem>
+            <ElFormItem Label="字段名">
+                <ElInput ModelValue="@EditFieldName"
+                         @onupdate:modelValue="SetEditFieldName"
+                         Maxlength="255"
+                         Placeholder="请输入字段名"
+                         Clearable="true"
+                         Disabled="@FormLoading" />
+            </ElFormItem>
+            <ElFormItem Label="语言代码">
+                <ElInput ModelValue="@EditLangCode"
+                         @onupdate:modelValue="SetEditLangCode"
+                         Maxlength="255"
+                         Placeholder="请输入语言代码"
+                         Clearable="true"
+                         Disabled="@FormLoading" />
+            </ElFormItem>
+        </div>
+        <ElFormItem Label="翻译内容">
+            <ElInput ModelValue="@EditContent"
+                     @onupdate:modelValue="SetEditContent"
+                     Type="textarea"
+                     Rows="4"
+                     Maxlength="255"
+                     Placeholder="请输入翻译内容"
+                     Clearable="true"
+                     Disabled="@FormLoading" />
+        </ElFormItem>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="CancelEdit" Disabled="@(Saving || FormLoading)">取消</ElButton>
+        <ElButton Type="primary" @onclick="Save" Loading="@(Saving || FormLoading)">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@ImportDialogVisible"
+          @onupdate:modelValue="ImportDialogChanged"
+          Title="翻译数据导入"
+          Width="480px"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+            <ElButton @onclick="DownloadTemplate" Loading="@TemplateDownloading">下载模板</ElButton>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            <strong>选择导入文件</strong>
+            <LangTextFileInput Id="@ImportFileInputId" OnChange="@SelectImportFile" />
+            <span style="color:#909399;font-size:13px;">支持 .xlsx、.xls、.csv；每次只导入一个文件。</span>
+        </div>
+        @if (ImportHasErrorFile)
+        {
+            <div style="display:flex;flex-direction:column;gap:8px;color:#f56c6c;">
+                <span>导入完毕，存在部分错误，请下载导入结果查看详情。</span>
+                <ElButton Link="true" Type="primary" @onclick="DownloadImportResult">
+                    @("下载导入结果" + (ImportResultFileName.Length == 0 ? "" : " · " + ImportResultFileName))
+                </ElButton>
+            </div>
+        }
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+        <ElButton @onclick="CloseImport" Disabled="@Importing">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="ImportPrimaryAction"
+                  Loading="@Importing">
+            @(ImportCompleted ? "关闭" : "确定")
+        </ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="600px">
+    <div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px 16px;line-height:1.6;">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool CanExport { get; set; }
+    [Parameter] public bool CanImport { get; set; }
+    [Parameter] public bool CanBatchDelete { get; set; }
+    [Parameter] public bool ShowAdvanced { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Exporting { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool FormLoading { get; set; }
+    [Parameter] public bool ImportDialogVisible { get; set; }
+    [Parameter] public bool Importing { get; set; }
+    [Parameter] public bool ImportCompleted { get; set; }
+    [Parameter] public bool TemplateDownloading { get; set; }
+    [Parameter] public bool ImportHasErrorFile { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public string Keyword { get; set; } = "";
+    [Parameter] public string EntityName { get; set; } = "";
+    [Parameter] public string EntityId { get; set; } = "";
+    [Parameter] public string FieldName { get; set; } = "";
+    [Parameter] public string LangCode { get; set; } = "";
+    [Parameter] public string Content { get; set; } = "";
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditEntityName { get; set; } = "";
+    [Parameter] public string EditEntityId { get; set; } = "";
+    [Parameter] public string EditFieldName { get; set; } = "";
+    [Parameter] public string EditLangCode { get; set; } = "";
+    [Parameter] public string EditContent { get; set; } = "";
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public string ImportResultFileName { get; set; } = "";
+    [Parameter] public string ImportFileInputId { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string?> SetKeyword { get; set; } = default!;
+    [Parameter] public Action<string?> SetEntityName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEntityId { get; set; } = default!;
+    [Parameter] public Action<string?> SetFieldName { get; set; } = default!;
+    [Parameter] public Action<string?> SetLangCode { get; set; } = default!;
+    [Parameter] public Action<string?> SetContent { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditEntityName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditEntityId { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditFieldName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditLangCode { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditContent { get; set; } = default!;
+    [Parameter] public LangTextView[] Rows { get; set; } = [];
+    [Parameter] public int SelectedCount { get; set; }
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action BatchDelete { get; set; } = default!;
+    [Parameter] public Action OpenImport { get; set; } = default!;
+    [Parameter] public Action ExportPage { get; set; } = default!;
+    [Parameter] public Action DownloadTemplate { get; set; } = default!;
+    [Parameter] public Action DownloadImportResult { get; set; } = default!;
+    [Parameter] public Action CloseImport { get; set; } = default!;
+    [Parameter] public Action ImportPrimaryAction { get; set; } = default!;
+    [Parameter] public Action SelectImportFile { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string> ExportCommand { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action CancelEdit { get; set; } = default!;
+    [Parameter] public Action ToggleAdvanced { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action<string, string> Sort { get; set; } = default!;
+    [Parameter] public Action<string[]> SelectionChanged { get; set; } = default!;
+    [Parameter] public Action<bool> ImportDialogChanged { get; set; } = default!;
+
+    private readonly double[] PageSizes = [10, 20, 50, 100, 200, 500];
+}

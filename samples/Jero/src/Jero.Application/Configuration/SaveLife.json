@@ -1,0 +1,23 @@
+{
+  "SaveLife": {
+    "Agent": {
+      "Enabled": true,
+      "Endpoint": "https://api.openai.com/v1",
+      "ApiKey": "",
+      "ChatEndpoint": "https://ark.cn-beijing.volces.com/api/coding/v3",
+      "ChatApiKey": "",
+      "ChatModel": "doubao-seed-2.0-lite",
+      "EmbeddingEndpoint": "https://api.openai.com/v1",
+      "EmbeddingApiKey": "",
+      "EmbeddingModel": "text-embedding-3-small",
+      "MaterialEmbeddingEndpoint": "https://ark.cn-beijing.volces.com/api/coding/v3",
+      "MaterialEmbeddingApiKey": "",
+      "MaterialEmbeddingModel": "doubao-embedding-vision",
+      "MaterialEmbeddingDimensions": 1024,
+      "MaxHistoryRounds": 10,
+      "MaxKnowledgeReferences": 4,
+      "MaxTrialReferences": 5,
+      "MinVectorScore": 0.18
+    }
+  }
+}

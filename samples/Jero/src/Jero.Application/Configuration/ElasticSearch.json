@@ -1,0 +1,28 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "ElasticSearch:Logging": {
+    "Enabled": true, // 启用ES日志
+    "AuthType": "None", // ES认证类型，可选 Basic、ApiKey、Base64ApiKey、None
+    "User": "elastic", // Basic认证的用户名，使用Basic认证类型时必填
+    "Password": "", // Basic认证的密码，使用Basic认证类型时必填
+    "ApiId": "", // 使用ApiKey认证类型时必填
+    "ApiKey": "", // 使用ApiKey认证类型时必填
+    "Base64ApiKey": "", // 使用Base64ApiKey认证类型时必填
+    "Fingerprint": "37:08:6A:C6:06:CC:9A:43:CF:ED:25:A2:1C:A4:69:57:90:31:2C:06:CA:61:56:39:6A:9C:46:11:BD:22:51:DA", // ES使用Https时的证书指纹
+    "ServerUris": [ "http://192.168.3.90:9200" ], // 地址
+    "DefaultIndex": "jero" // 索引
+  },
+  "ElasticSearch:Business": {
+    "Enabled": false, // 启用ES日志
+    "AuthType": "Basic", // ES认证类型，可选 Basic、ApiKey、Base64ApiKey、None
+    "User": "admin", // Basic认证的用户名，使用Basic认证类型时必填
+    "Password": "", // Basic认证的密码，使用Basic认证类型时必填
+    "ApiId": "", // 使用ApiKey认证类型时必填
+    "ApiKey": "", // 使用ApiKey认证类型时必填
+    "Base64ApiKey": "", // 使用Base64ApiKey认证类型时必填
+    "Fingerprint": "37:08:6A:C6:06:CC:9A:43:CF:ED:25:A2:1C:A4:69:57:90:31:2C:06:CA:61:56:39:6A:9C:46:11:BD:22:51:DA", // ES使用Https时的证书指纹
+    "ServerUris": [ "http://192.168.1.100:9200" ], // 地址
+    "DefaultIndex": "jero" // 索引
+  }
+}

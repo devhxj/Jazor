@@ -1,0 +1,363 @@
+@using Npm.ElementPlus
+@using App.Components
+@using App.Ldap
+@using Jero.Web.App.Role
+
+<style>
+    .role-page__toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .role-page__dialog-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0 20px; }
+    .role-page__dialog-wide { grid-column:1 / -1; }
+    .role-tree { width:100%; max-height:min(420px, 42vh); min-height:180px; overflow:auto; border:1px solid #dcdfe6; border-radius:6px; padding:8px 4px; background:#fff; }
+    .role-tree__row { min-height:32px; display:flex; align-items:center; gap:8px; padding-right:8px; border-radius:4px; color:#303133; }
+    .role-tree__row:hover { background:#f5f7fa; }
+    .role-tree__row.is-disabled { color:#a8abb2; }
+    .role-tree__check { width:18px; height:18px; flex:none; display:grid; place-items:center; padding:0; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#fff; cursor:pointer; font-size:13px; line-height:1; }
+    .role-tree__check.is-checked, .role-tree__check.is-partial { border-color:#409eff; background:#409eff; }
+    .role-tree__check:disabled { cursor:not-allowed; border-color:#e4e7ed; background:#f5f7fa; color:#c0c4cc; }
+    .role-tree__label { min-width:0; overflow-wrap:anywhere; }
+    .role-tree__empty { min-height:160px; display:grid; place-items:center; color:#909399; }
+    .role-data__summary { margin:0 0 16px; padding:12px 14px; border-radius:6px; background:#f5f7fa; color:#606266; }
+    .role-audit { display:grid; grid-template-columns:110px minmax(0,1fr); gap:12px 16px; line-height:1.6; }
+    @@media (max-width: 700px) {
+        .role-page__dialog-grid { grid-template-columns:1fr; }
+        .role-page__dialog-wide { grid-column:auto; }
+        .role-tree { max-height:36vh; }
+    }
+    @@media (max-width: 420px) {
+        .role-audit { grid-template-columns:1fr; gap:4px; }
+        .role-audit strong:not(:first-child) { margin-top:8px; }
+    }
+</style>
+
+<ElCard Header="角色管理" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        角色管理，支持筛选、分页、菜单授权、数据范围授权、删除和状态切换。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="@(_ => DismissError())" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            @if (IsSuperAdmin)
+            {
+                <ElFormItem Label="租户">
+                    <div style="width:min(260px, 100%);">
+                        <RoleTenantSelect Value="@TenantId" Options="@TenantItems" Loading="@TenantLoading" OnChange="@TenantChanged" />
+                    </div>
+                </ElFormItem>
+            }
+            <ElFormItem Label="角色名称">
+                <ElInput ModelValue="@QueryName"
+                         @onupdate:modelValue="SetQueryName"
+                         Placeholder="角色名称"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="角色编码">
+                <ElInput ModelValue="@QueryCode"
+                         @onupdate:modelValue="SetQueryCode"
+                         Placeholder="角色编码"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div class="role-page__toolbar">
+            <div>
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="@(_ => OpenCreate())">新增角色</ElButton>
+                }
+            </div>
+            <ElButton @onclick="@(_ => LoadPage())" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载角色…</ElText>
+        }
+
+        <div class="jero-list-scroll">
+            <RoleTable Rows="@Rows" CanSetStatus="@CanSetStatus" HasActionColumn="@HasActionColumn"
+                       CanGrantDataScope="@CanGrantDataScope" CanEdit="@CanEdit" CanDelete="@CanDelete"
+                       StatusLoadingId="@StatusLoadingId" DeletingId="@DeletingId"
+                       OnToggleStatus="@ToggleStatus" OnOpenAudit="@OpenAudit"
+                       OnOpenGrantData="@OpenGrantData" OnOpenEdit="@OpenEdit" OnDelete="@Delete" />
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@PageSizes"
+                              Background="true"
+                              Layout="Total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="min(780px, calc(100vw - 24px))"
+          Top="4vh"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="88px">
+        <div class="role-page__dialog-grid">
+            <div class="role-page__dialog-wide">
+                <ElFormItem Label="角色名称">
+                    <ElInput ModelValue="@EditName"
+                             @onupdate:modelValue="SetEditName"
+                             Placeholder="角色名称"
+                             Maxlength="64"
+                             ShowWordLimit="true"
+                             Clearable="true" />
+                </ElFormItem>
+            </div>
+            <div class="role-page__dialog-wide">
+                <ElFormItem Label="角色编码">
+                    <ElInput ModelValue="@EditCode"
+                             @onupdate:modelValue="SetEditCode"
+                             Placeholder="角色编码"
+                             Maxlength="64"
+                             ShowWordLimit="true"
+                             Clearable="true"
+                             Disabled="@(EditId.Length > 0 && EditCode == "sys_admin")" />
+                </ElFormItem>
+            </div>
+            <ElFormItem Label="排序">
+                <RoleOrderInput Value="@EditOrderNo" OnChange="@SetEditOrderNo" />
+            </ElFormItem>
+            <ElFormItem Label="状态">
+                <LdapStatusInput Value="@EditStatus" InactiveLabel="停用" OnChange="@SetEditStatus" />
+            </ElFormItem>
+            <div class="role-page__dialog-wide">
+                <ElFormItem Label="备注">
+                    <ElInput ModelValue="@EditRemark"
+                             @onupdate:modelValue="SetEditRemark"
+                             Type="textarea"
+                             Rows="3"
+                             Maxlength="128"
+                             ShowWordLimit="true"
+                             Placeholder="请输入备注" />
+                </ElFormItem>
+            </div>
+            @if (CanGrantMenu)
+            {
+                <div class="role-page__dialog-wide">
+                    <ElFormItem Label="菜单权限">
+                        <div class="role-tree" role="tree" aria-label="菜单权限">
+                            @if (MenuBusy)
+                            {
+                                <div class="role-tree__empty">正在加载菜单权限…</div>
+                            }
+                            else if (MenuNodes.Length == 0)
+                            {
+                                <div class="role-tree__empty">暂无菜单权限</div>
+                            }
+                            else
+                            {
+                                @foreach (var node in MenuNodes)
+                                {
+                                    <div class="role-tree__row" style="@TreeRowStyle(node)" role="treeitem" aria-level="@(node.depth + 1)">
+                                        <button type="button"
+                                                class="@MenuCheckboxClass(node)"
+                                                aria-label="@("选择菜单 " + node.label)"
+                                                aria-checked="@MenuAriaChecked(node)"
+                                                @onclick="@(_ => ToggleMenuNode(node.id))">@MenuCheckMark(node)</button>
+                                        <span class="role-tree__label">@node.label</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </ElFormItem>
+                </div>
+            }
+        </div>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="@(_ => CancelEdit())" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="@(_ => Save())"
+                  Loading="@Saving"
+                  Disabled="@MenuBusy">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@DataDialogVisible"
+          @onupdate:modelValue="SetDataDialogVisible"
+          Title="授权数据范围"
+          Width="min(520px, calc(100vw - 24px))"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <p class="role-data__summary">当前角色：@DisplayValue(DataRoleName)</p>
+    <ElForm LabelPosition="top">
+        <ElFormItem Label="数据范围">
+            <RoleScopeInput Value="@DataScope" OnChange="@SetDataScope" />
+        </ElFormItem>
+        <div style='@(DataScope == 5 ? "" : "display:none")'>
+            <ElFormItem Label="机构列表">
+                <div style="width:100%;">
+                    <div style="margin-bottom:10px;">
+                        <ElInput ModelValue="@OrgFilter"
+                                 @onupdate:modelValue="SetOrgFilter"
+                                 Placeholder="机构名称"
+                                 Clearable="true" />
+                    </div>
+                    <div class="role-tree" role="tree" aria-label="机构数据范围">
+                        <div class="role-tree__empty" style='@(OrgBusy ? "" : "display:none")'>正在加载机构范围…</div>
+                        <div class="role-tree__empty" style='@(!OrgBusy && OrgNodes.Length == 0 ? "" : "display:none")'>暂无机构数据</div>
+                        <div style='@(OrgBusy || OrgNodes.Length == 0 ? "display:none" : "")'>
+                            @foreach (var node in OrgNodes)
+                            {
+                                <div class='@("role-tree__row" + (node.disabled ? " is-disabled" : ""))'
+                                     style='@(OrgNodeVisible(node) ? TreeRowStyle(node) : "display:none")'
+                                     role="treeitem"
+                                     aria-level="@(node.depth + 1)">
+                                    <button type="button"
+                                            class="@OrgCheckboxClass(node)"
+                                            disabled="@node.disabled"
+                                            aria-label="@("选择机构 " + node.label)"
+                                            aria-checked="@(OrgAriaChecked(node))"
+                                            @onclick="@(_ => ToggleOrgNode(node.id))">@OrgCheckMark(node)</button>
+                                    <span class="role-tree__label">@node.label</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </ElFormItem>
+        </div>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="@(_ => CancelData())" Disabled="@DataSaving">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="@(_ => SaveDataScope())"
+                  Loading="@DataSaving"
+                  Disabled="@OrgBusy">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="min(560px, calc(100vw - 24px))">
+    <div class="role-audit">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+        <strong>备注</strong><span>@AuditRemark</span>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public Action<double> SetEditStatus { get; set; } = default!;
+    [Parameter] public Action<double> SetDataScope { get; set; } = default!;
+    [Parameter] public Action<double> SetEditOrderNo { get; set; } = default!;
+    [Parameter] public Action<string> SetQueryName { get; set; } = default!;
+    [Parameter] public Action<string> SetQueryCode { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string> SetEditName { get; set; } = default!;
+    [Parameter] public Action<string> SetEditCode { get; set; } = default!;
+    [Parameter] public Action<string> SetEditRemark { get; set; } = default!;
+    [Parameter] public Action<bool> SetDataDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string> SetOrgFilter { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action CancelEdit { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action CancelData { get; set; } = default!;
+    [Parameter] public Action SaveDataScope { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, bool> OrgNodeVisible { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, string> MenuCheckboxClass { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, string> MenuCheckMark { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, string> MenuAriaChecked { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, string> OrgCheckboxClass { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, string> OrgCheckMark { get; set; } = default!;
+    [Parameter] public Func<RoleTreeNode, string> OrgAriaChecked { get; set; } = default!;
+    [Parameter] public Action<string> ToggleMenuNode { get; set; } = default!;
+    [Parameter] public Action<string> ToggleOrgNode { get; set; } = default!;
+    [Parameter] public Action<string> TenantChanged { get; set; } = default!;
+    [Parameter] public Action<string> ToggleStatus { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenGrantData { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public RoleView[] Rows { get; set; } = [];
+    [Parameter] public RoleTenantOption[] TenantItems { get; set; } = [];
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public string QueryName { get; set; } = "";
+    [Parameter] public string QueryCode { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public string StatusLoadingId { get; set; } = "";
+    [Parameter] public string DeletingId { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public string EditId { get; set; } = "";
+    [Parameter] public string EditName { get; set; } = "";
+    [Parameter] public string EditCode { get; set; } = "";
+    [Parameter] public int EditOrderNo { get; set; }
+    [Parameter] public int EditStatus { get; set; }
+    [Parameter] public string EditRemark { get; set; } = "";
+    [Parameter] public RoleTreeNode[] MenuNodes { get; set; } = [];
+    [Parameter] public bool DataDialogVisible { get; set; }
+    [Parameter] public bool DataSaving { get; set; }
+    [Parameter] public string DataRoleName { get; set; } = "";
+    [Parameter] public int DataScope { get; set; }
+    [Parameter] public RoleTreeNode[] OrgNodes { get; set; } = [];
+    [Parameter] public string OrgFilter { get; set; } = "";
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public string AuditRemark { get; set; } = "";
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool CanGrantMenu { get; set; }
+    [Parameter] public bool CanGrantDataScope { get; set; }
+    [Parameter] public bool CanSetStatus { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool MenuBusy { get; set; }
+    [Parameter] public bool OrgBusy { get; set; }
+
+    private readonly double[] PageSizes = [10, 20, 50, 100];
+
+    private static string TreeRowStyle(RoleTreeNode node)
+        => "padding-left:" + (node.depth * 22 + 6) + "px";
+
+    private static string DisplayValue(string value) => value.Length == 0 ? "-" : value;
+}

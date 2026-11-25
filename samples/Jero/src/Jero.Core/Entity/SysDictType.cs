@@ -1,0 +1,60 @@
+namespace Jero.Core;
+
+/// <summary>
+/// 系统字典类型表
+/// </summary>
+[SugarTable(null, "系统字典类型表")]
+[SysTable]
+[SugarIndex("index_{table}_N", nameof(Name), OrderByType.Asc)]
+[SugarIndex("index_{table}_C", nameof(Code), OrderByType.Asc)]
+public partial class SysDictType : EntityBase
+{
+    /// <summary>
+    /// 名称
+    /// </summary>
+    [SugarColumn(ColumnDescription = "名称", Length = 64)]
+    [Required, MaxLength(64)]
+    public virtual string Name { get; set; } = string.Empty;
+    /// <summary>
+    /// 编码
+    /// </summary>
+    [SugarColumn(ColumnDescription = "编码", Length = 64)]
+    [Required, MaxLength(64)]
+    public virtual string Code { get; set; } = string.Empty;
+    /// <summary>
+    /// 排序
+    /// </summary>
+    [SugarColumn(ColumnDescription = "排序", DefaultValue = "100")]
+    public int OrderNo { get; set; } = 100;
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    [SugarColumn(ColumnDescription = "备注", Length = 256)]
+    [MaxLength(256)]
+    public string? Remark { get; set; }
+
+    /// <summary>
+    /// 状态
+    /// </summary>
+    [SugarColumn(ColumnDescription = "状态", DefaultValue = "1")]
+    public StatusEnum Status { get; set; } = StatusEnum.Enable;
+
+    /// <summary>
+    /// 是否是内置字典（Y-是，N-否）
+    /// </summary>
+    [SugarColumn(ColumnDescription = "是否是内置字典", DefaultValue = "1")]
+    public virtual YesNoEnum SysFlag { get; set; } = YesNoEnum.Y;
+
+    /// <summary>
+    /// 是否是租户字典（Y-是，N-否）
+    /// </summary>
+    [SugarColumn(ColumnDescription = "是否是租户字典", DefaultValue = "2")]
+    public virtual YesNoEnum IsTenant { get; set; } = YesNoEnum.N;
+
+    /// <summary>
+    /// 字典值集合
+    /// </summary>
+    [Navigate(NavigateType.OneToMany, nameof(SysDictData.DictTypeId))]
+    public List<SysDictData> Children { get; set; } = [];
+}

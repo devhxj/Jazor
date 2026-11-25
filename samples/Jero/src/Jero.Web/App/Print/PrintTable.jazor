@@ -1,0 +1,43 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Print
+
+<ElTable @attributes="@(new TableData<PrintTableRow>(Rows))" border="true" stripe="true" RowKey="id" EmptyText="暂无打印模板">
+    <ElTableColumn type="index" label="序号" width="70" align="center" />
+    <ElTableColumn prop="name" label="模板名称" MinWidth="180" ShowOverflowTooltip="true" />
+    <ElTableColumn label="打印类型" width="120" align="center">
+        <template #default context="cell">@{ var row = ((TableSlot<PrintTableRow>)(object)cell).row; }@(row.printType == 2 ? "客户端打印" : "浏览器打印")</template>
+        </ElTableColumn>
+        <ElTableColumn label="状态" width="90" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<PrintTableRow>)(object)cell).row; }
+                    <ElTag @attributes='@(new TableTagProps(row.status == 2 ? "info" : "success"))'>@(row.status == 2 ? "停用" : "启用")</ElTag>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn prop="orderNo" label="排序" width="80" align="center" />
+            <ElTableColumn prop="clientServiceAddress" label="客户端地址" MinWidth="220" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="remark" label="备注" MinWidth="180" ShowOverflowTooltip="true" />
+            <ElTableColumn label="修改记录" width="105" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<PrintTableRow>)(object)cell).row; }
+                        <ElButton link="true" type="primary" @onclick="@(() => OpenAudit(row.id))">详情</ElButton>
+                    </template>
+                </ElTableColumn>
+                @if (HasActionColumn) { <ElTableColumn label="操作" width="150" align="center" fixed="right">
+                    <template #default context="cell">@{ var row = ((TableSlot<PrintTableRow>)(object)cell).row; }
+                            @if (CanEdit) { <ElButton link="true" type="primary" @onclick="@(() => OpenEdit(row.id))">编辑</ElButton> }
+                            @if (CanDelete) { <ElPopconfirm title='@($"确定删除打印模板【{row.name}】吗？删除后不可恢复。")'
+                            ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.id))">
+                            <template #reference><ElButton link="true" type="danger">删除</ElButton></template>
+                        </ElPopconfirm> }
+                    </template>
+                </ElTableColumn> }
+            </ElTable>
+
+@code {
+    [Parameter] public PrintTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+}

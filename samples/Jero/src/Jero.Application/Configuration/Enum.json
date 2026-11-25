@@ -1,0 +1,8 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  // 枚举配置（将所有枚举转成字典）
+  "Enum": {
+    "EntityAssemblyNames": [ "Jero." ] // 枚举所在程序集（自行添加新建程序集名称）
+  }
+}

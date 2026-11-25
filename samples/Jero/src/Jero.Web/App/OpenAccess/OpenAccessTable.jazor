@@ -1,0 +1,42 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.OpenAccess
+@using Jero.Web.App.Components
+
+<ElTable @attributes="@(new TableData<OpenAccessTableRow>(Rows))" border="true" stripe="true" RowKey="id" EmptyText="暂无开放接口身份">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="accessKey" label="身份标识" MinWidth="220" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="accessSecret" label="密钥" MinWidth="260" ShowOverflowTooltip="true" />
+        <ElTableColumn label="绑定用户账号" MinWidth="150" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OpenAccessTableRow>)(object)cell).row; }@((string.IsNullOrEmpty(row.bindUserAccount) ? "-" : row.bindUserAccount))</template>
+        </ElTableColumn>
+        <ElTableColumn label="绑定租户名称" MinWidth="180" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OpenAccessTableRow>)(object)cell).row; }@((string.IsNullOrEmpty(row.bindTenantName) ? "-" : row.bindTenantName))</template>
+        </ElTableColumn>
+        <ElTableColumn label="修改记录" width="105" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<OpenAccessTableRow>)(object)cell).row; }
+                <ElButton link="true" type="primary" @onclick="@(() => OpenAudit(row.id))">详情</ElButton>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="操作" width="220" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<OpenAccessTableRow>)(object)cell).row; }
+                <div class="open-access-actions">
+                    @if (CanEdit) { <ElButton link="true" type="primary" @onclick="@(() => OpenEdit(row.id))">编辑</ElButton> }
+                    @if (CanDelete) { <ElPopconfirm title='@("确定删除开放接口身份【" + row.accessKey + "】吗？")'
+                                  ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.id))">
+                        <template #reference><ElButton link="true" type="danger">删除</ElButton></template>
+                    </ElPopconfirm> }
+                    <ElButton link="true" type="primary" @onclick="@(() => OpenSignature(row.id))">生成签名</ElButton>
+                </div>
+            </template>
+        </ElTableColumn>
+    </ElTable>
+
+@code {
+    [Parameter] public OpenAccessTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; } = default!;
+    [Parameter] public bool CanDelete { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string> OpenSignature { get; set; } = default!;
+}

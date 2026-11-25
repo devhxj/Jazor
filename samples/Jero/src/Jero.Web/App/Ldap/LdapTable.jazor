@@ -1,0 +1,66 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Ldap
+
+    <ElTable @attributes="@(new TableData<LdapTableRow>(Rows))" border="true" stripe="true" RowKey="id" EmptyText="暂无 LDAP 配置">
+            <ElTableColumn type="index" label="序号" width="70" align="center" />
+            @if (IsSuperAdmin) { <ElTableColumn label="租户" MinWidth="180" ShowOverflowTooltip="true">
+                    <template #default context="cell">@{ var row = ((TableSlot<LdapTableRow>)(object)cell).row; }@(TenantLabel(row.tenantId))</template>
+                </ElTableColumn> }
+            <ElTableColumn prop="host" label="主机" MinWidth="160" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="port" label="端口" width="80" align="center" />
+            <ElTableColumn prop="baseDn" label="用户搜索基准" MinWidth="220" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="bindDn" label="绑定 DN" MinWidth="220" ShowOverflowTooltip="true" />
+            <ElTableColumn label="绑定密码" width="110" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<LdapTableRow>)(object)cell).row; }<ElTag @attributes="@(new TableTagProps(row.hasPassword ? "success" : "info"))">@(row.hasPassword ? "已配置" : "未设置")</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn prop="authFilter" label="用户过滤规则" MinWidth="180" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="version" label="LDAP 版本" width="100" align="center" />
+            <ElTableColumn label="状态" width="90" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<LdapTableRow>)(object)cell).row; }<ElTag @attributes="@(new TableTagProps(row.status == 1 ? "success" : "info"))">@(row.status == 1 ? "启用" : "停用")</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn label="修改记录" width="110" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<LdapTableRow>)(object)cell).row; }<ElButton link="true" type="primary" @onclick='@(() => OnOpenAudit(row.id))'>查看</ElButton></template>
+            </ElTableColumn>
+            @if (HasActionColumn) { <ElTableColumn label="操作" width="330" align="center" fixed="right">
+                    <template #default context="cell">@{ var row = ((TableSlot<LdapTableRow>)(object)cell).row; }
+                        @if (CanEdit) { <ElButton link="true" type="primary" disabled='@(DetailLoading)' @onclick='@(() => OnOpenEdit(row.id))'>编辑</ElButton> }
+                        @if (CanDelete) { <ElPopconfirm title='@("确定删除 LDAP 主机【" + row.host + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.id))'>
+                                <template #reference><ElButton link="true" type="danger" loading='@(ActionLoading)' disabled='@(ActionLoading)'>删除</ElButton></template>
+                            </ElPopconfirm> }
+                        @if (CanSyncUser) { <ElPopconfirm title='@("确定同步 LDAP 主机【" + row.host + "】的域账户吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnSyncUser(row.id))'>
+                                <template #reference><ElButton link="true" type="primary" loading='@(ActionLoading)' disabled='@(ActionLoading)'>同步域账户</ElButton></template>
+                            </ElPopconfirm> }
+                        @if (CanSyncOrg) { <ElPopconfirm title='@("确定同步 LDAP 主机【" + row.host + "】的域组织架构吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnSyncOrg(row.id))'>
+                                <template #reference><ElButton link="true" type="primary" loading='@(ActionLoading)' disabled='@(ActionLoading)'>同步域组织</ElButton></template>
+                            </ElPopconfirm> }
+                    </template>
+                </ElTableColumn>
+                }
+        </ElTable>
+
+@code {
+    [Parameter] public LdapTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool CanSyncUser { get; set; }
+    [Parameter] public bool CanSyncOrg { get; set; }
+    [Parameter] public bool DetailLoading { get; set; }
+    [Parameter] public bool ActionLoading { get; set; }
+    [Parameter] public ConfigurationOption[] TenantOptions { get; set; } = [];
+    [Parameter] public Action<string> OnOpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+    [Parameter] public Action<string> OnSyncUser { get; set; } = default!;
+    [Parameter] public Action<string> OnSyncOrg { get; set; } = default!;
+
+    private string TenantLabel(string id)
+    {
+        foreach (var option in TenantOptions)
+            if (option.value == id)
+                return option.label;
+        return string.IsNullOrEmpty(id) ? "-" : id;
+    }
+}

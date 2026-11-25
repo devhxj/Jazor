@@ -1,0 +1,15 @@
+{
+  "name": "vform3-builds",
+  "version": "3.0.10",
+  "author": "vform-admin",
+  "private": false,
+  "main": "dist/designer.umd.js",
+  "description": "VForm 3 Online Form Designer",
+  "homepage": "https://www.vform666.com/",
+  "keywords": [
+    "variant-form",
+    "vform",
+    "element-ui",
+    "form-designer"
+  ]
+}

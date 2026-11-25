@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NoWarn>1701;1702;1591;8632</NoWarn>
+    <DocumentationFile></DocumentationFile>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Furion.Xunit" Version="4.9.9.100" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
+    <PackageReference Include="Microsoft.Playwright.Xunit.v3" Version="1.65.1" />
+    <PackageReference Include="xunit.v3" Version="4.0.3" ExcludeAssets="analyzers" />
+    <PackageReference Include="xunit.v3.assert" Version="4.0.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\Jero.Plugin.SaveLife.DocumentWorker.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Plugins\Jero.Plugin.SaveLife\Jero.Plugin.SaveLife.csproj" />
+    <ProjectReference Include="..\Jero.Core\Jero.Core.csproj" />
+    <ProjectReference Include="..\Jero.Web\Jero.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SaveLife\TestData\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

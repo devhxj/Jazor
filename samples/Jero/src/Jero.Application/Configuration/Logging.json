@@ -1,0 +1,38 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.AspNetCore.SpaServices": "Information",
+      "Microsoft.EntityFrameworkCore": "Information",
+      "AspNetCoreRateLimit": "None",
+      "System.Net.Http.HttpClient": "Warning"
+    },
+    "File": {
+      "Enabled": true, // 启用文件日志
+      "FileName": "logs/{0:yyyyMMdd}_{1}.log", // 日志文件
+      "Append": true, // 追加覆盖
+      "MinimumLevel": "Error", // 日志级别
+      "FileSizeLimitBytes": 10485760, // 10M=10*1024*1024
+      "MaxRollingFiles": 30 // 只保留30个文件
+    },
+    "Database": {
+      "Enabled": true, // 启用数据库日志
+      "MinimumLevel": "Information" // 日志级别
+    },
+    "Monitor": {
+      "GlobalEnabled": true, // 启用全局拦截日志（建议生产环境关闭，否则对性能有影响）
+      "IncludeOfMethods": [], // 拦截特定方法，当GlobalEnabled=false有效
+      "ExcludeOfMethods": [], // 排除特定方法，当GlobalEnabled=true有效
+      "BahLogLevel": "Information", // Oops.Oh 和 Oops.Bah 业务日志输出级别
+      "WithReturnValue": true, // 是否包含返回值，默认true
+      "ReturnValueThreshold": 0, // 返回值字符串阈值，默认0全量输出
+      "JsonBehavior": "None", // 是否输出Json，默认None(OnlyJson、All)
+      "JsonIndented": false, // 是否格式化Json
+      "UseUtcTimestamp": false, // 时间格式UTC、LOCAL
+      "ConsoleLog": true // 是否显示控制台日志
+    }
+  }
+}

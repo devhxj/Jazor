@@ -1,0 +1,19 @@
+<ElDialog ModelValue="@Visible" @onupdate:modelValue="SetVisible" Title="@Title"
+          Width="860px" DestroyOnClose="true">
+    @if (Loading)
+    {
+        <ElText>正在加载详情…</ElText>
+    }
+    else
+    {
+        <pre style="max-height:520px;overflow:auto;white-space:pre-wrap;word-break:break-word;margin:0;padding:16px;background:#f5f7fa;border-radius:4px;">@Content</pre>
+    }
+</ElDialog>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string Content { get; set; } = "";
+    [Parameter] public Action<bool> SetVisible { get; set; } = default!;
+}

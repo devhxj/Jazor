@@ -1,0 +1,22 @@
+@using Npm.ElementPlus
+@using Npm.Jero.ElementPlus
+@using Jero.Web.App.Logs
+@using Jero.Web.App.Components
+
+<ProjectSelect ModelValue="@(Value)" Placeholder="@Placeholder" Loading="@Loading" Filterable="@Filterable" Clearable="true" @attributes="@(new ModelUpdate<object?>(Update))">
+    @foreach (var option in Options)
+    {
+        <ElOption @key="option.value" Value="@option.value" Label='@option.label' />
+    }
+</ProjectSelect>
+
+@code {
+    [Parameter] public LogOption[] Options { get; set; } = [];
+    [Parameter] public string Value { get; set; } = default!;
+    [Parameter] public Action<string> Change { get; set; } = default!;
+    [Parameter] public string Placeholder { get; set; } = default!;
+    [Parameter] public bool Loading { get; set; } = default!;
+    [Parameter] public bool Filterable { get; set; } = default!;
+
+    private void Update(object? value) => Change(value as string ?? "");
+}

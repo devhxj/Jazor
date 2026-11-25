@@ -1,0 +1,8 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "WorkWeixin": {
+    "CorpId": "xxxx", // 企业ID
+    "CorpSecret": "xxxx" // 企业微信凭证密钥
+  }
+}

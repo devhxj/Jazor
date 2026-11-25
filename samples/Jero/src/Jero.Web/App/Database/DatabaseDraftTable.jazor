@@ -1,0 +1,29 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Database
+@using Jero.Web.App.Components
+
+<ElTable @attributes="@(new TableData<DatabaseColumnDraft>(Rows))" border="true" stripe="true" RowKey="key" MaxHeight="300" EmptyText="请添加字段">
+        <ElTableColumn type="index" label="序号" width="66" align="center" />
+        <ElTableColumn prop="dbColumnName" label="字段名" MinWidth="140" />
+        <ElTableColumn prop="columnDescription" label="描述" MinWidth="150" />
+        <ElTableColumn prop="dataType" label="类型" MinWidth="100" />
+        <ElTableColumn prop="length" label="长度" width="82" align="center" />
+        <ElTableColumn prop="decimalDigits" label="小数位" width="82" align="center" />
+        <ElTableColumn prop="defaultValue" label="默认值" MinWidth="110" />
+        <ElTableColumn label="操作" width="240" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnDraft>)(object)cell).row; }
+                <ElButton link="true" type="primary" disabled='@(((TableSlot<DatabaseColumnDraft>)(object)cell).Index == 0)' @onclick="@(() => MoveUp(row.key))">上移</ElButton>
+                <ElButton link="true" type="primary" disabled='@(((TableSlot<DatabaseColumnDraft>)(object)cell).Index == Rows.Length - 1)' @onclick="@(() => MoveDown(row.key))">下移</ElButton>
+                <ElButton link="true" type="primary" @onclick="@(() => Edit(row.key))">编辑</ElButton>
+                <ElButton link="true" type="danger" @onclick="@(() => Delete(row.key))">删除</ElButton>
+            </template>
+        </ElTableColumn>
+    </ElTable>
+
+@code {
+    [Parameter] public DatabaseColumnDraft[] Rows { get; set; } = [];
+    [Parameter] public Action<double> MoveUp { get; set; } = default!;
+    [Parameter] public Action<double> MoveDown { get; set; } = default!;
+    [Parameter] public Action<double> Edit { get; set; } = default!;
+    [Parameter] public Action<double> Delete { get; set; } = default!;
+}

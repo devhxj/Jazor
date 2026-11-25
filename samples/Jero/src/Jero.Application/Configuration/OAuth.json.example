@@ -1,0 +1,12 @@
+{
+  "OAuth": {
+    "Gitee": {
+      "ClientId": "",
+      "ClientSecret": ""
+    },
+    "Weixin": {
+      "ClientId": "",
+      "ClientSecret": ""
+    }
+  }
+}

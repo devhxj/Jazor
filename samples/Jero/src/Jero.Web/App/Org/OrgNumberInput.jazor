@@ -1,0 +1,12 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Org
+
+    <ElInputNumber ModelValue='@(Value)' min='@(Minimum)' @onupdate:modelValue='@(value => OnChange(value ?? DefaultValue))' />
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Minimum { get; set; }
+    [Parameter] public double DefaultValue { get; set; }
+    [Parameter] public Action<double> OnChange { get; set; } = default!;
+}

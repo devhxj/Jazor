@@ -1,0 +1,25 @@
+
+
+
+using Jero.Core;
+using @Model.EntityNameSpace;
+namespace @(Model.NameSpace);
+
+/// <summary>
+/// @(Model.Description) 表种子数据
+/// </summary>
+public class @(Model.SeedDataName) : ISqlSugarEntitySeedData<@(Model.EntityName)>
+{
+    /// <summary>
+    /// 种子数据
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerable<@(Model.EntityName)> HasData()
+    {
+        return new List<@(Model.EntityName)> {
+            @foreach (var record in Model.RecordList) {
+            @:new() { @record },
+            }
+        };
+    }
+}

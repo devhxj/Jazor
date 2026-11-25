@@ -1,0 +1,22 @@
+@using Npm.Jero.ElementPlus
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.LangText
+
+    <ProjectDropdown SplitButton="true" trigger="click" disabled='@(Disabled)' @onclick='@(() => OnExportPage())' @oncommand="OnCommand">
+        导出
+        <template #dropdown>
+            <ProjectDropdownMenu>
+                <ProjectDropdownItem command="select" disabled='@(!HasSelection)'>导出选中数据</ProjectDropdownItem>
+                <ProjectDropdownItem command="page">导出本页数据</ProjectDropdownItem>
+                <ProjectDropdownItem command="all">导出全部数据</ProjectDropdownItem>
+            </ProjectDropdownMenu>
+        </template>
+    </ProjectDropdown>
+
+@code {
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool HasSelection { get; set; }
+    [Parameter] public Action OnExportPage { get; set; } = default!;
+    [Parameter] public Action<string> OnCommand { get; set; } = default!;
+}

@@ -1,0 +1,15 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Ldap
+
+    <ElRadioGroup ModelValue='@(Value)' @attributes="@(new ModelUpdate<double>(Update))">
+        <ElRadio value='@(1)'>启用</ElRadio>
+        <ElRadio value='@(2)'> @(InactiveLabel ?? "禁用")</ElRadio>
+    </ElRadioGroup>
+
+@code {
+    private void Update(double value) => OnChange(value);
+    [Parameter] public double Value { get; set; }
+    [Parameter] public string InactiveLabel { get; set; } = "禁用";
+    [Parameter] public Action<double> OnChange { get; set; } = default!;
+}

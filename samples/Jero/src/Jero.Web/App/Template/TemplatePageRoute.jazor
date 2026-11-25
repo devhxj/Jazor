@@ -1,0 +1,65 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+@using Jero.Web.App.Template
+
+<TemplatePage @attributes="@(State.CreateProps())">
+    <TemplatePageContent
+        RichEditorIdValue="@(State.RichEditorIdValue)"
+        Groups="@(State.groups)"
+        TypeOptions="@(State.typeOptions)"
+        EditDialogVisible="@(State.editDialogVisible)"
+        EditDialogTitle="@(State.editDialogTitle)"
+        EditReadonly="@(State.editReadonly)"
+        Saving="@(State.saving)"
+        Previewing="@(State.previewing)"
+        SelectedTab="@(State.selectedTab)"
+        ContentMode="@(State.contentMode)"
+        EditName="@(State.editName)"
+        EditCode="@(State.editCode)"
+        EditType="@(State.editType)"
+        EditGroupName="@(State.editGroupName)"
+        EditOrderNo="@(State.editOrderNo)"
+        EditRemark="@(State.editRemark)"
+        EditContent="@(State.editContent)"
+        RichEditorHtml="@(State.richEditorHtml)"
+        PreviewHtml="@(State.previewHtml)"
+        RenderEntries="@(State.renderEntries)"
+        AuditDialogVisible="@(State.auditDialogVisible)"
+        AuditDialogTitle="@(State.auditDialogTitle)"
+        AuditCreateUser="@(State.auditCreateUser)"
+        AuditCreateTime="@(State.auditCreateTime)"
+        AuditUpdateUser="@(State.auditUpdateUser)"
+        AuditUpdateTime="@(State.auditUpdateTime)"
+        AuditRemark="@(State.auditRemark)"
+        CanPreview="@(State.CanPreview)"
+        SetEditDialogVisible="@(value => State.editDialogVisible = value)"
+        SetSelectedTab="@(value => State.selectedTab = value)"
+        SetEditName="@(value => State.editName = value)"
+        SetEditCode="@(value => State.editCode = value)"
+        SetEditGroupName="@(value => State.editGroupName = value)"
+        SetEditType="@(value => State.editType = value)"
+        SetEditOrderNo="@(value => State.editOrderNo = value)"
+        SetEditRemark="@(value => State.editRemark = value)"
+        ChangeContentMode="@(State.ChangeContentMode)"
+        InsertParameter="@(State.InsertParameter)"
+        RichCommand="@(State.RichCommand)"
+        RichBlock="@(State.RichBlock)"
+        SyncRichContent="@(State.SyncRichContent)"
+        ContentChanged="@(State.ContentChanged)"
+        AddRenderEntry="@(State.AddRenderEntry)"
+        RemoveRenderEntry="@(State.RemoveRenderEntry)"
+        RenderPreview="@(State.RenderPreview)"
+        Save="@(State.Save)"
+        SetAuditDialogVisible="@(value => State.auditDialogVisible = value)" />
+</TemplatePage>
+
+@code {
+    private ITemplatePageState State { get; set; } = default!;
+
+    [Setup]
+    private void Initialize()
+    {
+        State = Reactive(TemplatePageFactory.Create());
+        State.Initialize();
+    }
+}

@@ -1,0 +1,17 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Role
+
+    <ElRadioGroup ModelValue='@(Value)' @attributes="@(new ModelUpdate<double>(Update))">
+        <ElRadio value='@(1)'>全部数据</ElRadio>
+        <ElRadio value='@(2)'>本部门及以下数据</ElRadio>
+        <ElRadio value='@(3)'>本部门数据</ElRadio>
+        <ElRadio value='@(4)'>仅本人数据</ElRadio>
+        <ElRadio value='@(5)'>自定义数据</ElRadio>
+    </ElRadioGroup>
+
+@code {
+    private void Update(double value) => OnChange(value);
+    [Parameter] public double Value { get; set; }
+    [Parameter] public Action<double> OnChange { get; set; } = default!;
+}

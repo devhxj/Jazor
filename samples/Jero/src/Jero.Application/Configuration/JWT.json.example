@@ -1,0 +1,14 @@
+{
+  "JWTSettings": {
+    "ValidateIssuerSigningKey": true,
+    "IssuerSigningKey": "replace-with-your-own-signing-key",
+    "ValidateIssuer": true,
+    "ValidIssuer": "jero",
+    "ValidateAudience": true,
+    "ValidAudience": "jero",
+    "ValidateLifetime": true,
+    "ClockSkew": 30,
+    "RequireExpirationTime": true,
+    "Algorithm": "HS256"
+  }
+}

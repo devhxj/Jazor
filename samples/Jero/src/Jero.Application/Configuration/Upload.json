@@ -1,0 +1,33 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "Upload": {
+    "Path": "upload/{yyyy}/{MM}/{dd}", // 文件上传目录
+    "MaxSize": 51200, // 文件最大限制KB：1024*50
+    "ContentType": [ "image/jpg", "image/png", "image/jpeg", "image/gif", "image/bmp", "text/plain", "text/xml", "application/pdf", "application/msword", "application/vnd.ms-excel", "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "video/mp4", "video/quicktime", "application/wps-office.docx", "application/wps-office.xlsx", "application/wps-office.pptx", "application/vnd.android.package-archive" ],
+    "EnableMd5": false // 启用文件MDF5验证-防止重复上传
+  },
+  "OSSProvider": {
+    "Enabled": false,
+    "Provider": "Minio", // OSS提供者 Invalid/Minio/Aliyun/QCloud/Qiniu/HuaweiCloud
+    "Endpoint": "xxx.xxx.xxx.xxx:8090", // 节点/API地址（在腾讯云OSS中表示AppId）
+    "Region": "xxx.xxx.xxx.xxx", // 地域
+    "AccessKey": "",
+    "SecretKey": "",
+    "IsEnableHttps": false, // 是否启用HTTPS
+    "IsEnableCache": true, // 是否启用缓存
+    "Bucket": "jero",
+    "CustomHost": "" // 自定义Host：拼接外链的Host，若空则使用Endpoint拼接
+  },
+  "SSHProvider": {
+    "Enabled": false,
+    "Host": "127.0.0.1",
+    "Port": 8222,
+    "Username": "sshuser",
+    "Password": ""
+  },
+  "MultiOSS": {
+    "Enabled": false, // 是否启用多OSS功能
+    "Description": "启用多OSS功能后，系统将支持多个存储提供者，可以通过BucketName或ProviderId指定使用哪个存储提供者"
+  }
+}

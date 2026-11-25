@@ -1,0 +1,31 @@
+{
+  "SMS": {
+    "VerifyCodeExpireSeconds": 300,
+    "Aliyun": {
+      "AccessKeyId": "",
+      "AccessKeySecret": "",
+      "Templates": [
+        { "Id": "", "SignName": "", "TemplateCode": "", "Content": "" }
+      ]
+    },
+    "Tencentyun": {
+      "AccessKeyId": "",
+      "AccessKeySecret": "",
+      "SdkAppId": "",
+      "Templates": [
+        { "Id": "", "SignName": "", "TemplateCode": "", "Content": "" }
+      ]
+    },
+    "Custom": {
+      "Enabled": false,
+      "ApiUrl": "",
+      "Method": "POST",
+      "ContentType": "application/json",
+      "PostData": "",
+      "SuccessFlag": "",
+      "Templates": [
+        { "Id": "", "Content": "" }
+      ]
+    }
+  }
+}

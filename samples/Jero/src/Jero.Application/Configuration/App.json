@@ -1,0 +1,65 @@
+﻿{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "Urls": "http://*:5005", // 默认端口
+  "AllowedHosts": "*", // 允许所有地址
+
+  "AppSettings": {
+    "InjectSpecificationDocument": true, // 生产环境是否开启Swagger
+    "ExternalAssemblies": [ "plugins" ], // 插件目录
+    "VirtualPath": "" // 二级虚拟目录
+  },
+  "DynamicApiControllerSettings": {
+    //"DefaultRoutePrefix": "api", // 默认路由前缀
+    "CamelCaseSeparator": "", // 驼峰命名分隔符
+    "SplitCamelCase": false, // 切割骆驼(驼峰)/帕斯卡命名
+    "LowercaseRoute": false, // 小写路由格式
+    "AsLowerCamelCase": true, // 小驼峰命名（首字母小写）
+    "KeepVerb": false, // 保留动作方法请求谓词
+    "KeepName": false // 保持原有名称不处理
+  },
+  "FriendlyExceptionSettings": {
+    "DefaultErrorMessage": "系统异常，请联系管理员",
+    "ThrowBah": true, // 是否将 Oops.Oh 默认抛出为业务异常
+    "LogError": false // 是否输出异常日志
+  },
+  // 静态资源处理方式(允许这些文件被访问)，包含".*": "application/octet-stream"允许访问所有静态资源
+  "StaticContentTypeMappings": {
+    ".dll": "application/octet-stream",
+    ".exe": "application/octet-stream",
+    ".pdb": "application/octet-stream",
+    ".so": "application/octet-stream"
+  },
+  "LocalizationSettings": {
+    "SupportedCultures": [ "zh-CN", "en" ], // 语言列表
+    "DefaultCulture": "zh-CN", // 默认语言
+    "DateTimeFormatCulture": "zh-CN" // 固定时间区域为特定时区（多语言）
+  },
+  "CorsAccessorSettings": {
+    //"PolicyName": "App.Cors.Policy", // 跨域策略名称
+    //"WithOrigins": [ "http://localhost:5005", "https://gitee.com" ], // 允许的跨域地址
+    "WithExposedHeaders": [ "Content-Disposition", "X-Pagination", "access-token", "x-access-token", "Access-Control-Expose-Headersx-access-token" ], // 如果前端不代理且是axios请求
+    "SignalRSupport": true // 启用 SignalR 跨域支持
+  },
+  // 定时任务/作业调度
+  "JobSchedule": {
+    "Enabled": true // 是否开启
+  },
+  // 雪花Id
+  "SnowId": {
+    "WorkerId": 1, // 雪花Id机器码，多服务器时全局唯一
+    "WorkerIdBitLength": 6, // 机器码位长 默认值6，取值范围 [1, 19]
+    "SeqBitLength": 6, // 序列数位长 默认值6，取值范围 [3, 21]（建议不小于4，值越大性能越高、Id位数也更长）
+    "WorkerPrefix": "jero_" // 缓存前缀
+  },
+  // 密码策略
+  "Cryptogram": {
+    "StrongPassword": false, // 是否开启密码强度验证
+    "PasswordStrengthValidation": "(?=^.{6,16}$)(?=.*\\d)(?=.*\\W+)(?=.*[A-Z])(?=.*[a-z])(?!.*\\n).*$", // 密码强度验证正则表达式，必须须包含大小写字母、数字和特殊字符的组合，长度在6-16之间
+    "PasswordStrengthValidationMsg": "密码必须包含大小写字母、数字和特殊字符的组合，长度在6-16之间", // 密码强度验证消息提示
+    "CryptoType": "SM2", // 密码加密算法：MD5、SM2、SM4
+    // 新业务系统记得改密匙，通过接口(http://localhost:5005/api/sysCommon/smKeyPair)获取。记得同步修改前端公钥配置：VITE_SM_PUBLIC_KEY
+    "PublicKey": "", // 公钥
+    "PrivateKey": "" // 私钥
+  }
+}

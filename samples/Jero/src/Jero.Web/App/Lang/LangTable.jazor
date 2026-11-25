@@ -1,0 +1,54 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Lang
+
+    <ElTable @attributes="@(new TableData<LangTableRow>(Rows) { onSortChange = SortChanged })" border="true" stripe="true" RowKey="id" EmptyText="暂无语言">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="name" label="语言名称" MinWidth="180" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="code" label="语言代码" MinWidth="130" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="isoCode" label="ISO 语言代码" MinWidth="145" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="urlCode" label="URL 语言代码" MinWidth="145" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn label="书写方向" width="120" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTableRow>)(object)cell).row; }
+                <ElTag @attributes="@(new TableTagProps(row.direction == 2 ? "warning" : "primary"))">@(row.directionLabel)</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn prop="dateFormat" label="日期格式" MinWidth="150" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="timeFormat" label="时间格式" MinWidth="140" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn label="每周起始日" width="120" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTableRow>)(object)cell).row; }@(row.weekLabel)</template>
+        </ElTableColumn>
+        <ElTableColumn prop="grouping" label="分组符号" width="110" sortable="custom" align="center" />
+        <ElTableColumn prop="decimalPoint" label="小数点符号" width="120" sortable="custom" align="center" />
+        <ElTableColumn prop="thousandsSepDisplay" label="千分位分隔符" width="130" align="center" />
+        <ElTableColumn prop="active" label="是否启用" width="100" align="center" sortable="custom">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTableRow>)(object)cell).row; }
+                <ElTag @attributes="@(new TableTagProps(row.active ? "success" : "danger"))">@(row.active ? "是" : "否")</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="修改记录" width="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTableRow>)(object)cell).row; }
+                <ElButton link="true" type="primary" @onclick='@(() => OnOpenAudit(row.id))'>详情</ElButton>
+            </template>
+        </ElTableColumn>
+        @if (CanEdit || CanDelete) { <ElTableColumn label="操作" width="140" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTableRow>)(object)cell).row; }
+                @if (CanEdit) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenEdit(row.id))'>编辑</ElButton> }
+                @if (CanDelete) { <ElPopconfirm title='@("确定删除语言【" + row.name + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.id))'>
+                    <template #reference><ElButton link="true" type="danger">删除</ElButton></template>
+                </ElPopconfirm> }
+            </template>
+        </ElTableColumn> }
+    </ElTable>
+
+@code {
+    [Parameter] public LangTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public Action<string> OnOpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+    [Parameter] public Action<string, string> OnSort { get; set; } = default!;
+
+    private void SortChanged(TableSortScope sort) => OnSort(string.IsNullOrEmpty(sort.prop) ? "active" : sort.prop, string.IsNullOrEmpty(sort.order) ? "ascending" : sort.order);
+}

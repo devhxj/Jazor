@@ -1,0 +1,13 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+
+<ElRadioGroup ModelValue="@Value" @attributes="@(new ModelUpdate<double>(Change))">
+    <ElRadio value="@(1d)">目录</ElRadio>
+    <ElRadio value="@(2d)">菜单</ElRadio>
+    <ElRadio value="@(3d)">按钮</ElRadio>
+</ElRadioGroup>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public Action<double> Change { get; set; } = default!;
+}

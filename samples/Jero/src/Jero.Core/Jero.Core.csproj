@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NoWarn>1701;1702;1591;8632</NoWarn>
+    <DocumentationFile></DocumentationFile>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jero.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AlibabaCloud.SDK.Dysmsapi20170525" Version="4.4.0" />
+    <PackageReference Include="AlipaySDKNet.Standard" Version="4.9.1476" />
+    <PackageReference Include="AngleSharp" Version="1.11.0" />
+    <PackageReference Include="AspectCore.Extensions.Reflection" Version="3.0.0" />
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="Elastic.Clients.Elasticsearch" Version="9.5.3" />
+    <PackageReference Include="Furion" Version="4.9.9.100" />
+    <PackageReference Include="Furion.Extras.Authentication.JwtBearer" Version="4.9.9.100" />
+    <PackageReference Include="Furion.Extras.ObjectMapper.Mapster" Version="4.9.9.100" />
+    <PackageReference Include="Hardware.Info" Version="110.0.0.1" />
+    <PackageReference Include="Hashids.net" Version="1.7.0" />
+    <PackageReference Include="IPTools.China" Version="1.6.0" />
+    <PackageReference Include="IPTools.International" Version="1.6.0" />
+    <PackageReference Include="log4net" Version="3.6.0" />
+    <PackageReference Include="Lazy.Captcha.Core" Version="2.2.10" />
+    <PackageReference Include="Magicodes.IE.Excel" Version="2.9.0" />
+    <PackageReference Include="Magicodes.IE.Pdf" Version="2.9.0" />
+    <PackageReference Include="Magicodes.IE.Word" Version="2.9.0" />
+    <PackageReference Include="MailKit" Version="5.0.0" />
+    <PackageReference Include="MiniExcel" Version="2.0.0" />
+    <PackageReference Include="MiniWord" Version="0.9.2" />
+    <PackageReference Include="NewLife.Redis" Version="7.0.2026.1024" />
+    <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="4.1.0" />
+    <PackageReference Include="OnceMi.AspNetCore.OSS" Version="1.2.0" />
+    <PackageReference Include="QRCoder" Version="1.9.0" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.3.0" />
+    <PackageReference Include="SixLabors.ImageSharp.Web" Version="3.2.0" />
+    <PackageReference Include="SKIT.FlurlHttpClient.Wechat.Api" Version="4.0.1" />
+    <PackageReference Include="SKIT.FlurlHttpClient.Wechat.TenpayV3" Version="4.0.1" />
+    <PackageReference Include="SqlSugar.MongoDbCore" Version="5.1.4.280" />
+    <PackageReference Include="SqlSugarCore" Version="5.1.4.221" />
+    <PackageReference Include="SSH.NET" Version="2026.0.1" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.7.4" />
+    <PackageReference Include="TencentCloudSDK.Sms" Version="3.0.1499" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
+    <PackageReference Include="Yitter.IdGenerator" Version="1.0.15" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" Aliases="BouncyCastleV2" />
+    <PackageReference Include="AspNet.Security.OAuth.Gitee" Version="11.0.0" />
+    <PackageReference Include="AspNet.Security.OAuth.Weixin" Version="11.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="11.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="11.0.0" />
+    <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.7.0" />
+  </ItemGroup>	
+
+</Project>

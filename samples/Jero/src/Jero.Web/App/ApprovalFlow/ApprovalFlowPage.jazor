@@ -1,0 +1,564 @@
+@using App.Auth
+@using Jero.Web.App.Components
+@using Npm.ElementPlus
+@using App.Components
+@using Jero.Web.App.ApprovalFlow
+
+<ElCard Header="审批流程">
+    <p style="margin-top:0;color:#606266;">
+        管理审批流基础信息、业务表单绑定与 LogicFlow 流程结构。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <ElAlert Type="info"
+             ShowIcon="true"
+             Closable="false"
+             Title="当前后端未暴露发布、状态切换及审批记录查询 API；页面提供契约入口并明确展示该限制。" />
+
+    <div style="height:16px"></div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="关键字">
+                <ElInput ModelValue="@QueryKeyword"
+                         @onupdate:modelValue="SetQueryKeyword"
+                         Placeholder="编号 / 名称 / 备注"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="编号">
+                <ElInput ModelValue="@QueryCode"
+                         @onupdate:modelValue="SetQueryCode"
+                         Placeholder="审批流编号"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="名称">
+                <ElInput ModelValue="@QueryName"
+                         @onupdate:modelValue="SetQueryName"
+                         Placeholder="审批流名称"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="备注">
+                <ElInput ModelValue="@QueryRemark"
+                         @onupdate:modelValue="SetQueryRemark"
+                         Placeholder="备注"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard>
+        <div class="approval-flow-toolbar">
+            <ElButton Type="primary" @onclick="OpenCreate">新增</ElButton>
+            <ElButton @onclick="LoadPage" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        <div style='@(Loading ? "margin-bottom:12px" : "display:none")'>
+            <ElText>正在加载审批流程…</ElText>
+        </div>
+
+        <ApprovalFlowTable Rows="@Rows"
+            OnOpenAudit="@OpenAudit"
+            OnOpenDetail="@OpenDetail"
+            OnOpenEdit="@OpenEdit"
+            OnOpenFormConfig="@OpenFormConfig"
+            OnOpenDesigner="@OpenDesigner"
+            OnOpenPublishContract="@OpenPublishContract"
+            OnOpenRecordContract="@OpenRecordContract"
+            OnDelete="@Delete" />
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@PageSizes"
+                              Background="true"
+                              Layout="Total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="min(720px, calc(100vw - 24px))"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="90px">
+        <ElFormItem Label="编号">
+            <ElInput ModelValue="@EditCode"
+                     @onupdate:modelValue="SetEditCode"
+                     Placeholder="留空则由后端自动生成"
+                     Maxlength="32"
+                     ShowWordLimit="true"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="名称">
+            <ElInput ModelValue="@EditName"
+                     @onupdate:modelValue="SetEditName"
+                     Placeholder="请输入审批流名称"
+                     Maxlength="32"
+                     ShowWordLimit="true"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="备注">
+            <ElInput ModelValue="@EditRemark"
+                     @onupdate:modelValue="SetEditRemark"
+                     Placeholder="请输入备注"
+                     Type="textarea"
+                     Rows="4"
+                     Maxlength="256"
+                     ShowWordLimit="true"
+                     Clearable="true" />
+        </ElFormItem>
+    </ElForm>
+    <p style='@(EditLoading ? "color:#909399;text-align:center" : "display:none")'>正在加载完整实体快照…</p>
+    <div class="approval-flow-dialog-footer">
+        <ElButton @onclick="CloseEditDialog" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary" @onclick="SaveBasic" Loading="@Saving" Disabled="@EditLoading">保存</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@FormDialogVisible"
+          @onupdate:modelValue="SetFormDialogVisible"
+          Title="表单配置"
+          Width="min(820px, calc(100vw - 24px))"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <ElAlert Type="info"
+             ShowIcon="true"
+             Title="表单路由由“实体名称 + 操作标识”生成，保存前检查是否与已有审批流重复。" />
+    <div style="height:16px"></div>
+    <ElForm LabelWidth="100px">
+        <ElFormItem Label="库定位器">
+            <AuthOptionSelect Value="@FormConfigId" Options="@DatabaseOptions" Placeholder="请选择库定位器" Clearable="true" Loading="@FormLoading" Change="@FormConfigChanged" />
+        </ElFormItem>
+        <ElFormItem Label="数据库表">
+            <AuthOptionSelect Value="@FormTableName" Options="@TableOptions" Placeholder="请选择数据库表" Clearable="true" Loading="@TableLoading" Disabled="@(FormConfigId.Length == 0)" Change="@FormTableChanged" />
+        </ElFormItem>
+        <div class="approval-flow-form-grid">
+            <ElFormItem Label="实体名称">
+                <ElInput ModelValue="@FormEntityName"
+                         @onupdate:modelValue="SetFormEntityName"
+                         Placeholder="例如 OrderRequest"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="操作标识">
+                <AuthOptionSelect Value="@FormTypeName" Options="@OperationOptions" Placeholder="请选择或输入操作标识" Clearable="true" AllowCreate="true" DefaultFirstOption="true" Change="@SetFormTypeName" />
+            </ElFormItem>
+        </div>
+        <ElFormItem Label="路由预览">
+            <div class="approval-flow-route-preview">
+                <ElTag Type="danger" style='@(FormRouteConflict ? "" : "display:none")'>@FormRoutePreview</ElTag>
+                <ElTag Type="primary" style='@(FormRouteConflict ? "display:none" : "")'>@(FormRoutePreview.Length == 0 ? "待生成" : FormRoutePreview)</ElTag>
+                <span style='@(FormRouteConflict ? "color:#f56c6c" : "display:none")'>该路由已被其他审批流占用</span>
+            </div>
+        </ElFormItem>
+    </ElForm>
+    <p style='@(FormLoading ? "color:#909399;text-align:center" : "display:none")'>正在加载表单依赖与完整实体快照…</p>
+    <div class="approval-flow-dialog-footer">
+        <ElButton @onclick="CloseFormDialog" Disabled="@FormSaving">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="SaveFormConfig"
+                  Loading="@FormSaving"
+                  Disabled="@(FormLoading || FormRouteConflict)">保存</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@DesignerDialogVisible"
+          @onupdate:modelValue="SetDesignerVisible"
+          Title="流程设计"
+          Fullscreen="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false"
+          @onclosed="CleanupDesigner">
+    <div class="approval-flow-designer-header">
+        <div class="approval-flow-toolbar-group">
+            <ElTag>@DesignerNodeCount 节点</ElTag>
+            <ElTag Type="success">@DesignerEdgeCount 连线</ElTag>
+            <ElTag Type="warning">开始 @DesignerStartCount / 结束 @DesignerEndCount</ElTag>
+        </div>
+        <div class="approval-flow-toolbar-group">
+            <ElButton @onclick="FitDesigner">适配</ElButton>
+            <ElButton @onclick="CenterDesigner">居中</ElButton>
+            <ElButton @onclick="ZoomInDesigner">放大</ElButton>
+            <ElButton @onclick="ZoomOutDesigner">缩小</ElButton>
+            <ElButton @onclick="ResetDesignerZoom">100%</ElButton>
+            <ElButton @onclick="UndoDesigner" Disabled="@(!CanUndo)">撤销</ElButton>
+            <ElButton @onclick="RedoDesigner" Disabled="@(!CanRedo)">重做</ElButton>
+            @if (SelectionMode)
+            {
+                <ElButton Type="primary" @onclick="ToggleSelectionMode">关闭框选</ElButton>
+            }
+            else
+            {
+                <ElButton @onclick="ToggleSelectionMode">开启框选</ElButton>
+            }
+            <ElPopconfirm Title="将默认流程覆盖当前画布，未保存修改会丢失。"
+                          ConfirmButtonText="载入"
+                          CancelButtonText="取消"
+                          @onconfirm="ResetDesignerGraph">
+                <template #reference><ElButton>默认模板</ElButton></template>
+            </ElPopconfirm>
+            <ElPopconfirm Title="清空后必须重新补齐开始、结束和连线才能保存。"
+                          ConfirmButtonText="清空"
+                          CancelButtonText="取消"
+                          @onconfirm="ClearDesignerGraph">
+                <template #reference><ElButton Type="danger">清空画布</ElButton></template>
+            </ElPopconfirm>
+            <ElButton @onclick="ShowGraphJson">查看 JSON</ElButton>
+        </div>
+    </div>
+
+    <div style='@(DesignerWarning.Length == 0 ? "display:none" : "margin-bottom:12px")'>
+        <ElAlert Type="warning" Title="@DesignerWarning" ShowIcon="true" Closable="false" />
+    </div>
+    <div style='@(DesignerError.Length == 0 ? "display:none" : "margin-bottom:12px")'>
+        <ElAlert Type="error" Title="@DesignerError" ShowIcon="true" Closable="false" />
+    </div>
+
+    <div class="approval-flow-designer-layout">
+        <section class="approval-flow-canvas-shell">
+            <div id="@CanvasId" class="approval-flow-canvas"></div>
+            <div class="approval-flow-canvas-loading" style='@(DesignerLoading ? "" : "display:none")'>
+                正在初始化 LogicFlow 设计器…
+            </div>
+        </section>
+
+        <aside class="approval-flow-designer-side">
+            <section class="approval-flow-side-section">
+                <h3>流程结构</h3>
+                <div class="approval-flow-summary-grid">
+                    <span>开始节点</span><strong>@DesignerStartCount</strong>
+                    <span>审批节点</span><strong>@DesignerUserCount</strong>
+                    <span>系统节点</span><strong>@DesignerServiceCount</strong>
+                    <span>分支网关</span><strong>@DesignerGatewayCount</strong>
+                    <span>结束节点</span><strong>@DesignerEndCount</strong>
+                </div>
+                @foreach (var issue in DesignerIssues)
+                {
+                    <div style="margin-top:8px"><ElAlert Type="warning" Title="@issue" ShowIcon="true" Closable="false" /></div>
+                }
+            </section>
+
+            <section class="approval-flow-side-section">
+                <h3>当前选中</h3>
+                @if (SelectedId.Length == 0)
+                {
+                    <p style="color:#909399;">点击节点或连线后可编辑标签、定位和删除。</p>
+                }
+                else
+                {
+                    <div class="approval-flow-summary-grid">
+                        <span>元素 ID</span><strong>@SelectedId</strong>
+                        <span>类型</span><strong>@SelectedTypeLabel</strong>
+                        
+                        @if (SelectedKind == "edge")
+                        {
+                            <div>
+                                <span>连接</span><strong>@(SelectedSourceNodeId + " → " + SelectedTargetNodeId)</strong>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <span>坐标</span><strong>@(SelectedX + ", " + SelectedY)</strong>
+                            </div>
+                        }
+                    </div>
+                    <div style="height:12px"></div>
+                    <ElInput ModelValue="@SelectedText"
+                             @onupdate:modelValue="SetSelectedText"
+                             Placeholder="标签为空时将清空文本"
+                             Clearable="true" />
+                    <div class="approval-flow-selected-actions">
+                        <ElButton Type="primary" @onclick="ApplySelectedText">应用文本</ElButton>
+                        <ElButton @onclick="InlineEditSelected">原位编辑</ElButton>
+                        <ElButton @onclick="FocusSelected">定位</ElButton>
+                        <ElPopconfirm Title="当前只删除画布元素，保存后才会持久化。"
+                                      ConfirmButtonText="删除"
+                                      CancelButtonText="取消"
+                                      @onconfirm="DeleteSelected">
+                            <template #reference><ElButton Type="danger">删除</ElButton></template>
+                        </ElPopconfirm>
+                    </div>
+                }
+            </section>
+        </aside>
+    </div>
+
+    <div class="approval-flow-dialog-footer">
+        <ElButton @onclick="CloseDesigner" Disabled="@DesignerSaving">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="SaveDesigner"
+                  Loading="@DesignerSaving"
+                  Disabled="@(DesignerLoading || !DesignerReady)">保存流程</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@GraphJsonVisible"
+          @onupdate:modelValue="SetGraphJsonVisible"
+          Title="当前流程 JSON"
+          Width="min(960px, calc(100vw - 24px))"
+          AppendToBody="true"
+          DestroyOnClose="true">
+    <pre class="approval-flow-json approval-flow-json-dialog">@GraphJsonText</pre>
+</ElDialog>
+
+<ElDialog ModelValue="@DetailDialogVisible"
+          @onupdate:modelValue="SetDetailDialogVisible"
+          Title="审批流详情"
+          Width="min(1080px, calc(100vw - 24px))"
+          AppendToBody="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <div style='@(DetailParseError.Length == 0 ? "display:none" : "margin-bottom:12px")'>
+        <ElAlert Type="warning" Title="@DetailParseError" ShowIcon="true" Closable="false" />
+    </div>
+    <div class="approval-flow-detail-grid">
+        <section class="approval-flow-side-section">
+            <h3>基础信息</h3>
+            <div class="approval-flow-detail-list">
+                <strong>编号</strong><span>@DetailCodeText</span>
+                <strong>名称</strong><span>@DetailNameText</span>
+                <strong>状态</strong><span>@DetailStatusText</span>
+                <strong>备注</strong><span>@DetailRemarkText</span>
+                <strong>创建人</strong><span>@DetailCreateUserNameText</span>
+                <strong>创建时间</strong><span>@DetailCreateTimeText</span>
+                <strong>修改人</strong><span>@DetailUpdateUserNameText</span>
+                <strong>修改时间</strong><span>@DetailUpdateTimeText</span>
+            </div>
+        </section>
+        <section class="approval-flow-side-section">
+            <h3>表单绑定</h3>
+            <div class="approval-flow-detail-list">
+                <strong>库定位器</strong><span>@DetailFormConfigIdText</span>
+                <strong>数据库表</strong><span>@DetailFormTableNameText</span>
+                <strong>实体名称</strong><span>@DetailFormEntityNameText</span>
+                <strong>操作标识</strong><span>@DetailFormTypeNameText</span>
+                <strong>表单路由</strong><span>@DetailFormRouteText</span>
+                <strong>流程摘要</strong><span>@DetailNodeCount 节点 / @DetailEdgeCount 连线</span>
+            </div>
+        </section>
+    </div>
+    <div class="approval-flow-detail-grid">
+        <section class="approval-flow-side-section">
+            <h3>流程节点</h3>
+            <div class="approval-flow-node-list">
+                @foreach (var node in DetailNodes)
+                {
+                    <div><code>@node.id</code><span>@node.label</span><small>@node.x, @node.y</small></div>
+                }
+            </div>
+        </section>
+        <section class="approval-flow-side-section">
+            <h3>表单 JSON</h3>
+            <pre class="approval-flow-json">@DetailFormJson</pre>
+        </section>
+    </div>
+    <section class="approval-flow-side-section" style="margin-top:16px">
+        <h3>流程 JSON</h3>
+        <pre class="approval-flow-json">@DetailFlowJson</pre>
+    </section>
+    <p style='@(DetailLoading ? "color:#909399;text-align:center" : "display:none")'>正在加载详情…</p>
+    <div class="approval-flow-dialog-footer">
+        <ElButton Type="primary" @onclick="CloseDetailDialog">关闭</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="min(600px, calc(100vw - 24px))">
+    <div class="approval-flow-detail-list">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@ContractDialogVisible"
+          @onupdate:modelValue="SetContractDialogVisible"
+          Title="@ContractDialogTitle"
+          Width="min(680px, calc(100vw - 24px))">
+    <ElAlert Type="warning" Title="@ContractDialogText" ShowIcon="true" Closable="false" />
+    <div class="approval-flow-detail-list" style="margin-top:16px">
+        <strong>审批流</strong><span>@ContractFlowNameText</span>
+        <strong>当前处理</strong><span>不发送虚构接口请求，等待后端补充明确 API 后接入。</span>
+    </div>
+    <div class="approval-flow-dialog-footer">
+        <ElButton Type="primary" @onclick="CloseContractDialog">知道了</ElButton>
+    </div>
+</ElDialog>
+
+<style scoped>
+.approval-flow-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.approval-flow-actions,.approval-flow-toolbar-group,.approval-flow-selected-actions{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}.approval-flow-actions .el-button+.el-button{margin-left:0}.approval-flow-dialog-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.approval-flow-form-grid,.approval-flow-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.approval-flow-route-preview{display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;padding:8px 12px;border:1px solid #dcdfe6;border-radius:6px}.approval-flow-designer-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.approval-flow-designer-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;min-height:calc(100vh - 250px)}.approval-flow-canvas-shell{position:relative;min-height:calc(100vh - 250px);border:1px solid var(--el-border-color);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,#f8fafc,#fff)}.approval-flow-canvas{min-height:calc(100vh - 250px)}.approval-flow-canvas-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.78);color:#606266;z-index:4}.approval-flow-designer-side{display:flex;flex-direction:column;gap:16px;min-width:0}.approval-flow-side-section{border:1px solid var(--el-border-color);border-radius:12px;padding:16px;background:var(--el-bg-color);min-width:0}.approval-flow-side-section h3{margin:0 0 12px;font-size:16px}.approval-flow-summary-grid,.approval-flow-detail-list{display:grid;grid-template-columns:120px minmax(0,1fr);gap:10px 14px;line-height:1.6}.approval-flow-summary-grid span,.approval-flow-detail-list strong{color:#606266}.approval-flow-summary-grid strong,.approval-flow-detail-list span{min-width:0;overflow-wrap:anywhere}.approval-flow-selected-actions{justify-content:flex-start;margin-top:12px}.approval-flow-json{margin:0;max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word;line-height:1.55;font-size:12px;background:#0f172a;color:#e2e8f0;padding:12px;border-radius:10px}.approval-flow-json-dialog{max-height:70vh}.approval-flow-node-list{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto}.approval-flow-node-list>div{display:grid;grid-template-columns:minmax(100px,1fr) minmax(100px,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid #ebeef5;border-radius:6px}.approval-flow-node-list code{overflow-wrap:anywhere}.approval-flow-node-list small{color:#909399}.approval-flow-canvas-shell :deep(.lf-dndpanel){margin:12px}.approval-flow-canvas-shell :deep(.lf-mini-map){right:12px;bottom:12px}@media(max-width:1100px){.approval-flow-designer-layout{grid-template-columns:1fr}.approval-flow-designer-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.approval-flow-detail-grid{grid-template-columns:1fr}}@media(max-width:720px){.approval-flow-form-grid,.approval-flow-designer-side{grid-template-columns:1fr}.approval-flow-summary-grid,.approval-flow-detail-list{grid-template-columns:1fr}.approval-flow-dialog-footer{flex-wrap:wrap}.approval-flow-node-list>div{grid-template-columns:1fr}.approval-flow-actions{justify-content:flex-start}}
+</style>
+
+@code {
+    [Parameter] public ConfigurationOption[] DatabaseOptions { get; set; } = [];
+    [Parameter] public Action<string> FormConfigChanged { get; set; } = default!;
+    [Parameter] public ConfigurationOption[] TableOptions { get; set; } = [];
+    [Parameter] public Action<string> FormTableChanged { get; set; } = default!;
+    [Parameter] public ConfigurationOption[] OperationOptions { get; set; } = [];
+    [Parameter] public Action<string> SetFormTypeName { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetFormDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetDesignerVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetDetailDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetGraphJsonVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetContractDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditCode { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditRemark { get; set; } = default!;
+    [Parameter] public Action<string?> SetFormEntityName { get; set; } = default!;
+    [Parameter] public Action<string?> SetSelectedText { get; set; } = default!;
+    [Parameter] public Action CloseEditDialog { get; set; } = default!;
+    [Parameter] public Action SaveBasic { get; set; } = default!;
+    [Parameter] public Action CloseFormDialog { get; set; } = default!;
+    [Parameter] public Action SaveFormConfig { get; set; } = default!;
+    [Parameter] public Action FitDesigner { get; set; } = default!;
+    [Parameter] public Action CenterDesigner { get; set; } = default!;
+    [Parameter] public Action ZoomInDesigner { get; set; } = default!;
+    [Parameter] public Action ZoomOutDesigner { get; set; } = default!;
+    [Parameter] public Action ResetDesignerZoom { get; set; } = default!;
+    [Parameter] public Action UndoDesigner { get; set; } = default!;
+    [Parameter] public Action RedoDesigner { get; set; } = default!;
+    [Parameter] public Action ToggleSelectionMode { get; set; } = default!;
+    [Parameter] public Action ShowGraphJson { get; set; } = default!;
+    [Parameter] public Action ApplySelectedText { get; set; } = default!;
+    [Parameter] public Action InlineEditSelected { get; set; } = default!;
+    [Parameter] public Action FocusSelected { get; set; } = default!;
+    [Parameter] public Action CloseDesigner { get; set; } = default!;
+    [Parameter] public Action SaveDesigner { get; set; } = default!;
+    [Parameter] public Action CloseDetailDialog { get; set; } = default!;
+    [Parameter] public Action ResetDesignerGraph { get; set; } = default!;
+    [Parameter] public Action ClearDesignerGraph { get; set; } = default!;
+    [Parameter] public Action DeleteSelected { get; set; } = default!;
+    [Parameter] public Action CleanupDesigner { get; set; } = default!;
+    [Parameter] public Action CloseContractDialog { get; set; } = default!;
+    [Parameter] public string DetailCodeText { get; set; } = "";
+    [Parameter] public string DetailNameText { get; set; } = "";
+    [Parameter] public string DetailRemarkText { get; set; } = "";
+    [Parameter] public string DetailCreateTimeText { get; set; } = "";
+    [Parameter] public string DetailUpdateTimeText { get; set; } = "";
+    [Parameter] public string DetailFormConfigIdText { get; set; } = "";
+    [Parameter] public string DetailFormTableNameText { get; set; } = "";
+    [Parameter] public string DetailFormEntityNameText { get; set; } = "";
+    [Parameter] public string DetailFormTypeNameText { get; set; } = "";
+    [Parameter] public string DetailFormRouteText { get; set; } = "";
+    [Parameter] public string ContractFlowNameText { get; set; } = "";
+    [Parameter] public string DetailCreateUserNameText { get; set; } = "";
+    [Parameter] public string DetailUpdateUserNameText { get; set; } = "";
+    [Parameter] public string DetailStatusText { get; set; } = "";
+    [Parameter] public int DesignerNodeCount { get; set; }
+    [Parameter] public int DesignerEdgeCount { get; set; }
+    [Parameter] public int DesignerStartCount { get; set; }
+    [Parameter] public int DesignerEndCount { get; set; }
+    [Parameter] public int DesignerUserCount { get; set; }
+    [Parameter] public int DesignerServiceCount { get; set; }
+    [Parameter] public int DesignerGatewayCount { get; set; }
+    [Parameter] public string[] DesignerIssues { get; set; } = [];
+    [Parameter] public int DetailNodeCount { get; set; }
+    [Parameter] public int DetailEdgeCount { get; set; }
+    [Parameter] public ApprovalFlowNodeRow[] DetailNodes { get; set; } = [];
+    [Parameter] public string SelectedId { get; set; } = "";
+    [Parameter] public string SelectedKind { get; set; } = "";
+    [Parameter] public string SelectedSourceNodeId { get; set; } = "";
+    [Parameter] public string SelectedTargetNodeId { get; set; } = "";
+    [Parameter] public string SelectedX { get; set; } = "";
+    [Parameter] public string SelectedY { get; set; } = "";
+    [Parameter] public string CanvasId { get; set; } = "";
+    [Parameter] public bool DesignerReady { get; set; }
+    [Parameter] public string SelectedTypeLabel { get; set; } = "";
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditCode { get; set; } = "";
+    [Parameter] public string EditName { get; set; } = "";
+    [Parameter] public string EditRemark { get; set; } = "";
+    [Parameter] public bool EditLoading { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool FormDialogVisible { get; set; }
+    [Parameter] public string FormConfigId { get; set; } = "";
+    [Parameter] public string FormTableName { get; set; } = "";
+    [Parameter] public string FormEntityName { get; set; } = "";
+    [Parameter] public string FormTypeName { get; set; } = "";
+    [Parameter] public bool FormLoading { get; set; }
+    [Parameter] public bool TableLoading { get; set; }
+    [Parameter] public bool FormSaving { get; set; }
+    [Parameter] public bool FormRouteConflict { get; set; }
+    [Parameter] public string FormRoutePreview { get; set; } = "";
+    [Parameter] public bool DesignerDialogVisible { get; set; }
+    [Parameter] public bool SelectionMode { get; set; }
+    [Parameter] public bool CanUndo { get; set; }
+    [Parameter] public bool CanRedo { get; set; }
+    [Parameter] public string DesignerWarning { get; set; } = "";
+    [Parameter] public string DesignerError { get; set; } = "";
+    [Parameter] public bool DesignerLoading { get; set; }
+    [Parameter] public bool DesignerSaving { get; set; }
+    [Parameter] public string SelectedText { get; set; } = "";
+    [Parameter] public bool GraphJsonVisible { get; set; }
+    [Parameter] public string GraphJsonText { get; set; } = "";
+    [Parameter] public bool DetailDialogVisible { get; set; }
+    [Parameter] public string DetailParseError { get; set; } = "";
+    [Parameter] public string DetailFormJson { get; set; } = "";
+    [Parameter] public string DetailFlowJson { get; set; } = "";
+    [Parameter] public bool DetailLoading { get; set; }
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public bool ContractDialogVisible { get; set; }
+    [Parameter] public string ContractDialogTitle { get; set; } = "";
+    [Parameter] public string ContractDialogText { get; set; } = "";
+    [Parameter] public string QueryKeyword { get; set; } = "";
+    [Parameter] public string QueryCode { get; set; } = "";
+    [Parameter] public string QueryName { get; set; } = "";
+    [Parameter] public string QueryRemark { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public double[] PageSizes { get; set; } = [];
+    [Parameter] public Action<string?> SetQueryKeyword { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryCode { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryName { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryRemark { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenDetail { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OpenFormConfig { get; set; } = default!;
+    [Parameter] public Action<string> OpenDesigner { get; set; } = default!;
+    [Parameter] public Action<string> OpenPublishContract { get; set; } = default!;
+    [Parameter] public Action<string> OpenRecordContract { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public ApprovalFlowTableRow[] Rows { get; set; } = [];
+}

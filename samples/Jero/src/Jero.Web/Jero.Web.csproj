@@ -1,0 +1,115 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>zh-Hans</SatelliteResourceLanguages>
+    <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <UserSecretsId>ad9369d1-f29b-4f8f-a7df-8b4d7aa0726b</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <GenerateSatelliteAssembliesForCore>true</GenerateSatelliteAssembliesForCore>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <Version>1.0.0</Version>
+
+    <LangVersion>preview</LangVersion>
+    <JazorDir>App/.jazor/modules</JazorDir>
+    <!-- Keep authored components in the IDE. Only dependencies and build products are hidden. -->
+    <_SpaGenerated>App/node_modules/**;App/.jazor/**;App/.jolt/**;App/bin/**;App/obj/**;App/dist/**;App/Components/element-plus/obj/**</_SpaGenerated>
+    <_ElementPlusContractGenerator>$(MSBuildProjectDirectory)/../../scripts/csharp/generate-element-plus-contract.cs</_ElementPlusContractGenerator>
+    <_ElementPlusContract>App/Components/element-plus/obj/index.d.ts</_ElementPlusContract>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(_SpaGenerated);logs/**;publish/**</DefaultItemExcludes>
+    <_JeroJoltEnvironment Condition="'$(JazorPnpmStoreDirectory)' != ''">JazorPnpmStoreDirectory=$([System.IO.Path]::GetFullPath('$(JazorPnpmStoreDirectory)', '$(MSBuildProjectDirectory)'))</_JeroJoltEnvironment>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jero.Test" />
+    <PackageReference Include="Jazor;ECMAScript.Vue;ECMAScript.VueRoute" Version="[2.7.1]" />
+    <PackageReference Include="Scalar.AspNetCore" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Web SDK classifies JSON as deployable content. Vite owns the App asset layout. -->
+    <Content Update="App/**" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <JazorLibraryManifest Include="$(MSBuildProjectDirectory)/App/runtime.manifest.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\avatar\**;wwwroot\upload\**" CopyToPublishDirectory="Never" />
+    <None Update="Jero.db" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <Content Update="Jero.db" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <Content Update="wwwroot\template\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="GeoLite2-City.mmdb;ip2region.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="UpdateScripts\1.0.0.sql" CopyToOutputDirectory="Always" />
+    <EmbeddedResource Include="sensitive-words.txt" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jero.Application\Jero.Application.csproj" />
+    <ProjectReference Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\Jero.Plugin.SaveLife.DocumentWorker.csproj" ReferenceOutputAssembly="false" Private="false" />
+  </ItemGroup>
+
+  <Target Name="CopySaveLifeDocumentWorker" AfterTargets="Build">
+    <ItemGroup>
+      <SaveLifeDocumentWorkerFiles Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\bin\$(Configuration)\$(TargetFramework)\Jero.Plugin.SaveLife.DocumentWorker.dll" />
+      <SaveLifeDocumentWorkerFiles Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\bin\$(Configuration)\$(TargetFramework)\Jero.Plugin.SaveLife.DocumentWorker.deps.json" />
+      <SaveLifeDocumentWorkerFiles Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\bin\$(Configuration)\$(TargetFramework)\Jero.Plugin.SaveLife.DocumentWorker.runtimeconfig.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SaveLifeDocumentWorkerFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublishSaveLifeDocumentWorker" BeforeTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\bin\$(Configuration)\$(TargetFramework)\Jero.Plugin.SaveLife.DocumentWorker.dll">
+        <RelativePath>Jero.Plugin.SaveLife.DocumentWorker.dll</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\bin\$(Configuration)\$(TargetFramework)\Jero.Plugin.SaveLife.DocumentWorker.deps.json">
+        <RelativePath>Jero.Plugin.SaveLife.DocumentWorker.deps.json</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\bin\$(Configuration)\$(TargetFramework)\Jero.Plugin.SaveLife.DocumentWorker.runtimeconfig.json">
+        <RelativePath>Jero.Plugin.SaveLife.DocumentWorker.runtimeconfig.json</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+  <Target Name="GenerateElementPlusContract" Inputs="$(_ElementPlusContractGenerator)" Outputs="$(_ElementPlusContract)">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          Command="dotnet run --file &quot;$(_ElementPlusContractGenerator)&quot; -- &quot;$(_ElementPlusContract)&quot;" />
+    <ItemGroup>
+      <FileWrites Include="$(_ElementPlusContract)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CollectSpaInputs">
+    <ItemGroup>
+      <_SpaInput Include="App/**/*;../.config/dotnet-tools.json;$(_ElementPlusContractGenerator)"
+                          Exclude="$(_SpaGenerated)" />
+      <_SpaInput Include="$(_ElementPlusContract)" />
+      <_SpaInput Include="App/.jazor/modules/package.json;App/.jazor/modules/**/*.js;App/.jazor/modules/**/*.mjs;App/.jazor/modules/**/*.map"
+                          Exclude="App/.jazor/modules/.jazor/**/*;App/.jazor/modules/node_modules/**/*;App/.jazor/modules/dist/**/*" />
+    </ItemGroup>
+    <!-- Globs alone cannot invalidate the bundle when a formerly included file is deleted. -->
+    <WriteLinesToFile File="$(IntermediateOutputPath)spa.inputs" Lines="@(_SpaInput)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+  <Target Name="BuildSpa" AfterTargets="Build" BeforeTargets="ComputeFilesToPublish"
+          DependsOnTargets="GenerateElementPlusContract;JazorDebug;CollectSpaInputs"
+          Inputs="@(_SpaInput);$(IntermediateOutputPath)spa.inputs;$(MSBuildProjectFullPath)"
+          Outputs="App/dist/index.html"
+          Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          EnvironmentVariables="$(_JeroJoltEnvironment)"
+          Command="dotnet tool run jolt -- bundle App" />
+  </Target>
+  <Target Name="PublishSpa" AfterTargets="ComputeFilesToPublish" DependsOnTargets="BuildSpa">
+    <ItemGroup>
+      <_SpaAsset Include="App/dist/**/*" Exclude="App/dist/**/*.map" />
+      <ResolvedFileToPublish Include="@(_SpaAsset)">
+        <RelativePath>%(_SpaAsset.Identity)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+</Project>

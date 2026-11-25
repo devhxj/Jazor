@@ -1,0 +1,9 @@
+@using Npm.ElementPlus
+
+<ElCard Header="@Title">
+    <slot />
+</ElCard>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+}

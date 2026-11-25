@@ -1,0 +1,62 @@
+using ECMAScript;
+using Jero.Web.App.Http;
+using static ECMAScript.Vue;
+
+namespace @Model.FrontendNamespace;
+
+[ECMAScriptModule("@Model.RuntimeTransferModule")]
+public static class FileTransferRuntime
+{
+    public static FileRef? SelectedFile(EventRef e) => ((HTMLInputElement)e.Target!).Files?.GetItem(0);
+
+    public static IPromise<TransferResultRuntime> Upload(string path, FileRef file, string? resultFile = null)
+    {
+        var form = new FormData();
+        form.Append("file", file, file.Name);
+        return Send(path, "POST", (BodyInit)(XMLHttpRequestBodyInit)form, false, resultFile);
+    }
+
+    public static IPromise<TransferResultRuntime> Download(string path, string fileName, object? request = null)
+        => request is null
+            ? Send(path, "GET", null, false, fileName)
+            : Send(path, "POST", (BodyInit)(XMLHttpRequestBodyInit)(JSON.Stringify(request) ?? "{}"), true, fileName);
+
+    private static IPromise<TransferResultRuntime> Send(string path, string method, BodyInit? body, bool json, string? download)
+    {
+        var headers = new System.Collections.Generic.List<string[]>();
+        var token = BrowserApiClient.AuthToken;
+        if (!string.IsNullOrEmpty(token)) headers.Add(["authorization", "Bearer " + token]);
+        if (json) headers.Add(["content-type", "application/json"]);
+        var headerValues = (HeadersInit)headers.ToArray();
+        var init = body is null
+            ? new RequestInit(Method: method, Credentials: RequestCredentials.SameOrigin, Headers: headerValues)
+            : new RequestInit(Method: method, Credentials: RequestCredentials.SameOrigin, Headers: headerValues, Body: body.Value);
+        return Promise<Response>.Resolve(Global.Window.Fetch(path, init)).Then(response =>
+        {
+            if ((response.Headers.Get("content-type") ?? "").Contains("application/json"))
+                return Promise<string>.Resolve(response.Text()).Then(text =>
+                {
+                    var envelope = JSON.Parse(text);
+                    if (envelope is null) return new TransferResultRuntime(false, "服务器响应无效", null);
+                    var status = Reflect.Get(envelope, "code");
+                    var ok = response.Ok && (status is null || (double)Global.NumberValue(status) == 200);
+                    var message = Reflect.Get(envelope, "message");
+                    return new TransferResultRuntime(ok, ok || message is null ? null : Global.StringValue(message), Reflect.Get(envelope, "result"));
+                });
+            if (!response.Ok || download is null)
+                return Promise<TransferResultRuntime>.Resolve(new TransferResultRuntime(false, "文件请求失败", null));
+            return Promise<Blob>.Resolve(response.Blob()).Then(blob =>
+            {
+                var url = URL.CreateObjectURL(blob);
+                var link = (HTMLAnchorElement)Global.Document.CreateElement("a", (DocumentCreateElementOptions?)null);
+                link.Href = url;
+                link.Download = download;
+                link.Click();
+                URL.RevokeObjectURL(url);
+                return new TransferResultRuntime(true, null, null);
+            });
+        });
+    }
+}
+
+public sealed record TransferResultRuntime(bool Ok, string? Error, object? Data) : VueProps;

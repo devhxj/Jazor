@@ -1,0 +1,62 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+@using Jero.Web.App.File
+@using Npm.ElementPlus
+
+<div @ref="host"></div>
+@if (loading)
+{
+    <ElEmpty Description="正在加载预览" />
+}
+else if (loadFailed)
+{
+    <ElEmpty Description="加载预览组件失败，请尝试下载后查看" />
+}
+
+@code {
+    [Parameter] public Blob Source { get; set; } = default!;
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public Action RenderFailed { get; set; } = default!;
+
+    private HTMLDivElement? host;
+    private VueApp? app;
+    private bool active;
+    private bool loading = true;
+    private bool loadFailed;
+
+    [Setup]
+    private void Configure()
+    {
+        OnMounted(Mount);
+        OnBeforeUnmount(Unmount);
+    }
+
+    private void Mount()
+    {
+        active = true;
+        var load = Kind == "docx" ? FileOfficeLoaders.LoadDocx() : FileOfficeLoaders.LoadExcel();
+        load.Then(component =>
+        {
+            if (active && host is not null)
+            {
+                // Each preview owns its app and releases it when the dialog closes.
+                app = CreateApp(component, new FileOfficeProps(Source, () => RenderFailed()));
+                app.Mount(host);
+                loading = false;
+            }
+        }, _ =>
+        {
+            if (active)
+            {
+                loadFailed = true;
+                loading = false;
+            }
+        });
+    }
+
+    private void Unmount()
+    {
+        active = false;
+        app?.Unmount();
+    }
+}

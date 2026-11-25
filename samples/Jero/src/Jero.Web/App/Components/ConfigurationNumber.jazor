@@ -1,0 +1,10 @@
+@using Npm.ElementPlus
+
+<ElInputNumber ModelValue="@Value" Min="@Minimum" Max="@Maximum" @onupdate:modelValue="Change" />
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Minimum { get; set; }
+    [Parameter] public double Maximum { get; set; } = double.PositiveInfinity;
+    [Parameter] public Action<double?> Change { get; set; } = default!;
+}

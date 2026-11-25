@@ -1,0 +1,41 @@
+﻿{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "SpecificationDocumentSettings": {
+    "DocumentTitle": "Jero 通用权限开发平台",
+    "GroupOpenApiInfos": [
+      {
+        "Group": "Default",
+        "Title": "Jero 通用权限开发平台",
+        "Description": "让 .NET 开发更简单、更通用、更流行。整合最新技术，模块插件式开发，前后端分离，开箱即用。",
+        "Version": "1.0.0",
+        "Order": 1000
+      },
+      {
+        "Group": "All Groups",
+        "Title": "所有接口",
+        "Description": "让 .NET 开发更简单、更通用、更流行。整合最新技术，模块插件式开发，前后端分离，开箱即用。",
+        "Version": "1.0.0",
+        "Order": 0
+      }
+    ],
+    "DefaultGroupName": "Default", // 默认分组名
+    "DocExpansionState": "List", // List、Full、None
+    "EnableAllGroups": true,
+    //"ServerDir": "xxx", // 二级虚拟目录并且开启 Servers 选择列表
+    "HideServers": true,
+    "Servers": [
+      {
+        "Url": "http://ip/xxx",
+        "Description": "二级目录应用程序名"
+      }
+    ],
+    "LoginInfo": {
+      "Enabled": true, // 是否开启Swagger登录
+      "CheckUrl": "/api/swagger/checkUrl",
+      "SubmitUrl": "/api/swagger/submitUrl",
+      "EnableOnProduction": false // 是否在生产环境中自动开启
+    },
+    "EnumToNumber": true // 枚举类型生成值类型
+  }
+}

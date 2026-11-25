@@ -1,0 +1,148 @@
+@using Jero.Web.App.Shell
+
+<div class="jero-shell__brand">
+    <div class="jero-shell__brand-mark">
+        <span class="jero-shell__mark" style="@BrandMarkStyle">J</span>
+        <img class="jero-shell__logo" src="@BrandLogo" alt="系统 Logo" style="@BrandLogoStyle" />
+    </div>
+    <div class="jero-shell__brand-title" title="@SectionTitle">@SectionTitle</div>
+</div>
+
+<header class="jero-shell__header">
+    <div class="jero-shell__header-left">
+        <button class="jero-shell__mobile-menu" @onclick="@(_ => ToggleMobileMenu())">菜单</button>
+        @if (Ready)
+        {
+            <nav class="jero-shell__breadcrumb" aria-label="当前页面">
+                <button class="jero-shell__breadcrumb-home" @onclick="@(_ => OpenHome())">首页</button>
+                @if (CurrentSection.Length > 0)
+                {
+                    <span>/</span>
+                    <span>@CurrentSection</span>
+                }
+                <span>/</span>
+                <span class="jero-shell__breadcrumb-current">@CurrentTitle</span>
+            </nav>
+        }
+    </div>
+    <div class="jero-shell__user">
+        <button class="jero-shell__icon-btn"
+                title="@(IsDark ? "切换为亮色主题" : "切换为暗色主题")"
+                @onclick="@(_ => ToggleTheme())">@(IsDark ? "☀" : "☾")</button>
+        <div class="jero-shell__lang" role="group" aria-label="界面语言">
+            <button class='@("jero-shell__lang-btn" + (Lang == "zh-cn" ? " is-active" : ""))'
+                    title="简体中文（组件文案）"
+                    @onclick="@(_ => SwitchLang("zh-cn"))">中</button>
+            <button class='@("jero-shell__lang-btn" + (Lang == "en" ? " is-active" : ""))'
+                    title="English (component texts)"
+                    @onclick="@(_ => SwitchLang("en"))">EN</button>
+        </div>
+        <div class="jero-shell__notice">
+            <button class="jero-shell__notice-button" title="站内信" @onclick="@(_ => ToggleNoticePanel())">
+                <span>♢</span>
+                @if (UnreadNoticeCount > 0)
+                {
+                    <span class="jero-shell__notice-count">@(UnreadNoticeCount > 99 ? "99+" : UnreadNoticeCount.ToString())</span>
+                }
+            </button>
+            @if (NoticePanelOpen)
+            {
+                <div class="jero-shell__notice-panel">
+                    <div class="jero-shell__notice-panel-head">
+                        <span>未读通知（@UnreadNoticeCount）</span>
+                        <button class="jero-shell__notice-refresh" disabled="@NoticeLoading" @onclick="@(_ => LoadUnreadNotices())">@(NoticeLoading ? "刷新中…" : "刷新")</button>
+                    </div>
+                    <div class="jero-shell__notice-list">
+                        @if (NoticeError is not null)
+                        {
+                            <div class="jero-shell__notice-error">@NoticeError</div>
+                        }
+                        else if (NoticeLoading && UnreadNotices.Length == 0)
+                        {
+                            <div class="jero-shell__notice-empty">正在加载未读通知…</div>
+                        }
+                        else if (UnreadNotices.Length == 0)
+                        {
+                            <div class="jero-shell__notice-empty">暂无未读通知</div>
+                        }
+                        else
+                        {
+                            @foreach (var notice in UnreadNotices)
+                            {
+                                <button class="jero-shell__notice-item" @onclick="@(_ => OpenNotice(notice))">
+                                    <div class="jero-shell__notice-title">@(notice.title.Length == 0 ? "未命名通知" : notice.title)</div>
+                                    <div class="jero-shell__notice-meta">
+                                        <span>@(notice.publicUserName.Length == 0 ? "系统" : notice.publicUserName)</span>
+                                        <span>@(notice.publicTime.Length == 0 ? "-" : notice.publicTime)</span>
+                                    </div>
+                                </button>
+                            }
+                        }
+                    </div>
+                    <div class="jero-shell__notice-panel-foot">
+                        <span></span>
+                        <button class="jero-shell__notice-more" @onclick="@(_ => OpenNoticeCenter())">查看全部站内信</button>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="jero-shell__user-menu">
+            <button class="jero-shell__user-chip"
+                    title="账号菜单"
+                    aria-expanded='@(UserMenuOpen ? "true" : "false")'
+                    @onclick="@(_ => ToggleUserMenu())">
+                <span class="jero-shell__user-avatar" aria-hidden="true">@UserInitialText</span>
+                <span class="jero-shell__user-chip-name">@UserDisplayName</span>
+                <span class='@("jero-shell__user-chip-caret" + (UserMenuOpen ? " is-open" : ""))' aria-hidden="true">▾</span>
+            </button>
+            @if (UserMenuOpen)
+            {
+                <div class="jero-shell__user-panel">
+                    <div class="jero-shell__user-panel-info">
+                        <div class="jero-shell__user-name">@UserDisplayName</div>
+                        <div class="jero-shell__user-meta">@UserMeta</div>
+                    </div>
+                    <button class="jero-shell__user-action" @onclick="@(_ => OpenProfile())">个人中心</button>
+                    <button class="jero-shell__user-action" @onclick="@(_ => RequestLockScreen())">锁屏</button>
+                    <button class="jero-shell__user-action is-danger" @onclick="@(_ => ShowLogoutConfirm())">
+                        @(LoggingOut ? "退出中…" : "退出登录")
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter] public string BrandLogo { get; set; } = "";
+    [Parameter] public string SectionTitle { get; set; } = "";
+    [Parameter] public string BrandMarkStyle { get; set; } = "";
+    [Parameter] public string BrandLogoStyle { get; set; } = "";
+    [Parameter] public bool Ready { get; set; }
+    [Parameter] public string UserInitialText { get; set; } = "";
+    [Parameter] public string UserDisplayName { get; set; } = "";
+    [Parameter] public string UserMeta { get; set; } = "";
+    [Parameter] public string CurrentSection { get; set; } = "";
+    [Parameter] public string CurrentTitle { get; set; } = "";
+    [Parameter] public int UnreadNoticeCount { get; set; }
+    [Parameter] public AppUnreadNotice[] UnreadNotices { get; set; } = [];
+    [Parameter] public string Lang { get; set; } = "";
+    [Parameter] public bool IsDark { get; set; }
+    [Parameter] public bool NoticePanelOpen { get; set; }
+    [Parameter] public bool NoticeLoading { get; set; }
+    [Parameter] public string? NoticeError { get; set; }
+    [Parameter] public bool UserMenuOpen { get; set; }
+    [Parameter] public bool LoggingOut { get; set; }
+    [Parameter] public Action ToggleMobileMenu { get; set; } = default!;
+    [Parameter] public Action OpenHome { get; set; } = default!;
+    [Parameter] public Action ToggleTheme { get; set; } = default!;
+    [Parameter] public Action ToggleNoticePanel { get; set; } = default!;
+    [Parameter] public Action LoadUnreadNotices { get; set; } = default!;
+    [Parameter] public Action OpenNoticeCenter { get; set; } = default!;
+    [Parameter] public Action ToggleUserMenu { get; set; } = default!;
+    [Parameter] public Action OpenProfile { get; set; } = default!;
+    [Parameter] public Action RequestLockScreen { get; set; } = default!;
+    [Parameter] public Action ShowLogoutConfirm { get; set; } = default!;
+    [Parameter] public Action<string> SwitchLang { get; set; } = default!;
+    [Parameter] public Action<AppUnreadNotice> OpenNotice { get; set; } = default!;
+}

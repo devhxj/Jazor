@@ -1,0 +1,6 @@
+<input id="@Id" class="info-setting__file" type="file" accept=".jpg,.jpeg,.png,.svg,.webp" @onchange="@(_ => Change())" />
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public Action Change { get; set; } = default!;
+}

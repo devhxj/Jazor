@@ -1,0 +1,282 @@
+@using Npm.ElementPlus
+@using App.Components
+@using App.Logs
+@using App.Auth
+@using Jero.Web.App.Components
+@using Jero.Web.App.OpenAccess
+
+<ElCard Header="开放接口" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        管理开放接口身份，支持租户与用户联动、服务端密钥生成、签名工具和使用说明。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="身份标识">
+                <ElInput ModelValue="@QueryAccessKey"
+                         @onupdate:modelValue="SetQueryAccessKey"
+                         Placeholder="请输入身份标识"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div class="open-access-toolbar">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="OpenCreate">新增</ElButton>
+                }
+                <ElButton @onclick="OpenHelp">使用说明</ElButton>
+            </div>
+            <ElButton @onclick="LoadPage" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        <div style='@(Loading ? "" : "display:none")'>
+            <ElText>正在加载开放接口身份…</ElText>
+        </div>
+
+        <div class="jero-list-scroll">
+            <OpenAccessTable Rows="@Rows" CanEdit="@CanEdit" CanDelete="@CanDelete"
+                             OpenAudit="@OpenAudit" OpenEdit="@OpenEdit" Delete="@Delete"
+                             OpenSignature="@OpenSignature" />
+        </div>
+
+        <LogPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total"
+                       ChangePage="@ChangePage" ChangePageSize="@ChangePageSize" />
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="720px"
+          CloseOnClickModal="false"
+          DestroyOnClose="true">
+    <ElForm LabelWidth="96px">
+        <div class="open-access-form-grid">
+            <ElFormItem Label="身份标识" class="open-access-span-two">
+                <ElInput ModelValue="@EditAccessKey"
+                         @onupdate:modelValue="SetEditAccessKey"
+                         Placeholder="请输入开放接口身份标识"
+                         Maxlength="128"
+                         ShowWordLimit="true"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="密钥" class="open-access-span-two">
+                <div class="open-access-secret-row">
+                    <ElInput ModelValue="@EditAccessSecret"
+                             @onupdate:modelValue="SetEditAccessSecret"
+                             Placeholder="请输入密钥或点击生成"
+                             Maxlength="256"
+                             ShowWordLimit="true"
+                             Clearable="true" />
+                    <ElButton @onclick="RegenerateSecret" Loading="@SecretLoading">生成密钥</ElButton>
+                </div>
+            </ElFormItem>
+            <ElFormItem Label="绑定租户">
+                <AuthOptionSelect Value="@EditTenantId" Options="@TenantOptions" Placeholder="请选择租户" Clearable="true" Disabled="@TenantLoading" Change="@TenantChanged" />
+            </ElFormItem>
+            <ElFormItem Label="绑定用户">
+                <AuthOptionSelect Value="@EditUserId" Options="@UserOptions" Placeholder="请选择用户" Clearable="true" Disabled="@(UserLoading || EditTenantId.Length == 0)" Change="@SetEditUserId" />
+            </ElFormItem>
+        </div>
+    </ElForm>
+    <p style='@(EditorBusy ? "color:#909399;text-align:center" : "display:none")'>正在加载表单依赖…</p>
+    <div class="open-access-dialog-footer">
+        <ElButton @onclick="CancelEdit" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="Save"
+                  Loading="@Saving"
+                  Disabled="@(EditorBusy || DependencyFailed)">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@SignatureDialogVisible"
+          @onupdate:modelValue="SetSignatureDialogVisible"
+          Title="生成签名"
+          Width="760px"
+          CloseOnClickModal="false"
+          DestroyOnClose="true">
+    <ElForm LabelWidth="104px">
+        <ElFormItem Label="身份标识">
+            <ElInput ModelValue="@SignatureAccessKey" Readonly="true" />
+        </ElFormItem>
+        <ElFormItem Label="密钥">
+            <ElInput ModelValue="@SignatureAccessSecret" Readonly="true" ShowPassword="true" />
+        </ElFormItem>
+        <ElFormItem Label="接口地址">
+            <div class="open-access-sign-url">
+                <div style="width:120px;">
+                    <OpenAccessMethodSelect Value="@SignatureMethod" Options="@MethodOptions" Change="@SignatureMethodChanged" />
+                </div>
+                <ElInput ModelValue="@SignatureUrl"
+                         @onupdate:modelValue="SetSignatureUrl"
+                         Placeholder="请填写以 / 开头的接口地址，例如 /api/demo/helloWord"
+                         Clearable="true" />
+            </div>
+        </ElFormItem>
+        <ElFormItem Label="时间戳">
+            <div class="open-access-secret-row">
+                <ElInput ModelValue="@SignatureTimestamp"
+                         @onupdate:modelValue="SetSignatureTimestamp"
+                         Placeholder="请输入秒级时间戳"
+                         Clearable="true" />
+                <ElButton @onclick="FillTimestamp">获取</ElButton>
+            </div>
+        </ElFormItem>
+        <ElFormItem Label="随机数">
+            <div class="open-access-secret-row">
+                <ElInput ModelValue="@SignatureNonce"
+                         @onupdate:modelValue="SetSignatureNonce"
+                         Placeholder="请输入随机数"
+                         Clearable="true" />
+                <ElButton @onclick="FillNonce">获取</ElButton>
+            </div>
+        </ElFormItem>
+        <ElFormItem Label="签名结果">
+            <ElInput ModelValue="@SignatureResult" Readonly="true" Type="textarea" Rows="3" />
+        </ElFormItem>
+    </ElForm>
+    <div class="open-access-dialog-footer">
+        <ElButton @onclick="CopySignature" Disabled="@(SignatureResult.Length == 0)">复制签名</ElButton>
+        <ElButton Type="primary" @onclick="GenerateSignature" Loading="@SignatureGenerating">重新生成</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@HelpDialogVisible"
+          @onupdate:modelValue="SetHelpDialogVisible"
+          Title="OpenAPI 使用说明"
+          Width="860px"
+          DestroyOnClose="true">
+    <div class="open-access-help">
+        <p>
+            在接口上配置 <code>[Authorize(AuthenticationSchemes = SignatureAuthenticationDefaults.AuthenticationScheme)]</code>
+            即可启用开放接口身份验证。
+        </p>
+        <p>
+            如需同时保留 JWT，可将 JWT 与 Signature 两个 AuthenticationSchemes 用英文逗号连接。
+        </p>
+        <h3>公共请求头</h3>
+        <div class="open-access-help-grid">
+            <strong>accessKey</strong><span>开放接口身份标识</span>
+            <strong>timestamp</strong><span>时间戳，精确到秒</span>
+            <strong>nonce</strong><span>唯一随机数，建议 6 位数字</span>
+            <strong>sign</strong><span>HMAC-SHA256 Base64 签名</span>
+        </div>
+        <h3>签名流程</h3>
+        <ol>
+            <li>按 method、url、accessKey、timestamp、nonce 顺序用 &amp; 拼接。</li>
+            <li>method 使用大写；url 仅保留以 / 开头的接口路径，不包含协议、域名和查询参数。</li>
+            <li>使用 accessSecret 作为 HMAC-SHA256 密钥，对拼接结果签名并进行 Base64 编码。</li>
+        </ol>
+        <ElAlert Type="info" ShowIcon="true" Title="签名用于免登录识别访问用户身份，并降低重放攻击风险。" />
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="600px">
+    <div class="open-access-audit-grid">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+    </div>
+</ElDialog>
+
+<style>
+.open-access-toolbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}.open-access-actions{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}.open-access-actions .el-button+.el-button{margin-left:0}.open-access-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}.open-access-span-two{grid-column:1/-1}.open-access-secret-row,.open-access-sign-url{display:flex;width:100%;gap:8px;align-items:center}.open-access-secret-row>.el-input,.open-access-sign-url>.el-input{flex:1;min-width:0}.open-access-dialog-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.open-access-help{line-height:1.75}.open-access-help code{display:inline-block;padding:2px 7px;border-radius:4px;background:#f5f7fa;color:#409eff;overflow-wrap:anywhere}.open-access-help h3{margin:20px 0 10px;padding-bottom:8px;border-bottom:1px solid #ebeef5}.open-access-help-grid,.open-access-audit-grid{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px 16px}.open-access-help-grid strong,.open-access-audit-grid strong{color:#606266}@media(max-width:760px){.open-access-form-grid{grid-template-columns:1fr}.open-access-span-two{grid-column:auto}.open-access-secret-row,.open-access-sign-url{align-items:stretch;flex-direction:column}.open-access-sign-url>div{width:100%!important}.open-access-help-grid,.open-access-audit-grid{grid-template-columns:1fr}.open-access-dialog-footer{flex-wrap:wrap}}
+</style>
+
+@code {
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public bool UserLoading { get; set; }
+    [Parameter] public bool SecretLoading { get; set; }
+    [Parameter] public bool EditorBusy { get; set; }
+    [Parameter] public bool DependencyFailed { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool SignatureDialogVisible { get; set; }
+    [Parameter] public bool SignatureGenerating { get; set; }
+    [Parameter] public bool HelpDialogVisible { get; set; }
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public string QueryAccessKey { get; set; } = "";
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditAccessKey { get; set; } = "";
+    [Parameter] public string EditAccessSecret { get; set; } = "";
+    [Parameter] public string EditTenantId { get; set; } = "";
+    [Parameter] public string EditUserId { get; set; } = "";
+    [Parameter] public string SignatureMethod { get; set; } = "";
+    [Parameter] public string SignatureAccessKey { get; set; } = "";
+    [Parameter] public string SignatureAccessSecret { get; set; } = "";
+    [Parameter] public string SignatureUrl { get; set; } = "";
+    [Parameter] public string SignatureTimestamp { get; set; } = "";
+    [Parameter] public string SignatureNonce { get; set; } = "";
+    [Parameter] public string SignatureResult { get; set; } = "";
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetSignatureDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetHelpDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryAccessKey { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditAccessKey { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditAccessSecret { get; set; } = default!;
+    [Parameter] public Action<string?> SetSignatureUrl { get; set; } = default!;
+    [Parameter] public Action<string?> SetSignatureTimestamp { get; set; } = default!;
+    [Parameter] public Action<string?> SetSignatureNonce { get; set; } = default!;
+    [Parameter] public Action<string> SetEditUserId { get; set; } = default!;
+    [Parameter] public OpenAccessTableRow[] Rows { get; set; } = [];
+    [Parameter] public ConfigurationOption[] TenantOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] UserOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] MethodOptions { get; set; } = [];
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action RegenerateSecret { get; set; } = default!;
+    [Parameter] public Action FillTimestamp { get; set; } = default!;
+    [Parameter] public Action FillNonce { get; set; } = default!;
+    [Parameter] public Action CopySignature { get; set; } = default!;
+    [Parameter] public Action GenerateSignature { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string> OpenSignature { get; set; } = default!;
+    [Parameter] public Action<string> TenantChanged { get; set; } = default!;
+    [Parameter] public Action<string> SignatureMethodChanged { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action CancelEdit { get; set; } = default!;
+    [Parameter] public Action OpenHelp { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+}

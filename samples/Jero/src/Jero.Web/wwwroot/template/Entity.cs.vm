@@ -1,0 +1,43 @@
+
+
+
+@if(Model.BaseClassName!=""){
+@:using Jero.Core;
+@:using SqlSugar;
+}
+namespace @(Model.NameSpace);
+
+/// <summary>
+/// @(Model.Description)
+/// </summary>
+[Tenant("@(Model.ConfigId)")]
+[SugarTable("@(Model.TableName)", "@(Model.Description)")]
+public partial class @(Model.EntityName) @Model.BaseClassName
+{
+@foreach (var column in Model.TableField) {
+    var propSuffix = "";
+    if (column.IsPrimarykey && (Model.BaseClassName == "" || Model.BaseClassName != "" && column.DbColumnName.ToLower() != "id")) {
+        propSuffix = $", IsPrimaryKey = true, IsIdentity = {column.IsIdentity.ToString().ToLower()}";
+    }
+
+    if (column.DataType.TrimEnd('?') == "string") {
+        propSuffix += $", Length = {column.Length}";
+    } else if (column.DataType.TrimEnd('?') == "decimal") {
+        propSuffix += $", Length = {column.Length}, DecimalDigits={column.DecimalDigits}";
+    }
+    
+    if(!string.IsNullOrWhiteSpace(column.DefaultValue)){
+        propSuffix +=$", DefaultValue = \"{column.DefaultValue}\"";
+    }
+
+    @:/// <summary>
+    @:/// @column.ColumnDescription
+    @:/// </summary>
+    if(!column.IsNullable){
+    @:[Required]
+    }
+    @:[SugarColumn(ColumnName = "@column.DbColumnName", ColumnDescription = "@column.ColumnDescription"@propSuffix)]
+    @:public virtual @column.DataType @column.PropertyName { get; set; }
+    @:
+}
+}

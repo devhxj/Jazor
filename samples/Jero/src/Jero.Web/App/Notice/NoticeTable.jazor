@@ -1,0 +1,58 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Notice
+@using Jero.Web.App.Components
+
+<ElTable @attributes="@(new TableData<NoticeTableRow>(Rows))" border="true" stripe="true" RowKey="id" EmptyText="暂无通知公告">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="title" label="标题" MinWidth="220" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="contentSummary" label="内容摘要" MinWidth="260" ShowOverflowTooltip="true" />
+        <ElTableColumn label="类型" width="100" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<NoticeTableRow>)(object)cell).row; }<ElTag @attributes="@(new TableTagProps(Tag(row.typeTag)))">@(row.typeLabel)</ElTag></template>
+        </ElTableColumn>
+        <ElTableColumn label="创建者" MinWidth="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<NoticeTableRow>)(object)cell).row; }@((string.IsNullOrEmpty(row.createUserName) ? "-" : row.createUserName))</template>
+        </ElTableColumn>
+        <ElTableColumn prop="createTime" label="创建时间" MinWidth="170" align="center" />
+        <ElTableColumn label="状态" width="100" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<NoticeTableRow>)(object)cell).row; }<ElTag @attributes="@(new TableTagProps(Tag(row.statusTag)))">@(row.statusLabel)</ElTag></template>
+        </ElTableColumn>
+        <ElTableColumn label="发布者" MinWidth="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<NoticeTableRow>)(object)cell).row; }@((string.IsNullOrEmpty(row.publicUserName) ? "-" : row.publicUserName))</template>
+        </ElTableColumn>
+        <ElTableColumn label="发布时间" MinWidth="170" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<NoticeTableRow>)(object)cell).row; }@((string.IsNullOrEmpty(row.publicTime) ? "-" : row.publicTime))</template>
+        </ElTableColumn>
+        @if (CanEdit || CanPublish || CanDelete) { <ElTableColumn label="操作" width="220" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<NoticeTableRow>)(object)cell).row; }
+                @if (CanPublish) { <ElPopconfirm
+                              title='@("确定发布通知公告【" + row.title + "】吗？发布后不可直接修改。")'
+                              ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Publish(row.id))">
+                    <template #reference>
+                        <span title='@(row.disabledReason)'><ElButton link="true" type="primary" disabled='@(!row.canMutate)'>发布</ElButton></span>
+                    </template>
+                </ElPopconfirm> }
+                @if (CanEdit) { <span title='@(row.disabledReason)'>
+                    <ElButton link="true" type="primary" disabled='@(!row.canMutate)' @onclick="@(() => Edit(row.id))">编辑</ElButton>
+                </span> }
+                @if (CanDelete) { <ElPopconfirm
+                              title='@("确定删除通知公告【" + row.title + "】吗？")'
+                              ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.id))">
+                    <template #reference>
+                        <span title='@(row.disabledReason)'><ElButton link="true" type="danger" disabled='@(!row.canMutate)'>删除</ElButton></span>
+                    </template>
+                </ElPopconfirm> }
+            </template>
+        </ElTableColumn> }
+    </ElTable>
+
+@code {
+    [Parameter] public NoticeTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; } = default!;
+    [Parameter] public bool CanPublish { get; set; } = default!;
+    [Parameter] public bool CanDelete { get; set; } = default!;
+    [Parameter] public Action<string> Edit { get; set; } = default!;
+    [Parameter] public Action<string> Publish { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+
+    private static string Tag(string value) => value is "success" or "warning" or "danger" or "info" ? value : "primary";
+}

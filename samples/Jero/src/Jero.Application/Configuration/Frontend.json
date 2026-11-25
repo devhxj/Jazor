@@ -1,0 +1,11 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  "FrontendRuntime": {
+    "ApiUrl": "/api", // 前端运行时 API 基地址，支持相对路径或绝对地址
+    "DingTalk": {
+      "ClientId": "", // 为空时回退到 DingTalk:ClientId
+      "CorpId": "" // 为空时回退到 DingTalk:AppId
+    }
+  }
+}

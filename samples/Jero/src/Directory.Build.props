@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Copyright>Jero</Copyright>
+    <Description>Jero 通用权限开发平台</Description>
+  </PropertyGroup>
+</Project>

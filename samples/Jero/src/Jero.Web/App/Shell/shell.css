@@ -1,0 +1,171 @@
+    /* 标准列表页（jero-list-page 标记）flex 填充：main 锁滚动，高度沿卡链下传——
+       列表卡吃满剩余高度、表区（jero-list-scroll）滚动、分页钉在卡底常驻可见；
+       查询卡展开/折叠时列表卡随之收缩，这是 max-height 方案做不到的自适应。
+       Region（左右分栏）/ApprovalFlow（设计器）等异构页不标记、维持主区滚动。 */
+    .jero-shell__main:has(.jero-list-page) { overflow: hidden; display: flex; flex-direction: column; }
+    .jero-shell__main .jero-list-page { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .jero-shell__main .jero-list-page > .el-card__body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .jero-list-card { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .jero-list-card > .el-card__body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .jero-list-scroll { flex: 1; min-height: 0; overflow: auto; }
+    /* 移动端回退：窄屏改为自然高度 + 主区滚动（flex 填充是桌面增强，窄屏挤压表格得不偿失） */
+    @media (max-width: 860px) {
+        .jero-shell__main:has(.jero-list-page) { overflow: auto; display: block; }
+    }
+    /* height 而非 min-height：壳层锁定视口，长内容由 main 内部滚动（头部/侧栏/标签条固定），
+       否则网格会被内容撑高、整篇文档跟着滚 */
+    .jero-shell { height: 100vh; display: grid; grid-template-columns: 252px minmax(0, 1fr); grid-template-rows: 64px auto minmax(0, 1fr); }
+    .jero-shell__brand { grid-column: 1; grid-row: 1; min-width: 0; display: grid; grid-template-columns: 64px minmax(0, 1fr); color: white; background: #17233d; box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .06); font-weight: 700; letter-spacing: .3px; }
+    .jero-shell__brand-mark { display: flex; align-items: center; justify-content: center; gap: 4px; border-right: 1px solid rgba(255, 255, 255, .05); }
+    .jero-shell__brand-title { min-width: 0; display: flex; align-items: center; padding: 0 12px 0 2px; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .jero-shell__mark { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: linear-gradient(135deg, #409eff, #36cfc9); box-shadow: 0 3px 10px rgba(64, 158, 255, .3); }
+    .jero-shell__logo { width: 30px; height: 30px; object-fit: contain; }
+    .jero-shell__header { grid-column: 2; grid-row: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 24px; background: white; border-bottom: 1px solid var(--jero-border); box-shadow: 0 1px 3px rgba(16, 24, 40, .03); }
+    .jero-shell__header-left { min-width: 0; display: flex; align-items: center; gap: 12px; }
+    .jero-shell__mobile-menu { display: none; border: 1px solid #dcdfe6; border-radius: 7px; padding: 7px 11px; background: white; color: #606266; cursor: pointer; }
+    .jero-shell__mobile-overlay { display: none; }
+    /* 面包屑迁入头部：原来的 chrome 卡片上下文改为 64px 白条内嵌，可收缩省略 */
+    .jero-shell__breadcrumb { min-width: 0; display: flex; align-items: center; gap: 8px; padding: 0; color: #909399; font-size: 13px; overflow: hidden; white-space: nowrap; }
+    .jero-shell__breadcrumb > * { flex: 0 0 auto; }
+    .jero-shell__breadcrumb span { color: #c0c4cc; }
+    .jero-shell__breadcrumb-home { border: 0; padding: 0; background: transparent; color: #409eff; cursor: pointer; }
+    .jero-shell__breadcrumb-home:hover { opacity: .78; }
+    .jero-shell__breadcrumb-current { color: #303133 !important; font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+    .jero-shell__icon-btn { width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #606266; cursor: pointer; font-size: 17px; line-height: 1; transition: color .16s ease, background-color .16s ease, border-color .16s ease; }
+    .jero-shell__icon-btn:hover { border-color: #a0cfff; color: #409eff; background: #ecf5ff; }
+    .jero-shell__lang { display: flex; align-items: center; gap: 2px; border: 1px solid var(--jero-border); border-radius: 9px; padding: 2px; }
+    .jero-shell__lang-btn { border: 0; border-radius: 7px; padding: 5px 9px; background: transparent; color: #909399; font-size: 12px; line-height: 1; cursor: pointer; transition: color .16s ease, background-color .16s ease; }
+    .jero-shell__lang-btn:hover { color: #409eff; }
+    .jero-shell__lang-btn.is-active { background: #409eff; color: white; }
+    .jero-shell__user { min-width: 0; display: flex; align-items: center; gap: 14px; padding-left: 16px; border-left: 1px solid var(--jero-border-light); }
+    .jero-shell__notice { position: relative; }
+    .jero-shell__notice-button { position: relative; width: 38px; height: 38px; display: grid; place-items: center; border: 1px solid #dcdfe6; border-radius: 9px; background: white; color: #606266; cursor: pointer; font-size: 18px; transition: color .16s ease, background-color .16s ease, border-color .16s ease; }
+    .jero-shell__notice-button:hover { border-color: #a0cfff; color: #409eff; background: #ecf5ff; }
+    .jero-shell__notice-count { position: absolute; top: -6px; right: -7px; min-width: 19px; height: 19px; display: grid; place-items: center; border: 2px solid white; border-radius: 10px; padding: 0 4px; background: #f56c6c; color: white; font-size: 10px; font-weight: 700; }
+    .jero-shell__notice-panel { position: absolute; z-index: 80; top: 46px; right: 0; width: min(380px, calc(100vw - 32px)); border: 1px solid var(--jero-border-light); border-radius: 12px; background: white; box-shadow: 0 16px 48px rgba(16, 24, 40, .14); overflow: hidden; }
+    .jero-shell__notice-panel-head, .jero-shell__notice-panel-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+    .jero-shell__notice-panel-head { border-bottom: 1px solid var(--jero-border-light); font-size: 14px; font-weight: 700; }
+    .jero-shell__notice-panel-foot { border-top: 1px solid var(--jero-border-light); }
+    .jero-shell__notice-refresh, .jero-shell__notice-more { border: 0; background: transparent; color: #409eff; cursor: pointer; }
+    .jero-shell__notice-refresh:disabled { color: #a8abb2; cursor: wait; }
+    .jero-shell__notice-list { max-height: 360px; overflow-y: auto; }
+    .jero-shell__notice-item { width: 100%; display: block; border: 0; border-bottom: 1px solid #f0f2f5; padding: 12px 16px; background: white; color: inherit; text-align: left; cursor: pointer; }
+    .jero-shell__notice-item:hover { background: #f6f8fb; }
+    .jero-shell__notice-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+    .jero-shell__notice-meta { margin-top: 6px; display: flex; justify-content: space-between; gap: 12px; color: #909399; font-size: 11px; }
+    .jero-shell__notice-empty, .jero-shell__notice-error { padding: 24px 16px; color: #909399; text-align: center; font-size: 13px; }
+    .jero-shell__notice-error { color: #e6a23c; }
+    .jero-shell__notice-detail { min-height: 160px; line-height: 1.7; overflow-wrap: anywhere; }
+    /* 用户芯片 + 下拉：头部动作收敛，降低信息密度（面板样式与通知面板同一视觉语言） */
+    .jero-shell__user-menu { position: relative; }
+    .jero-shell__user-chip { display: flex; align-items: center; gap: 9px; border: 1px solid transparent; border-radius: 10px; padding: 4px 10px 4px 5px; background: transparent; color: #606266; cursor: pointer; transition: color .16s ease, background-color .16s ease, border-color .16s ease; }
+    .jero-shell__user-chip:hover { background: #f6f8fb; border-color: var(--jero-border); }
+    .jero-shell__user-avatar { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, #409eff, #36cfc9); color: white; font-size: 13px; font-weight: 700; }
+    .jero-shell__user-chip-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 600; color: #303133; }
+    .jero-shell__user-chip-caret { flex: 0 0 auto; color: #909399; font-size: 11px; transition: transform .16s ease; }
+    .jero-shell__user-chip-caret.is-open { transform: rotate(180deg); }
+    .jero-shell__user-panel { position: absolute; z-index: 80; top: 48px; right: 0; width: 220px; border: 1px solid var(--jero-border-light); border-radius: 12px; background: white; box-shadow: 0 16px 48px rgba(16, 24, 40, .14); overflow: hidden; }
+    .jero-shell__user-panel-info { padding: 12px 14px; border-bottom: 1px solid var(--jero-border-light); }
+    .jero-shell__user-name { font-size: 14px; font-weight: 600; }
+    .jero-shell__user-meta { margin-top: 4px; color: #909399; font-size: 12px; }
+    .jero-shell__user-action { width: 100%; display: flex; align-items: center; gap: 8px; border: 0; padding: 10px 14px; background: transparent; color: #606266; font-size: 13px; text-align: left; cursor: pointer; transition: background-color .16s ease, color .16s ease; }
+    .jero-shell__user-action:hover { background: #f6f8fb; color: #303133; }
+    .jero-shell__user-action.is-danger { color: #f56c6c; }
+    .jero-shell__user-action.is-danger:hover { background: #fef0f0; }
+    /* 双列侧栏：64px 图标栏（分组聚合）+ 手风琴菜单列；两列各自独立滚动 */
+    .jero-shell__sidebar { grid-column: 1; grid-row: 2 / 4; min-width: 0; display: grid; grid-template-columns: 64px minmax(0, 1fr); background: #17233d; box-shadow: inset -1px 0 0 rgba(255, 255, 255, .04); color: #c0c8d8; overflow: hidden; }
+    .jero-shell__rail { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 0 20px; overflow-y: auto; border-right: 1px solid rgba(255, 255, 255, .05); scrollbar-width: none; }
+    .jero-shell__rail::-webkit-scrollbar { display: none; }
+    .jero-shell__rail-btn { position: relative; width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px; padding: 0; background: transparent; color: #aeb9cc; cursor: pointer; transition: background-color .16s ease, color .16s ease; }
+    .jero-shell__rail-btn:hover { background: rgba(255, 255, 255, .06); color: white; }
+    .jero-shell__rail-btn.is-active { background: rgba(64, 158, 255, .18); color: white; }
+    .jero-shell__rail-btn.is-active::before { content: ""; position: absolute; left: 2px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; border-radius: 2px; background: white; }
+    .jero-shell__rail-glyph { line-height: 1; font-size: 15px; font-weight: 600; }
+    .jero-shell__menu-col { min-width: 0; display: grid; gap: 2px; align-content: start; overflow-y: auto; padding: 12px 10px 24px; }
+    /* 选中态走"半透明主色 + 左侧指示条"而非整块实色，降低深色侧栏的视觉噪音 */
+    .jero-shell__menu { position: relative; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 0; border-radius: 8px; padding: 9px 10px 9px 14px; background: transparent; color: #c8d0df; text-align: left; cursor: pointer; transition: background-color .16s ease, color .16s ease; }
+    .jero-shell__menu:hover:not(:disabled) { background: rgba(255, 255, 255, .06); color: white; }
+    .jero-shell__menu.is-active { background: rgba(64, 158, 255, .18); color: white; font-weight: 600; }
+    .jero-shell__menu.is-active::before { content: ""; position: absolute; left: 4px; top: 50%; transform: translateY(-50%); width: 3px; height: 18px; border-radius: 2px; background: white; }
+    .jero-shell__menu:disabled { color: #667187; cursor: default; }
+    .jero-shell__badge { flex: 0 0 auto; border-radius: 10px; padding: 2px 7px; background: rgba(255,255,255,.09); font-size: 10px; }
+    .jero-shell__main { grid-column: 2; grid-row: 3; min-width: 0; padding: 24px; overflow: auto; overscroll-behavior: contain; }
+    .jero-shell__main::-webkit-scrollbar { width: 10px; height: 10px; }
+    .jero-shell__main::-webkit-scrollbar-thumb { background: #d3d9e3; border: 2px solid #f5f7fa; border-radius: 5px; }
+    /* 水印只做存在性提示：低透明度 + 疏排布，避免压过正文可读性 */
+    .jero-shell__watermark { position: fixed; z-index: 40; inset: 104px 0 0 252px; display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); grid-auto-rows: 190px; align-items: center; justify-items: center; overflow: hidden; pointer-events: none; user-select: none; color: rgba(96, 98, 102, .032); font-size: 15px; font-weight: 500; letter-spacing: 1px; }
+    .jero-shell__watermark span { transform: rotate(-18deg); white-space: nowrap; }
+    .jero-shell__status { margin-bottom: 16px; border: 1px solid #f3d19e; border-radius: 8px; padding: 12px 14px; background: #fdf6ec; color: #b88230; }
+    /* 页签条：紧贴 header 正下方（同底色同下边框，连为一体），无间距无卡片 */
+    .jero-shell__tabbar { grid-column: 2; grid-row: 2; display: flex; align-items: center; min-height: 40px; padding: 0 20px 0 24px; background: white; border-bottom: 1px solid var(--jero-border); }
+    .jero-shell__tabbar.is-empty { display: none; }
+    .jero-shell__tabs { flex: 1 1 auto; min-width: 0; display: flex; gap: 6px; padding: 6px 0; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; }
+    .jero-shell__tabs::-webkit-scrollbar { display: none; }
+    .jero-shell__tab { flex: 0 0 auto; display: flex; align-items: center; border: 1px solid var(--jero-border); border-radius: 8px; background: #f6f8fb; color: #606266; transition: border-color .16s ease, background-color .16s ease, color .16s ease; }
+    .jero-shell__tab:hover { border-color: #b9d4f5; }
+    .jero-shell__tab.is-active { border-color: var(--jero-primary); background: #ecf5ff; color: #337ecc; }
+    .jero-shell__tab-open, .jero-shell__tab-close { border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 13px; }
+    .jero-shell__tab-open { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; }
+    .jero-shell__tab-close { padding: 6px 8px 6px 2px; font-size: 15px; line-height: 1; }
+    .jero-shell__tab-close:hover { color: #f56c6c; }
+    /* 页签右键菜单：透明覆盖层收菜单 + 定位菜单面板（不用全局 pointerdown——会吞掉菜单项 click） */
+    .jero-shell__ctx-overlay { position: fixed; z-index: 95; inset: 0; border: 0; padding: 0; background: transparent; cursor: default; }
+    .jero-shell__ctx-menu { position: fixed; z-index: 96; min-width: 150px; border: 1px solid var(--jero-border-light); border-radius: 10px; background: white; box-shadow: 0 12px 32px rgba(16, 24, 40, .16); padding: 4px; }
+    .jero-shell__ctx-item { width: 100%; display: flex; align-items: center; gap: 8px; border: 0; border-radius: 7px; padding: 8px 12px; background: transparent; color: #606266; font-size: 13px; text-align: left; cursor: pointer; transition: background-color .16s ease, color .16s ease; }
+    .jero-shell__ctx-item:hover:not(:disabled) { background: #f6f8fb; color: #303133; }
+    .jero-shell__ctx-item:disabled { color: #c0c4cc; cursor: default; }
+    html.dark .jero-shell__ctx-menu { background: #151d31; border-color: #222c45; }
+    html.dark .jero-shell__ctx-item { color: #a3adc2; }
+    html.dark .jero-shell__ctx-item:hover:not(:disabled) { background: rgba(255, 255, 255, .05); color: #e5eaf3; }
+    html.dark .jero-shell__ctx-item:disabled { color: #4e5a75; }
+    .jero-shell__menu:focus-visible, .jero-shell__rail-btn:focus-visible, .jero-shell__notice-button:focus-visible, .jero-shell__user-chip:focus-visible, .jero-shell__user-action:focus-visible, .jero-shell__icon-btn:focus-visible, .jero-shell__lang-btn:focus-visible, .jero-shell__tab-open:focus-visible, .jero-shell__tab-close:focus-visible, .jero-shell__breadcrumb-home:focus-visible { outline: 2px solid rgba(64, 158, 255, .5); outline-offset: 1px; }
+    html.dark .jero-shell__header { background: #131a2c; border-bottom-color: #222c45; box-shadow: none; }
+    html.dark .jero-shell__tabbar { background: #131a2c; border-bottom-color: #222c45; }
+    html.dark .jero-shell__breadcrumb { color: #7d8aa5; }
+    html.dark .jero-shell__breadcrumb span { color: #4e5a75; }
+    html.dark .jero-shell__breadcrumb-current { color: #e5eaf3 !important; }
+    html.dark .jero-shell__tab { background: rgba(255, 255, 255, .05); border-color: #2a3550; color: #a3adc2; }
+    html.dark .jero-shell__tab:hover { border-color: #3d5a8f; }
+    html.dark .jero-shell__tab.is-active { border-color: #409eff; background: rgba(64, 158, 255, .16); color: #7cc0ff; }
+    html.dark .jero-shell__mobile-menu { background: transparent; border-color: #2a3550; color: #a3adc2; }
+    html.dark .jero-shell__lang { border-color: #2a3550; }
+    html.dark .jero-shell__lang-btn.is-active { background: #409eff; color: white; }
+    html.dark .jero-shell__notice-panel { background: #151d31; border-color: #222c45; }
+    html.dark .jero-shell__notice-item { background: #151d31; }
+    html.dark .jero-shell__notice-item:hover { background: rgba(255, 255, 255, .05); }
+    html.dark .jero-shell__notice-button, html.dark .jero-shell__icon-btn { background: transparent; color: #a3adc2; border-color: transparent; }
+    html.dark .jero-shell__notice-button:hover, html.dark .jero-shell__icon-btn:hover { background: rgba(64, 158, 255, .12); color: #7cc0ff; border-color: rgba(64, 158, 255, .35); }
+    html.dark .jero-shell__user-chip { color: #a3adc2; }
+    html.dark .jero-shell__user-chip:hover { background: rgba(255, 255, 255, .05); border-color: #2a3550; }
+    html.dark .jero-shell__user-chip-name { color: #e5eaf3; }
+    html.dark .jero-shell__user-panel { background: #151d31; border-color: #222c45; }
+    html.dark .jero-shell__user-action { color: #a3adc2; }
+    html.dark .jero-shell__user-action:hover { background: rgba(255, 255, 255, .05); color: #e5eaf3; }
+    html.dark .jero-shell__user-action.is-danger { color: #f89898; }
+    html.dark .jero-shell__user-action.is-danger:hover { background: rgba(245, 108, 108, .12); }
+    html.dark .jero-shell__watermark { color: rgba(255, 255, 255, .045); }
+    html.dark .jero-shell__status { background: #2a2313; border-color: #5a4a1f; color: #d9a542; }
+    html.dark .jero-shell__main::-webkit-scrollbar-thumb { background: #33405f; border-color: #0d1322; }
+    @media (max-width: 860px) {
+        .jero-shell { grid-template-columns: 1fr; grid-template-rows: 56px auto auto minmax(0, 1fr); }
+        .jero-shell__brand { grid-column: 1; grid-row: 1; }
+        .jero-shell__header { grid-column: 1; grid-row: 2; padding: 12px 16px; }
+        .jero-shell__tabbar { grid-column: 1; grid-row: 3; padding: 0 12px; }
+        .jero-shell__sidebar { grid-row: 2 / 4; }
+        .jero-shell__mobile-menu { display: inline-flex; align-items: center; }
+        .jero-shell__mobile-overlay { position: fixed; z-index: 89; inset: 0; display: block; border: 0; background: rgba(15, 23, 42, .45); }
+        .jero-shell__sidebar { position: fixed; z-index: 90; inset: 0 auto 0 0; width: min(88vw, 320px); display: grid; transform: translateX(-100%); transition: transform .18s ease; box-shadow: 12px 0 32px rgba(15, 23, 42, .22); }
+        .jero-shell__sidebar.is-open { transform: translateX(0); }
+        .jero-shell__main { grid-column: 1; grid-row: 4; padding: 16px; }
+        .jero-shell__watermark { inset: 152px 0 0 0; grid-template-columns: repeat(3, minmax(120px, 1fr)); }
+        .jero-shell__user-meta { display: none; }
+    }
+    @media (max-width: 560px) {
+        .jero-shell__brand-title { font-size: 14px; }
+        .jero-shell__header { gap: 8px; padding: 10px 12px; }
+        .jero-shell__user { gap: 8px; }
+        .jero-shell__notice-panel { position: fixed; top: 112px; right: 12px; left: 12px; width: auto; }
+        .jero-shell__notice-list { max-height: calc(100vh - 230px); }
+        .jero-shell__main { padding: 12px; }
+        .jero-shell__breadcrumb { overflow-x: auto; white-space: nowrap; }
+    }

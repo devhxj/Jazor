@@ -1,0 +1,188 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Shell
+
+<div class="jero-shell">
+    <ShellHeader BrandMarkStyle='@(BrandLogo.Length > 0 ? "display:none" : "")'
+        BrandLogoStyle='@(BrandLogo.Length > 0 ? "" : "display:none")'
+        BrandLogo="@BrandLogo"
+        SectionTitle="@SectionTitle"
+        Ready="@Ready"
+        UserInitialText="@UserInitialText"
+        UserDisplayName="@UserDisplayName"
+        UserMeta="@UserMeta"
+        CurrentSection="@CurrentSection"
+        CurrentTitle="@CurrentTitle"
+        UnreadNoticeCount="@UnreadNoticeCount"
+        UnreadNotices="@UnreadNotices"
+        Lang="@Lang"
+        IsDark="@IsDark"
+        NoticePanelOpen="@NoticePanelOpen"
+        NoticeLoading="@NoticeLoading"
+        NoticeError="@NoticeError"
+        UserMenuOpen="@UserMenuOpen"
+        LoggingOut="@LoggingOut"
+        ToggleMobileMenu="@ToggleMobileMenu"
+        OpenHome="@OpenHome"
+        ToggleTheme="@ToggleTheme"
+        ToggleNoticePanel="@ToggleNoticePanel"
+        LoadUnreadNotices="@LoadUnreadNotices"
+        OpenNoticeCenter="@OpenNoticeCenter"
+        ToggleUserMenu="@ToggleUserMenu"
+        OpenProfile="@OpenProfile"
+        RequestLockScreen="@RequestLockScreen"
+        ShowLogoutConfirm="@ShowLogoutConfirm"
+        SwitchLang="@SwitchLang"
+        OpenNotice="@OpenNotice" />
+
+    @if (Tabs.Length > 0)
+    {
+        <div class="jero-shell__tabbar">
+            <div class="jero-shell__tabs" aria-label="已打开页面">
+                @foreach (var tab in Tabs)
+                {
+                    <div @key="tab.Route" class='@(tab.Active ? "jero-shell__tab is-active" : "jero-shell__tab")'
+                         data-route="@tab.Route" @attributes="@tab.ContextHandler">
+                        <button class="jero-shell__tab-open" @onclick="tab.Open">
+                            <slot name="tabIcon" path="@tab.Route" /><span>@tab.Title</span>
+                        </button>
+                        @if (!tab.IsAffix)
+                        {
+                            <button class="jero-shell__tab-close" title="关闭标签" @onclick="tab.Close">×</button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    @if (ContextActions.Length > 0)
+    {
+        <button class="jero-shell__ctx-overlay" title="关闭菜单" @onclick="CloseContext"></button>
+        <div class="jero-shell__ctx-menu" style="@ContextStyle">
+            @foreach (var item in ContextActions)
+            {
+                <button @key="item.Title" class="jero-shell__ctx-item" disabled="@item.Disabled" @onclick="item.Run">@item.Title</button>
+            }
+        </div>
+    }
+    @if (Mobile)
+    {
+        <button class="jero-shell__mobile-overlay" title="关闭菜单" @onclick="CloseMobile"></button>
+    }
+    <aside class='@(Mobile ? "jero-shell__sidebar is-open" : "jero-shell__sidebar")'>
+        <nav class="jero-shell__rail" aria-label="菜单分组">
+            @foreach (var section in Sections)
+            {
+                <button @key="section.Title" class='@(section.Active ? "jero-shell__rail-btn is-active" : "jero-shell__rail-btn")'
+                        title="@section.Title" @onclick="section.Select">
+                    <slot name="sectionIcon" title="@section.Title" initial="@section.Initial" />
+                </button>
+            }
+        </nav>
+        <div class="jero-shell__menu-col">
+            @foreach (var item in Menus)
+            {
+                <button @key="item.Id" class='@(item.Active ? "jero-shell__menu is-active" : "jero-shell__menu")'
+                        disabled="@(!item.IsSupported && !item.IsExternal)" @onclick="item.Open">
+                    <span>@item.Title</span>
+                    @if (item.IsExternal)
+                    {
+                        <span class="jero-shell__badge">外链</span>
+                    }
+                    else if (!item.IsSupported)
+                    {
+                        <span class="jero-shell__badge">待迁移</span>
+                    }
+                </button>
+            }
+        </div>
+    </aside>
+    <main class="jero-shell__main">
+        @if (Watermark.Length > 0)
+        {
+            <div class="jero-shell__watermark" aria-hidden="true">
+                @for (var index = 0; index < 24; index++)
+                {
+                    <span @key="index">@Watermark</span>
+                }
+            </div>
+        }
+        @if (Loading)
+        {
+            <div class="jero-shell__status">正在加载用户、菜单和权限…</div>
+        }
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="jero-shell__status">@Error</div>
+        }
+        @if (Ready)
+        {
+            <slot name="route" />
+        }
+    </main>
+</div>
+
+<ElDialog ModelValue="@DetailVisible" @onupdate:modelValue="@(value => SetDetailVisible(value == true))"
+          Title="@NoticeTitle" Width="min(720px, calc(100vw - 24px))">
+    <div class="jero-shell__notice-detail" innerHTML="@NoticeContent"></div>
+</ElDialog>
+<ElDialog ModelValue="@LogoutConfirm" @onupdate:modelValue="@(value => SetLogoutConfirm(value == true))"
+          Title="退出确认" Width="min(380px, calc(100vw - 24px))" ZIndex="3000">
+    <div>确定退出当前登录吗？</div>
+    <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="UpdateLogoutConfirm">取 消</ElButton>
+        <ElButton Type="primary" Disabled="@LoggingOut" @onclick="Logout">@(LoggingOut ? "退出中…" : "退 出")</ElButton>
+    </div>
+</ElDialog>
+<slot name="lock" />
+
+@code {
+    [Parameter] public string BrandLogo { get; set; } = "";
+    [Parameter] public string SectionTitle { get; set; } = "";
+    [Parameter] public bool Ready { get; set; }
+    [Parameter] public string UserInitialText { get; set; } = "";
+    [Parameter] public string UserDisplayName { get; set; } = "";
+    [Parameter] public string UserMeta { get; set; } = "";
+    [Parameter] public string CurrentSection { get; set; } = "";
+    [Parameter] public string CurrentTitle { get; set; } = "";
+    [Parameter] public int UnreadNoticeCount { get; set; }
+    [Parameter] public AppUnreadNotice[] UnreadNotices { get; set; } = [];
+    [Parameter] public string Lang { get; set; } = "";
+    [Parameter] public bool IsDark { get; set; }
+    [Parameter] public bool NoticePanelOpen { get; set; }
+    [Parameter] public bool NoticeLoading { get; set; }
+    [Parameter] public string? NoticeError { get; set; }
+    [Parameter] public bool UserMenuOpen { get; set; }
+    [Parameter] public bool LoggingOut { get; set; }
+    [Parameter] public Action ToggleMobileMenu { get; set; } = default!;
+    [Parameter] public Action OpenHome { get; set; } = default!;
+    [Parameter] public Action ToggleTheme { get; set; } = default!;
+    [Parameter] public Action ToggleNoticePanel { get; set; } = default!;
+    [Parameter] public Action LoadUnreadNotices { get; set; } = default!;
+    [Parameter] public Action OpenNoticeCenter { get; set; } = default!;
+    [Parameter] public Action ToggleUserMenu { get; set; } = default!;
+    [Parameter] public Action OpenProfile { get; set; } = default!;
+    [Parameter] public Action RequestLockScreen { get; set; } = default!;
+    [Parameter] public Action ShowLogoutConfirm { get; set; } = default!;
+    [Parameter] public Action<string> SwitchLang { get; set; } = default!;
+    [Parameter] public Action<AppUnreadNotice> OpenNotice { get; set; } = default!;
+    [Parameter] public bool Mobile { get; set; }
+    [Parameter] public Action CloseMobile { get; set; } = default!;
+    [Parameter] public ShellTab[] Tabs { get; set; } = [];
+    [Parameter] public string ContextStyle { get; set; } = "";
+    [Parameter] public ShellContextAction[] ContextActions { get; set; } = [];
+    [Parameter] public Action CloseContext { get; set; } = default!;
+    [Parameter] public ShellSection[] Sections { get; set; } = [];
+    [Parameter] public ShellMenu[] Menus { get; set; } = [];
+    [Parameter] public string Watermark { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool DetailVisible { get; set; }
+    [Parameter] public Action<bool> SetDetailVisible { get; set; } = default!;
+    [Parameter] public string NoticeTitle { get; set; } = "";
+    [Parameter] public string NoticeContent { get; set; } = "";
+    [Parameter] public bool LogoutConfirm { get; set; }
+    [Parameter] public Action<bool> SetLogoutConfirm { get; set; } = default!;
+    [Parameter] public Action Logout { get; set; } = default!;
+
+    private void UpdateLogoutConfirm() => SetLogoutConfirm(false);
+}

@@ -1,0 +1,14 @@
+@using Npm.ElementPlus
+@using Npm.Jero.ElementPlus
+
+<ProjectTabs ModelValue="@Active" @onupdate:modelValue="Update">
+    <ElTabPane Label="流量趋势" Name="trends" />
+    <ElTabPane Label="月访问量" Name="visits" />
+</ProjectTabs>
+
+@code {
+    [Parameter] public string Active { get; set; } = "";
+    [Parameter] public Action<string> Change { get; set; } = default!;
+
+    private void Update(ECMAScript.Vue.VueStringNumberValue value) => Change(value.AsString ?? "");
+}

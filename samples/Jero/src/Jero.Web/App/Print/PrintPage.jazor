@@ -1,0 +1,422 @@
+@using Npm.ElementPlus
+@using App.Auth
+@using App.Components
+@using App.Ldap
+@using Jero.Web.App.Components
+@using Jero.Web.App.Print
+
+<ElCard Header="打印模板" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        管理租户打印模板，支持 Hiprint A/B 组件库、版面设计、测试数据预览、浏览器打印、客户端打印和 PDF 导出。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            @if (IsSuperAdmin)
+            {
+                <ElFormItem Label="租户">
+                    <div style="width:260px;">
+                        <AuthOptionSelect Value="@TenantId" Options="@TenantOptions" Placeholder="请选择租户" Clearable="true" Loading="@TenantLoading" Change="@TenantChanged" />
+                    </div>
+                </ElFormItem>
+            }
+            <ElFormItem Label="模板名称">
+                <ElInput ModelValue="@Name"
+                         @onupdate:modelValue="SetName"
+                         Placeholder="请输入模板名称"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px;"></div>
+
+    <ElCard class="jero-list-card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">
+            <div>
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="OpenCreate">新增</ElButton>
+                }
+            </div>
+            <ElButton @onclick="LoadPage" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载打印模板…</ElText>
+        }
+
+        <div class="jero-list-scroll">
+            <PrintTable Rows="@Rows" CanEdit="@CanEdit" CanDelete="@CanDelete" HasActionColumn="@HasActionColumn"
+                        OpenAudit="@OpenAudit" OpenEdit="@OpenEdit" Delete="@Delete" />
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@PageSizes"
+                              Background="true"
+                              Layout="total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Fullscreen="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false"
+          @onopened="InitializeDesigner"
+          @onclosed="CleanupDesigner">
+    <template #default>
+    <div style="display:flex;flex-direction:column;gap:16px;min-height:720px;">
+        <ElAlert Type="info"
+                 ShowIcon="true"
+                 Closable="false"
+                 Title="浏览器打印使用当前浏览器预览；客户端打印需填写服务地址，并在打印参数 JSON 中指定 printer、title、copies、color 等字段。" />
+
+        <ElCard Header="模板配置">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 18px;">
+                <ElFormItem Label="模板名称">
+                    <ElInput ModelValue="@EditName"
+                             @onupdate:modelValue="SetEditName"
+                             Maxlength="64"
+                             ShowWordLimit="true"
+                             Placeholder="请输入模板名称"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem Label="排序">
+                    <PrintNumberInput Value="@EditOrderNo"
+                                   Change="@SetEditOrderNo"
+                                   Minimum="0"
+                                   Step="1" />
+                </ElFormItem>
+                <ElFormItem Label="状态">
+                    <LdapStatusInput Value="@EditStatus" InactiveLabel="停用" OnChange="@SetEditStatus" />
+                </ElFormItem>
+                <ElFormItem Label="打印类型">
+                    <PrintTypeInput Value="@EditPrintType" Change="@SetEditPrintType" />
+                </ElFormItem>
+            </div>
+            <ElFormItem Label="客户端服务地址">
+                <ElInput ModelValue="@EditClientServiceAddress"
+                         @onupdate:modelValue="SetEditClientServiceAddress"
+                         Maxlength="128"
+                         ShowWordLimit="true"
+                         Placeholder="例如：http://localhost:17521"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="打印参数">
+                <ElInput ModelValue="@EditPrintParam"
+                         @onupdate:modelValue="SetEditPrintParam"
+                         Type="textarea"
+                         Rows="4"
+                         Placeholder="JSON 对象，例如 printer、title、copies、color" />
+            </ElFormItem>
+            <ElFormItem Label="备注">
+                <ElInput ModelValue="@EditRemark"
+                         @onupdate:modelValue="SetEditRemark"
+                         Type="textarea"
+                         Rows="2"
+                         Maxlength="128"
+                         ShowWordLimit="true"
+                         Placeholder="请输入备注内容" />
+            </ElFormItem>
+        </ElCard>
+
+        <ElCard Header="Hiprint 设计器">
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px;">
+                <div style="width:120px;">
+                    <AuthOptionSelect Value="@ModeValue" Options="@ProviderOptions" Placeholder="设计组件库" Disabled="@DesignerLoading" Change="@ModeChanged" />
+                </div>
+                <div style="width:110px;">
+                    <AuthOptionSelect Value="@PaperType" Options="@PaperOptions" Placeholder="纸张" Disabled="@(!DesignerReady)" Change="@PaperChanged" />
+                </div>
+                <PrintNumberInput Value="@CustomPaperWidth"
+                               Change="@SetCustomPaperWidth"
+                               Minimum="1"
+                               Step="1"
+                               
+                               Disabled="@(!DesignerReady)" />
+                <span>×</span>
+                <PrintNumberInput Value="@CustomPaperHeight"
+                               Change="@SetCustomPaperHeight"
+                               Minimum="1"
+                               Step="1"
+                               
+                               Disabled="@(!DesignerReady)" />
+                <span>mm</span>
+                <ElButton @onclick="ApplyCustomPaper" Disabled="@(!DesignerReady)">应用纸张</ElButton>
+                <PrintNumberInput Value="@ScaleValue"
+                               Change="@ScaleChanged"
+                               Minimum="0.5"
+                               Maximum="5"
+                               Step="0.1"
+                               Precision="2"
+                               
+                               Disabled="@(!DesignerReady)" />
+                <ElButtonGroup>
+                    <ElButton @onclick="AlignLeft" Disabled="@(!DesignerReady)">左</ElButton>
+                    <ElButton @onclick="AlignVertical" Disabled="@(!DesignerReady)">中</ElButton>
+                    <ElButton @onclick="AlignRight" Disabled="@(!DesignerReady)">右</ElButton>
+                    <ElButton @onclick="AlignTop" Disabled="@(!DesignerReady)">顶</ElButton>
+                    <ElButton @onclick="AlignHorizontal" Disabled="@(!DesignerReady)">垂</ElButton>
+                    <ElButton @onclick="AlignBottom" Disabled="@(!DesignerReady)">底</ElButton>
+                </ElButtonGroup>
+                <ElButton @onclick="RotatePaper" Disabled="@(!DesignerReady)">旋转</ElButton>
+                <ElButton Type="primary" @onclick="OpenPreview" Disabled="@(!DesignerReady)">预览</ElButton>
+                <ElPopconfirm Title="确定清空当前打印设计稿吗？该操作仅影响尚未保存的内容。"
+                              ConfirmButtonText="确定"
+                              CancelButtonText="取消"
+                              @onconfirm="ClearPaper">
+                    <template #reference>
+                        <ElButton Type="danger" Disabled="@(!DesignerReady)">清空</ElButton>
+                    </template>
+                </ElPopconfirm>
+                <ElButton @onclick="ShowTemplateJson" Disabled="@(!DesignerReady)">JSON</ElButton>
+            </div>
+
+            @if (DesignerLoading)
+            {
+                <ElAlert Type="info" Title="正在初始化打印设计器…" ShowIcon="true" Closable="false" />
+            }
+
+            <div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(480px,3fr) minmax(260px,1.25fr);gap:10px;min-height:620px;overflow:auto;">
+                <div style="border:1px solid #ebeef5;padding:10px;overflow:auto;min-height:620px;">
+                    <div id="jero-print-elements" class="jero-print-elements"></div>
+                </div>
+                <div style="border:1px solid #ebeef5;padding:10px;overflow:auto;min-height:620px;background:#f5f7fa;">
+                    <div id="jero-print-template" class="jero-print-template"></div>
+                    <div class="jero-print-pagination"></div>
+                </div>
+                <div style="border:1px solid #ebeef5;min-height:620px;overflow:auto;">
+                    <div style="display:flex;border-bottom:1px solid #ebeef5;">
+                        <button type="button"
+                                style='@(DesignerTab == "properties" ? "flex:1;padding:10px;border:0;background:#ecf5ff;color:#409eff;cursor:pointer" : "flex:1;padding:10px;border:0;background:white;cursor:pointer")'
+                                @onclick='ShowProperties'>属性</button>
+                        <button type="button"
+                                style='@(DesignerTab == "data" ? "flex:1;padding:10px;border:0;background:#ecf5ff;color:#409eff;cursor:pointer" : "flex:1;padding:10px;border:0;background:white;cursor:pointer")'
+                                @onclick='ShowData'>测试数据</button>
+                    </div>
+                    <div style='@(DesignerTab == "properties" ? "padding:10px" : "display:none")'>
+                        <div id="jero-print-settings"></div>
+                    </div>
+                    <div style='@(DesignerTab == "data" ? "padding:10px" : "display:none")'>
+                        <ElButton @onclick="FormatPrintData" Disabled="@(!DesignerReady)">格式化 JSON</ElButton>
+                        <div style="height:10px;"></div>
+                        <ElInput ModelValue="@EditPrintDataDemo"
+                                 @onupdate:modelValue="SetEditPrintDataDemo"
+                                 Type="textarea"
+                                 Rows="28"
+                                 Placeholder="请输入整个文档的完整测试数据（JSON 对象）" />
+                    </div>
+                </div>
+            </div>
+        </ElCard>
+    </div>
+    </template>
+
+    <template #footer>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <ElButton @onclick="CloseEditor" Disabled="@Saving">取消</ElButton>
+            <ElButton Type="primary" @onclick="Save" Loading="@Saving" Disabled="@(!DesignerReady)">确定</ElButton>
+        </div>
+    </template>
+</ElDialog>
+
+<ElDialog ModelValue="@PreviewDialogVisible"
+          @onupdate:modelValue="SetPreviewDialogVisible"
+          Title="打印预览"
+          Width="80%"
+          AppendToBody="true"
+          DestroyOnClose="true">
+    <template #default>
+        <div id="jero-print-preview" style="min-height:360px;overflow:auto;background:#f5f7fa;padding:18px;"></div>
+    </template>
+    <template #footer>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <ElButton Type="primary" @onclick="PrintDirectly" Loading="@Printing">直接打印</ElButton>
+            <ElButton Type="primary" @onclick="ExportPdf">导出 PDF</ElButton>
+            <ElButton @onclick="ClosePreviewDialog">关闭</ElButton>
+        </div>
+    </template>
+</ElDialog>
+
+<ElDialog ModelValue="@JsonDialogVisible"
+          @onupdate:modelValue="SetJsonDialogVisible"
+          Title="打印模板 JSON"
+          Width="720px"
+          AppendToBody="true">
+    <template #default>
+        <ElInput ModelValue="@JsonText" Type="textarea" Rows="28" Readonly="true" />
+    </template>
+    <template #footer>
+        <ElButton @onclick="CloseJsonDialog">关闭</ElButton>
+    </template>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="600px">
+    <div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px 16px;line-height:1.6;">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+    </div>
+</ElDialog>
+
+<style>
+    .jero-print-elements .hiprint-printElement-type > li > ul {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .jero-print-elements .hiprint-printElement-type > li > ul li a {
+        width: 100%;
+        height: auto;
+        margin: 0;
+        color: var(--el-color-primary);
+        box-shadow: none !important;
+    }
+
+    .jero-print-template .hiprint-option-item-submitBtn {
+        background: var(--el-color-primary);
+    }
+
+    .jero-print-template .hiprint-option-item-deleteBtn {
+        background: var(--el-color-danger);
+    }
+
+    #jero-print-preview .hiprint-printPanel {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    #jero-print-preview .hiprint-printPaper {
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, .18);
+    }
+</style>
+
+@code {
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool DesignerReady { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool DesignerLoading { get; set; }
+    [Parameter] public bool PreviewDialogVisible { get; set; }
+    [Parameter] public bool Printing { get; set; }
+    [Parameter] public bool JsonDialogVisible { get; set; }
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditName { get; set; } = "";
+    [Parameter] public string EditClientServiceAddress { get; set; } = "";
+    [Parameter] public string EditPrintParam { get; set; } = "";
+    [Parameter] public string EditRemark { get; set; } = "";
+    [Parameter] public string ModeValue { get; set; } = "";
+    [Parameter] public string PaperType { get; set; } = "";
+    [Parameter] public string DesignerTab { get; set; } = "";
+    [Parameter] public string EditPrintDataDemo { get; set; } = "";
+    [Parameter] public string JsonText { get; set; } = "";
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public int EditOrderNo { get; set; }
+    [Parameter] public int EditStatus { get; set; }
+    [Parameter] public int EditPrintType { get; set; }
+    [Parameter] public double CustomPaperWidth { get; set; }
+    [Parameter] public double CustomPaperHeight { get; set; }
+    [Parameter] public double ScaleValue { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public ConfigurationOption[] TenantOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] ProviderOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] PaperOptions { get; set; } = [];
+    [Parameter] public PrintTableRow[] Rows { get; set; } = [];
+    [Parameter] public double[] PageSizes { get; set; } = [];
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    [Parameter] public Action InitializeDesigner { get; set; } = default!;
+    [Parameter] public Action CleanupDesigner { get; set; } = default!;
+    [Parameter] public Action ApplyCustomPaper { get; set; } = default!;
+    [Parameter] public Action RotatePaper { get; set; } = default!;
+    [Parameter] public Action OpenPreview { get; set; } = default!;
+    [Parameter] public Action ClearPaper { get; set; } = default!;
+    [Parameter] public Action ShowTemplateJson { get; set; } = default!;
+    [Parameter] public Action FormatPrintData { get; set; } = default!;
+    [Parameter] public Action CloseEditor { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action PrintDirectly { get; set; } = default!;
+    [Parameter] public Action ExportPdf { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string?> TenantChanged { get; set; } = default!;
+    [Parameter] public Action<string?> ModeChanged { get; set; } = default!;
+    [Parameter] public Action<string?> PaperChanged { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action<string?> SetName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditClientServiceAddress { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditPrintParam { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditRemark { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditPrintDataDemo { get; set; } = default!;
+    [Parameter] public Action<double?> SetEditOrderNo { get; set; } = default!;
+    [Parameter] public Action<double> SetEditStatus { get; set; } = default!;
+    [Parameter] public Action<double> SetEditPrintType { get; set; } = default!;
+    [Parameter] public Action<double?> SetCustomPaperWidth { get; set; } = default!;
+    [Parameter] public Action<double?> SetCustomPaperHeight { get; set; } = default!;
+    [Parameter] public Action<double?> ScaleChanged { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetPreviewDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetJsonDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action ClosePreviewDialog { get; set; } = default!;
+    [Parameter] public Action CloseJsonDialog { get; set; } = default!;
+    [Parameter] public Action AlignLeft { get; set; } = default!;
+    [Parameter] public Action AlignVertical { get; set; } = default!;
+    [Parameter] public Action AlignRight { get; set; } = default!;
+    [Parameter] public Action AlignTop { get; set; } = default!;
+    [Parameter] public Action AlignHorizontal { get; set; } = default!;
+    [Parameter] public Action AlignBottom { get; set; } = default!;
+    [Parameter] public Action ShowProperties { get; set; } = default!;
+    [Parameter] public Action ShowData { get; set; } = default!;
+}

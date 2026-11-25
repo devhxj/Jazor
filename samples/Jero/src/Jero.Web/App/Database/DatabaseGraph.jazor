@@ -1,0 +1,41 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Database
+
+<div class="database-graph-stage">
+    <div id="database-relation-graph" class="database-graph-host"></div>
+    <div class="database-graph-tools">
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Graph.zoom(10))">放大</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Graph.zoom(-10))">缩小</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Graph.center())">居中</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Graph.fit())">适应画布</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Graph.reset())">100%</ElButton>
+    </div>
+    <div class="database-graph-legend">
+        <span>图例：</span>
+        <span class="database-graph-legend__item"><span>一对多</span><span class="database-graph-legend__line database-graph-legend__many"></span></span>
+        <span class="database-graph-legend__item"><span>一对一</span><span class="database-graph-legend__line database-graph-legend__single"></span></span>
+    </div>
+    @if (Loading)
+    {
+        <div class="database-graph-loading">正在读取并布局库表关系…</div>
+    }
+    else if (Nodes.Length == 0)
+    {
+        <div class="database-graph-empty">暂无可视化表结构</div>
+    }
+</div>
+
+@code {
+    [Parameter] public DatabaseDiagramNode[] Nodes { get; set; } = [];
+    [Parameter] public DatabaseDiagramRelation[] Relations { get; set; } = [];
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public DatabaseGraphActions Graph { get; set; } = default!;
+
+    [Setup]
+    private void Configure()
+    {
+        global::ECMAScript.Vue.OnMounted(() => Graph.mount(Nodes, Relations));
+        global::ECMAScript.Vue.OnUpdated(() => Graph.update(Nodes, Relations));
+        global::ECMAScript.Vue.OnBeforeUnmount(() => Graph.dispose());
+    }
+}

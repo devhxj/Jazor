@@ -1,0 +1,645 @@
+@using Npm.ElementPlus
+@using App.Auth
+@using App.Components
+@using Jero.Web.App.Components
+@using Jero.Web.App.User
+
+<ElCard Header="账号管理" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        支持组织和租户筛选、账号档案维护、角色授权、状态控制、重置密码与解除登录锁定。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <div class="user-page-layout">
+        <ElCard Header="组织机构" class="user-org-card">
+            <div style='@(IsSuperAdmin ? "margin-bottom:14px" : "display:none")'>
+                <AuthOptionSelect Value="@TenantId" Options="@TenantOptions" Placeholder="请选择租户" Clearable="true" Loading="@TenantLoading" Change="@TenantChanged" />
+            </div>
+
+            <button type="button"
+                    class="@OrgButtonClass(SelectedOrgId, "-1")"
+                    @onclick='@(_ => SelectOrganization("-1", "全部机构", string.Empty))'>
+                全部机构
+            </button>
+            @foreach (var org in OrgTreeItems)
+            {
+                <button type="button"
+                        class="@OrgButtonClass(SelectedOrgId, org.id)"
+                        style="@OrgIndent(org)"
+                        disabled="@org.disabled"
+                        @onclick="@(_ => SelectOrganization(org.id, org.path, org.tenantId))">
+                    @org.name
+                </button>
+            }
+            <p style='@(OrgLoading ? "color:#909399;padding:8px 12px" : "display:none")'>正在加载组织机构…</p>
+            <p style='@(!OrgLoading && OrgTreeItems.Length == 0 ? "color:#909399;padding:8px 12px" : "display:none")'>暂无组织数据</p>
+        </ElCard>
+
+        <div class="user-page-main">
+            <JeroQueryCard Title="查询条件">
+                <ElForm Inline="true">
+                    <ElFormItem Label="账号">
+                        <ElInput ModelValue="@Account"
+                                 @onupdate:modelValue="SetAccount"
+                                 Placeholder="账号"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="姓名">
+                        <ElInput ModelValue="@RealName"
+                                 @onupdate:modelValue="SetRealName"
+                                 Placeholder="姓名"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="职位">
+                        <ElInput ModelValue="@PosName"
+                                 @onupdate:modelValue="SetPosName"
+                                 Placeholder="职位"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="手机">
+                        <ElInput ModelValue="@Phone"
+                                 @onupdate:modelValue="SetPhone"
+                                 Placeholder="手机号"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem>
+                        <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                        <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+                    </ElFormItem>
+                </ElForm>
+            </JeroQueryCard>
+
+            <ElCard class="jero-list-card">
+                <div class="user-toolbar">
+                    <div>
+                        @if (CanAdd)
+                        {
+                            <ElButton Type="primary" @onclick="OpenCreate">新增</ElButton>
+                        }
+                        <span class="user-selected-org">当前组织：@SelectedOrgName</span>
+                    </div>
+                    <ElButton @onclick="Refresh" Loading="@Loading">刷新</ElButton>
+                </div>
+
+                <div class="jero-list-scroll">
+    <UserTable Rows="@Rows"
+                            CanSetStatus="@CanSetStatus" CanDetail="@CanDetail" HasActionColumn="@HasActionColumn" CanEdit="@CanEdit" CanGrantRole="@CanGrantRole" CanAdd="@CanAdd" CanResetPassword="@CanResetPassword" CanUnlockLogin="@CanUnlockLogin" CanDelete="@CanDelete"
+                            StatusLoadingId="@StatusLoadingId" ResetLoadingId="@ResetLoadingId" UnlockLoadingId="@UnlockLoadingId" DeletingId="@DeletingId"
+                            SetStatus="@SetStatus" OpenDetail="@OpenDetail" OpenEdit="@OpenEdit" OpenGrantRoles="@OpenGrantRoles" OpenCopy="@OpenCopy" ResetPassword="@ResetPassword" UnlockLogin="@UnlockLogin" Delete="@Delete" />
+                </div>
+
+                <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+                    <ElPagination CurrentPage="@CurrentPage"
+                                      PageSize="@PageSize"
+                                      Total="@Total"
+                                      PageSizes="@PageSizes"
+                                      Background="true"
+                                      Layout="Total, sizes, prev, pager, next, jumper"
+                                      @oncurrent-change="ChangePage"
+                                      @onsize-change="ChangePageSize" />
+                </div>
+            </ElCard>
+        </div>
+    </div>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="min(1040px, calc(100vw - 32px))"
+          Draggable="true"
+          CloseOnClickModal="false">
+    <div class="user-edit-tabs" role="tablist" aria-label="账号编辑分类">
+        <button type="button" class='@("user-edit-tab" + (EditTab == "basic" ? " is-active" : ""))' @onclick='@(_ => SelectEditTab("basic"))'>基础信息</button>
+        <button type="button" class='@("user-edit-tab" + (EditTab == "roles" ? " is-active" : ""))' @onclick='@(_ => SelectEditTab("roles"))'>角色授权</button>
+        <button type="button" class='@("user-edit-tab" + (EditTab == "profile" ? " is-active" : ""))' @onclick='@(_ => SelectEditTab("profile"))'>档案信息</button>
+        <button type="button" class='@("user-edit-tab" + (EditTab == "binding" ? " is-active" : ""))' @onclick='@(_ => SelectEditTab("binding"))'>账号绑定</button>
+    </div>
+
+    <div class="user-dialog-scroll">
+        <div style="@PanelStyle(EditTab, "basic")">
+            <ElForm LabelWidth="92px">
+                <div class="user-form-grid">
+                    <ElFormItem Label="账号名称">
+                        <ElInput ModelValue="@DraftAccount"
+                                 @onupdate:modelValue="SetDraftAccount"
+                                 Placeholder="账号名称"
+                                 Maxlength="32"
+                                 Clearable="true"
+                                 Disabled="@(Editing)" />
+                    </ElFormItem>
+                    <ElFormItem Label="真实姓名">
+                        <ElInput ModelValue="@DraftRealName"
+                                 @onupdate:modelValue="SetDraftRealName"
+                                 Placeholder="真实姓名"
+                                 Maxlength="32"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="昵称">
+                        <ElInput ModelValue="@DraftNickName"
+                                 @onupdate:modelValue="SetDraftNickName"
+                                 Placeholder="昵称"
+                                 Maxlength="32"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="手机号码">
+                        <ElInput ModelValue="@DraftPhone"
+                                 @onupdate:modelValue="SetDraftPhone"
+                                 Placeholder="手机号码"
+                                 Maxlength="16"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="账号类型">
+                        <AuthOptionSelect Value="@DraftAccountType" Options="@AccountTypeOptions" Placeholder="账号类型" Change="@SetDraftAccountType" />
+                    </ElFormItem>
+                    <ElFormItem Label="邮箱">
+                        <ElInput ModelValue="@DraftEmail"
+                                 @onupdate:modelValue="SetDraftEmail"
+                                 Placeholder="邮箱"
+                                 Maxlength="64"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="语言">
+                        <AuthOptionSelect Value="@DraftLangCode" Options="@LanguageOptions" Placeholder="语言" Loading="@DependencyLoading" Change="@SetDraftLangCode" />
+                    </ElFormItem>
+                    <ElFormItem Label="排序">
+                        <ConfigurationNumber Value="@DraftOrderNo" Minimum="@(0)" Change="@SetDraftOrderNo" />
+                    </ElFormItem>
+                    <ElFormItem Label="状态">
+                        <AuthOptionSelect Value="@DraftStatus" Options="@StatusOptions" Placeholder="" Disabled="@(Editing)" Change="@SetDraftStatus" />
+                    </ElFormItem>
+                    <ElFormItem Label="所属机构">
+                        <AuthOptionSelect Value="@DraftOrgId" Options="@EditorOrganizationOptions" Placeholder="所属机构" Clearable="true" Loading="@DependencyLoading" Change="@SetDraftOrgId" />
+                    </ElFormItem>
+                    <ElFormItem Label="职位">
+                        <AuthOptionSelect Value="@DraftPosId" Options="@PositionOptions" Placeholder="职位" Clearable="true" Loading="@DependencyLoading" Change="@SetDraftPosId" />
+                    </ElFormItem>
+                    <ElFormItem Label="工号">
+                        <ElInput ModelValue="@DraftJobNum"
+                                 @onupdate:modelValue="SetDraftJobNum"
+                                 Placeholder="工号"
+                                 Maxlength="32"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="入职日期">
+                        <UserDateInput Value="@DraftJoinDate" Placeholder="入职日期" Change="@SetDraftJoinDate" />
+                    </ElFormItem>
+                    <ElFormItem Label="个性化首页" class="user-form-span-two">
+                        <ElInput ModelValue="@DraftHomepage"
+                                 @onupdate:modelValue="SetDraftHomepage"
+                                 Placeholder="个性化首页"
+                                 Maxlength="512"
+                                 Clearable="true" />
+                    </ElFormItem>
+                </div>
+
+                <div class="user-section-heading">
+                    <strong>附属机构</strong>
+                    <ElButton Plain="true" Type="primary" @onclick="AddExtOrganization">增加附属机构</ElButton>
+                </div>
+                <p style='@(EditExtOrganizations.Length == 0 ? "color:#909399;text-align:center" : "display:none")'>暂无附属机构</p>
+                @for (var index = 0; index < EditExtOrganizations.Length; index++)
+                {
+                    var rowIndex = index;
+                    var ext = EditExtOrganizations[index];
+                    <div class="user-ext-org-row">
+                        <ElFormItem Label="机构">
+                            <AuthOptionSelect Value="@ext.orgId" Options="@EditorOrganizationOptions" Placeholder="机构" Clearable="true" Change="@((string value) => ChangeExtOrganization(rowIndex, value))" />
+                        </ElFormItem>
+                        <ElFormItem Label="职位">
+                            <AuthOptionSelect Value="@ext.posId" Options="@PositionOptions" Placeholder="职位" Clearable="true" Change="@((string value) => ChangeExtPosition(rowIndex, value))" />
+                        </ElFormItem>
+                        <ElButton Link="true" Type="danger" @onclick="@(_ => RemoveExtOrganization(rowIndex))">删除</ElButton>
+                    </div>
+                }
+            </ElForm>
+        </div>
+
+        <div style="@PanelStyle(EditTab, "roles")">
+            <p class="user-panel-tip">选择账号拥有的角色。编辑保存时会与账号资料一并提交。</p>
+            <div class="user-role-grid">
+                @foreach (var role in RoleOptions)
+                {
+                    <button type="button"
+                            class="@RoleButtonClass(EditRoleIds, role.id)"
+                            disabled="@(!CanEditDraftRoles || DependencyLoading)"
+                            @onclick="@(_ => ToggleEditRole(role.id))">
+                        <span>@role.name</span>
+                        <small>@(ContainsId(EditRoleIds, role.id) ? "已授权" : "未授权")</small>
+                    </button>
+                }
+            </div>
+            <p style='@(RoleOptions.Length == 0 ? "color:#909399;text-align:center" : "display:none")'>暂无可授权角色</p>
+        </div>
+
+        <div style="@PanelStyle(EditTab, "profile")">
+            <ElForm LabelWidth="92px">
+                <div class="user-form-grid">
+                    <ElFormItem Label="证件类型">
+                        <AuthOptionSelect Value="@DraftCardType" Options="@CardTypeOptions" Placeholder="" Clearable="true" Change="@SetDraftCardType" />
+                    </ElFormItem>
+                    <ElFormItem Label="证件号码">
+                        <ElInput ModelValue="@DraftIdCardNum"
+                                 @onupdate:modelValue="SetDraftIdCardNum"
+                                 Placeholder="证件号码"
+                                 Maxlength="32"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="出生日期">
+                        <UserDateInput Value="@DraftBirthday" Placeholder="出生日期" Change="@SetDraftBirthday" />
+                    </ElFormItem>
+                    <ElFormItem Label="性别">
+                        <AuthOptionSelect Value="@DraftSex" Options="@GenderOptions" Placeholder="" Change="@SetDraftSex" />
+                    </ElFormItem>
+                    <ElFormItem Label="年龄">
+                        <ConfigurationNumber Value="@DraftAge" Minimum="@(0)" Maximum="@(150)" Change="@SetDraftAge" />
+                    </ElFormItem>
+                    <ElFormItem Label="民族">
+                        <AuthOptionSelect Value="@DraftNation" Options="@NationOptions" Placeholder="民族" Clearable="true" Change="@SetDraftNation" />
+                    </ElFormItem>
+                    <ElFormItem Label="毕业学校">
+                        <ElInput ModelValue="@DraftCollege"
+                                 @onupdate:modelValue="SetDraftCollege"
+                                 Placeholder="毕业学校"
+                                 Maxlength="128"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="文化程度">
+                        <AuthOptionSelect Value="@DraftCultureLevel" Options="@CultureLevelOptions" Placeholder="" Clearable="true" Change="@SetDraftCultureLevel" />
+                    </ElFormItem>
+                    <ElFormItem Label="政治面貌">
+                        <ElInput ModelValue="@DraftPoliticalOutlook"
+                                 @onupdate:modelValue="SetDraftPoliticalOutlook"
+                                 Placeholder="政治面貌"
+                                 Maxlength="16"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="办公电话">
+                        <ElInput ModelValue="@DraftOfficePhone"
+                                 @onupdate:modelValue="SetDraftOfficePhone"
+                                 Placeholder="办公电话"
+                                 Maxlength="16"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="地址" class="user-form-span-two">
+                        <ElInput ModelValue="@DraftAddress"
+                                 @onupdate:modelValue="SetDraftAddress"
+                                 Placeholder="地址"
+                                 Type="textarea"
+                                 Rows="2"
+                                 Maxlength="256" />
+                    </ElFormItem>
+                    <ElFormItem Label="紧急联系人">
+                        <ElInput ModelValue="@DraftEmergencyContact"
+                                 @onupdate:modelValue="SetDraftEmergencyContact"
+                                 Placeholder="紧急联系人"
+                                 Maxlength="32"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="联系人电话">
+                        <ElInput ModelValue="@DraftEmergencyPhone"
+                                 @onupdate:modelValue="SetDraftEmergencyPhone"
+                                 Placeholder="联系人电话"
+                                 Maxlength="16"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="联系人地址" class="user-form-span-two">
+                        <ElInput ModelValue="@DraftEmergencyAddress"
+                                 @onupdate:modelValue="SetDraftEmergencyAddress"
+                                 Placeholder="联系人地址"
+                                 Type="textarea"
+                                 Rows="2"
+                                 Maxlength="256" />
+                    </ElFormItem>
+                    <ElFormItem Label="个人简介" class="user-form-span-two">
+                        <ElInput ModelValue="@DraftIntroduction"
+                                 @onupdate:modelValue="SetDraftIntroduction"
+                                 Placeholder="个人简介"
+                                 Type="textarea"
+                                 Rows="3"
+                                 Maxlength="512" />
+                    </ElFormItem>
+                    <ElFormItem Label="备注" class="user-form-span-two">
+                        <ElInput ModelValue="@DraftRemark"
+                                 @onupdate:modelValue="SetDraftRemark"
+                                 Placeholder="备注"
+                                 Type="textarea"
+                                 Rows="3"
+                                 Maxlength="256" />
+                    </ElFormItem>
+                </div>
+            </ElForm>
+        </div>
+
+        <div style="@PanelStyle(EditTab, "binding")">
+            <ElForm LabelWidth="92px">
+                <div class="user-form-grid">
+                    <ElFormItem Label="登录账号">
+                        <ElInput ModelValue="@DraftAccount" Disabled="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="域账号">
+                        <ElInput ModelValue="@DraftDomainAccount"
+                                 @onupdate:modelValue="SetDraftDomainAccount"
+                                 Placeholder="域账号"
+                                 Maxlength="32"
+                                 Clearable="true" />
+                    </ElFormItem>
+                </div>
+            </ElForm>
+        </div>
+    </div>
+
+    <div class="user-dialog-footer">
+        <ElButton @onclick="CloseEditDialogVisible" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="Save"
+                  Loading="@Saving"
+                  Disabled="@(DependencyLoading || DependencyFailed)">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@DetailDialogVisible"
+          @onupdate:modelValue="SetDetailDialogVisible"
+          Title="账号详情"
+          Width="780px">
+    <div class="user-detail-grid">
+        <strong>账号</strong><span>@DetailAccount</span>
+        <strong>姓名</strong><span>@DetailRealName</span>
+        <strong>昵称</strong><span>@DetailNickName</span>
+        <strong>手机</strong><span>@DetailPhone</span>
+        <strong>邮箱</strong><span>@DetailEmail</span>
+        <strong>账号类型</strong><span>@DetailAccountType</span>
+        <strong>角色</strong><span>@DetailRoleName</span>
+        <strong>所属机构</strong><span>@DetailOrgName</span>
+        <strong>职位</strong><span>@DetailPosName</span>
+        <strong>工号</strong><span>@DetailJobNum</span>
+        <strong>状态</strong><span>@DetailStatus</span>
+        <strong>语言</strong><span>@DetailLangCode</span>
+        <strong>最后登录 IP</strong><span>@DetailLastLoginIp</span>
+        <strong>最后登录地点</strong><span>@DetailLastLoginAddress</span>
+        <strong>最后登录时间</strong><span>@DetailLastLoginTime</span>
+        <strong>最后登录设备</strong><span>@DetailLastLoginDevice</span>
+        <strong>创建人</strong><span>@DetailCreateUserName</span>
+        <strong>创建时间</strong><span>@DetailCreateTime</span>
+        <strong>最后修改人</strong><span>@DetailUpdateUserName</span>
+        <strong>最后修改时间</strong><span>@DetailUpdateTime</span>
+        <strong>备注</strong><span class="user-detail-span">@DetailRemark</span>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@GrantDialogVisible"
+          @onupdate:modelValue="SetGrantDialogVisible"
+          Title="角色授权"
+          Width="720px"
+          CloseOnClickModal="false">
+    <p class="user-panel-tip">账号：@GrantAccount · @GrantRealName</p>
+    <div class="user-role-grid">
+        @foreach (var role in GrantRoleOptions)
+        {
+            <button type="button"
+                    class="@RoleButtonClass(GrantRoleIds, role.id)"
+                    disabled="@GrantLoading"
+                    @onclick="@(_ => ToggleGrantRole(role.id))">
+                <span>@role.name</span>
+                <small>@(ContainsId(GrantRoleIds, role.id) ? "已授权" : "未授权")</small>
+            </button>
+        }
+    </div>
+    <p style='@(GrantLoading ? "color:#909399;text-align:center" : "display:none")'>正在加载角色…</p>
+    <p style='@(!GrantLoading && GrantRoleOptions.Length == 0 ? "color:#909399;text-align:center" : "display:none")'>暂无可授权角色</p>
+    <div class="user-dialog-footer">
+        <ElButton @onclick="CloseGrantDialogVisible" Disabled="@Granting">取消</ElButton>
+        <ElButton Type="primary"
+                  @onclick="SaveGrantRoles"
+                  Loading="@Granting"
+                  Disabled="@(GrantLoading || GrantFailed)">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@PasswordDialogVisible"
+          @onupdate:modelValue="SetPasswordDialogVisible"
+          Title="密码重置成功"
+          Width="460px">
+    <p>新密码：</p>
+    <ElInput ModelValue="@ResetPasswordValue" Readonly="true" />
+    <p style="color:#909399;font-size:13px;">请安全地将密码交给账号本人。</p>
+    <div class="user-dialog-footer">
+        <ElButton Type="primary" @onclick="ClosePasswordDialogVisible">知道了</ElButton>
+    </div>
+</ElDialog>
+
+<style scoped>
+.user-page-layout{display:grid;grid-template-columns:280px minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:16px;flex:1;min-height:0}.user-page-main{display:grid;min-width:0;gap:16px;grid-template-rows:auto minmax(0,1fr);min-height:0}.user-org-item{display:block;width:100%;margin:2px 0;padding:9px 12px;border:0;border-radius:6px;background:transparent;color:#303133;text-align:left;cursor:pointer}.user-org-item:hover{background:#f5f7fa}.user-org-item.is-active{background:#ecf5ff;color:#409eff;font-weight:600}.user-org-item:disabled{color:#c0c4cc;cursor:not-allowed}.user-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.user-org-card{display:flex;flex-direction:column;min-height:0}.user-org-card > :deep(.el-card__body){flex:1;min-height:0;overflow:auto}.user-selected-org{margin-left:12px;color:#909399;font-size:13px}.user-edit-tabs{display:flex;gap:4px;margin:-8px 0 18px;border-bottom:1px solid #ebeef5}.user-edit-tab{padding:10px 18px;border:0;border-bottom:2px solid transparent;background:transparent;color:#606266;cursor:pointer}.user-edit-tab.is-active{border-bottom-color:#409eff;color:#409eff;font-weight:600}.user-dialog-scroll{max-height:calc(100vh - 230px);overflow:auto;padding:2px 4px}.user-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}.user-form-span-two{grid-column:1/-1}.user-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 16px;padding-top:16px;border-top:1px solid #ebeef5}.user-ext-org-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px;border:1px solid #ebeef5;border-radius:8px}.user-panel-tip{margin:0 0 16px;color:#606266}.user-role-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.user-role-option{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:48px;padding:10px 14px;border:1px solid #dcdfe6;border-radius:8px;background:#fff;color:#303133;cursor:pointer}.user-role-option small{color:#909399}.user-role-option.is-selected{border-color:#409eff;background:#ecf5ff;color:#409eff}.user-role-option:disabled{cursor:not-allowed;opacity:.65}.user-dialog-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.user-detail-grid{display:grid;grid-template-columns:110px minmax(0,1fr) 110px minmax(0,1fr);gap:12px 16px;line-height:1.65}.user-detail-grid strong{color:#606266}.user-detail-span{grid-column:2/-1}@media(max-width:1100px){.user-page-layout{grid-template-columns:220px minmax(0,1fr)}.user-role-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:820px){.user-page-layout{grid-template-columns:1fr}.user-form-grid,.user-detail-grid{grid-template-columns:1fr}.user-form-span-two,.user-detail-span{grid-column:auto}.user-ext-org-row{grid-template-columns:1fr}.user-role-grid{grid-template-columns:1fr}.user-selected-org{display:block;margin:8px 0 0}}
+</style>
+
+@code {
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public ConfigurationOption[] TenantOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] EditorOrganizationOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] PositionOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] LanguageOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] NationOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] AccountTypeOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] CardTypeOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] GenderOptions { get; set; } = [];
+    [Parameter] public ConfigurationOption[] CultureLevelOptions { get; set; } = [];
+    [Parameter] public UserTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanSetStatus { get; set; }
+    [Parameter] public bool CanDetail { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanGrantRole { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanResetPassword { get; set; }
+    [Parameter] public bool CanUnlockLogin { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public string StatusLoadingId { get; set; } = "";
+    [Parameter] public string ResetLoadingId { get; set; } = "";
+    [Parameter] public string UnlockLoadingId { get; set; } = "";
+    [Parameter] public string DeletingId { get; set; } = "";
+    [Parameter] public Action<string> SetStatus { get; set; } = default!;
+    [Parameter] public Action<string> OpenDetail { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OpenGrantRoles { get; set; } = default!;
+    [Parameter] public Action<string> OpenCopy { get; set; } = default!;
+    [Parameter] public Action<string> ResetPassword { get; set; } = default!;
+    [Parameter] public Action<string> UnlockLogin { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string> TenantChanged { get; set; } = default!;
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public Action<string> SetDraftAccountType { get; set; } = default!;
+    [Parameter] public string DraftAccountType { get; set; } = "";
+    [Parameter] public Action<string> SetDraftLangCode { get; set; } = default!;
+    [Parameter] public string DraftLangCode { get; set; } = "";
+    [Parameter] public Action<string> SetDraftStatus { get; set; } = default!;
+    [Parameter] public ConfigurationOption[] StatusOptions { get; set; } = [];
+    [Parameter] public string DraftStatus { get; set; } = "";
+    [Parameter] public Action<string> SetDraftOrgId { get; set; } = default!;
+    [Parameter] public string DraftOrgId { get; set; } = "";
+    [Parameter] public Action<string> SetDraftPosId { get; set; } = default!;
+    [Parameter] public string DraftPosId { get; set; } = "";
+    [Parameter] public Action<int, string?> ChangeExtOrganization { get; set; } = default!;
+    [Parameter] public Action<int, string?> ChangeExtPosition { get; set; } = default!;
+    [Parameter] public Action<string> SetDraftCardType { get; set; } = default!;
+    [Parameter] public string DraftCardType { get; set; } = "";
+    [Parameter] public Action<string> SetDraftSex { get; set; } = default!;
+    [Parameter] public string DraftSex { get; set; } = "";
+    [Parameter] public Action<string> SetDraftNation { get; set; } = default!;
+    [Parameter] public string DraftNation { get; set; } = "";
+    [Parameter] public Action<string> SetDraftCultureLevel { get; set; } = default!;
+    [Parameter] public string DraftCultureLevel { get; set; } = "";
+    [Parameter] public int DraftOrderNo { get; set; }
+    [Parameter] public Action<double?> SetDraftOrderNo { get; set; } = default!;
+    [Parameter] public int DraftAge { get; set; }
+    [Parameter] public Action<double?> SetDraftAge { get; set; } = default!;
+    [Parameter] public string DraftJoinDate { get; set; } = "";
+    [Parameter] public Action<string> SetDraftJoinDate { get; set; } = default!;
+    [Parameter] public string DraftBirthday { get; set; } = "";
+    [Parameter] public Action<string> SetDraftBirthday { get; set; } = default!;
+    [Parameter] public Action<string?> SetAccount { get; set; } = default!;
+    [Parameter] public Action<string?> SetRealName { get; set; } = default!;
+    [Parameter] public Action<string?> SetPosName { get; set; } = default!;
+    [Parameter] public Action<string?> SetPhone { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftAccount { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftRealName { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftNickName { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftPhone { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftEmail { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftJobNum { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftHomepage { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftIdCardNum { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftCollege { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftPoliticalOutlook { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftOfficePhone { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftAddress { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftEmergencyContact { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftEmergencyPhone { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftEmergencyAddress { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftIntroduction { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftRemark { get; set; } = default!;
+    [Parameter] public Action<string?> SetDraftDomainAccount { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetDetailDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetGrantDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetPasswordDialogVisible { get; set; } = default!;
+    [Parameter] public Action CloseEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action CloseGrantDialogVisible { get; set; } = default!;
+    [Parameter] public Action ClosePasswordDialogVisible { get; set; } = default!;
+    [Parameter] public Action<int> RemoveExtOrganization { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action AddExtOrganization { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action SaveGrantRoles { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public bool Editing { get; set; }
+    [Parameter] public string DraftAccount { get; set; } = "";
+    [Parameter] public string DraftRealName { get; set; } = "";
+    [Parameter] public string DraftNickName { get; set; } = "";
+    [Parameter] public string DraftPhone { get; set; } = "";
+    [Parameter] public string DraftEmail { get; set; } = "";
+    [Parameter] public string DraftJobNum { get; set; } = "";
+    [Parameter] public string DraftHomepage { get; set; } = "";
+    [Parameter] public string DraftIdCardNum { get; set; } = "";
+    [Parameter] public string DraftCollege { get; set; } = "";
+    [Parameter] public string DraftPoliticalOutlook { get; set; } = "";
+    [Parameter] public string DraftOfficePhone { get; set; } = "";
+    [Parameter] public string DraftAddress { get; set; } = "";
+    [Parameter] public string DraftEmergencyContact { get; set; } = "";
+    [Parameter] public string DraftEmergencyPhone { get; set; } = "";
+    [Parameter] public string DraftEmergencyAddress { get; set; } = "";
+    [Parameter] public string DraftIntroduction { get; set; } = "";
+    [Parameter] public string DraftRemark { get; set; } = "";
+    [Parameter] public string DraftDomainAccount { get; set; } = "";
+    [Parameter] public string DetailAccount { get; set; } = "";
+    [Parameter] public string DetailRealName { get; set; } = "";
+    [Parameter] public string DetailNickName { get; set; } = "";
+    [Parameter] public string DetailPhone { get; set; } = "";
+    [Parameter] public string DetailEmail { get; set; } = "";
+    [Parameter] public string DetailRoleName { get; set; } = "";
+    [Parameter] public string DetailOrgName { get; set; } = "";
+    [Parameter] public string DetailPosName { get; set; } = "";
+    [Parameter] public string DetailJobNum { get; set; } = "";
+    [Parameter] public string DetailLangCode { get; set; } = "";
+    [Parameter] public string DetailLastLoginIp { get; set; } = "";
+    [Parameter] public string DetailLastLoginAddress { get; set; } = "";
+    [Parameter] public string DetailLastLoginTime { get; set; } = "";
+    [Parameter] public string DetailLastLoginDevice { get; set; } = "";
+    [Parameter] public string DetailCreateTime { get; set; } = "";
+    [Parameter] public string DetailUpdateTime { get; set; } = "";
+    [Parameter] public string DetailRemark { get; set; } = "";
+    [Parameter] public string DetailCreateUserName { get; set; } = "";
+    [Parameter] public string DetailUpdateUserName { get; set; } = "";
+    [Parameter] public string DetailAccountType { get; set; } = "";
+    [Parameter] public string DetailStatus { get; set; } = "";
+    [Parameter] public string GrantAccount { get; set; } = "";
+    [Parameter] public string GrantRealName { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string Account { get; set; } = "";
+    [Parameter] public string RealName { get; set; } = "";
+    [Parameter] public string PosName { get; set; } = "";
+    [Parameter] public string Phone { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool OrgLoading { get; set; }
+    [Parameter] public string SelectedOrgId { get; set; } = "";
+    [Parameter] public string SelectedOrgName { get; set; } = "";
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditTab { get; set; } = "";
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool DependencyLoading { get; set; }
+    [Parameter] public bool DependencyFailed { get; set; }
+    [Parameter] public string[] EditRoleIds { get; set; } = [];
+    [Parameter] public string[] GrantRoleIds { get; set; } = [];
+    [Parameter] public bool DetailDialogVisible { get; set; }
+    [Parameter] public bool GrantDialogVisible { get; set; }
+    [Parameter] public bool GrantLoading { get; set; }
+    [Parameter] public bool Granting { get; set; }
+    [Parameter] public bool GrantFailed { get; set; }
+    [Parameter] public bool PasswordDialogVisible { get; set; }
+    [Parameter] public string ResetPasswordValue { get; set; } = "";
+    [Parameter] public bool CanEditDraftRoles { get; set; }
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public UserTreeRow[] OrgTreeItems { get; set; } = [];
+    [Parameter] public UserRoleRow[] RoleOptions { get; set; } = [];
+    [Parameter] public UserRoleRow[] GrantRoleOptions { get; set; } = [];
+    [Parameter] public UserExtOrganizationRow[] EditExtOrganizations { get; set; } = [];
+    [Parameter] public double[] PageSizes { get; set; } = [];
+    [Parameter] public Action<string, string, string> SelectOrganization { get; set; } = default!;
+    [Parameter] public Action<string> SelectEditTab { get; set; } = default!;
+    [Parameter] public Action<string> ToggleEditRole { get; set; } = default!;
+    [Parameter] public Action<string> ToggleGrantRole { get; set; } = default!;
+
+    private static string OrgButtonClass(string selectedId, string id)
+        => "user-org-item" + (selectedId == id ? " is-active" : "");
+
+    private static string OrgIndent(UserTreeRow option)
+        => "padding-left:" + (12 + option.depth * 18) + "px";
+
+    private static string RoleButtonClass(string[] selected, string id)
+        => "user-role-option" + (ContainsId(selected, id) ? " is-selected" : "");
+
+    private static string PanelStyle(string active, string panel) => active == panel ? "" : "display:none";
+
+    private static bool ContainsId(string[] ids, string id)
+    {
+        foreach (var value in ids)
+            if (value == id)
+                return true;
+        return false;
+    }
+}

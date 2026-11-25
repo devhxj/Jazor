@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NoWarn>1701;1702;1591;8632</NoWarn>
+    <DocumentationFile></DocumentationFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Configuration\**\*">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\**\*">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Jero.Core\Jero.Core.csproj" />
+    <ProjectReference Include="..\Plugins\Jero.Plugin.ApprovalFlow\Jero.Plugin.ApprovalFlow.csproj" />
+    <ProjectReference Include="..\Plugins\Jero.Plugin.DingTalk\Jero.Plugin.DingTalk.csproj" />
+    <ProjectReference Include="..\Plugins\Jero.Plugin.GoView\Jero.Plugin.GoView.csproj" />
+    <ProjectReference Include="..\Plugins\Jero.Plugin.SaveLife\Jero.Plugin.SaveLife.csproj" />
+  </ItemGroup>
+
+</Project>

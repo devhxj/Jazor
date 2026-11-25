@@ -1,0 +1,61 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+
+<div class="jero-query-card">
+    <button type="button"
+            class="jero-query-card__head"
+            aria-expanded='@(expanded.Value ? "true" : "false")'
+            @onclick="Toggle">
+        <span class="jero-query-card__title">@Title</span>
+        <span class='@("jero-query-card__arrow" + (expanded.Value ? " is-open" : ""))' aria-hidden="true">▸</span>
+    </button>
+    @if (expanded.Value)
+    {
+        <div class="jero-query-card__body">
+            <slot />
+        </div>
+    }
+</div>
+
+<style>
+    .jero-query-card { border: 1px solid #eef1f6; border-radius: 10px; background: white; box-shadow: 0 1px 2px rgba(16, 24, 40, .03), 0 2px 10px rgba(16, 24, 40, .04); }
+    .jero-query-card__head { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 0; padding: 12px 16px; background: transparent; color: #303133; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+    .jero-query-card__head:hover { color: #409eff; }
+    .jero-query-card__head:focus-visible { outline: 2px solid rgba(64, 158, 255, .5); outline-offset: -2px; }
+    .jero-query-card__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .jero-query-card__arrow { flex: 0 0 auto; color: #909399; font-size: 11px; transition: transform .16s ease; }
+    .jero-query-card__arrow.is-open { transform: rotate(90deg); }
+    .jero-query-card__body { padding: 4px 16px 16px; }
+    html.dark .jero-query-card { background: #1d1e1f; border-color: #222c45; }
+    html.dark .jero-query-card__head { color: #e5eaf3; }
+</style>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "查询条件";
+
+    private readonly IVueRef<bool> expanded = Ref(false);
+    private string storageKey = "jero-query-open:home";
+
+    [Setup]
+    private void Configure() => OnMounted(Restore);
+
+    private void Restore()
+    {
+        var basePath = new URL(Global.Document.BaseURI).Pathname;
+        var path = new URL(Global.Document.DocumentURI).Pathname;
+        // The host base href includes ASP.NET Core PathBase. Keep the legacy
+        // base-relative key and ignore query strings and fragments.
+        var relative = path.StartsWith(basePath) ? path.Substring(basePath.Length) : path;
+        if (relative.StartsWith('/'))
+            relative = relative.Substring(1);
+        storageKey = "jero-query-open:" + (relative.Length == 0 ? "home" : relative);
+        expanded.Value = Global.Window.LocalStorage.GetItem(storageKey) == "1";
+    }
+
+    private void Toggle()
+    {
+        expanded.Value = !expanded.Value;
+        Global.Window.LocalStorage.SetItem(storageKey, expanded.Value ? "1" : "0");
+    }
+}

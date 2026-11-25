@@ -1,0 +1,73 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Org
+
+    <ElTable @attributes="@(new TableData<OrgFlatView>(Rows))" border="true" stripe="true" RowKey="id" EmptyText="暂无机构">
+        <ElTableColumn label="机构名称" MinWidth="220" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OrgFlatView>)(object)cell).row; }
+                <span style='@("display:inline-block;padding-left:" + row.depth * 20 + "px;")'>
+                    <ElButton link="true" type="primary" @onclick='@(() => OnOpenDetail(row.id))'>@(row.name)</ElButton>
+                </span>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn prop="code" label="机构编码" MinWidth="140" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="level" label="级别" width="80" align="center" />
+        <ElTableColumn label="机构类型" MinWidth="120" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<OrgFlatView>)(object)cell).row; }
+                <ElTag @attributes="@(new TableTagProps(TypeTag(row.type)))">@(TypeLabel(row.type))</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn prop="orderNo" label="排序" width="90" align="center" />
+        <ElTableColumn label="状态" width="90" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<OrgFlatView>)(object)cell).row; }
+                <ElTag @attributes="@(new TableTagProps(row.status == 1 ? "success" : "info"))">@(row.status == 1 ? "启用" : "停用")</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="修改记录" width="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<OrgFlatView>)(object)cell).row; }
+                <ElButton link="true" type="primary" @onclick='@(() => OnOpenAudit(row.id))'>查看</ElButton>
+            </template>
+        </ElTableColumn>
+        @if (HasActionColumn) { <ElTableColumn label="操作" width="220" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<OrgFlatView>)(object)cell).row; }
+                @if (CanEdit) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenEdit(row.id))'>编辑</ElButton> }
+                @if (CanAdd) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenCopy(row.id))'>复制</ElButton> }
+                @if (CanDelete) { <ElPopconfirm title='@("确定删除机构【" + row.name + "】吗？通过服务端约束后将级联删除其下级机构。")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.id))'>
+                    <template #reference>
+                        <ElButton link="true" type="danger" loading='@(DeletingId == row.id)' disabled='@(DeletingId.Length > 0)'>删除</ElButton>
+                    </template>
+                </ElPopconfirm> }
+            </template>
+        </ElTableColumn> }
+    </ElTable>
+
+@code {
+    [Parameter] public OrgFlatView[] Rows { get; set; } = [];
+    [Parameter] public OrgTypeOption[] Types { get; set; } = [];
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public string DeletingId { get; set; } = "";
+    [Parameter] public Action<string> OnOpenDetail { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenCopy { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+
+    private string TypeLabel(string value)
+    {
+        foreach (var option in Types)
+            if (option.value == value)
+                return option.label;
+        return string.IsNullOrEmpty(value) ? "未分类" : value;
+    }
+
+    private string TypeTag(string value)
+    {
+        foreach (var option in Types)
+            if (option.value == value && option.tagType is "success" or "warning" or "danger" or "primary")
+                return option.tagType;
+        return "info";
+    }
+}

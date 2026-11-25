@@ -1,0 +1,240 @@
+@using Npm.ElementPlus
+@using Npm.Jero.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.WechatPay
+
+<ElTable @attributes='@(new TableData<WechatPayView>(State.rows))'
+                     border='@(true)'
+                     stripe='@(true)'
+                     RowKey="id"
+                     EmptyText="暂无微信支付订单">
+            <ElTableColumn type="index" label="序号" width='@(70)' align="center" />
+            <ElTableColumn prop="outTradeNumber" label="商户订单号" MinWidth='@(190)' ShowOverflowTooltip='@(true)' />
+            <ElTableColumn label="支付订单号" MinWidth='@(220)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "transactionId"))</template>
+            </ElTableColumn>
+            <ElTableColumn label="商品描述" MinWidth='@(180)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "description"))</template>
+            </ElTableColumn>
+            <ElTableColumn label="金额（元）" width='@(110)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.RowAmount(cell, "total"))</template>
+            </ElTableColumn>
+            <ElTableColumn label="状态" width='@(110)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }<ElTag @attributes='@(new TableTagProps(State.RowStateTag(cell)))'>@(State.RowStateText(cell))</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn label="状态说明" MinWidth='@(180)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "tradeStateDescription"))</template>
+            </ElTableColumn>
+            <ElTableColumn label="业务类型" MinWidth='@(120)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "tags"))</template>
+            </ElTableColumn>
+            <ElTableColumn label="业务 ID" MinWidth='@(150)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "businessId"))</template>
+            </ElTableColumn>
+            <ElTableColumn prop="createTime" label="创建时间" MinWidth='@(175)' align="center" />
+            <ElTableColumn label="完成时间" MinWidth='@(175)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "successTime"))</template>
+            </ElTableColumn>
+            <ElTableColumn label="修改记录" width='@(100)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }
+                    <ElButton link='@(true)' type="primary" @onclick='@(_ => State.OpenAudit(cell))'>查看</ElButton>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn label="操作" width='@(360)' align="center" fixed="right">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatPayView>)(object)scope).row; }
+                    <ElButton link='@(true)' type="primary" @onclick='@(_ => State.OpenDetail(cell))'>详情</ElButton>
+                    @if (State.RowStringForView(cell, "qrcodeContent").Length > 0) {
+                        <ElButton link='@(true)' type="primary" loading='@(State.qrLoading)' @onclick='@(_ => State.OpenQrCode(cell))'>付款二维码</ElButton>
+                    }
+                    @if (State.CanListRefund && State.RowStringForView(cell, "tradeState") == "REFUND") {
+                        <ElButton link='@(true)' type="primary" loading='@(State.refundListLoading)' @onclick='@(_ => State.OpenRefunds(cell))'>查看退款</ElButton>
+                    }
+                    @if (State.CanRefund && State.RowStringForView(cell, "tradeState") == "SUCCESS") {
+                        <ElButton link='@(true)' type="danger" @onclick='@(_ => State.OpenRefund(cell))'>全额退款</ElButton>
+                    }
+                    @if (State.CanSync && State.RowStringForView(cell, "outTradeNumber").Length > 0) {
+                        <ElButton link='@(true)' type="primary" loading='@(State.IsSyncing(cell))' @onclick='@(_ => State.SyncWechat(cell))'>同步状态</ElButton>
+                    }
+                </template>
+            </ElTableColumn>
+        </ElTable>
+
+<ElDialog ModelValue='@(State.detailDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.detailDialogVisible = value == true))'
+          title="微信支付订单详情"
+          width="920px"
+          DestroyOnClose='@(true)'>
+    @if (State.detail is not null) {
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px;line-height:1.6;">
+            <div><strong>记录 ID：</strong>@(State.DisplayValueForView(State.detail.id))</div>
+            <div><strong>商户订单号：</strong>@(State.DisplayValueForView(State.detail.outTradeNumber))</div>
+            <div><strong>支付订单号：</strong>@(State.DisplayValueForView(State.detail.transactionId))</div>
+            <div><strong>订单金额：</strong>@(State.FormatAmount(State.detail.total)) 元</div>
+            <div><strong>用户支付金额：</strong>@(State.NullableAmountForView(State.detail.payerTotal)) 元</div>
+            <div><strong>状态：</strong><ElTag @attributes='@(new TableTagProps(State.TradeStateTag(State.detail.tradeState)))'>@(State.TradeStateText(State.detail.tradeState))</ElTag></div>
+            <div><strong>状态说明：</strong>@(State.DisplayValueForView(State.detail.tradeStateDescription))</div>
+            <div><strong>交易类型：</strong>@(State.DisplayValueForView(State.detail.tradeType))</div>
+            <div><strong>付款银行：</strong>@(State.DisplayValueForView(State.detail.bankType))</div>
+            <div><strong>商品描述：</strong>@(State.DisplayValueForView(State.detail.description))</div>
+            <div><strong>附加信息：</strong>@(State.DisplayValueForView(State.detail.attachment))</div>
+            <div><strong>优惠标记：</strong>@(State.DisplayValueForView(State.detail.goodsTag))</div>
+            <div><strong>业务标签：</strong>@(State.DisplayValueForView(State.detail.tags))</div>
+            <div><strong>业务 ID：</strong>@(State.DisplayValueForView(State.detail.businessId))</div>
+            <div><strong>OpenId：</strong>@(State.DisplayValueForView(State.detail.openId))</div>
+            <div><strong>商户号：</strong>@(State.DisplayValueForView(State.detail.merchantId))</div>
+            <div><strong>AppId：</strong>@(State.DisplayValueForView(State.detail.appId))</div>
+            <div><strong>子商户号：</strong>@(State.DisplayValueForView(State.detail.subMerchantId))</div>
+            <div><strong>子商户 AppId：</strong>@(State.DisplayValueForView(State.detail.subAppId))</div>
+            <div><strong>创建时间：</strong>@(State.DisplayValueForView(State.detail.createTime))</div>
+            <div><strong>支付完成时间：</strong>@(State.DisplayValueForView(State.detail.successTime))</div>
+            <div><strong>失效时间：</strong>@(State.DisplayValueForView(State.detail.expireTime))</div>
+            <div style="grid-column:1/-1"><strong>备注：</strong>@(State.DisplayValueForView(State.detail.remark))</div>
+        </div>
+    }
+</ElDialog>
+
+<ElDialog ModelValue='@(State.auditDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.auditDialogVisible = value == true))'
+          title="修改记录"
+          width="620px"
+          DestroyOnClose='@(true)'>
+    @if (State.audit is not null) {
+        <div style="display:grid;grid-template-columns:150px 1fr;gap:12px 18px;line-height:1.6;">
+            <strong>创建人</strong><span>@(State.DisplayUserForView(State.audit.createUserName, State.audit.createUserId))</span>
+            <strong>创建时间</strong><span>@(State.DisplayValueForView(State.audit.createTime))</span>
+            <strong>最后修改人</strong><span>@(State.DisplayUserForView(State.audit.updateUserName, State.audit.updateUserId))</span>
+            <strong>最后修改时间</strong><span>@(State.DisplayValueForView(State.audit.updateTime))</span>
+        </div>
+    }
+</ElDialog>
+
+<ElDialog ModelValue='@(State.createDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.createDialogVisible = value == true))'
+          title="新增 Native 支付单"
+          width="660px"
+          DestroyOnClose='@(true)'
+          CloseOnClickModal='@(false)'>
+    <ElForm LabelWidth="110px">
+        <ElFormItem label="商品描述">
+            <ElInput ModelValue='@(State.createDescription)' @attributes='@(new ModelUpdate<string>(value => State.createDescription = value ?? ""))' placeholder="必填" clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="金额（分）">
+            <ElInput ModelValue='@(State.createTotal)' @attributes='@(new ModelUpdate<string>(value => State.createTotal = value ?? ""))' placeholder="正整数，单位为分" clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="附加信息">
+            <ElInput ModelValue='@(State.createAttachment)' @attributes='@(new ModelUpdate<string>(value => State.createAttachment = value ?? ""))' placeholder="可选" clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="优惠标记">
+            <ElInput ModelValue='@(State.createGoodsTag)' @attributes='@(new ModelUpdate<string>(value => State.createGoodsTag = value ?? ""))' placeholder="可选" clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="业务标签">
+            <ElInput ModelValue='@(State.createTags)' @attributes='@(new ModelUpdate<string>(value => State.createTags = value ?? ""))' placeholder="可选" clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="业务 ID">
+            <ElInput ModelValue='@(State.createBusinessId)' @attributes='@(new ModelUpdate<string>(value => State.createBusinessId = value ?? ""))' placeholder="可选，保持字符串精度" clearable='@(true)' />
+        </ElFormItem>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+        <ElButton @onclick='@(_ => State.createDialogVisible = false)' disabled='@(State.creating)'>取消</ElButton>
+        <ElPopconfirm title="确定向微信发起 Native 下单吗？"
+                      ConfirmButtonText="确定下单"
+                      CancelButtonText="取消"
+                      @onconfirm='@(_ => State.CreateNative())'>
+            <template #reference>
+                <ElButton type="primary" loading='@(State.creating)'>确定</ElButton>
+            </template>
+        </ElPopconfirm>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(State.qrDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.qrDialogVisible = value == true))'
+          title="付款二维码"
+          width="420px"
+          DestroyOnClose='@(true)'>
+    <div style="text-align:center;min-height:340px;">
+        @if (State.qrLoading) {
+            <ElText>正在生成二维码…</ElText>
+        } else if (State.qrImage.Length > 0) {
+            <img src='@(State.qrImage)' alt="付款二维码" style="width:320px;height:320px;object-fit:contain;" />
+            <div style="margin-top:8px;color:#606266;word-break:break-all;">@(State.DisplayValueForView(State.qrOrderNumber))</div>
+        }
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(State.refundListDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.refundListDialogVisible = value == true))'
+          title="退款记录"
+          width="1080px"
+          DestroyOnClose='@(true)'>
+    @if (State.refundListLoading) {
+        <ElText>正在加载退款记录…</ElText>
+    }
+    <ElTable @attributes='@(new TableData<WechatRefundView>(State.refundRows))' border='@(true)' stripe='@(true)' RowKey="id" EmptyText="暂无退款记录">
+        <ElTableColumn type="index" label="序号" width='@(70)' align="center" />
+        <ElTableColumn prop="outRefundNumber" label="商户退款号" MinWidth='@(190)' ShowOverflowTooltip='@(true)' />
+        <ElTableColumn prop="transactionId" label="支付订单号" MinWidth='@(220)' ShowOverflowTooltip='@(true)' />
+        <ElTableColumn label="退款金额（元）" width='@(130)' align="center">
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }@(State.RowAmount(cell, "refund"))</template>
+        </ElTableColumn>
+        <ElTableColumn label="退款原因" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "reason"))</template>
+        </ElTableColumn>
+        <ElTableColumn label="状态" width='@(110)' align="center">
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }<ElTag @attributes='@(new TableTagProps(State.RowStateTag(cell)))'>@(State.RowStateText(cell))</ElTag></template>
+        </ElTableColumn>
+        <ElTableColumn label="状态说明" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "tradeStateDescription"))</template>
+        </ElTableColumn>
+        <ElTableColumn label="退款渠道" MinWidth='@(130)' ShowOverflowTooltip='@(true)'>
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "channel"))</template>
+        </ElTableColumn>
+        <ElTableColumn label="入账账户" MinWidth='@(180)' ShowOverflowTooltip='@(true)'>
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "userReceivedAccount"))</template>
+        </ElTableColumn>
+        <ElTableColumn prop="createTime" label="创建时间" MinWidth='@(175)' align="center" />
+        <ElTableColumn label="完成时间" MinWidth='@(175)' align="center">
+            <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<WechatRefundView>)(object)scope).row; }@(State.DisplayRowValueForView(cell, "successTime"))</template>
+        </ElTableColumn>
+    </ElTable>
+</ElDialog>
+
+<ElDialog ModelValue='@(State.refundDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.refundDialogVisible = value == true))'
+          title="全额退款确认"
+          width="620px"
+          DestroyOnClose='@(true)'
+          CloseOnClickModal='@(false)'>
+    @if (State.refundOrder is not null) {
+        <ElAlert type="warning"
+                 title='@("将对订单【" + State.refundOrder.outTradeNumber + "】退回 " + State.FormatAmount(State.refundOrder.total) + " 元。")'
+                 ShowIcon='@(true)'
+                 closable='@(false)' />
+        <div style="height:16px"></div>
+        <ElForm LabelWidth="90px">
+            <ElFormItem label="退款原因">
+                <ElInput ModelValue='@(State.refundReason)'
+                         @attributes='@(new ModelUpdate<string>(value => State.refundReason = value ?? ""))'
+                         placeholder="可选"
+                         clearable='@(true)' />
+            </ElFormItem>
+        </ElForm>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+            <ElButton @onclick='@(_ => State.refundDialogVisible = false)' disabled='@(State.refunding)'>取消</ElButton>
+            <ElPopconfirm title="确定提交全额退款吗？"
+                          ConfirmButtonText="确定退款"
+                          CancelButtonText="取消"
+                          @onconfirm='@(_ => State.Refund())'>
+                <template #reference>
+                    <ElButton type="danger" loading='@(State.refunding)'>确认全额退款</ElButton>
+                </template>
+            </ElPopconfirm>
+        </div>
+    }
+</ElDialog>
+
+
+
+@code {
+    [Parameter] public IWechatPayContentState State { get; set; } = default!;
+}

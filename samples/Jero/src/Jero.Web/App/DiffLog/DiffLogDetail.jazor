@@ -1,0 +1,53 @@
+@using Jero.Web.App.DiffLog
+
+<div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px 16px;margin-bottom:20px;line-height:1.6;">
+    <strong>日志 ID</strong><span>@Detail.id</span>
+    <strong>差异操作</strong><span>@Display(Detail.diffType)</span>
+    <strong>耗时(ms)</strong><span>@Display(Detail.elapsed)</span>
+    <strong>操作时间</strong><span>@Display(Detail.createTime)</span>
+    <strong>业务对象</strong><pre style="margin:0;white-space:pre-wrap;word-break:break-word;">@Display(Detail.businessData)</pre>
+</div>
+@if (Detail.tableItems.Length > 0)
+{
+    @foreach (var table in Detail.tableItems)
+    {
+        <div style="margin-bottom:20px;">
+            <div style="margin-bottom:8px;font-weight:600;">
+                @Display(table.tableName)
+                <span style="margin-left:8px;color:#909399;font-weight:400;">@Display(table.tableDescription)</span>
+            </div>
+            <DiffLogColumns Rows="@table.columns" />
+        </div>
+    }
+}
+else
+{
+    <div style="margin-bottom:20px;">
+        <strong>原始差异数据</strong>
+        <pre style="white-space:pre-wrap;word-break:break-word;">@Display(Detail.diffData)</pre>
+    </div>
+}
+@if (Detail.sql.Length > 0)
+{
+    <div style="margin-bottom:20px;">
+        <strong>SQL 语句</strong>
+        <pre style="white-space:pre-wrap;word-break:break-word;">@Detail.sql</pre>
+    </div>
+}
+@if (Detail.parameterItems.Length > 0)
+{
+    <div style="margin-bottom:12px;font-weight:600;">参数</div>
+    <DiffLogParameters Rows="@Detail.parameterItems" />
+}
+else if (Detail.parameters.Length > 0)
+{
+    <div>
+        <strong>原始参数</strong>
+        <pre style="white-space:pre-wrap;word-break:break-word;">@Detail.parameters</pre>
+    </div>
+}
+
+@code {
+    [Parameter] public DiffLogView Detail { get; set; } = default!;
+    private static string Display(string value) => value.Length == 0 ? "-" : value;
+}

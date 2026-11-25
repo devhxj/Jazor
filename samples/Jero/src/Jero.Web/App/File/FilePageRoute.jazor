@@ -1,0 +1,65 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+@using Jero.Web.App.File
+
+<FilePage @attributes="@(State.CreateProps())">
+    <FilePageContent
+        UploadInputIdValue="@(State.UploadInputIdValue)"
+        UploadDialogVisible="@(State.uploadDialogVisible)"
+        Uploading="@(State.uploading)"
+        UploadFilePath="@(State.uploadFilePath)"
+        UploadFileType="@(State.uploadFileType)"
+        UploadVisibility="@(State.uploadVisibility)"
+        PreviewDialogVisible="@(State.previewDialogVisible)"
+        PreviewKind="@(State.previewKind)"
+        PreviewFileName="@(State.previewFileName)"
+        PreviewUrl="@(State.previewUrl)"
+        EditDialogVisible="@(State.editDialogVisible)"
+        Saving="@(State.saving)"
+        EditFileName="@(State.editFileName)"
+        EditFileType="@(State.editFileType)"
+        EditFileAlias="@(State.editFileAlias)"
+        EditDataId="@(State.editDataId)"
+        EditVisibility="@(State.editVisibility)"
+        AuditDialogVisible="@(State.auditDialogVisible)"
+        AuditDialogTitle="@(State.auditDialogTitle)"
+        AuditCreateUser="@(State.auditCreateUser)"
+        AuditCreateTime="@(State.auditCreateTime)"
+        AuditUpdateUser="@(State.auditUpdateUser)"
+        AuditUpdateTime="@(State.auditUpdateTime)"
+        UploadDialogChanged="@(State.UploadDialogChanged)"
+        SetUploadFilePath="@(value => State.uploadFilePath = value)"
+        SetUploadFileType="@(value => State.uploadFileType = value)"
+        SetUploadVisibility="@(value => State.uploadVisibility = value)"
+        SelectUploadFile="@(SelectUploadFile)"
+        SubmitUpload="@(State.SubmitUpload)"
+        EditDialogChanged="@(State.EditDialogChanged)"
+        SetEditFileName="@(value => State.editFileName = value)"
+        SetEditFileType="@(value => State.editFileType = value)"
+        SetEditFileAlias="@(value => State.editFileAlias = value)"
+        SetEditDataId="@(value => State.editDataId = value)"
+        SetEditVisibility="@(value => State.editVisibility = value)"
+        SaveEdit="@(State.SaveEdit)"
+        PreviewDialogChanged="@(State.PreviewDialogChanged)"
+        SetAuditDialogVisible="@(value => State.auditDialogVisible = value)"
+        PreviewBlob="@(State.previewBlob)"
+        PreviewVersion="@(State.PreviewVersion)"
+        PreviewRenderFailed="@(State.PreviewRenderFailedForView)" />
+</FilePage>
+
+@code {
+    private IFilePageState State { get; set; } = default!;
+
+    [Setup]
+    private void Initialize()
+    {
+        State = Reactive(FilePageFactory.Create());
+        State.Initialize();
+    }
+
+    private void SelectUploadFile()
+    {
+        var input = ECMAScript.Global.Document.GetElementById(State.UploadInputIdValue) as HTMLInputElement;
+        State.SelectUploadFile(input?.Files?.GetItem(0));
+    }
+}

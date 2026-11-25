@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NoWarn>1701;1702;1591;8632</NoWarn>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Jero.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Configuration\**\*">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GHSoftware.WordDocTextExtractor" Version="1.0.4" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" Version="1.14.0-preview.260721.1" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.14.0" />
+    <PackageReference Include="OpenAI" Version="2.15.0" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
+    <ProjectReference Include="..\..\Jero.Core\Jero.Core.csproj" />
+  </ItemGroup>
+
+</Project>

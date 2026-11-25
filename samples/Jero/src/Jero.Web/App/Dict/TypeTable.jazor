@@ -1,0 +1,58 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.Dict
+
+<ElTable @attributes="@(new TableData<DictTypeView>(Rows) { onSortChange = SortChanged, onRowClick = row => OnSelectTypeRow(row.id) })" border="true" stripe="true" HighlightCurrentRow="true" RowKey="id" EmptyText="暂无字典">
+                <ElTableColumn type="index" label="序号" width="70" align="center" />
+                <ElTableColumn prop="name" label="字典名称" MinWidth="140" sortable="custom" />
+                <ElTableColumn prop="code" label="字典编码" MinWidth="150" sortable="custom" />
+                    @if (IsSuperAdmin) { <ElTableColumn label="系统内置" width="96" align="center">
+                        <template #default context="cell">@{ var row = ((TableSlot<DictTypeView>)(object)cell).row; }
+                            <ElTag @attributes="@(new TableTagProps(YesNoTagType(row.sysFlag)))">
+                                @(YesNoText(row.sysFlag))
+                            </ElTag>
+                        </template>
+                    </ElTableColumn> }
+                    @if (IsSuperAdmin) { <ElTableColumn label="租户字典" width="96" align="center">
+                        <template #default context="cell">@{ var row = ((TableSlot<DictTypeView>)(object)cell).row; }
+                            <ElTag @attributes="@(new TableTagProps(YesNoTagType(row.isTenant)))">
+                                @(YesNoText(row.isTenant))
+                            </ElTag>
+                        </template>
+                    </ElTableColumn> }
+                <ElTableColumn label="状态" width="80" align="center">
+                    <template #default context="cell">@{ var row = ((TableSlot<DictTypeView>)(object)cell).row; }
+                        <ElTag @attributes="@(new TableTagProps(StatusTagType(row)))">@(StatusText(row))</ElTag>
+                    </template>
+                </ElTableColumn>
+                <ElTableColumn prop="orderNo" label="排序" width="80" align="center" sortable="custom" />
+                    @if (CanEditType || CanDeleteType) { <ElTableColumn label="操作" width="126" align="center" fixed="right">
+                        <template #default context="cell">@{ var row = ((TableSlot<DictTypeView>)(object)cell).row; }
+                            @if (CanEditType) { <ElButton link="true" type="primary" disabled='@(!CanEditTypeRow(row))' @onclick='@(() => OnOpenEditType(row.id))'>编辑</ElButton> }
+                            @if (CanDeleteType) { <ElPopconfirm title='@("确定删除字典【" + row.name + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDeleteType(row.id))'>
+                                    <template #reference>
+                                        <ElButton link="true" type="danger" disabled='@(!CanDeleteTypeRow(row))'>删除</ElButton>
+                                    </template>
+                                </ElPopconfirm> }
+                        </template>
+                    </ElTableColumn> }
+            </ElTable>
+
+@code {
+    [Parameter] public DictTypeView[] Rows { get; set; } = [];
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanEditType { get; set; }
+    [Parameter] public bool CanDeleteType { get; set; }
+    [Parameter] public Action<string> OnSelectTypeRow { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEditType { get; set; } = default!;
+    [Parameter] public Action<string> OnDeleteType { get; set; } = default!;
+    [Parameter] public Action<string, string> OnSortTypes { get; set; } = default!;
+
+    private static string StatusText(DictTypeView row) => row.status == 1 ? "启用" : "停用";
+    private static string StatusTagType(DictTypeView row) => row.status == 1 ? "success" : "info";
+    private static string YesNoText(int value) => value == 1 ? "是" : "否";
+    private static string YesNoTagType(int value) => value == 1 ? "success" : "info";
+    private bool CanEditTypeRow(DictTypeView row) => row.sysFlag == 2 || IsSuperAdmin;
+    private static bool CanDeleteTypeRow(DictTypeView row) => row.sysFlag == 2;
+    private void SortChanged(TableSortScope sort) => OnSortTypes(sort.prop ?? "", sort.order ?? "");
+}

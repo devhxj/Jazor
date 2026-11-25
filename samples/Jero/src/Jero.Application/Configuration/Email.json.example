@@ -1,0 +1,12 @@
+{
+  "Email": {
+    "Host": "smtp.example.com",
+    "Port": 465,
+    "EnableSsl": true,
+    "UserName": "",
+    "Password": "",
+    "DefaultFromEmail": "",
+    "DefaultFromName": "Jero",
+    "DefaultToEmail": ""
+  }
+}

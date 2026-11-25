@@ -1,0 +1,21 @@
+{
+  "Alipay": {
+    "ServerUrl": "https://openapi.alipay.com/gateway.do",
+    "AuthUrl": "",
+    "AppAuthUrl": "",
+    "WebsocketUrl": "",
+    "NotifyUrl": "",
+    "RootCertPath": "AlipayCrt/alipayRootCert.crt",
+    "AccountList": [
+      {
+        "Name": "",
+        "AppId": "",
+        "PrivateKey": "",
+        "EncryptKey": "",
+        "SignType": "RSA2",
+        "AppCertPath": "",
+        "AlipayPublicCertPath": ""
+      }
+    ]
+  }
+}

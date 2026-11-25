@@ -1,0 +1,86 @@
+{
+  "$schema": "https://gitee.com/dotnetchina/Furion/raw/v4/schemas/v4/furion-schema.json",
+
+  // 详细数据库配置见SqlSugar官网（第一个为默认库），极力推荐 PostgreSQL 数据库
+  // 数据库连接字符串参考地址：https://www.connectionstrings.com/
+  "DbConnection": {
+    "EnableConsoleSql": false, // 启用控制台打印SQL
+    "ConnectionConfigs": [
+      {
+        //"ConfigId": "1300000000001", // 默认库标识-禁止修改
+        "DbType": "Sqlite", // MySql、SqlServer、Sqlite、Oracle、PostgreSQL、Dm、Kdbndp、Oscar、MySqlConnector、Access、OpenGauss、QuestDB、HG、ClickHouse、GBase、Odbc、Custom
+        "DbNickName": "系统库",
+        "ConnectionString": "DataSource=./Jero.db", // Sqlite
+        //"ConnectionString": "PORT=5432;DATABASE=xxx;HOST=localhost;PASSWORD=xxx;USER ID=xxx", // PostgreSQL
+        //"ConnectionString": "Server=localhost;Database=xxx;Uid=xxx;Pwd=xxx;SslMode=None;AllowLoadLocalInfile=true;AllowUserVariables=true;", // MySql,
+        //"ConnectionString": "User Id=xxx; Password=xxx; Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCL)))", // Oracle
+        //"ConnectionString": "Server=localhost;Database=xxx;User Id=xxx;Password=xxx;Encrypt=True;TrustServerCertificate=True;", // SqlServer
+
+        //"SlaveConnectionConfigs": [ // 读写分离/主从
+        //	{
+        //		"HitRate": 10,
+        //		"ConnectionString": "DataSource=./Jero1.db"
+        //	},
+        //	{
+        //		"HitRate": 10,
+        //		"ConnectionString": "DataSource=./Jero2.db"
+        //	}
+        //],
+        "DbSettings": {
+          "EnableInitDb": true, // 启用库初始化（若实体没有变化建议关闭）
+          "EnableInitView": true, // 启用视图初始化（若实体和视图没有变化建议关闭）
+          "EnableDiffLog": false, // 启用库表差异日志
+          "EnableUnderLine": false, // 启用驼峰转下划线
+          "EnableConnEncrypt": false // 启用数据库连接串加密（国密SM2加解密）
+        },
+        "TableSettings": {
+          "EnableInitTable": true, // 启用表初始化（若实体没有变化建议关闭）
+          "EnableIncreTable": false // 启用表增量更新（只更新贴了特性[IncreTable]的实体表）
+        },
+        "SeedSettings": {
+          "EnableInitSeed": true, // 启用种子初始化（若种子没有变化建议关闭）
+          "EnableIncreSeed": false // 启用种子增量更新（只更新贴了特性[IncreSeed]的种子表）
+        }
+      }
+      //// 日志独立数据库配置
+      //{
+      //  "ConfigId": "1300000000002", // 日志库标识-禁止修改
+      //  "DbNickName": "日志库",
+      //  "DbType": "Sqlite",
+      //  "ConnectionString": "DataSource=./Jero.Log.db", // 库连接字符串
+      //  "DbSettings": {
+      //    "EnableInitDb": true, // 启用库初始化（若实体没有变化建议关闭）
+      //    "EnableDiffLog": false, // 启用库表差异日志
+      //    "EnableUnderLine": false // 启用驼峰转下划线
+      //  },
+      //  "TableSettings": {
+      //    "EnableInitTable": true, // 启用表初始化（若实体没有变化建议关闭）
+      //    "EnableIncreTable": false // 启用表增量更新（只更新贴了特性[IncreTable]的实体表）
+      //  },
+      //  "SeedSettings": {
+      //    "EnableInitSeed": false, // 启用种子初始化（若种子没有变化建议关闭）
+      //    "EnableIncreSeed": false // 启用种子增量更新（只更新贴了特性[IncreSeed]的种子表）
+      //  }
+      //},
+      //// 其他数据库配置（可以配置多个）
+      //{
+      //  "ConfigId": "test", // 库标识
+      //  "DbType": "Sqlite", // 库类型
+      //  "ConnectionString": "DataSource=./Jero.Test.db", // 库连接字符串
+      //  "DbSettings": {
+      //    "EnableInitDb": true, // 启用库初始化（若实体没有变化建议关闭）
+      //    "EnableDiffLog": false, // 启用库表差异日志
+      //    "EnableUnderLine": false // 启用驼峰转下划线
+      //  },
+      //  "TableSettings": {
+      //    "EnableInitTable": true, // 启用表初始化（若实体没有变化建议关闭）
+      //    "EnableIncreTable": false // 启用表增量更新（只更新贴了特性[IncreTable]的实体表）
+      //  },
+      //  "SeedSettings": {
+      //    "EnableInitSeed": true, // 启用种子初始化（若种子没有变化建议关闭）
+      //    "EnableIncreSeed": false // 启用种子增量更新（只更新贴了特性[IncreSeed]的种子表）
+      //  }
+      //}
+    ]
+  }
+}

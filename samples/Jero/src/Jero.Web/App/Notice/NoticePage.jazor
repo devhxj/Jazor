@@ -1,0 +1,155 @@
+@using Npm.ElementPlus
+@using App.Components
+@using App.Logs
+@using Jero.Web.App.Notice
+
+<ElCard Header="通知公告" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        支持标题和类型查询、分页、富文本编辑、发布，以及创建者权限控制。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="标题">
+                <ElInput ModelValue="@QueryTitle"
+                         @onupdate:modelValue="SetQueryTitle"
+                         Placeholder="搜索通知公告标题"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="类型">
+                <div style="width:180px">
+                    <NoticeOptionSelect Value="@QueryType" Options="@TypeOptions" Loading="@OptionsLoading" Query="true" Change="@SetQueryType" />
+                </div>
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">
+            <div>
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="OpenCreate">新增</ElButton>
+                }
+            </div>
+            <ElButton @onclick="Refresh" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载通知公告…</ElText>
+        }
+
+        <div class="jero-list-scroll">
+            <NoticeTable Rows="@Rows" CanEdit="@CanEdit" CanPublish="@CanPublish" CanDelete="@CanDelete"
+                         Edit="@OpenEdit" Publish="@Publish" Delete="@Delete" />
+        </div>
+
+        <LogPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total"
+                       ChangePage="@ChangePage" ChangePageSize="@ChangePageSize" />
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="960px"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="80px">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;">
+            <ElFormItem Label="标题">
+                <ElInput ModelValue="@EditTitle"
+                         @onupdate:modelValue="SetEditTitle"
+                         Placeholder="标题，最多32个字符"
+                         Maxlength="32"
+                         ShowWordLimit="true"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="类型">
+                <NoticeOptionSelect Value="@EditType" Options="@TypeOptions" Loading="@OptionsLoading" Change="@SetEditType" />
+            </ElFormItem>
+        </div>
+
+        <ElFormItem Label="内容">
+            <div style="width:100%;border:1px solid #dcdfe6;border-radius:4px;overflow:hidden;">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;padding:8px;border-bottom:1px solid #ebeef5;background:#f5f7fa;">
+                    <ElButton @onclick='@(() => RichCommand("bold"))'>加粗</ElButton>
+                    <ElButton @onclick='@(() => RichCommand("italic"))'>斜体</ElButton>
+                    <ElButton @onclick='@(() => RichCommand("underline"))'>下划线</ElButton>
+                    <ElButton @onclick='@(() => RichBlock("h2"))'>标题</ElButton>
+                    <ElButton @onclick='@(() => RichBlock("p"))'>正文</ElButton>
+                    <ElButton @onclick='@(() => RichCommand("insertUnorderedList"))'>无序列表</ElButton>
+                    <ElButton @onclick='@(() => RichCommand("insertOrderedList"))'>有序列表</ElButton>
+                    <ElButton @onclick='@(() => RichCommand("removeFormat"))'>清除格式</ElButton>
+                </div>
+                <NoticeRichEditor Id="@RichEditorId" Html="@RichEditorHtml" Input="@SyncRichContent" />
+            </div>
+        </ElFormItem>
+    </ElForm>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;">
+        <ElButton @onclick="CancelEdit" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary" @onclick="Save" Loading="@Saving">确定</ElButton>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanPublish { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool OptionsLoading { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public int QueryType { get; set; }
+    [Parameter] public int EditType { get; set; }
+    [Parameter] public string QueryTitle { get; set; } = "";
+    [Parameter] public string EditTitle { get; set; } = "";
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string RichEditorHtml { get; set; } = "";
+    [Parameter] public string RichEditorId { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public NoticeTableRow[] Rows { get; set; } = [];
+    [Parameter] public NoticeSelectOption[] TypeOptions { get; set; } = [];
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action SyncRichContent { get; set; } = default!;
+    [Parameter] public Action<string> RichCommand { get; set; } = default!;
+    [Parameter] public Action<string> RichBlock { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Publish { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action CancelEdit { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryTitle { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTitle { get; set; } = default!;
+    [Parameter] public Action<double> SetQueryType { get; set; } = default!;
+    [Parameter] public Action<double> SetEditType { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+}
+

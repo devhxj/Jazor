@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "libraryId": "jero-browser-npm",
+  "version": "1.0.0",
+  "source": "npm",
+  "packages": {
+    "@logicflow/core": {
+      "source": "npm",
+      "version": "2.2.1"
+    },
+    "@logicflow/extension": {
+      "source": "npm",
+      "version": "2.2.1"
+    },
+    "@microsoft/signalr": {
+      "source": "npm",
+      "version": "10.0.0"
+    },
+    "echarts": {
+      "source": "npm",
+      "version": "6.0.0"
+    },
+    "qrcode": {
+      "source": "npm",
+      "version": "1.5.4"
+    }
+  },
+  "imports": {
+    "@logicflow/core": {
+      "type": "module",
+      "path": "@logicflow/core"
+    },
+    "@logicflow/extension": {
+      "type": "module",
+      "path": "@logicflow/extension"
+    },
+    "@microsoft/signalr": {
+      "type": "module",
+      "path": "@microsoft/signalr"
+    },
+    "echarts": {
+      "type": "module",
+      "path": "echarts"
+    },
+    "qrcode": {
+      "type": "module",
+      "path": "qrcode"
+    }
+  }
+}

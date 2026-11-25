@@ -1,0 +1,26 @@
+{
+  "Wechat": {
+    "WechatAppId": "",
+    "WechatAppSecret": "",
+    "WechatToken": "",
+    "WechatEncodingAESKey": "",
+    "WxOpenAppId": "",
+    "WxOpenAppSecret": "",
+    "WxToken": "",
+    "WxEncodingAESKey": "",
+    "QRImagePath": ""
+  },
+  "WechatPay": {
+    "AppId": "",
+    "MerchantId": "",
+    "MerchantV3Secret": "",
+    "MerchantCertificateSerialNumber": "",
+    "MerchantCertificatePrivateKey": ""
+  },
+  "PayCallBack": {
+    "AlipayUrl": "",
+    "AlipayRefundUrl": "",
+    "WechatPayUrl": "",
+    "WechatRefundUrl": ""
+  }
+}

@@ -1,0 +1,146 @@
+@{ var config = (CustomViewEngine)Model; }
+using System.ComponentModel;
+using ECMAScript;
+using static ECMAScript.Vue;
+
+namespace @Model.FrontendNamespace;
+
+public sealed record Row : VueProps
+{
+@foreach (var column in Model.TableField) {
+    @:public @(Model.FrontendType(column)) @@@(column.LowerPropertyName) { get; set; }
+}
+}
+
+public sealed record PageRequest : VueProps
+{
+    public double page { get; set; }
+    public double pageSize { get; set; }
+    public string field { get; set; } = "";
+    public string order { get; set; } = "descending";
+    public string descStr { get; set; } = "descending";
+@if (config.ImportFieldList.Count > 0) {
+    @:public @(config.FrontendType(config.PrimaryKeyFieldList[0]))[]? selectKeyList { get; set; }
+}
+@if (Model.HasLikeQuery) {
+    @:public string? keyword { get; set; }
+}
+@foreach (var column in Model.QueryWhetherList) {
+    if (column.NetType.TrimEnd('?') == "DateTime" && column.QueryType == "~") {
+    @:public string?[]? @(column.LowerPropertyName)Range { get; set; }
+    } else {
+    @:public @(Model.FrontendType(column)) @@@(column.LowerPropertyName) { get; set; }
+    }
+}
+}
+
+public sealed record RowKey(@config.RowKeyParameters) : VueProps;
+public sealed record PageData(Row[] items, double total) : VueProps;
+public sealed record DropdownRequest(bool fromPage) : VueProps;
+public sealed record CrudTableData(Row[] data) : VueProps
+{
+    public System.Action<SortChange>? onSortChange { get; init; }
+    public System.Action<Row[]>? onSelectionChange { get; init; }
+    public System.Func<Row, string>? rowKey { get; init; }
+}
+public sealed record SortChange(string? prop, string? order);
+public sealed record Cell(Row row);
+public sealed record Choice(string Value, string Label) : VueProps;
+public sealed record DropdownChoice(object? value, string? label, DropdownChoice[]? children) : VueProps;
+public sealed record EnumChoice(double value, string describe) : VueProps;
+public sealed record ConstChoice(object? code, string name) : VueProps;
+
+@if (config.HasCustomPrint) {
+    @:[ECMAScript("/Print/hiprint.mjs")]
+    @:internal static class PrintExports
+    @:{
+        @:[Description("@@#loadHiprint")]
+        @:public static extern IPromise<PrintModule> Load();
+    @:}
+    @:
+    @:[ECMAScript]
+    @:[Description("@@#")]
+    @:internal sealed class PrintModule
+    @:{
+        @:#pragma warning disable CS0626
+        @:[Description("@@#default")]
+        @:public extern PrintRuntime Default { get; }
+        @:#pragma warning restore CS0626
+        @:[Description("@@#disAutoConnect")]
+        @:public extern void DisableAutoConnect();
+    @:}
+    @:
+    @:[ECMAScript]
+    @:[Description("@@#")]
+    @:internal sealed class PrintRuntime
+    @:{
+        @:#pragma warning disable CS0626
+        @:public extern PrintApi hiprint { get; }
+        @:#pragma warning restore CS0626
+    @:}
+    @:
+    @:[ECMAScript]
+    @:[Description("@@#")]
+    @:internal sealed class PrintApi
+    @:{
+        @:#pragma warning disable CS0626
+        @:public extern object PrintTemplate { get; }
+        @:#pragma warning restore CS0626
+    @:}
+    @:
+    @:public sealed record PrintOptions(object template) : VueProps;
+    @:
+    @:[ECMAScript]
+    @:[Description("@@#")]
+    @:internal sealed class PrintTemplate
+    @:{
+        @:[Description("@@#getHtml")]
+        @:public extern object? GetHtml(Row data);
+        @:[Description("@@#print")]
+        @:public extern void Print(Row data);
+    @:}
+}
+
+@if (config.HasFileTransfer) {
+    @:public sealed record TransferResult(bool Ok, string? Error, object? Data) : VueProps;
+    @:
+    @:// Keep the transport at the JSON and WebIDL boundary. Browser fetch owns the multipart header.
+    @:[ECMAScript("@@jero/runtime/@(config.RuntimeTransferModule)")]
+    @:public static class FileTransfer
+    @:{
+        @:[Description("@@#SelectedFile")]
+        @:public static extern FileRef? SelectedFile(EventRef e);
+        @:[Description("@@#Upload")]
+        @:public static extern IPromise<TransferResult> Upload(string path, FileRef file, string? resultFile = null);
+        @:[Description("@@#Download")]
+        @:public static extern IPromise<TransferResult> Download(string path, string fileName, object? request = null);
+    @:}
+}
+
+[ECMAScript("@@jero/runtime/components/api-client.js")]
+internal static class CrudApi
+{
+    [Description("@@#Get")]
+    public static extern IPromise<CrudOutcome> Get(string path);
+
+    [Description("@@#Post")]
+    public static extern IPromise<CrudOutcome> Post(string path, object body);
+}
+
+[ECMAScript("@@jero/runtime/components/application-state.js")]
+internal static class CrudPermissions
+{
+    [Description("@@#HasPermission")]
+    public static extern bool Has(string permission);
+}
+
+[ECMAScript]
+[Description("@@#")]
+internal sealed class CrudOutcome
+{
+#pragma warning disable CS0626 // The Jero browser client supplies the wire properties.
+    public extern bool Ok { get; }
+    public extern string? Error { get; }
+    public extern object? Data { get; }
+#pragma warning restore CS0626
+}

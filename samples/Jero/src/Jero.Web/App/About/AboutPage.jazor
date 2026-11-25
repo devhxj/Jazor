@@ -1,0 +1,183 @@
+@using Npm.ElementPlus
+
+<style>
+    .about-page { display: grid; gap: 24px; }
+    .about-heading { padding: 4px 2px; }
+    .about-heading h1 { margin: 0; color: #303133; font-size: 23px; line-height: 1.25; }
+    .about-heading p { margin: 12px 0 0; color: #303133; font-size: 14px; line-height: 1.7; }
+    .about-link { color: #409eff; text-decoration: none; }
+    .about-link:hover { color: #79bbff; text-decoration: underline; }
+    .about-card { min-width: 0; }
+    .about-section-title { margin: 0; color: #303133; font-size: 18px; font-weight: 500; }
+    .about-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 16px; }
+    .about-item { min-width: 0; border-top: 1px solid #ebeef5; padding: 18px 16px; }
+    .about-item__title { color: #303133; font-size: 14px; font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+    .about-item__value { margin-top: 8px; color: #606266; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+    .about-dependency .about-item { padding-top: 12px; padding-bottom: 12px; }
+    .about-dependency .about-item__title { font-weight: 400; }
+    .about-dependency .about-item__value { color: #909399; }
+    @@media (max-width: 1100px) {
+        .about-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @@media (max-width: 760px) {
+        .about-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @@media (max-width: 520px) {
+        .about-grid { grid-template-columns: 1fr; }
+        .about-item { padding-right: 0; padding-left: 0; }
+    }
+</style>
+
+<div class="about-page">
+    <header class="about-heading">
+        <h1>关于项目</h1>
+        <p>
+            <a class="about-link" href="https://github.com/vbenjs/vue-vben-admin" target="_blank">Vben Admin</a>
+            是一个现代化开箱即用的中后台解决方案，采用最新的技术栈，包括 Vue 3.0、Vite、TailwindCSS 和 TypeScript 等前沿技术，代码规范严谨，提供丰富的配置选项，旨在为中大型项目的开发提供现成的开箱即用解决方案及丰富的示例，同时，它也是学习和深入前端技术的一个极佳示例。
+        </p>
+    </header>
+
+    <ElCard class="about-card">
+        <h2 class="about-section-title">基本信息</h2>
+        <dl class="about-grid">
+            <div class="about-item">
+                <dt class="about-item__title">版本号</dt>
+                <dd class="about-item__value">1.0.0</dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">开源许可协议</dt>
+                <dd class="about-item__value">—</dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">最后构建时间</dt>
+                <dd class="about-item__value">—</dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">主页</dt>
+                <dd class="about-item__value">—</dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">文档地址</dt>
+                <dd class="about-item__value"><a class="about-link" href="https://doc.vben.pro" target="_blank">点击查看</a></dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">预览地址</dt>
+                <dd class="about-item__value"><a class="about-link" href="https://www.vben.pro" target="_blank">点击查看</a></dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">Github</dt>
+                <dd class="about-item__value"><a class="about-link" href="https://github.com/vbenjs/vue-vben-admin" target="_blank">点击查看</a></dd>
+            </div>
+            <div class="about-item">
+                <dt class="about-item__title">作者</dt>
+                <dd class="about-item__value">—</dd>
+            </div>
+        </dl>
+    </ElCard>
+
+    <ElCard class="about-card about-dependency">
+        <h2 class="about-section-title">生产环境依赖</h2>
+        <dl class="about-grid">
+            @foreach (var dependency in ProductionDependencies)
+            {
+                <div class="about-item">
+                    <dt class="about-item__title">@dependency.Name</dt>
+                    <dd class="about-item__value">@dependency.Version</dd>
+                </div>
+            }
+        </dl>
+    </ElCard>
+
+    <ElCard class="about-card about-dependency">
+        <h2 class="about-section-title">开发环境依赖</h2>
+        <dl class="about-grid">
+            @foreach (var dependency in DevelopmentDependencies)
+            {
+                <div class="about-item">
+                    <dt class="about-item__title">@dependency.Name</dt>
+                    <dd class="about-item__value">@dependency.Version</dd>
+                </div>
+            }
+        </dl>
+    </ElCard>
+</div>
+
+@code {
+    private sealed record AboutDependency(string Name, string Version);
+
+    private readonly AboutDependency[] ProductionDependencies =
+    [
+        new("@logicflow/core", "^2.2.1"),
+        new("@logicflow/extension", "^2.2.1"),
+        new("@microsoft/signalr", "^10.0.0"),
+        new("@vben-core/composables", "file:./packages/core-composables"),
+        new("@vben-core/design", "file:./packages/core-design"),
+        new("@vben-core/form-ui", "file:./packages/core-form-ui"),
+        new("@vben-core/icons", "file:./packages/core-icons"),
+        new("@vben-core/layout-ui", "file:./packages/core-layout-ui"),
+        new("@vben-core/menu-ui", "file:./packages/core-menu-ui"),
+        new("@vben-core/popup-ui", "file:./packages/core-popup-ui"),
+        new("@vben-core/preferences", "file:./packages/core-preferences"),
+        new("@vben-core/shadcn-ui", "file:./packages/core-shadcn-ui"),
+        new("@vben-core/shared", "file:./packages/core-shared"),
+        new("@vben-core/tabs-ui", "file:./packages/core-tabs-ui"),
+        new("@vben-core/typings", "file:./packages/core-typings"),
+        new("@vben/access", "file:./packages/access"),
+        new("@vben/common-ui", "file:./packages/common-ui"),
+        new("@vben/constants", "file:./packages/constants"),
+        new("@vben/hooks", "file:./packages/hooks"),
+        new("@vben/icons", "file:./packages/icons"),
+        new("@vben/layouts", "file:./packages/layouts"),
+        new("@vben/locales", "file:./packages/locales"),
+        new("@vben/plugins", "file:./packages/plugins"),
+        new("@vben/preferences", "file:./packages/preferences"),
+        new("@vben/request", "file:./packages/request"),
+        new("@vben/stores", "file:./packages/stores"),
+        new("@vben/styles", "file:./packages/styles"),
+        new("@vben/tailwind-config", "file:./packages/tailwind-config"),
+        new("@vben/types", "file:./packages/types"),
+        new("@vben/utils", "file:./packages/utils"),
+        new("@vue-office/docx", "^1.6.3"),
+        new("@vue-office/excel", "^1.7.14"),
+        new("@vue-office/pdf", "^2.0.10"),
+        new("@vueuse/core", "^14.2.1"),
+        new("dayjs", "^1.11.20"),
+        new("element-plus", "^2.13.7"),
+        new("monaco-editor", "^0.55.1"),
+        new("pinia", "^3.0.4"),
+        new("pinia-plugin-persistedstate", "^4.7.1"),
+        new("relation-graph", "^2.2.11"),
+        new("sm-crypto-v2", "^1.15.1"),
+        new("vcrontab-3", "^3.3.22"),
+        new("vform3-builds", "^3.0.10"),
+        new("vue", "^3.5.32"),
+        new("vue-plugin-hiprint", "^0.0.60"),
+        new("vue-router", "^5.0.4")
+    ];
+
+    private readonly AboutDependency[] DevelopmentDependencies =
+    [
+        new("@eslint/js", "^10.0.1"),
+        new("@intlify/unplugin-vue-i18n", "^11.0.7"),
+        new("@tailwindcss/vite", "^4.2.2"),
+        new("@types/node", "^25.6.0"),
+        new("@vitejs/plugin-vue", "^6.0.6"),
+        new("@vitejs/plugin-vue-jsx", "^5.1.5"),
+        new("@vue/test-utils", "^2.4.6"),
+        new("eslint", "^10.2.1"),
+        new("eslint-plugin-vue", "^10.9.0"),
+        new("happy-dom", "^20.9.0"),
+        new("rollup-plugin-visualizer", "^7.0.1"),
+        new("sass", "^1.99.0"),
+        new("sass-embedded", "^1.99.0"),
+        new("tailwindcss", "^4.2.2"),
+        new("typescript", "^6.0.2"),
+        new("typescript-eslint", "^8.59.0"),
+        new("unplugin-element-plus", "^0.11.2"),
+        new("vite", "^8.0.8"),
+        new("vite-plugin-compression", "^0.5.1"),
+        new("vite-plugin-pwa", "^1.2.0"),
+        new("vitest", "^4.1.5"),
+        new("vue-tsc", "^3.2.6")
+    ];
+}

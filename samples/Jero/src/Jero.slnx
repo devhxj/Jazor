@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Plugins/">
+    <Project Path="Plugins/Jero.Plugin.ApprovalFlow/Jero.Plugin.ApprovalFlow.csproj" />
+    <Project Path="Plugins/Jero.Plugin.DingTalk/Jero.Plugin.DingTalk.csproj" />
+    <Project Path="Plugins/Jero.Plugin.GoView/Jero.Plugin.GoView.csproj" />
+    <Project Path="Plugins/Jero.Plugin.K3Cloud/Jero.Plugin.K3Cloud.csproj" />
+    <Project Path="Plugins/Jero.Plugin.ReZero/Jero.Plugin.ReZero.csproj" />
+    <Project Path="Plugins/Jero.Plugin.SaveLife/Jero.Plugin.SaveLife.csproj" />
+    <Project Path="Plugins/Jero.Plugin.SaveLife.DocumentWorker/Jero.Plugin.SaveLife.DocumentWorker.csproj" />
+    <Project Path="Plugins/Jero.Plugin.WorkWeixin/Jero.Plugin.WorkWeixin.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="Jero.Application/Jero.Application.csproj" />
+  <Project Path="Jero.Core/Jero.Core.csproj" />
+  <Project Path="Jero.Test/Jero.Test.csproj">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
+  <Project Path="Jero.Web/Jero.Web.csproj" />
+</Solution>

@@ -1,0 +1,197 @@
+@{ var model = (CustomViewEngine)Model; }
+
+
+
+using Jero.Core;
+using System.ComponentModel.DataAnnotations;
+using Magicodes.ExporterAndImporter.Core;
+using Magicodes.ExporterAndImporter.Excel;
+namespace @(model.NameSpace);
+
+/// <summary>
+/// @(model.BusName)基础输入参数
+/// </summary>
+public class @(model.ClassName)BaseInput
+{
+@foreach (var column in model.PrimaryKeyFieldList.Concat(model.AddUpdateFieldList)){
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>
+    if (column.EffectType is "EnumSelector" or "DictSelector") {
+    @:[Dict(@(column.EffectType == "EnumSelector" ? $"nameof({column.DictTypeCode})" : $"\"{column.DictTypeCode}\""), AllowNullValue=true)]
+    }
+    if (column.WhetherRequired == "Y") {
+    @:[Required(ErrorMessage = "@(column.ColumnComment)不能为空")]
+    }
+    @:public virtual @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    @:
+}
+}
+
+/// <summary>
+/// @(model.BusName)分页查询输入参数
+/// </summary>
+public class Page@(model.ClassName)Input : BasePageInput
+{
+@foreach (var column in model.TableField.Where(u => u.WhetherQuery == "Y")){
+    if(column.NetType?.TrimEnd('?') == "DateTime" && column.QueryType == "~"){
+    @:/// <summary>
+    @:/// @(column.ColumnComment)范围
+    @:/// </summary>
+    @: public DateTime?[] @(column.PropertyName)Range { get; set; }
+    } else {
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>
+    if (column.EffectType is "EnumSelector" or "DictSelector") {
+    @:[Dict(@(column.EffectType == "EnumSelector" ? $"nameof({column.DictTypeCode})" : $"\"{column.DictTypeCode}\""), AllowNullValue=true)]
+    }
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    }
+    @:
+}
+@if (model.ImportFieldList.Count > 0){
+    var primaryKey = model.PrimaryKeyFieldList.First();
+    @:/// <summary>
+    @:/// 选中主键列表
+    @:/// </summary>
+    @: public List<@(primaryKey.NetType)> SelectKeyList { get; set; }
+}
+}
+
+/// <summary>
+/// @(model.BusName)增加输入参数
+/// </summary>
+public class Add@(model.ClassName)Input
+{
+@foreach (var column in model.AddUpdateFieldList){
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>
+    if (column.EffectType is "EnumSelector" or "DictSelector") {
+    @:[Dict(@(column.EffectType == "EnumSelector" ? $"nameof({column.DictTypeCode})" : $"\"{column.DictTypeCode}\""), AllowNullValue=true)]
+    }
+    if (column.WhetherRequired == "Y") {
+    @:[Required(ErrorMessage = "@(column.ColumnComment)不能为空")]
+    }
+    if (column.NetType.TrimEnd('?').EndsWith("string") && column.ColumnLength > 0){
+    @:[MaxLength(@column.ColumnLength, ErrorMessage = "@(column.ColumnComment)字符长度不能超过@(column.ColumnLength)")]
+    }
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    @:
+}
+}
+
+/// <summary>
+/// @(model.BusName)删除输入参数
+/// </summary>
+public class Delete@(model.ClassName)Input
+{
+@foreach (var column in model.PrimaryKeyFieldList) {
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>
+    @:[Required(ErrorMessage = "@(column.ColumnComment)不能为空")]
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    @:
+}
+}
+
+/// <summary>
+/// @(model.BusName)更新输入参数
+/// </summary>
+public class Update@(model.ClassName)Input
+{
+    @foreach (var column in model.PrimaryKeyFieldList.Concat(model.AddUpdateFieldList)){
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>    
+    if (column.EffectType is "EnumSelector" or "DictSelector") {
+    @:[Dict(@(column.EffectType == "EnumSelector" ? $"nameof({column.DictTypeCode})" : $"\"{column.DictTypeCode}\""), AllowNullValue=true)]
+    }
+    if (column.WhetherRequired == "Y" || column.ColumnKey == "True") {
+    @:[Required(ErrorMessage = "@(column.ColumnComment)不能为空")]
+    }
+    if (column.NetType.TrimEnd('?').EndsWith("string") && column.ColumnLength > 0){
+    @:[MaxLength(@column.ColumnLength, ErrorMessage = "@(column.ColumnComment)字符长度不能超过@(column.ColumnLength)")]
+    }
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    @:
+    }
+}
+
+/// <summary>
+/// @(model.BusName)主键查询输入参数
+/// </summary>
+public class QueryById@(model.ClassName)Input : Delete@(model.ClassName)Input
+{
+}
+
+@if (model.DropdownFieldList.Count > 0) {
+@:/// <summary>
+@:/// 下拉数据输入参数
+@:/// </summary>
+@:public class DropdownData@(model.ClassName)Input
+@:{
+    @:/// <summary>
+    @:/// 是否用于分页查询
+    @:/// </summary>
+    @:public bool FromPage { get; set; }
+@:}
+@:
+}
+@if (model.HasSetStatus) {
+@:/// <summary>
+@:/// 设置状态输入参数
+@:/// </summary>
+@:public class Set@(model.ClassName)StatusInput : BaseStatusInput
+@:{
+    @foreach (var column in model.PrimaryKeyFieldList.Where(u => u.PropertyName != "Id")) {
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>
+    @:[Required(ErrorMessage = "@(column.ColumnComment)不能为空")]
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    @:
+    }
+@:}
+@:
+}
+@if (model.ImportFieldList.Count > 0){
+@:/// <summary>
+@:/// @(model.BusName)数据导入实体
+@:/// </summary>
+@:[ExcelImporter(SheetIndex = 1, IsOnlyErrorRows = true)]
+@:public class Import@(model.ClassName)Input : BaseImportInput
+@:{
+    foreach (var column in model.ImportFieldList){
+    var headerName = (column.WhetherRequired == "Y" ? "*" : "") + column.ColumnComment;
+    if(column.EffectType == "ForeignKey" || column.EffectType == "ApiTreeSelector" || column.EffectType == "DictSelector") {
+    @:/// <summary>
+    @:/// @column.ColumnComment 关联值
+    @:/// </summary>
+    @:[ImporterHeader(IsIgnore = true)]
+    @:[ExporterHeader(IsIgnore = true)]
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    @:
+    @:/// <summary>
+    @:/// @column.ColumnComment 文本
+    @:/// </summary>
+    if (column.EffectType == "DictSelector") {
+    @:[Dict(@($"\"{column.DictTypeCode}\""))]
+    }
+    @:[ImporterHeader(Name = "@(headerName)")]
+    @:[ExporterHeader("@(headerName)", Format = "@", Width = 25, IsBold = true)]
+    @:public string @column.ExtendedPropertyName { get; set; }
+    } else {
+    @:/// <summary>
+    @:/// @column.ColumnComment
+    @:/// </summary>
+    @:[ImporterHeader(Name = "@(headerName)")]
+    @:[ExporterHeader("@(headerName)", Format = "@", Width = 25, IsBold = true)]
+    @:public @model.GetNullableNetType(column.NetType) @column.PropertyName { get; set; }
+    }
+    @:
+    }
+@:}
+}

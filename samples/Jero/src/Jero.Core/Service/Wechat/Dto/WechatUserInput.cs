@@ -1,0 +1,17 @@
+namespace Jero.Core.Service;
+
+public class WechatUserInput : BasePageInput
+{
+    /// <summary>
+    /// 昵称
+    /// </summary>
+    public string NickName { get; set; } = string.Empty;
+    /// <summary>
+    /// 手机号码
+    /// </summary>
+    public string Mobile { get; set; } = string.Empty;
+}
+
+public class DeleteWechatUserInput : BaseIdInput
+{
+}

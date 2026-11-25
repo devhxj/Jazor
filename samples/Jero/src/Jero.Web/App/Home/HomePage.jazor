@@ -1,0 +1,155 @@
+<style>
+    .home-page { display: grid; gap: 20px; }
+    .home-hero { position: relative; min-height: 176px; display: flex; align-items: center; gap: 22px; overflow: hidden; border: 1px solid #e3edfa; border-radius: 14px; padding: 30px 34px; background: linear-gradient(135deg, #ffffff 0%, #f6faff 52%, #e9f3fe 100%); box-shadow: 0 8px 24px rgba(31, 45, 61, .05); }
+    .home-hero::after { position: absolute; right: -74px; bottom: -102px; width: 260px; height: 260px; border-radius: 50%; background: linear-gradient(135deg, rgba(64,158,255,.18), rgba(54,207,201,.1)); content: ""; }
+    .home-avatar { position: relative; z-index: 1; flex: 0 0 auto; width: 84px; height: 84px; display: grid; place-items: center; overflow: hidden; border: 4px solid rgba(255,255,255,.92); border-radius: 50%; background: linear-gradient(135deg, #409eff, #36cfc9); color: white; box-shadow: 0 9px 22px rgba(64,158,255,.2); font-size: 28px; font-weight: 700; }
+    .home-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .home-hero__copy { position: relative; z-index: 1; min-width: 0; }
+    .home-hero h1 { margin: 0; color: #253247; font-size: clamp(22px, 3vw, 30px); line-height: 1.35; }
+    .home-hero p { max-width: 760px; margin: 11px 0 0; color: #7b8493; font-size: 14px; line-height: 1.75; }
+    .home-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .home-overview__item { min-width: 0; display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 13px; border: 1px solid #ebeef5; border-radius: 12px; padding: 18px; background: white; transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+    .home-overview__item:hover { transform: translateY(-1px); border-color: #d8e6f8; box-shadow: 0 4px 14px rgba(16, 24, 40, .07); }
+    .home-overview__icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 13px; font-size: 18px; font-weight: 700; }
+    .home-overview__copy { min-width: 0; }
+    .home-overview__title { color: #303133; font-size: 15px; font-weight: 650; }
+    .home-overview__caption { margin-top: 5px; color: #909399; font-size: 12px; }
+    .home-overview__value { color: #303133; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
+    .home-panel { border: 1px solid #ebeef5; border-radius: 12px; background: white; }
+    .home-quick { overflow: hidden; display: flex; flex-direction: column; }
+    .home-quick__head { padding: 20px 22px 15px; border-bottom: 1px solid #f0f2f5; }
+    .home-quick__head h2 { margin: 0; color: #303133; font-size: 17px; }
+    .home-quick__list { flex: 1 1 auto; align-content: start; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 10px; }
+    .home-quick__item { min-width: 0; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 9px; padding: 11px 10px; background: transparent; color: #4b5565; text-align: left; cursor: pointer; }
+    .home-quick__item:hover:not(:disabled) { background: #f5f7fa; color: #303133; }
+    .home-quick__item:disabled { color: #a8abb2; cursor: default; }
+    .home-quick__glyph { flex: 0 0 auto; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px; color: white; font-size: 13px; font-weight: 700; }
+    .home-quick__name { min-width: 0; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+    .home-quick__status { flex: 0 0 auto; color: #c0c4cc; font-size: 10px; }
+    @@media (max-width: 1180px) {
+        .home-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .home-quick__list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @@media (max-width: 700px) {
+        .home-hero { align-items: flex-start; padding: 24px; }
+        .home-avatar { width: 68px; height: 68px; }
+        .home-overview { grid-template-columns: 1fr; }
+        .home-quick__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @@media (max-width: 480px) {
+        .home-hero { flex-direction: column; gap: 16px; padding: 20px; }
+        .home-quick__list { grid-template-columns: 1fr; }
+    }
+    /* 暗色主题：hero/卡片均为本页自有类，EP 变量管不到，需同位覆盖 */
+    html.dark .home-hero { border-color: #222c45; background: linear-gradient(135deg, #151d31 0%, #131a2c 52%, #16233c 100%); box-shadow: none; }
+    html.dark .home-hero h1 { color: #e5eaf3; }
+    html.dark .home-hero p { color: #7d8aa5; }
+    html.dark .home-overview__item, html.dark .home-panel { background: #151d31; border-color: #222c45; }
+    html.dark .home-overview__item:hover { border-color: #3d5a8f; box-shadow: 0 4px 14px rgba(0, 0, 0, .35); }
+    html.dark .home-overview__title, html.dark .home-overview__value, html.dark .home-quick__head h2 { color: #e5eaf3; }
+    html.dark .home-overview__caption { color: #7d8aa5; }
+    html.dark .home-quick__head { border-bottom-color: #222c45; }
+    html.dark .home-quick__item { color: #a3adc2; }
+    html.dark .home-quick__item:hover:not(:disabled) { background: rgba(255, 255, 255, .06); color: #e5eaf3; }
+</style>
+
+<div class="home-page">
+    <section class="home-hero">
+        <div class="home-avatar">
+            @if (Avatar.Length > 0)
+            {
+                <img src="@Avatar" alt="@UserName" />
+            }
+            else
+            {
+                <span>@AvatarInitial()</span>
+            }
+        </div>
+        <div class="home-hero__copy">
+            <h1>@UserName，欢迎使用 Jero</h1>
+            <p>工作台首页，汇总系统概览并提供账号、机构、角色、租户等常用入口快捷导航。</p>
+        </div>
+    </section>
+
+    <section class="home-overview" aria-label="系统概览">
+        <article class="home-overview__item">
+            <span class="home-overview__icon" style="background:#ecfdf5;color:#0f766e;">账</span>
+            <div class="home-overview__copy"><div class="home-overview__title">账号</div><div class="home-overview__caption">权限用户</div></div>
+            <strong class="home-overview__value">@UserCount</strong>
+        </article>
+        <article class="home-overview__item">
+            <span class="home-overview__icon" style="background:#fff7ed;color:#9a3412;">租</span>
+            <div class="home-overview__copy"><div class="home-overview__title">租户</div><div class="home-overview__caption">多租户</div></div>
+            <strong class="home-overview__value">@TenantCount</strong>
+        </article>
+        <article class="home-overview__item">
+            <span class="home-overview__icon" style="background:#eff6ff;color:#2563eb;">任</span>
+            <div class="home-overview__copy"><div class="home-overview__title">任务</div><div class="home-overview__caption">调度任务</div></div>
+            <strong class="home-overview__value">@JobCount</strong>
+        </article>
+        <article class="home-overview__item">
+            <span class="home-overview__icon" style="background:#fff1f2;color:#be123c;">知</span>
+            <div class="home-overview__copy"><div class="home-overview__title">通知</div><div class="home-overview__caption">公告消息</div></div>
+            <strong class="home-overview__value">@NoticeCount</strong>
+        </article>
+    </section>
+
+    <section class="home-panel home-quick">
+        <div class="home-quick__head"><h2>常用入口</h2></div>
+        <div class="home-quick__list">
+            @foreach (var item in quickNavItems)
+            {
+                <button class="home-quick__item"
+                        disabled="@(!CanNavigate(item.BackendPath))"
+                        title="@(CanNavigate(item.BackendPath) ? item.Title : item.Title + "（当前账号不可用）")"
+                        @onclick="@(() => OpenQuickNav(item.BackendPath))">
+                    <span class="home-quick__glyph" style='@("background:" + item.Color)'>@item.Glyph</span>
+                    <span class="home-quick__name">@item.Title</span>
+                    @if (!CanNavigate(item.BackendPath))
+                    {
+                        <span class="home-quick__status">不可用</span>
+                    }
+                </button>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    // 快捷入口色板统一在蓝—青—石板这一品牌邻近色系内（去掉锈红/琥珀/紫等离散暖色），
+    // 保证 12 个入口并排时的整体感；仅是展示色字面量，与导航逻辑无关。
+    private readonly HomeQuickNavItem[] quickNavItems =
+    [
+        new() { Title = "账号管理", Glyph = "账", Color = "#2563eb", BackendPath = "/system/user" },
+        new() { Title = "机构管理", Glyph = "机", Color = "#0e7490", BackendPath = "/system/org" },
+        new() { Title = "职位管理", Glyph = "职", Color = "#0f766e", BackendPath = "/system/pos" },
+        new() { Title = "角色管理", Glyph = "角", Color = "#1d4ed8", BackendPath = "/system/role" },
+        new() { Title = "菜单管理", Glyph = "单", Color = "#0d9488", BackendPath = "/platform/menu" },
+        new() { Title = "租户管理", Glyph = "租", Color = "#0369a1", BackendPath = "/platform/tenant" },
+        new() { Title = "字典管理", Glyph = "典", Color = "#0e7490", BackendPath = "/platform/dict" },
+        new() { Title = "配置管理", Glyph = "配", Color = "#475569", BackendPath = "/platform/config" },
+        new() { Title = "系统参数", Glyph = "参", Color = "#155e75", BackendPath = "/system/tenantConfig" },
+        new() { Title = "通知公告", Glyph = "知", Color = "#1d4ed8", BackendPath = "/system/notice" },
+        new() { Title = "注册方案", Glyph = "注", Color = "#0369a1", BackendPath = "/platform/regWay" },
+        new() { Title = "模板管理", Glyph = "模", Color = "#0f766e", BackendPath = "/platform/template" }
+    ];
+
+    public sealed record HomeQuickNavItem
+    {
+        public string Title { get; init; } = string.Empty;
+        public string Glyph { get; init; } = string.Empty;
+        public string Color { get; init; } = string.Empty;
+        public string BackendPath { get; init; } = string.Empty;
+    }
+
+    [Parameter] public string UserName { get; set; } = "";
+    [Parameter] public string Avatar { get; set; } = "";
+    [Parameter] public string UserCount { get; set; } = "—";
+    [Parameter] public string TenantCount { get; set; } = "—";
+    [Parameter] public string JobCount { get; set; } = "—";
+    [Parameter] public string NoticeCount { get; set; } = "—";
+    [Parameter] public Func<string, bool> CanNavigate { get; set; } = default!;
+    [Parameter] public Action<string> OpenQuickNav { get; set; } = default!;
+
+    private string AvatarInitial() => UserName.Length == 0 ? "管" : UserName.Substring(0, 1);
+}

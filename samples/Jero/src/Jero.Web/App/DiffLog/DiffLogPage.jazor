@@ -1,0 +1,94 @@
+@using Npm.ElementPlus
+@using App.Components
+@using App.Logs
+@using Jero.Web.App.Logs
+@using Jero.Web.App.DiffLog
+
+<ElCard Header="差异日志" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        支持租户和时间筛选、分页浏览及字段级差异详情；结果由后端按创建时间倒序分页。
+    </p>
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error" Title='@(Error ?? "")' ShowIcon="true" Closable="true" @onclose="@(_ => DismissError())" />
+    </div>
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            @if (IsSuperAdmin)
+            {
+                <ElFormItem Label="租户">
+                    <div style="width:260px">
+                        <LogSelect Value="@TenantId" Placeholder="请选择租户" Options="@Tenants"
+                                   Loading="@TenantLoading" Filterable="true" Change="@SetTenant" />
+                    </div>
+                </ElFormItem>
+            }
+            <ElFormItem Label="开始时间">
+                <div style="width:220px"><LogDateInput Value="@StartTime" Placeholder="开始时间" Change="@SetStartTime" /></div>
+            </ElFormItem>
+            <ElFormItem Label="结束时间">
+                <div style="width:220px"><LogDateInput Value="@EndTime" Placeholder="结束时间" Change="@SetEndTime" /></div>
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading" Disabled="@(!CanQuery)">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@(Loading || !CanQuery)">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+    <div style="height:16px"></div>
+    <ElCard class="jero-list-card">
+        <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
+            <ElButton @onclick="@(_ => Refresh())" Loading="@Loading" Disabled="@(!CanQuery)">刷新</ElButton>
+        </div>
+        @if (Loading)
+        {
+            <ElText>正在加载差异日志…</ElText>
+        }
+        <div class="jero-list-scroll">
+            <DiffLogTable Rows="@Rows" CanQuery="@CanQuery" Detail="@OpenDetail" />
+        </div>
+        <LogPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total"
+                       ChangePage="@ChangePage" ChangePageSize="@ChangePageSize" />
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@DetailDialogVisible" @onupdate:modelValue="SetDialogVisible"
+          Title="差异日志详情" Width="1100px" DestroyOnClose="true">
+    @if (DetailLoading)
+    {
+        <ElText>正在加载差异日志详情…</ElText>
+    }
+    else if (Detail is not null)
+    {
+        <DiffLogDetail Detail="@Detail" />
+    }
+</ElDialog>
+
+@code {
+    [Parameter] public DiffLogView[] Rows { get; set; } = [];
+    [Parameter] public LogOption[] Tenants { get; set; } = [];
+    [Parameter] public DiffLogView? Detail { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public string StartTime { get; set; } = "";
+    [Parameter] public string EndTime { get; set; } = "";
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanQuery { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public bool DetailLoading { get; set; }
+    [Parameter] public bool DetailDialogVisible { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action<string> SetTenant { get; set; } = default!;
+    [Parameter] public Action<string> SetStartTime { get; set; } = default!;
+    [Parameter] public Action<string> SetEndTime { get; set; } = default!;
+    [Parameter] public Action<string> OpenDetail { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action<bool> SetDialogVisible { get; set; } = default!;
+}

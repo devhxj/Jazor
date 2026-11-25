@@ -1,0 +1,18 @@
+@using Npm.ElementPlus
+@using Npm.Jero.ElementPlus
+@using Jero.Web.App.Components
+
+<ProjectSelect ModelValue="@(Value)" @attributes="@(new ModelUpdate<string>(Update))">
+    @foreach (var method in methods)
+    {
+        <ElOption @key="method" Label="@method" Value="@method" />
+    }
+</ProjectSelect>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public Action<string> Change { get; set; } = default!;
+
+    private readonly string[] methods = ["GET", "POST", "PUT", "DELETE"];
+    private void Update(string? value) => Change(value ?? "GET");
+}

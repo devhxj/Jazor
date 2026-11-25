@@ -1,0 +1,47 @@
+@using Npm.ElementPlus
+@using Jero.Web.App.Components
+@using Jero.Web.App.LangText
+
+    <ElTable @attributes="@(new TableData<LangTextView>(Rows) { onSortChange = SortChanged, onSelectionChange = Selected })" border="true" stripe="true" RowKey="id" EmptyText="暂无翻译文本">
+        @if (CanSelect) { <ElTableColumn type="selection" width="46" /> }
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="entityName" label="所属实体名" MinWidth="160" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="entityId" label="所属实体 ID" MinWidth="150" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="fieldName" label="字段名" MinWidth="150" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="langCode" label="语言代码" MinWidth="130" sortable="custom" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="content" label="翻译内容" MinWidth="240" ShowOverflowTooltip="true" />
+        <ElTableColumn label="修改记录" width="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTextView>)(object)cell).row; }
+                <ElButton link="true" type="primary" @onclick='@(() => OnOpenAudit(row.id))'>详情</ElButton>
+            </template>
+        </ElTableColumn>
+        @if (CanEdit || CanDelete) { <ElTableColumn label="操作" width="140" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<LangTextView>)(object)cell).row; }
+                @if (CanEdit) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenEdit(row.id))'>编辑</ElButton> }
+                @if (CanDelete) { <ElPopconfirm title='@("确定删除翻译【" + row.entityName + "/" + row.fieldName + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.id))'>
+                    <template #reference><ElButton link="true" type="danger">删除</ElButton></template>
+                </ElPopconfirm> }
+            </template>
+        </ElTableColumn> }
+    </ElTable>
+
+@code {
+    [Parameter] public LangTextView[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool CanSelect { get; set; }
+    [Parameter] public Action<string> OnOpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+    [Parameter] public Action<string, string> OnSort { get; set; } = default!;
+    [Parameter] public Action<string[]> OnSelection { get; set; } = default!;
+
+    private void SortChanged(TableSortScope sort) => OnSort(string.IsNullOrEmpty(sort.prop) ? "createTime" : sort.prop, string.IsNullOrEmpty(sort.order) ? "ascending" : sort.order);
+    private void Selected(LangTextView[] rows)
+    {
+        var ids = new string[rows.Length];
+        for (var index = 0; index < rows.Length; index++)
+            ids[index] = rows[index].id;
+        OnSelection(ids);
+    }
+}

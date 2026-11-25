@@ -1,0 +1,181 @@
+@@using ECMAScript
+@@using Npm.ElementPlus
+@@using @Model.FrontendNamespace
+@@using static ECMAScript.Vue
+@{ var config = (CustomViewEngine)Model; }
+
+<ElDialog ModelValue="true" Title='@@(IsUpdate ? "编辑" : "新增")' Width="760px" CloseOnClickModal="false" @@onupdate:modelValue="ChangeVisibility">
+    <div class="crud-editor">
+@foreach (var column in Model.AddUpdateFieldList) {
+    var field = "Draft.Value.@" + column.LowerPropertyName;
+    var type = Model.FrontendType(column);
+    if (Model.IsStatus(column)) {
+        @:@@if (!IsUpdate) {
+    }
+    if (column.EffectType is "Upload" or "Upload_SingleFile") {
+        @:<label>@column.ColumnComment <input type="file" @@onchange='@@(e => Upload@(column.PropertyName)(e))' /></label>
+        @:@@if (!string.IsNullOrEmpty(@field)) { <a href='@@(@field)' target="_blank" rel="noopener">查看附件</a> }
+    } else if (config.IsFrontendSelector(column)) {
+        @:<label>@column.ColumnComment <select @@bind:get='@@(ChoiceValue(@field))' @@bind:set='@@((string value) => @field = @(config.SelectorAssignment(column)))'>
+        @:    <option value="">请选择</option>
+        @:    @@foreach (var item in Choices@(column.PropertyName).Value) { <option value="@@item.Value">@@item.Label</option> }
+        @:</select></label>
+    } else if (type == "bool?") {
+        @:<label>@column.ColumnComment <input type="checkbox" @@bind:get='@@(@field == true)' @@bind:set='@@((bool value) => @field = value)' /></label>
+    } else if (column.EffectType == "Editor") {
+        @:<div>
+        @:    <span>@column.ColumnComment</span>
+        @:    <div class="crud-rich-tools">
+        @:        <button type="button" @@onmousedown:preventDefault="true" @@onclick='@@(() => FormatEditor("bold"))'>加粗</button>
+        @:        <button type="button" @@onmousedown:preventDefault="true" @@onclick='@@(() => FormatEditor("italic"))'>斜体</button>
+        @:        <button type="button" @@onmousedown:preventDefault="true" @@onclick='@@(() => FormatEditor("insertUnorderedList"))'>列表</button>
+        @:    </div>
+        @:    <div class="crud-rich-input" role="textbox" aria-multiline="true" aria-label="@column.ColumnComment" contenteditable="true"
+        @:         innerHTML='@@(Initial.@(column.LowerPropertyName))' @@oninput='@@(e => @field = Global.StringValue(((HTMLElement)e.Target!).InnerHTML))'></div>
+        @:</div>
+    } else if (column.EffectType == "InputTextArea") {
+        @:<label>@column.ColumnComment <textarea @@bind:get='@@(@field)' @@bind:set='@@(value => @field = value)'></textarea></label>
+    } else if (column.EffectType == "DatePicker") {
+        @:<label>@column.ColumnComment <input type="date" value='@@(DateInput(@field))' @@onchange='@@(e => @field = InputText(e))' /></label>
+    } else {
+    var inputType = type == "double?" ? "number" : "text";
+        @:<label>@column.ColumnComment <input type="@inputType" @@bind:get='@@(@field)' @@bind:set='@@(value => @field = value)' /></label>
+    }
+    if (Model.IsStatus(column)) {
+        @:}
+    }
+}
+        @@if (Error.Value.Length > 0) { <p role="alert">@@Error.Value</p> }
+    </div>
+    <template #footer>
+        <ElButton disabled="@@Saving.Value" @@onclick="Close">取消</ElButton>
+        <ElButton type="primary" loading="@@Saving.Value" @@onclick="Save">保存</ElButton>
+    </template>
+</ElDialog>
+
+<style>
+    .crud-editor { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+    .crud-editor label { display: grid; gap: 4px; align-content: start; }
+    .crud-editor input, .crud-editor textarea { min-height: 30px; }
+    .crud-rich-tools { display: flex; gap: 4px; margin-block: 4px; }
+    .crud-rich-input { min-height: 130px; padding: 8px; border: 1px solid var(--el-border-color); border-radius: 4px; }
+</style>
+
+@@code {
+    private const string Api = "/api/@Model.LowerClassName/";
+
+    [Parameter] public Row Value { get; set; } = default!;
+    [Parameter] public bool IsUpdate { get; set; }
+    [Parameter] public System.Action Close { get; set; } = default!;
+    [Parameter] public System.Action Saved { get; set; } = default!;
+
+    private readonly IVueRef<Row> Draft = Ref(new Row());
+@if (config.AddUpdateFieldList.Any(column => column.EffectType == "Editor")) {
+    @:private Row Initial = new();
+    @:private static void FormatEditor(string command) => Global.Document.ExecCommand(command);
+}
+    private readonly IVueRef<bool> Saving = Ref(false);
+    private readonly IVueRef<string> Error = Ref("");
+@foreach (var column in config.AddUpdateFieldList.Where(config.IsFrontendSelector)) {
+    @:private readonly IVueRef<Choice[]> Choices@(column.PropertyName) = ShallowRef(System.Array.Empty<Choice>());
+}
+
+    [Setup]
+    private void SetupEditor()
+    {
+@if (config.AddUpdateFieldList.Any(column => column.EffectType == "Editor")) {
+        @:Initial = Value with { };
+}
+        Draft.Value = Value;
+        OnMounted(LoadChoices);
+    }
+
+    private void LoadChoices()
+    {
+@foreach (var column in config.AddUpdateFieldList.Where(column => config.IsFrontendSelector(column) && column.EffectType is not ("ForeignKey" or "ApiTreeSelector"))) {
+    var shape = column.EffectType == "EnumSelector" ? "EnumChoices" : column.EffectType == "ConstSelector" ? "ConstChoices" : "FlatChoices";
+        @:CrudApi.Get(@(config.SourceString(config.SelectorEndpoint(column)))).Then(outcome =>
+        @:{
+            @:if (outcome.Ok) Choices@(column.PropertyName).Value = @(shape)(outcome.Data);
+            @:else Error.Value = outcome.Error ?? "选项加载失败";
+        @:});
+}
+@if (config.AddUpdateFieldList.Any(column => column.EffectType is "ForeignKey" or "ApiTreeSelector")) {
+        @:CrudApi.Post(Api + "dropdownData", new DropdownRequest(false)).Then(outcome =>
+        @:{
+            @:if (!outcome.Ok) { Error.Value = outcome.Error ?? "选项加载失败"; return; }
+            @:if (outcome.Data is null) return;
+    foreach (var column in config.AddUpdateFieldList.Where(column => column.EffectType is "ForeignKey" or "ApiTreeSelector")) {
+            @:Choices@(column.PropertyName).Value = FlatChoices(Reflect.Get(outcome.Data, "@column.LowerPropertyName"));
+    }
+        @:});
+}
+    }
+
+    private static string ChoiceValue(object? value) => value is null ? "" : Global.StringValue(value);
+    private static Choice[] EnumChoices(object? source) =>
+        ((EnumChoice[]?)source ?? []).Select(item => new Choice(ChoiceValue(item.value), item.describe)).ToArray();
+    private static Choice[] ConstChoices(object? source) =>
+        ((ConstChoice[]?)source ?? []).Select(item => new Choice(ChoiceValue(item.code), item.name)).ToArray();
+    private static Choice[] FlatChoices(object? source)
+    {
+        var items = new System.Collections.Generic.List<Choice>();
+        CollectChoices((DropdownChoice[]?)source ?? [], "", items);
+        return items.ToArray();
+    }
+    private static void CollectChoices(DropdownChoice[] source, string parent, System.Collections.Generic.List<Choice> result)
+    {
+        foreach (var item in source)
+        {
+            var label = parent + (item.label ?? "");
+            result.Add(new Choice(ChoiceValue(item.value), label));
+            if (item.children is not null) CollectChoices(item.children, label + " / ", result);
+        }
+    }
+
+    private static string DateInput(string? value) => value is not null && value.Length >= 10 ? value.Substring(0, 10) : "";
+    private static string? InputText(EventRef e)
+    {
+        var value = ((HTMLInputElement)e.Target!).Value;
+        return value.Length == 0 ? null : value;
+    }
+
+    private void ChangeVisibility(bool visible)
+    {
+        if (!visible && !Saving.Value) Close();
+    }
+
+    private void Save()
+    {
+        if (Saving.Value) return;
+        var row = Draft.Value;
+@foreach (var column in config.AddUpdateFieldList.Where(column => column.WhetherRequired == "Y")) {
+    var property = "row.@" + column.LowerPropertyName;
+    var invalid = Model.FrontendType(column) == "string?" ? $"string.IsNullOrWhiteSpace({property})" : $"{property} is null";
+    var message = Model.SourceString(column.ColumnComment + "不能为空");
+        @:if (@invalid) { Error.Value = @message; return; }
+}
+        Error.Value = "";
+        Saving.Value = true;
+        CrudApi.Post(Api + (IsUpdate ? "update" : "add"), row).Then(outcome =>
+        {
+            Saving.Value = false;
+            if (outcome.Ok) Saved();
+            else Error.Value = outcome.Error ?? "保存失败";
+        });
+    }
+@foreach (var column in config.AddUpdateFieldList.Where(column => column.EffectType is "Upload" or "Upload_SingleFile")) {
+    @:private void Upload@(column.PropertyName)(EventRef e)
+    @:{
+        @:var file = FileTransfer.SelectedFile(e);
+        @:if (file is null) return;
+        @:((HTMLInputElement)e.Target!).Value = "";
+        @:FileTransfer.Upload(Api + "upload@(column.PropertyName)", file).Then(result =>
+        @:    {
+            @:if (!result.Ok) { Error.Value = result.Error ?? "上传失败"; return; }
+            @:if (result.Data is not null)
+            @:    Draft.Value.@@@(column.LowerPropertyName) = (string?)Reflect.Get(result.Data, "url");
+        @:    });
+    @:}
+}
+}

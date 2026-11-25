@@ -1,0 +1,68 @@
+@using Npm.ElementPlus
+
+<style>
+    .jero-fallback { min-height: 480px; display: grid; place-items: center; padding: 48px 24px; border: 1px solid #ebeef5; border-radius: 10px; background: white; text-align: center; }
+    .jero-fallback__code { color: #409eff; font-size: clamp(64px, 10vw, 120px); font-weight: 800; line-height: 1; letter-spacing: -4px; }
+    .jero-fallback__title { margin: 22px 0 10px; color: #303133; font-size: 28px; }
+    .jero-fallback__description { max-width: 560px; margin: 0 auto 24px; color: #909399; font-size: 15px; line-height: 1.8; }
+</style>
+
+<section class="jero-fallback">
+    <div>
+        <div class="jero-fallback__code">@DisplayCode</div>
+        <h1 class="jero-fallback__title">@Title</h1>
+        <p class="jero-fallback__description">@Description</p>
+        @if (ShowRefresh)
+        {
+            <ElButton Type="primary" @onclick="Refresh">重新加载</ElButton>
+        }
+        else
+        {
+            <ElButton Type="primary" @onclick="GoHome">返回首页</ElButton>
+        }
+    </div>
+</section>
+
+@code {
+    private ECMAScript.RouteLocationNormalizedLoaded route = default!;
+    private ECMAScript.Router router = default!;
+
+    [Setup]
+    private void Configure()
+    {
+        route = ECMAScript.VueRoute.UseRoute();
+        router = ECMAScript.VueRoute.UseRouter();
+    }
+
+    private string Status => route.Path.StartsWith("/") ? route.Path[1..] : route.Path;
+    private void GoHome() => router.Push("/home");
+    private void Refresh() => ((ECMAScript.WindowRef)ECMAScript.Global.Window).Location.Reload();
+
+    private string DisplayCode => Status switch
+    {
+        "coming-soon" => "Soon",
+        "offline" => "Offline",
+        _ => Status
+    };
+
+    private string Title => Status switch
+    {
+        "403" => "无权访问",
+        "404" => "页面不存在",
+        "500" => "服务暂时不可用",
+        "offline" => "网络连接已断开",
+        _ => "功能建设中"
+    };
+
+    private string Description => Status switch
+    {
+        "403" => "当前账号没有访问该页面的权限，请联系管理员调整角色授权。",
+        "404" => "访问地址不存在，或对应页面尚未纳入 Jazor 路由注册表。",
+        "500" => "页面加载过程中发生异常，请稍后重新加载。",
+        "offline" => "请检查网络连接，恢复后重新加载当前页面。",
+        _ => "该功能仍在迁移中，完成后会从菜单的待迁移状态切换为可访问。"
+    };
+
+    private bool ShowRefresh => Status == "500" || Status == "offline";
+
+}

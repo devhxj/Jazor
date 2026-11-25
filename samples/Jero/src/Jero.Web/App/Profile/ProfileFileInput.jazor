@@ -1,0 +1,6 @@
+<input id="@Id" class="profile-file" type="file" accept=".jpg,.jpeg,.png,.bmp,.gif" @onchange="@(_ => Change())" />
+
+@code {
+    [Parameter] public string Id { get; set; } = "";
+    [Parameter] public Action Change { get; set; } = default!;
+}
