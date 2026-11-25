@@ -1,12 +1,12 @@
 # 当前状态
 
-> 当前版本：[2.7.1（2026-11-25）](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.7.2（2026-11-26）](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)，使用 .NET 11 GA。包选择与升级见[安装与配置](../03-guides/installation-and-configuration.md)，版本变化见 [CHANGELOG](../../CHANGELOG.md)。
 
 本页定义今天可以依赖的产品契约。测试与运行报告必须关联被测提交、SDK、平台和输入；历史计数只保留在[演进记录](../05-history/evolution.md)，不作为当前版本的能力清单。
 
 ## Jolt 作者面
 
-| 范围 | 2.7.1 已发布能力 |
+| 范围 | 2.7.2 已发布能力 |
 | --- | --- |
 | 编译与构建 | `.jazor` 模板与 C#、本地组件、npm 公开 TypeScript 声明与 ESM、源码映射、Vite 开发与生产构建 |
 | 组件契约 | 类型化参数、回调、插槽、受约束的泛型参数、本地和 npm 命名模型、原生表单绑定、DOM 事件、`@key`、`@ref` 与 `<style scoped>` |
@@ -20,7 +20,7 @@
 
 普通 `.cs` 项目可通过 `using` 按需投影 npm 导出。构建使用 Jazor 工具和进程内 TypeScript checker，Jolt 的组件路径复用同一算法。Windows 上的 VS Code C# 语言服务已验证未保存文件的成员补全。在 Automatic 下还验证了参数提示、类型诊断、错误恢复，以及链接包声明修改后的签名和原始位置更新。F12 打开生成的 C#，悬停提示提供原始 TypeScript 声明的链接。[编辑器验收](../../scripts/csharp/verify-jazor-npm-editor.cs) · [职责与实施状态](./jazor-jolt-migration.md)
 
-用发行前的同一 SDK 候选包，Windows VS Code 和 Visual Studio 2026 Insiders 均已从成员悬停打开本项目的 `addDays.d.ts`，光标定位到声明行和列。桌面 VS 使用现有 `Jolt.VisualStudio.vsix` 的 0.1.9 候选版，安装一次即可使用 C# 导航与原有 `.jazor` 编辑功能。[组合扩展](../../editors/jolt-visual-studio/README.md)
+Visual Studio 组合扩展 `Jolt.VisualStudio.vsix` 0.1.10 同时提供 `.jazor` 语言服务和普通 C# 的 npm 声明导航。Jolt 可从 `.jazor` 跳到 `jolt.csharpSources` 选中的共享声明。VS Code 使用未保存的共享 C# 文本，Visual Studio 跟踪共享文件保存、新增和删除。[组合扩展](../../editors/jolt-visual-studio/README.md)
 
 ## 已交付的核心能力
 

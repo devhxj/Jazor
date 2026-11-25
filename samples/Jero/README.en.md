@@ -37,7 +37,7 @@ The sample lives in `samples/Jero`. Open [src/Jero.slnx](src/Jero.slnx) to work 
 
 ## Development
 
-Use the .NET 11 SDK selected by [`src/global.json`](src/global.json). Restore dependencies from the Jero `src` directory. Jazor, ECMAScript.Vue, ECMAScript.VueRoute, and Jazor.Jolt use version `2.7.1` from NuGet.org.
+Use the .NET 11 SDK selected by [`src/global.json`](src/global.json). Restore dependencies from the Jero `src` directory. Jazor, ECMAScript.Vue, ECMAScript.VueRoute, and Jazor.Jolt use version `2.7.2` from NuGet.org.
 
 MVC and SignalR share their `System.Text.Json` configuration. Responses encode `long` IDs as strings and use `yyyy-MM-dd HH:mm:ss` for timestamps. Static images support URL transformations such as `/images/logo.png?width=32&format=jpg`.
 

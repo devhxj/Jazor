@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-当前正式版本为 **2.7.1**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.7.1 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)
+当前正式版本为 **2.7.2**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.7.2 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
 
 开发新的 Jolt 组件时，直接在项目的 `package.json` 声明应用所需的 npm 包，在 `.jazor` 中导入投影的类型。Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 的手写绑定与 Jazor、Jolt 和 Style 一起发布。旧的七个应用级绑定仍可按 2.3.0 安装。 [投影用法与示例](./jolt-authoring.md#直接调用-npm-函数)
 
@@ -31,13 +31,13 @@ live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browse
 | 使用测试 Pinia 和 action spy | `Jazor`、`ECMAScript.Pinia.Testing` | 在测试项目中按需引用 |
 | 开发 Vue Devtools 插件 | `Jazor`、`ECMAScript.Vue.Devtools` | 在定义插件的项目中按需引用 |
 | 在 `.jazor` 使用 npm 函数或 composable | `Jazor.Jolt` 和项目 npm 依赖 | 可投影的调用范围见[作者指南](./jolt-authoring.md#直接调用-npm-函数) |
-| 在普通 `.cs` 类库使用应用级 npm 库 | 当前源码或本地候选 Jazor SDK，及项目锁定的 npm 依赖 | 在 VS Code 的 C# 编辑器输入 `using Dates = Npm.DateFns.Exports;` 和 `Dates.` 可补全成员，`dotnet build` 独立生成构建所需声明。[生成与消费](./jolt-authoring.md#普通-c-类库的公开投影) |
+| 在普通 `.cs` 类库使用应用级 npm 库 | Jazor SDK，及项目锁定的 npm 依赖 | 在 VS Code 的 C# 编辑器输入 `using Dates = Npm.DateFns.Exports;` 和 `Dates.` 可补全成员，`dotnet build` 独立生成构建所需声明。[生成与消费](./jolt-authoring.md#普通-c-类库的公开投影) |
 
 核心包示例：
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.7.1" />
+  <PackageReference Include="Jazor" Version="2.7.2" />
 </ItemGroup>
 ```
 
@@ -47,22 +47,22 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.7.1" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.7.1" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.7.1" />
+  <PackageReference Include="ECMAScript.Style" Version="2.7.2" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.7.2" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.7.2" />
 </ItemGroup>
 ```
 
 测试项目需要创建测试 Pinia 时，添加同版本的 Pinia Testing。 [测试用例](../../src/ECMAScript.Pinia.Testing.Test/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.7.1" />
+<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.7.2" />
 ```
 
 定义 Vue Devtools 插件的项目添加同版本的 Devtools 绑定。 [插件样例](../../samples/ECMAScript.Vue.Devtools.Plugin/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.1" />
+<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.2" />
 ```
 
 ## 配置产物输出

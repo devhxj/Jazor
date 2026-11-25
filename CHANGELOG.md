@@ -2,6 +2,38 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-26
+
+### Jazor 2.7.2
+
+中文 | English
+
+#### 体验优化
+
+- `@code`、`@if` 等指令可在空白标记行或键入 `@` 时补全。HTML 开始标签可补全常用属性和 DOM 事件。by @devhxj
+- 键入 `@using Npm.` 可选择项目声明的 npm 依赖。Jolt 可先提供已知的组件名，声明就绪后提供类型化参数、事件和原始声明导航。by @devhxj
+- 从 `.jazor` 按 F12 可跳到 `jolt.csharpSources` 选中的共享 C# 声明。VS Code 使用未保存的共享 C# 编辑，Visual Studio 在共享文件保存、新增或删除后更新。by @devhxj
+- 首次从 npm 组件按 F12 后继续编辑时，补全、语义着色和查找引用可复用已有的项目分析，缩短后续请求的等待时间。by @devhxj
+
+#### 问题修复
+
+- 修复生产编译错误导致 Jolt 编辑器请求失败的问题。组件尚未写完时，仍可查看已经能绑定的符号。by @devhxj
+- 修复普通 C# 的 npm 投影将缺失文件传给实际运行编译器的设计时构建的问题。编辑器仍可发现打开项目后新建的根清单和锁文件。by @devhxj
+- npm 元数据查询现在直接在进程内运行，修复项目临时脚本遇到“拒绝访问”时组件补全和定义导航失效的问题。by @devhxj
+
+Improvements
+
+- Complete directives such as `@code` and `@if` on a blank markup line or after typing `@`. HTML start tags offer common attributes and DOM events. by @devhxj
+- Type `@using Npm.` to choose from the project's declared npm dependencies. Jolt can offer known component names before the declarations are ready, then provide typed parameters, events, and original declaration navigation. by @devhxj
+- Press F12 in `.jazor` to navigate to shared C# declarations selected by `jolt.csharpSources`. VS Code uses unsaved shared C# edits. Visual Studio refreshes when shared files are saved, added, or deleted. by @devhxj
+- When editing after the first F12 on an npm component, completion, semantic highlighting, and find references can reuse project analysis to shorten subsequent requests. by @devhxj
+
+Bug Fixes
+
+- Fixed Jolt editor requests that could fail because of production compilation errors. Incomplete components still offer editor information for symbols that bind. by @devhxj
+- Fixed ordinary C# npm projection passing missing files to design-time builds that execute the compiler. Editors can still discover the root manifest and lockfile when they are created after the project opens. by @devhxj
+- npm metadata queries now run in process, fixing missing component completions and definitions when access to a temporary script in the project was denied. by @devhxj
+
 ## 2026-11-25
 
 ### Jazor 2.7.1

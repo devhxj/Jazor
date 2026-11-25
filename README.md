@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.7.1"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.7.1&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.7.2"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.7.2&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -30,11 +30,11 @@
 Install the .NET 11 SDK on Windows or glibc Linux (x64 or ARM64). Clone the repository and run these commands from its root.
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.1
+dotnet tool install --global Jazor.Jolt --version 2.7.2
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-If the tool is already installed, use `dotnet tool update --global Jazor.Jolt --version 2.7.1`. Open the URL printed in the terminal and click **Increment**. A typed callback updates the parent’s count and the state of a Reka UI component. [Counter project](samples/Jolt.Counter/README.md)
+If the tool is already installed, use `dotnet tool update --global Jazor.Jolt --version 2.7.2`. Open the URL printed in the terminal and click **Increment**. A typed callback updates the parent’s count and the state of a Reka UI component. [Counter project](samples/Jolt.Counter/README.md)
 
 A `.jazor` file combines markup and C#.
 
@@ -53,11 +53,11 @@ Each `.jazor` file becomes one ES module. The Vue component is the default expor
 
 | Editor | Extension |
 | --- | --- |
-| VS Code | Install `jolt-2.7.1.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
+| VS Code | Install `jolt-2.7.2.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
 | Visual Studio 2026 on Windows x64 | Open `Jolt.VisualStudio.vsix` with the VSIX Installer. [Visual Studio setup](editors/jolt-visual-studio/README.md) |
-| JetBrains Rider 2026.3 | Install `jolt-rider-2.7.1.zip` from disk in **Settings → Plugins**. [Rider setup](editors/jolt-rider/README.md) |
+| JetBrains Rider 2026.3 | Install `jolt-rider-2.7.2.zip` from disk in **Settings → Plugins**. [Rider setup](editors/jolt-rider/README.md) |
 
-Get the CLI and your editor’s extension from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor`. [2.7.1 release](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)
+Get the CLI and your editor’s extension from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor`. [2.7.2 release](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
 
 `jolt build samples/Jolt.Counter` writes modules and source maps to `samples/Jolt.Counter/.jolt/`. `jolt bundle samples/Jolt.Counter` writes production assets to `samples/Jolt.Counter/dist/`.
 
@@ -66,7 +66,7 @@ Get the CLI and your editor’s extension from the same release. Open `samples/J
 Add the `Jazor` SDK to a .NET project to compile `[ECMAScriptModule]` classes. The SDK includes the compiler, analyzer, Emit tooling and ASP.NET Core integration. [C# module quickstart](docs/03-guides/quick-start.md)
 
 ```sh
-dotnet add package Jazor --version 2.7.1
+dotnet add package Jazor --version 2.7.2
 ```
 
 | Topic | Documentation |
@@ -90,7 +90,7 @@ The Jolt release workflow verifies an isolated CLI install, the language server 
 
 ## Latest release
 
-Jazor 2.7.1 introduces `[Boundary]` for handwritten bindings and reports empty host names at their declaration. Rebuild bindings that used empty aliases. The [Jero sample](samples/Jero/README.en.md) shows C# and `.jazor` in an ASP.NET Core administration app. [Release notes and migration](CHANGELOG.md#jazor-271)
+Jazor 2.7.2 improves Jolt completion in blank markup and HTML start tags, adds npm import suggestions, and enables F12 navigation from `.jazor` to shared C# declarations. It also fixes missing npm inputs in ordinary C# design-time builds. [Release notes](CHANGELOG.md#jazor-272)
 
 ## AI-assisted development
 

@@ -9,11 +9,11 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 Jolt CLI 使用 .NET 11，发布包覆盖 Windows 和 glibc Linux 的 x64 与 ARM64。在克隆的仓库根目录执行以下命令。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.1
+dotnet tool install --global Jazor.Jolt --version 2.7.2
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.7.1`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
+已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.7.2`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
 
 | 命令 | 结果 |
 | --- | --- |
@@ -28,13 +28,13 @@ jolt dev samples/Jolt.Counter --port 15658
 
 ## 配置编辑器
 
-在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.7.1 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)
+在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.7.2 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
 
 | 编辑器 | 安装 |
 | --- | --- |
-| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.1.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
+| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.2.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
-| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.1.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
+| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.2.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
 
 在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
 
@@ -359,13 +359,13 @@ var (count, events) = form.DefineField(row => row.Count,
 
 ### 普通 C# 类库的公开投影
 
-普通 `.csproj` 直接引用Jazor 2.7.1，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
+普通 `.csproj` 直接引用Jazor 2.7.2，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
 
 对于项目打开时已有的依赖，VS Code C# 语言服务的 `Balanced` 模式可立即解析未保存的别名。首次调用尚未投影的 `Dates.AddDays` 时，成员处可能出现 `CS0117`。保存该文件即可获得方法签名。如果第二个参数传了 `true`，诊断会指向这个实参并报告 `CS1503`。
 
 项目打开后才加入 `date-fns` 时，更新 `package.json` 和锁文件即可继续编辑。如果类库原先没有 npm 清单，可以在 `.csproj` 所在目录首次创建这两个文件。两种情况都已在真实的 VS Code C# 语言服务上验证。在 `Balanced` 和 `Automatic` 下，都可以在未保存的 C# 文件中从 `Npm.` 选到 `DateFns`，再从 `Npm.DateFns.` 选到 `Exports`。写好别名后，`Dates.` 会列出 `AddDays` 等实际导出。
 
-如果先写了 `using` 再加包，`Automatic` 会自行清除导入错误，`Balanced` 下保存当前 C# 文件一次即可刷新绑定和方法签名。移除依赖后，两个模式也在各自的刷新时机撤去包名和成员补全，并在旧 `using` 处报告缺失的命名空间。VS Code 的模式由 `dotnet.server.sourceGeneratorExecution` 控制。[候选包编辑器验证](../../scripts/csharp/verify-jazor-npm-editor.cs)
+如果先写了 `using` 再加包，`Automatic` 会自行清除导入错误，`Balanced` 下保存当前 C# 文件一次即可刷新绑定和方法签名。移除依赖后，两个模式也在各自的刷新时机撤去包名和成员补全，并在旧 `using` 处报告缺失的命名空间。VS Code 的模式由 `dotnet.server.sourceGeneratorExecution` 控制。[普通 C# 编辑器验证](../../scripts/csharp/verify-jazor-npm-editor.cs)
 
 子项目可以使用父目录的 `package.json`。如果在子项目目录创建自己的清单和锁文件，构建和 Automatic 编辑器随即使用子项目声明的依赖。删除这两份文件后，项目又能使用父清单中的包。已验证这个切换过程中的补全、调用签名及原 C# 文件的未保存编辑。[嵌套工作区验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
 
@@ -416,14 +416,14 @@ string french = Dates.FormatDistance(new ECMAScript.Date(2026, 0, 17),
 
 #### 在桌面 Visual Studio 验收普通 C# 编辑反馈
 
-使用临时解决方案和当前候选 Jazor 包。项目目标为 `net11.0`，语言版本为 `preview`，直接引用该包，并在 `package.json` 和 `pnpm-lock.yaml` 中锁定 `date-fns`。先只保存空的 `Calendar.cs`，打开解决方案并等待 NuGet 还原和项目加载完成。以下按 C# 源生成器的 Automatic 模式操作。桌面 VS 缺省使用 Balanced，输入新调用后先保存一次，再检查成员签名与 F12。
+使用临时解决方案和Jazor 2.7.2 包。项目目标为 `net11.0`，语言版本为 `preview`，直接引用该包，并在 `package.json` 和 `pnpm-lock.yaml` 中锁定 `date-fns`。先只保存空的 `Calendar.cs`，打开解决方案并等待 NuGet 还原和项目加载完成。以下按 C# 源生成器的 Automatic 模式操作。桌面 VS 缺省使用 Balanced，输入新调用后先保存一次，再检查成员签名与 F12。
 
 1. 输入 `using Dates = Npm.`，按 Ctrl+Space 查看 `DateFns`。继续输入 `Npm.DateFns.` 查看 `Exports`，完成 `using Dates = Npm.DateFns.Exports;`。
 2. 在类内写一个调用 `Dates.AddDays(new ECMAScript.Date(2024, 0, 31), 2)` 的方法。输入 `Dates.` 时检查 `AddDays`，再检查调用签名。把 `2` 改为 `true`，检查 `CS1503` 是否出现在该参数；改回 `2`，检查诊断清除。用另一个编辑器或终端读取 `Calendar.cs`，确认磁盘上仍是原来的空文件。
 3. 在已绑定的 `AddDays` 上按 F12，核对生成 C# 中的方法签名。要打开本机原声明，桌面 Visual Studio 安装或更新现有 `Jolt.VisualStudio.vsix` 后，使用悬停中带文件名和行号的 `Open addDays.d.ts at line 48`。VS Code 使用悬停中的 `Open TypeScript declaration`。`.jazor` 中的 F12 直接定位到原始声明。[Visual Studio 安装说明](../../editors/jolt-visual-studio/README.md)
 4. 若要验证外部声明刷新，增加一个用 pnpm `link:` 指向的本地包，让入口重导出另一份 `.d.ts` 中的函数。在打开的 C# 文件中调用该导出并保留未保存状态。单独修改被重导出的声明，将参数从 `string` 改为 `bool`，检查签名、诊断与快速信息链接是否刷新。
 
-候选 SDK `.12` 已在独立桌面配置验证 Automatic 的未保存补全与成员 F12，以及 Balanced 保存后的参数帮助和成员 F12。[迁移验收记录](../04-roadmap/jazor-jolt-migration.md) · [独立 Roslyn LSP 验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
+普通 C# 的桌面验收步骤覆盖 Automatic 下未保存的补全和 F12，以及 Balanced 下保存后的参数帮助和 F12。[迁移验收记录](../04-roadmap/jazor-jolt-migration.md) · [独立 Roslyn LSP 验收](../../scripts/csharp/verify-jazor-npm-editor.cs)
 
 #### 在多个 DLL 之间传递同一条 npm 记录
 
@@ -751,6 +751,10 @@ import Counter, { Advance, Initial, Step } from './.jolt/Counter.mjs';
 组件用 `[Parameter]` 声明参数和委托，用 `[EditorRequired]` 标记调用者必须提供的参数。默认插槽使用 `<slot />`，具名插槽使用 `<slot name="header" />`，调用方用 `<template #header>…</template>` 填充内容。`<template>` 在这里是具名插槽写法，文件顶层可以直接书写标记。C# 区域支持 `@name`、`@(expression)`、`@if` 和 `@foreach`。
 
 编辑器用相同的项目加载器、组件声明和 C# 投影提供补全、悬停、签名帮助、定义导航和诊断。键入标签名时，可以选择同项目其他命名空间的本地组件，接受建议后会插入相应的 `@using`，随后可以补全该组件的类型化参数。npm 定义可跳转至声明文件。 [VS Code 扩展](../../editors/jolt/README.md) · [Visual Studio 扩展](../../editors/jolt-visual-studio/README.md)
+
+键入 `@using Npm.` 即可从当前项目的 `package.json` 选择包。导入后，读取导出清单即可补全组件名。组件声明就绪后可补全属性和事件，在组件标签、属性或具名插槽上悬停或按 F12 可读取上游文档和声明位置。
+
+在 `.jazor` 的 C# 表达式中，F12 可以跳到 `jolt.csharpSources` 选中的共享 C# 源文件。VS Code 根据尚未保存的 C# 缓冲区更新补全和跳转位置。Visual Studio 扩展从 0.1.10 开始监听共享文件的保存、新增和删除。
 
 编辑器提供查找引用、改名、格式化和快捷修复。跨文件改名按 Roslyn 符号和组件绑定更新 C#、参数、委托和具名插槽。支持文件操作的编辑器还可以从标签改名组件及其同目录文件。格式化调整 C# 和标签内的属性缩进，保留渲染文本与换行风格。未知的本地组件可以用快捷修复添加 `@using`，缺少必填参数时可以匹配当前组件的同名同类型字段或可读属性。
 

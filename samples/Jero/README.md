@@ -43,7 +43,7 @@ Jero 是一个后端基于 Admin.NET、前端使用 [Jazor](https://github.com/d
 
 ## 开发与运行
 
-使用 [`src/global.json`](src/global.json) 指定的 .NET 11 SDK。从 Jero 的 `src` 目录还原依赖。Jazor、ECMAScript.Vue、ECMAScript.VueRoute 和 Jazor.Jolt 均使用 NuGet.org 上发布的 `2.7.1`。
+使用 [`src/global.json`](src/global.json) 指定的 .NET 11 SDK。从 Jero 的 `src` 目录还原依赖。Jazor、ECMAScript.Vue、ECMAScript.VueRoute 和 Jazor.Jolt 均使用 NuGet.org 上发布的 `2.7.2`。
 
 MVC 与 SignalR 共用 `System.Text.Json` 配置。响应中的 `long` ID 写为字符串，日期使用 `yyyy-MM-dd HH:mm:ss`。静态图片仍支持 URL 变换，例如 `/images/logo.png?width=32&format=jpg`。
 
