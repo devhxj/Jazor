@@ -2,6 +2,30 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-25
+
+### Jazor 2.7.1
+
+中文 | English
+
+#### 新增功能
+
+- **破坏性变更，按维护者指定的补丁版本发布。** 手写绑定用 `[Boundary]` 指定 JavaScript 宿主名称的拼接终点。将原来用于截断的空别名替换为 `[Boundary]`，删除数据 record 上多余的空别名，并重新编译使用旧规则的绑定 DLL。by @devhxj
+
+#### 体验优化
+
+- 普通 C# 和 Jolt 组件在声明位置报告空名称错误 `JAZOR009`，包括 `[ECMAScriptName("")]` 和 `[Description("@#")]`。`[String]` 枚举字段可用 `[ECMAScriptName("")]` 表示实际的空字符串值。by @devhxj
+- 新增 [Jero 管理应用示例](samples/Jero/README.md)，演示用 C# 和 `.jazor` 实现登录、路由、CRUD 页面和表单，并按需加载 Office 预览、Monaco 和打印设计器。by @devhxj
+
+New Features
+
+- **Breaking change, released as a patch at the maintainer’s request.** Use `[Boundary]` on the handwritten binding container where JavaScript host-name qualification stops. Replace empty aliases used for this purpose, remove redundant empty aliases from data records, and rebuild binding DLLs that used the previous convention. by @devhxj
+
+Improvements
+
+- C# and Jolt components report `JAZOR009` at the declaration for empty aliases, including `[ECMAScriptName("")]` and `[Description("@#")]`. A field on a `[String]` enum can use `[ECMAScriptName("")]` for the empty string value. by @devhxj
+- The [Jero administration sample](samples/Jero/README.en.md) demonstrates sign-in, routing, CRUD pages, and forms in C# and `.jazor`, with on-demand Office previews, Monaco, and the print designer. by @devhxj
+
 ## 2026-11-24
 
 ### Jazor 2.7.0

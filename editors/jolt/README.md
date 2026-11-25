@@ -2,10 +2,10 @@
 
 ## Install
 
-Install the Jolt CLI and download `jolt-2.7.0.vsix` from the same release. In VS Code, select **Extensions: Install from VSIX**. [Jolt release](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
+Install the Jolt CLI and download `jolt-2.7.1.vsix` from the same release. In VS Code, select **Extensions: Install from VSIX**. [Jolt release](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.0
+dotnet tool install --global Jazor.Jolt --version 2.7.1
 ```
 
 Open the project folder and then a `.jazor` file. In Jolt Counter, try completion in `@code` and go to definition on `CollapsibleRoot`. [Counter sample](../../samples/Jolt.Counter/README.md)

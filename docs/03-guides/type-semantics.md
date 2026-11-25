@@ -17,7 +17,7 @@
 
 | 声明 | 运行时表示与边界 |
 | --- | --- |
-| 普通源码 class | 保留受支持的构造、字段初始化、实例成员和原型分派；不因空名称或宿主标注变成对象字面量 |
+| 普通源码 class | 保留受支持的构造、字段初始化、实例成员和原型分派 |
 | 数据 record | 创建为结构化对象，`with` 使用对象复制；使用位置参数或受支持的属性初始化 |
 | readonly record struct | 使用已支持的结构化表示；不保留完整 CLR runtime identity |
 | 可变 record struct | 缺少隐式值复制协议，明确拒绝 |
@@ -44,7 +44,8 @@ var options = new JsOptions("release");
 | `[ECMAScript]` | 环境 JavaScript 宿主或明确的特殊值语义 |
 | `[ECMAScript("specifier")]` | 外部 ESM 导入来源；成员声明优先于类型声明 |
 | `[ECMAScriptModule("path")]` | 编译根与模块输出身份；普通辅助类型沿源码闭包参与转换 |
-| `[ECMAScriptName]`、`[Description("@#...")]` | 名称和属性键解析，不改变 class/record 的对象模型 |
+| `[ECMAScriptName("name")]`、`[Description("@#name")]` | 指定 JavaScript 名称或属性键。空别名报 `JAZOR009`。`[String]` 枚举成员可用 `[ECMAScriptName("")]` 表示实际的空字符串值 |
+| `[Boundary]` | 指定嵌套宿主名沿 C# 包含链向外拼接时的终点 |
 | `[Style]`、`[ECMAScriptInline]` | 样式依赖和已声明表达式模板 |
 
 宿主 union 的擦除与普通源码准入是独立规则。优先使用分支互不赋值的原生 `union`；分支可赋值重叠、需要精确投影时使用已声明的 tagged fallback。保留 `Value`、`AsX` 和接收者单次求值契约，不能把任意 union 当作原始 JavaScript 值。

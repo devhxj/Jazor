@@ -124,10 +124,11 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 | `[ECMAScriptModule("path")]` | 输出路径 | **标注生成模块**：该类型被发射为某模块 | 已定 |
 | `[Style("specifier")]` | 样式 specifier | **绑定 CSS 导入** | 已定 |
 | `[ECMAScriptName("name")]` / `[Description("@#name")]` | 名称 | 输出名，同时作为模块导出名 | 已定 |
+| `[Boundary]` | 无 | 截断绑定容器的 JavaScript 宿主名称 | 已定 |
 
 `[ECMAScript("specifier")]` 与 `[ECMAScriptModule("path")]` 是**相反方向**的两件事：前者是"从哪个外部库导入"（消费），后者是"这个类型生成到哪个模块"（产出）。两者可以同时出现在一个类型上，互不冲突，各自解析。
 
-这些特性不承担普通源码类型的编译许可。模块内的普通实现与可达辅助类型按源码和符号归属参与转换；纯数据 record 依据其声明种类生成对象字面量。带空名称的宿主 class 仍是 class，不会据此生成 `{}`；options 和 dictionary 声明应采用 record。
+模块内的普通实现与可达辅助类型按源码和符号归属参与转换。纯数据 record 依据其声明种类生成对象字面量，可用于描述 options 和 dictionary。
 
 **声明面同项目**：`[Style]` 与 `[ECMAScript]` 位于同一个程序集 `ECMAScript.Contract`（`netstandard2.0`、零依赖），命名空间同为 `ECMAScript`。绑定库经 `ECMAScript` 的程序集引用传递可见两者。声明面特性集中在一处，不分散到实现程序集，避免绑定库为用一个特性而引入实现依赖。
 
@@ -143,15 +144,17 @@ JSR 绑定直接声明 npm 兼容名，例如 `@jsr/std__path`。Emit 保留 `js
 
 ### 名字与导出名
 
-名字解析是三态规则：
+绑定作者可以指定符号名称，也可以标记嵌套宿主名称的拼接边界。
 
 | 写法 | 结果 |
 | --- | --- |
 | 无名字特性 | 使用符号名 |
 | `[ECMAScriptName("X")]` / `[Description("@#X")]` | 使用显式名 `X` |
-| `[ECMAScriptName("")]` / `[Description("@#")]` | **stop**：不参与命名，也不参与外层宿主的名称拼接 |
+| 绑定容器上的 `[Boundary]` | 沿 `ContainingType` 向外拼接宿主名称时，到达该容器即停止。容器和它的外层均省略 |
 
 `ECMAScriptName` 优先于 `Description("@#...")`。`default` 导出写成 `[ECMAScriptName("default")]`，没有独立的 `default` 回退规则。
+
+例如，在 `Outer.Bindings` 上标记 `[Boundary]`，嵌套的环境宿主 `Outer.Bindings.Intl.NumberFormat` 在 JavaScript 中使用 `Intl.NumberFormat`。普通数据 record 直接声明即可。为符号显式指定空名称会在特性处报告 `JAZOR009`。`[String]` 枚举成员可用 `[ECMAScriptName("")]` 表示实际的空字符串值。
 
 ### 组件
 

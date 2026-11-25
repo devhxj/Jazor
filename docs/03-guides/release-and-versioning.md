@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前版本：[2.7.0（2026-11-24）](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 当前版本：[2.7.1（2026-11-25）](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -45,6 +45,10 @@
 维护者批准以 2.7.0 单次 MINOR 发布移除 `ECMAScriptUndefinedArgumentAttribute` 和 `ECMAScriptUndefinedDefaultAttribute`。重新生成 npm 投影并重编译引用旧标注的类库。手写门面用类型化重载表达不同调用形式，以 JavaScript inline 模板保留固定空位。可省略且没有 C# 默认值的宿主 extern 参数用 `System.Runtime.InteropServices.OptionalAttribute` 表达。迁移步骤见 [CHANGELOG](../../CHANGELOG.md#jazor-270)。冻结基线、后续 MAJOR 规则和发布门禁继续适用。
 
 Jazor 统一管理用户级投影缓存。直接使用 Jolt 编译器的调用方升级时应删除对 `JoltCompileOptions.NpmProjectionCacheDirectory` 的赋值。
+
+### 2.7.1 宿主名称迁移例外
+
+维护者指定这次绑定契约变更以 2.7.1 发布。使用旧空名称截断规则的绑定须迁移到 `[Boundary]` 并重新编译。这是本次 PATCH 的版本例外。详见 [CHANGELOG](../../CHANGELOG.md#jazor-271)。
 
 ## 发版节奏
 

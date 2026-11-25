@@ -93,7 +93,6 @@ internal static class SmCrypto
 }
 
 [ECMAScript]
-[Description("@#")]
 internal sealed record Sm2
 {
     [Description("@#doEncrypt")]
@@ -113,7 +112,7 @@ worker、字体、图片和 wasm 通过上游 ESM import、`new URL(..., import.
 
 普通业务类型、纯数据 record、枚举和回调委托无需为参与编译添加 `[ECMAScript]`。无参标注用于环境 JS 宿主或明确的特殊值协议，有参标注用于外部模块绑定。record 中具有 extern、索引器或模板映射的成员仍应保留所需的宿主契约。
 
-配置对象使用 record；普通 class 保留类的构造与实例语义。迁移原先依赖 `[ECMAScript]` 加 `[Description("@#")]` 自动生成对象字面量的 class 时，将声明改成 record，保留属性键的名称映射。例如 `ErrorOptions`、`PropertyDescriptorRef` 和 callback interface 的 literal 对象已采用 record。空名称本身不再决定对象创建方式。
+配置对象使用 record，属性名与外部键不同时保留显式别名。需要省略外层 C# 宿主名时，在对应绑定容器上标记 `[Boundary]`。迁移旧绑定时，去掉数据类型上的空名称，为确实需要截断的容器添加 `[Boundary]`，然后重新编译绑定程序集。
 
 绑定类型位于对应的 `ECMAScript.<Name>` 命名空间，保持强类型的参数、返回值、事件、props、slots、enum 和 union。
 

@@ -9,11 +9,11 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 Jolt CLI 使用 .NET 11，发布包覆盖 Windows 和 glibc Linux 的 x64 与 ARM64。在克隆的仓库根目录执行以下命令。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.0
+dotnet tool install --global Jazor.Jolt --version 2.7.1
 jolt dev samples/Jolt.Counter --port 15658
 ```
 
-已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.7.0`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
+已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.7.1`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
 
 | 命令 | 结果 |
 | --- | --- |
@@ -28,13 +28,13 @@ jolt dev samples/Jolt.Counter --port 15658
 
 ## 配置编辑器
 
-在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.7.0 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.0)
+在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.7.1 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.1)
 
 | 编辑器 | 安装 |
 | --- | --- |
-| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.0.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
+| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.1.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
-| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.0.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
+| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.1.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
 
 在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
 
@@ -359,7 +359,7 @@ var (count, events) = form.DefineField(row => row.Count,
 
 ### 普通 C# 类库的公开投影
 
-普通 `.csproj` 直接引用Jazor 2.7.0，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
+普通 `.csproj` 直接引用Jazor 2.7.1，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
 
 对于项目打开时已有的依赖，VS Code C# 语言服务的 `Balanced` 模式可立即解析未保存的别名。首次调用尚未投影的 `Dates.AddDays` 时，成员处可能出现 `CS0117`。保存该文件即可获得方法签名。如果第二个参数传了 `true`，诊断会指向这个实参并报告 `CS1503`。
 
