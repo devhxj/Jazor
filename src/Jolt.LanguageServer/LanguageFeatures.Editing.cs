@@ -14,19 +14,18 @@ internal sealed partial class LanguageFeatures
 {
     internal async Task<object[]> FormatAsync(TextSpan requested, JsonElement options, CancellationToken cancellationToken)
     {
-        using var roslyn = new AdhocWorkspace(Host.Value);
-        var document = await CreateRoslynDocumentAsync(roslyn, cancellationToken);
-        var formattedOptions = roslyn.Options
-            .WithChangedOption(FormattingOptions.UseTabs, LanguageNames.CSharp, !options.GetProperty("insertSpaces").GetBoolean())
-            .WithChangedOption(FormattingOptions.TabSize, LanguageNames.CSharp, Math.Max(1, options.GetProperty("tabSize").GetInt32()))
-            .WithChangedOption(FormattingOptions.IndentationSize, LanguageNames.CSharp, Math.Max(1, options.GetProperty("tabSize").GetInt32()))
-            .WithChangedOption(FormattingOptions.NewLine, LanguageNames.CSharp, NewLine());
         var mapped = projection.Spans.Where(span => span.Source.Length > 0 && requested.Contains(span.Source))
             .ToArray();
         var edits = new List<TextChange>();
         if (mapped.Length > 0)
         {
-            var root = (await document.GetSyntaxRootAsync(cancellationToken))!;
+            var roslyn = EditorWorkspace.Value;
+            var formattedOptions = roslyn.Options
+                .WithChangedOption(FormattingOptions.UseTabs, LanguageNames.CSharp, !options.GetProperty("insertSpaces").GetBoolean())
+                .WithChangedOption(FormattingOptions.TabSize, LanguageNames.CSharp, Math.Max(1, options.GetProperty("tabSize").GetInt32()))
+                .WithChangedOption(FormattingOptions.IndentationSize, LanguageNames.CSharp, Math.Max(1, options.GetProperty("tabSize").GetInt32()))
+                .WithChangedOption(FormattingOptions.NewLine, LanguageNames.CSharp, NewLine());
+            var root = await projection.SemanticModel.SyntaxTree.GetRootAsync(cancellationToken);
             var formatted = Formatter.GetFormattedTextChanges(root, mapped.Select(span => span.Generated), roslyn, formattedOptions, cancellationToken);
             foreach (var change in formatted)
             {

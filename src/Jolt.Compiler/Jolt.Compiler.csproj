@@ -6,6 +6,7 @@
     </PropertyGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Jolt.LanguageServer" />
+        <InternalsVisibleTo Include="Jolt.Project" />
         <InternalsVisibleTo Include="Jolt.Cli" />
         <InternalsVisibleTo Include="Jolt.Compiler.Test" />
     </ItemGroup>

@@ -221,7 +221,7 @@ public sealed partial class NpmValueMetadataProvider
         }
 
         internal bool IsTransientProbe(string absolute, string? expected) => expected is null &&
-            Relative(project, absolute)?.StartsWith(".jazor/npm-metadata-", StringComparison.Ordinal) == true;
+            Relative(project, absolute)?.StartsWith(".jazor/npm-metadata/", StringComparison.Ordinal) == true;
 
         private static string? Relative(string root, string value)
         {

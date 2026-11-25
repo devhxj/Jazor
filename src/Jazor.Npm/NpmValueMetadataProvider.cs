@@ -32,8 +32,12 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
 
     public async Task<IReadOnlyList<string>> ListValueExportsAsync(string documentPath, string moduleSpecifier,
         CancellationToken cancellationToken = default)
+        => await ListValueExportsAsync(documentPath, moduleSpecifier, null, cancellationToken);
+
+    internal async Task<IReadOnlyList<string>> ListValueExportsAsync(string documentPath, string moduleSpecifier,
+        Validation? validation, CancellationToken cancellationToken)
     {
-        var metadata = await ReadSnapshotAsync(documentPath, moduleSpecifier, "value", null, cancellationToken);
+        var metadata = await ReadSnapshotAsync(documentPath, moduleSpecifier, "value", null, cancellationToken, validation);
         return metadata.Exports!;
     }
 
@@ -43,11 +47,15 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
 
     public async Task<NpmValueProjections> ReadValueProjectionsAsync(string documentPath, string moduleSpecifier,
         IReadOnlyList<string> exportNames, CancellationToken cancellationToken = default)
+        => await ReadValueProjectionsAsync(documentPath, moduleSpecifier, exportNames, null, cancellationToken);
+
+    internal async Task<NpmValueProjections> ReadValueProjectionsAsync(string documentPath, string moduleSpecifier,
+        IReadOnlyList<string> exportNames, Validation? validation, CancellationToken cancellationToken)
     {
         if (exportNames.Count == 0)
             return new([], new Dictionary<string, string>());
         var query = JsonSerializer.Serialize(exportNames.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal));
-        var metadata = await ReadSnapshotAsync(documentPath, moduleSpecifier, "values", query, cancellationToken);
+        var metadata = await ReadSnapshotAsync(documentPath, moduleSpecifier, "values", query, cancellationToken, validation);
         return new(metadata.Values!, metadata.Errors!);
     }
 
@@ -172,7 +180,7 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
     };
 
     private Task<ValueSnapshot> ReadSnapshotAsync(string documentPath, string moduleSpecifier, string mode, string? query,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, Validation? validation = null)
         => ReadQueryAsync(documentPath, moduleSpecifier, mode, query, _cache, typeof(NpmValueMetadataProvider), ReadValueSnapshotAsync,
             cancellationToken, (project, entry) =>
             {
@@ -180,7 +188,7 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
                     foreach (var value in values)
                         _cache[(project, moduleSpecifier, "value", value.ExportName)] =
                             entry with { Data = entry.Data with { Value = value, Values = null } };
-            });
+            }, validation);
 
     private async Task<ValueSnapshot> ReadValueSnapshotAsync(string project, string moduleSpecifier, string mode, string? query,
         string store, string typescript, CancellationToken cancellationToken)
@@ -422,8 +430,7 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
     }
 
 
-    // metadata.mjs imports the package's projection modules. Extract from the
-    // same embedded resource set as MSBuild so newly added imports resolve.
+    // Use the same embedded module graph as MSBuild so newly added imports resolve.
     private static readonly string[] MetadataModules = typeof(NpmValueMetadataProvider).Assembly.GetManifestResourceNames()
         .Where(name => name.StartsWith("Jazor.Npm.", StringComparison.Ordinal) && name.EndsWith(".mjs", StringComparison.Ordinal))
         .Select(name => name["Jazor.Npm.".Length..]).ToArray();
@@ -432,30 +439,21 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
         CancellationToken cancellationToken, Type? resourceOwner = null, IReadOnlyList<string>? resources = null)
     {
         resourceOwner ??= typeof(NpmValueMetadataProvider);
-        var directory = Path.Combine(project, ".jazor", $"npm-metadata-{Guid.NewGuid():N}");
         resources ??= entry switch
         {
             "metadata.mjs" => MetadataModules,
             "resolve-module.mjs" => [entry, "runtime-module.mjs"],
             _ => [entry]
         };
-        Directory.CreateDirectory(directory);
-        try
+        var modules = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var file in resources)
         {
-            foreach (var file in resources)
-            {
-                using var source = resourceOwner.Assembly.GetManifestResourceStream(resourceOwner.Namespace + "." + file)
-                    ?? typeof(NpmValueMetadataProvider).Assembly.GetManifestResourceStream("Jazor.Npm." + file)!;
-                await using var output = File.Create(Path.Combine(directory, file));
-                await source.CopyToAsync(output, cancellationToken);
-            }
-            return await NodeModuleRunner.RunAsync(project, Path.Combine(directory, entry), arguments, cancellationToken);
+            using var source = resourceOwner.Assembly.GetManifestResourceStream(resourceOwner.Namespace + "." + file)
+                ?? typeof(NpmValueMetadataProvider).Assembly.GetManifestResourceStream("Jazor.Npm." + file)!;
+            using var reader = new StreamReader(source);
+            modules.Add(file, await reader.ReadToEndAsync(cancellationToken));
         }
-        finally
-        {
-            foreach (var file in resources)
-                File.Delete(Path.Combine(directory, file));
-            Directory.Delete(directory);
-        }
+        var modulePath = Path.Combine(project, ".jazor", "npm-metadata", entry);
+        return await NodeModuleRunner.RunAsync(project, modulePath, arguments, cancellationToken, embeddedModules: modules);
     }
 }

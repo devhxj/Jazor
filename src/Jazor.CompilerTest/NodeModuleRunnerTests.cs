@@ -6,6 +6,31 @@ namespace Jazor.CompilerTest;
 public sealed class NodeModuleRunnerTests
 {
     [TestMethod]
+    public async Task RunAsync_EmbeddedModulesResolveProjectImportsWithoutStagingFiles()
+    {
+        var root = Path.Combine(RepositoryTemp.Root, "nodeapi-embedded", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            await File.WriteAllTextAsync(Path.Combine(root, "package.json"), """{"imports":{"#example":"./example.mjs"}}""");
+            await File.WriteAllTextAsync(Path.Combine(root, "example.mjs"), "export default 'from project';");
+            // A file in place of the staging directory fails deterministically under any account.
+            await File.WriteAllTextAsync(Path.Combine(root, ".jazor"), "occupied");
+            var modules = new Dictionary<string, string>
+            {
+                ["main.mjs"] = "import { value } from './helper.mjs'; console.log(value);",
+                ["helper.mjs"] = "export { default as value } from '#example';",
+            };
+            var entry = Path.Combine(root, ".jazor", "npm-metadata", "main.mjs");
+            Assert.AreEqual("from project", await NodeModuleRunner.RunAsync(root, entry, embeddedModules: modules));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task RunAsync_CancellationStopsTimerAndFileWritesBeforeReturning()
     {
         var root = Path.Combine(RepositoryTemp.Root, "nodeapi-cancellation", Guid.NewGuid().ToString("N"));

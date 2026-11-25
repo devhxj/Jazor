@@ -31,6 +31,10 @@ internal sealed partial class LanguageFeatures(
 
     public async Task<object?> GetAsync(string method, int offset, CancellationToken cancellationToken, int? version = null)
     {
+        var authoring = method == "textDocument/completion" ? AuthoringCompletions(offset) : null;
+        if (authoring is { IncludeCSharp: false })
+            return authoring.Value.Items;
+
         if (method == "textDocument/definition" && MarkupAt(offset) is { } binding)
         {
             var target = analysis.Documents.Single(document => document.Document.Path == binding.Symbol.ComponentPath);
@@ -50,7 +54,9 @@ internal sealed partial class LanguageFeatures(
             var generated = mapping.Generated.Start + Math.Min(offset - mapping.Source.Start, mapping.Generated.Length);
             return method switch
             {
-                "textDocument/completion" => await CSharpCompletionAsync(generated, cancellationToken, version),
+                "textDocument/completion" => authoring is { } suggestions
+                    ? suggestions.Items.Concat(await CSharpCompletionAsync(generated, cancellationToken, version)).ToArray()
+                    : await CSharpCompletionAsync(generated, cancellationToken, version),
                 "textDocument/hover" => SymbolAt(generated, cancellationToken) is { } symbol
                     ? CSharpHover(symbol, cancellationToken)
                     : null,
@@ -60,6 +66,8 @@ internal sealed partial class LanguageFeatures(
             };
         }
 
+        if (method == "textDocument/signatureHelp")
+            return null;
         var elements = JoltTree.Elements(projection.Document).Where(node => node.Span.Start <= offset && offset <= node.Span.End);
         var element = elements.OrderBy(node => node.Span.Length).FirstOrDefault();
         var attribute = element?.Attributes.FirstOrDefault(item => item.Span.Start <= offset && offset <= item.Span.End);
@@ -69,6 +77,8 @@ internal sealed partial class LanguageFeatures(
         var parentComponent = Component(parent?.Name);
         var localParent = LocalComponent(parent?.Name);
         var builtInParent = parentComponent is null && localParent is null ? VueBuiltIns.Find(parent?.Name) : null;
+        if (authoring is { } remaining)
+            return remaining.Items;
         if (method == "textDocument/completion")
             return MarkupCompletion(offset, element, attribute, component, parentComponent, local, localParent, builtInParent);
         if (element is null)
@@ -122,8 +132,7 @@ internal sealed partial class LanguageFeatures(
 
     private async Task<object[]> CSharpCompletionAsync(int position, CancellationToken cancellationToken, int? version, int? sourceAfterTrailingDot = null)
     {
-        using var workspace = new AdhocWorkspace(Host.Value);
-        var document = await CreateCompletionDocumentAsync(workspace, position, sourceAfterTrailingDot.HasValue, cancellationToken);
+        var document = await CreateCompletionDocumentAsync(position, sourceAfterTrailingDot.HasValue, cancellationToken);
         var generated = await document.GetTextAsync(cancellationToken);
         var service = CompletionService.GetService(document);
         if (service is null)
@@ -134,7 +143,7 @@ internal sealed partial class LanguageFeatures(
         var items = new List<object>();
         var typed = result.Span.Start <= position ? generated.ToString(TextSpan.FromBounds(result.Span.Start, position)) : "";
         var candidates = result.ItemsList
-            .Where(item => !item.DisplayText.StartsWith("__Jolt", StringComparison.Ordinal))
+            .Where(item => !item.DisplayText.StartsWith("__Jolt", StringComparison.Ordinal) && !IsRenderTemporary(item))
             .OrderByDescending(item => item.FilterText.StartsWith(typed, StringComparison.OrdinalIgnoreCase))
             .ThenByDescending(item => item.Rules.MatchPriority)
             .ThenBy(item => item.SortText, StringComparer.Ordinal)
@@ -169,13 +178,25 @@ internal sealed partial class LanguageFeatures(
                 });
         }
         return items.ToArray();
+
+        bool IsRenderTemporary(CompletionItem item)
+        {
+            if (!item.DisplayText.StartsWith("__jolt", StringComparison.Ordinal) ||
+                !(item.Tags.Contains(WellKnownTags.Local) || item.Tags.Contains(WellKnownTags.Parameter)))
+                return false;
+            // Locals in the generated render method share the scope of template expressions.
+            // Only remove declarations without an author span so similarly named author locals stay visible.
+            var model = projection.SemanticModel;
+            var symbols = model.LookupSymbols(Math.Min(position, model.SyntaxTree.Length), name: item.DisplayText);
+            return symbols.Length > 0 && symbols.All(symbol => symbol.Locations.All(location =>
+                location.SourceTree == model.SyntaxTree && ToSource(location.SourceSpan) is null));
+        }
     }
 
     internal async Task<object> ResolveCompletionAsync(JsonElement item, JsonElement data, CancellationToken cancellationToken)
     {
         var position = data.GetProperty("position").GetInt32();
-        using var workspace = new AdhocWorkspace(Host.Value);
-        var document = await CreateCompletionDocumentAsync(workspace, position,
+        var document = await CreateCompletionDocumentAsync(position,
             data.GetProperty("sourceAfterTrailingDot").ValueKind == JsonValueKind.Number, cancellationToken);
         var service = CompletionService.GetService(document);
         if (position > (await document.GetTextAsync(cancellationToken)).Length || service is null ||
@@ -196,17 +217,11 @@ internal sealed partial class LanguageFeatures(
         return resolved;
     }
 
-    private async Task<Document> CreateRoslynDocumentAsync(AdhocWorkspace workspace, CancellationToken cancellationToken, int? trailingDot = null)
-    {
-        var documents = await CreateRoslynProjectAsync(workspace, cancellationToken, trailingDot);
-        return documents[projection.Document.Path];
-    }
-
-    private async Task<Document> CreateCompletionDocumentAsync(AdhocWorkspace roslynWorkspace, int position, bool trailingDot,
+    private async Task<Document> CreateCompletionDocumentAsync(int position, bool trailingDot,
         CancellationToken cancellationToken)
     {
         var dot = trailingDot ? position - 1 : (int?)null;
-        if (workspace.ValueExports.Count > 0 && NpmValueReceiver(position - 1, trailingDot, cancellationToken) is { } receiver)
+        if (workspace.ValueExports.Count > 0 && NpmValueReceiver(projection.SemanticModel, position - 1, trailingDot, cancellationToken) is { } receiver)
         {
             var imports = JoltProjectImports.Parse(workspace.Sources, cancellationToken);
             var import = imports.ImportsFor(projection.Document).FirstOrDefault(use => use.IsNpmValue &&
@@ -220,19 +235,19 @@ internal sealed partial class LanguageFeatures(
                     // The additional contracts exist only for Roslyn completion. Keep the validated source snapshot intact.
                     var expanded = JoltProjectCompiler.Analyze(workspace.Sources, workspace.Options with { NpmValues = values }, cancellationToken);
                     var author = expanded.Documents.Single(document => document.Document.Path == projection.Document.Path);
-                    return await new LanguageFeatures(author, expanded, workspace, projectDirectory, snapshotId)
-                        .CreateRoslynDocumentAsync(roslynWorkspace, cancellationToken, dot);
+                    return await CompletionDocumentAsync(author.SemanticModel,
+                        GetEditorProject(cancellationToken), dot, cancellationToken);
                 }
             }
         }
-        return await CreateRoslynDocumentAsync(roslynWorkspace, cancellationToken, dot);
+        return await CompletionDocumentAsync(projection.SemanticModel,
+            GetEditorProject(cancellationToken), dot, cancellationToken);
     }
 
-    private (string Alias, string Namespace, string Prefix)? NpmValueReceiver(int position, bool trailingDot, CancellationToken cancellationToken)
+    private static (string Alias, string Namespace, string Prefix)? NpmValueReceiver(SemanticModel model, int position, bool trailingDot, CancellationToken cancellationToken)
     {
         if (position < 0)
             return null;
-        var model = projection.SemanticModel;
         var token = model.SyntaxTree.GetRoot(cancellationToken).FindToken(trailingDot ? Math.Max(0, position - 1) : position);
         var access = token.Parent?.AncestorsAndSelf().OfType<MemberAccessExpressionSyntax>()
             .FirstOrDefault(candidate => candidate.OperatorToken == token || candidate.Name.Span.Contains(token.Span));
@@ -242,29 +257,6 @@ internal sealed partial class LanguageFeatures(
         var prefix = trailingDot || access is null || position < access.Name.SpanStart ? "" :
             model.SyntaxTree.GetText(cancellationToken).ToString(TextSpan.FromBounds(access.Name.SpanStart, position + 1));
         return (receiver.Identifier.ValueText, type.ContainingNamespace.ToDisplayString(), prefix);
-    }
-
-    private async Task<Dictionary<string, Document>> CreateRoslynProjectAsync(
-        AdhocWorkspace workspace, CancellationToken cancellationToken, int? trailingDot = null)
-    {
-        var model = projection.SemanticModel;
-        var projectId = ProjectId.CreateNewId();
-        var info = ProjectInfo.Create(projectId, VersionStamp.Create(), "Jolt", model.Compilation.AssemblyName!, LanguageNames.CSharp,
-            parseOptions: model.SyntaxTree.Options, compilationOptions: model.Compilation.Options, metadataReferences: model.Compilation.References);
-        var solution = workspace.AddProject(info).Solution;
-        var ids = new Dictionary<string, DocumentId>(StringComparer.Ordinal);
-        var paths = analysis.Documents.ToDictionary(author => author.SemanticModel.SyntaxTree, author => author.Document.Path);
-        foreach (var tree in model.Compilation.SyntaxTrees)
-        {
-            var id = DocumentId.CreateNewId(projectId);
-            var generated = await tree.GetTextAsync(cancellationToken);
-            if (tree == model.SyntaxTree && trailingDot is { } dot)
-                generated = generated.WithChanges(new TextChange(new TextSpan(dot, 0), "."));
-            solution = solution.AddDocument(id, Path.GetFileName(tree.FilePath), generated, filePath: tree.FilePath);
-            if (paths.TryGetValue(tree, out var author))
-                ids.Add(author, id);
-        }
-        return ids.ToDictionary(item => item.Key, item => solution.GetDocument(item.Value)!, StringComparer.Ordinal);
     }
 
     private static int CompletionKind(CompletionItem item)
@@ -331,10 +323,17 @@ internal sealed partial class LanguageFeatures(
             if (projection.ExternalSlotMemberOrigins.TryGetValue(member, out var definition))
                 return FromNpm(definition);
         }
-        foreach (var location in symbol.Locations.Where(location => location.IsInSource))
-            if (analysis.Documents.FirstOrDefault(document => document.SemanticModel.SyntaxTree == location.SourceTree) is { } author &&
+        foreach (var location in symbol.Locations)
+        {
+            if (location.SourceTree is not { } tree)
+                continue;
+            if (analysis.Documents.FirstOrDefault(document => document.SemanticModel.SyntaxTree == tree) is { } author &&
                 ToSource(author, location.SourceSpan) is { } span)
                 return Location(author.Document.Path, SourceText.From(author.Document.Source), span);
+            // The selected shared tree already contains the current editor overlay.
+            if (workspace.Options.CSharpSources.Any(source => StringComparer.Ordinal.Equals(source.Path, tree.FilePath)))
+                return Location(tree.FilePath, tree.GetText(cancellationToken), location.SourceSpan);
+        }
         return null;
     }
 
@@ -429,6 +428,106 @@ internal sealed partial class LanguageFeatures(
         }).ToArray();
         var documentation = FormatNpmDocumentation(xml, includeParameters: false);
         return documentation is null ? new { label, parameters } : new { label, parameters, documentation };
+    }
+
+    internal enum NpmMetadataKind { None, TagNames, Component, BoundProject }
+
+    internal static NpmMetadataKind NavigationMetadata(JoltProjectedDocument document, int offset, string method)
+    {
+        if (document.Spans.Any(span => span.Source.Contains(offset) || span.Source.End == offset))
+            return NpmMetadataKind.BoundProject; // npm aliases and scoped slot values need their C# projection.
+        if (method == "textDocument/signatureHelp")
+            return NpmMetadataKind.None;
+        var elements = JoltTree.Elements(document.Document).Where(node => node.Span.Start <= offset && offset <= node.Span.End)
+            .OrderBy(node => node.Span.Length).Take(2).ToArray();
+        if (elements.Length == 0)
+            return NpmMetadataKind.None;
+        var tag = elements[0];
+        var attribute = tag.Attributes.FirstOrDefault(item => item.Span.Contains(offset));
+        if (tag.Name == "template" && attribute?.Name.StartsWith('#') == true && elements.Length == 2)
+            tag = elements[1];
+        else if (!tag.NameSpan.Contains(offset) && attribute is null)
+            return NpmMetadataKind.None;
+        return tag.Name.Length > 0 && char.IsUpper(tag.Name[0]) ? NpmMetadataKind.Component : NpmMetadataKind.None;
+    }
+
+    internal static NpmMetadataKind CompletionMetadata(JoltProjectedDocument document, SourceText text, int offset, CancellationToken cancellationToken)
+    {
+        var mapping = document.Spans.FirstOrDefault(span => span.Source.Contains(offset) || span.Source.End == offset);
+        if (mapping is not null)
+        {
+            var position = mapping.Generated.Start + Math.Min(offset - mapping.Source.Start, mapping.Generated.Length);
+            return NpmValueReceiver(document.SemanticModel, position - 1, trailingDot: false, cancellationToken) is null
+                ? NpmMetadataKind.None : NpmMetadataKind.BoundProject;
+        }
+        if (offset > 0 && text[offset - 1] == '.' &&
+            document.Spans.FirstOrDefault(span => span.Source.Length > 0 && span.Source.End == offset - 1) is { } receiver)
+            return NpmValueReceiver(document.SemanticModel, receiver.Generated.End, trailingDot: true, cancellationToken) is null
+                ? NpmMetadataKind.None : NpmMetadataKind.BoundProject;
+        int start = offset;
+        while (start > 0 && IsMarkupNameCharacter(text[start - 1]))
+            start--;
+        if (start > 0 && text[start - 1] == '<')
+        {
+            // Local and npm component names can share a prefix. Both belong in the same tag list.
+            return start == offset || char.IsUpper(text[start]) ? NpmMetadataKind.TagNames : NpmMetadataKind.None;
+        }
+        var elements = JoltTree.Elements(document.Document).Where(element => element.Span.Start <= offset && offset <= element.Span.End)
+            .OrderBy(element => element.Span.Length).Take(2).ToArray();
+        if (elements.Length == 0)
+            return NpmMetadataKind.None;
+        var tag = elements[0];
+        if (tag.Name == "template" && start > 0 && text[start - 1] == '#' && elements.Length == 2)
+            return IsPackageTag(elements[1]) ? NpmMetadataKind.Component : NpmMetadataKind.None;
+        if (IsPackageTag(tag))
+        {
+            var afterAttribute = tag.Attributes.Where(attribute => attribute.Span.End <= offset).Select(attribute => attribute.Span.End)
+                .DefaultIfEmpty(tag.NameSpan.End).Max();
+            if (tag.Attributes.Any(attribute => attribute.Span.Contains(offset)) ||
+                offset >= afterAttribute && !text.ToString(TextSpan.FromBounds(afterAttribute, offset)).Contains('>'))
+                return NpmMetadataKind.Component;
+        }
+        return NpmMetadataKind.None;
+
+        bool IsPackageTag(JoltElement element) => element.Name.Length > 0 && char.IsUpper(element.Name[0]) &&
+            !document.LocalComponents.Any(local => local.Name == element.Name);
+    }
+
+    internal sealed record NpmImportTarget(string Scope, bool Alias, LinePositionSpan Replacement)
+    {
+        internal object[] Completions(IEnumerable<string> modules)
+        {
+            var range = Server.Range(Replacement);
+            return modules.Select(NpmNames.NamespaceFor)
+                .Select(name => Alias ? name + ".Exports" : name)
+                .Where(name => name.StartsWith(Scope, StringComparison.Ordinal))
+                .Select(name => name[Scope.Length..].Split('.')[0]).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)
+                .Select(name => (object)new { label = name, kind = name == "Exports" ? 7 : 9, textEdit = new { range, newText = name } }).ToArray();
+        }
+    }
+
+    internal static NpmImportTarget? FindNpmImportTarget(SourceText text, int offset, string path)
+    {
+        var line = text.Lines.GetLineFromPosition(offset);
+        if (!text.ToString(line.Span).TrimStart().StartsWith("@using", StringComparison.Ordinal))
+            return null;
+        var directive = JoltParser.Parse(text.ToString(), path).Nodes.OfType<JoltUsing>()
+            .FirstOrDefault(use => offset >= use.CodeSpan.Start && offset <= use.CodeSpan.End);
+        if (directive is null)
+            return null;
+        var target = text.ToString(TextSpan.FromBounds(directive.CodeSpan.Start, offset));
+        var aliasEnd = target.IndexOf('=');
+        target = target[(aliasEnd + 1)..].TrimStart();
+        if (target.StartsWith("global::", StringComparison.Ordinal))
+            target = target["global::".Length..];
+        if (!target.StartsWith("Npm.", StringComparison.Ordinal))
+            return null;
+        var scopeEnd = target.LastIndexOf('.') + 1;
+        var scope = target[..scopeEnd];
+        var end = offset;
+        while (end < line.End && SyntaxFacts.IsIdentifierPartCharacter(text[end]))
+            end++;
+        return new(scope, aliasEnd >= 0, text.Lines.GetLinePositionSpan(TextSpan.FromBounds(offset - (target.Length - scopeEnd), end)));
     }
 
     private object[] MarkupCompletion(int offset, JoltElement? element, JoltAttribute? attribute, NpmVueComponent? component,

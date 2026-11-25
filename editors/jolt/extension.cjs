@@ -15,7 +15,7 @@ async function activate(context) {
         : { command: 'jolt', args: ['lsp'] };
     const command = !server ? installed
         : server.endsWith('.dll') ? { command: 'dotnet', args: [server] } : { command: server, args: ['lsp'] };
-    const watcher = vscode.workspace.createFileSystemWatcher('**/{*.jazor,*.vue,*.ts,*.tsx,*.mts,*.cts,*.js,*.jsx,*.mjs,tsconfig*.json,package.json,pnpm-lock.yaml,.npmrc}');
+    const watcher = vscode.workspace.createFileSystemWatcher('**/{*.jazor,*.cs,*.vue,*.ts,*.tsx,*.mts,*.cts,*.js,*.jsx,*.mjs,tsconfig*.json,package.json,pnpm-lock.yaml,.npmrc}');
     const declarations = vscode.workspace.createFileSystemWatcher('**/node_modules/**/*.{d.ts,d.mts,d.cts}');
     context.subscriptions.push(watcher, declarations);
     client = new LanguageClient('jolt', 'Jolt', command, {
@@ -23,11 +23,11 @@ async function activate(context) {
         synchronize: { fileEvents: [watcher, declarations] },
     });
     await client.start();
-    // Forward buffers without registering Jolt's authoring features for Vue or TypeScript.
-    const vueBuffer = document => document.uri.scheme === 'file' && /\.(vue|ts|tsx|mts|cts|js|jsx|mjs)$/.test(document.fileName);
+    // Forward buffers without registering Jolt's authoring features for other languages.
+    const sharedBuffer = document => document.uri.scheme === 'file' && /\.(cs|vue|ts|tsx|mts|cts|js|jsx|mjs)$/.test(document.fileName);
     const identifier = document => ({ uri: document.uri.toString(), version: document.version });
     const open = document => {
-        if (vueBuffer(document))
+        if (sharedBuffer(document))
             return client.sendNotification('textDocument/didOpen', {
                 textDocument: { ...identifier(document), languageId: document.languageId, text: document.getText() },
             });
@@ -35,13 +35,13 @@ async function activate(context) {
     context.subscriptions.push(
         vscode.workspace.onDidOpenTextDocument(open),
         vscode.workspace.onDidChangeTextDocument(({ document, contentChanges }) => {
-            if (vueBuffer(document) && contentChanges.length > 0)
+            if (sharedBuffer(document) && contentChanges.length > 0)
                 return client.sendNotification('textDocument/didChange', {
                     textDocument: identifier(document), contentChanges: [{ text: document.getText() }],
                 });
         }),
         vscode.workspace.onDidCloseTextDocument(document => {
-            if (vueBuffer(document))
+            if (sharedBuffer(document))
                 return client.sendNotification('textDocument/didClose', { textDocument: identifier(document) });
         }),
     );

@@ -25,9 +25,11 @@ var (executable, arguments) = args switch
     ["--npm-values"] => ("dotnet", new[] { "run", "--project", "src/Jolt.LanguageServer", "--no-build" }),
     ["--local-vue", var cli] => (Path.GetFullPath(cli), new[] { "lsp" }),
     ["--local-vue"] => ("dotnet", new[] { "run", "--project", "src/Jolt.LanguageServer", "--no-build" }),
+    ["--shared-csharp", var cli] => (Path.GetFullPath(cli), new[] { "lsp" }),
+    ["--shared-csharp"] => ("dotnet", new[] { "run", "--project", "src/Jolt.LanguageServer", "--no-build" }),
     [var cli] => (Path.GetFullPath(cli), new[] { "lsp" }),
     [] => ("dotnet", new[] { "run", "--project", "src/Jolt.LanguageServer", "--no-build" }),
-    _ => throw new ArgumentException("Usage: verify.cs [--editor-only | --npm-values | --local-vue] [path to Jolt CLI apphost] | verify.cs --router <path to Jolt CLI apphost> | verify.cs --benchmark-mixed <rounds> <path to Jolt CLI apphost>"),
+    _ => throw new ArgumentException("Usage: verify.cs [--editor-only | --npm-values | --local-vue | --shared-csharp] [path to Jolt CLI apphost] | verify.cs --router <path to Jolt CLI apphost> | verify.cs --benchmark-mixed <rounds> <path to Jolt CLI apphost>"),
 };
 var start = new ProcessStartInfo(executable) { RedirectStandardInput = true, RedirectStandardOutput = true };
 start.Environment["JazorPnpmStoreDirectory"] = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ??
@@ -71,9 +73,12 @@ try
         await process.WaitForExitAsync(token);
         return;
     }
-    if (args.FirstOrDefault() == "--local-vue")
+    if (args.FirstOrDefault() is "--local-vue" or "--shared-csharp")
     {
-        await VerifyLocalVueAsync();
+        if (args[0] == "--shared-csharp")
+            await VerifySharedCSharpAsync();
+        else
+            await VerifyLocalVueAsync();
         await Send("shutdown", new { }, 40);
         await Response(40);
         await Send("exit", new { });
@@ -91,6 +96,7 @@ try
         await process.WaitForExitAsync(token);
         return;
     }
+    await VerifyAuthoringCompletionAsync();
     await Send("textDocument/didOpen", new { textDocument = new { uri, version = 1, languageId = "jazor", text = "<p>@Count</p>\n@code { private int Count = 1; }" } });
     await Send("textDocument/definition", new { textDocument = new { uri }, position = new { line = 0, character = 6 } }, 2);
     var location = await Response(2);
@@ -103,17 +109,17 @@ try
     await Send("completionItem/resolve", countItem, 20);
     if ((await Response(20)).GetProperty("documentation").GetString()?.Contains("int", StringComparison.Ordinal) != true)
         throw new InvalidOperationException("Roslyn completion did not return type information for Count.");
-    var metadataDirectory = Path.Combine(project.FullName, ".jazor", $"vue-metadata-{Guid.NewGuid():N}");
-    var metadataResources = new[] { "metadata.mjs", "vue-contract.mjs", "vue-source.mjs", "vue-template-text.mjs" };
+    var metadataDirectories = new[] { "vue-metadata-", "npm-metadata-" }
+        .Select(prefix => Path.Combine(project.FullName, ".jazor", prefix + Guid.NewGuid().ToString("N")));
     // Replay create/delete notifications for resources that may already be gone when the editor reports them.
     await Send("workspace/didChangeWatchedFiles", new
     {
-        changes = metadataResources.SelectMany(file => new[] { 1, 3 }.Select(type =>
-            new { uri = ClientUri(Path.Combine(metadataDirectory, file)), type })),
+        changes = metadataDirectories.SelectMany(directory => new[] { 1, 3 }.Select(type =>
+            new { uri = ClientUri(Path.Combine(directory, "metadata.mjs")), type })),
     });
     await Send("completionItem/resolve", countItem, 210);
     if (!(await Response(210)).TryGetProperty("documentation", out _))
-        throw new InvalidOperationException("Internal Vue tooling events invalidated the current Jolt snapshot.");
+        throw new InvalidOperationException("Internal metadata tooling events invalidated the current Jolt snapshot.");
 
     await Send("workspace/didChangeWatchedFiles", new
     {
@@ -148,6 +154,7 @@ try
     await VerifyEditingAsync();
     await VerifyLocalGenericAsync();
     await VerifySharedImportsAsync();
+    await VerifyNpmImportCompletionAsync();
     await VerifyLocalModelAsync();
     await VerifyVueBuiltInsAsync();
     await VerifyDirectivesAsync(capabilities.GetProperty("semanticTokensProvider").GetProperty("legend").GetProperty("tokenTypes"));
@@ -176,20 +183,27 @@ try
     if (!(await Response(42)).EnumerateArray().Any(item => item.GetProperty("label").GetString() == "Count"))
         throw new InvalidOperationException("Local completion must work during the first npm restore.");
     Console.WriteLine($"During npm restore, local navigation took {definitionTime} ms and local completion was available after {npmTime.ElapsedMilliseconds} ms.");
-    await WaitForNpmAsync(3);
-    Console.WriteLine($"Initial npm declarations were ready after {npmTime.ElapsedMilliseconds} ms.");
+    // F12 can be the first package request after opening a file; no earlier completion should be required.
+    await At("definition", 6, 1, 4);
+    var packageDefinition = (await Response(6)).GetProperty("uri").GetString();
+    if (packageDefinition is null || !packageDefinition.Contains("/reka-ui/", StringComparison.Ordinal) || !packageDefinition.EndsWith(".d.ts", StringComparison.Ordinal))
+        throw new InvalidOperationException($"Unexpected npm component declaration: {packageDefinition}");
+    Console.WriteLine($"Initial npm component definition was ready after {npmTime.ElapsedMilliseconds} ms.");
+    await At("signatureHelp", 44, 1, 18);
+    if ((await Response(44)).ValueKind != JsonValueKind.Null)
+        throw new InvalidOperationException("A markup attribute name must not return a C# signature or definition as signature help.");
     await Send("textDocument/completion", new { textDocument = new { uri }, position = new { line = 1, character = 5 } }, 4);
     if (!(await Response(4)).EnumerateArray().Any(item => item.GetProperty("label").GetString() == "CollapsibleRoot"))
         throw new InvalidOperationException("Missing package export completion.");
+    Console.WriteLine($"Initial npm component completion was ready after {npmTime.ElapsedMilliseconds} ms.");
+    await At("completion", 43, 1, 17);
+    var propItem = (await Response(43)).EnumerateArray().Single(item => item.GetProperty("label").GetString() == "Open");
+    CheckEdit(propItem, "Open", 17, 21);
     await Send("textDocument/hover", new { textDocument = new { uri }, position = new { line = 1, character = 18 } }, 5);
     var openHover = (await Response(5)).GetProperty("contents").GetProperty("value").GetString();
     if (openHover?.StartsWith("Open: boolean", StringComparison.Ordinal) != true ||
         !openHover.Contains("The controlled open state of the collapsible.", StringComparison.Ordinal))
         throw new InvalidOperationException($"Expected the declared type and Reka UI's documentation for Open: {openHover}");
-    await Send("textDocument/definition", new { textDocument = new { uri }, position = new { line = 1, character = 4 } }, 6);
-    var packageDefinition = (await Response(6)).GetProperty("uri").GetString();
-    if (packageDefinition is null || !packageDefinition.Contains("/reka-ui/", StringComparison.Ordinal) || !packageDefinition.EndsWith(".d.ts", StringComparison.Ordinal))
-        throw new InvalidOperationException($"Unexpected npm component declaration: {packageDefinition}");
     const string signatureSource = "<p>@(Format(1))</p>\n@code { private string Format(int value) => value.ToString(); }";
     await Send("textDocument/didChange", new { textDocument = new { uri, version = 4 }, contentChanges = new[] { new { text = signatureSource } } });
     await Send("textDocument/didChange", new { textDocument = new { uri, version = 3 }, contentChanges = new[] { new { text = "<p>Stale</p>" } } });
@@ -218,7 +232,9 @@ try
         throw new InvalidOperationException($"Incorrect local prop declaration: {field}");
     const string slot = "@using Npm.RekaUi\n<CollapsibleRoot><template #default context=\"scope\"><p>@scope.open</p></template></CollapsibleRoot>";
     await Send("textDocument/didChange", new { textDocument = new { uri, version = 6 }, contentChanges = new[] { new { text = slot } } });
-    await WaitForNpmAsync(6);
+    await At("hover", 45, 1, slot.Split('\n')[1].IndexOf("#default", StringComparison.Ordinal) + 2);
+    if (!(await Response(45)).GetProperty("contents").GetProperty("value").GetString()!.Contains("open: boolean", StringComparison.Ordinal))
+        throw new InvalidOperationException("Hover on an npm slot should use the parent component's typed slot contract.");
     await At("completion", 10, 1, slot.Split('\n')[1].IndexOf("#default", StringComparison.Ordinal) + 2);
     var scoped = (await Response(10)).EnumerateArray().Single(item => item.GetProperty("label").GetString() == "default");
     if (!scoped.GetProperty("detail").GetString()!.Contains("open: boolean", StringComparison.Ordinal))
@@ -741,7 +757,6 @@ async Task VerifyNpmValuesAsync()
     await WriteDependency(first, "sha512-VhMc6IXmexu8iYFfL2aaAww6IvJTdHlqBLruLoEUs33YD4IcP5DdZcLOybMsMmmLsiy1c8PsiLsrM0DdIuuRUA==");
     await Send("textDocument/didOpen", new { textDocument = new { imports.uri, version = 1, languageId = "jazor", text = importText } });
     await Send("textDocument/didOpen", new { textDocument = new { document.uri, version = 1, languageId = "jazor", text = "<p>@Text.</p>" } });
-    await Ready(1);
     await Request("completion", 200, 9);
     var completion = (await Response(200)).EnumerateArray().Single(item => item.GetProperty("label").GetString() == "CamelCase");
     if (completion.GetProperty("kind").GetInt32() != 2)
@@ -1399,6 +1414,182 @@ async Task VerifyEditingAsync()
     }
 }
 
+async Task VerifySharedCSharpAsync()
+{
+    await File.WriteAllTextAsync(Path.Combine(project.FullName, "package.json"),
+        """{"name":"shared-csharp","jolt":{"csharpSources":["Shared/**/*.cs"]}}""", token);
+    var shared = project.CreateSubdirectory("Shared");
+    var source = Path.Combine(shared.FullName, "Contract.cs");
+    var sourceUri = ClientUri(source);
+    const string integer = "namespace Contracts; public static class Contract { public static int Value(int argument = 1) => argument; }";
+    const string text = "namespace Contracts;\r\npublic static class Contract { /* 🐈 */ public static string Value(string argument = \"text\") => argument; }";
+    await File.WriteAllTextAsync(source, integer, token);
+    await Send("textDocument/didOpen", new
+    {
+        textDocument = new { uri, version = 1, languageId = "jazor", text = "@code { private void Use() { var result = Contracts.Contract.Value(); } }" },
+    });
+    await ExpectHoverAsync(2001, "int");
+    await ExpectDefinitionAsync(2009, source, integer);
+    await Send("textDocument/didOpen", new
+    {
+        textDocument = new { uri = sourceUri, version = 1, languageId = "csharp", text = integer },
+    });
+    await Send("textDocument/didChange", new
+    {
+        textDocument = new { uri = sourceUri, version = 2 },
+        contentChanges = new[] { new { text } },
+    });
+    await ExpectHoverAsync(2002, "string");
+    await ExpectDefinitionAsync(2010, source, text);
+    await Send("textDocument/didClose", new { textDocument = new { uri = sourceUri } });
+    await ExpectHoverAsync(2003, "int");
+    await ExpectDefinitionAsync(2011, source, integer);
+
+    await File.WriteAllTextAsync(source, text, token);
+    await NotifyFileAsync(source, 2);
+    await ExpectHoverAsync(2004, "string");
+    await Send("textDocument/completion", new { textDocument = new { uri }, position = new { line = 0, character = 63 } }, 2005);
+    var item = (await Response(2005)).EnumerateArray().Single(value => value.GetProperty("label").GetString() == "Value");
+
+    foreach (var unrelated in new[]
+    {
+        Path.Combine(project.FullName, "Other.cs"),
+        Path.Combine(shared.FullName, "obj", "Generated.cs"),
+        Path.Combine(shared.FullName, "bin", "Generated.cs"),
+    })
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(unrelated)!);
+        await File.WriteAllTextAsync(unrelated, integer, token);
+        await NotifyFileAsync(unrelated, 1);
+    }
+    await Send("completionItem/resolve", item, 2006);
+    if (!(await Response(2006)).TryGetProperty("documentation", out _))
+        throw new InvalidOperationException("An unrelated C# file event invalidated the current Jolt snapshot.");
+
+    File.Delete(source);
+    await NotifyFileAsync(source, 3);
+    await ExpectHoverAsync(2007, null);
+    await ExpectDefinitionAsync(2012, null, null);
+    var replacement = Path.Combine(shared.FullName, "Replacement.cs");
+    await File.WriteAllTextAsync(replacement, integer, token);
+    await NotifyFileAsync(replacement, 1);
+    await ExpectHoverAsync(2008, "int");
+    await ExpectDefinitionAsync(2013, replacement, integer);
+    Console.WriteLine("Shared C# definitions, unsaved ranges, saves, additions, deletions and ignored files verified.");
+
+    Task NotifyFileAsync(string file, int type) => Send("workspace/didChangeWatchedFiles",
+        new { changes = new[] { new { uri = ClientUri(file), type } } });
+
+    async Task ExpectHoverAsync(int id, string? type)
+    {
+        await Send("textDocument/hover", new { textDocument = new { uri }, position = new { line = 0, character = 65 } }, id);
+        var hover = await Response(id);
+        if (type is null ? hover.ValueKind != JsonValueKind.Null : !hover.ToString().Contains("Contracts.Contract.Value(" + type, StringComparison.Ordinal))
+            throw new InvalidOperationException($"Expected shared C# hover '{type ?? "(none)"}', got {hover}.");
+    }
+
+    async Task ExpectDefinitionAsync(int id, string? target, string? content)
+    {
+        await Send("textDocument/definition", new { textDocument = new { uri }, position = new { line = 0, character = 65 } }, id);
+        var definition = await Response(id);
+        if (target is null)
+        {
+            if (definition.ValueKind != JsonValueKind.Null)
+                throw new InvalidOperationException($"Expected no shared C# definition after deletion, got {definition}.");
+            return;
+        }
+        var lines = content!.Split('\n');
+        var line = Array.FindIndex(lines, item => item.Contains("Value(", StringComparison.Ordinal));
+        var character = lines[line].IndexOf("Value(", StringComparison.Ordinal);
+        if (definition.ValueKind != JsonValueKind.Object || definition.GetProperty("uri").GetString() != new Uri(target).AbsoluteUri)
+            throw new InvalidOperationException($"Expected a shared C# definition in '{target}', got {definition}.");
+        var range = definition.GetProperty("range");
+        var start = range.GetProperty("start");
+        var end = range.GetProperty("end");
+        if (start.GetProperty("line").GetInt32() != line || end.GetProperty("line").GetInt32() != line ||
+            start.GetProperty("character").GetInt32() != character || end.GetProperty("character").GetInt32() != character + "Value".Length)
+            throw new InvalidOperationException($"Unexpected shared C# definition range: {range}.");
+    }
+}
+
+async Task VerifyAuthoringCompletionAsync()
+{
+    var cases = new (string Source, string Label, int ReplaceStart)[]
+    {
+        ("<", "button", 1),
+        ("<button ", "@key", 8),
+        ("<button ", "type", 8),
+        ("<input @on", "@oninput", 7),
+        ("", "@code", 0),
+        ("@", "@code", 0),
+        ("@co", "@code", 0),
+        ("<p>@i", "@if", 3),
+    };
+    var authorUri = ClientUri(Path.Combine(project.FullName, "Starter.jazor"));
+    await Send("textDocument/didOpen", new { textDocument = new { uri = authorUri, version = 1, languageId = "jazor", text = "" } });
+    for (var index = 0; index < cases.Length; index++)
+    {
+        var (source, label, replaceStart) = cases[index];
+        await Send("textDocument/didChange", new { textDocument = new { uri = authorUri, version = index + 2 }, contentChanges = new[] { new { text = source } } });
+        var id = 560 + index;
+        await Send("textDocument/completion", new { textDocument = new { uri = authorUri }, position = new { line = 0, character = source.Length } }, id);
+        var result = await Response(id);
+        if (result.ValueKind != JsonValueKind.Array || result.EnumerateArray()
+            .FirstOrDefault(item => item.GetProperty("label").GetString() == label) is not { ValueKind: JsonValueKind.Object } completion)
+            throw new InvalidOperationException($"Missing '{label}' completion after '{source}'.");
+        var edit = completion.GetProperty("textEdit");
+        var range = edit.GetProperty("range");
+        if (range.GetProperty("start").GetProperty("character").GetInt32() != replaceStart ||
+            range.GetProperty("end").GetProperty("character").GetInt32() != source.Length ||
+            edit.GetProperty("newText").GetString() != label)
+            throw new InvalidOperationException($"Unexpected edit for '{label}' after '{source}': {edit}");
+    }
+    await Send("textDocument/didClose", new { textDocument = new { uri = authorUri } });
+    Console.WriteLine("Verified blank-file directives, partial Razor and HTML names, and DOM event completion edits.");
+
+    const string loop = "@foreach (var __joltItem in Items) { <span>@__joltItem</span> }\n@code { private string[] Items = []; }";
+    var expression = loop.IndexOf("@__joltItem", StringComparison.Ordinal) + "@__jolt".Length;
+    await Send("textDocument/didOpen", new { textDocument = new { uri = authorUri, version = 1, languageId = "jazor", text = loop } });
+    await Send("textDocument/completion", new { textDocument = new { uri = authorUri }, position = new { line = 0, character = expression } }, 575);
+    var locals = (await Response(575)).EnumerateArray().Select(item => item.GetProperty("label").GetString()).ToArray();
+    if (!locals.Contains("__joltItem") || locals.Any(name => name!.StartsWith("__joltNodes", StringComparison.Ordinal)))
+        throw new InvalidOperationException("Template completion must preserve author locals and hide generated render temporaries.");
+    await Send("textDocument/didClose", new { textDocument = new { uri = authorUri } });
+}
+
+async Task VerifyNpmImportCompletionAsync()
+{
+    var directory = project.CreateSubdirectory("PackageImports");
+    await File.WriteAllTextAsync(Path.Combine(directory.FullName, "package.json"),
+        """{"dependencies":{"@example/widgets":"1.0.0","example-utils":"1.0.0"}}""", token);
+    foreach (var (file, source, expected) in new[]
+    {
+        ("Page.jazor", "@using Npm.", "ExampleUtils"),
+        ("Page.jazor", "@using Widgets = global::Npm.Ex", "Example"),
+        ("_Imports.jazor", "@using Widget = Npm.Example.Wi", "Widgets"),
+    })
+    {
+        var target = ClientUri(Path.Combine(directory.FullName, file));
+        await Send("textDocument/didOpen", new { textDocument = new { uri = target, version = 1, languageId = "jazor", text = source } });
+        await Send("textDocument/completion", new { textDocument = new { uri = target }, position = new { line = 0, character = source.Length } }, 880);
+        var item = (await Response(880)).EnumerateArray().Single(entry => entry.GetProperty("label").GetString() == expected);
+        CheckEdit(item, expected, source.LastIndexOf('.') + 1, source.Length);
+        await Send("textDocument/didClose", new { textDocument = new { uri = target } });
+    }
+
+    // A broken shared C# source can prevent a project snapshot. Root npm names still come from the local manifest.
+    var cold = directory.CreateSubdirectory("Cold");
+    await File.WriteAllTextAsync(Path.Combine(cold.FullName, "package.json"),
+        """{"optionalDependencies":{"cold-package":"1.0.0"},"jolt":{"csharpSources":["missing.cs"]}}""", token);
+    var coldUri = ClientUri(Path.Combine(cold.FullName, "New.jazor"));
+    const string partial = "@using Npm.ColdPkg";
+    await Send("textDocument/didOpen", new { textDocument = new { uri = coldUri, version = 1, languageId = "jazor", text = partial } });
+    await Send("textDocument/completion", new { textDocument = new { uri = coldUri }, position = new { line = 0, character = 13 } }, 881);
+    var root = (await Response(881)).EnumerateArray().Single();
+    CheckEdit(root, "ColdPackage", "@using Npm.".Length, partial.Length);
+    await Send("textDocument/didClose", new { textDocument = new { uri = coldUri } });
+}
+
 async Task VerifyAutoImportAsync()
 {
     var first = project.CreateSubdirectory("Widgets");
@@ -1508,6 +1699,18 @@ async Task VerifyEditorAsync(JsonElement legend)
     }, 24);
     if (!(await Response(24)).EnumerateArray().Any(item => item.GetProperty("label").GetString() == "header"))
         throw new InvalidOperationException("Local slot completion was missing.");
+
+    var edited = source.Replace("private int Count;", "private int Count { get; set; }", StringComparison.Ordinal);
+    lines = edited.Split('\n');
+    await Send("textDocument/didChange", new
+    {
+        textDocument = new { uri = editorUri, version = 2 }, contentChanges = new[] { new { text = edited } },
+    });
+    await Send("textDocument/semanticTokens/full", new { textDocument = editorDocument }, 2401);
+    var updated = ReadTokens(await Response(2401));
+    if (!updated.Contains((0, "Count", "property name")) || !updated.Contains((4, "Count", "property name")) ||
+        updated.Any(token => token.Item2 == "Count" && token.Item3 == "field name"))
+        throw new InvalidOperationException("An unsaved field-to-property edit must reclassify the declaration and its template uses.");
 
     await Send("textDocument/didClose", new { textDocument = editorDocument });
     File.Delete(child);

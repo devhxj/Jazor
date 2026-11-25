@@ -246,11 +246,24 @@ public sealed class ProjectImportsTests
                 ObserveQueryInputs = _ => queries++,
             };
 
-            var workspace = await JoltProjectLoader.LoadAsync(root.FullName, provider, overlays);
+            var sources = await JoltProjectLoader.LoadSourcesAsync(root.FullName, overlays, CancellationToken.None);
+            var progress = new JoltNpmLoadProgress();
+            var catalogAvailableAtContracts = false;
+            provider.ObserveQueryInputs = _ =>
+            {
+                queries++;
+                if (queries == 2)
+                    catalogAvailableAtContracts = progress.Catalog.Task.IsCompletedSuccessfully &&
+                        !progress.Components.Task.IsCompleted;
+            };
+            var workspace = await JoltProjectLoader.LoadNpmAsync(root.FullName, sources, provider, CancellationToken.None, progress);
             Assert.IsEmpty(workspace.Diagnostics, string.Join(Environment.NewLine, workspace.Diagnostics));
             Assert.AreEqual(2, queries, "The export catalog and all requested component contracts should each be read once.");
+            Assert.IsTrue(catalogAvailableAtContracts, "The catalog should be available while component contracts are still loading.");
+            Assert.AreSame(workspace.Exports, await progress.Catalog.Task);
             CollectionAssert.AreEqual(new[] { "Card", "Dialog", "Unused" }, workspace.Exports["component-fixture"].ToArray());
             var components = workspace.Options.NpmComponents!;
+            CollectionAssert.AreEqual(components.ToArray(), (await progress.Components.Task).ToArray());
             CollectionAssert.AreEqual(new[] { "Card", "Dialog" }, components.Select(component => component.ExportName).ToArray());
             Assert.AreEqual("string", components[0].Props["label"].Type);
             Assert.AreEqual("boolean", components[1].Props["open"].Type);
@@ -326,9 +339,16 @@ public sealed class ProjectImportsTests
 
             // Windows keeps pnpm's native addon loaded until the test host exits. Keep the engine outside the disposable store.
             var engineCache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Jolt", "pnpm-store");
-            var provider = new NpmVueMetadataProvider(Path.Combine(root.FullName, ".pnpm-store"), engineCache);
-            var workspace = await JoltProjectLoader.LoadAsync(root.FullName, provider);
+            var progress = new JoltNpmLoadProgress();
+            var componentsAvailableAtValues = false;
+            var provider = new NpmVueMetadataProvider(Path.Combine(root.FullName, ".pnpm-store"), engineCache)
+            {
+                ObserveQueryInputs = _ => componentsAvailableAtValues = progress.Components.Task.IsCompletedSuccessfully,
+            };
+            var sources = await JoltProjectLoader.LoadSourcesAsync(root.FullName, null, CancellationToken.None);
+            var workspace = await JoltProjectLoader.LoadNpmAsync(root.FullName, sources, provider, CancellationToken.None, progress);
             Assert.IsEmpty(workspace.Diagnostics, string.Join(Environment.NewLine, workspace.Diagnostics));
+            Assert.IsTrue(componentsAvailableAtValues, "Value queries should begin after the component phase is available.");
             CollectionAssert.AreEquivalent(new[] { "title", "default", "theme" }, workspace.Options.NpmValues.Select(value => value.ExportName).ToArray());
             Assert.AreEqual("value-fixture/editor/editor.api.js", workspace.Options.NpmValues.Single(value => value.ExportName == "theme").ModuleSpecifier);
             var analysis = JoltProjectCompiler.Analyze(workspace.Sources, workspace.Options);

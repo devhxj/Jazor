@@ -31,7 +31,7 @@ public sealed class JoltLanguageClient : ILanguageClient
     public object InitializationOptions => new { visualStudioClassifications = true };
     public IEnumerable<string> FilesToWatch { get; } = new[]
         {
-            "**/*.jazor", "**/*.vue", "**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs",
+            "**/*.jazor", "**/*.cs", "**/*.vue", "**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs",
             "**/tsconfig*.json", "**/package.json", "**/pnpm-lock.yaml", "**/.npmrc",
             "**/node_modules/**/*.d.ts", "**/node_modules/**/*.d.mts", "**/node_modules/**/*.d.cts",
         };

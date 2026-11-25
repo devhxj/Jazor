@@ -48,6 +48,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
     private readonly List<(TextSpan Generated, (int Source, string Path) Site, ComponentContract Component, JoltAttribute?[] Explicit)> _typeProbes = [];
     private (CSharpParseOptions Options, (JoltCode Block, ClassDeclarationSyntax Declaration)[] Blocks)? _authorCode;
     private IReadOnlyList<ComponentContract> _components = [];
+    private ILookup<string, ComponentContract>? _componentsByName;
     internal IReadOnlyList<ComponentContract> VisibleComponents => _components;
     private bool _componentsAvailable;
     private IReadOnlyDictionary<(int Source, string Path), ComponentTypeBinding>? _typeArguments;
@@ -79,6 +80,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
         _typeProbes.Clear();
         _nextLocal = 0;
         _components = components ?? [];
+        _componentsByName = components?.ToLookup(component => component.Name, StringComparer.Ordinal);
         _componentsAvailable = components is not null;
         _typeArguments = typeArguments;
         _probeTypeArguments = probeTypeArguments;
@@ -556,7 +558,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             return;
         }
 
-        var candidates = _components.Where(component => component.Name == element.Name).ToArray();
+        var candidates = _componentsByName![element.Name].ToArray();
         var component = candidates.Length switch
         {
             0 => VueBuiltIns.Find(element.Name),
@@ -912,7 +914,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             }
 
             var span = directive?.NameSpan ?? template.NameSpan;
-            if (directive is null && _components.Any(candidate => candidate.Name == template.Name))
+            if (directive is null && _componentsByName!.Contains(template.Name))
             {
                 Report("JOLT1007", span, $"'{template.Name}' names both a child component and a slot. Use <template #{slot}> to select the slot or place the component inside <ChildContent>.");
                 continue;

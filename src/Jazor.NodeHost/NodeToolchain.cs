@@ -5,7 +5,7 @@ namespace Jazor.NodeHost;
 
 internal static class NodeToolchain
 {
-    private static readonly EmbeddedNodeModule Bridge = new(typeof(NodeToolchain), "toolchain.cjs");
+    internal static readonly EmbeddedNodeModule Bridge = new(typeof(NodeToolchain), "toolchain.cjs");
     private static readonly string LightningCssWasmVersion = typeof(NodeToolchain).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
         .Single(attribute => attribute.Key == "LightningCssWasmVersion").Value!;
@@ -16,7 +16,8 @@ internal static class NodeToolchain
         var bootstrap = await PnpmBootstrap.EnsureAsync(engineCacheDirectory ?? storeDirectory, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         using var environment = new NodeEnvironment(projectDirectory, progress);
-        var result = await environment.InvokeAsync(MaterializeBridge(projectDirectory), "restore",
+        // Finish the active pnpm transaction before observing cancellation.
+        var result = await Bridge.InvokeAsync(environment, projectDirectory, "restore", CancellationToken.None,
             JsonSerializer.Serialize(new { projectDirectory, storeDirectory, bootstrap, standaloneTool,
                 engineVersion = PnpmBootstrap.Version, lightningCssWasmVersion = LightningCssWasmVersion }));
         progress?.WriteLine("[Jazor NodeApi] " + result);

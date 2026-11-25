@@ -36,9 +36,13 @@
                       Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <Exec Command="$(_JazorToolCommand) --sdk-npm-editor-inputs &quot;$(_JazorNpmEditorRequest)&quot; &quot;$(_JazorNpmEditorInputs)&quot;" />
     <ReadLinesFromFile File="$(_JazorNpmEditorInputs)">
-      <Output TaskParameter="Lines" ItemName="AdditionalFiles" />
+      <Output TaskParameter="Lines" ItemName="_JazorNpmEditorAdditionalFile" />
     </ReadLinesFromFile>
     <ItemGroup>
+      <!-- The IDE watches declared paths for file creation. Csc itself rejects
+           missing AdditionalFiles when executing a design-time compilation. -->
+      <AdditionalFiles Include="@(_JazorNpmEditorAdditionalFile)"
+                       Condition="'$(SkipCompilerExecution)' == 'true' or Exists('%(_JazorNpmEditorAdditionalFile.Identity)')" />
       <FileWrites Include="$(_JazorNpmEditorRequest);$(_JazorNpmEditorInputs)" />
     </ItemGroup>
   </Target>

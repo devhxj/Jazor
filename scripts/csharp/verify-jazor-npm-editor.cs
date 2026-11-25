@@ -315,7 +315,13 @@ static async Task VerifyColdGenerationAsync(string scratch, string workspace, Ca
         throw new InvalidOperationException("The cold design-time C# project must contain only valid package roots without member projections.");
 
     await File.WriteAllTextAsync(source, consumer + "\n" + facade, stop);
+    // Match a C# project with ordinary feature folders alongside its npm workspace.
+    var unrelated = Directory.CreateDirectory(Path.Combine(workspace, "Unrelated")).FullName;
+    await File.WriteAllTextAsync(Path.Combine(unrelated, "Other.cs"), "namespace Unrelated; internal class Other { }", stop);
     await RunDotnetAsync(workspace, stop, build);
+    var editorInputs = Directory.EnumerateFiles(Path.Combine(workspace, "obj"), "Calendar.npm.editor.inputs", SearchOption.AllDirectories).Single();
+    if ((await File.ReadAllLinesAsync(editorInputs, stop)).Any(path => Path.GetDirectoryName(path) == unrelated))
+        throw new InvalidOperationException("A C# directory with no npm workspace added phantom npm inputs.");
 
     await File.WriteAllTextAsync(source, """
         using Clash = Npm.ColdClash.Exports;

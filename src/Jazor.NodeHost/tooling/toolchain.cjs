@@ -9,7 +9,24 @@ const exists = (file) => fs.access(file).then(() => true, () => false);
 const hash = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
 exports.executeModule = async (requestJson) => {
-    const { projectDirectory, modulePath, arguments: args, imports } = JSON.parse(requestJson);
+    const { projectDirectory, modulePath, arguments: args, imports, embeddedModules } = JSON.parse(requestJson);
+    if (embeddedModules) {
+        // Keep file URLs for native ESM package resolution, but serve our own checker modules from the assembly.
+        const modules = new Map(Object.entries(embeddedModules).map(([file, source]) =>
+            [pathToFileURL(path.join(path.dirname(modulePath), file)).href, source]));
+        require('node:module').registerHooks({
+            resolve(specifier, context, nextResolve) {
+                if (specifier.startsWith('./') || specifier.startsWith('file:')) {
+                    const url = new URL(specifier, context.parentURL).href;
+                    if (modules.has(url)) return { url, shortCircuit: true };
+                }
+                return nextResolve(specifier, context);
+            },
+            load(url, context, nextLoad) {
+                return modules.has(url) ? { format: 'module', source: modules.get(url), shortCircuit: true } : nextLoad(url, context);
+            },
+        });
+    }
     if (imports) {
         // Only test fixtures need an import map for their local host doubles.
         // Register an environment-owned ESM hook; production modules retain

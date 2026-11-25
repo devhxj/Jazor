@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using Jazor.Npm;
 using System.Text.Json;
 using Jolt.Compiler;
@@ -23,6 +24,27 @@ public sealed record JoltWorkspace(
     public IReadOnlyList<string> VuePaths { get; init; } = [];
     public IReadOnlyDictionary<string, string> VueSources { get; init; } = new Dictionary<string, string>();
     public bool VueUsesJolt { get; init; }
+    internal CSharpSourceSelection? CSharpSelection { get; init; }
+}
+
+internal sealed record CSharpSourceSelection(string Root, HashSet<string> ExplicitPaths, Matcher? Matcher)
+{
+    internal bool Includes(string path)
+    {
+        var relative = Path.GetRelativePath(Root, path).Replace(Path.DirectorySeparatorChar, '/');
+        return JoltProjectLoader.IsProjectRelative(relative) && (ExplicitPaths.Contains(relative) || Matcher is not null &&
+            Matcher.Match(Root, [relative]).HasMatches &&
+            JoltProjectLoader.IsCSharpDiscoveryPath(Root, relative));
+    }
+}
+
+internal sealed class JoltNpmLoadProgress
+{
+    internal TaskCompletionSource<IReadOnlyDictionary<string, IReadOnlyList<string>>> Catalog { get; } =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    internal TaskCompletionSource<IReadOnlyList<NpmVueComponent>> Components { get; } =
+        new(TaskCreationOptions.RunContinuationsAsynchronously);
 }
 
 public static class JoltProjectLoader
@@ -100,6 +122,7 @@ public static class JoltProjectLoader
         var packages = new SortedSet<string>(StringComparer.Ordinal);
         var rootNamespace = "App";
         IReadOnlyList<JoltSource> csharpSources = [];
+        CSharpSourceSelection? csharpSelection = null;
         bool router = false;
         if (File.Exists(manifest))
         {
@@ -111,7 +134,10 @@ public static class JoltProjectLoader
                     rootNamespace = ns.GetString() ?? rootNamespace;
                 router = options.TryGetProperty("router", out var routing) && routing.ValueKind == JsonValueKind.True;
                 if (options.TryGetProperty("csharpSources", out var configuredSources))
-                    csharpSources = await LoadCSharpSourcesAsync(root, configuredSources, overlays, cancellationToken);
+                {
+                    csharpSelection = ParseCSharpSelection(root, configuredSources);
+                    csharpSources = await LoadCSharpSourcesAsync(root, csharpSelection, overlays, cancellationToken);
+                }
             }
             foreach (var group in new[] { "dependencies", "devDependencies", "peerDependencies", "optionalDependencies" })
                 if (project.TryGetProperty(group, out var deps))
@@ -125,6 +151,7 @@ public static class JoltProjectLoader
         }, [], packages.ToArray(),
             new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal))
         {
+            CSharpSelection = csharpSelection,
             VuePaths = vuePaths.ToArray(),
             VueSources = vueSources,
         };
@@ -137,8 +164,7 @@ public static class JoltProjectLoader
             previous?.GetValueOrDefault(path) is { } last && last.Content == content ? last : new(path, content);
     }
 
-    private static async Task<JoltSource[]> LoadCSharpSourcesAsync(string root, JsonElement entries,
-        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken)
+    private static CSharpSourceSelection ParseCSharpSelection(string root, JsonElement entries)
     {
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var comparer = StringComparer.FromComparison(comparison);
@@ -160,12 +186,20 @@ public static class JoltProjectLoader
                 continue;
             }
 
-            var relative = Relative(Path.GetFullPath(configured, root));
+            var relative = Path.GetRelativePath(root, Path.GetFullPath(configured, root)).Replace(Path.DirectorySeparatorChar, '/');
             if (!IsProjectRelative(relative))
                 throw InvalidSource(configured);
             explicitPaths.Add(relative);
         }
 
+        return new(root, explicitPaths, hasPatterns ? matcher : null);
+    }
+
+    private static async Task<JoltSource[]> LoadCSharpSourcesAsync(string root, CSharpSourceSelection selection,
+        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken)
+    {
+        var (explicitPaths, matcher) = (selection.ExplicitPaths, selection.Matcher);
+        var comparer = explicitPaths.Comparer;
         var currentSources = new Dictionary<string, string>(comparer);
         if (overlays is not null)
             foreach (var (path, text) in overlays)
@@ -176,7 +210,7 @@ public static class JoltProjectLoader
             }
 
         var candidates = new HashSet<string>(comparer);
-        if (hasPatterns)
+        if (matcher is not null)
         {
             foreach (var file in Discover(root, csharp: true))
             {
@@ -190,7 +224,7 @@ public static class JoltProjectLoader
 
         // A literal keeps its missing-file error even when it also matches an include pattern.
         var paths = new HashSet<string>(explicitPaths, comparer);
-        if (hasPatterns)
+        if (matcher is not null)
             paths.UnionWith(matcher.Match(root, candidates).Files.Select(file => file.Path));
         var sources = new List<JoltSource>(paths.Count);
         foreach (var relative in paths.Order(StringComparer.Ordinal))
@@ -212,13 +246,13 @@ public static class JoltProjectLoader
         string Relative(string path) => Path.GetRelativePath(root, path).Replace(Path.DirectorySeparatorChar, '/');
     }
 
-    private static bool IsProjectRelative(string path) =>
+    internal static bool IsProjectRelative(string path) =>
         path != ".." && !path.StartsWith("../", StringComparison.Ordinal) && !Path.IsPathRooted(path);
 
     private static InvalidDataException InvalidSource(string? configured) =>
         new($"Invalid jolt.csharpSources entry '{configured}'. Expected a project-relative .cs file or glob.");
 
-    private static bool IsCSharpDiscoveryPath(string root, string relative)
+    internal static bool IsCSharpDiscoveryPath(string root, string relative)
     {
         var parts = relative.Split('/');
         var path = root;
@@ -240,7 +274,8 @@ public static class JoltProjectLoader
         => LoadNpmAsync(projectDirectory, workspace, Metadata, cancellationToken);
 
     internal static async Task<JoltWorkspace> LoadNpmAsync(string projectDirectory, JoltWorkspace workspace,
-        NpmVueMetadataProvider provider, CancellationToken cancellationToken)
+        NpmVueMetadataProvider provider, CancellationToken cancellationToken,
+        JoltNpmLoadProgress? progress = null)
     {
         var root = Path.GetFullPath(projectDirectory);
         var validation = new NpmValueMetadataProvider.Validation();
@@ -253,34 +288,33 @@ public static class JoltProjectLoader
         var modules = new Dictionary<JoltImport, string?>();
         var npmProjects = new Dictionary<string, string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var componentRequests = new List<NpmComponentRequest>();
+        var valueImports = new List<(JoltDocument Document, JoltImport Import, string ImportPath)>();
         var valueAliases = new Dictionary<string, Dictionary<(string Alias, string Namespace), (string Module, string ImportPath)>>(StringComparer.Ordinal);
         foreach (var document in projectImports.Documents)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var tags = JoltProjectImports.IsImportsFile(document.Path) ? [] :
-                JoltTree.Elements(document).Where(e => e.Name.Length != 0 && char.IsUpper(e.Name[0])).ToArray();
+            Dictionary<string, JoltElement>? firstTags = null;
             foreach (var import in projectImports.ImportsFor(document).Where(import => import.IsNpm).DistinctBy(import => import.Code))
             {
                 var importPath = Path.Combine(root, import.Document.Path);
+                if (import.IsNpmValue)
+                {
+                    valueImports.Add((document, import, importPath));
+                    continue;
+                }
                 if (!modules.TryGetValue(import, out var module))
                     modules[import] = module = await ResolveImportAsync(import, importPath);
                 if (module == null)
                     continue;
-                if (import.IsNpmValue)
-                {
-                    if (!JoltProjectImports.IsImportsFile(document.Path))
-                    {
-                        if (!valueAliases.TryGetValue(document.Path, out var aliases))
-                            valueAliases[document.Path] = aliases = new();
-                        aliases[(import.Alias!, import.NpmNamespace!)] = (module, importPath);
-                    }
+                if (JoltProjectImports.IsImportsFile(document.Path))
                     continue;
-                }
+                // Keep the first authored location for each tag and preserve package export order.
+                firstTags ??= JoltTree.Elements(document).Where(e => e.Name.Length != 0 && char.IsUpper(e.Name[0]))
+                    .DistinctBy(e => e.Name, StringComparer.Ordinal).ToDictionary(e => e.Name, StringComparer.Ordinal);
                 var importDirectory = Path.GetDirectoryName(importPath)!;
                 foreach (var export in exports[module])
                 {
-                    var site = Array.Find(tags, e => e.Name == NpmNames.TagFor(module, export));
-                    if (site == null)
+                    if (!firstTags.TryGetValue(NpmNames.TagFor(module, export), out var site))
                         continue;
                     if (!npmProjects.TryGetValue(importDirectory, out var npmProject))
                         try
@@ -296,6 +330,10 @@ public static class JoltProjectLoader
                 }
             }
         }
+
+        // The names are complete at this point. Editor tag completion can use the
+        // same catalog while individual component contracts are still loading.
+        progress?.Catalog.TrySetResult(exports);
 
         // A batch shares the installed declaration graph. Apply its results in source
         // order so another workspace can supply a contract after an earlier failure.
@@ -328,20 +366,33 @@ public static class JoltProjectLoader
             else
                 ReportComponentError(document, span, module, export, result.Error!);
         }
-        var componentOptions = workspace.Options with { NpmComponents = metadata.Values.ToArray() };
+        IReadOnlyList<NpmVueComponent> components = metadata.Values.ToImmutableArray();
+        progress?.Components.TrySetResult(components);
+        var componentOptions = workspace.Options with { NpmComponents = components };
         var (vueComponents, vueUsesJolt) = await LoadVueAsync(workspace with { Options = componentOptions }, projectImports, provider, root,
             diagnostics, validation, cancellationToken);
         componentOptions = componentOptions with { VueComponents = vueComponents };
+        foreach (var (document, import, importPath) in valueImports)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!modules.TryGetValue(import, out var module))
+                modules[import] = module = await ResolveImportAsync(import, importPath);
+            if (module is null || JoltProjectImports.IsImportsFile(document.Path))
+                continue;
+            if (!valueAliases.TryGetValue(document.Path, out var aliases))
+                valueAliases[document.Path] = aliases = new();
+            aliases[(import.Alias!, import.NpmNamespace!)] = (module, importPath);
+        }
         if (valueAliases.Count != 0)
         {
             var namesByModule = valueNames.ToDictionary(pair => pair.Key,
                 pair => pair.Value.ToLookup(NpmNames.ValueNameFor, StringComparer.Ordinal), StringComparer.Ordinal);
             // Bind through the actual C# projection so a local/parameter can shadow
             // an alias and aliases in scoped slots see the real component contracts.
-            var preliminary = JoltProjectCompiler.Analyze(workspace.Sources,
-                componentOptions, cancellationToken);
+            var preliminary = JoltProjectCompiler.ProjectDocumentsForNpm(workspace.Sources,
+                componentOptions, valueAliases.Keys.ToHashSet(StringComparer.Ordinal), cancellationToken);
             var requests = new List<(string Module, string Export, string ImportPath, Location Site, string? Variant)>();
-            foreach (var projected in preliminary.Documents)
+            foreach (var projected in preliminary)
             {
                 if (!valueAliases.TryGetValue(projected.Document.Path, out var aliases))
                     continue;
@@ -383,7 +434,7 @@ public static class JoltProjectLoader
                 NpmValueProjections projections;
                 try
                 {
-                    projections = await provider.ReadValueProjectionsAsync(group.First().ImportPath, module, names, cancellationToken);
+                    projections = await provider.ReadValueProjectionsAsync(group.First().ImportPath, module, names, validation, cancellationToken);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
@@ -425,7 +476,7 @@ public static class JoltProjectLoader
                 {
                     var module = matches[0];
                     if (import.IsNpmValue && !valueNames.ContainsKey(module))
-                        valueNames[module] = await provider.ListValueExportsAsync(importPath, module, cancellationToken);
+                        valueNames[module] = await provider.ListValueExportsAsync(importPath, module, validation, cancellationToken);
                     else if (!import.IsNpmValue && !exports.ContainsKey(module))
                         exports[module] = await provider.ListExportsAsync(importPath, module, validation, cancellationToken);
                     return module;

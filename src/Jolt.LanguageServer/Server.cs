@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Jazor.Npm;
 using Jolt.Compiler;
 using Jolt.Project;
 using Microsoft.CodeAnalysis;
@@ -180,6 +181,17 @@ public sealed partial class Server(Stream input, Stream output)
             requestedBuffer?.Version != version.GetInt32())
             return args;
         var project = ProjectFor(path);
+        var authorPath = Path.GetRelativePath(project.Directory, path).Replace('\\', '/');
+        var import = method == "textDocument/completion" && requestedBuffer is not null && IsJazor(path)
+            ? LanguageFeatures.FindNpmImportTarget(requestedBuffer.Text, Offset(requestedBuffer.Text, args.GetProperty("position")), authorPath)
+            : null;
+        if (import?.Scope == "Npm.")
+        {
+            // Every public subpath starts with its dependency's namespace. The root list is complete before TS or Roslyn starts.
+            var packages = File.Exists(Path.Combine(project.Directory, "package.json"))
+                ? NpmValueMetadataProvider.ListPackageNames(project.Directory) : [];
+            return import.Completions(packages);
+        }
         var versioned = GetProject(project);
         var snapshot = await versioned.Input.WaitAsync(cancellationToken);
         if (snapshot.Npm is { IsCompletedSuccessfully: true } ready)
@@ -187,7 +199,35 @@ public sealed partial class Server(Stream input, Stream output)
         if (resolve && (!completionData.TryGetProperty("snapshotId", out var snapshotId) ||
             !snapshotId.TryGetInt64(out var id) || id != snapshot.Id))
             return args;
-        var document = snapshot.Analysis.Documents.FirstOrDefault(item => PathEquals(Path.GetFullPath(item.Document.Path, snapshot.Directory), path));
+        JoltProjectedDocument? FindDocument(ProjectSnapshot current) =>
+            current.Analysis.Documents.FirstOrDefault(item => PathEquals(item.Document.Path, authorPath));
+        var document = FindDocument(snapshot);
+        if (method == "textDocument/completion" && requestedBuffer is not null)
+        {
+            var offset = Offset(requestedBuffer.Text, args.GetProperty("position"));
+            if (import is not null)
+            {
+                if (!IsCurrent(project, versioned) || !_buffers.TryGetValue(path, out var buffer) || buffer != requestedBuffer)
+                    throw new OperationCanceledException("The author document changed while handling the request.");
+                return import.Completions(snapshot.Workspace.Packages.Concat(snapshot.Workspace.Exports.Keys).Concat(snapshot.Workspace.ValueExports.Keys));
+            }
+            if (snapshot.Npm is { } pending && document is not null && snapshot.NpmImports.Contains(document.Document.Path))
+            {
+                var required = LanguageFeatures.CompletionMetadata(document, requestedBuffer.Text, offset, cancellationToken);
+                if (required == LanguageFeatures.NpmMetadataKind.TagNames && snapshot.NpmCatalog is { } catalogs &&
+                    await catalogs.WaitAsync(cancellationToken) is { } exports)
+                    snapshot = snapshot with { Workspace = snapshot.Workspace with { Exports = exports } };
+                else if (required == LanguageFeatures.NpmMetadataKind.Component && snapshot.NpmComponents is { } components &&
+                    await components.WaitAsync(cancellationToken) is { } contracts)
+                    snapshot = snapshot with { Workspace = snapshot.Workspace with { Options = snapshot.Workspace.Options with { NpmComponents = contracts } } };
+                else if (required != LanguageFeatures.NpmMetadataKind.None)
+                {
+                    // Component attributes and npm value members need their bound declarations.
+                    snapshot = await pending.WaitAsync(cancellationToken);
+                    document = FindDocument(snapshot);
+                }
+            }
+        }
         if (document is null)
             return resolve ? args : null;
         var text = SourceText.From(document.Document.Source);
@@ -206,12 +246,36 @@ public sealed partial class Server(Stream input, Stream output)
                     method == "textDocument/references" && args.GetProperty("context").GetProperty("includeDeclaration").GetBoolean(),
                     method == "textDocument/rename" ? args.GetProperty("newName").GetString() : null, _fileRename, _changeAnnotations,
                     documentPath => _buffers.TryGetValue(documentPath, out var buffer) ? buffer.Version : null, cancellationToken),
-            _ => await features.GetAsync(method, Offset(text, args.GetProperty("position")), cancellationToken, requestedBuffer?.Version),
+            _ => await GetPositionResultAsync(),
         };
         _buffers.TryGetValue(path, out var currentBuffer);
         if (requestedBuffer != currentBuffer || !IsCurrent(project, versioned))
             throw new OperationCanceledException("The author document changed while handling the request.");
         return result;
+
+        async Task<object?> GetPositionResultAsync()
+        {
+            var offset = Offset(text, args.GetProperty("position"));
+            var local = await features.GetAsync(method, offset, cancellationToken, requestedBuffer?.Version);
+            if (local is not null || snapshot.Npm is not { } loading || !snapshot.NpmImports.Contains(document.Document.Path) ||
+                method is not ("textDocument/hover" or "textDocument/definition" or "textDocument/signatureHelp"))
+                return local;
+            var required = LanguageFeatures.NavigationMetadata(document, offset, method);
+            if (required == LanguageFeatures.NpmMetadataKind.None)
+                return null;
+            // A component contract already contains its upstream locations and docs, independently of C# value binding.
+            if (required == LanguageFeatures.NpmMetadataKind.Component && snapshot.NpmComponents is { } components &&
+                await components.WaitAsync(cancellationToken) is { } contracts)
+            {
+                var workspace = snapshot.Workspace with { Options = snapshot.Workspace.Options with { NpmComponents = contracts } };
+                return await new LanguageFeatures(document, snapshot.Analysis, workspace, snapshot.Directory, snapshot.Id)
+                    .GetAsync(method, offset, cancellationToken, requestedBuffer?.Version);
+            }
+            var complete = await loading.WaitAsync(cancellationToken);
+            var bound = FindDocument(complete);
+            return bound is null ? null : await new LanguageFeatures(bound, complete.Analysis, complete.Workspace, complete.Directory, complete.Id)
+                .GetAsync(method, offset, cancellationToken, requestedBuffer?.Version);
+        }
     }
 
     private async Task NotifyAsync(string method, JsonElement args, CancellationToken stopping)
@@ -272,8 +336,8 @@ public sealed partial class Server(Stream input, Stream output)
                     foreach (var change in args.GetProperty("changes").EnumerateArray())
                     {
                         var path = FilePath(change.GetProperty("uri"));
-                        // Editors also watch .mjs tooling resources. Rebuilding on these events restarts the query that wrote them.
-                        if (IsVueMetadataResource(path))
+                        // An SDK running alongside the editor can stage its own .mjs tooling in the same project.
+                        if (IsMetadataResource(path))
                             continue;
                         affected.UnionWith(Invalidate(path, fileSystem: true));
                         if (Path.GetFileName(path) == "package.json")
@@ -395,17 +459,19 @@ public sealed partial class Server(Stream input, Stream output)
     private Task PublishAsync(string uri, int? version, object[] diagnostics, CancellationToken cancellationToken) =>
         _transport.WriteAsync(new { jsonrpc = "2.0", method = "textDocument/publishDiagnostics", @params = new { uri, version, diagnostics } }, cancellationToken);
 
-    private static bool IsVueMetadataResource(string path)
+    private static bool IsMetadataResource(string path)
     {
-        const string prefix = "vue-metadata-";
         for (var directory = Path.GetDirectoryName(path); directory is not null; directory = Path.GetDirectoryName(directory))
         {
             var name = Path.GetFileName(directory);
-            if (name.StartsWith(prefix, StringComparison.Ordinal) && Guid.TryParseExact(name.AsSpan(prefix.Length), "N", out _) &&
+            if ((QueryDirectory(name, "vue-metadata-") || QueryDirectory(name, "npm-metadata-")) &&
                 PathEquals(Path.GetFileName(Path.GetDirectoryName(directory)), ".jazor"))
                 return true;
         }
         return false;
+
+        static bool QueryDirectory(string name, string prefix) =>
+            name.StartsWith(prefix, StringComparison.Ordinal) && Guid.TryParseExact(name.AsSpan(prefix.Length), "N", out _);
     }
 
     private string ProjectDirectory(string path)

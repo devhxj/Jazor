@@ -94,6 +94,10 @@ public sealed partial class NpmVueMetadataProvider
         CancellationToken cancellationToken = default)
         => _values.ListValueExportsAsync(documentPath, moduleSpecifier, cancellationToken);
 
+    internal Task<IReadOnlyList<string>> ListValueExportsAsync(string documentPath, string moduleSpecifier,
+        Validation validation, CancellationToken cancellationToken)
+        => _values.ListValueExportsAsync(documentPath, moduleSpecifier, validation, cancellationToken);
+
     public Task<IReadOnlyList<NpmValueExport>> ReadValuesAsync(string documentPath, string moduleSpecifier,
         IReadOnlyList<string> exportNames, CancellationToken cancellationToken = default)
         => _values.ReadValuesAsync(documentPath, moduleSpecifier, exportNames, cancellationToken);
@@ -101,6 +105,10 @@ public sealed partial class NpmVueMetadataProvider
     public Task<NpmValueProjections> ReadValueProjectionsAsync(string documentPath, string moduleSpecifier,
         IReadOnlyList<string> exportNames, CancellationToken cancellationToken = default)
         => _values.ReadValueProjectionsAsync(documentPath, moduleSpecifier, exportNames, cancellationToken);
+
+    internal Task<NpmValueProjections> ReadValueProjectionsAsync(string documentPath, string moduleSpecifier,
+        IReadOnlyList<string> exportNames, Validation validation, CancellationToken cancellationToken)
+        => _values.ReadValueProjectionsAsync(documentPath, moduleSpecifier, exportNames, validation, cancellationToken);
 
     public Task<IReadOnlyList<string>> ListSpecifiersAsync(string documentPath, string packageName,
         CancellationToken cancellationToken = default)

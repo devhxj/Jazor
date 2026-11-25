@@ -33,12 +33,13 @@ internal sealed partial class LanguageFeatures
     {
         var binding = MarkupAt(offset);
         var site = GeneratedSite(offset, binding);
-        using var roslyn = new AdhocWorkspace(Host.Value);
         Dictionary<string, Document>? documents = null;
         ISymbol? symbol = null;
         if (site is { } selected)
         {
-            documents = await CreateRoslynProjectAsync(roslyn, cancellationToken);
+            var project = GetEditorProject(cancellationToken);
+            documents = analysis.Documents.ToDictionary(author => author.Document.Path,
+                author => project.GetDocument(author.SemanticModel.SyntaxTree), StringComparer.Ordinal);
             var model = (await documents[selected.Path].GetSemanticModelAsync(cancellationToken))!;
             symbol = SymbolAt(model, selected.Span.Start, cancellationToken, allowCandidate: false)?.OriginalDefinition;
             if (symbol?.Locations.Any(location => location.IsInSource && ToAuthor(location) is not null) != true)

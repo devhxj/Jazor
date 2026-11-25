@@ -42,9 +42,20 @@ public static partial class JoltProjectCompiler
         .Select(path => (MetadataReference)MetadataReference.CreateFromFile(path)).ToImmutableArray());
 
     public static JoltAnalysis Analyze(IEnumerable<JoltSource> sources, JoltCompileOptions? options = null, CancellationToken cancellationToken = default)
+        => Analyze(sources, options ?? new(), cancellationToken, diagnosticPaths: null);
+
+    internal static JoltAnalysis Analyze(IEnumerable<JoltSource> sources, JoltCompileOptions options, CancellationToken cancellationToken,
+        IReadOnlySet<string>? diagnosticPaths)
+        => CreateAnalysis(Build(sources, options, cancellationToken, diagnosticPaths: diagnosticPaths), options);
+
+    internal static IEnumerable<(JoltDocument Document, SemanticModel SemanticModel, IReadOnlyList<JoltProjectionSpan> Spans)>
+        ProjectDocumentsForNpm(IEnumerable<JoltSource> sources, JoltCompileOptions options,
+            IReadOnlySet<string> aliasPaths, CancellationToken cancellationToken) =>
+        Build(sources, options, cancellationToken, aliasPaths: aliasPaths).Documents.Select(document =>
+            (document.Projection.Document, document.Model, (IReadOnlyList<JoltProjectionSpan>)document.Projection.Spans));
+
+    private static JoltAnalysis CreateAnalysis(BuildResult analysis, JoltCompileOptions options)
     {
-        options ??= new();
-        var analysis = Build(sources, options, cancellationToken);
         var locals = analysis.Documents.Select(document => document.ToLocalComponent()).ToArray();
         return new JoltAnalysis(analysis.Documents.Select(document => document.ToProjectedDocument(locals, options)).ToArray(), analysis.Diagnostics)
         {
@@ -114,7 +125,8 @@ public static partial class JoltProjectCompiler
         NpmValueLowering? NpmValues, string? RouterModule, DevSnapshot? Snapshot = null);
 
     private static BuildResult Build(IEnumerable<JoltSource> sources, JoltCompileOptions options, CancellationToken cancellationToken,
-        Dictionary<string, string>? declarations = null, bool capture = false)
+        Dictionary<string, string>? declarations = null, bool capture = false, IReadOnlySet<string>? diagnosticPaths = null,
+        Action<AnalysisState>? rememberAnalysis = null, IReadOnlySet<string>? aliasPaths = null)
     {
         var diagnostics = new List<Diagnostic>();
         var projections = new List<Projection>();
@@ -148,16 +160,7 @@ public static partial class JoltProjectCompiler
             string componentNamespace = string.Join('.', parts.SkipLast(1).Prepend(options.RootNamespace));
             var imports = projectImports.ImportsFor(document).DistinctBy(import => import.Code).ToArray();
             var projection = new Projection(document, name, componentNamespace, imports, diagnostics);
-            var parameters = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var parameter in document.Nodes.OfType<JoltTypeParameter>())
-                if (!parameters.Add(parameter.Name))
-                    diagnostics.Add(Error("JOLT1020", projection.Location(parameter.NameSpan), $"Type parameter '{parameter.Name}' is declared more than once."));
-            foreach (var diagnostic in document.Diagnostics)
-            {
-                if (HandledByRouter(options, document, diagnostic))
-                    continue;
-                diagnostics.Add(CreateDiagnostic(diagnostic.Id, diagnostic.Severity, projection.Location(diagnostic.Span), diagnostic.Message));
-            }
+            AddSourceDiagnostics(projection, options, diagnostics);
             if (!SyntaxFacts.IsValidIdentifier(name) || parts.SkipLast(1).Any(part => !SyntaxFacts.IsValidIdentifier(part)))
                 diagnostics.Add(Error("JOLT1011", projection.Location(default), $"Component path '{document.Path}' must contain valid C# identifiers."));
             else if (!names.Add((componentNamespace, name)))
@@ -184,13 +187,20 @@ public static partial class JoltProjectCompiler
         if (options.VueComponents.Count != 0)
             sharedTrees.Add(CSharpSyntaxTree.ParseText(string.Join('\n', options.VueComponents.Select(component => component.LocalNamespace)
                 .Distinct(StringComparer.Ordinal).Select(ns => $"namespace {ns} {{ }}")), ParseOptions));
-        var compilation = CSharpCompilation.Create("JoltComponents", projections.Select(projection => projection.Build(null, ParseOptions)).Concat(sharedTrees),
+        var authorTrees = projections.ToDictionary(projection => projection, projection =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return projection.Build(null, ParseOptions);
+        });
+        var compilation = CSharpCompilation.Create("JoltComponents", authorTrees.Values.Concat(sharedTrees),
             references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
         var local = projections.Select(projection => ComponentContract.FromLocal(projection,
-            compilation.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}+{projection.StateMetadataName}")!, compilation)).ToArray();
+            compilation.Assembly.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}+{projection.StateMetadataName}")!, compilation)).ToArray();
         // The declaration pass already types literal and boolean outlet fields.
-        var needsSlotProbe = local.Any(component => component.Slots.Any(slot =>
-            slot.Scope?.Any(member => member.LocalType is null) == true));
+        var slotProbePaths = local.Where(component => component.Slots.Any(slot =>
+            slot.Scope?.Any(member => member.LocalType is null) == true))
+            .Select(component => component.Path).ToHashSet(StringComparer.Ordinal);
+        bool needsSlotProbe = slotProbePaths.Count != 0;
         // Vue imports need component declarations only. Without expression-valued
         // outlet fields, the author trees already contain the whole public contract.
         if (declarations is not null && !needsSlotProbe)
@@ -200,6 +210,8 @@ public static partial class JoltProjectCompiler
         }
 
         var npm = (options.NpmComponents ?? []).Select(ComponentContract.FromNpm).ToArray();
+        var npmNamespaces = npm.Select(component =>
+            (Namespace: NpmNames.NamespaceFor(component.Npm!.ModuleSpecifier), Component: component)).ToArray();
         var vue = options.VueComponents.Select(ComponentContract.FromNpm).ToArray();
         Dictionary<Projection, IReadOnlyDictionary<(int Source, string Path), ComponentTypeBinding>>? typeArguments = null;
         // Bind authored outlet values before the final render projection so consumer slot
@@ -207,11 +219,31 @@ public static partial class JoltProjectCompiler
         if (needsSlotProbe)
         {
             int diagnosticsBeforeProbe = diagnostics.Count;
-            var probeTrees = ProjectTrees();
-            var probe = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(probeTrees.Keys.Concat(sharedTrees));
-            local = probeTrees.Select(pair => ComponentContract.FromLocal(pair.Value,
-                probe.GetTypeByMetadataName($"{pair.Value.Namespace}.{pair.Value.ModuleName}+{pair.Value.StateMetadataName}")!,
-                probe, probe.GetSemanticModel(pair.Key))).ToArray();
+            // Outlet types use their author's render body. Keep the other files'
+            // declarations available for references during the probe.
+            var probeTrees = ProjectTrees(renderPaths: slotProbePaths);
+            var probe = compilation;
+            foreach (var (tree, projection) in probeTrees)
+                probe = probe.ReplaceSyntaxTree(authorTrees[projection], tree);
+            if (declarations is null)
+            {
+                // Render consumers only use the authored type names. Contracts
+                // without outlet expressions have already been bound in this pass.
+                var rebound = probeTrees.ToDictionary(pair => pair.Value.Document.Path, pair =>
+                    ComponentContract.FromLocal(pair.Value,
+                        probe.Assembly.GetTypeByMetadataName($"{pair.Value.Namespace}.{pair.Value.ModuleName}+{pair.Value.StateMetadataName}")!,
+                        probe, probe.GetSemanticModel(pair.Key)), StringComparer.Ordinal);
+                local = local.Select(contract => rebound.GetValueOrDefault(contract.Path) ?? contract).ToArray();
+            }
+            else
+            {
+                // The TypeScript declaration writer compares symbols directly,
+                // so bind its contracts in one compilation.
+                var probeTreesByProjection = probeTrees.ToDictionary(pair => pair.Value, pair => pair.Key);
+                local = projections.Select(projection => ComponentContract.FromLocal(projection,
+                    probe.Assembly.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}+{projection.StateMetadataName}")!,
+                    probe, probeTreesByProjection.TryGetValue(projection, out var tree) ? probe.GetSemanticModel(tree) : null)).ToArray();
+            }
             diagnostics.RemoveRange(diagnosticsBeforeProbe, diagnostics.Count - diagnosticsBeforeProbe);
         }
         if (local.Concat(npm).Any(component => component.TypeParameters.Count != 0))
@@ -242,7 +274,7 @@ public static partial class JoltProjectCompiler
                 probe = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(typeTrees.Keys.Concat(sharedTrees));
                 var rebound = typeTrees.ToDictionary(pair => pair.Value, pair => pair.Value.BindTypeArguments(probe.GetSemanticModel(pair.Key)));
                 var contracts = typeTrees.Select(pair => ComponentContract.FromLocal(pair.Value,
-                    probe.GetTypeByMetadataName($"{pair.Value.Namespace}.{pair.Value.ModuleName}+{pair.Value.StateMetadataName}")!,
+                    probe.Assembly.GetTypeByMetadataName($"{pair.Value.Namespace}.{pair.Value.ModuleName}+{pair.Value.StateMetadataName}")!,
                     probe, probe.GetSemanticModel(pair.Key))).ToArray();
                 diagnostics.RemoveRange(before, diagnostics.Count - before);
                 if (SameTypeArguments(typeArguments, rebound) && SameSlotTypes(local, contracts))
@@ -253,23 +285,38 @@ public static partial class JoltProjectCompiler
         }
         var canCapture = capture && !needsSlotProbe && typeArguments is null &&
             local.All(contract => contract.Slots.All(slot => slot.Scope is not { Count: > 0 }));
-        var trees = ProjectTrees();
-        Dictionary<SyntaxTree, Projection> ProjectTrees(bool probeTypeArguments = false)
+        var trees = ProjectTrees(renderPaths: aliasPaths);
+        Dictionary<SyntaxTree, Projection> ProjectTrees(bool probeTypeArguments = false, IReadOnlySet<string>? renderPaths = null)
         {
             var result = new Dictionary<SyntaxTree, Projection>();
             foreach (var projection in projections)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (renderPaths is not null && !renderPaths.Contains(projection.Document.Path))
+                    continue;
                 var imports = projection.Imports.Select(import =>
                     import.NpmNamespace is { } npmNamespace && !import.IsNpmValue ? npmNamespace : import.Code).ToHashSet(StringComparer.Ordinal);
                 var components = local.Where(component => IsVisible(projection, namespacesByPath[component.Path], imports))
                     .Concat(vue.Where(component => IsVisible(projection, component.Npm!.LocalNamespace!, imports)))
-                    .Concat(npm.Where(component => imports.Contains(NpmNames.NamespaceFor(component.Npm!.ModuleSpecifier)))).ToArray();
+                    .Concat(npmNamespaces.Where(entry => imports.Contains(entry.Namespace)).Select(entry => entry.Component)).ToArray();
                 result.Add(projection.Build(components, ParseOptions, typeArguments?.GetValueOrDefault(projection), probeTypeArguments), projection);
             }
             return result;
         }
 
-        compilation = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(trees.Keys.Concat(sharedTrees));
+        if (aliasPaths is null)
+            compilation = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(trees.Keys.Concat(sharedTrees));
+        else
+        {
+            // npm alias discovery reads only importing files. Other files still
+            // supply their C# declarations and the slot probe runs independently.
+            foreach (var (tree, projection) in trees)
+                compilation = compilation.ReplaceSyntaxTree(authorTrees[projection], tree);
+            var contractsByPath = local.ToDictionary(contract => contract.Path, StringComparer.Ordinal);
+            var aliases = trees.Select(pair => BindDocument(compilation, pair.Key, pair.Value,
+                contractsByPath[pair.Value.Document.Path], options, valueProjection, diagnostics, cancellationToken, validate: false)).ToList();
+            return new(aliases, diagnostics, null, null);
+        }
         if (declarations is not null)
         {
             WriteAuthorDeclarations(trees.Values, local, compilation, declarations);
@@ -277,11 +324,47 @@ public static partial class JoltProjectCompiler
         }
 
         var localByPath = local.ToDictionary(contract => contract.Path, StringComparer.Ordinal);
+        var diagnosticTrees = diagnosticPaths is null ? trees.Keys.Concat(sharedSourceTrees) :
+            trees.Where(pair => diagnosticPaths.Contains(pair.Value.Document.Path)).Select(pair => pair.Key);
+        var models = diagnosticTrees.Select(tree => compilation.GetSemanticModel(tree)).ToArray();
+        AddCompilerDiagnostics(diagnosticPaths is null
+            ? compilation.GetDiagnostics(cancellationToken).AsEnumerable()
+            : models.SelectMany(model => model.GetDiagnostics(cancellationToken: cancellationToken)), models, trees, diagnostics, cancellationToken);
+        var documents = trees.Select(pair =>
+        {
+            return BindDocument(compilation, pair.Key, pair.Value, localByPath[pair.Value.Document.Path],
+                options, valueProjection, diagnostics, cancellationToken, diagnosticPaths?.Contains(pair.Value.Document.Path) ?? true);
+        }).ToList();
+        var routerModule = options.Router
+            ? JoltRouter.Build(documents.Select(document => (document.Projection, document.Contract)).ToArray(), diagnostics)
+            : null;
+        if (rememberAnalysis is not null && typeArguments is null)
+            rememberAnalysis(new(compilation, authorTrees, documents, valueProjection));
+        return new(documents, diagnostics, valueProjection?.Bind(compilation), routerModule,
+            canCapture && diagnostics.Count == 0 ? DevSnapshot.Create(compilation, trees, valueProjection) : null);
+    }
+
+    private static void AddSourceDiagnostics(Projection projection, JoltCompileOptions options, List<Diagnostic> diagnostics)
+    {
+        var document = projection.Document;
+        var parameters = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var parameter in document.Nodes.OfType<JoltTypeParameter>())
+            if (!parameters.Add(parameter.Name))
+                diagnostics.Add(Error("JOLT1020", projection.Location(parameter.NameSpan), $"Type parameter '{parameter.Name}' is declared more than once."));
+        foreach (var diagnostic in document.Diagnostics)
+        {
+            if (HandledByRouter(options, document, diagnostic))
+                continue;
+            diagnostics.Add(CreateDiagnostic(diagnostic.Id, diagnostic.Severity, projection.Location(diagnostic.Span), diagnostic.Message));
+        }
+    }
+
+    private static void AddCompilerDiagnostics(IEnumerable<Diagnostic> compilerDiagnostics, IEnumerable<SemanticModel> models,
+        Dictionary<SyntaxTree, Projection> trees, List<Diagnostic> diagnostics, CancellationToken cancellationToken)
+    {
         var reported = new HashSet<(string Id, Location Location, string Message)>();
-        var nameDiagnostics = trees.Keys.Concat(sharedSourceTrees)
-            .SelectMany(tree => AnalyzeJavaScriptNames(compilation.GetSemanticModel(tree), cancellationToken));
-        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken)
-            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Concat(nameDiagnostics))
+        foreach (var diagnostic in compilerDiagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+            .Concat(models.SelectMany(model => AnalyzeJavaScriptNames(model, cancellationToken))))
         {
             var location = diagnostic.Location;
             if (location.SourceTree is { } tree && trees.TryGetValue(tree, out var projection))
@@ -290,23 +373,17 @@ public static partial class JoltProjectCompiler
             if (reported.Add((diagnostic.Id, location, message)))
                 diagnostics.Add(CreateDiagnostic(diagnostic.Id, diagnostic.Severity, location, message));
         }
-        var documents = trees.Select(pair =>
-        {
-            return BindDocument(compilation, pair.Key, pair.Value, localByPath[pair.Value.Document.Path],
-                options, valueProjection, diagnostics, cancellationToken);
-        }).ToList();
-        var routerModule = options.Router
-            ? JoltRouter.Build(documents.Select(document => (document.Projection, document.Contract)).ToArray(), diagnostics)
-            : null;
-        return new(documents, diagnostics, valueProjection?.Bind(compilation), routerModule,
-            canCapture && diagnostics.Count == 0 ? DevSnapshot.Create(compilation, trees, valueProjection) : null);
     }
 
     private static BoundDocument BindDocument(CSharpCompilation compilation, SyntaxTree tree, Projection projection,
         ComponentContract contract, JoltCompileOptions options,
-        NpmValueProjection? valueProjection, List<Diagnostic> diagnostics, CancellationToken cancellationToken)
+        NpmValueProjection? valueProjection, List<Diagnostic> diagnostics, CancellationToken cancellationToken, bool validate = true)
     {
         var model = compilation.GetSemanticModel(tree);
+        var module = compilation.Assembly.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}")!;
+        var bound = new BoundDocument(projection, model, module, contract);
+        if (!validate)
+            return bound;
         if (valueProjection?.HasPropertyPaths == true || options.References is { Count: > 0 })
         {
             foreach (var syntax in tree.GetRoot(cancellationToken).DescendantNodes().OfType<InvocationExpressionSyntax>())
@@ -325,11 +402,10 @@ public static partial class JoltProjectCompiler
         projection.CheckRecordArrays(model);
         projection.CheckBindings(model);
         projection.CheckSlotOutlets(model);
-        var module = compilation.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}")!;
         var state = module.GetTypeMembers(projection.StateName).Single();
         projection.CheckReferences(model, state);
         projection.CheckSetup(model, state);
-        return new(projection, model, module, contract);
+        return bound;
     }
 
     private static bool HandledByRouter(JoltCompileOptions options, JoltDocument document, JoltDiagnostic diagnostic) =>
@@ -342,7 +418,7 @@ public static partial class JoltProjectCompiler
         var byPath = contracts.ToDictionary(contract => contract.Path, StringComparer.Ordinal);
         foreach (var projection in projections)
         {
-            var module = compilation.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}")!;
+            var module = compilation.Assembly.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}")!;
             var state = module.GetTypeMembers(projection.StateName).Single();
             var path = projection.Document.Path;
             declarations.Add(path, JoltTypeScriptDeclaration.Emit(byPath[path], projection, module, state,
@@ -383,7 +459,7 @@ public static partial class JoltProjectCompiler
         }
     }
 
-    private sealed record BoundDocument(Projection Projection, SemanticModel Model, INamedTypeSymbol Module, ComponentContract Contract)
+    internal sealed record BoundDocument(Projection Projection, SemanticModel Model, INamedTypeSymbol Module, ComponentContract Contract)
     {
         internal JoltLocalComponent ToLocalComponent() => new(Contract.Name, Contract.Path,
             Contract.Properties.Select(property => new JoltLocalProperty(property.Name, property.Type, property.Required, property.Source)).ToArray(),

@@ -60,12 +60,13 @@ internal sealed partial class LanguageFeatures
     internal async Task<object> ClassifyAsync(TextSpan range, bool visualStudio, CancellationToken cancellationToken)
     {
         var tokens = new List<(TextSpan Span, TokenKind Kind)>();
-        using var classifierWorkspace = new AdhocWorkspace(Host.Value);
-        var document = await CreateRoslynDocumentAsync(classifierWorkspace, cancellationToken);
+        Document? document = null;
         foreach (var mapping in projection.Spans)
         {
             if (mapping.Source.Intersection(range) is not { Length: > 0 } requested)
                 continue;
+            // Classify the same immutable Roslyn snapshot used for completion. Markup-only ranges need no C# workspace.
+            document ??= GetEditorProject(cancellationToken).GetDocument(projection.SemanticModel.SyntaxTree);
             var generated = new TextSpan(mapping.Generated.Start + requested.Start - mapping.Source.Start, requested.Length);
             foreach (var classified in await Classifier.GetClassifiedSpansAsync(document, generated, cancellationToken))
             {

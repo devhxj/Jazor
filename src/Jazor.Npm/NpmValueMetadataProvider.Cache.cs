@@ -102,7 +102,10 @@ public sealed partial class NpmValueMetadataProvider
             ObserveChecker?.Invoke();
             var metadata = await read(project, moduleSpecifier, mode, query, store, typescript, cancellationToken);
             var inputs = metadata.Inputs.Concat(PackageInputs(project)).Distinct(StringComparer.Ordinal);
-            var entry = new CacheEntry<T>(metadata, inputs.ToDictionary(path => path, Fingerprint, StringComparer.Ordinal));
+            // Validation was cleared before the checker ran. Reuse the fresh
+            // publication hashes when this load queries the same graph again.
+            var entry = new CacheEntry<T>(metadata,
+                inputs.ToDictionary(path => path, path => ReadFingerprint(path, validation), StringComparer.Ordinal));
             if (!CanShareSnapshot(metadata, entry.Inputs))
             {
                 ReportInputs(entry.Inputs, typescript);

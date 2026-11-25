@@ -59,7 +59,7 @@ internal sealed partial class Projection
                 case IdentifierNameSyntax identifier:
                     var name = identifier.Identifier.ValueText;
                     var span = SourceSpan(identifier);
-                    var candidates = _components.Where(component => component.Name == name).ToArray();
+                    var candidates = _componentsByName![name].ToArray();
                     if (candidates.Length == 1 && !candidates[0].IsVueBuiltIn &&
                         (candidates[0].Npm is null || candidates[0].Npm!.LocalPath is not null))
                     {

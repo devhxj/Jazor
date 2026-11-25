@@ -12,10 +12,13 @@ internal static class NpmLocalDeclarationInputs
         var inputs = new SortedSet<string>(StringComparer.Ordinal);
         var ancestors = NpmWorkspace.PotentialManifests(projectFile, []).ToHashSet(PathComparer);
         var projectDirectory = Path.GetDirectoryName(projectFile)!;
-        // Register source-local candidates even before there is a C# npm import. An edit
-        // can activate an already-open source's workspace without a new MSBuild evaluation.
+        // An edit can activate an existing source-local workspace before the first npm
+        // import. Registering every possible missing file makes Roslyn load phantom
+        // documents in each C# folder, even when they all share one npm workspace.
         var candidates = NpmWorkspace.PotentialManifests(projectFile, sourceFiles)
-            .Where(path => !ancestors.Contains(path)).ToList();
+            .Where(path => !ancestors.Contains(path) &&
+                (File.Exists(path) || File.Exists(Path.Combine(Path.GetDirectoryName(path)!, "pnpm-workspace.yaml"))))
+            .ToList();
         var pendingAncestors = new List<string>();
         for (var parent = new DirectoryInfo(projectDirectory); parent is not null; parent = parent.Parent)
         {
