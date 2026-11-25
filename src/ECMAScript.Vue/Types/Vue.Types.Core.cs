@@ -110,7 +110,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">与此注入键关联的值契约。The value contract associated with this injection key.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueInjectionKey<TValue>
 	{
 		private VueInjectionKey()
@@ -153,7 +152,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">每个任意键的值契约。The value contract for each arbitrary key.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueDictionary<TValue> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -204,7 +202,6 @@ public static partial class Vue
 	/// underlying JavaScript value at emission time.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueValue
 	{
 		private VueValue()
@@ -354,7 +351,6 @@ public static partial class Vue
 	/// while keeping the C# public surface compact and stable.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueChild
 	{
 		private VueChild()
@@ -476,7 +472,6 @@ public static partial class Vue
 	/// relying on chained implicit conversions through <see cref="Number"/>.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueKey
 	{
 		private VueKey()
@@ -590,7 +585,7 @@ public static partial class Vue
 	/// <c>Number</c>, and <c>Boolean</c>.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
+	[Boundary]
 	public sealed class VuePropType
 	{
 		private VuePropType()
@@ -658,7 +653,6 @@ public static partial class Vue
 	/// Convenience non-generic dictionary surface for common Vue object authoring.
 	/// This is the direct default when the value contract is the general <see cref="VueValue"/>.
 	/// </summary>
-	[Description("@#")]
 	public record VueDictionary : VueDictionary<VueValue>
 	{
 	}

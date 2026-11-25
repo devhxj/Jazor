@@ -296,7 +296,7 @@ tuple 在 Jazor 中应视为“可擦除的复合值”：
 - record 解构赋值默认按结构属性键展开，而不是依赖实例 `Deconstruct()` runtime protocol
 - 模块层与成员层都不为 `record` 发射 runtime class 声明
 - `Description` / `ECMAScriptName` 之类命名配置只影响结构属性键或编译期名称，不会把 `record` 抬升回 nominal class 语义
-- 普通 class 不因宿主标注或空名称配置降成对象字面量；类的构造与初始化不能被隐式抹除。仅描述 options、dictionary 或 callback 对象形状的声明应使用 record
+- 普通 class 保留构造与初始化行为。仅描述 options、dictionary 或 callback 对象形状的声明应使用 record。`[Boundary]` 仅控制嵌套宿主的名称拼接
 
 换句话说，`record` 保的是：
 

@@ -6,7 +6,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[Description("@#")]
 public sealed record CounterHydrationState : PiniaStateTree
 {
     public int Count { get; set; }
@@ -14,7 +13,6 @@ public sealed record CounterHydrationState : PiniaStateTree
     public string Status { get; set; } = "";
 }
 
-[Description("@#")]
 public sealed record CounterHydrationStatePatch : PiniaStatePatch<CounterHydrationState>
 {
     public int? Count { get; init; }
@@ -22,7 +20,6 @@ public sealed record CounterHydrationStatePatch : PiniaStatePatch<CounterHydrati
     public string? Status { get; init; }
 }
 
-[Description("@#")]
 public sealed record CounterHydrationStore : Vue.VueProps
 {
     public int Count { get; init; }
@@ -37,7 +34,6 @@ public sealed record CounterHydrationStore : Vue.VueProps
 }
 
 [ECMAScript]
-[Description("@#")]
 public abstract class CounterHydrationOptionStore : Store<CounterHydrationState>
 {
     public extern int Count { get; set; }

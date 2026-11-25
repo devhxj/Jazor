@@ -13,7 +13,6 @@ namespace ECMAScript;
 /// 它是宿主绑定，不是 C# 正则引擎实现。
 /// </remarks>
 [ECMAScript]
-[Description("@#")]
 public sealed class RegExpResult : IArray<string?>
 {
     ///<summary>
@@ -65,7 +64,6 @@ public sealed class RegExpResult : IArray<string?>
 /// <c>RegExpResult.indices</c> 使用的 JavaScript 对象形状；每个元素是 <c>[start, end]</c> 双项数组，未匹配捕获组为 <see langword="null"/>。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class RegExpIndices : IArray<Array<Number>?>
 {
     /// <summary>

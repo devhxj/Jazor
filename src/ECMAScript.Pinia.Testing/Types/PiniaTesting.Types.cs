@@ -16,7 +16,6 @@ public static partial class PiniaTesting
 	/// originating from the testing package.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract record TestingPinia : Pinia.PiniaInstance
 	{
 		/// <summary>
@@ -45,7 +44,6 @@ public static partial class PiniaTesting
 	/// each store instance is created.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract record TestingInitialState : Vue.VueProps;
 
 	/// <summary>
@@ -58,7 +56,6 @@ public static partial class PiniaTesting
 	/// should be stubbed.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union TestingStubActions(bool, string[], PiniaTestingStubActionPredicate)
 	{
 		/// <summary>
@@ -120,7 +117,6 @@ public static partial class PiniaTesting
 	/// </summary>
 	/// <typeparam name="TStore">谓词分支所期望的具体 store 投影类型。The concrete store projection expected by the predicate branch.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union TestingStubActions<TStore>(bool, string[], PiniaTestingStubActionPredicate<TStore>)
 		where TStore : class
 	{

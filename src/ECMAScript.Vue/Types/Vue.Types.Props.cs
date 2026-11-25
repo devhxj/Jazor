@@ -17,7 +17,6 @@ public static partial class Vue
 	/// listener prop names such as <c>onClick</c>; values are no-payload handlers.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEventHandlers : VueProps
 	{
 		/// <summary>
@@ -36,7 +35,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TEvent">侦听器运行时 Vue 提供的事件载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEventHandlers<TEvent> : VueEventHandlers
 	{
 		/// <summary>
@@ -55,7 +53,6 @@ public static partial class Vue
 	/// one property per listener.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueAttributeListeners : VueProps
 	{
 		/// <summary>
@@ -75,7 +72,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TEvent">每个侦听器所期望的事件载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueAttributeListeners<TEvent> : VueAttributeListeners
 	{
 		/// <summary>
@@ -95,7 +91,6 @@ public static partial class Vue
 	/// on canonical members like <c>Props</c>, <c>Emits</c>, and <c>Inject</c>.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	[CollectionBuilder(typeof(VueNamesOrOptionsCollectionBuilder), nameof(VueNamesOrOptionsCollectionBuilder.Create))]
 	public readonly union VueNamesOrOptions(string[], VueProps) : IEnumerable<string>
 	{
@@ -216,7 +211,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">所有注册表条目使用的属性值类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VuePropRegistry<TValue> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -262,7 +256,6 @@ public static partial class Vue
 	/// array-form <c>Emits</c> surface.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEmitRegistry : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -285,7 +278,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="T0">第一个事件载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEmitRegistry<T0> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -309,7 +301,6 @@ public static partial class Vue
 	/// <typeparam name="T0">第一个事件载荷类型。</typeparam>
 	/// <typeparam name="T1">第二个事件载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEmitRegistry<T0, T1> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -334,7 +325,6 @@ public static partial class Vue
 	/// <typeparam name="T1">第二个事件载荷类型。</typeparam>
 	/// <typeparam name="T2">第三个事件载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEmitRegistry<T0, T1, T2> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -360,7 +350,6 @@ public static partial class Vue
 	/// <typeparam name="T2">第三个事件载荷类型。</typeparam>
 	/// <typeparam name="T3">第四个事件载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueEmitRegistry<T0, T1, T2, T3> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -734,7 +723,6 @@ public static partial class Vue
 	/// <c>slots</c> option.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueSlots : IVueOptionsBag
 	{
 		/// <summary>
@@ -756,7 +744,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TScope">传递给每个插槽回调的作用域载荷类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueScopedSlots<TScope> : VueSlots
 	{
 		/// <summary>

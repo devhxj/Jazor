@@ -6,7 +6,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[Description("@#")]
 public sealed record CounterOptionsComputed : VueProps
 {
     public Func<int> Count { get; init; } = default!;
@@ -20,7 +19,6 @@ public sealed record CounterOptionsComputed : VueProps
     public Func<string> AuditTag { get; init; } = default!;
 }
 
-[Description("@#")]
 public sealed record CounterOptionsMethods : VueProps
 {
     public Action Increment { get; init; } = default!;

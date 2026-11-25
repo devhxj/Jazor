@@ -122,7 +122,6 @@ public enum FloatingStrategy
 /// A value usable as a reference or floating target: a real DOM <c>Element</c> or a mounted Vue component public instance.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union FloatingMaybeElement(Element, Vue.VueComponentPublicInstance);
 
 /// <summary>
@@ -130,7 +129,6 @@ public readonly union FloatingMaybeElement(Element, Vue.VueComponentPublicInstan
 /// A middleware object created by factories such as <c>offset()</c> or <c>shift()</c> and consumed internally.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class FloatingMiddleware
 {
     private FloatingMiddleware()
@@ -142,7 +140,6 @@ public sealed class FloatingMiddleware
 /// 浮层的二维坐标。
 /// The two-dimensional coordinates of the floating element.
 /// </summary>
-[Description("@#")]
 public record FloatingCoords
 {
     /// <summary>水平坐标。The x coordinate.</summary>
@@ -158,7 +155,6 @@ public record FloatingCoords
 /// 元素尺寸。
 /// The element dimensions.
 /// </summary>
-[Description("@#")]
 public record FloatingDimensions
 {
     /// <summary>宽度。The width.</summary>
@@ -174,7 +170,6 @@ public record FloatingDimensions
 /// 元素矩形：坐标与尺寸的组合。
 /// An element rectangle combining coordinates and dimensions.
 /// </summary>
-[Description("@#")]
 public record FloatingRect
 {
     /// <summary>水平坐标。The x coordinate.</summary>
@@ -198,7 +193,6 @@ public record FloatingRect
 /// 四边溢出量；键为 top/right/bottom/left。
 /// The overflow amounts for each side; keys are top/right/bottom/left.
 /// </summary>
-[Description("@#")]
 public record FloatingSideObject
 {
     /// <summary>顶部溢出量。The top overflow.</summary>
@@ -222,7 +216,6 @@ public record FloatingSideObject
 /// 参考元素与浮层元素的矩形对。
 /// The rectangle pair for the reference and floating elements.
 /// </summary>
-[Description("@#")]
 public record FloatingElementRects
 {
     /// <summary>参考元素矩形。The reference element rectangle.</summary>
@@ -238,7 +231,6 @@ public record FloatingElementRects
 /// 参与定位的元素对。
 /// The element pair used for positioning.
 /// </summary>
-[Description("@#")]
 public record FloatingElements
 {
     /// <summary>参考元素。The reference element.</summary>
@@ -254,7 +246,6 @@ public record FloatingElements
 /// 中间件返回的数据；按中间件名索引，未使用的键为 undefined。
 /// Data returned by middleware, indexed by middleware name; unused keys are undefined.
 /// </summary>
-[Description("@#")]
 public record FloatingMiddlewareData
 {
     /// <summary>arrow 中间件数据（含居中偏移）。Data from the <c>arrow</c> middleware, including the center offset.</summary>
@@ -278,7 +269,6 @@ public record FloatingMiddlewareData
 /// arrow 中间件的定位数据。
 /// Positioning data produced by the <c>arrow</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingArrowData
 {
     /// <summary>箭头相对浮层中心的偏移。The arrow offset from the floating element center.</summary>
@@ -302,7 +292,6 @@ public record FloatingArrowData
 /// 摆放修正中间件（flip、shift）的索引数据。
 /// Index data produced by placement-modifying middleware such as <c>flip</c> and <c>shift</c>.
 /// </summary>
-[Description("@#")]
 public record FloatingPlacementData
 {
     /// <summary>实际选中的候选索引；undefined 表示未修正。The chosen candidate index; undefined when no adjustment was made.</summary>
@@ -314,7 +303,6 @@ public record FloatingPlacementData
 /// hide 中间件的裁剪数据。
 /// Clipping data produced by the <c>hide</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingHideData
 {
     /// <summary>参考元素是否被裁剪。Whether the reference element is clipped.</summary>
@@ -330,7 +318,6 @@ public record FloatingHideData
 /// 应用于浮层元素的定位样式。
 /// The positioning styles to apply to the floating element.
 /// </summary>
-[Description("@#")]
 public record FloatingStyles
 {
     /// <summary>CSS position 策略。The CSS position strategy.</summary>
@@ -358,7 +345,6 @@ public record FloatingStyles
 /// <c>computePosition()</c> 的返回结果。
 /// The result returned by <c>computePosition()</c>.
 /// </summary>
-[Description("@#")]
 public record FloatingComputePositionReturn
 {
     /// <summary>水平坐标。The x coordinate.</summary>
@@ -386,7 +372,6 @@ public record FloatingComputePositionReturn
 /// <c>computePosition()</c> 的选项对象。
 /// Options for <c>computePosition()</c>.
 /// </summary>
-[Description("@#")]
 public record FloatingComputePositionConfig
 {
     /// <summary>初始摆放方位。The initial placement.</summary>
@@ -406,7 +391,6 @@ public record FloatingComputePositionConfig
 /// <c>offset()</c> 中间件的选项：数值或按主轴/交叉轴/对准轴给出的偏移。
 /// Options for the <c>offset()</c> middleware: a number or per-axis offsets.
 /// </summary>
-[Description("@#")]
 public record FloatingOffsetValue
 {
     /// <summary>主轴（摆放方向）偏移。The offset along the main axis.</summary>
@@ -426,7 +410,6 @@ public record FloatingOffsetValue
 /// detectOverflow 的溢出检测选项，被 shift/flip/size 等中间件共享。
 /// Overflow-detection options shared by middleware such as shift, flip, and size.
 /// </summary>
-[Description("@#")]
 public record FloatingDetectOverflowOptions
 {
     /// <summary>裁剪边界：指定元素、元素数组或 <c>"clippingAncestors"</c>。The clipping boundary: an element, an element array, or <c>"clippingAncestors"</c>.</summary>
@@ -455,7 +438,6 @@ public record FloatingDetectOverflowOptions
 /// The clipping boundary domain: a string (<c>"clippingAncestors"</c>), an element, or an element array.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union FloatingBoundary(string, Element, Element[]);
 
 /// <summary>
@@ -494,7 +476,6 @@ public enum FloatingElementContext
 /// <c>shift()</c> 中间件的选项。
 /// Options for the <c>shift()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingShiftOptions
 {
     /// <summary>主轴偏移；设为 true 时保持参考元素与浮层在主轴上的对齐。The main-axis offset; <c>true</c> keeps the main axis aligned with the reference.</summary>
@@ -531,7 +512,6 @@ public record FloatingShiftOptions
 /// The shift limiter; currently only the value returned by <c>limitShift()</c>.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class FloatingLimiter
 {
     private FloatingLimiter()
@@ -543,7 +523,6 @@ public sealed class FloatingLimiter
 /// <c>flip()</c> 中间件的选项。
 /// Options for the <c>flip()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingFlipOptions
 {
     /// <summary>主轴：是否在主轴溢出时翻转。The main axis: whether to flip along the main axis.</summary>
@@ -603,7 +582,6 @@ public enum FloatingFallbackStrategy
 /// <c>size()</c> 中间件的选项。
 /// Options for the <c>size()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingSizeOptions
 {
     /// <summary>溢出检测选项。The overflow-detection options.</summary>
@@ -627,7 +605,6 @@ public record FloatingSizeOptions
 /// <c>autoPlacement()</c> 中间件的选项。
 /// Options for the <c>autoPlacement()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingAutoPlacementOptions
 {
     /// <summary>候选摆放范围：<c>"all"</c>、<c>"sides"</c> 或 <c>"alignments"</c>。The candidate placement scope: <c>"all"</c>, <c>"sides"</c>, or <c>"alignments"</c>.</summary>
@@ -663,7 +640,6 @@ public record FloatingAutoPlacementOptions
 /// <c>hide()</c> 中间件的选项。
 /// Options for the <c>hide()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingHideOptions
 {
     /// <summary>参考元素溢出检测选项。Overflow-detection options for the reference element.</summary>
@@ -687,7 +663,6 @@ public record FloatingHideOptions
 /// <c>arrow()</c> 中间件的选项。
 /// Options for the <c>arrow()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingArrowOptions
 {
     /// <summary>箭头元素。The arrow element.</summary>
@@ -703,7 +678,6 @@ public record FloatingArrowOptions
 /// <c>inline()</c> 中间件的选项。
 /// Options for the <c>inline()</c> middleware.
 /// </summary>
-[Description("@#")]
 public record FloatingInlineOptions
 {
     /// <summary>是否应用基于行的改进定位。Whether to apply line-based positioning improvements.</summary>
@@ -735,7 +709,6 @@ public record FloatingInlineOptions
 /// <c>autoUpdate()</c> 的选项。
 /// Options for <c>autoUpdate()</c>.
 /// </summary>
-[Description("@#")]
 public record FloatingAutoUpdateOptions
 {
     /// <summary>祖先滚动时是否更新位置。Whether to update when an ancestor scrolls.</summary>
@@ -773,7 +746,6 @@ public delegate Action FloatingWhileElementsMounted(Element reference, Element f
 /// <c>useFloating()</c> 的选项对象。
 /// Options for <c>useFloating()</c>.
 /// </summary>
-[Description("@#")]
 public record FloatingUseOptions
 {
     /// <summary>浮层的开合状态；关闭时暂停定位。The open/close state of the floating element; positioning is paused when closed.</summary>
@@ -806,7 +778,6 @@ public record FloatingUseOptions
 /// The <c>useFloating()</c> return value: reactive coordinates, placement state, styles, and a manual update entry.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class FloatingUseReturn
 {
     /// <summary>

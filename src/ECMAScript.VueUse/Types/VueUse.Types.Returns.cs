@@ -9,7 +9,6 @@ namespace ECMAScript;
 /// The <c>useNetwork()</c> return value: reactive network connection state.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseNetworkReturn
 {
     /// <summary>
@@ -61,7 +60,6 @@ public abstract class VueUseNetworkReturn
 /// The <c>useBattery()</c> return value: reactive battery state.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseBatteryReturn
 {
     /// <summary>
@@ -97,7 +95,6 @@ public abstract class VueUseBatteryReturn
 /// The <c>useIdle()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseIdleReturn
 {
     /// <summary>
@@ -125,7 +122,6 @@ public abstract class VueUseIdleReturn
 /// The <c>useColorMode()</c> return value: the current mode, stored value, and system preference.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseColorModeReturn
 {
     /// <summary>
@@ -157,7 +153,6 @@ public abstract class VueUseColorModeReturn
 /// A pausable timing control returned by <c>useIntervalFn</c>, <c>useTimeoutFn</c>, and <c>useRafFn</c>.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUsePausableControl
 {
     /// <summary>
@@ -185,7 +180,6 @@ public abstract class VueUsePausableControl
 /// A VueUse event hook that triggers events and manages listeners.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseEventHook<T>
 {
     /// <summary>
@@ -211,7 +205,6 @@ public abstract class VueUseEventHook<T>
 /// <c>useAsyncState()</c> 的选项对象。
 /// Options for <c>useAsyncState()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseAsyncStateOptions
 {
     /// <summary>是否立即执行。Whether to execute immediately.</summary>
@@ -236,7 +229,6 @@ public record VueUseAsyncStateOptions
 /// The <c>useAsyncState()</c> return value: state refs and manual execution entries.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseAsyncStateReturn<T>
 {
     /// <summary>

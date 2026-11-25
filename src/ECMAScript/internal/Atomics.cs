@@ -6,7 +6,6 @@ namespace ECMAScript;
 /// JavaScript <c>Atomics.waitAsync</c> 返回的对象形状；<c>value</c> 可为立即状态字符串或解析为状态的 Promise，因此明确保留联合类型。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class AtomicsWaitAsyncResult
 {
 	/// <summary>

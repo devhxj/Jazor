@@ -9,7 +9,7 @@ namespace ECMAScript;
 /// Curated date-fns locale contract; properties mirror the date-fns/locale named exports.
 /// </summary>
 [ECMAScript("date-fns/locale")]
-[Description("@#")]
+[Boundary]
 public static partial class DateFnsLocale
 {
     /// <summary>de locale 对象。The de locale object.</summary>

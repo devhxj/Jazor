@@ -296,7 +296,9 @@ internal sealed class PreviewBindingEmitter
             var enumValueName = WebIdlNaming.ToPascalCase(string.IsNullOrEmpty(value) ? "Empty" : value);
             // WebIDL enum tokens are wire values. The C# name is only an authoring projection.
             AppendDocumentation(builder, GetMemberDocumentation(declaration, index)?.Documentation, 1);
-            builder.AppendLine($"    [Description({JsonSerializer.Serialize($"@#{value}")})]");
+            builder.AppendLine(value.Length == 0
+                ? "    [ECMAScriptName(\"\")]"
+                : $"    [Description({JsonSerializer.Serialize($"@#{value}")})]");
             builder.Append($"    {enumValueName} = {index}");
             if (index < enumValues.Count - 1)
             {
@@ -322,7 +324,6 @@ internal sealed class PreviewBindingEmitter
 
         var builder = new StringBuilder();
         AppendDocumentation(builder, declaration.Documentation);
-        builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
         builder.Append($"public delegate {returnType} {callbackName}({parameters});");
         return builder.ToString();
@@ -365,7 +366,6 @@ internal sealed class PreviewBindingEmitter
         var partialKeyword = declaration.Partial == true ? " partial" : string.Empty;
         var builder = new StringBuilder();
         AppendDocumentation(builder, declaration.Documentation);
-        builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
         builder.AppendLine($"public{partialKeyword} sealed record {callbackInterfaceName}Literal");
         builder.AppendLine("{");
@@ -413,7 +413,6 @@ internal sealed class PreviewBindingEmitter
 
         var builder = new StringBuilder();
         AppendDocumentation(builder, operationDocumentation?.Documentation ?? interfaceDocumentation);
-        builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine("[Category(\"literal\")]");
         builder.Append($"public delegate {returnType} {callbackName}Callback({parameters});");
         return builder.ToString();
@@ -1239,7 +1238,6 @@ internal sealed class PreviewBindingEmitter
         var builder = new StringBuilder();
         AppendDocumentation(builder, documentation?.Documentation);
         AppendParameterDocumentation(builder, parameters);
-        builder.AppendLine("[Description(\"@#\")]");
         builder.Append(accessorInfo.HasSetter
             ? $"public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; set; }}"
             : $"public extern {inheritanceModifier}{returnType} this[{string.Join(", ", parameters.Select(static parameter => parameter.Signature))}] {{ get; }}");
@@ -1269,7 +1267,6 @@ internal sealed class PreviewBindingEmitter
         var valueType = ResolveInlineType(arguments[1].GetProperty("idlType"), namespaceName, "IndexerValue");
         var builder = new StringBuilder();
         AppendDocumentation(builder, documentation?.Documentation);
-        builder.AppendLine("[Description(\"@#\")]");
         builder.Append($"public extern {inheritanceModifier}{valueType} this[{indexType} {indexName}] {{ set; }}");
         return builder.ToString();
     }
@@ -1282,7 +1279,6 @@ internal sealed class PreviewBindingEmitter
         var builder = new StringBuilder();
         AppendDocumentation(builder, documentation);
         AppendParameterDocumentation(builder, parameters);
-        builder.AppendLine("[Description(\"@#\")]");
         builder.AppendLine($"[Jazor(\"{BuildDeleterInlineTemplate(parameters)}\")]");
         builder.Append($"public extern {inheritanceModifier}void Delete({string.Join(", ", parameters.Select(static parameter => parameter.Signature))});");
         return builder.ToString();
@@ -2043,7 +2039,6 @@ internal sealed class PreviewBindingEmitter
             builder.AppendLine("[System.Runtime.CompilerServices.Union]");
         }
 
-        builder.AppendLine("[Description(\"@#\")]");
         if (union.CollectionElementType is not null)
         {
             builder.AppendLine($"[System.Runtime.CompilerServices.CollectionBuilder(typeof({union.Name}CollectionBuilder), nameof({union.Name}CollectionBuilder.Create))]");

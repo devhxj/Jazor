@@ -10,7 +10,7 @@ namespace ECMAScript;
 /// API 应尽量保持 JavaScript 运行时形状；这些调整只是宿主语言适配，不代表另一套运行时模型。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
+[Boundary]
 [Jazor]
 public static partial class Global
 {

@@ -32,7 +32,6 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TStore">由 store 定义提供的类型化 store 投影。The typed store projection supplied by the store definition.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union PiniaStateMapValue<TStore>(string, PiniaMapStateSelector<TStore>)
 		where TStore : class
 	{

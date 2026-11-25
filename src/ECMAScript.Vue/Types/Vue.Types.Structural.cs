@@ -789,7 +789,6 @@ public static partial class Vue
 	/// names and values are linked refs for those properties.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueRefs
 	{
 		/// <summary>
@@ -816,7 +815,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TSource">源响应式对象契约。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueRefs<TSource> : VueRefs
 		where TSource : class
 	{

@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Jolt.Compiler" />
     <Compile Include="..\ECMAScript.Contract\GlobalUsings.cs" Link="Shared\GlobalUsings.cs" />
     <Compile Include="..\ECMAScript.Contract\IsExternalInit.cs" Link="Shared\IsExternalInit.cs" />
   </ItemGroup>

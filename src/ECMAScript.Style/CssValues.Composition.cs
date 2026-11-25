@@ -8,7 +8,6 @@ namespace ECMAScript.Style;
 
 /// <summary>Two padding sides; append one side to obtain a triple。双值 padding，可继续追加第三值。</summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssPaddingPair
 {
     internal CssPaddingPair() { }
@@ -20,7 +19,6 @@ public sealed class CssPaddingPair
 
 /// <summary>Three padding sides; append the left side to finish。三值 padding，可追加 left 值完成四边简写。</summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssPaddingTriple
 {
     internal CssPaddingTriple() { }

@@ -9,6 +9,7 @@
 - 定义白名单声明原语 `JazorAttribute` 与操作词汇 `Op`。
 - 提供最小 UI 标记契约 `IUIComponent`。
 - 提供统一的 ECMAScript 宿主/外部 ESM/组件绑定元数据 `ECMAScriptAttribute`。
+- 绑定容器可用 `[Boundary]` 截断由外层 C# 类型组成的 JavaScript 宿主名。
 - 提供 record-like host contract 的推导原语 `PropsAttribute` 与 `EmitsAttribute`。
 - 保持零外部依赖，供编译器、生成器和宿主绑定共同引用。
 

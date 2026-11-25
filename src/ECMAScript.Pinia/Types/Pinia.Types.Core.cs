@@ -143,7 +143,6 @@ public static partial class Pinia
 	/// mark functions as tracked store actions.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class SetupStoreHelpers
 	{
 		/// <summary>
@@ -566,7 +565,6 @@ public static partial class Pinia
 	/// members matching the subset they intend to patch.
 	/// </summary>
 	/// <typeparam name="TState">被 patch 的 state record。The state record being patched.</typeparam>
-	[Description("@#")]
 	public abstract record PiniaStatePatch<TState> : Vue.VueProps
 		where TState : PiniaStateTree;
 
@@ -579,7 +577,6 @@ public static partial class Pinia
 	/// allowing typical JavaScript payload shapes.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class PiniaValue
 	{
 		private PiniaValue()
@@ -769,7 +766,6 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TStore">正在转换为 refs 的 store 契约。The store contract being converted to refs.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class StoreRefs<TStore> : Vue.VueRefs<TStore>
 		where TStore : class
 	{

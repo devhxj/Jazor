@@ -5,7 +5,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[Description("@#")]
 public sealed record ActivityState : PiniaStateTree
 {
     public int CompletedActions { get; set; }
@@ -16,7 +15,6 @@ public sealed record ActivityState : PiniaStateTree
 }
 
 [ECMAScript]
-[Description("@#")]
 public abstract class ActivityStore : Store<ActivityState>
 {
     public extern int CompletedActions { get; set; }
@@ -32,13 +30,11 @@ public abstract class ActivityStore : Store<ActivityState>
     public extern void QueueReview();
 }
 
-[Description("@#")]
 public sealed record ActivityGetters : Vue.VueProps
 {
     public Func<string> Summary { get; init; } = default!;
 }
 
-[Description("@#")]
 public sealed record ActivityActions : Vue.VueProps
 {
     public Action<string> Capture { get; init; } = default!;

@@ -2055,6 +2055,7 @@ public sealed class CompilerCoverage98BoundaryTests
         var compilation = CreateCompilation(
             """
             using System;
+            using System.ComponentModel;
             using ECMAScript;
             [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
             public sealed class JazorAttribute : Attribute
@@ -2064,31 +2065,6 @@ public sealed class CompilerCoverage98BoundaryTests
             }
             [AttributeUsage(AttributeTargets.All)]
             public sealed class OtherAttribute : Attribute { }
-            [AttributeUsage(AttributeTargets.All)]
-            public sealed class ECMAScriptNameAttribute : Attribute
-            {
-                public ECMAScriptNameAttribute(string? name) { }
-            }
-            [AttributeUsage(AttributeTargets.All)]
-            public sealed class DescriptionAttribute : Attribute
-            {
-                public DescriptionAttribute(string? value) { }
-            }
-            namespace ECMAScript
-            {
-                [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
-                public sealed class ECMAScriptAttribute : Attribute { }
-                [AttributeUsage(AttributeTargets.Class)]
-                public sealed class ECMAScriptModuleAttribute : Attribute
-                {
-                    public ECMAScriptModuleAttribute(string path) { }
-                }
-                [AttributeUsage(AttributeTargets.Method)]
-                public sealed class ECMAScriptInlineAttribute : Attribute
-                {
-                    public ECMAScriptInlineAttribute(string template) { }
-                }
-            }
             [ECMAScript]
             public sealed class ImportShapes
             {
@@ -2101,7 +2077,7 @@ public sealed class CompilerCoverage98BoundaryTests
                 [Jazor(3, "load", "loadRuntime")] public void ImportWithRuntime() { }
                 [ECMAScriptName("  authored  "), Description("@#fallback")] public void Named() { }
                 [ECMAScriptName(""), Description("@#description")] public void EmptyNamed() { }
-                [Description("@#")] public void Boundary() { }
+                [Description("@#")] public void EmptyDescription() { }
                 [Description("ordinary")] public void OrdinaryDescription() { }
                 [ECMAScriptInline("value")] public void InlineValue() { }
                 [ECMAScriptInline(" ")] public void InlineBlank() { }
@@ -2113,7 +2089,8 @@ public sealed class CompilerCoverage98BoundaryTests
                 public void Overload(string value) { }
                 [ECMAScriptName("named-overload")] public void Overload(double value) { }
             }
-            """);
+            """, TestMetadataReferences.Net11.Add(
+                MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location)));
         var host = compilation.GetTypeByMetadataName("ImportShapes")!;
         var importMapping = GetPrivateStatic(
             typeof(Util),
@@ -2129,9 +2106,14 @@ public sealed class CompilerCoverage98BoundaryTests
             _ = Util.TryGetJazorImportRuntimeName(method, out _);
         }
 
-        var metadata = GetPrivateStatic(typeof(Util), "GetJavaScriptNameMetadata", typeof(ISymbol));
-        foreach (var method in host.GetMembers().OfType<IMethodSymbol>())
-            _ = metadata.Invoke(null, [method]);
+        var named = host.GetMembers("Named").Single();
+        var emptyNamed = host.GetMembers("EmptyNamed").Single();
+        var emptyDescription = host.GetMembers("EmptyDescription").Single();
+        Assert.AreEqual("authored", Util.GetSymbolConfigName(named));
+        Assert.AreEqual("EmptyNamed", Util.GetConfigOrSymbolName(emptyNamed));
+        Assert.AreEqual("EmptyDescription", Util.GetConfigOrSymbolName(emptyDescription));
+        Assert.IsFalse(Util.HasNameResolutionBoundary(emptyNamed));
+        Assert.IsFalse(Util.HasNameResolutionBoundary(emptyDescription));
 
         var moduleHost = compilation.GetTypeByMetadataName("ModuleShapes")!;
         foreach (var method in moduleHost.GetMembers().OfType<IMethodSymbol>())
@@ -3534,13 +3516,13 @@ public sealed class CompilerCoverage98BoundaryTests
                 .Single(static a => a.AttributeClass?.Name == "ECMAScriptAttribute")));
     }
 
-    private static CSharpCompilation CreateCompilation(string source)
+    private static CSharpCompilation CreateCompilation(string source, IEnumerable<MetadataReference>? references = null)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
         var compilation = CSharpCompilation.Create(
             "CompilerCoverage98Boundary_" + Guid.NewGuid().ToString("N"),
             [syntaxTree],
-            TestMetadataReferences.Net11,
+            references ?? TestMetadataReferences.Net11,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var errors = compilation.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)

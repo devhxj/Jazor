@@ -2,7 +2,6 @@ namespace ECMAScript;
 
 /// <summary>WebIDL 联合值：object、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct AlgorithmIdentifier
 {
     private readonly byte _kind;
@@ -44,7 +43,6 @@ public static implicit operator AlgorithmIdentifier(string value)
 
 /// <summary>WebIDL 联合值：ArrayBuffer、SharedArrayBuffer、IArrayBufferView。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct AllowSharedBufferSource
 {
     private readonly byte _kind;
@@ -184,7 +182,6 @@ public static implicit operator AllowSharedBufferSource(BigUint64Array value)
 
 /// <summary>WebIDL 联合值：IBufferSource、Blob、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct BlobPart
 {
     private readonly byte _kind;
@@ -330,7 +327,6 @@ public static implicit operator BlobPart(string value)
 
 /// <summary>WebIDL 联合值：IArrayBufferView、ArrayBuffer。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct BufferSource
 {
     private readonly byte _kind;
@@ -450,7 +446,6 @@ public static implicit operator BufferSource(ArrayBuffer value)
 
 /// <summary>WebIDL 联合值：IBufferSource、Blob、string、WriteParams。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct FileSystemWriteChunkType
 {
     private readonly byte _kind;
@@ -618,7 +613,6 @@ public static implicit operator FileSystemWriteChunkType(WriteParams value)
 
 /// <summary>WebIDL 联合值：string、IBufferSource。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct FontFaceSourceValue
 {
     private readonly byte _kind;
@@ -744,7 +738,6 @@ public static implicit operator FontFaceSourceValue(BigUint64Array value)
 
 /// <summary>WebIDL 联合值：IDBObjectStore、IDBIndex。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct IDBCursorSource
 {
     private readonly byte _kind;
@@ -786,7 +779,6 @@ public static IDBCursorSource FromIDBIndex(IDBIndex value)
 
 /// <summary>WebIDL 联合值：IDBObjectStore、IDBIndex、IDBCursor。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct IDBRequestSource
 {
     private readonly byte _kind;
@@ -848,7 +840,6 @@ public static IDBRequestSource FromIDBCursor(IDBCursor value)
 
 /// <summary>WebIDL 联合值：IAllowSharedBufferSource、ReadableStream。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct ImageBufferSource
 {
     private readonly byte _kind;
@@ -980,7 +971,6 @@ public static implicit operator ImageBufferSource(ReadableStream value)
 
 /// <summary>WebIDL 联合值：ImageBitmapSource、AudioBuffer、IBufferSource、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct LanguageModelMessageValue
 {
     private readonly byte _kind;
@@ -1148,7 +1138,6 @@ public static implicit operator LanguageModelMessageValue(string value)
 
 /// <summary>WebIDL 联合值：string、IBufferSource、NDEFMessageInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct NDEFMessageSource
 {
     private readonly byte _kind;
@@ -1294,7 +1283,6 @@ public static implicit operator NDEFMessageSource(NDEFMessageInit value)
 
 /// <summary>WebIDL 联合值：IBufferSource、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct PushMessageDataInit
 {
     private readonly byte _kind;
@@ -1420,7 +1408,6 @@ public static implicit operator PushMessageDataInit(string value)
 
 /// <summary>WebIDL 联合值：IBufferSource、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct PushSubscriptionOptionsInitApplicationServerKey
 {
     private readonly byte _kind;
@@ -1546,7 +1533,6 @@ public static implicit operator PushSubscriptionOptionsInitApplicationServerKey(
 
 /// <summary>WebIDL 联合值：IBufferSource、Blob、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct SendData
 {
     private readonly byte _kind;
@@ -1692,7 +1678,6 @@ public static implicit operator SendData(string value)
 
 /// <summary>WebIDL 联合值：string、IBufferSource。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct StructuralCacheValue11
 {
     private readonly byte _kind;
@@ -1818,7 +1803,6 @@ public static implicit operator StructuralCacheValue11(BigUint64Array value)
 
 /// <summary>WebIDL 联合值：IDBObjectStore、IDBIndex、IDBCursor。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct StructuralCacheValue39
 {
     private readonly byte _kind;
@@ -1880,7 +1864,6 @@ public static StructuralCacheValue39 FromIDBCursor(IDBCursor value)
 
 /// <summary>WebIDL 联合值：IDBObjectStore、IDBIndex。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct StructuralCacheValue41
 {
     private readonly byte _kind;
@@ -1922,7 +1905,6 @@ public static StructuralCacheValue41 FromIDBIndex(IDBIndex value)
 
 /// <summary>WebIDL 联合值：IBufferSource、JsonWebKey。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct StructuralCacheValue54
 {
     private readonly byte _kind;
@@ -2048,7 +2030,6 @@ public static implicit operator StructuralCacheValue54(JsonWebKey value)
 
 /// <summary>WebIDL 联合值：IBufferSource、Blob、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct StructuralCacheValue61
 {
     private readonly byte _kind;
@@ -2194,7 +2175,6 @@ public static implicit operator StructuralCacheValue61(string value)
 
 /// <summary>WebIDL 联合值：IBufferSource、JsonWebKey。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct SubtleCryptoImportKeyKeyData
 {
     private readonly byte _kind;
@@ -2320,7 +2300,6 @@ public static implicit operator SubtleCryptoImportKeyKeyData(JsonWebKey value)
 
 /// <summary>WebIDL 联合值：IBufferSource、Blob、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct WebSocketSendData
 {
     private readonly byte _kind;
@@ -2466,7 +2445,6 @@ public static implicit operator WebSocketSendData(string value)
 
 /// <summary>WebIDL 联合值：IBufferSource、Blob、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct WriteParamsData
 {
     private readonly byte _kind;
@@ -2612,7 +2590,6 @@ public static implicit operator WriteParamsData(string value)
 
 /// <summary>WebIDL 联合值：Blob、IBufferSource、FormData、URLSearchParams、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly struct XMLHttpRequestBodyInit
 {
     private readonly byte _kind;
@@ -2805,7 +2782,6 @@ public static implicit operator XMLHttpRequestBodyInit(string value)
 /// <summary>WebIDL 联合值：RouterRule、RouterRule[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(AddRoutesRulesCollectionBuilder), nameof(AddRoutesRulesCollectionBuilder.Create))]
 public readonly union AddRoutesRules(RouterRule, RouterRule[]) : IEnumerable<RouterRule>
 {
@@ -2849,7 +2825,6 @@ public static AddRoutesRules Create(ReadOnlySpan<RouterRule> items)
 /// <summary>WebIDL 联合值：string、UUID[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(AllowedBluetoothDeviceAllowedServicesCollectionBuilder), nameof(AllowedBluetoothDeviceAllowedServicesCollectionBuilder.Create))]
 public readonly union AllowedBluetoothDeviceAllowedServices(string, UUID[]) : IEnumerable<UUID>
 {
@@ -2893,7 +2868,6 @@ public static AllowedBluetoothDeviceAllowedServices Create(ReadOnlySpan<UUID> it
 /// <summary>WebIDL 联合值：RequestInfo、RequestInfo[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BackgroundFetchManagerFetchRequestsCollectionBuilder), nameof(BackgroundFetchManagerFetchRequestsCollectionBuilder.Create))]
 public readonly union BackgroundFetchManagerFetchRequests(RequestInfo, RequestInfo[]) : IEnumerable<RequestInfo>
 {
@@ -2941,7 +2915,6 @@ public static BackgroundFetchManagerFetchRequests Create(ReadOnlySpan<RequestInf
 /// <summary>WebIDL 联合值：CompositeOperationOrAuto、CompositeOperationOrAuto[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeCompositeCollectionBuilder), nameof(BasePropertyIndexedKeyframeCompositeCollectionBuilder.Create))]
 public readonly union BasePropertyIndexedKeyframeComposite(CompositeOperationOrAuto, CompositeOperationOrAuto[]) : IEnumerable<CompositeOperationOrAuto>
 {
@@ -2985,7 +2958,6 @@ public static BasePropertyIndexedKeyframeComposite Create(ReadOnlySpan<Composite
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeEasingCollectionBuilder), nameof(BasePropertyIndexedKeyframeEasingCollectionBuilder.Create))]
 public readonly union BasePropertyIndexedKeyframeEasing(string, string[]) : IEnumerable<string>
 {
@@ -3029,7 +3001,6 @@ public static BasePropertyIndexedKeyframeEasing Create(ReadOnlySpan<string> item
 /// <summary>WebIDL 联合值：double?、double?[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(BasePropertyIndexedKeyframeOffsetCollectionBuilder), nameof(BasePropertyIndexedKeyframeOffsetCollectionBuilder.Create))]
 public readonly struct BasePropertyIndexedKeyframeOffset : System.Runtime.CompilerServices.IUnion, IEnumerable<double?>
 {
@@ -3102,7 +3073,6 @@ public static BasePropertyIndexedKeyframeOffset Create(ReadOnlySpan<double?> ite
 /// <summary>WebIDL 联合值：uint、uint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CSSFontFeatureValuesMapSetValuesCollectionBuilder), nameof(CSSFontFeatureValuesMapSetValuesCollectionBuilder.Create))]
 public readonly union CSSFontFeatureValuesMapSetValues(uint, uint[]) : IEnumerable<uint>
 {
@@ -3146,7 +3116,6 @@ public static CSSFontFeatureValuesMapSetValues Create(ReadOnlySpan<uint> items)
 /// <summary>WebIDL 联合值：double、DOMPointInit、CanvasRenderingContext2DRoundRectRadii[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder), nameof(CanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder.Create))]
 public readonly union CanvasRenderingContext2DRoundRectRadiiValue(double, DOMPointInit, CanvasRenderingContext2DRoundRectRadii[]) : IEnumerable<CanvasRenderingContext2DRoundRectRadii>
 {
@@ -3199,7 +3168,6 @@ public static CanvasRenderingContext2DRoundRectRadiiValue Create(ReadOnlySpan<Ca
 /// <summary>WebIDL 联合值：string、string[]、ConstrainDOMStringParameters。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringCollectionBuilder), nameof(ConstrainDOMStringCollectionBuilder.Create))]
 public readonly union ConstrainDOMString(string, string[], ConstrainDOMStringParameters) : IEnumerable<string>
 {
@@ -3252,7 +3220,6 @@ public static ConstrainDOMString Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringParametersExactCollectionBuilder), nameof(ConstrainDOMStringParametersExactCollectionBuilder.Create))]
 public readonly union ConstrainDOMStringParametersExact(string, string[]) : IEnumerable<string>
 {
@@ -3296,7 +3263,6 @@ public static ConstrainDOMStringParametersExact Create(ReadOnlySpan<string> item
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainDOMStringParametersIdealCollectionBuilder), nameof(ConstrainDOMStringParametersIdealCollectionBuilder.Create))]
 public readonly union ConstrainDOMStringParametersIdeal(string, string[]) : IEnumerable<string>
 {
@@ -3340,7 +3306,6 @@ public static ConstrainDOMStringParametersIdeal Create(ReadOnlySpan<string> item
 /// <summary>WebIDL 联合值：Point2D[]、ConstrainPoint2DParameters。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ConstrainPoint2DCollectionBuilder), nameof(ConstrainPoint2DCollectionBuilder.Create))]
 public readonly union ConstrainPoint2D(Point2D[], ConstrainPoint2DParameters) : IEnumerable<Point2D>
 {
@@ -3384,7 +3349,6 @@ public static ConstrainPoint2D Create(ReadOnlySpan<Point2D> items)
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(CrossOriginStorageRequestFileHandleOptionsOriginsCollectionBuilder), nameof(CrossOriginStorageRequestFileHandleOptionsOriginsCollectionBuilder.Create))]
 public readonly union CrossOriginStorageRequestFileHandleOptionsOrigins(string, string[]) : IEnumerable<string>
 {
@@ -3428,7 +3392,6 @@ public static CrossOriginStorageRequestFileHandleOptionsOrigins Create(ReadOnlyS
 /// <summary>WebIDL 联合值：string、double[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DOMMatrixInitValueCollectionBuilder), nameof(DOMMatrixInitValueCollectionBuilder.Create))]
 public readonly union DOMMatrixInitValue(string, double[]) : IEnumerable<double>
 {
@@ -3472,7 +3435,6 @@ public static DOMMatrixInitValue Create(ReadOnlySpan<double> items)
 /// <summary>WebIDL 联合值：string、double[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DOMMatrixReadOnlyInitCollectionBuilder), nameof(DOMMatrixReadOnlyInitCollectionBuilder.Create))]
 public readonly union DOMMatrixReadOnlyInit(string, double[]) : IEnumerable<double>
 {
@@ -3516,7 +3478,6 @@ public static DOMMatrixReadOnlyInit Create(ReadOnlySpan<double> items)
 /// <summary>WebIDL 联合值：double?、double?[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueCollectionBuilder), nameof(DefaultValueCollectionBuilder.Create))]
 public readonly struct DefaultValue : System.Runtime.CompilerServices.IUnion, IEnumerable<double?>
 {
@@ -3589,7 +3550,6 @@ public static DefaultValue Create(ReadOnlySpan<double?> items)
 /// <summary>WebIDL 联合值：CompositeOperationOrAuto、CompositeOperationOrAuto[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValue2CollectionBuilder), nameof(DefaultValueValue2CollectionBuilder.Create))]
 public readonly union DefaultValueValue2(CompositeOperationOrAuto, CompositeOperationOrAuto[]) : IEnumerable<CompositeOperationOrAuto>
 {
@@ -3633,7 +3593,6 @@ public static DefaultValueValue2 Create(ReadOnlySpan<CompositeOperationOrAuto> i
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValue3CollectionBuilder), nameof(DefaultValueValue3CollectionBuilder.Create))]
 public readonly union DefaultValueValue3(string, string[]) : IEnumerable<string>
 {
@@ -3677,7 +3636,6 @@ public static DefaultValueValue3 Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(DefaultValueValueCollectionBuilder), nameof(DefaultValueValueCollectionBuilder.Create))]
 public readonly union DefaultValueValue(string, string[]) : IEnumerable<string>
 {
@@ -3721,7 +3679,6 @@ public static DefaultValueValue Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(FilePickerAcceptTypeAcceptValueCollectionBuilder), nameof(FilePickerAcceptTypeAcceptValueCollectionBuilder.Create))]
 public readonly union FilePickerAcceptTypeAcceptValue(string, string[]) : IEnumerable<string>
 {
@@ -3765,7 +3722,6 @@ public static FilePickerAcceptTypeAcceptValue Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：Float32Array、GLfloat[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Float32ListCollectionBuilder), nameof(Float32ListCollectionBuilder.Create))]
 public readonly union Float32List(Float32Array, GLfloat[]) : IEnumerable<GLfloat>
 {
@@ -3809,7 +3765,6 @@ public static Float32List Create(ReadOnlySpan<GLfloat> items)
 /// <summary>WebIDL 联合值：string[][]、Dictionary&lt;string, string&gt;。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(HeadersInitCollectionBuilder), nameof(HeadersInitCollectionBuilder.Create))]
 public readonly union HeadersInit(string[][], Dictionary<string, string>) : IEnumerable<string[]>
 {
@@ -3853,7 +3808,6 @@ public static HeadersInit Create(ReadOnlySpan<string[]> items)
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBDatabaseTransactionStoreNamesCollectionBuilder), nameof(IDBDatabaseTransactionStoreNamesCollectionBuilder.Create))]
 public readonly union IDBDatabaseTransactionStoreNames(string, string[]) : IEnumerable<string>
 {
@@ -3897,7 +3851,6 @@ public static IDBDatabaseTransactionStoreNames Create(ReadOnlySpan<string> items
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBObjectStoreCreateIndexKeyPathCollectionBuilder), nameof(IDBObjectStoreCreateIndexKeyPathCollectionBuilder.Create))]
 public readonly union IDBObjectStoreCreateIndexKeyPath(string, string[]) : IEnumerable<string>
 {
@@ -3941,7 +3894,6 @@ public static IDBObjectStoreCreateIndexKeyPath Create(ReadOnlySpan<string> items
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IDBObjectStoreParametersKeyPathCollectionBuilder), nameof(IDBObjectStoreParametersKeyPathCollectionBuilder.Create))]
 public readonly union IDBObjectStoreParametersKeyPath(string, string[]) : IEnumerable<string>
 {
@@ -3985,7 +3937,6 @@ public static IDBObjectStoreParametersKeyPath Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：RouterRule、RouterRule[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(InstallEventAddRoutesRulesCollectionBuilder), nameof(InstallEventAddRoutesRulesCollectionBuilder.Create))]
 public readonly union InstallEventAddRoutesRules(RouterRule, RouterRule[]) : IEnumerable<RouterRule>
 {
@@ -4029,7 +3980,6 @@ public static InstallEventAddRoutesRules Create(ReadOnlySpan<RouterRule> items)
 /// <summary>WebIDL 联合值：Int32Array、GLint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Int32ListCollectionBuilder), nameof(Int32ListCollectionBuilder.Create))]
 public readonly union Int32List(Int32Array, GLint[]) : IEnumerable<GLint>
 {
@@ -4073,7 +4023,6 @@ public static Int32List Create(ReadOnlySpan<GLint> items)
 /// <summary>WebIDL 联合值：double、double[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(IntersectionObserverInitThresholdCollectionBuilder), nameof(IntersectionObserverInitThresholdCollectionBuilder.Create))]
 public readonly union IntersectionObserverInitThreshold(double, double[]) : IEnumerable<double>
 {
@@ -4117,7 +4066,6 @@ public static IntersectionObserverInitThreshold Create(ReadOnlySpan<double> item
 /// <summary>WebIDL 联合值：string、LanguageModelMessageContent[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(LanguageModelMessageContentValueCollectionBuilder), nameof(LanguageModelMessageContentValueCollectionBuilder.Create))]
 public readonly union LanguageModelMessageContentValue(string, LanguageModelMessageContent[]) : IEnumerable<LanguageModelMessageContent>
 {
@@ -4161,7 +4109,6 @@ public static LanguageModelMessageContentValue Create(ReadOnlySpan<LanguageModel
 /// <summary>WebIDL 联合值：LanguageModelMessage[]、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(LanguageModelPromptCollectionBuilder), nameof(LanguageModelPromptCollectionBuilder.Create))]
 public readonly union LanguageModelPrompt(LanguageModelMessage[], string) : IEnumerable<LanguageModelMessage>
 {
@@ -4205,7 +4152,6 @@ public static LanguageModelPrompt Create(ReadOnlySpan<LanguageModelMessage> item
 /// <summary>WebIDL 联合值：uint、uint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(MLGraphBuilderSplitSplitsCollectionBuilder), nameof(MLGraphBuilderSplitSplitsCollectionBuilder.Create))]
 public readonly union MLGraphBuilderSplitSplits(uint, uint[]) : IEnumerable<uint>
 {
@@ -4249,7 +4195,6 @@ public static MLGraphBuilderSplitSplits Create(ReadOnlySpan<uint> items)
 /// <summary>WebIDL 联合值：double、DOMPointInit、OffscreenCanvasRenderingContext2DRoundRectRadii[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder), nameof(OffscreenCanvasRenderingContext2DRoundRectRadiiValueCollectionBuilder.Create))]
 public readonly union OffscreenCanvasRenderingContext2DRoundRectRadiiValue(double, DOMPointInit, OffscreenCanvasRenderingContext2DRoundRectRadii[]) : IEnumerable<OffscreenCanvasRenderingContext2DRoundRectRadii>
 {
@@ -4302,7 +4247,6 @@ public static OffscreenCanvasRenderingContext2DRoundRectRadiiValue Create(ReadOn
 /// <summary>WebIDL 联合值：double、DOMPointInit、Path2DRoundRectRadii[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Path2DRoundRectRadiiValueCollectionBuilder), nameof(Path2DRoundRectRadiiValueCollectionBuilder.Create))]
 public readonly union Path2DRoundRectRadiiValue(double, DOMPointInit, Path2DRoundRectRadii[]) : IEnumerable<Path2DRoundRectRadii>
 {
@@ -4355,7 +4299,6 @@ public static Path2DRoundRectRadiiValue Create(ReadOnlySpan<Path2DRoundRectRadii
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(RTCIceServerUrlsCollectionBuilder), nameof(RTCIceServerUrlsCollectionBuilder.Create))]
 public readonly union RTCIceServerUrls(string, string[]) : IEnumerable<string>
 {
@@ -4399,7 +4342,6 @@ public static RTCIceServerUrls Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：double、DOMPointInit、RoundRectRadii[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(RoundRectRadiiValueCollectionBuilder), nameof(RoundRectRadiiValueCollectionBuilder.Create))]
 public readonly union RoundRectRadiiValue(double, DOMPointInit, RoundRectRadii[]) : IEnumerable<RoundRectRadii>
 {
@@ -4452,7 +4394,6 @@ public static RoundRectRadiiValue Create(ReadOnlySpan<RoundRectRadii> items)
 /// <summary>WebIDL 联合值：uint、uint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(SetValuesCollectionBuilder), nameof(SetValuesCollectionBuilder.Create))]
 public readonly union SetValues(uint, uint[]) : IEnumerable<uint>
 {
@@ -4496,7 +4437,6 @@ public static SetValues Create(ReadOnlySpan<uint> items)
 /// <summary>WebIDL 联合值：uint、uint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue12CollectionBuilder), nameof(StructuralCacheValue12CollectionBuilder.Create))]
 public readonly union StructuralCacheValue12(uint, uint[]) : IEnumerable<uint>
 {
@@ -4540,7 +4480,6 @@ public static StructuralCacheValue12 Create(ReadOnlySpan<uint> items)
 /// <summary>WebIDL 联合值：string、double[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue26CollectionBuilder), nameof(StructuralCacheValue26CollectionBuilder.Create))]
 public readonly union StructuralCacheValue26(string, double[]) : IEnumerable<double>
 {
@@ -4584,7 +4523,6 @@ public static StructuralCacheValue26 Create(ReadOnlySpan<double> items)
 /// <summary>WebIDL 联合值：double、DOMPointInit、StructuralCacheValue2[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue3CollectionBuilder), nameof(StructuralCacheValue3CollectionBuilder.Create))]
 public readonly union StructuralCacheValue3(double, DOMPointInit, StructuralCacheValue2[]) : IEnumerable<StructuralCacheValue2>
 {
@@ -4637,7 +4575,6 @@ public static StructuralCacheValue3 Create(ReadOnlySpan<StructuralCacheValue2> i
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue40CollectionBuilder), nameof(StructuralCacheValue40CollectionBuilder.Create))]
 public readonly union StructuralCacheValue40(string, string[]) : IEnumerable<string>
 {
@@ -4681,7 +4618,6 @@ public static StructuralCacheValue40 Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：RouterRule、RouterRule[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue43CollectionBuilder), nameof(StructuralCacheValue43CollectionBuilder.Create))]
 public readonly union StructuralCacheValue43(RouterRule, RouterRule[]) : IEnumerable<RouterRule>
 {
@@ -4725,7 +4661,6 @@ public static StructuralCacheValue43 Create(ReadOnlySpan<RouterRule> items)
 /// <summary>WebIDL 联合值：string[][]、Dictionary&lt;string, string&gt;、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue48CollectionBuilder), nameof(StructuralCacheValue48CollectionBuilder.Create))]
 public readonly union StructuralCacheValue48(string[][], Dictionary<string, string>, string) : IEnumerable<string[]>
 {
@@ -4778,7 +4713,6 @@ public static StructuralCacheValue48 Create(ReadOnlySpan<string[]> items)
 /// <summary>WebIDL 联合值：Int32Array、GLint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue55CollectionBuilder), nameof(StructuralCacheValue55CollectionBuilder.Create))]
 public readonly union StructuralCacheValue55(Int32Array, GLint[]) : IEnumerable<GLint>
 {
@@ -4822,7 +4756,6 @@ public static StructuralCacheValue55 Create(ReadOnlySpan<GLint> items)
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue56CollectionBuilder), nameof(StructuralCacheValue56CollectionBuilder.Create))]
 public readonly union StructuralCacheValue56(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -4866,7 +4799,6 @@ public static StructuralCacheValue56 Create(ReadOnlySpan<GLsizei> items)
 /// <summary>WebIDL 联合值：Uint32Array、GLuint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue57CollectionBuilder), nameof(StructuralCacheValue57CollectionBuilder.Create))]
 public readonly union StructuralCacheValue57(Uint32Array, GLuint[]) : IEnumerable<GLuint>
 {
@@ -4910,7 +4842,6 @@ public static StructuralCacheValue57 Create(ReadOnlySpan<GLuint> items)
 /// <summary>WebIDL 联合值：uint、uint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue58CollectionBuilder), nameof(StructuralCacheValue58CollectionBuilder.Create))]
 public readonly union StructuralCacheValue58(uint, uint[]) : IEnumerable<uint>
 {
@@ -4954,7 +4885,6 @@ public static StructuralCacheValue58 Create(ReadOnlySpan<uint> items)
 /// <summary>WebIDL 联合值：RequestInfo、RequestInfo[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheValue7CollectionBuilder), nameof(StructuralCacheValue7CollectionBuilder.Create))]
 public readonly union StructuralCacheValue7(RequestInfo, RequestInfo[]) : IEnumerable<RequestInfo>
 {
@@ -5002,7 +4932,6 @@ public static StructuralCacheValue7 Create(ReadOnlySpan<RequestInfo> items)
 /// <summary>WebIDL 联合值：string[][]、Dictionary&lt;string, string&gt;、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(URLSearchParamsInitCollectionBuilder), nameof(URLSearchParamsInitCollectionBuilder.Create))]
 public readonly union URLSearchParamsInit(string[][], Dictionary<string, string>, string) : IEnumerable<string[]>
 {
@@ -5055,7 +4984,6 @@ public static URLSearchParamsInit Create(ReadOnlySpan<string[]> items)
 /// <summary>WebIDL 联合值：Uint32Array、GLuint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(Uint32ListCollectionBuilder), nameof(Uint32ListCollectionBuilder.Create))]
 public readonly union Uint32List(Uint32Array, GLuint[]) : IEnumerable<GLuint>
 {
@@ -5099,7 +5027,6 @@ public static Uint32List Create(ReadOnlySpan<GLuint> items)
 /// <summary>WebIDL 联合值：uint、uint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(VibratePatternCollectionBuilder), nameof(VibratePatternCollectionBuilder.Create))]
 public readonly union VibratePattern(uint, uint[]) : IEnumerable<uint>
 {
@@ -5143,7 +5070,6 @@ public static VibratePattern Create(ReadOnlySpan<uint> items)
 /// <summary>WebIDL 联合值：string、ViewTimelineOptionsInset[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(ViewTimelineOptionsInsetValueCollectionBuilder), nameof(ViewTimelineOptionsInsetValueCollectionBuilder.Create))]
 public readonly union ViewTimelineOptionsInsetValue(string, ViewTimelineOptionsInset[]) : IEnumerable<ViewTimelineOptionsInset>
 {
@@ -5187,7 +5113,6 @@ public static ViewTimelineOptionsInsetValue Create(ReadOnlySpan<ViewTimelineOpti
 /// <summary>WebIDL 联合值：Uint32Array、GLuint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLBaseInstancesList(Uint32Array, GLuint[]) : IEnumerable<GLuint>
 {
@@ -5231,7 +5156,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstan
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5275,7 +5199,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstan
 /// <summary>WebIDL 联合值：Int32Array、GLint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLFirstsList(Int32Array, GLint[]) : IEnumerable<GLint>
 {
@@ -5319,7 +5242,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstan
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstancedBaseInstanceWEBGLInstanceCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5363,7 +5285,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawArraysInstan
 /// <summary>WebIDL 联合值：Uint32Array、GLuint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseInstancesList(Uint32Array, GLuint[]) : IEnumerable<GLuint>
 {
@@ -5407,7 +5328,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInst
 /// <summary>WebIDL 联合值：Int32Array、GLint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLBaseVerticesList(Int32Array, GLint[]) : IEnumerable<GLint>
 {
@@ -5451,7 +5371,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInst
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5495,7 +5414,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInst
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLInstanceCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5539,7 +5457,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInst
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLOffsetsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5583,7 +5500,6 @@ public static WEBGLMultiDrawInstancedBaseVertexBaseInstanceMultiDrawElementsInst
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5627,7 +5543,6 @@ public static WEBGLMultiDrawMultiDrawArraysInstancedWEBGLCountsList Create(ReadO
 /// <summary>WebIDL 联合值：Int32Array、GLint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList(Int32Array, GLint[]) : IEnumerable<GLint>
 {
@@ -5671,7 +5586,6 @@ public static WEBGLMultiDrawMultiDrawArraysInstancedWEBGLFirstsList Create(ReadO
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5715,7 +5629,6 @@ public static WEBGLMultiDrawMultiDrawArraysInstancedWEBGLInstanceCountsList Crea
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysWEBGLCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawArraysWEBGLCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5759,7 +5672,6 @@ public static WEBGLMultiDrawMultiDrawArraysWEBGLCountsList Create(ReadOnlySpan<G
 /// <summary>WebIDL 联合值：Int32Array、GLint[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawArraysWEBGLFirstsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList(Int32Array, GLint[]) : IEnumerable<GLint>
 {
@@ -5803,7 +5715,6 @@ public static WEBGLMultiDrawMultiDrawArraysWEBGLFirstsList Create(ReadOnlySpan<G
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5847,7 +5758,6 @@ public static WEBGLMultiDrawMultiDrawElementsInstancedWEBGLCountsList Create(Rea
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5891,7 +5801,6 @@ public static WEBGLMultiDrawMultiDrawElementsInstancedWEBGLInstanceCountsList Cr
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5935,7 +5844,6 @@ public static WEBGLMultiDrawMultiDrawElementsInstancedWEBGLOffsetsList Create(Re
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsWEBGLCountsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawElementsWEBGLCountsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -5979,7 +5887,6 @@ public static WEBGLMultiDrawMultiDrawElementsWEBGLCountsList Create(ReadOnlySpan
 /// <summary>WebIDL 联合值：Int32Array、GLsizei[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBuilder), nameof(WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsListCollectionBuilder.Create))]
 public readonly union WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList(Int32Array, GLsizei[]) : IEnumerable<GLsizei>
 {
@@ -6023,7 +5930,6 @@ public static WEBGLMultiDrawMultiDrawElementsWEBGLOffsetsList Create(ReadOnlySpa
 /// <summary>WebIDL 联合值：string、string[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WebSocketProtocolsCollectionBuilder), nameof(WebSocketProtocolsCollectionBuilder.Create))]
 public readonly union WebSocketProtocols(string, string[]) : IEnumerable<string>
 {
@@ -6067,7 +5973,6 @@ public static WebSocketProtocols Create(ReadOnlySpan<string> items)
 /// <summary>WebIDL 联合值：HTMLElement、int。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AddBefore(HTMLElement, int)
 {
 
@@ -6093,7 +5998,6 @@ public static implicit operator AddBefore(int value)
 /// <summary>WebIDL 联合值：AddEventListenerOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AddEventListenerOptionsValue(AddEventListenerOptions, bool)
 {
 
@@ -6119,7 +6023,6 @@ public static implicit operator AddEventListenerOptionsValue(bool value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AfterNodes(Node, string)
 {
 
@@ -6145,7 +6048,6 @@ public static implicit operator AfterNodes(string value)
 /// <summary>WebIDL 联合值：double、KeyframeAnimationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AnimateOptions(double, KeyframeAnimationOptions)
 {
 
@@ -6171,7 +6073,6 @@ public static implicit operator AnimateOptions(KeyframeAnimationOptions value)
 /// <summary>WebIDL 联合值：TimelineRangeOffset、CSSNumericValue、CSSKeywordValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AnimationTriggerOptionsExitRangeEnd(TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string)
 {
 
@@ -6215,7 +6116,6 @@ public static implicit operator AnimationTriggerOptionsExitRangeEnd(string value
 /// <summary>WebIDL 联合值：TimelineRangeOffset、CSSNumericValue、CSSKeywordValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AnimationTriggerOptionsExitRangeStart(TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string)
 {
 
@@ -6259,7 +6159,6 @@ public static implicit operator AnimationTriggerOptionsExitRangeStart(string val
 /// <summary>WebIDL 联合值：TimelineRangeOffset、CSSNumericValue、CSSKeywordValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AnimationTriggerOptionsRangeEnd(TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string)
 {
 
@@ -6303,7 +6202,6 @@ public static implicit operator AnimationTriggerOptionsRangeEnd(string value)
 /// <summary>WebIDL 联合值：TimelineRangeOffset、CSSNumericValue、CSSKeywordValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AnimationTriggerOptionsRangeStart(TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string)
 {
 
@@ -6347,7 +6245,6 @@ public static implicit operator AnimationTriggerOptionsRangeStart(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AppendNodes(Node, string)
 {
 
@@ -6373,7 +6270,6 @@ public static implicit operator AppendNodes(string value)
 /// <summary>WebIDL 联合值：Int8Array、Int16Array、Int32Array、Uint8Array、Uint16Array、Uint32Array、Uint8ClampedArray、BigInt64Array、BigUint64Array、Float16Array、Float32Array、Float64Array、DataView。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ArrayBufferView(Int8Array, Int16Array, Int32Array, Uint8Array, Uint16Array, Uint32Array, Uint8ClampedArray, BigInt64Array, BigUint64Array, Float16Array, Float32Array, Float64Array, DataView)
 {
 
@@ -6498,7 +6394,6 @@ public static implicit operator ArrayBufferView(DataView value)
 /// <summary>WebIDL 联合值：Element、Text。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AssignNodes(Element, Text)
 {
 
@@ -6524,7 +6419,6 @@ public static implicit operator AssignNodes(Text value)
 /// <summary>WebIDL 联合值：AudioContextLatencyCategory、double。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AudioContextOptionsLatencyHint(AudioContextLatencyCategory, double)
 {
 
@@ -6550,7 +6444,6 @@ public static implicit operator AudioContextOptionsLatencyHint(double value)
 /// <summary>WebIDL 联合值：AudioContextRenderSizeCategory、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AudioContextOptionsRenderSizeHint(AudioContextRenderSizeCategory, uint)
 {
 
@@ -6576,7 +6469,6 @@ public static implicit operator AudioContextOptionsRenderSizeHint(uint value)
 /// <summary>WebIDL 联合值：string、AudioSinkOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AudioContextOptionsSinkId(string, AudioSinkOptions)
 {
 
@@ -6602,7 +6494,6 @@ public static implicit operator AudioContextOptionsSinkId(AudioSinkOptions value
 /// <summary>WebIDL 联合值：string、AudioSinkOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AudioContextSetSinkId(string, AudioSinkOptions)
 {
 
@@ -6628,7 +6519,6 @@ public static implicit operator AudioContextSetSinkId(AudioSinkOptions value)
 /// <summary>WebIDL 联合值：string、AudioSinkInfo。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AudioContextSinkId(string, AudioSinkInfo)
 {
 
@@ -6654,7 +6544,6 @@ public static implicit operator AudioContextSinkId(AudioSinkInfo value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BeforeNodes(Node, string)
 {
 
@@ -6680,7 +6569,6 @@ public static implicit operator BeforeNodes(string value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothAdvertisingEventInitUUIDs(string, uint)
 {
 
@@ -6706,7 +6594,6 @@ public static implicit operator BluetoothAdvertisingEventInitUUIDs(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothCharacteristicUUID(string, uint)
 {
 
@@ -6732,7 +6619,6 @@ public static implicit operator BluetoothCharacteristicUUID(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothDescriptorUUID(string, uint)
 {
 
@@ -6758,7 +6644,6 @@ public static implicit operator BluetoothDescriptorUUID(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothServiceUUID(string, uint)
 {
 
@@ -6784,7 +6669,6 @@ public static implicit operator BluetoothServiceUUID(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothUUIDGetCharacteristicName(string, uint)
 {
 
@@ -6810,7 +6694,6 @@ public static implicit operator BluetoothUUIDGetCharacteristicName(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothUUIDGetDescriptorName(string, uint)
 {
 
@@ -6836,7 +6719,6 @@ public static implicit operator BluetoothUUIDGetDescriptorName(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BluetoothUUIDGetServiceName(string, uint)
 {
 
@@ -6862,7 +6744,6 @@ public static implicit operator BluetoothUUIDGetServiceName(uint value)
 /// <summary>WebIDL 联合值：ReadableStream、XMLHttpRequestBodyInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union BodyInit(ReadableStream, XMLHttpRequestBodyInit)
 {
 
@@ -6888,7 +6769,6 @@ public static implicit operator BodyInit(XMLHttpRequestBodyInit value)
 /// <summary>WebIDL 联合值：Element、CSSPseudoElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSPseudoElementParent(Element, CSSPseudoElement)
 {
 
@@ -6914,7 +6794,6 @@ public static implicit operator CSSPseudoElementParent(CSSPseudoElement value)
 /// <summary>WebIDL 联合值：HTMLOrSVGImageElement、HTMLVideoElement、HTMLCanvasElement、ImageBitmap、OffscreenCanvas、VideoFrame。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CanvasImageSource(HTMLOrSVGImageElement, HTMLVideoElement, HTMLCanvasElement, ImageBitmap, OffscreenCanvas, VideoFrame)
 {
 
@@ -6976,7 +6855,6 @@ public static implicit operator CanvasImageSource(VideoFrame value)
 /// <summary>WebIDL 联合值：string、CanvasGradient、CanvasPattern。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CanvasRenderingContext2DFillStyle(string, CanvasGradient, CanvasPattern)
 {
 
@@ -7011,7 +6889,6 @@ public static implicit operator CanvasRenderingContext2DFillStyle(CanvasPattern 
 /// <summary>WebIDL 联合值：double、DOMPointInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CanvasRenderingContext2DRoundRectRadii(double, DOMPointInit)
 {
 
@@ -7037,7 +6914,6 @@ public static implicit operator CanvasRenderingContext2DRoundRectRadii(DOMPointI
 /// <summary>WebIDL 联合值：string、CanvasGradient、CanvasPattern。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CanvasRenderingContext2DStrokeStyle(string, CanvasGradient, CanvasPattern)
 {
 
@@ -7072,7 +6948,6 @@ public static implicit operator CanvasRenderingContext2DStrokeStyle(CanvasPatter
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CharacterDataAfterNodes(Node, string)
 {
 
@@ -7098,7 +6973,6 @@ public static implicit operator CharacterDataAfterNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CharacterDataBeforeNodes(Node, string)
 {
 
@@ -7124,7 +6998,6 @@ public static implicit operator CharacterDataBeforeNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CharacterDataReplaceWithNodes(Node, string)
 {
 
@@ -7150,7 +7023,6 @@ public static implicit operator CharacterDataReplaceWithNodes(string value)
 /// <summary>WebIDL 联合值：string、Blob。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ClipboardItemDataValue(string, Blob)
 {
 
@@ -7176,7 +7048,6 @@ public static implicit operator ClipboardItemDataValue(Blob value)
 /// <summary>WebIDL 联合值：CollectedClientAdditionalPaymentData、CollectedClientAdditionalPaymentRegistrationData。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CollectedClientPaymentDataPayment(CollectedClientAdditionalPaymentData, CollectedClientAdditionalPaymentRegistrationData)
 {
 
@@ -7202,7 +7073,6 @@ public static implicit operator CollectedClientPaymentDataPayment(CollectedClien
 /// <summary>WebIDL 联合值：bool、ConstrainBooleanParameters。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ConstrainBoolean(bool, ConstrainBooleanParameters)
 {
 
@@ -7228,7 +7098,6 @@ public static implicit operator ConstrainBoolean(ConstrainBooleanParameters valu
 /// <summary>WebIDL 联合值：bool、string、ConstrainBooleanOrDOMStringParameters。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ConstrainBooleanOrDOMString(bool, string, ConstrainBooleanOrDOMStringParameters)
 {
 
@@ -7263,7 +7132,6 @@ public static implicit operator ConstrainBooleanOrDOMString(ConstrainBooleanOrDO
 /// <summary>WebIDL 联合值：bool、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ConstrainBooleanOrDOMStringParametersExact(bool, string)
 {
 
@@ -7289,7 +7157,6 @@ public static implicit operator ConstrainBooleanOrDOMStringParametersExact(strin
 /// <summary>WebIDL 联合值：bool、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ConstrainBooleanOrDOMStringParametersIdeal(bool, string)
 {
 
@@ -7315,7 +7182,6 @@ public static implicit operator ConstrainBooleanOrDOMStringParametersIdeal(strin
 /// <summary>WebIDL 联合值：double、ConstrainDoubleRange。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ConstrainDouble(double, ConstrainDoubleRange)
 {
 
@@ -7341,7 +7207,6 @@ public static implicit operator ConstrainDouble(ConstrainDoubleRange value)
 /// <summary>WebIDL 联合值：uint、ConstrainULongRange。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ConstrainULong(uint, ConstrainULongRange)
 {
 
@@ -7367,7 +7232,6 @@ public static implicit operator ConstrainULong(ConstrainULongRange value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CreateContextualFragmentString(TrustedHTML, string)
 {
 
@@ -7393,7 +7257,6 @@ public static implicit operator CreateContextualFragmentString(string value)
 /// <summary>WebIDL 联合值：string、ElementCreationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CreateElementNSOptions(string, ElementCreationOptions)
 {
 
@@ -7419,7 +7282,6 @@ public static implicit operator CreateElementNSOptions(ElementCreationOptions va
 /// <summary>WebIDL 联合值：string、ElementCreationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CreateElementOptions(string, ElementCreationOptions)
 {
 
@@ -7445,7 +7307,6 @@ public static implicit operator CreateElementOptions(ElementCreationOptions valu
 /// <summary>WebIDL 联合值：Blob、MediaSource。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CreateObjectURLObj(Blob, MediaSource)
 {
 
@@ -7471,7 +7332,6 @@ public static implicit operator CreateObjectURLObj(MediaSource value)
 /// <summary>WebIDL 联合值：SmallCryptoKeyID、BigInt。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CryptoKeyID(SmallCryptoKeyID, BigInt)
 {
 
@@ -7497,7 +7357,6 @@ public static implicit operator CryptoKeyID(BigInt value)
 /// <summary>WebIDL 联合值：MediaList、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CustomMediaQuery(MediaList, bool)
 {
 
@@ -7523,7 +7382,6 @@ public static implicit operator CustomMediaQuery(bool value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DOMParserParseFromString(TrustedHTML, string)
 {
 
@@ -7549,7 +7407,6 @@ public static implicit operator DOMParserParseFromString(string value)
 /// <summary>WebIDL 联合值：DigitalCredentialPresentationProtocol、DigitalCredentialIssuanceProtocol。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DigitalCredentialProtocol(DigitalCredentialPresentationProtocol, DigitalCredentialIssuanceProtocol)
 {
 
@@ -7575,7 +7432,6 @@ public static implicit operator DigitalCredentialProtocol(DigitalCredentialIssua
 /// <summary>WebIDL 联合值：bool、MediaTrackConstraints。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DisplayMediaStreamOptionsAudio(bool, MediaTrackConstraints)
 {
 
@@ -7601,7 +7457,6 @@ public static implicit operator DisplayMediaStreamOptionsAudio(MediaTrackConstra
 /// <summary>WebIDL 联合值：bool、MediaTrackConstraints。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DisplayMediaStreamOptionsVideo(bool, MediaTrackConstraints)
 {
 
@@ -7627,7 +7482,6 @@ public static implicit operator DisplayMediaStreamOptionsVideo(MediaTrackConstra
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentAppendNodes(Node, string)
 {
 
@@ -7653,7 +7507,6 @@ public static implicit operator DocumentAppendNodes(string value)
 /// <summary>WebIDL 联合值：string、ElementCreationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentCreateElementNSOptions(string, ElementCreationOptions)
 {
 
@@ -7679,7 +7532,6 @@ public static implicit operator DocumentCreateElementNSOptions(ElementCreationOp
 /// <summary>WebIDL 联合值：string、ElementCreationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentCreateElementOptions(string, ElementCreationOptions)
 {
 
@@ -7705,7 +7557,6 @@ public static implicit operator DocumentCreateElementOptions(ElementCreationOpti
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentFragmentAppendNodes(Node, string)
 {
 
@@ -7731,7 +7582,6 @@ public static implicit operator DocumentFragmentAppendNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentFragmentPrependNodes(Node, string)
 {
 
@@ -7757,7 +7607,6 @@ public static implicit operator DocumentFragmentPrependNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentFragmentReplaceChildrenNodes(Node, string)
 {
 
@@ -7783,7 +7632,6 @@ public static implicit operator DocumentFragmentReplaceChildrenNodes(string valu
 /// <summary>WebIDL 联合值：bool、ImportNodeOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentImportNodeOptions(bool, ImportNodeOptions)
 {
 
@@ -7809,7 +7657,6 @@ public static implicit operator DocumentImportNodeOptions(ImportNodeOptions valu
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentParseHTMLUnsafeHtml(TrustedHTML, string)
 {
 
@@ -7835,7 +7682,6 @@ public static implicit operator DocumentParseHTMLUnsafeHtml(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentPrependNodes(Node, string)
 {
 
@@ -7861,7 +7707,6 @@ public static implicit operator DocumentPrependNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentReplaceChildrenNodes(Node, string)
 {
 
@@ -7887,7 +7732,6 @@ public static implicit operator DocumentReplaceChildrenNodes(string value)
 /// <summary>WebIDL 联合值：ViewTransitionUpdateCallback、StartViewTransitionOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentStartViewTransitionCallbackOptions(ViewTransitionUpdateCallback, StartViewTransitionOptions)
 {
 
@@ -7913,7 +7757,6 @@ public static implicit operator DocumentStartViewTransitionCallbackOptions(Start
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentTypeAfterNodes(Node, string)
 {
 
@@ -7939,7 +7782,6 @@ public static implicit operator DocumentTypeAfterNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentTypeBeforeNodes(Node, string)
 {
 
@@ -7965,7 +7807,6 @@ public static implicit operator DocumentTypeBeforeNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentTypeReplaceWithNodes(Node, string)
 {
 
@@ -7991,7 +7832,6 @@ public static implicit operator DocumentTypeReplaceWithNodes(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentWriteText(TrustedHTML, string)
 {
 
@@ -8017,7 +7857,6 @@ public static implicit operator DocumentWriteText(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union DocumentWritelnText(TrustedHTML, string)
 {
 
@@ -8043,7 +7882,6 @@ public static implicit operator DocumentWritelnText(string value)
 /// <summary>WebIDL 联合值：double、CSSNumericValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union EffectTimingDuration(double, CSSNumericValue, string)
 {
 
@@ -8078,7 +7916,6 @@ public static implicit operator EffectTimingDuration(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementAfterNodes(Node, string)
 {
 
@@ -8104,7 +7941,6 @@ public static implicit operator ElementAfterNodes(string value)
 /// <summary>WebIDL 联合值：double、KeyframeAnimationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementAnimateOptions(double, KeyframeAnimationOptions)
 {
 
@@ -8130,7 +7966,6 @@ public static implicit operator ElementAnimateOptions(KeyframeAnimationOptions v
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementAppendNodes(Node, string)
 {
 
@@ -8156,7 +7991,6 @@ public static implicit operator ElementAppendNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementBeforeNodes(Node, string)
 {
 
@@ -8182,7 +8016,6 @@ public static implicit operator ElementBeforeNodes(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementInnerHTML(TrustedHTML, string)
 {
 
@@ -8208,7 +8041,6 @@ public static implicit operator ElementInnerHTML(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementInsertAdjacentHTMLString(TrustedHTML, string)
 {
 
@@ -8234,7 +8066,6 @@ public static implicit operator ElementInsertAdjacentHTMLString(string value)
 /// <summary>WebIDL 联合值：FileRef、string、FormData。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementInternalsSetFormValue(FileRef, string, FormData)
 {
 
@@ -8269,7 +8100,6 @@ public static implicit operator ElementInternalsSetFormValue(FormData value)
 /// <summary>WebIDL 联合值：FileRef、string、FormData。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementInternalsSetFormValueState(FileRef, string, FormData)
 {
 
@@ -8304,7 +8134,6 @@ public static implicit operator ElementInternalsSetFormValueState(FormData value
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementOuterHTML(TrustedHTML, string)
 {
 
@@ -8330,7 +8159,6 @@ public static implicit operator ElementOuterHTML(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementPrependNodes(Node, string)
 {
 
@@ -8356,7 +8184,6 @@ public static implicit operator ElementPrependNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementReplaceChildrenNodes(Node, string)
 {
 
@@ -8382,7 +8209,6 @@ public static implicit operator ElementReplaceChildrenNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementReplaceWithNodes(Node, string)
 {
 
@@ -8408,7 +8234,6 @@ public static implicit operator ElementReplaceWithNodes(string value)
 /// <summary>WebIDL 联合值：bool、ScrollIntoViewOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementScrollIntoViewArg(bool, ScrollIntoViewOptions)
 {
 
@@ -8434,7 +8259,6 @@ public static implicit operator ElementScrollIntoViewArg(ScrollIntoViewOptions v
 /// <summary>WebIDL 联合值：TrustedType、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementSetAttributeNSValue(TrustedType, string)
 {
 
@@ -8460,7 +8284,6 @@ public static implicit operator ElementSetAttributeNSValue(string value)
 /// <summary>WebIDL 联合值：TrustedType、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementSetAttributeValue(TrustedType, string)
 {
 
@@ -8486,7 +8309,6 @@ public static implicit operator ElementSetAttributeValue(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementSetHTMLUnsafeHtml(TrustedHTML, string)
 {
 
@@ -8512,7 +8334,6 @@ public static implicit operator ElementSetHTMLUnsafeHtml(string value)
 /// <summary>WebIDL 联合值：ViewTransitionUpdateCallback、StartViewTransitionOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ElementStartViewTransitionCallbackOptions(ViewTransitionUpdateCallback, StartViewTransitionOptions)
 {
 
@@ -8538,7 +8359,6 @@ public static implicit operator ElementStartViewTransitionCallbackOptions(StartV
 /// <summary>WebIDL 联合值：EventListenerLiteral、HandleEventCallback。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union EventListenerValue(EventListenerLiteral, HandleEventCallback)
 {
 
@@ -8564,7 +8384,6 @@ public static implicit operator EventListenerValue(HandleEventCallback value)
 /// <summary>WebIDL 联合值：AddEventListenerOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union EventTargetAddEventListenerOptions(AddEventListenerOptions, bool)
 {
 
@@ -8590,7 +8409,6 @@ public static implicit operator EventTargetAddEventListenerOptions(bool value)
 /// <summary>WebIDL 联合值：EventListenerOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union EventTargetRemoveEventListenerOptions(EventListenerOptions, bool)
 {
 
@@ -8616,7 +8434,6 @@ public static implicit operator EventTargetRemoveEventListenerOptions(bool value
 /// <summary>WebIDL 联合值：Client、ServiceWorker、MessagePort。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ExtendableMessageEventInitSource(Client, ServiceWorker, MessagePort)
 {
 
@@ -8651,7 +8468,6 @@ public static implicit operator ExtendableMessageEventInitSource(MessagePort val
 /// <summary>WebIDL 联合值：Client、ServiceWorker、MessagePort。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ExtendableMessageEventSource(Client, ServiceWorker, MessagePort)
 {
 
@@ -8686,7 +8502,6 @@ public static implicit operator ExtendableMessageEventSource(MessagePort value)
 /// <summary>WebIDL 联合值：string、ArrayBuffer。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union FileReaderResult(string, ArrayBuffer)
 {
 
@@ -8712,7 +8527,6 @@ public static implicit operator FileReaderResult(ArrayBuffer value)
 /// <summary>WebIDL 联合值：FileRef、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union FormDataEntryValue(FileRef, string)
 {
 
@@ -8738,7 +8552,6 @@ public static implicit operator FormDataEntryValue(string value)
 /// <summary>WebIDL 联合值：Text、Element、CSSPseudoElement、DocumentRef。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GeometryNode(Text, Element, CSSPseudoElement, DocumentRef)
 {
 
@@ -8782,7 +8595,6 @@ public static implicit operator GeometryNode(DocumentRef value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GetCharacteristicName(string, uint)
 {
 
@@ -8808,7 +8620,6 @@ public static implicit operator GetCharacteristicName(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GetDescriptorName(string, uint)
 {
 
@@ -8834,7 +8645,6 @@ public static implicit operator GetDescriptorName(uint value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GetServiceName(string, uint)
 {
 
@@ -8860,7 +8670,6 @@ public static implicit operator GetServiceName(uint value)
 /// <summary>WebIDL 联合值：double、EffectTiming。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GroupEffectTiming(double, EffectTiming)
 {
 
@@ -8886,7 +8695,6 @@ public static implicit operator GroupEffectTiming(EffectTiming value)
 /// <summary>WebIDL 联合值：HTMLCollection、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLAllCollectionItemResult(HTMLCollection, Element)
 {
 
@@ -8912,7 +8720,6 @@ public static implicit operator HTMLAllCollectionItemResult(Element value)
 /// <summary>WebIDL 联合值：HTMLCollection、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLAllCollectionNamedItemResult(HTMLCollection, Element)
 {
 
@@ -8938,7 +8745,6 @@ public static implicit operator HTMLAllCollectionNamedItemResult(Element value)
 /// <summary>WebIDL 联合值：bool、double、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLElementHidden(bool, double, string)
 {
 
@@ -8973,7 +8779,6 @@ public static implicit operator HTMLElementHidden(string value)
 /// <summary>WebIDL 联合值：TogglePopoverOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLElementTogglePopoverOptions(TogglePopoverOptions, bool)
 {
 
@@ -8999,7 +8804,6 @@ public static implicit operator HTMLElementTogglePopoverOptions(bool value)
 /// <summary>WebIDL 联合值：RadioNodeList、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLFormControlsCollectionNamedItemResult(RadioNodeList, Element)
 {
 
@@ -9025,7 +8829,6 @@ public static implicit operator HTMLFormControlsCollectionNamedItemResult(Elemen
 /// <summary>WebIDL 联合值：RadioNodeList、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLFormElementResult(RadioNodeList, Element)
 {
 
@@ -9051,7 +8854,6 @@ public static implicit operator HTMLFormElementResult(Element value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLIFrameElementSrcdoc(TrustedHTML, string)
 {
 
@@ -9077,7 +8879,6 @@ public static implicit operator HTMLIFrameElementSrcdoc(string value)
 /// <summary>WebIDL 联合值：HTMLElement、int。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLOptionsCollectionAddBefore(HTMLElement, int)
 {
 
@@ -9103,7 +8904,6 @@ public static implicit operator HTMLOptionsCollectionAddBefore(int value)
 /// <summary>WebIDL 联合值：HTMLOptionElement、HTMLOptGroupElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLOptionsCollectionAddElement(HTMLOptionElement, HTMLOptGroupElement)
 {
 
@@ -9129,7 +8929,6 @@ public static implicit operator HTMLOptionsCollectionAddElement(HTMLOptGroupElem
 /// <summary>WebIDL 联合值：HTMLImageElement、SVGImageElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLOrSVGImageElement(HTMLImageElement, SVGImageElement)
 {
 
@@ -9155,7 +8954,6 @@ public static implicit operator HTMLOrSVGImageElement(SVGImageElement value)
 /// <summary>WebIDL 联合值：HTMLScriptElement、SVGScriptElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLOrSVGScriptElement(HTMLScriptElement, SVGScriptElement)
 {
 
@@ -9181,7 +8979,6 @@ public static implicit operator HTMLOrSVGScriptElement(SVGScriptElement value)
 /// <summary>WebIDL 联合值：HTMLElement、int。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLSelectElementAddBefore(HTMLElement, int)
 {
 
@@ -9207,7 +9004,6 @@ public static implicit operator HTMLSelectElementAddBefore(int value)
 /// <summary>WebIDL 联合值：HTMLOptionElement、HTMLOptGroupElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLSelectElementAddElement(HTMLOptionElement, HTMLOptGroupElement)
 {
 
@@ -9233,7 +9029,6 @@ public static implicit operator HTMLSelectElementAddElement(HTMLOptGroupElement 
 /// <summary>WebIDL 联合值：Element、Text。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union HTMLSlotElementAssignNodes(Element, Text)
 {
 
@@ -9259,7 +9054,6 @@ public static implicit operator HTMLSlotElementAssignNodes(Text value)
 /// <summary>WebIDL 联合值：HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ImageBitmapRenderingContextCanvas(HTMLCanvasElement, OffscreenCanvas)
 {
 
@@ -9285,7 +9079,6 @@ public static implicit operator ImageBitmapRenderingContextCanvas(OffscreenCanva
 /// <summary>WebIDL 联合值：CanvasImageSource、Blob、ImageData。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ImageBitmapSource(CanvasImageSource, Blob, ImageData)
 {
 
@@ -9320,7 +9113,6 @@ public static implicit operator ImageBitmapSource(ImageData value)
 /// <summary>WebIDL 联合值：Uint8ClampedArray、Float16Array。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ImageDataArray(Uint8ClampedArray, Float16Array)
 {
 
@@ -9346,7 +9138,6 @@ public static implicit operator ImageDataArray(Float16Array value)
 /// <summary>WebIDL 联合值：bool、ImportNodeOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ImportNodeOptionsValue(bool, ImportNodeOptions)
 {
 
@@ -9372,7 +9163,6 @@ public static implicit operator ImportNodeOptionsValue(ImportNodeOptions value)
 /// <summary>WebIDL 联合值：TrustedScriptURL、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ImportScriptsUrls(TrustedScriptURL, string)
 {
 
@@ -9398,7 +9188,6 @@ public static implicit operator ImportScriptsUrls(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union InsertAdjacentHTMLString(TrustedHTML, string)
 {
 
@@ -9424,7 +9213,6 @@ public static implicit operator InsertAdjacentHTMLString(string value)
 /// <summary>WebIDL 联合值：Element、DocumentRef。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union IntersectionObserverInitRoot(Element, DocumentRef)
 {
 
@@ -9450,7 +9238,6 @@ public static implicit operator IntersectionObserverInitRoot(DocumentRef value)
 /// <summary>WebIDL 联合值：Element、DocumentRef。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union IntersectionObserverRoot(Element, DocumentRef)
 {
 
@@ -9476,7 +9263,6 @@ public static implicit operator IntersectionObserverRoot(DocumentRef value)
 /// <summary>WebIDL 联合值：TimelineRangeOffset、CSSNumericValue、CSSKeywordValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union KeyframeAnimationOptionsRangeEnd(TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string)
 {
 
@@ -9520,7 +9306,6 @@ public static implicit operator KeyframeAnimationOptionsRangeEnd(string value)
 /// <summary>WebIDL 联合值：TimelineRangeOffset、CSSNumericValue、CSSKeywordValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union KeyframeAnimationOptionsRangeStart(TimelineRangeOffset, CSSNumericValue, CSSKeywordValue, string)
 {
 
@@ -9564,7 +9349,6 @@ public static implicit operator KeyframeAnimationOptionsRangeStart(string value)
 /// <summary>WebIDL 联合值：double、KeyframeEffectOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union KeyframeEffectOptionsValue(double, KeyframeEffectOptions)
 {
 
@@ -9590,7 +9374,6 @@ public static implicit operator KeyframeEffectOptionsValue(KeyframeEffectOptions
 /// <summary>WebIDL 联合值：double、AutoKeyword。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union LineAndPositionSetting(double, AutoKeyword)
 {
 
@@ -9616,7 +9399,6 @@ public static implicit operator LineAndPositionSetting(AutoKeyword value)
 /// <summary>WebIDL 联合值：BigInt、double。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MLNumber(BigInt, double)
 {
 
@@ -9642,7 +9424,6 @@ public static implicit operator MLNumber(double value)
 /// <summary>WebIDL 联合值：MediaStream、MediaSource、Blob。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaProvider(MediaStream, MediaSource, Blob)
 {
 
@@ -9677,7 +9458,6 @@ public static implicit operator MediaProvider(Blob value)
 /// <summary>WebIDL 联合值：bool、MediaTrackConstraints。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaStreamConstraintsAudio(bool, MediaTrackConstraints)
 {
 
@@ -9703,7 +9483,6 @@ public static implicit operator MediaStreamConstraintsAudio(MediaTrackConstraint
 /// <summary>WebIDL 联合值：bool、MediaTrackConstraints。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaStreamConstraintsVideo(bool, MediaTrackConstraints)
 {
 
@@ -9729,7 +9508,6 @@ public static implicit operator MediaStreamConstraintsVideo(MediaTrackConstraint
 /// <summary>WebIDL 联合值：MediaStreamTrack、MediaStreamTrackHandle。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaStreamTrackOrHandle(MediaStreamTrack, MediaStreamTrackHandle)
 {
 
@@ -9755,7 +9533,6 @@ public static implicit operator MediaStreamTrackOrHandle(MediaStreamTrackHandle 
 /// <summary>WebIDL 联合值：MediaStreamTrackAudioStats、MediaStreamTrackVideoStats。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaStreamTrackStats(MediaStreamTrackAudioStats, MediaStreamTrackVideoStats)
 {
 
@@ -9781,7 +9558,6 @@ public static implicit operator MediaStreamTrackStats(MediaStreamTrackVideoStats
 /// <summary>WebIDL 联合值：bool、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaTrackCapabilitiesEchoCancellation(bool, string)
 {
 
@@ -9807,7 +9583,6 @@ public static implicit operator MediaTrackCapabilitiesEchoCancellation(string va
 /// <summary>WebIDL 联合值：bool、ConstrainDouble。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaTrackConstraintSetPan(bool, ConstrainDouble)
 {
 
@@ -9837,7 +9612,6 @@ public double? AsDouble => AsConstrainDouble?.AsDouble;
 /// <summary>WebIDL 联合值：bool、ConstrainDouble。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaTrackConstraintSetTilt(bool, ConstrainDouble)
 {
 
@@ -9867,7 +9641,6 @@ public double? AsDouble => AsConstrainDouble?.AsDouble;
 /// <summary>WebIDL 联合值：bool、ConstrainDouble。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaTrackConstraintSetZoom(bool, ConstrainDouble)
 {
 
@@ -9897,7 +9670,6 @@ public double? AsDouble => AsConstrainDouble?.AsDouble;
 /// <summary>WebIDL 联合值：bool、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MediaTrackSettingsEchoCancellation(bool, string)
 {
 
@@ -9923,7 +9695,6 @@ public static implicit operator MediaTrackSettingsEchoCancellation(string value)
 /// <summary>WebIDL 联合值：WindowProxy、MessagePort、ServiceWorker。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union MessageEventSource(WindowProxy, MessagePort, ServiceWorker)
 {
 
@@ -9958,7 +9729,6 @@ public static implicit operator MessageEventSource(ServiceWorker value)
 /// <summary>WebIDL 联合值：NodeFilterLiteral、AcceptNodeCallback。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union NodeFilterValue(NodeFilterLiteral, AcceptNodeCallback)
 {
 
@@ -9984,7 +9754,6 @@ public static implicit operator NodeFilterValue(AcceptNodeCallback value)
 /// <summary>WebIDL 联合值：ObservableSubscriptionCallback、ObservableInspector。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ObservableInspectorUnion(ObservableSubscriptionCallback, ObservableInspector)
 {
 
@@ -10010,7 +9779,6 @@ public static implicit operator ObservableInspectorUnion(ObservableInspector val
 /// <summary>WebIDL 联合值：ObservableSubscriptionCallback、SubscriptionObserver。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ObserverUnion(ObservableSubscriptionCallback, SubscriptionObserver)
 {
 
@@ -10036,7 +9804,6 @@ public static implicit operator ObserverUnion(SubscriptionObserver value)
 /// <summary>WebIDL 联合值：AudioContextRenderSizeCategory、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union OfflineAudioContextOptionsRenderSizeHint(AudioContextRenderSizeCategory, uint)
 {
 
@@ -10062,7 +9829,6 @@ public static implicit operator OfflineAudioContextOptionsRenderSizeHint(uint va
 /// <summary>WebIDL 联合值：string、CanvasGradient、CanvasPattern。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union OffscreenCanvasRenderingContext2DFillStyle(string, CanvasGradient, CanvasPattern)
 {
 
@@ -10097,7 +9863,6 @@ public static implicit operator OffscreenCanvasRenderingContext2DFillStyle(Canva
 /// <summary>WebIDL 联合值：double、DOMPointInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union OffscreenCanvasRenderingContext2DRoundRectRadii(double, DOMPointInit)
 {
 
@@ -10123,7 +9888,6 @@ public static implicit operator OffscreenCanvasRenderingContext2DRoundRectRadii(
 /// <summary>WebIDL 联合值：string、CanvasGradient、CanvasPattern。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union OffscreenCanvasRenderingContext2DStrokeStyle(string, CanvasGradient, CanvasPattern)
 {
 
@@ -10158,7 +9922,6 @@ public static implicit operator OffscreenCanvasRenderingContext2DStrokeStyle(Can
 /// <summary>WebIDL 联合值：OffscreenCanvasRenderingContext2D、ImageBitmapRenderingContext、WebGLRenderingContext、WebGL2RenderingContext、GPUCanvasContext。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union OffscreenRenderingContext(OffscreenCanvasRenderingContext2D, ImageBitmapRenderingContext, WebGLRenderingContext, WebGL2RenderingContext, GPUCanvasContext)
 {
 
@@ -10211,7 +9974,6 @@ public static implicit operator OffscreenRenderingContext(GPUCanvasContext value
 /// <summary>WebIDL 联合值：double、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union OptionalEffectTimingDuration(double, string)
 {
 
@@ -10237,7 +9999,6 @@ public static implicit operator OptionalEffectTimingDuration(string value)
 /// <summary>WebIDL 联合值：Element、CSSPseudoElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ParameterCurrentTarget(Element, CSSPseudoElement)
 {
 
@@ -10263,7 +10024,6 @@ public static implicit operator ParameterCurrentTarget(CSSPseudoElement value)
 /// <summary>WebIDL 联合值：EventRef、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ParameterEvent(EventRef, string)
 {
 
@@ -10289,7 +10049,6 @@ public static implicit operator ParameterEvent(string value)
 /// <summary>WebIDL 联合值：Sanitizer、SanitizerConfig、SanitizerPresets。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ParseHTMLUnsafeOptionsSanitizer(Sanitizer, SanitizerConfig, SanitizerPresets)
 {
 
@@ -10324,7 +10083,6 @@ public static implicit operator ParseHTMLUnsafeOptionsSanitizer(SanitizerPresets
 /// <summary>WebIDL 联合值：PasswordCredentialData、HTMLFormElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union PasswordCredentialInit(PasswordCredentialData, HTMLFormElement)
 {
 
@@ -10350,7 +10108,6 @@ public static implicit operator PasswordCredentialInit(HTMLFormElement value)
 /// <summary>WebIDL 联合值：Path2D、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union Path2DPath(Path2D, string)
 {
 
@@ -10376,7 +10133,6 @@ public static implicit operator Path2DPath(string value)
 /// <summary>WebIDL 联合值：double、DOMPointInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union Path2DRoundRectRadii(double, DOMPointInit)
 {
 
@@ -10402,7 +10158,6 @@ public static implicit operator Path2DRoundRectRadii(DOMPointInit value)
 /// <summary>WebIDL 联合值：string、double。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union PerformanceMeasureOptionsEnd(string, double)
 {
 
@@ -10428,7 +10183,6 @@ public static implicit operator PerformanceMeasureOptionsEnd(double value)
 /// <summary>WebIDL 联合值：string、double。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union PerformanceMeasureOptionsStart(string, double)
 {
 
@@ -10454,7 +10208,6 @@ public static implicit operator PerformanceMeasureOptionsStart(double value)
 /// <summary>WebIDL 联合值：string、PerformanceMeasureOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union PerformanceMeasureStartOrMeasureOptions(string, PerformanceMeasureOptions)
 {
 
@@ -10480,7 +10233,6 @@ public static implicit operator PerformanceMeasureStartOrMeasureOptions(Performa
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union PrependNodes(Node, string)
 {
 
@@ -10506,7 +10258,6 @@ public static implicit operator PrependNodes(string value)
 /// <summary>WebIDL 联合值：MediaStreamTrack、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RTCPeerConnectionAddTransceiverTrackOrKind(MediaStreamTrack, string)
 {
 
@@ -10532,7 +10283,6 @@ public static implicit operator RTCPeerConnectionAddTransceiverTrackOrKind(strin
 /// <summary>WebIDL 联合值：RTCRtpSFrameDecryptor、RTCRtpScriptTransform。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RTCRtpReceiverTransform(RTCRtpSFrameDecryptor, RTCRtpScriptTransform)
 {
 
@@ -10558,7 +10308,6 @@ public static implicit operator RTCRtpReceiverTransform(RTCRtpScriptTransform va
 /// <summary>WebIDL 联合值：RTCRtpSFrameEncryptor、RTCRtpScriptTransform。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RTCRtpSenderTransform(RTCRtpSFrameEncryptor, RTCRtpScriptTransform)
 {
 
@@ -10584,7 +10333,6 @@ public static implicit operator RTCRtpSenderTransform(RTCRtpScriptTransform valu
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RangeCreateContextualFragmentString(TrustedHTML, string)
 {
 
@@ -10610,7 +10358,6 @@ public static implicit operator RangeCreateContextualFragmentString(string value
 /// <summary>WebIDL 联合值：ReadableStreamDefaultController、ReadableByteStreamController。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ReadableStreamController(ReadableStreamDefaultController, ReadableByteStreamController)
 {
 
@@ -10636,7 +10383,6 @@ public static implicit operator ReadableStreamController(ReadableByteStreamContr
 /// <summary>WebIDL 联合值：ReadableStreamDefaultReader、ReadableStreamBYOBReader。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ReadableStreamReader(ReadableStreamDefaultReader, ReadableStreamBYOBReader)
 {
 
@@ -10662,7 +10408,6 @@ public static implicit operator ReadableStreamReader(ReadableStreamBYOBReader va
 /// <summary>WebIDL 联合值：EventListenerOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RemoveEventListenerOptions(EventListenerOptions, bool)
 {
 
@@ -10688,7 +10433,6 @@ public static implicit operator RemoveEventListenerOptions(bool value)
 /// <summary>WebIDL 联合值：CanvasRenderingContext2D、ImageBitmapRenderingContext、WebGLRenderingContext、WebGL2RenderingContext、GPUCanvasContext。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RenderingContext(CanvasRenderingContext2D, ImageBitmapRenderingContext, WebGLRenderingContext, WebGL2RenderingContext, GPUCanvasContext)
 {
 
@@ -10741,7 +10485,6 @@ public static implicit operator RenderingContext(GPUCanvasContext value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ReplaceChildrenNodes(Node, string)
 {
 
@@ -10767,7 +10510,6 @@ public static implicit operator ReplaceChildrenNodes(string value)
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ReplaceWithNodes(Node, string)
 {
 
@@ -10793,7 +10535,6 @@ public static implicit operator ReplaceWithNodes(string value)
 /// <summary>WebIDL 联合值：FenceEvent、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ReportEventType(FenceEvent, string)
 {
 
@@ -10819,7 +10560,6 @@ public static implicit operator ReportEventType(string value)
 /// <summary>WebIDL 联合值：Request、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RequestInfo(Request, string)
 {
 
@@ -10845,7 +10585,6 @@ public static implicit operator RequestInfo(string value)
 /// <summary>WebIDL 联合值：Float32Array、Float64Array、DOMMatrix。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RotationMatrixType(Float32Array, Float64Array, DOMMatrix)
 {
 
@@ -10880,7 +10619,6 @@ public static implicit operator RotationMatrixType(DOMMatrix value)
 /// <summary>WebIDL 联合值：double、DOMPointInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RoundRectRadii(double, DOMPointInit)
 {
 
@@ -10906,7 +10644,6 @@ public static implicit operator RoundRectRadii(DOMPointInit value)
 /// <summary>WebIDL 联合值：RouterSourceDict、RouterSourceEnum。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union RouterSource(RouterSourceDict, RouterSourceEnum)
 {
 
@@ -10932,7 +10669,6 @@ public static implicit operator RouterSource(RouterSourceEnum value)
 /// <summary>WebIDL 联合值：RTCEncodedVideoFrame、RTCEncodedAudioFrame。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SFrameTransformErrorEventFrame(RTCEncodedVideoFrame, RTCEncodedAudioFrame)
 {
 
@@ -10958,7 +10694,6 @@ public static implicit operator SFrameTransformErrorEventFrame(RTCEncodedAudioFr
 /// <summary>WebIDL 联合值：RTCEncodedVideoFrame、RTCEncodedAudioFrame。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SFrameTransformErrorEventInitFrame(RTCEncodedVideoFrame, RTCEncodedAudioFrame)
 {
 
@@ -10984,7 +10719,6 @@ public static implicit operator SFrameTransformErrorEventInitFrame(RTCEncodedAud
 /// <summary>WebIDL 联合值：string、TrustedScriptURL。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SVGAnimatedStringBaseVal(string, TrustedScriptURL)
 {
 
@@ -11010,7 +10744,6 @@ public static implicit operator SVGAnimatedStringBaseVal(TrustedScriptURL value)
 /// <summary>WebIDL 联合值：string、SanitizerAttributeNamespace。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SanitizerAttribute(string, SanitizerAttributeNamespace)
 {
 
@@ -11036,7 +10769,6 @@ public static implicit operator SanitizerAttribute(SanitizerAttributeNamespace v
 /// <summary>WebIDL 联合值：SanitizerConfig、SanitizerPresets。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SanitizerConfiguration(SanitizerConfig, SanitizerPresets)
 {
 
@@ -11062,7 +10794,6 @@ public static implicit operator SanitizerConfiguration(SanitizerPresets value)
 /// <summary>WebIDL 联合值：string、SanitizerElementNamespace。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SanitizerElement(string, SanitizerElementNamespace)
 {
 
@@ -11088,7 +10819,6 @@ public static implicit operator SanitizerElement(SanitizerElementNamespace value
 /// <summary>WebIDL 联合值：string、SanitizerElementNamespaceWithAttributes。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SanitizerElementWithAttributes(string, SanitizerElementNamespaceWithAttributes)
 {
 
@@ -11114,7 +10844,6 @@ public static implicit operator SanitizerElementWithAttributes(SanitizerElementN
 /// <summary>WebIDL 联合值：string、SanitizerProcessingInstruction。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SanitizerPI(string, SanitizerProcessingInstruction)
 {
 
@@ -11140,7 +10869,6 @@ public static implicit operator SanitizerPI(SanitizerProcessingInstruction value
 /// <summary>WebIDL 联合值：bool、ScrollIntoViewOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ScrollIntoViewArg(bool, ScrollIntoViewOptions)
 {
 
@@ -11166,7 +10894,6 @@ public static implicit operator ScrollIntoViewArg(ScrollIntoViewOptions value)
 /// <summary>WebIDL 联合值：DocumentRef、XMLHttpRequestBodyInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SendBody(DocumentRef, XMLHttpRequestBodyInit)
 {
 
@@ -11192,7 +10919,6 @@ public static implicit operator SendBody(XMLHttpRequestBodyInit value)
 /// <summary>WebIDL 联合值：double、EffectTiming。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SequenceEffectTiming(double, EffectTiming)
 {
 
@@ -11218,7 +10944,6 @@ public static implicit operator SequenceEffectTiming(EffectTiming value)
 /// <summary>WebIDL 联合值：TrustedScriptURL、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ServiceWorkerContainerRegisterScriptURL(TrustedScriptURL, string)
 {
 
@@ -11244,7 +10969,6 @@ public static implicit operator ServiceWorkerContainerRegisterScriptURL(string v
 /// <summary>WebIDL 联合值：TrustedType、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetAttributeNSValue(TrustedType, string)
 {
 
@@ -11270,7 +10994,6 @@ public static implicit operator SetAttributeNSValue(string value)
 /// <summary>WebIDL 联合值：TrustedType、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetAttributeValue(TrustedType, string)
 {
 
@@ -11296,7 +11019,6 @@ public static implicit operator SetAttributeValue(string value)
 /// <summary>WebIDL 联合值：FileRef、string、FormData。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetFormValueState(FileRef, string, FormData)
 {
 
@@ -11331,7 +11053,6 @@ public static implicit operator SetFormValueState(FormData value)
 /// <summary>WebIDL 联合值：Sanitizer、SanitizerConfig、SanitizerPresets。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetHTMLOptionsSanitizer(Sanitizer, SanitizerConfig, SanitizerPresets)
 {
 
@@ -11366,7 +11087,6 @@ public static implicit operator SetHTMLOptionsSanitizer(SanitizerPresets value)
 /// <summary>WebIDL 联合值：Sanitizer、SanitizerConfig、SanitizerPresets。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetHTMLUnsafeOptionsSanitizer(Sanitizer, SanitizerConfig, SanitizerPresets)
 {
 
@@ -11401,7 +11121,6 @@ public static implicit operator SetHTMLUnsafeOptionsSanitizer(SanitizerPresets v
 /// <summary>WebIDL 联合值：string、AudioSinkOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetSinkId(string, AudioSinkOptions)
 {
 
@@ -11427,7 +11146,6 @@ public static implicit operator SetSinkId(AudioSinkOptions value)
 /// <summary>WebIDL 联合值：Element、CSSPseudoElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ShadowAnimationNewTarget(Element, CSSPseudoElement)
 {
 
@@ -11453,7 +11171,6 @@ public static implicit operator ShadowAnimationNewTarget(CSSPseudoElement value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ShadowRootInnerHTML(TrustedHTML, string)
 {
 
@@ -11479,7 +11196,6 @@ public static implicit operator ShadowRootInnerHTML(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ShadowRootSetHTMLUnsafeHtml(TrustedHTML, string)
 {
 
@@ -11505,7 +11221,6 @@ public static implicit operator ShadowRootSetHTMLUnsafeHtml(string value)
 /// <summary>WebIDL 联合值：string、SharedWorkerOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SharedWorkerOptionsValue(string, SharedWorkerOptions)
 {
 
@@ -11531,7 +11246,6 @@ public static implicit operator SharedWorkerOptionsValue(SharedWorkerOptions val
 /// <summary>WebIDL 联合值：TrustedScriptURL、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SharedWorkerScriptURL(TrustedScriptURL, string)
 {
 
@@ -11557,7 +11271,6 @@ public static implicit operator SharedWorkerScriptURL(string value)
 /// <summary>WebIDL 联合值：WellKnownDirectory、FileSystemHandle。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StartInDirectory(WellKnownDirectory, FileSystemHandle)
 {
 
@@ -11583,7 +11296,6 @@ public static implicit operator StartInDirectory(FileSystemHandle value)
 /// <summary>WebIDL 联合值：ViewTransitionUpdateCallback、StartViewTransitionOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StartViewTransitionCallbackOptions(ViewTransitionUpdateCallback, StartViewTransitionOptions)
 {
 
@@ -11609,7 +11321,6 @@ public static implicit operator StartViewTransitionCallbackOptions(StartViewTran
 /// <summary>WebIDL 联合值：Blob、MediaSource。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StorageAccessHandleCreateObjectURLObj(Blob, MediaSource)
 {
 
@@ -11635,7 +11346,6 @@ public static implicit operator StorageAccessHandleCreateObjectURLObj(MediaSourc
 /// <summary>WebIDL 联合值：string、SharedWorkerOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StorageAccessHandleSharedWorkerOptions(string, SharedWorkerOptions)
 {
 
@@ -11661,7 +11371,6 @@ public static implicit operator StorageAccessHandleSharedWorkerOptions(SharedWor
 /// <summary>WebIDL 联合值：Node、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCache(Node, string)
 {
 
@@ -11687,7 +11396,6 @@ public static implicit operator StructuralCache(string value)
 /// <summary>WebIDL 联合值：string、CanvasGradient、CanvasPattern。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue(string, CanvasGradient, CanvasPattern)
 {
 
@@ -11722,7 +11430,6 @@ public static implicit operator StructuralCacheValue(CanvasPattern value)
 /// <summary>WebIDL 联合值：TogglePopoverOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue10(TogglePopoverOptions, bool)
 {
 
@@ -11748,7 +11455,6 @@ public static implicit operator StructuralCacheValue10(bool value)
 /// <summary>WebIDL 联合值：ViewTransitionUpdateCallback、StartViewTransitionOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue13(ViewTransitionUpdateCallback, StartViewTransitionOptions)
 {
 
@@ -11774,7 +11480,6 @@ public static implicit operator StructuralCacheValue13(StartViewTransitionOption
 /// <summary>WebIDL 联合值：bool、ScrollIntoViewOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue14(bool, ScrollIntoViewOptions)
 {
 
@@ -11800,7 +11505,6 @@ public static implicit operator StructuralCacheValue14(ScrollIntoViewOptions val
 /// <summary>WebIDL 联合值：TrustedType、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue15(TrustedType, string)
 {
 
@@ -11826,7 +11530,6 @@ public static implicit operator StructuralCacheValue15(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue16(TrustedHTML, string)
 {
 
@@ -11852,7 +11555,6 @@ public static implicit operator StructuralCacheValue16(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue17(TrustedHTML, string)
 {
 
@@ -11878,7 +11580,6 @@ public static implicit operator StructuralCacheValue17(string value)
 /// <summary>WebIDL 联合值：Element、CSSPseudoElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue18(Element, CSSPseudoElement)
 {
 
@@ -11904,7 +11605,6 @@ public static implicit operator StructuralCacheValue18(CSSPseudoElement value)
 /// <summary>WebIDL 联合值：string、ElementCreationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue19(string, ElementCreationOptions)
 {
 
@@ -11930,7 +11630,6 @@ public static implicit operator StructuralCacheValue19(ElementCreationOptions va
 /// <summary>WebIDL 联合值：double、DOMPointInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue2(double, DOMPointInit)
 {
 
@@ -11956,7 +11655,6 @@ public static implicit operator StructuralCacheValue2(DOMPointInit value)
 /// <summary>WebIDL 联合值：bool、ImportNodeOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue20(bool, ImportNodeOptions)
 {
 
@@ -11982,7 +11680,6 @@ public static implicit operator StructuralCacheValue20(ImportNodeOptions value)
 /// <summary>WebIDL 联合值：AddEventListenerOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue21(AddEventListenerOptions, bool)
 {
 
@@ -12008,7 +11705,6 @@ public static implicit operator StructuralCacheValue21(bool value)
 /// <summary>WebIDL 联合值：EventListenerOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue22(EventListenerOptions, bool)
 {
 
@@ -12034,7 +11730,6 @@ public static implicit operator StructuralCacheValue22(bool value)
 /// <summary>WebIDL 联合值：string、PerformanceMeasureOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue23(string, PerformanceMeasureOptions)
 {
 
@@ -12060,7 +11755,6 @@ public static implicit operator StructuralCacheValue23(PerformanceMeasureOptions
 /// <summary>WebIDL 联合值：string、ArrayBuffer。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue24(string, ArrayBuffer)
 {
 
@@ -12086,7 +11780,6 @@ public static implicit operator StructuralCacheValue24(ArrayBuffer value)
 /// <summary>WebIDL 联合值：Blob、MediaSource。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue25(Blob, MediaSource)
 {
 
@@ -12112,7 +11805,6 @@ public static implicit operator StructuralCacheValue25(MediaSource value)
 /// <summary>WebIDL 联合值：HTMLCollection、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue27(HTMLCollection, Element)
 {
 
@@ -12138,7 +11830,6 @@ public static implicit operator StructuralCacheValue27(Element value)
 /// <summary>WebIDL 联合值：RadioNodeList、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue28(RadioNodeList, Element)
 {
 
@@ -12164,7 +11855,6 @@ public static implicit operator StructuralCacheValue28(Element value)
 /// <summary>WebIDL 联合值：HTMLOptionElement、HTMLOptGroupElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue29(HTMLOptionElement, HTMLOptGroupElement)
 {
 
@@ -12190,7 +11880,6 @@ public static implicit operator StructuralCacheValue29(HTMLOptGroupElement value
 /// <summary>WebIDL 联合值：HTMLElement、int。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue30(HTMLElement, int)
 {
 
@@ -12216,7 +11905,6 @@ public static implicit operator StructuralCacheValue30(int value)
 /// <summary>WebIDL 联合值：VideoTrack、AudioTrack、TextTrack。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue31(VideoTrack, AudioTrack, TextTrack)
 {
 
@@ -12251,7 +11939,6 @@ public static implicit operator StructuralCacheValue31(TextTrack value)
 /// <summary>WebIDL 联合值：RadioNodeList、Element。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue32(RadioNodeList, Element)
 {
 
@@ -12277,7 +11964,6 @@ public static implicit operator StructuralCacheValue32(Element value)
 /// <summary>WebIDL 联合值：Element、Text。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue33(Element, Text)
 {
 
@@ -12303,7 +11989,6 @@ public static implicit operator StructuralCacheValue33(Text value)
 /// <summary>WebIDL 联合值：Path2D、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue34(Path2D, string)
 {
 
@@ -12329,7 +12014,6 @@ public static implicit operator StructuralCacheValue34(string value)
 /// <summary>WebIDL 联合值：FileRef、string、FormData。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue35(FileRef, string, FormData)
 {
 
@@ -12364,7 +12048,6 @@ public static implicit operator StructuralCacheValue35(FormData value)
 /// <summary>WebIDL 联合值：SanitizerConfig、SanitizerPresets。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue36(SanitizerConfig, SanitizerPresets)
 {
 
@@ -12390,7 +12073,6 @@ public static implicit operator StructuralCacheValue36(SanitizerPresets value)
 /// <summary>WebIDL 联合值：TrustedScriptURL、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue37(TrustedScriptURL, string)
 {
 
@@ -12416,7 +12098,6 @@ public static implicit operator StructuralCacheValue37(string value)
 /// <summary>WebIDL 联合值：string、SharedWorkerOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue38(string, SharedWorkerOptions)
 {
 
@@ -12442,7 +12123,6 @@ public static implicit operator StructuralCacheValue38(SharedWorkerOptions value
 /// <summary>WebIDL 联合值：double、KeyframeAnimationOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue4(double, KeyframeAnimationOptions)
 {
 
@@ -12468,7 +12148,6 @@ public static implicit operator StructuralCacheValue4(KeyframeAnimationOptions v
 /// <summary>WebIDL 联合值：Element、DocumentRef。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue42(Element, DocumentRef)
 {
 
@@ -12494,7 +12173,6 @@ public static implicit operator StructuralCacheValue42(DocumentRef value)
 /// <summary>WebIDL 联合值：Client、ServiceWorker、MessagePort。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue44(Client, ServiceWorker, MessagePort)
 {
 
@@ -12529,7 +12207,6 @@ public static implicit operator StructuralCacheValue44(MessagePort value)
 /// <summary>WebIDL 联合值：string、TrustedScriptURL。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue45(string, TrustedScriptURL)
 {
 
@@ -12555,7 +12232,6 @@ public static implicit operator StructuralCacheValue45(TrustedScriptURL value)
 /// <summary>WebIDL 联合值：Element、CSSPseudoElement。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue46(Element, CSSPseudoElement)
 {
 
@@ -12581,7 +12257,6 @@ public static implicit operator StructuralCacheValue46(CSSPseudoElement value)
 /// <summary>WebIDL 联合值：DocumentRef、XMLHttpRequestBodyInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue47(DocumentRef, XMLHttpRequestBodyInit)
 {
 
@@ -12607,7 +12282,6 @@ public static implicit operator StructuralCacheValue47(XMLHttpRequestBodyInit va
 /// <summary>WebIDL 联合值：double、KeyframeEffectOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue49(double, KeyframeEffectOptions)
 {
 
@@ -12633,7 +12307,6 @@ public static implicit operator StructuralCacheValue49(KeyframeEffectOptions val
 /// <summary>WebIDL 联合值：HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue5(HTMLCanvasElement, OffscreenCanvas)
 {
 
@@ -12659,7 +12332,6 @@ public static implicit operator StructuralCacheValue5(OffscreenCanvas value)
 /// <summary>WebIDL 联合值：double、EffectTiming。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue50(double, EffectTiming)
 {
 
@@ -12685,7 +12357,6 @@ public static implicit operator StructuralCacheValue50(EffectTiming value)
 /// <summary>WebIDL 联合值：string、uint。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue51(string, uint)
 {
 
@@ -12711,7 +12382,6 @@ public static implicit operator StructuralCacheValue51(uint value)
 /// <summary>WebIDL 联合值：string、AudioSinkInfo。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue52(string, AudioSinkInfo)
 {
 
@@ -12737,7 +12407,6 @@ public static implicit operator StructuralCacheValue52(AudioSinkInfo value)
 /// <summary>WebIDL 联合值：string、AudioSinkOptions。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue53(string, AudioSinkOptions)
 {
 
@@ -12763,7 +12432,6 @@ public static implicit operator StructuralCacheValue53(AudioSinkOptions value)
 /// <summary>WebIDL 联合值：MediaStreamTrack、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue59(MediaStreamTrack, string)
 {
 
@@ -12789,7 +12457,6 @@ public static implicit operator StructuralCacheValue59(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue6(TrustedHTML, string)
 {
 
@@ -12815,7 +12482,6 @@ public static implicit operator StructuralCacheValue6(string value)
 /// <summary>WebIDL 联合值：RTCEncodedVideoFrame、RTCEncodedAudioFrame。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue60(RTCEncodedVideoFrame, RTCEncodedAudioFrame)
 {
 
@@ -12841,7 +12507,6 @@ public static implicit operator StructuralCacheValue60(RTCEncodedAudioFrame valu
 /// <summary>WebIDL 联合值：MediaStreamTrackAudioStats、MediaStreamTrackVideoStats。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue8(MediaStreamTrackAudioStats, MediaStreamTrackVideoStats)
 {
 
@@ -12867,7 +12532,6 @@ public static implicit operator StructuralCacheValue8(MediaStreamTrackVideoStats
 /// <summary>WebIDL 联合值：bool、double、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue9(bool, double, string)
 {
 
@@ -12902,7 +12566,6 @@ public static implicit operator StructuralCacheValue9(string value)
 /// <summary>WebIDL 联合值：CryptoKey、CryptoKeyPair。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValueValue(CryptoKey, CryptoKeyPair)
 {
 
@@ -12928,7 +12591,6 @@ public static implicit operator StructuralCacheValueValue(CryptoKeyPair value)
 /// <summary>WebIDL 联合值：ArrayBuffer、JsonWebKey。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValueValue2(ArrayBuffer, JsonWebKey)
 {
 
@@ -12954,7 +12616,6 @@ public static implicit operator StructuralCacheValueValue2(JsonWebKey value)
 /// <summary>WebIDL 联合值：ArrayBuffer、JsonWebKey。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SubtleCryptoExportKeyResultValue(ArrayBuffer, JsonWebKey)
 {
 
@@ -12980,7 +12641,6 @@ public static implicit operator SubtleCryptoExportKeyResultValue(JsonWebKey valu
 /// <summary>WebIDL 联合值：CryptoKey、CryptoKeyPair。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SubtleCryptoGenerateKeyResultValue(CryptoKey, CryptoKeyPair)
 {
 
@@ -13006,7 +12666,6 @@ public static implicit operator SubtleCryptoGenerateKeyResultValue(CryptoKeyPair
 /// <summary>WebIDL 联合值：TaskPriority、TaskSignal。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TaskSignalAnyInitPriority(TaskPriority, TaskSignal)
 {
 
@@ -13032,7 +12691,6 @@ public static implicit operator TaskSignalAnyInitPriority(TaskSignal value)
 /// <summary>WebIDL 联合值：ImageBitmap、ImageData、HTMLImageElement、HTMLCanvasElement、HTMLVideoElement、OffscreenCanvas、VideoFrame。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TexImageSource(ImageBitmap, ImageData, HTMLImageElement, HTMLCanvasElement, HTMLVideoElement, OffscreenCanvas, VideoFrame)
 {
 
@@ -13103,7 +12761,6 @@ public static implicit operator TexImageSource(VideoFrame value)
 /// <summary>WebIDL 联合值：string、Delegate、TrustedScript。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TimerHandler(string, Delegate, TrustedScript)
 {
 
@@ -13138,7 +12795,6 @@ public static implicit operator TimerHandler(TrustedScript value)
 /// <summary>WebIDL 联合值：TogglePopoverOptions、bool。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TogglePopoverOptionsValue(TogglePopoverOptions, bool)
 {
 
@@ -13164,7 +12820,6 @@ public static implicit operator TogglePopoverOptionsValue(bool value)
 /// <summary>WebIDL 联合值：VideoTrack、AudioTrack、TextTrack。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TrackEventInitTrack(VideoTrack, AudioTrack, TextTrack)
 {
 
@@ -13199,7 +12854,6 @@ public static implicit operator TrackEventInitTrack(TextTrack value)
 /// <summary>WebIDL 联合值：VideoTrack、AudioTrack、TextTrack。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TrackEventTrack(VideoTrack, AudioTrack, TextTrack)
 {
 
@@ -13234,7 +12888,6 @@ public static implicit operator TrackEventTrack(TextTrack value)
 /// <summary>WebIDL 联合值：TrustedHTML、TrustedScript、TrustedScriptURL。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union TrustedType(TrustedHTML, TrustedScript, TrustedScriptURL)
 {
 
@@ -13269,7 +12922,6 @@ public static implicit operator TrustedType(TrustedScriptURL value)
 /// <summary>WebIDL 联合值：Blob、MediaSource。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union URLCreateObjectURLObj(Blob, MediaSource)
 {
 
@@ -13295,7 +12947,6 @@ public static implicit operator URLCreateObjectURLObj(MediaSource value)
 /// <summary>WebIDL 联合值：string、URLPatternInit、URLPattern。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union URLPatternCompatible(string, URLPatternInit, URLPattern)
 {
 
@@ -13330,7 +12981,6 @@ public static implicit operator URLPatternCompatible(URLPattern value)
 /// <summary>WebIDL 联合值：string、URLPatternInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union URLPatternInput(string, URLPatternInit)
 {
 
@@ -13356,7 +13006,6 @@ public static implicit operator URLPatternInput(URLPatternInit value)
 /// <summary>WebIDL 联合值：string、FencedFrameConfig。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union UrnOrConfig(string, FencedFrameConfig)
 {
 
@@ -13382,7 +13031,6 @@ public static implicit operator UrnOrConfig(FencedFrameConfig value)
 /// <summary>WebIDL 联合值：CSSNumericValue、CSSKeywordValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union ViewTimelineOptionsInset(CSSNumericValue, CSSKeywordValue)
 {
 
@@ -13408,7 +13056,6 @@ public static implicit operator ViewTimelineOptionsInset(CSSKeywordValue value)
 /// <summary>WebIDL 联合值：HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WebGL2RenderingContextCanvas(HTMLCanvasElement, OffscreenCanvas)
 {
 
@@ -13434,7 +13081,6 @@ public static implicit operator WebGL2RenderingContextCanvas(OffscreenCanvas val
 /// <summary>WebIDL 联合值：HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WebGLRenderingContextCanvas(HTMLCanvasElement, OffscreenCanvas)
 {
 
@@ -13460,7 +13106,6 @@ public static implicit operator WebGLRenderingContextCanvas(OffscreenCanvas valu
 /// <summary>WebIDL 联合值：TrustedScriptURL、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WorkerGlobalScopeImportScriptsUrls(TrustedScriptURL, string)
 {
 
@@ -13486,7 +13131,6 @@ public static implicit operator WorkerGlobalScopeImportScriptsUrls(string value)
 /// <summary>WebIDL 联合值：Worker、WorkerAndParameters。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WorkerOrWorkerAndParameters(Worker, WorkerAndParameters)
 {
 
@@ -13512,7 +13156,6 @@ public static implicit operator WorkerOrWorkerAndParameters(WorkerAndParameters 
 /// <summary>WebIDL 联合值：TrustedScriptURL、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WorkerScriptURL(TrustedScriptURL, string)
 {
 
@@ -13538,7 +13181,6 @@ public static implicit operator WorkerScriptURL(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WriteText(TrustedHTML, string)
 {
 
@@ -13564,7 +13206,6 @@ public static implicit operator WriteText(string value)
 /// <summary>WebIDL 联合值：TrustedHTML、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union WritelnText(TrustedHTML, string)
 {
 
@@ -13590,7 +13231,6 @@ public static implicit operator WritelnText(string value)
 /// <summary>WebIDL 联合值：DocumentRef、XMLHttpRequestBodyInit。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union XMLHttpRequestSendBody(DocumentRef, XMLHttpRequestBodyInit)
 {
 
@@ -13616,7 +13256,6 @@ public static implicit operator XMLHttpRequestSendBody(XMLHttpRequestBodyInit va
 /// <summary>WebIDL 联合值：XPathNSResolverLiteral、LookupNamespaceURICallback。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union XPathNSResolverValue(XPathNSResolverLiteral, LookupNamespaceURICallback)
 {
 
@@ -13642,7 +13281,6 @@ public static implicit operator XPathNSResolverValue(LookupNamespaceURICallback 
 /// <summary>WebIDL 联合值：WebGLRenderingContext、WebGL2RenderingContext。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union XRWebGLRenderingContext(WebGLRenderingContext, WebGL2RenderingContext)
 {
 

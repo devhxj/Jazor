@@ -16,7 +16,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">计算属性值的类型。The computed property value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueComputedValue<TValue>(Func<TValue>, VueWritableComputedOptions<TValue>)
 	{
 		/// <summary>
@@ -40,7 +39,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">被侦听值的类型。The watched value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueWatchDeclaration<TValue>(
 		string,
 		Action<TValue, TValue>,
@@ -101,7 +99,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">注入值的类型。The injected value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueInjectFrom<TValue>(string, VueInjectionKey<TValue>, Symbol)
 	{
 		/// <summary>
@@ -129,7 +126,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">prop 值的类型。The prop value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VuePropDeclaration<TValue>(VuePropType, VuePropType?[], VuePropOptions<TValue>)
 	{
 		/// <summary>
@@ -156,7 +152,6 @@ public static partial class Vue
 	/// Union type for Vue <c>class</c> binding values. Can be a string, string array, object form, or mixed value array.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueClassValue(string, string[], VueProps, VueValue[])
 	{
 		/// <summary>
@@ -190,7 +185,6 @@ public static partial class Vue
 	/// contract accepts either an enable/disable flag or a named string literal.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueBooleanStringValue(bool, string)
 	{
 		/// <summary>
@@ -214,7 +208,6 @@ public static partial class Vue
 	/// such as modelValue or active/inactive state props.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueBooleanStringNumberValue(bool, double, string)
 	{
 		/// <summary>
@@ -242,7 +235,6 @@ public static partial class Vue
 	/// contract accepts either a simple enable/disable flag or a scalar numeric override.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueBooleanNumberValue(bool, double)
 	{
 		/// <summary>
@@ -265,7 +257,6 @@ public static partial class Vue
 	/// dynamic component entry points.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringComponentValue(string, IVueComponent)
 	{
 		/// <summary>
@@ -287,7 +278,6 @@ public static partial class Vue
 	/// mixed style arrays.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStyleValue(string, VueProps, VueStyleValues)
 	{
 		/// <summary>
@@ -379,7 +369,6 @@ public static partial class Vue
 	/// authoring.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	[CollectionBuilder(typeof(VueStyleValuesCollectionBuilder), nameof(VueStyleValuesCollectionBuilder.Create))]
 	public readonly union VueStyleValues(VueStyleValue[]) : IEnumerable<VueStyleValue>
 	{
@@ -447,7 +436,6 @@ public static partial class Vue
 	/// </summary>
 	/// <remarks>数字分支的 C# 类型为 double，普通整数可直接赋值：Razor 写 <c>Size="@(32)"</c>；<c>Size="32"</c> 选择字符串分支，投影不会解析数字字符串。</remarks>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringNumberValue(double, string)
 	{
 		/// <summary>
@@ -476,7 +464,6 @@ public static partial class Vue
 	/// a number, or a date. Use this for official <c>DateModelType = string | number | Date</c>-style contracts.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringNumberDateValue(double, string, Date)
 	{
 		/// <summary>
@@ -505,7 +492,6 @@ public static partial class Vue
 	/// Use this for public contracts such as collapse active names that officially allow one value or many values.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringNumberArrayableValue(VueStringNumberValue, VueStringNumberValue[]) : IEnumerable<VueStringNumberValue>
 	{
 		/// <summary>
@@ -584,7 +570,6 @@ public static partial class Vue
 	/// without widening arrays into mixed-element unions.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringNumberDateArrayableValue(
 		VueStringNumberDateValue,
 		Number[],
@@ -688,7 +673,6 @@ public static partial class Vue
 	/// for public contracts that officially allow one number or many numbers, such as slider/range model values.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueNumberOrNumbersValue(double, Number[]) : IEnumerable<Number>
 	{
 		/// <summary>
@@ -733,7 +717,6 @@ public static partial class Vue
 	/// for public contracts that officially allow scalar selection values or object values.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringNumberObjectValue(double, string, VueProps)
 	{
 		/// <summary>
@@ -770,7 +753,6 @@ public static partial class Vue
 	/// This fits public contracts such as checkbox value/label that allow scalar or object values.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueBooleanStringNumberObjectValue(bool, double, string, VueProps)
 	{
 		/// <summary>
@@ -820,7 +802,6 @@ public static partial class Vue
 	/// </summary>
 	/// <remarks>外层选择 scalar/array，内层选择 bool/double/string/object。对可空模型写 <c>value?.AsSingle?.AsNumber</c> 或 <c>value?.AsMultiple</c>；分支不匹配返回 null，数值 0 与空数组仍是有效值。清空值由宿主组件决定，nullable 不能代替 ValueOnClear 的业务策略。</remarks>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueBooleanStringNumberObjectArrayableValue(
 		VueBooleanStringNumberObjectValue,
 		VueBooleanStringNumberObjectValue[]) : IEnumerable<VueBooleanStringNumberObjectValue>
@@ -971,7 +952,6 @@ public static partial class Vue
 	/// for public authoring contracts that officially allow one string or many strings.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringOrStringsValue(string, string[])
 	{
 		/// <summary>
@@ -995,7 +975,6 @@ public static partial class Vue
 	/// </summary>
 	[ECMAScript]
 	[Union]
-	[Description("@#")]
 	[CollectionBuilder(typeof(VueNumberPairCollectionBuilder), nameof(VueNumberPairCollectionBuilder.Create))]
 	public readonly struct VueNumberPair : IUnion, IEnumerable<Number>
 	{
@@ -1088,7 +1067,6 @@ public static partial class Vue
 	/// Use this when the official public contract explicitly allows these three runtime branches.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringNumberVNodeValue(string, Number, IVNode)
 	{
 		/// <summary>
@@ -1142,7 +1120,6 @@ public static partial class Vue
 	/// for official public contracts such as delimiters and simple pattern inputs.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringRegExpValue(string, RegExp)
 	{
 		/// <summary>
@@ -1164,7 +1141,6 @@ public static partial class Vue
 	/// contracts that allow either a CSS selector string or an existing DOM element instance.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringHtmlElementValue(string, HTMLElement)
 	{
 		/// <summary>
@@ -1187,7 +1163,6 @@ public static partial class Vue
 	/// Use this for host contracts that allow either runtime `Headers` or object-form request headers.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueHeadersValue(Headers, VueDictionary)
 	{
 		/// <summary>
@@ -1212,7 +1187,6 @@ public static partial class Vue
 	/// </summary>
 	[ECMAScript]
 	[Union]
-	[Description("@#")]
 	[CollectionBuilder(typeof(VueStringPairCollectionBuilder), nameof(VueStringPairCollectionBuilder.Create))]
 	public readonly struct VueStringPair : IUnion, IEnumerable<string>
 	{
@@ -1297,7 +1271,6 @@ public static partial class Vue
 	/// range. Use this to mirror official <c>SingleOrRange&lt;string&gt;</c>-style contracts.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueStringSingleOrRangeValue(string, VueStringPair)
 	{
 		/// <summary>
@@ -1330,7 +1303,6 @@ public static partial class Vue
 	/// </summary>
 	[ECMAScript]
 	[Union]
-	[Description("@#")]
 	[CollectionBuilder(typeof(VueDatePairCollectionBuilder), nameof(VueDatePairCollectionBuilder.Create))]
 	public readonly struct VueDatePair : IUnion, IEnumerable<Date>
 	{
@@ -1415,7 +1387,6 @@ public static partial class Vue
 	/// range. Use this to mirror official <c>SingleOrRange&lt;Date&gt;</c>-style contracts.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueDateSingleOrRangeValue(Date, VueDatePair)
 	{
 		/// <summary>
@@ -1444,7 +1415,6 @@ public static partial class Vue
 	/// Union type for the <c>deep</c> option of <c>watch()</c>. Can be a boolean (enable/disable deep traversal) or an integer (depth limit).
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueWatchDeep(bool, int)
 	{
 		/// <summary>
@@ -1465,7 +1435,6 @@ public static partial class Vue
 	/// Union type for Transition duration. Can be a number (milliseconds) or an object with enter/leave phase durations.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueTransitionDurationValue(Number, VueTransitionDuration)
 	{
 		/// <summary>
@@ -1507,7 +1476,6 @@ public static partial class Vue
 	/// or a full Transition props object.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueTransitionValue(string, VueTransitionProps)
 	{
 		/// <summary>
@@ -1530,7 +1498,6 @@ public static partial class Vue
 	/// Can be a string, RegExp, string array, or RegExp array.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueKeepAliveMatch(string, RegExp, string[], RegExp[])
 	{
 		/// <summary>
@@ -1563,7 +1530,6 @@ public static partial class Vue
 	/// Union type for HTML attributes that accept either integer or string values (e.g. <c>max</c> for <c>KeepAlive</c>).
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueIntStringValue(int, string)
 	{
 		/// <summary>
@@ -1584,7 +1550,6 @@ public static partial class Vue
 	/// Union type for <c>Teleport</c> target container. Can be a CSS selector string or a DOM element.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union VueTeleportTarget(string, Element)
 	{
 		/// <summary>

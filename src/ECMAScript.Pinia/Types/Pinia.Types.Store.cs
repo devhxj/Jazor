@@ -435,7 +435,6 @@ public static partial class Pinia
 	/// mutation kind.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public readonly union SubscriptionMutationEvents(Vue.VueDebuggerEvent, Vue.VueDebuggerEvent[])
 	{
 		/// <summary>
@@ -692,7 +691,6 @@ public static partial class Pinia
 	/// <typeparam name="TActionName">调用方期望的显式 action 名称契约。The explicit action-name contract expected by the caller.</typeparam>
 	/// <typeparam name="TArgs">调用方期望的显式参数数组视图契约。The explicit argument-array view contract expected by the caller.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ProjectedActionContext<TStore, TActionName, TArgs> : StoreActionListenerContext<TStore>
 		where TStore : class
 		where TArgs : class
@@ -729,7 +727,6 @@ public static partial class Pinia
 	/// contract used by higher-arity typed slot projections.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView
 	{
 		/// <summary>
@@ -753,7 +750,6 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TArg0">第一个 action 参数的类型。The type of the first action argument.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0> : ActionArgsView
 	{
 		/// <summary>
@@ -778,7 +774,6 @@ public static partial class Pinia
 	/// <typeparam name="TArg0">第一个 action 参数的类型。The type of the first action argument.</typeparam>
 	/// <typeparam name="TArg1">第二个 action 参数的类型。The type of the second action argument.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1> : ActionArgsView<TArg0>
 	{
 		/// <summary>
@@ -801,7 +796,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with three typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2> : ActionArgsView<TArg0, TArg1>
 	{
 		/// <summary>
@@ -824,7 +818,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with four typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3> : ActionArgsView<TArg0, TArg1, TArg2>
 	{
 		/// <summary>
@@ -847,7 +840,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with five typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4> : ActionArgsView<TArg0, TArg1, TArg2, TArg3>
 	{
 		/// <summary>
@@ -870,7 +862,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with six typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4>
 	{
 		/// <summary>
@@ -893,7 +884,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with seven typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5>
 	{
 		/// <summary>
@@ -916,7 +906,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with eight typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6>
 	{
 		/// <summary>
@@ -939,7 +928,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with nine typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7>
 	{
 		/// <summary>
@@ -962,7 +950,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with ten typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8>
 	{
 		/// <summary>
@@ -985,7 +972,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with eleven typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9>
 	{
 		/// <summary>
@@ -1008,7 +994,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with twelve typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10>
 	{
 		/// <summary>
@@ -1031,7 +1016,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with thirteen typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11>
 	{
 		/// <summary>
@@ -1054,7 +1038,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with fourteen typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12>
 	{
 		/// <summary>
@@ -1077,7 +1060,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with fifteen typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13>
 	{
 		/// <summary>
@@ -1100,7 +1082,6 @@ public static partial class Pinia
 	/// Explicit typed view over a Pinia action argument array with sixteen typed slots.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15> : ActionArgsView<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14>
 	{
 		/// <summary>
@@ -1124,7 +1105,6 @@ public static partial class Pinia
 	/// that accept heterogeneous store-definition lists.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class StoreDefinition
 	{
 		/// <summary>
@@ -1146,7 +1126,6 @@ public static partial class Pinia
 	/// </summary>
 	/// <typeparam name="TStore">包装器返回的类型化 store 投影。The typed store projection returned by the wrapper.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class StoreDefinition<TStore> : StoreDefinition
 		where TStore : class
 	{
@@ -1203,7 +1182,6 @@ public static partial class Pinia
 	/// <typeparam name="TStore">基础类型化 store 投影。The base typed store projection.</typeparam>
 	/// <typeparam name="TCustomProperties">插件添加的自定义 store 属性投影。The plugin-added custom store properties projection.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ProjectedStore<TStore, TCustomProperties>
 		where TStore : class
 		where TCustomProperties : Vue.VueProps
@@ -1240,7 +1218,6 @@ public static partial class Pinia
 	/// <typeparam name="TCustomProperties">插件添加的自定义 store 属性投影。The plugin-added custom store properties projection.</typeparam>
 	/// <typeparam name="TCustomState"><c>store.$state</c> 上插件添加的自定义状态投影。The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ProjectedStore<TStore, TCustomProperties, TCustomState> : ProjectedStore<TStore, TCustomProperties>
 		where TStore : class
 		where TCustomProperties : Vue.VueProps
@@ -1273,7 +1250,6 @@ public static partial class Pinia
 	/// <typeparam name="TStore">基础类型化 store 投影。The base typed store projection.</typeparam>
 	/// <typeparam name="TCustomProperties">插件添加的自定义 store 属性投影。The plugin-added custom store properties projection.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties> : StoreDefinition<ProjectedStore<TStore, TCustomProperties>>
 		where TStore : class
 		where TCustomProperties : Vue.VueProps
@@ -1303,7 +1279,6 @@ public static partial class Pinia
 	/// <typeparam name="TCustomProperties">插件添加的自定义 store 属性投影。The plugin-added custom store properties projection.</typeparam>
 	/// <typeparam name="TCustomState"><c>store.$state</c> 上插件添加的自定义状态投影。The plugin-added custom state projection on <c>store.$state</c>.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class ProjectedStoreDefinition<TStore, TCustomProperties, TCustomState> : StoreDefinition<ProjectedStore<TStore, TCustomProperties, TCustomState>>
 		where TStore : class
 		where TCustomProperties : Vue.VueProps

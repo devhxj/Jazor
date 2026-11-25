@@ -120,16 +120,16 @@ public sealed class UtilBoundaryScenarioTests
                 AssertSymbolName(
                     fixture.GetMethod("NamingHost", "BlankExplicitNameSuppressesDescription"),
                     expectedConfigName: null,
-                    hasBoundary: true,
+                    hasBoundary: false,
                     "BlankExplicitNameSuppressesDescription",
                     scenario.Id);
                 break;
-            case UtilSymbolNameKind.DescriptionBoundary:
+            case UtilSymbolNameKind.EmptyDescription:
                 AssertSymbolName(
-                    fixture.GetMethod("NamingHost", "DescriptionBoundary"),
+                    fixture.GetMethod("NamingHost", "EmptyDescription"),
                     expectedConfigName: null,
-                    hasBoundary: true,
-                    "DescriptionBoundary",
+                    hasBoundary: false,
+                    "EmptyDescription",
                     scenario.Id);
                 break;
             case UtilSymbolNameKind.PlainDescriptionIgnored:
@@ -475,7 +475,7 @@ public enum UtilSymbolNameKind
     NoArgumentAttributeThenDescription,
     ExplicitNameOverridesDescription,
     BlankExplicitNameSuppressesDescription,
-    DescriptionBoundary,
+    EmptyDescription,
     PlainDescriptionIgnored,
     UnconfiguredMethod,
     OrdinaryOverloads,
@@ -758,7 +758,7 @@ internal static class UtilBoundaryScenarioCatalog
             }
 
             [Description("@#")]
-            public void DescriptionBoundary()
+            public void EmptyDescription()
             {
             }
 
@@ -838,18 +838,18 @@ internal static class UtilBoundaryScenarioCatalog
             }
         }
 
-        [Description("@#")]
+        [Boundary]
         public sealed class BoundaryOnly
         {
         }
 
         [ECMAScript]
-        [Description("@#")]
+        [Boundary]
         public sealed class RuntimeObjectHost
         {
         }
 
-        [Description("@#")]
+        [Boundary]
         public sealed class RuntimeDerivedObjectHost : RuntimeBase
         {
         }

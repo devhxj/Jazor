@@ -5,7 +5,6 @@ namespace ECMAScript;
 /// 新版 JavaScript <c>Set.prototype</c> 关系方法消费的 set-like 协议。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface ISetLike<T>
 {

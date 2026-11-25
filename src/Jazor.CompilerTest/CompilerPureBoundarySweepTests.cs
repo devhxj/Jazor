@@ -1259,11 +1259,10 @@ public sealed class CompilerPureBoundarySweepTests
             .OfType<IFieldSymbol>()
             .Single();
 
-        var metadata = GetPrivateStatic(typeof(Util), "GetJavaScriptNameMetadata", typeof(ISymbol));
-        var blankMetadata = (Util.JavaScriptNameMetadata)metadata.Invoke(null, [blank])!;
-        var describedMetadata = (Util.JavaScriptNameMetadata)metadata.Invoke(null, [described])!;
+        var blankMetadata = Util.GetJavaScriptNameMetadata(blank);
+        var describedMetadata = Util.GetJavaScriptNameMetadata(described);
         Assert.IsTrue(blankMetadata.HasECMAScriptNameAttribute);
-        Assert.IsFalse(describedMetadata.HasDescriptionBoundary);
+        Assert.IsFalse(describedMetadata.HasBoundary);
         Assert.AreEqual("display-name", describedMetadata.DescriptionName);
 
         Assert.AreEqual(

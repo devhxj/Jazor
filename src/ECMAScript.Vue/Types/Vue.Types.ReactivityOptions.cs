@@ -145,7 +145,6 @@ public static partial class Vue
 	/// <typeparam name="TProps">与此模型关联的类型化属性契约。</typeparam>
 	/// <typeparam name="TValue">模型值类型。</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueModelName<TProps, TValue>
 		where TProps : VueProps
 	{
@@ -629,7 +628,6 @@ public static partial class Vue
 	/// <c>binding.modifiers["primary"]</c>.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueDirectiveModifiers
 	{
 		/// <summary>

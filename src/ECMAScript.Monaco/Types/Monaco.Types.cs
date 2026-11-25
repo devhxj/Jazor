@@ -27,7 +27,6 @@ public enum MonacoMarkerSeverity
 /// 标记（marker）数据；对应 Monaco <c>IMarkerData</c>。
 /// Marker data; mirrors Monaco's <c>IMarkerData</c>.
 /// </summary>
-[Description("@#")]
 public record MonacoMarker
 {
     /// <summary>起始行号（从 1 开始）。The start line number, 1-based.</summary>
@@ -59,7 +58,6 @@ public record MonacoMarker
 /// 位置（行列坐标，均从 1 开始）；对应 Monaco <c>Position</c>。
 /// A position (line and column, both 1-based); mirrors Monaco's <c>Position</c>.
 /// </summary>
-[Description("@#")]
 public record MonacoPosition
 {
     /// <summary>行号。The line number.</summary>
@@ -75,7 +73,6 @@ public record MonacoPosition
 /// 选区（起点与终点）；对应 Monaco <c>Selection</c> 的行列投影。
 /// A selection (anchor and position); the line/column projection of Monaco's <c>Selection</c>.
 /// </summary>
-[Description("@#")]
 public record MonacoSelection
 {
     /// <summary>起始行号。The start line number.</summary>
@@ -99,7 +96,6 @@ public record MonacoSelection
 /// 模型的语言与内容更新选项；对应 <c>ITextModelUpdateOptions</c> 的常用项。
 /// Language and content update options for a model; the frequently used <c>ITextModelUpdateOptions</c>.
 /// </summary>
-[Description("@#")]
 public record MonacoModelUpdateOptions
 {
     /// <summary>是否追加而非替换内容。Whether the value is appended instead of replacing.</summary>
@@ -115,7 +111,6 @@ public record MonacoModelUpdateOptions
 /// 编辑器构造选项；覆盖 Monaco <c>IStandaloneEditorConstructionOptions</c> 的常用项。
 /// Editor construction options; the frequently used subset of Monaco's <c>IStandaloneEditorConstructionOptions</c>.
 /// </summary>
-[Description("@#")]
 public record MonacoEditorConstructionOptions
 {
     /// <summary>初始文本内容；未提供 model 时自动创建模型。The initial value; a model is created automatically when none is supplied.</summary>
@@ -175,7 +170,6 @@ public record MonacoEditorConstructionOptions
 /// 小地图选项。
 /// Minimap options.
 /// </summary>
-[Description("@#")]
 public record MonacoMinimapOptions
 {
     /// <summary>是否启用小地图。Whether the minimap is enabled.</summary>
@@ -188,7 +182,6 @@ public record MonacoMinimapOptions
 /// A disposable handle; calling <c>dispose()</c> cancels the registration. Mirrors Monaco's <c>IDisposable</c>.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class MonacoDisposable
 {
     private MonacoDisposable()
@@ -201,7 +194,6 @@ public sealed class MonacoDisposable
 /// A text model; mirrors Monaco's <c>ITextModel</c>. A model binds language and content and can be shared by editors.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class MonacoModel
 {
     /// <summary>
@@ -275,7 +267,6 @@ public abstract class MonacoModel
 /// A model URI; mirrors Monaco's <c>Uri</c>.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class MonacoUri
 {
     private MonacoUri()
@@ -287,7 +278,6 @@ public sealed class MonacoUri
 /// 模型内容变化事件。
 /// The model content-change event.
 /// </summary>
-[Description("@#")]
 public record MonacoContentChangeEvent
 {
     /// <summary>变化后的版本号。The version id after the change.</summary>
@@ -307,7 +297,6 @@ public record MonacoContentChangeEvent
 /// 模型语言变化事件。
 /// The model language-change event.
 /// </summary>
-[Description("@#")]
 public record MonacoLanguageChangeEvent
 {
     /// <summary>变化后的语言 id。The language id after the change.</summary>
@@ -323,7 +312,6 @@ public record MonacoLanguageChangeEvent
 /// 编辑器布局信息；对应 <c>EditorLayoutInfo</c> 的常用项。
 /// Editor layout information; the frequently used <c>EditorLayoutInfo</c> fields.
 /// </summary>
-[Description("@#")]
 public record MonacoLayoutInfo
 {
     /// <summary>编辑器宽度（像素）。The editor width in pixels.</summary>
@@ -339,7 +327,6 @@ public record MonacoLayoutInfo
 /// 主题定义的颜色表与规则。
 /// The color table and rules of a theme definition.
 /// </summary>
-[Description("@#")]
 public record MonacoThemeData
 {
     /// <summary>颜色键值表，例如 <c>{"editor.background":"#1e1e1e"}</c>。The color map, for example <c>{"editor.background":"#1e1e1e"}</c>.</summary>
@@ -365,7 +352,6 @@ public record MonacoThemeData
 /// lifecycle; SSR must not call <c>Create</c>.
 /// </remarks>
 [ECMAScript]
-[Description("@#")]
 public abstract class MonacoEditor
 {
     /// <summary>
@@ -453,7 +439,6 @@ public abstract class MonacoEditor
 /// 光标位置变化事件。
 /// The cursor position-change event.
 /// </summary>
-[Description("@#")]
 public record MonacoCursorPositionEvent
 {
     /// <summary>新的光标位置。The new cursor position.</summary>
@@ -465,7 +450,6 @@ public record MonacoCursorPositionEvent
 /// 选区变化事件。
 /// The selection-change event.
 /// </summary>
-[Description("@#")]
 public record MonacoSelectionEvent
 {
     /// <summary>新的选区。The new selection.</summary>
@@ -481,7 +465,6 @@ public record MonacoSelectionEvent
 /// web worker 创建选项；对应 Monaco <c>IInternalWebWorkerOptions</c> 的公开子集。
 /// Web-worker creation options; the public subset of Monaco's <c>IInternalWebWorkerOptions</c>.
 /// </summary>
-[Description("@#")]
 public record MonacoWebWorkerOptions
 {
     /// <summary>worker 模块的 URL；由应用按自身资源路径提供。The URL of the worker module, supplied by the application's own asset path.</summary>
@@ -503,7 +486,6 @@ public record MonacoWebWorkerOptions
 /// </summary>
 /// <typeparam name="TWorker">worker 代理的强类型契约。The strongly typed contract of the worker proxy.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class MonacoWebWorker<TWorker>
 {
     /// <summary>

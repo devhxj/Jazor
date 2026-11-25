@@ -19,7 +19,7 @@ namespace ECMAScript;
 /// high-frequency composables; further upstream exports can be appended in <c>Api/VueUse.Api.cs</c>.
 /// </remarks>
 [ECMAScript("@vueuse/core")]
-[Description("@#")]
+[Boundary]
 public static partial class VueUse
 {
 }

@@ -30,7 +30,8 @@ public sealed class PreviewBindingEmitterTests
                 [
                   { "type": "enum-value", "value": "same-origin" },
                   { "type": "enum-value", "value": "no-store" },
-                  { "type": "enum-value", "value": "include" }
+                  { "type": "enum-value", "value": "include" },
+                  { "type": "enum-value", "value": "" }
                 ]
                 """));
 
@@ -38,6 +39,7 @@ public sealed class PreviewBindingEmitterTests
         StringAssert.Contains(enums, "[Description(\"@#same-origin\")]\n    SameOrigin = 0");
         StringAssert.Contains(enums, "[Description(\"@#no-store\")]\n    NoStore = 1");
         StringAssert.Contains(enums, "[Description(\"@#include\")]\n    Include = 2");
+        StringAssert.Contains(enums, "[ECMAScriptName(\"\")]\n    Empty = 3");
     }
 
     [TestMethod]
@@ -1290,7 +1292,7 @@ public sealed class PreviewBindingEmitterTests
                 ]
                 """));
 
-        StringAssert.Contains(output, "[Description(\"@#\")]");
+        Assert.IsFalse(output.Contains("[Description(\"@#\")]", StringComparison.Ordinal));
         StringAssert.Contains(output, "[Jazor(\"delete (__arg1)[__arg2]\")]");
         StringAssert.Contains(output, "public extern void Delete(string name);");
         Assert.IsFalse(output.Contains("[Category(\"deleter\")]", StringComparison.Ordinal));

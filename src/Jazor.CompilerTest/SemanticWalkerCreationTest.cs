@@ -303,7 +303,7 @@ public sealed class SemanticWalkerCreationTest
     {
         var block = GetBlockOperation(@"
             [ECMAScript]
-            [System.ComponentModel.Description(""@#"")]
+            [Boundary]
             sealed class ObjectLiteralHost
             {
                 public ObjectLiteralHost(int value) { }

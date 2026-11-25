@@ -16,7 +16,7 @@ namespace ECMAScript;
 /// adapters are outside the first slice.
 /// </remarks>
 [ECMAScript("vee-validate")]
-[Description("@#")]
+[Boundary]
 public static partial class VeeValidate
 {
 }

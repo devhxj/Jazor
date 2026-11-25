@@ -223,7 +223,6 @@ public static partial class Vue
 	/// a more strongly-typed registry surface. Maps to Vue's <c>components</c> option.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueComponentRegistry : IVueOptionsBag
 	{
 		/// <summary>
@@ -242,7 +241,6 @@ public static partial class Vue
 	/// a more strongly-typed registry surface. Maps to Vue's <c>directives</c> option.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueDirectiveRegistry : IVueOptionsBag, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -291,7 +289,6 @@ public static partial class Vue
 	/// surface.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public record VuePluginOptions : IVueOptionsBag
 	{
 		/// <summary>
@@ -311,7 +308,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">计算属性的值类型。The computed property value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueComputedRegistry<TValue> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -348,7 +344,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TDelegate">方法委托签名。The method delegate signature.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueMethodRegistry<TDelegate> : VueProps, System.Collections.IEnumerable
 		where TDelegate : Delegate
 	{
@@ -378,7 +373,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">被观察的值类型。The watched value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueWatchEntry<TValue>
 	{
 		private VueWatchEntry()
@@ -431,7 +425,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">被观察的值类型。The watched value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public sealed class VueWatchEntries<TValue>
 	{
 		private VueWatchEntries()
@@ -489,7 +482,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">被观察的值类型。The watched value type.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueWatchRegistry<TValue> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>
@@ -600,7 +592,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">注入的值契约。The injected value contract.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public class VueInjectEntry<TValue>
 	{
 		/// <summary>
@@ -648,7 +639,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">所有条目使用的注入值类型。The injected value type used by all entries.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public record VueInjectRegistry<TValue> : VueProps, System.Collections.IEnumerable
 	{
 		/// <summary>

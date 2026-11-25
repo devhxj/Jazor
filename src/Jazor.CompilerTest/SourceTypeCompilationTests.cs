@@ -13,6 +13,76 @@ namespace Jazor.CompilerTest;
 public sealed class SourceTypeCompilationTests
 {
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task Convert_HostQualificationStopsAtExplicitBoundary(bool useMetadata)
+    {
+        const string hostSource = """
+            using ECMAScript;
+            using System.ComponentModel;
+            using HostBoundary = ECMAScript.BoundaryAttribute;
+
+            namespace Other
+            {
+                public sealed class BoundaryAttribute : System.Attribute { }
+                public sealed class ECMAScriptNameAttribute(string name) : System.Attribute { }
+            }
+
+            [ECMAScript, Description("@#")]
+            public static class Outer
+            {
+                [ECMAScript, Other.Boundary, Other.ECMAScriptName("ignored"), ECMAScriptName(""), Description("@#ignored")]
+                public static class Qualified
+                {
+                    public static extern int Read();
+                }
+
+                [ECMAScript, HostBoundary]
+                public static class Globals
+                {
+                    [ECMAScript]
+                    public static class Nested
+                    {
+                        public static extern int Read();
+                    }
+                }
+            }
+            """;
+        const string callerSource = """
+            public static class TestModule
+            {
+                public static int Run() => Outer.Qualified.Read() + Outer.Globals.Nested.Read();
+            }
+            """;
+        MetadataReference? hostReference = null;
+        if (useMetadata)
+        {
+            var hostTree = CSharpSyntaxTree.ParseText(hostSource, TestMetadataReferences.PreviewParseOptions);
+            var hostCompilation = CSharpCompilation.Create(
+                "HostQualification",
+                [hostTree],
+                TestMetadataReferences.Net11
+                    .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptNameAttribute).Assembly.Location)),
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            using var assembly = new MemoryStream();
+            var emission = hostCompilation.Emit(assembly);
+            Assert.IsTrue(emission.Success, string.Join(Environment.NewLine, emission.Diagnostics));
+            hostReference = MetadataReference.CreateFromImage(assembly.ToArray());
+        }
+
+        var script = await Convert(
+            useMetadata ? callerSource : hostSource + Environment.NewLine + callerSource,
+            additionalReference: hostReference);
+
+        StringAssert.Contains(script, "Outer.Qualified.Read() + Nested.Read()");
+        await AssertRun(script + """
+
+            const Outer = { Qualified: { Read: () => 4 } };
+            const Nested = { Read: () => 7 };
+            """, 11);
+    }
+
+    [TestMethod]
     public async Task Convert_StringToStringUsesNativeMemberAndEvaluatesReceiverOnce()
     {
         var script = await Convert("""
@@ -682,6 +752,36 @@ public sealed class SourceTypeCompilationTests
         StringAssert.Contains(script, "host.Select(7, void 0, false)");
         StringAssert.Contains(script, "__jz_optionalCall(__jz_fixedArg0, __jz_fixedArg1, false)");
         StringAssert.Contains(script, ".bind(host)");
+    }
+
+    [TestMethod]
+    public async Task Convert_HostAliasesKeepExplicitOptionalDefaults()
+    {
+        var script = await Convert("""
+            using Runtime = ECMAScript.ECMAScriptAttribute;
+            using Alias = ECMAScript.ECMAScriptNameAttribute;
+
+            [Runtime]
+            [Alias("widget")]
+            public static class Host
+            {
+                [Alias("select")]
+                public static extern int Select(int value = 12, int offset = 3);
+            }
+
+            public static class TestModule
+            {
+                private static int Local(int value = 6) => value;
+                public static int Run() => Host.Select(offset: 9) + Local();
+            }
+            """);
+
+        StringAssert.Contains(script, "widget.select(");
+        StringAssert.Contains(script, "Local(6)");
+        await AssertRun(script + """
+
+            const widget = { select: (value, offset) => value * 100 + offset };
+            """, 1215);
     }
 
     [TestMethod]
@@ -1390,13 +1490,15 @@ public sealed class SourceTypeCompilationTests
 
     private static async Task<string> Convert(string source, AstConverterOptions? options = null,
         Func<INamedTypeSymbol, AstConverterOptions>? createOptions = null, string moduleName = "TestModule",
-        bool referenceVue = true)
+        bool referenceVue = true, MetadataReference? additionalReference = null)
     {
         var tree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions, "source-types.cs");
         var references = TestMetadataReferences.Net11
             .Add(MetadataReference.CreateFromFile(typeof(ECMAScript.ECMAScriptModuleAttribute).Assembly.Location));
         if (referenceVue)
             references = references.Add(MetadataReference.CreateFromFile(typeof(ECMAScript.Vue).Assembly.Location));
+        if (additionalReference is not null)
+            references = references.Add(additionalReference);
         var compilation = CSharpCompilation.Create("SourceTypes_" + Guid.NewGuid().ToString("N"), [tree],
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));

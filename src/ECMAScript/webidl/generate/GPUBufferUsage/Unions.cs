@@ -3,7 +3,6 @@ namespace ECMAScript.GPUBufferUsage;
 /// <summary>WebIDL 联合值：double[]、GPUColorDict。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUColorCollectionBuilder), nameof(GPUColorCollectionBuilder.Create))]
 public readonly union GPUColor(double[], GPUColorDict) : IEnumerable<double>
 {
@@ -47,7 +46,6 @@ public static GPUColor Create(ReadOnlySpan<double> items)
 /// <summary>WebIDL 联合值：GPUIntegerCoordinate[]、GPUExtent3DDict。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUExtent3DCollectionBuilder), nameof(GPUExtent3DCollectionBuilder.Create))]
 public readonly union GPUExtent3D(GPUIntegerCoordinate[], GPUExtent3DDict) : IEnumerable<GPUIntegerCoordinate>
 {
@@ -91,7 +89,6 @@ public static GPUExtent3D Create(ReadOnlySpan<GPUIntegerCoordinate> items)
 /// <summary>WebIDL 联合值：GPUIntegerCoordinate[]、GPUOrigin2DDict。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin2DCollectionBuilder), nameof(GPUOrigin2DCollectionBuilder.Create))]
 public readonly union GPUOrigin2D(GPUIntegerCoordinate[], GPUOrigin2DDict) : IEnumerable<GPUIntegerCoordinate>
 {
@@ -135,7 +132,6 @@ public static GPUOrigin2D Create(ReadOnlySpan<GPUIntegerCoordinate> items)
 /// <summary>WebIDL 联合值：GPUIntegerCoordinate[]、GPUOrigin3DDict。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(GPUOrigin3DCollectionBuilder), nameof(GPUOrigin3DCollectionBuilder.Create))]
 public readonly union GPUOrigin3D(GPUIntegerCoordinate[], GPUOrigin3DDict) : IEnumerable<GPUIntegerCoordinate>
 {
@@ -179,7 +175,6 @@ public static GPUOrigin3D Create(ReadOnlySpan<GPUIntegerCoordinate> items)
 /// <summary>WebIDL 联合值：GPUSampler、GPUTexture、GPUTextureView、GPUBuffer、GPUBufferBinding、GPUExternalTexture。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPUBindingResource(GPUSampler, GPUTexture, GPUTextureView, GPUBuffer, GPUBufferBinding, GPUExternalTexture)
 {
 
@@ -241,7 +236,6 @@ public static implicit operator GPUBindingResource(GPUExternalTexture value)
 /// <summary>WebIDL 联合值：HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPUCanvasContextCanvas(HTMLCanvasElement, OffscreenCanvas)
 {
 
@@ -267,7 +261,6 @@ public static implicit operator GPUCanvasContextCanvas(OffscreenCanvas value)
 /// <summary>WebIDL 联合值：ImageBitmap、ImageData、HTMLImageElement、HTMLVideoElement、VideoFrame、HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPUCopyExternalImageSource(ImageBitmap, ImageData, HTMLImageElement, HTMLVideoElement, VideoFrame, HTMLCanvasElement, OffscreenCanvas)
 {
 
@@ -338,7 +331,6 @@ public static implicit operator GPUCopyExternalImageSource(OffscreenCanvas value
 /// <summary>WebIDL 联合值：HTMLVideoElement、VideoFrame。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPUExternalTextureDescriptorSource(HTMLVideoElement, VideoFrame)
 {
 
@@ -364,7 +356,6 @@ public static implicit operator GPUExternalTextureDescriptorSource(VideoFrame va
 /// <summary>WebIDL 联合值：GPUPipelineLayout、GPUAutoLayoutMode。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPUPipelineDescriptorBaseLayout(GPUPipelineLayout, GPUAutoLayoutMode)
 {
 
@@ -390,7 +381,6 @@ public static implicit operator GPUPipelineDescriptorBaseLayout(GPUAutoLayoutMod
 /// <summary>WebIDL 联合值：GPUTexture、GPUTextureView。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPURenderPassColorAttachmentResolveTarget(GPUTexture, GPUTextureView)
 {
 
@@ -416,7 +406,6 @@ public static implicit operator GPURenderPassColorAttachmentResolveTarget(GPUTex
 /// <summary>WebIDL 联合值：GPUTexture、GPUTextureView。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPURenderPassColorAttachmentView(GPUTexture, GPUTextureView)
 {
 
@@ -442,7 +431,6 @@ public static implicit operator GPURenderPassColorAttachmentView(GPUTextureView 
 /// <summary>WebIDL 联合值：GPUTexture、GPUTextureView。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPURenderPassDepthStencilAttachmentView(GPUTexture, GPUTextureView)
 {
 
@@ -468,7 +456,6 @@ public static implicit operator GPURenderPassDepthStencilAttachmentView(GPUTextu
 /// <summary>WebIDL 联合值：GPUPipelineLayout、GPUAutoLayoutMode。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union GPUShaderModuleCompilationHintLayout(GPUPipelineLayout, GPUAutoLayoutMode)
 {
 
@@ -494,7 +481,6 @@ public static implicit operator GPUShaderModuleCompilationHintLayout(GPUAutoLayo
 /// <summary>WebIDL 联合值：HTMLCanvasElement、OffscreenCanvas。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCache(HTMLCanvasElement, OffscreenCanvas)
 {
 

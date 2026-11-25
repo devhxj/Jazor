@@ -21,7 +21,6 @@ public static class JSON
 	/// This is not a global host; it models the runtime context object directly.
 	/// 作为 <c>JSON.parse</c> reviver 第三个参数传入的 JavaScript 对象形状；不是全局宿主，直接建模运行时 context 对象。
 	/// </summary>
-	[Description("@#")]
 	public sealed class ParseContext
 	{
 		/// <summary>
@@ -38,7 +37,6 @@ public static class JSON
 	/// This is not a global host; it models the frozen runtime object directly.
 	/// JavaScript <c>JSON.rawJSON</c> 返回的对象形状；不是全局宿主，直接建模冻结的运行时对象。
 	/// </summary>
-	[Description("@#")]
 	public sealed class RawValue
 	{
 		/// <summary>

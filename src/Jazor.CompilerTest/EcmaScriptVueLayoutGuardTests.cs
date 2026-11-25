@@ -42,7 +42,7 @@ public sealed class EcmaScriptVueLayoutGuardTests
         var source = File.ReadAllText(shellPath);
 
         StringAssert.Contains(source, "[ECMAScript(\"vue\")]");
-        StringAssert.Contains(source, "[Description(\"@#\")]");
+        StringAssert.Contains(source, "[Boundary]");
         StringAssert.Contains(source, "public static partial class Vue");
         Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "Vue shell file should not contain static API members.");
         Assert.IsFalse(source.Contains("public interface IVueComponent", StringComparison.Ordinal), "Vue nested type contracts should stay in Types/ partial files.");

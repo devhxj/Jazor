@@ -5,7 +5,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[Description("@#")]
 public sealed record CounterState : PiniaStateTree
 {
     public int Count { get; set; }
@@ -14,7 +13,6 @@ public sealed record CounterState : PiniaStateTree
 }
 
 [ECMAScript]
-[Description("@#")]
 public abstract class CounterStore : Store<CounterState>
 {
     public extern int Count { get; set; }
@@ -28,20 +26,17 @@ public abstract class CounterStore : Store<CounterState>
     public extern void Decrement();
 }
 
-[Description("@#")]
 public sealed record CounterPluginExtensions : Vue.VueProps
 {
     public string AuditTag { get; init; } = "";
 }
 
-[Description("@#")]
 public sealed record CounterPluginState : PiniaStateTree
 {
     public string PersistedAt { get; set; } = "";
 }
 
 [ECMAScript]
-[Description("@#")]
 public abstract class CounterStoreRefs : StoreRefs<CounterStore>
 {
     public extern Vue.IVueRef<int> Count { get; }
@@ -51,13 +46,11 @@ public abstract class CounterStoreRefs : StoreRefs<CounterStore>
     public extern Vue.VueReadonlyRef<int> DoubleCount { get; }
 }
 
-[Description("@#")]
 public record CounterGetters : Vue.VueProps
 {
     public Func<int> DoubleCount { get; init; } = default!;
 }
 
-[Description("@#")]
 public record CounterActions : Vue.VueProps
 {
     public Action Increment { get; init; } = default!;

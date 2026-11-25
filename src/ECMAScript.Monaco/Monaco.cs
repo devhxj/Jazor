@@ -24,7 +24,7 @@ namespace ECMAScript;
 /// them with the closure.
 /// </remarks>
 [ECMAScript("monaco-editor/editor/editor.api.js")]
-[Description("@#")]
+[Boundary]
 public static partial class Monaco
 {
 }

@@ -49,7 +49,7 @@ public delegate bool PiniaTestingStubActionPredicate<TStore>(string actionName, 
 /// Pinia 测试入口；创建可配置 action 替身、初始状态和插件行为的测试根实例。
 /// </summary>
 [ECMAScript("@pinia/testing")]
-[Description("@#")]
+[Boundary]
 public static partial class PiniaTesting
 {
 }

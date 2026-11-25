@@ -10,7 +10,6 @@ public static partial class VueDevtools
 {
     /// <summary>Vue Devtools 使用的 component uid/key 值域。</summary>
     [ECMAScript]
-    [Description("@#")]
     public readonly union ComponentIdentifier(string, Number)
     {
         /// <summary>从整数 uid 创建 identity projection。</summary>
@@ -43,7 +42,6 @@ public static partial class VueDevtools
     /// 避免业务代码耦合 <c>ComponentInternalInstance</c> 这一非公共 Vue runtime shape。
     /// </summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class ComponentInstance
     {
         /// <summary>
@@ -56,7 +54,6 @@ public static partial class VueDevtools
 
     /// <summary>Devtools 中可编辑的 Vue component tree 节点。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class ComponentTreeNode
     {
         /// <summary>
@@ -136,7 +133,6 @@ public static partial class VueDevtools
 
     /// <summary>Devtools 中被检查 component 的数据快照。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class InspectedComponentData
     {
         /// <summary>
@@ -172,7 +168,6 @@ public static partial class VueDevtools
 
     /// <summary>component 对应 DOM bounds。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class ComponentBounds
     {
         /// <summary>
@@ -201,7 +196,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>visitComponentTree</c> hook 提供的 component tree payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class VisitComponentTreePayload
     {
         /// <summary>
@@ -230,7 +224,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>inspectComponent</c> hook 提供的 component state payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class InspectComponentPayload
     {
         /// <summary>

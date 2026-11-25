@@ -129,7 +129,6 @@ public enum VueUseNetworkEffectiveType
 /// A VueUse element target: a DOM element, a mounted component public instance, or a readonly ref to either.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union VueUseMaybeElement(
     Element,
     Vue.VueComponentPublicInstance,
@@ -140,7 +139,6 @@ public readonly union VueUseMaybeElement(
 /// <c>useMouse()</c> 的选项对象。
 /// Options for <c>useMouse()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseMouseOptions
 {
     /// <summary>坐标取值基准。The coordinate basis.</summary>
@@ -164,7 +162,6 @@ public record VueUseMouseOptions
 /// <c>useMouseInElement()</c> 的选项对象。
 /// Options for <c>useMouseInElement()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseMouseInElementOptions
 {
     /// <summary>坐标取值基准。The coordinate basis.</summary>
@@ -193,7 +190,6 @@ public record VueUseMouseInElementOptions
 /// The <c>useMouse()</c> return value: reactive coordinates and the event source.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseMouseReturn
 {
     /// <summary>
@@ -222,7 +218,6 @@ public abstract class VueUseMouseReturn
 /// relative position and dimensions.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseMouseInElementReturn : VueUseMouseReturn
 {
     /// <summary>
@@ -270,7 +265,6 @@ public abstract class VueUseMouseInElementReturn : VueUseMouseReturn
 /// The <c>useWindowSize()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseWindowSizeReturn
 {
     /// <summary>
@@ -294,7 +288,6 @@ public abstract class VueUseWindowSizeReturn
 /// The <c>useElementSize()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseElementSizeReturn
 {
     /// <summary>
@@ -322,7 +315,6 @@ public abstract class VueUseElementSizeReturn
 /// The <c>useElementBounding()</c> return value: the element's bounding rectangle.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseElementBoundingReturn
 {
     /// <summary>
@@ -373,7 +365,6 @@ public abstract class VueUseElementBoundingReturn
 /// <c>useElementBounding()</c> 的选项对象。
 /// Options for <c>useElementBounding()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseElementBoundingOptions
 {
     /// <summary>停止观测时是否重置为 0。Whether to reset values to zero when tracking stops.</summary>
@@ -398,7 +389,6 @@ public record VueUseElementBoundingOptions
 /// The <c>useWindowScroll()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseWindowScrollReturn
 {
     /// <summary>
@@ -421,7 +411,6 @@ public abstract class VueUseWindowScrollReturn
 /// <c>useIntersectionObserver()</c> 的选项对象。
 /// Options for <c>useIntersectionObserver()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseIntersectionObserverOptions
 {
     /// <summary>立即开始观测。Whether to start observing immediately.</summary>
@@ -446,7 +435,6 @@ public record VueUseIntersectionObserverOptions
 /// The <c>useIntersectionObserver()</c> return value: pausable observation control.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseIntersectionObserverReturn
 {
     /// <summary>
@@ -497,7 +485,6 @@ public delegate void VueUseResizeObserverCallback(Array<ResizeObserverEntry?> en
 /// <c>useStorage()</c> 系列及 <c>useLocalStorage()</c>、<c>useSessionStorage()</c> 的选项对象。
 /// Options shared by <c>useStorage()</c>, <c>useLocalStorage()</c>, and <c>useSessionStorage()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseStorageOptions
 {
     /// <summary>深层监听存储值变化。Whether to watch storage values deeply.</summary>
@@ -521,7 +508,6 @@ public record VueUseStorageOptions
 /// <c>useClipboard()</c> 的选项对象。
 /// Options for <c>useClipboard()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseClipboardOptions
 {
     /// <summary>挂载时读取剪贴板内容。Whether to read the clipboard content on mount.</summary>
@@ -542,7 +528,6 @@ public record VueUseClipboardOptions
 /// The <c>useClipboard()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseClipboardReturn
 {
     /// <summary>
@@ -579,7 +564,6 @@ public abstract class VueUseClipboardReturn
 /// <c>useTitle()</c> 的选项对象。
 /// Options for <c>useTitle()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseTitleOptions
 {
     /// <summary>在其上设置标题的文档。The document whose title is set.</summary>
@@ -595,7 +579,6 @@ public record VueUseTitleOptions
 /// <c>useFavicon()</c> 的选项对象。
 /// Options for <c>useFavicon()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseFaviconOptions
 {
     /// <summary>图标 URL 的基础路径。The base path prepended to the icon URL.</summary>
@@ -611,7 +594,6 @@ public record VueUseFaviconOptions
 /// <c>useFullscreen()</c> 的选项对象。
 /// Options for <c>useFullscreen()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseFullscreenOptions
 {
     /// <summary>目标元素。The target element.</summary>
@@ -628,7 +610,6 @@ public record VueUseFullscreenOptions
 /// The <c>useFullscreen()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseFullscreenReturn
 {
     /// <summary>

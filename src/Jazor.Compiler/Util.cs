@@ -50,20 +50,6 @@ public static class Util
         return isInitOnly;
     }
 
-    private enum JsNameConfigKind
-    {
-        None,
-        Stop,
-        Explicit,
-    }
-
-    private readonly record struct JsNameConfig(JsNameConfigKind Kind, string? Name)
-    {
-        public static JsNameConfig None => new(JsNameConfigKind.None, null);
-        public static JsNameConfig Stop => new(JsNameConfigKind.Stop, null);
-        public static JsNameConfig Explicit(string name) => new(JsNameConfigKind.Explicit, name);
-    }
-
     /// <summary>
     /// Raw JavaScript-name metadata found on one Roslyn symbol.
     ///
@@ -75,8 +61,12 @@ public static class Util
         bool HasECMAScriptNameAttribute,
         string? ECMAScriptName,
         string? DescriptionName,
-        bool HasDescriptionBoundary)
+        bool HasBoundary)
     {
+        public string? ExplicitName => HasECMAScriptNameAttribute
+            ? (string.IsNullOrEmpty(ECMAScriptName) ? null : ECMAScriptName)
+            : DescriptionName;
+
         public bool HasConflictingExplicitNames
             => HasECMAScriptNameAttribute &&
                !string.IsNullOrEmpty(ECMAScriptName) &&
@@ -207,7 +197,7 @@ public static class Util
     /// <param name="symbol"></param>
     /// <returns></returns>
     public static string? GetSymbolConfigName(ISymbol symbol)
-        => GetSymbolNameConfig(symbol) is { Kind: JsNameConfigKind.Explicit, Name: var name } ? name : null;
+        => GetJavaScriptNameMetadata(symbol).ExplicitName;
 
     internal static bool HasOptionalRead(ISymbol symbol) =>
         HasAttribute(symbol, "ECMAScript.ECMAScriptOptionalAttribute");
@@ -222,13 +212,13 @@ public static class Util
         attribute.AttributeClass?.ToDisplayString() == metadataName;
 
     /// <summary>
-    /// 判断当前符号是否声明了名称解析边界（<c>@#</c>）。
+    /// 判断当前类型是否直接声明了 <c>[Boundary]</c>。
     /// 一旦命中该边界，当前符号及其外层宿主都不再继续参与名称拼接。
     /// </summary>
     /// <param name="symbol"></param>
     /// <returns></returns>
     public static bool HasNameResolutionBoundary(ISymbol symbol)
-        => GetSymbolNameConfig(symbol).Kind == JsNameConfigKind.Stop;
+        => symbol is INamedTypeSymbol && GetJavaScriptNameMetadata(symbol).HasBoundary;
 
     /// <summary>
     /// Resolves the producer-side CLR runtime mapping declared by <c>Jazor(Op.Import, ...)</c>.
@@ -282,27 +272,30 @@ public static class Util
     }
 
     /// <summary>
-    /// Reads both supported authored-name attributes without applying precedence.
-    ///
-    /// The effective resolver below intentionally keeps the historical rule that a blank/null
-    /// <c>ECMAScriptName</c> suppresses <c>Description</c>, and that <c>Description("@#")</c>
-    /// is a boundary rather than a concrete name. Keeping the raw read here gives compiler and
-    /// analyzer one source of truth while still allowing diagnostics to explain the conflict.
+    /// Reads host qualification and aliases in one pass. String enum literals and analyzer
+    /// diagnostics need the authored values before ordinary name precedence is applied.
     /// </summary>
     internal static JavaScriptNameMetadata GetJavaScriptNameMetadata(ISymbol symbol)
     {
         var hasECMAScriptName = false;
         string? ecmaScriptName = null;
         string? descriptionName = null;
-        var hasDescriptionBoundary = false;
+        var hasBoundary = false;
 
         foreach (var attribute in symbol.GetAttributes())
         {
+            // Roslyn supplies an error type for an unresolved attribute in source.
+            var attributeName = attribute.AttributeClass!.ToDisplayString();
+            if (attributeName == "ECMAScript.BoundaryAttribute" && symbol is INamedTypeSymbol)
+            {
+                hasBoundary = true;
+                continue;
+            }
+
             if (attribute.ConstructorArguments.Length == 0)
                 continue;
 
-            var attributeName = attribute.AttributeClass?.Name;
-            if (attributeName == "ECMAScriptNameAttribute")
+            if (attributeName == "ECMAScript.ECMAScriptNameAttribute")
             {
                 // AttributeUsage disallows duplicates, but keeping the first value preserves the
                 // old resolver's source-order behavior for invalid/recovered Roslyn symbols.
@@ -315,51 +308,21 @@ public static class Util
                 continue;
             }
 
-            if (attributeName != "DescriptionAttribute")
+            if (attributeName != "System.ComponentModel.DescriptionAttribute")
                 continue;
 
             var description = ((string?)attribute.ConstructorArguments[0].Value)?.Trim();
             if (description?.StartsWith("@#", StringComparison.Ordinal) != true)
                 continue;
 
-            var name = description.Substring(2);
-            if (name.Length == 0)
-            {
-                descriptionName = null;
-                hasDescriptionBoundary = true;
-            }
-            else
-            {
-                descriptionName = name;
-                hasDescriptionBoundary = false;
-            }
+            descriptionName = description.Length > 2 ? description.Substring(2) : null;
         }
 
         return new JavaScriptNameMetadata(
             hasECMAScriptName,
             ecmaScriptName,
             descriptionName,
-            hasDescriptionBoundary);
-    }
-
-    private static JsNameConfig GetSymbolNameConfig(ISymbol symbol)
-    {
-        var metadata = GetJavaScriptNameMetadata(symbol);
-        if (metadata.HasECMAScriptNameAttribute)
-        {
-            // A blank ECMAScriptName is a stop marker for ordinary symbol-name resolution.
-            // String-enum wire values intentionally inspect the raw metadata separately.
-            return string.IsNullOrEmpty(metadata.ECMAScriptName)
-                ? JsNameConfig.Stop
-                : JsNameConfig.Explicit(metadata.ECMAScriptName!);
-        }
-
-        if (metadata.HasDescriptionBoundary)
-            return JsNameConfig.Stop;
-
-        return string.IsNullOrEmpty(metadata.DescriptionName)
-            ? JsNameConfig.None
-            : JsNameConfig.Explicit(metadata.DescriptionName!);
+            hasBoundary);
     }
 
     /// <summary>

@@ -1301,7 +1301,6 @@ extern IEnumerator IEnumerable.GetEnumerator();
     /// <see href="https://drafts.css-houdini.org/css-typed-om-1/">CSS Typed OM Level 1: CSSNumericArray.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://drafts.css-houdini.org/css-typed-om-1/">CSS Typed OM Level 1: index</see></param>
-[Description("@#")]
     public extern CSSNumericValue this[uint index] { get; }
 }
 
@@ -1971,7 +1970,6 @@ extern IEnumerator IEnumerable.GetEnumerator();
     /// <see href="https://drafts.css-houdini.org/css-typed-om-1/">CSS Typed OM Level 1: CSSTransformValue.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://drafts.css-houdini.org/css-typed-om-1/">CSS Typed OM Level 1: index</see></param>
-[Description("@#")]
     public extern CSSTransformComponent this[uint index] { get; set; }
 
     /// <summary>
@@ -2132,7 +2130,6 @@ extern IEnumerator IEnumerable.GetEnumerator();
     /// <see href="https://drafts.css-houdini.org/css-typed-om-1/">CSS Typed OM Level 1: CSSUnparsedValue.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://drafts.css-houdini.org/css-typed-om-1/">CSS Typed OM Level 1: index</see></param>
-[Description("@#")]
     public extern CSSUnparsedSegment this[uint index] { get; set; }
 }
 

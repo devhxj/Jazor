@@ -9,7 +9,6 @@ namespace ECMAScript;
 /// 路由器选项配置包。
 /// Router options configuration bag.
 /// </summary>
-[Description("@#")]
 public record RouterOptions : Vue.VueProps
 {
 	/// <summary>
@@ -89,7 +88,6 @@ public record RouterOptions : Vue.VueProps
 /// Type wrapper for values that can be stored in route metadata.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class RouteMetaValue
 {
 	private RouteMetaValue()
@@ -258,7 +256,6 @@ public sealed class RouteMetaValue
 /// Route metadata dictionary for storing custom data attached to route records.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RouteMeta : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -349,7 +346,6 @@ public record RouteMeta : Vue.VueProps, System.Collections.IEnumerable
 /// Browser history state entry for data stored in history.state.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record HistoryState : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -397,7 +393,6 @@ public record HistoryState : Vue.VueProps, System.Collections.IEnumerable
 /// Parsed query parameters dictionary with single query values.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record LocationQuery : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -429,7 +424,6 @@ public record LocationQuery : Vue.VueProps, System.Collections.IEnumerable
 /// Raw query parameters dictionary where values can be single values or arrays.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record LocationQueryRaw : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -477,7 +471,6 @@ public record LocationQueryRaw : Vue.VueProps, System.Collections.IEnumerable
 /// Parsed route parameters dictionary.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RouteParams : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -509,7 +502,6 @@ public record RouteParams : Vue.VueProps, System.Collections.IEnumerable
 /// Raw route parameters dictionary where parameter values can be single values or arrays.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RouteParamsRaw : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -540,7 +532,6 @@ public record RouteParamsRaw : Vue.VueProps, System.Collections.IEnumerable
 /// 路由位置选项的基类，包含通用导航选项。
 /// Base class for route location options containing common navigation options.
 /// </summary>
-[Description("@#")]
 public abstract record RouteLocationOptions : Vue.VueProps
 {
 	/// <summary>
@@ -570,7 +561,6 @@ public abstract record RouteLocationOptions : Vue.VueProps
 /// Base class for route locations representing a resolved or unresolved route location.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteLocation
 {
 	/// <summary>
@@ -670,7 +660,6 @@ public abstract class RouteLocation
 /// 基于路径的原始路由位置的基类，包含查询和哈希。
 /// Base class for path-based raw route locations including query and hash.
 /// </summary>
-[Description("@#")]
 public abstract record RouteLocationPathRawBase : RouteLocationOptions
 {
 	/// <summary>
@@ -692,7 +681,6 @@ public abstract record RouteLocationPathRawBase : RouteLocationOptions
 /// 基于路径字符串的路由位置（非泛型版本）。
 /// Path-string-based route location (non-generic version).
 /// </summary>
-[Description("@#")]
 public record RouteLocationAsPath : RouteLocationPathRawBase
 {
 	/// <summary>
@@ -707,7 +695,6 @@ public record RouteLocationAsPath : RouteLocationPathRawBase
 /// 包含查询和哈希的路由位置基类。
 /// Base class for route locations including query and hash.
 /// </summary>
-[Description("@#")]
 public abstract record RouteQueryAndHash : Vue.VueProps
 {
 	/// <summary>
@@ -729,7 +716,6 @@ public abstract record RouteQueryAndHash : Vue.VueProps
 /// 基于路径字符串的原始路由位置。
 /// Path-string-based raw route location.
 /// </summary>
-[Description("@#")]
 public record RouteLocationPathRaw : RouteLocationPathRawBase
 {
 	/// <summary>
@@ -744,7 +730,6 @@ public record RouteLocationPathRaw : RouteLocationPathRawBase
 /// 基于名称的相对原始路由位置的基类。
 /// Base class for name-based relative raw route locations.
 /// </summary>
-[Description("@#")]
 public abstract record LocationAsRelativeRaw : RouteLocationOptions
 {
 	/// <summary>
@@ -781,7 +766,6 @@ public abstract record LocationAsRelativeRaw : RouteLocationOptions
 /// 基于名称的相对路由位置（非泛型版本）。
 /// Name-based relative route location (non-generic version).
 /// </summary>
-[Description("@#")]
 public record RouteLocationAsRelative : LocationAsRelativeRaw
 {
 }
@@ -790,7 +774,6 @@ public record RouteLocationAsRelative : LocationAsRelativeRaw
 /// 基于名称的原始路由位置。
 /// Name-based raw route location.
 /// </summary>
-[Description("@#")]
 public record RouteLocationNamedRaw : LocationAsRelativeRaw
 {
 }
@@ -799,7 +782,6 @@ public record RouteLocationNamedRaw : LocationAsRelativeRaw
 /// 路径解析器选项，控制路径令牌的匹配行为。
 /// Path parser options controlling how path tokens are matched.
 /// </summary>
-[Description("@#")]
 public record PathParserOptions : Vue.VueProps
 {
 	/// <summary>
@@ -829,7 +811,6 @@ public record PathParserOptions : Vue.VueProps
 /// 表示路径解析器中提取的路径参数键。
 /// Represents a path parameter key extracted by the path parser.
 /// </summary>
-[Description("@#")]
 public record PathParserKey : Vue.VueProps
 {
 	/// <summary>
@@ -859,7 +840,6 @@ public record PathParserKey : Vue.VueProps
 /// Abstract base class for path parsers that match path strings against route patterns.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class PathParser
 {
 	/// <summary>
@@ -914,7 +894,6 @@ public abstract class PathParser
 /// 基于路径的匹配器位置。
 /// Path-based matcher location.
 /// </summary>
-[Description("@#")]
 public record MatcherLocationAsPath : Vue.VueProps
 {
 	/// <summary>
@@ -929,7 +908,6 @@ public record MatcherLocationAsPath : Vue.VueProps
 /// 基于名称的相对匹配器位置。
 /// Name-based relative matcher location.
 /// </summary>
-[Description("@#")]
 public record MatcherLocationAsRelative : Vue.VueProps
 {
 	/// <summary>
@@ -944,7 +922,6 @@ public record MatcherLocationAsRelative : Vue.VueProps
 /// 具名匹配器位置，通过路由名称定位。
 /// Named matcher location, identified by route name.
 /// </summary>
-[Description("@#")]
 public record MatcherLocationAsName : Vue.VueProps
 {
 	/// <summary>
@@ -966,7 +943,6 @@ public record MatcherLocationAsName : Vue.VueProps
 /// 匹配器解析后的路由位置。
 /// Matcher-resolved route location.
 /// </summary>
-[Description("@#")]
 public record MatcherLocation : Vue.VueProps
 {
 	/// <summary>
@@ -1010,7 +986,6 @@ public record MatcherLocation : Vue.VueProps
 /// Normalized route record containing all resolved information.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteRecordNormalized
 {
 	/// <summary>
@@ -1125,7 +1100,6 @@ public abstract class RouteRecordNormalized
 /// Matched route location record extending the normalized record with resolved components.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteLocationMatched : RouteRecordNormalized
 {
 	/// <summary>
@@ -1149,7 +1123,6 @@ public abstract class RouteLocationMatched : RouteRecordNormalized
 /// Route record matcher extending the path parser with matcher tree structure information.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteRecordMatcher : PathParser
 {
 	/// <summary>
@@ -1194,7 +1167,6 @@ public abstract class RouteRecordMatcher : PathParser
 /// Normalized route location containing all resolved route information.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteLocationNormalized
 {
 	/// <summary>
@@ -1274,7 +1246,6 @@ public abstract class RouteLocationNormalized
 /// Normalized route location with loaded components, containing resolved matched records.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteLocationNormalizedLoaded : RouteLocationNormalized
 {
 	/// <summary>
@@ -1298,7 +1269,6 @@ public abstract class RouteLocationNormalizedLoaded : RouteLocationNormalized
 /// Resolved route location including the href that can be used to generate links.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouteLocationResolved : RouteLocation
 {
 	/// <summary>
@@ -1322,7 +1292,6 @@ public abstract class RouteLocationResolved : RouteLocation
 /// Router history navigation information describing the type and direction of a navigation.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouterHistoryNavigationInformation
 {
 	/// <summary>
@@ -1360,7 +1329,6 @@ public abstract class RouterHistoryNavigationInformation
 /// Abstract base class for router history management, wrapping the browser history API.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouterHistory
 {
 	/// <summary>
@@ -1474,7 +1442,6 @@ public abstract class RouterHistory
 /// Vue Router instance providing the core API for route navigation and state management.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract record Router : Vue.VuePlugin
 {
 	/// <summary>
@@ -1793,7 +1760,6 @@ public abstract record Router : Vue.VuePlugin
 /// Route matcher responsible for registering, removing, and resolving route records.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class RouterMatcher
 {
 	/// <summary>
@@ -1879,7 +1845,6 @@ public abstract class RouterMatcher
 /// Navigation failure error containing the failure type and source/target route information.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class NavigationFailure : Error
 {
 	/// <summary>
@@ -1917,7 +1882,6 @@ public abstract class NavigationFailure : Error
 /// Navigation redirect error indicating a redirect occurred during navigation guards.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class NavigationRedirectError : Error
 {
 	/// <summary>
@@ -1955,7 +1919,6 @@ public abstract class NavigationRedirectError : Error
 /// Raw route components mapping dictionary for multi-named-view scenarios.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RawRouteComponents : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -2005,7 +1968,6 @@ public record RawRouteComponents : Vue.VueProps, System.Collections.IEnumerable
 /// Resolved route components mapping dictionary for multi-named-view scenarios.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RouteComponents : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -2055,7 +2017,6 @@ public record RouteComponents : Vue.VueProps, System.Collections.IEnumerable
 /// Navigation guard next callback list, accessible by index.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record NavigationGuardNextCallbackList : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -2086,7 +2047,6 @@ public record NavigationGuardNextCallbackList : Vue.VueProps, System.Collections
 /// Named map of navigation guard next callbacks, indexed by view name.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record NavigationGuardNextCallbackMap : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -2118,7 +2078,6 @@ public record NavigationGuardNextCallbackMap : Vue.VueProps, System.Collections.
 /// Route component instance map, indexed by view name.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RouteComponentInstanceMap : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -2150,7 +2109,6 @@ public record RouteComponentInstanceMap : Vue.VueProps, System.Collections.IEnum
 /// Map of route props configurations indexed by view name.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public record RouteNamedProps : Vue.VueProps, System.Collections.IEnumerable
 {
 	/// <summary>
@@ -2208,7 +2166,6 @@ public record RouteNamedProps : Vue.VueProps, System.Collections.IEnumerable
 /// 路由记录的基类，包含所有路由记录类型的共享属性。
 /// Base class for route records containing shared properties for all route record types.
 /// </summary>
-[Description("@#")]
 public abstract record RouteRecordBase : Vue.VueProps
 {
 	/// <summary>
@@ -2273,7 +2230,6 @@ public abstract record RouteRecordBase : Vue.VueProps
 /// 单视图路由记录，定义一个默认视图的组件。
 /// Single-view route record defining a component for the default view.
 /// </summary>
-[Description("@#")]
 public record RouteRecordSingleView : RouteRecordBase
 {
 	/// <summary>
@@ -2295,7 +2251,6 @@ public record RouteRecordSingleView : RouteRecordBase
 /// 带子路由的单视图路由记录。
 /// Single-view route record with nested children.
 /// </summary>
-[Description("@#")]
 public record RouteRecordSingleViewWithChildren : RouteRecordBase
 {
 	/// <summary>
@@ -2331,7 +2286,6 @@ public record RouteRecordSingleViewWithChildren : RouteRecordBase
 /// 多视图（命名视图）路由记录。
 /// Multiple-view (named-view) route record.
 /// </summary>
-[Description("@#")]
 public record RouteRecordMultipleViews : RouteRecordBase
 {
 	/// <summary>
@@ -2353,7 +2307,6 @@ public record RouteRecordMultipleViews : RouteRecordBase
 /// 带子路由的多视图（命名视图）路由记录。
 /// Multiple-view (named-view) route record with nested children.
 /// </summary>
-[Description("@#")]
 public record RouteRecordMultipleViewsWithChildren : RouteRecordBase
 {
 	/// <summary>
@@ -2389,7 +2342,6 @@ public record RouteRecordMultipleViewsWithChildren : RouteRecordBase
 /// 重定向路由记录，将路由重定向到其他位置。
 /// Redirect route record that redirects to another location.
 /// </summary>
-[Description("@#")]
 public record RouteRecordRedirect : RouteRecordBase
 {
 	/// <summary>
@@ -2468,7 +2420,6 @@ public enum RouterLinkAriaCurrentValue
 /// RouterLink 组件的核心选项。
 /// Core options for the RouterLink component.
 /// </summary>
-[Description("@#")]
 public record RouterLinkOptions : Vue.VueProps
 {
 	/// <summary>
@@ -2490,7 +2441,6 @@ public record RouterLinkOptions : Vue.VueProps
 /// RouterLink 组件的完整属性集。
 /// Full props for the RouterLink component.
 /// </summary>
-[Description("@#")]
 public record RouterLinkProps : RouterLinkOptions
 {
 
@@ -2534,7 +2484,6 @@ public record RouterLinkProps : RouterLinkOptions
 /// useLink() 组合式函数的选项。
 /// Options for the useLink() composable.
 /// </summary>
-[Description("@#")]
 public record UseLinkOptions : Vue.VueProps
 {
 	/// <summary>
@@ -2568,7 +2517,6 @@ public record UseLinkOptions : Vue.VueProps
 /// Base class for the return value of the useLink() composable.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class UseLinkReturn
 {
 	/// <summary>
@@ -2630,7 +2578,6 @@ public abstract class UseLinkReturn
 /// Full return result of the useLink() composable.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class UseLinkResult : UseLinkReturn
 {
 	/// <summary>
@@ -2646,7 +2593,6 @@ public abstract class UseLinkResult : UseLinkReturn
 /// 滚动位置坐标，包含水平和垂直偏移量。
 /// Scroll position coordinates including horizontal and vertical offsets.
 /// </summary>
-[Description("@#")]
 public record ScrollPositionCoordinates : Vue.VueProps
 {
 	/// <summary>
@@ -2675,7 +2621,6 @@ public record ScrollPositionCoordinates : Vue.VueProps
 /// 基于元素的滚动位置，指定要滚动到的目标元素。
 /// Element-based scroll position specifying the target element to scroll to.
 /// </summary>
-[Description("@#")]
 public record ScrollPositionElement : ScrollPositionCoordinates
 {
 	/// <summary>
@@ -2690,7 +2635,6 @@ public record ScrollPositionElement : ScrollPositionCoordinates
 /// 规范化后的滚动位置，坐标为确定值。
 /// Normalized scroll position with definitive coordinate values.
 /// </summary>
-[Description("@#")]
 public record ScrollPositionNormalized : Vue.VueProps
 {
 	/// <summary>
@@ -2720,7 +2664,6 @@ public record ScrollPositionNormalized : Vue.VueProps
 /// Union type for scroll position targets, which can be a CSS selector string or a DOM element.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union ScrollPositionTarget(string, Element)
 {
 	/// <summary>
@@ -2742,7 +2685,6 @@ public readonly union ScrollPositionTarget(string, Element)
 /// </summary>
 [ECMAScript]
 [Union]
-[Description("@#")]
 public readonly struct RouterScrollResult : IUnion
 {
 	private readonly byte _kind;
@@ -2878,7 +2820,6 @@ public readonly struct RouterScrollResult : IUnion
 /// Union type for the router scroll behavior handler, supporting both sync and async callbacks.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouterScrollHandler(RouterScrollBehavior, AsyncRouterScrollBehavior)
 {
 	/// <summary>
@@ -2916,7 +2857,6 @@ public readonly union RouterScrollHandler(RouterScrollBehavior, AsyncRouterScrol
 /// RouterLink 组件的插槽定义。
 /// Slot definitions for the RouterLink component.
 /// </summary>
-[Description("@#")]
 public record RouterLinkSlots : Vue.VueSlots
 {
 	/// <summary>
@@ -2931,7 +2871,6 @@ public record RouterLinkSlots : Vue.VueSlots
 /// RouterLink 作用域插槽中暴露的数据对象。
 /// Data object exposed in the RouterLink scoped slot.
 /// </summary>
-[Description("@#")]
 public record RouterLinkSlotScope : Vue.VueProps
 {
 	/// <summary>
@@ -2974,7 +2913,6 @@ public record RouterLinkSlotScope : Vue.VueProps
 /// RouterView 组件的属性。
 /// Props for the RouterView component.
 /// </summary>
-[Description("@#")]
 public record RouterViewProps : Vue.VueProps
 {
 	/// <summary>
@@ -2996,7 +2934,6 @@ public record RouterViewProps : Vue.VueProps
 /// RouterView 作用域插槽中暴露的数据对象。
 /// Data object exposed in the RouterView scoped slot.
 /// </summary>
-[Description("@#")]
 public record RouterViewSlotScope : Vue.VueProps
 {
 	/// <summary>
@@ -3018,7 +2955,6 @@ public record RouterViewSlotScope : Vue.VueProps
 /// RouterView 组件的插槽定义。
 /// Slot definitions for the RouterView component.
 /// </summary>
-[Description("@#")]
 public record RouterViewSlots : Vue.VueSlots
 {
 	/// <summary>

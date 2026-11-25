@@ -74,6 +74,8 @@ public static partial class JoltProjectCompiler
                 return null;
 
             var next = Compilation.ReplaceSyntaxTree(document.Tree, newTree);
+            // IsStaticEdit accepts only literal markup changes. Attribute declarations and shared
+            // sources already passed name validation in the captured compilation.
             if (next.GetSemanticModel(newTree).GetDiagnostics(cancellationToken: cancellationToken)
                 .Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
                 return null;

@@ -4442,7 +4442,6 @@ extern IEnumerator IEnumerable.GetEnumerator();
     /// <see href="https://drafts.csswg.org/css-font-loading-3/">CSS Font Loading Module Level 3: FontFacePalette.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://drafts.csswg.org/css-font-loading-3/">CSS Font Loading Module Level 3: index</see></param>
-[Description("@#")]
     public extern string this[uint index] { get; }
 
     /// <summary>
@@ -4505,7 +4504,6 @@ extern IEnumerator IEnumerable.GetEnumerator();
     /// <see href="https://drafts.csswg.org/css-font-loading-3/">CSS Font Loading Module Level 3: FontFacePalettes.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://drafts.csswg.org/css-font-loading-3/">CSS Font Loading Module Level 3: index</see></param>
-[Description("@#")]
     public extern FontFacePalette this[uint index] { get; }
 }
 
@@ -12940,7 +12938,6 @@ public class TextTrackList : EventTarget
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: TextTrackList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: index</see></param>
-[Description("@#")]
     public extern TextTrack this[uint index] { get; }
 
     /// <summary>
@@ -16411,7 +16408,6 @@ extern IEnumerator IEnumerable.GetEnumerator();
     /// <see href="https://immersive-web.github.io/webxr/">WebXR Device API: XRInputSourceArray.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://immersive-web.github.io/webxr/">WebXR Device API: index</see></param>
-[Description("@#")]
     public extern XRInputSource this[uint index] { get; }
 }
 
@@ -27054,7 +27050,6 @@ public class ImageTrackList
     /// <see href="https://w3c.github.io/webcodecs/">WebCodecs: ImageTrackList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://w3c.github.io/webcodecs/">WebCodecs: index</see></param>
-[Description("@#")]
     public extern ImageTrack this[uint index] { get; }
 
     /// <summary>
@@ -38727,7 +38722,6 @@ public partial class DocumentRef : Node
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: Document.</see>
     /// </remarks>
     /// <param name="name">WebIDL 参数 name：DOMString。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: name</see></param>
-[Description("@#")]
     public extern object this[string name] { get; }
 
     /// <summary>
@@ -45680,7 +45674,6 @@ public class CSSKeyframesRule : CSSRule
     /// <see href="https://drafts.csswg.org/css-animations-1/">CSS Animations Module Level 1: CSSKeyframesRule.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://drafts.csswg.org/css-animations-1/">CSS Animations Module Level 1: index</see></param>
-[Description("@#")]
     public extern CSSKeyframeRule this[uint index] { get; }
 
     /// <summary>
@@ -56085,7 +56078,6 @@ public class SourceBufferList : EventTarget
     /// <see href="https://w3c.github.io/media-source/">Media Source Extensions™: SourceBufferList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://w3c.github.io/media-source/">Media Source Extensions™: index</see></param>
-[Description("@#")]
     public extern SourceBuffer this[uint index] { get; }
 }
 
@@ -62407,7 +62399,6 @@ public class DataTransferItemList
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: DataTransferItemList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: index</see></param>
-[Description("@#")]
     public extern DataTransferItem this[uint index] { get; }
 
     /// <summary>
@@ -62966,7 +62957,6 @@ public class TextTrackCueList
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: TextTrackCueList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: index</see></param>
-[Description("@#")]
     public extern TextTrackCue this[uint index] { get; }
 
     /// <summary>
@@ -64208,7 +64198,6 @@ public class AudioTrackList : EventTarget
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: AudioTrackList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: index</see></param>
-[Description("@#")]
     public extern AudioTrack this[uint index] { get; }
 
     /// <summary>
@@ -64281,7 +64270,6 @@ public class VideoTrackList : EventTarget
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: VideoTrackList.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: index</see></param>
-[Description("@#")]
     public extern VideoTrack this[uint index] { get; }
 
     /// <summary>
@@ -64701,7 +64689,6 @@ public class DOMStringMap
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: DOMStringMap.</see>
     /// </remarks>
     /// <param name="name">WebIDL 参数 name：DOMString。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: name</see></param>
-[Description("@#")]
     public extern string this[string name] { get; set; }
 
     /// <summary>
@@ -64711,7 +64698,6 @@ public class DOMStringMap
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: DOMStringMap.</see>
     /// </remarks>
     /// <param name="name">WebIDL 参数 name：DOMString。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: name</see></param>
-[Description("@#")]
     [Jazor("delete (__arg1)[__arg2]")]
     public extern void Delete(string name);
 }
@@ -64861,7 +64847,6 @@ public class HTMLAllCollection
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: HTMLAllCollection.</see>
     /// </remarks>
     /// <param name="index">WebIDL 参数 index：unsigned long。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: index</see></param>
-[Description("@#")]
     public extern Element this[uint index] { get; }
 
     /// <summary>
@@ -64925,7 +64910,6 @@ public class HTMLOptionsCollection : HTMLCollection
     /// <remarks>
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: HTMLOptionsCollection.</see>
     /// </remarks>
-[Description("@#")]
     public extern HTMLOptionElement? this[uint index] { set; }
 
     /// <summary>
@@ -74199,7 +74183,6 @@ public partial class WindowRef : EventTarget
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: Window.</see>
     /// </remarks>
     /// <param name="name">WebIDL 参数 name：DOMString。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: name</see></param>
-[Description("@#")]
     public extern object this[string name] { get; }
 
     /// <summary>
@@ -80778,7 +80761,6 @@ public extern HTMLFormElement();
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: HTMLFormElement.</see>
     /// </remarks>
     /// <param name="index">用于索引表单控件的名称或位置。</param>
-[Description("@#")]
     public extern Element this[uint index] { get; }
 
     /// <summary>
@@ -80788,7 +80770,6 @@ public extern HTMLFormElement();
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: HTMLFormElement.</see>
     /// </remarks>
     /// <param name="name">WebIDL 参数 name：DOMString。调用时必须传入。 <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: name</see></param>
-[Description("@#")]
     public extern HTMLFormElementResult this[string name] { get; }
 
     /// <summary>

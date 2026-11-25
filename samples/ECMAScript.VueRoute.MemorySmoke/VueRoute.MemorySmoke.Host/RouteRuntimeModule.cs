@@ -163,7 +163,6 @@ public static class RouteRuntimeModule
     }
 }
 
-[Description("@#")]
 public sealed record RouteRuntimeSnapshot : ECMAScript.Vue.VueProps
 {
     [Description("@#currentPath")]

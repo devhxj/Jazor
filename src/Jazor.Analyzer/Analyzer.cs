@@ -1485,7 +1485,7 @@ public partial class Analyzer : DiagnosticAnalyzer
 			return;
 		}
 
-		if (HasExplicitJavaScriptPropertyName(property))
+		if (Util.GetSymbolConfigName(property) is not null)
 		{
 			context.ReportDiagnostic(Diagnostic.Create(
 				ConflictingSpreadPropertyNameRule,
@@ -1497,23 +1497,4 @@ public partial class Analyzer : DiagnosticAnalyzer
 	private static bool HasSpreadAttribute(IPropertySymbol property)
 		=> property.GetAttributes().Any(static attribute => attribute.AttributeClass?.ToDisplayString() == "ECMAScript.SpreadAttribute");
 
-	private static bool HasExplicitJavaScriptPropertyName(IPropertySymbol property)
-	{
-		foreach (var attribute in property.GetAttributes())
-		{
-			var attributeName = attribute.AttributeClass?.Name;
-			if (attributeName == "ECMAScriptNameAttribute")
-				return true;
-
-			if (attributeName == "DescriptionAttribute" &&
-				attribute.ConstructorArguments.Length > 0 &&
-				attribute.ConstructorArguments[0].Value is string description &&
-				description.Trim().StartsWith("@#", StringComparison.Ordinal))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
 }

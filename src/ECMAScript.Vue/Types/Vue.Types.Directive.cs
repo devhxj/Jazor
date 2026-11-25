@@ -24,7 +24,6 @@ public static partial class Vue
 	/// Unlike the read-side <see cref="VueModelModifiers"/> abstraction, this record is
 	/// meant for declaring component input contracts such as <c>modelModifiers</c>.
 	/// </summary>
-	[Description("@#")]
 	public record VueModelModifierBag : VueDictionary<bool>
 	{
 		/// <summary>
@@ -142,7 +141,6 @@ public static partial class Vue
 	/// Current runtime binding payload for a directive lifecycle hook.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueDirectiveBinding
 	{
 		/// <summary>
@@ -196,7 +194,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">指令当前绑定值的类型化契约。The typed contract of the directive's current binding value.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueDirectiveBinding<TValue> : VueDirectiveBinding
 	{
 		/// <summary>
@@ -226,7 +223,6 @@ public static partial class Vue
 	/// Runtime binding payload for a directive update hook, including the previous value.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueDirectiveUpdateBinding : VueDirectiveBinding
 	{
 		/// <summary>
@@ -250,7 +246,6 @@ public static partial class Vue
 	/// </summary>
 	/// <typeparam name="TValue">指令当前和之前绑定值的类型化契约。The typed contract of the directive's current and previous binding values.</typeparam>
 	[ECMAScript]
-	[Description("@#")]
 	public abstract class VueDirectiveUpdateBinding<TValue> : VueDirectiveBinding<TValue>
 	{
 		/// <summary>
@@ -274,7 +269,6 @@ public static partial class Vue
 	/// where Vue accepts either an object-form directive or a function shorthand.
 	/// </summary>
 	[ECMAScript]
-	[Description("@#")]
 	public class VueDirectiveValue
 	{
 		/// <summary>
@@ -304,7 +298,6 @@ public static partial class Vue
 	/// Direct object-form Vue directive authoring surface. This maps to a plain JavaScript
 	/// directive object whose lifecycle hooks are invoked by Vue.
 	/// </summary>
-	[Description("@#")]
 	public record VueDirective : IVueOptionsBag
 	{
 		/// <summary>
@@ -377,7 +370,6 @@ public static partial class Vue
 	/// value strongly typed while still lowering to the same plain JavaScript directive object.
 	/// </summary>
 	/// <typeparam name="TValue">指令绑定值的类型化契约。The typed contract of the directive's binding value.</typeparam>
-	[Description("@#")]
 	public record VueDirective<TValue> : VueDirective
 	{
 		/// <summary>

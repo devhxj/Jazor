@@ -170,7 +170,7 @@ public delegate void PiniaHotUpdateHandler(IObject newModule);
 /// Pinia 状态管理入口；创建并安装根实例后，使用 DefineStore 声明 store，通过订阅和 action 钩子观察变更。
 /// </summary>
 [ECMAScript("pinia")]
-[Description("@#")]
+[Boundary]
 public static partial class Pinia
 {
 }

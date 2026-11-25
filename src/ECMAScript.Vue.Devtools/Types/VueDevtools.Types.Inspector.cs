@@ -14,7 +14,6 @@ public static partial class VueDevtools
     /// 标量便捷构造通过 <c>From(...)</c> identity helper 完成，避免多重 implicit conversion 链。
     /// </summary>
     [ECMAScript]
-    [Description("@#")]
     public readonly union DevtoolsValue(string, bool, Number, BigInt, Vue.VueProps, Array<DevtoolsValue?>)
     {
         /// <summary>从 CLR 整数创建 Devtools value；发射时保留原始 JavaScript number。</summary>
@@ -55,7 +54,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>custom inspector 节点 tag 的显示样式。</summary>
-    [Description("@#")]
     public record InspectorNodeTag : Vue.VueProps
     {
         /// <summary>tag 中显示的文本。The visible tag label.</summary>
@@ -76,7 +74,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>custom inspector toolbar action 的共有显示元数据。</summary>
-    [Description("@#")]
     public abstract record InspectorAction : Vue.VueProps
     {
         /// <summary>Iconify icon 名称或图像 URL。Iconify icon name or image URL.</summary>
@@ -89,7 +86,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>同步 custom inspector toolbar action。</summary>
-    [Description("@#")]
     public record SyncInspectorAction : InspectorAction
     {
         /// <summary>点击 action 时执行的同步回调。</summary>
@@ -98,7 +94,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>异步 custom inspector toolbar action。</summary>
-    [Description("@#")]
     public record AsyncInspectorAction : InspectorAction
     {
         /// <summary>点击 action 时执行并返回 Promise 的回调。</summary>
@@ -107,7 +102,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>custom inspector node action 的共有显示元数据。</summary>
-    [Description("@#")]
     public abstract record InspectorNodeAction : Vue.VueProps
     {
         /// <summary>Iconify icon 名称或图像 URL。Iconify icon name or image URL.</summary>
@@ -120,7 +114,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>同步 custom inspector node action。</summary>
-    [Description("@#")]
     public record SyncInspectorNodeAction : InspectorNodeAction
     {
         /// <summary>接收当前 node id 的同步回调。</summary>
@@ -129,7 +122,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>异步 custom inspector node action。</summary>
-    [Description("@#")]
     public record AsyncInspectorNodeAction : InspectorNodeAction
     {
         /// <summary>接收当前 node id 并返回 Promise 的回调。</summary>
@@ -138,7 +130,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>注册 custom inspector 时使用的选项。</summary>
-    [Description("@#")]
     public record InspectorOptions : Vue.VueProps
     {
         /// <summary>inspector 唯一 id。Stable inspector id.</summary>
@@ -175,7 +166,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>custom inspector tree 的一个节点。</summary>
-    [Description("@#")]
     public record InspectorNode : Vue.VueProps
     {
         /// <summary>节点唯一 id。Stable inspector node id.</summary>
@@ -228,7 +218,6 @@ public static partial class VueDevtools
     /// custom inspector state 的基础条目。value 使用 <see cref="DevtoolsValue"/> 让常用可传输值保持封闭域；
     /// 复杂业务对象应实现为 <see cref="Vue.VueProps"/> record 后直接传入该分支。
     /// </summary>
-    [Description("@#")]
     public record InspectorStateEntry : Vue.VueProps
     {
         /// <summary>state entry 的显示键。The visible state key.</summary>
@@ -253,7 +242,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>包含 Devtools component state type 的 state entry。</summary>
-    [Description("@#")]
     public record ComponentStateEntry : InspectorStateEntry
     {
         /// <summary>组件 state 的来源类别，例如 <c>data</c>、<c>props</c> 或插件自定义分类。</summary>
@@ -266,7 +254,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>component prop state 的 Devtools 元信息。</summary>
-    [Description("@#")]
     public record ComponentPropMetadata : Vue.VueProps
     {
         /// <summary>prop 的 runtime type 显示文本。</summary>
@@ -300,7 +287,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Devtools custom state wrapper；将其赋给 <see cref="InspectorStateEntry.Value"/> 可显示自定义 UI。</summary>
-    [Description("@#")]
     public record CustomState : Vue.VueProps
     {
         /// <summary>Devtools 使用的保留 custom-state descriptor。</summary>
@@ -309,7 +295,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>custom state 的显示、identity 和 action 元数据。</summary>
-    [Description("@#")]
     public record CustomStateDescriptor : Vue.VueProps
     {
         /// <summary>custom state 类型名称或内置类型。</summary>
@@ -362,7 +347,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>custom state 子字段的显示约束。</summary>
-    [Description("@#")]
     public record CustomStateFields : Vue.VueProps
     {
         /// <summary>是否将子字段作为抽象值展示。</summary>
@@ -371,11 +355,9 @@ public static partial class VueDevtools
     }
 
     /// <summary>按 group key 组织的 custom inspector state。</summary>
-    [Description("@#")]
     public record InspectorState : Vue.VueDictionary<InspectorStateEntry[]>;
 
     /// <summary>普通编辑 state payload：写入值和可选重命名。</summary>
-    [Description("@#")]
     public record EditStateValue : Vue.VueProps
     {
         /// <summary>需要写入的新值。New value to write.</summary>
@@ -392,7 +374,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>删除 state entry 的编辑 payload。</summary>
-    [Description("@#")]
     public record RemoveState : Vue.VueProps
     {
         /// <summary>必须为 true，表示删除目标 state entry。</summary>
@@ -402,7 +383,6 @@ public static partial class VueDevtools
 
     /// <summary>Devtools state 编辑操作：写入/重命名或删除。</summary>
     [ECMAScript]
-    [Description("@#")]
     public readonly union StateChange(EditStateValue, RemoveState)
     {
     }
@@ -412,7 +392,6 @@ public static partial class VueDevtools
     /// <c>set</c> callback，因此使用方不需要自行重建 JavaScript 路径写入逻辑。
     /// </summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class EditStatePayload
     {
         /// <summary>
@@ -473,7 +452,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>editComponentState</c> hook 提供的编辑 payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class EditComponentStatePayload : EditStatePayload
     {
         /// <summary>
@@ -486,7 +464,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>editInspectorState</c> hook 提供的编辑 payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class EditInspectorStatePayload : EditStatePayload
     {
         /// <summary>
@@ -499,7 +476,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>getInspectorTree</c> hook 提供的 payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class GetInspectorTreePayload
     {
         /// <summary>
@@ -528,7 +504,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>getInspectorState</c> hook 提供的 payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class GetInspectorStatePayload
     {
         /// <summary>
@@ -557,7 +532,6 @@ public static partial class VueDevtools
 
     /// <summary>由 <c>setPluginSettings</c> hook 提供的动态 settings payload。</summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class SetPluginSettingsPayload
     {
         /// <summary>
@@ -595,7 +569,6 @@ public static partial class VueDevtools
     /// <summary>带业务 settings record 投影的修改 payload。</summary>
     /// <typeparam name="TSettings">应用声明的 settings record 类型。</typeparam>
     [ECMAScript]
-    [Description("@#")]
     public abstract class SetPluginSettingsPayload<TSettings> : SetPluginSettingsPayload
         where TSettings : Vue.VueProps
     {

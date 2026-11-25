@@ -12,7 +12,6 @@ namespace ECMAScript;
 /// Route record name union accepting string or Symbol.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordName(string, Symbol)
 {
     /// <summary>
@@ -33,7 +32,6 @@ public readonly union RouteRecordName(string, Symbol)
 /// Route record alias union accepting string or string array.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordAlias(string, string[])
 {
     /// <summary>
@@ -54,7 +52,6 @@ public readonly union RouteRecordAlias(string, string[])
 /// Route location raw union accepting string, RouteLocationAsPath, or RouteLocationAsRelative.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteLocationRaw(string, RouteLocationAsPath, RouteLocationAsRelative)
 {
     /// <summary>
@@ -114,7 +111,6 @@ public readonly union RouteLocationRaw(string, RouteLocationAsPath, RouteLocatio
 /// Route location raw (possibly reactive ref) union accepting value, Ref, or ReadonlyRef.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteLocationRawMaybeRef(
     RouteLocationRaw,
     Vue.IVueRef<RouteLocationRaw>,
@@ -286,7 +282,6 @@ public readonly union RouteLocationRawMaybeRef(
 /// Route boolean (possibly reactive ref) union accepting bool, Ref, or ReadonlyRef.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteBooleanMaybeRef(bool, Vue.IVueRef<bool>, Vue.VueReadonlyRef<bool>)
 {
     /// <summary>
@@ -331,7 +326,6 @@ public readonly union RouteBooleanMaybeRef(bool, Vue.IVueRef<bool>, Vue.VueReado
 /// RouterView depth value union accepting Number or Vue Ref of Number.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouterViewDepthValue(Number, Vue.IVueRef<Number>)
 {
     /// <summary>
@@ -522,7 +516,6 @@ public readonly union RouterViewDepthValue(Number, Vue.IVueRef<Number>)
 /// History state value union accepting string, Number, bool, HistoryState, or array.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union HistoryStateValue(string, Number, bool, HistoryState, Array<HistoryStateValue?>)
 {
     /// <summary>
@@ -645,7 +638,6 @@ public readonly union HistoryStateValue(string, Number, bool, HistoryState, Arra
 /// Router error value union accepting Error, string, Number, bool, BigInt, Symbol, IObject, or array.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouterErrorValue(
     Error,
     string,
@@ -739,7 +731,6 @@ public readonly union RouterErrorValue(
 /// Raw route component union accepting IVueComponent or RouteComponentLoader.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RawRouteComponent(IVueComponent, RouteComponentLoader)
 {
 
@@ -787,7 +778,6 @@ public readonly union RawRouteComponent(IVueComponent, RouteComponentLoader)
 /// Route component union accepting IVueComponent or RouteComponentLoader.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteComponent(IVueComponent, RouteComponentLoader)
 {
     /// <summary>
@@ -827,7 +817,6 @@ public readonly union RouteComponent(IVueComponent, RouteComponentLoader)
 /// Route record props union accepting bool, VueProps, or RouteRecordPropsResolver.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordProps(bool, Vue.VueProps, RouteRecordPropsResolver)
 {
     /// <summary>
@@ -881,7 +870,6 @@ public readonly union RouteRecordProps(bool, Vue.VueProps, RouteRecordPropsResol
 /// Route record named view props union accepting bool or RouteNamedProps.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordNamedViewProps(bool, RouteNamedProps)
 {
     /// <summary>
@@ -920,7 +908,6 @@ public readonly union RouteRecordNamedViewProps(bool, RouteNamedProps)
 /// Navigation guard next argument union accepting bool, RouteLocationRaw, NavigationGuardNextCallback, or Error.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union NavigationGuardNextArgument(bool, RouteLocationRaw, NavigationGuardNextCallback, Error)
 {
     /// <summary>
@@ -991,7 +978,6 @@ public readonly union NavigationGuardNextArgument(bool, RouteLocationRaw, Naviga
 /// Navigation guard return value union accepting bool, RouteLocationRaw, or Error.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union NavigationGuardReturn(bool, RouteLocationRaw, Error)
 {
     /// <summary>
@@ -1047,7 +1033,6 @@ public readonly union NavigationGuardReturn(bool, RouteLocationRaw, Error)
 /// Route navigation result union accepting NavigationFailure.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteNavigationResult(NavigationFailure)
 {
     /// <summary>
@@ -1062,7 +1047,6 @@ public readonly union RouteNavigationResult(NavigationFailure)
 /// Navigation guard handler union accepting sync guard, async guard, legacy sync guard, or legacy async guard.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union NavigationGuardHandler(
     RouteNavigationGuard,
     AsyncRouteNavigationGuard,
@@ -1135,7 +1119,6 @@ public readonly union NavigationGuardHandler(
 /// Route record beforeEnter guard union accepting a single guard or an array of guards.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordBeforeEnter(NavigationGuardHandler, NavigationGuardHandler[])
 {
     /// <summary>
@@ -1246,7 +1229,6 @@ public readonly union RouteRecordBeforeEnter(NavigationGuardHandler, NavigationG
 /// Route redirect option union accepting RouteLocationRaw or RouteRedirectCallback.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRedirectOption(RouteLocationRaw, RouteRedirectCallback)
 {
     /// <summary>
@@ -1355,7 +1337,6 @@ public readonly union RouteRedirectOption(RouteLocationRaw, RouteRedirectCallbac
 /// Route record redirect option union accepting RouteLocationRaw or RouteRedirectCallback.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordRedirectOption(RouteLocationRaw, RouteRedirectCallback)
 {
     /// <summary>
@@ -1438,7 +1419,6 @@ public readonly union RouteRecordRedirectOption(RouteLocationRaw, RouteRedirectC
 /// Route record raw union accepting single view, single view with children, multiple views, multiple views with children, or redirect record.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteRecordRaw(
     RouteRecordSingleView,
     RouteRecordSingleViewWithChildren,
@@ -1482,7 +1462,6 @@ public readonly union RouteRecordRaw(
 /// Matcher location raw union accepting path-based, named, or relative matcher location.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union MatcherLocationRaw(MatcherLocationAsPath, MatcherLocationAsName, MatcherLocationAsRelative)
 {
     /// <summary>
@@ -1509,7 +1488,6 @@ public readonly union MatcherLocationRaw(MatcherLocationAsPath, MatcherLocationA
 /// Route parameter union accepting string or string array.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteParam(string, string[])
 {
     /// <summary>
@@ -1530,7 +1508,6 @@ public readonly union RouteParam(string, string[])
 /// Route parameter raw union accepting string, RouteParamRaw array, or Number.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union RouteParamRaw(string, Array<RouteParamRaw>, Number)
 {
     /// <summary>
@@ -1601,7 +1578,6 @@ public readonly union RouteParamRaw(string, Array<RouteParamRaw>, Number)
 /// Location query value union accepting string or string array.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union LocationQueryValue(string, Array<string?>)
 {
     /// <summary>
@@ -1631,7 +1607,6 @@ public readonly union LocationQueryValue(string, Array<string?>)
 /// Location query raw value union accepting string, LocationQueryValueRaw array, or Number.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union LocationQueryValueRaw(string, Array<LocationQueryValueRaw?>, Number)
 {
     /// <summary>

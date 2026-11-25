@@ -10,7 +10,6 @@ namespace ECMAScript;
 /// </summary>
 /// <typeparam name="TTarget">Static CLR view of the proxied target object. 被代理目标对象的静态 CLR 视图。</typeparam>
 [ECMAScript]
-[Description("@#")]
 public sealed class RevocableProxy<TTarget> where TTarget : class
 {
 	/// <summary>
@@ -77,7 +76,6 @@ public sealed class Proxy<TTarget> where TTarget : class
 /// </summary>
 /// <typeparam name="TTarget">Static CLR view of the proxied target object. 被代理目标对象的静态 CLR 视图。</typeparam>
 [ECMAScript]
-[Description("@#")]
 public sealed class ProxyMutationHandler<TTarget> where TTarget : class
 {
 	/// <summary>
@@ -107,7 +105,6 @@ public sealed class ProxyMutationHandler<TTarget> where TTarget : class
 /// </summary>
 /// <typeparam name="TTarget">Static CLR view of the proxied target object. 被代理目标对象的静态 CLR 视图。</typeparam>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class ProxyHandler<TTarget> where TTarget : class
 {

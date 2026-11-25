@@ -1,4 +1,5 @@
 using Jazor.Npm;
+using Jazor.Analyzer;
 using Jazor.Compiler;
 using Jolt.Syntax;
 using Jolt.Npm;
@@ -174,9 +175,10 @@ public static partial class JoltProjectCompiler
                 ? NpmProjectionCache.LoadComponent(NpmProjectionCache.ProjectionDirectory, valueNamespaces, options.NpmValues, ParseOptions, cancellationToken)
                 : new NpmValueProjection(valueNamespaces, options.NpmValues, ParseOptions)
             : null;
+        var sharedSourceTrees = options.CSharpSources.Select(source => CSharpSyntaxTree.ParseText(
+            source.Content, ParseOptions, source.Path, cancellationToken: cancellationToken)).ToArray();
         var sharedTrees = new List<SyntaxTree> { Authoring };
-        sharedTrees.AddRange(options.CSharpSources.Select(source => CSharpSyntaxTree.ParseText(
-            source.Content, ParseOptions, source.Path, cancellationToken: cancellationToken)));
+        sharedTrees.AddRange(sharedSourceTrees);
         if (valueProjection is not null)
             sharedTrees.Add(valueProjection.Tree);
         if (options.VueComponents.Count != 0)
@@ -276,7 +278,10 @@ public static partial class JoltProjectCompiler
 
         var localByPath = local.ToDictionary(contract => contract.Path, StringComparer.Ordinal);
         var reported = new HashSet<(string Id, Location Location, string Message)>();
-        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken).Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+        var nameDiagnostics = trees.Keys.Concat(sharedSourceTrees)
+            .SelectMany(tree => AnalyzeJavaScriptNames(compilation.GetSemanticModel(tree), cancellationToken));
+        foreach (var diagnostic in compilation.GetDiagnostics(cancellationToken)
+            .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Concat(nameDiagnostics))
         {
             var location = diagnostic.Location;
             if (location.SourceTree is { } tree && trees.TryGetValue(tree, out var projection))
@@ -368,6 +373,15 @@ public static partial class JoltProjectCompiler
 
     private static Location Map(Projection projection, Location location)
         => location.IsInSource ? projection.MapLocation(location.SourceSpan) : projection.Location(default);
+
+    private static IEnumerable<Diagnostic> AnalyzeJavaScriptNames(SemanticModel model, CancellationToken cancellationToken)
+    {
+        foreach (var attribute in model.SyntaxTree.GetRoot(cancellationToken).DescendantNodes().OfType<AttributeSyntax>())
+        {
+            if (JavaScriptNameAnalyzer.AnalyzeAttribute(model, attribute, cancellationToken) is { } diagnostic)
+                yield return diagnostic;
+        }
+    }
 
     private sealed record BoundDocument(Projection Projection, SemanticModel Model, INamedTypeSymbol Module, ComponentContract Contract)
     {

@@ -80,7 +80,6 @@ public enum VueUseKeyModifier
 /// <c>useBase64()</c> 的选项对象。
 /// Options for <c>useBase64()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseBase64Options
 {
     /// <summary>输出为 data URL 而非裸 base64 文本。Whether the output is a data URL rather than bare base64 text.</summary>
@@ -93,7 +92,6 @@ public record VueUseBase64Options
 /// The <c>useBase64()</c> return value.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseBase64Return
 {
     /// <summary>
@@ -121,7 +119,6 @@ public abstract class VueUseBase64Return
 /// <c>useCountdown()</c> 的选项对象。
 /// Options for <c>useCountdown()</c>.
 /// </summary>
-[Description("@#")]
 public record VueUseCountdownOptions
 {
     /// <summary>倒计时结束时的回调。Callback invoked when the countdown completes.</summary>
@@ -138,7 +135,6 @@ public record VueUseCountdownOptions
 /// The <c>useCountdown()</c> return value: the remaining seconds and start/stop/reset control.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseCountdownReturn
 {
     /// <summary>
@@ -184,7 +180,6 @@ public abstract class VueUseCountdownReturn
 /// The <c>useTextSelection()</c> return value: the current text selection, rectangles, and ranges.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueUseTextSelectionReturn
 {
     /// <summary>

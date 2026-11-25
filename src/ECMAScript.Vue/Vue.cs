@@ -13,7 +13,6 @@ namespace ECMAScript;
 /// C# uses explicit methods so the control surface remains discoverable.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueWatchHandle
 {
 	/// <summary>
@@ -543,7 +542,6 @@ public delegate void VueThisWatchCleanupCallback<TThis, TValue>(TThis self, TVal
 /// Day.js 模块提供，不能因为存在此类型就假设 compiler 拥有完整 Day.js runtime。
 /// </remarks>
 [ECMAScript("dayjs")]
-[Description("@#")]
 public sealed class Dayjs
 {
 	private Dayjs()
@@ -561,7 +559,6 @@ public sealed class Dayjs
 /// 当前 host 的 h 函数，不生成额外 wrapper runtime，也不承担组件 props/slot lowering。
 /// </remarks>
 [ECMAScript]
-[Description("@#")]
 public sealed class VueRenderHost
 {
 	private VueRenderHost()
@@ -682,7 +679,7 @@ public sealed class VueRenderHost
 /// 这里的类型与方法是 authoring contract，不是 C# 对 Vue runtime 的重新实现。
 /// </remarks>
 [ECMAScript("vue")]
-[Description("@#")]
+[Boundary]
 public static partial class Vue
 {
 }

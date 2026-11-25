@@ -171,10 +171,8 @@ public partial class SemanticWalker
 		// 再取特性配置
 		if (string.IsNullOrEmpty(name))
 		{
-			if (Util.HasNameResolutionBoundary(symbol))
-				return null;
-
-			name = Util.GetSymbolConfigName(symbol) ?? symbol.Name;
+			var metadata = Util.GetJavaScriptNameMetadata(symbol);
+			return metadata.HasBoundary ? null : metadata.ExplicitName ?? symbol.Name;
 		}
 
 		return name;
@@ -895,16 +893,10 @@ public partial class SemanticWalker
 
 	private static string GetStringEnumLiteralText(IFieldSymbol symbol)
 	{
-		// String-enum wire values preserve an explicitly authored empty
-		// ECMAScriptName, while null and Description("@#") remain name-resolution
-		// boundaries and fall back to the declared member name.
+		// An empty ECMAScriptName on a string enum is a literal wire value.
 		var metadata = Util.GetJavaScriptNameMetadata(symbol);
-		if (metadata.HasECMAScriptNameAttribute && metadata.ECMAScriptName is not null)
-			return metadata.ECMAScriptName;
-
-		return Util.HasNameResolutionBoundary(symbol)
-			? symbol.Name
-			: Util.GetSymbolConfigName(symbol) ?? symbol.Name;
+		return (metadata.HasECMAScriptNameAttribute ? metadata.ECMAScriptName : metadata.DescriptionName)
+			?? symbol.Name;
 	}
 
 	private static bool IsErasedUnionProjectionProperty(IPropertySymbol property)

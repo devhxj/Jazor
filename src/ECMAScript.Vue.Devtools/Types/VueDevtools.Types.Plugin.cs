@@ -12,7 +12,6 @@ public static partial class VueDevtools
     /// 注册 Devtools plugin 所需的身份与作用域描述。<see cref="App"/> 必须是同一应用实际使用的 Vue app，
     /// 否则 inspector/timeline 不会落入预期的 app scope。
     /// </summary>
-    [Description("@#")]
     public record PluginDescriptor : Vue.VueProps
     {
         /// <summary>插件唯一标识。Plugin id must be stable across reloads.</summary>
@@ -68,7 +67,6 @@ public static partial class VueDevtools
     /// 仅让 <see cref="PluginApi{TSettings}.GetSettings()"/> 和 settings hook 保持业务类型。
     /// </summary>
     /// <typeparam name="TSettings">应用声明的 settings 值 record。</typeparam>
-    [Description("@#")]
     public record PluginDescriptor<TSettings> : PluginDescriptor
         where TSettings : Vue.VueProps;
 
@@ -76,25 +74,21 @@ public static partial class VueDevtools
     /// Devtools settings 定义的动态键字典。collection initializer 会直接 lowering 为普通 JS object，
     /// 不会在运行时创建 <c>Map</c>。
     /// </summary>
-    [Description("@#")]
     public record PluginSettings : Vue.VueDictionary<PluginSetting>;
 
     /// <summary>
     /// Devtools 读取到的 settings 值字典。对于固定业务 schema，优先使用
     /// <see cref="PluginApi{TSettings}.GetSettings()"/> 获取具体 record。
     /// </summary>
-    [Description("@#")]
     public record PluginSettingsValues : Vue.VueDictionary<DevtoolsValue>;
 
     /// <summary>
     /// 所有 Devtools setting definition 的共同结果类型。具体 setting 必须通过各自的
     /// <c>Create(...)</c> factory 创建，factory 会写入不能由业务侧覆盖的官方 <c>type</c> literal。
     /// </summary>
-    [Description("@#")]
     public abstract record PluginSetting : Vue.VueProps;
 
     /// <summary>Boolean setting factory 的输入形状。</summary>
-    [Description("@#")]
     public record BooleanPluginSettingOptions : Vue.VueProps
     {
         /// <summary>setting 的用户可见标签。User-facing setting label.</summary>
@@ -115,7 +109,6 @@ public static partial class VueDevtools
     /// <c>type: "boolean"</c>，而不会依赖 C# property initializer 的 CLR-only 默认值。
     /// </summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record BooleanPluginSetting : PluginSetting
     {
         private BooleanPluginSetting()
@@ -129,7 +122,6 @@ public static partial class VueDevtools
 
     /// <summary>Choice setting 的候选值，官方 API 只接受字符串或数字。</summary>
     [ECMAScript]
-    [Description("@#")]
     public readonly union ChoiceValue(string, Number)
     {
         /// <summary>从整数创建 choice 值；helper 在发射时就是 identity expression。</summary>
@@ -170,7 +162,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Choice setting 的一个可选项。</summary>
-    [Description("@#")]
     public record PluginSettingChoice : Vue.VueProps
     {
         /// <summary>写入 settings object 的实际值。The stored value.</summary>
@@ -196,7 +187,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Choice setting factory 的输入形状。</summary>
-    [Description("@#")]
     public record ChoicePluginSettingOptions : Vue.VueProps
     {
         /// <summary>setting 的用户可见标签。User-facing setting label.</summary>
@@ -222,7 +212,6 @@ public static partial class VueDevtools
 
     /// <summary>Choice setting 的 opaque result；factory 固定发射 <c>type: "choice"</c>。</summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record ChoicePluginSetting : PluginSetting
     {
         private ChoicePluginSetting()
@@ -235,7 +224,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>Text setting factory 的输入形状。</summary>
-    [Description("@#")]
     public record TextPluginSettingOptions : Vue.VueProps
     {
         /// <summary>setting 的用户可见标签。User-facing setting label.</summary>
@@ -253,7 +241,6 @@ public static partial class VueDevtools
 
     /// <summary>Text setting 的 opaque result；factory 固定发射 <c>type: "text"</c>。</summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record TextPluginSetting : PluginSetting
     {
         private TextPluginSetting()
@@ -270,7 +257,6 @@ public static partial class VueDevtools
     /// 只能在 setup callback 内保存和使用，不能使用 <c>new</c> 创建。
     /// </summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class PluginApi
     {
         /// <summary>
@@ -374,7 +360,6 @@ public static partial class VueDevtools
     /// <summary>带具体 settings record 投影的 Devtools API handle。</summary>
     /// <typeparam name="TSettings">业务 settings record 类型。</typeparam>
     [ECMAScript]
-    [Description("@#")]
     public abstract class PluginApi<TSettings> : PluginApi
         where TSettings : Vue.VueProps
     {
@@ -399,7 +384,6 @@ public static partial class VueDevtools
     /// 不会像 CLR event 一样返回订阅句柄；plugin 生命周期由 Devtools 控制。
     /// </summary>
     [ECMAScript]
-    [Description("@#")]
     public abstract class PluginHooks
     {
         /// <summary>

@@ -6,7 +6,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[Description("@#")]
 public sealed record CounterMultiStoreComputed : Vue.VueProps
 {
     [ECMAScriptName("counter")]
@@ -17,7 +16,6 @@ public sealed record CounterMultiStoreComputed : Vue.VueProps
 }
 
 [ECMAScript]
-[Description("@#")]
 public abstract class CounterMultiStoreThis
 {
     [ECMAScriptName("counter")]

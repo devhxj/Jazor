@@ -56,7 +56,6 @@ public enum VueQueryFilterType
 /// <see cref="Vue.VueProps"/> branch for nested structures.
 /// </remarks>
 [ECMAScript]
-[Description("@#")]
 public readonly union VueQueryKeyPart(string, Number, bool, Vue.VueProps)
 {
     /// <summary>读取字符串分支；当前值不属于该分支时返回 null。Reads the string branch; null when the value is not in that branch.</summary>
@@ -111,7 +110,6 @@ public delegate PromiseResult<TData> VueQueryMutationFunction<TData, TVariables>
 /// <c>VueQueryPlugin</c> 的安装选项：指定已有 client 或让插件按配置创建。
 /// Install options for <c>VueQueryPlugin</c>: supply an existing client or let the plugin create one from the config.
 /// </summary>
-[Description("@#")]
 public record VueQueryPluginOptions : Vue.VuePluginOptions
 {
     /// <summary>由调用方创建并注入的 query client。The query client created and injected by the caller.</summary>
@@ -127,7 +125,6 @@ public record VueQueryPluginOptions : Vue.VuePluginOptions
 /// query client 配置：缓存实例与默认选项。
 /// The query client configuration: cache instances and default options.
 /// </summary>
-[Description("@#")]
 public record VueQueryClientConfig
 {
     /// <summary>查询缓存实现；为空时使用默认缓存。The query cache implementation; the default cache is used when omitted.</summary>
@@ -147,7 +144,6 @@ public record VueQueryClientConfig
 /// query client 的默认选项集合。
 /// The default option set of a query client.
 /// </summary>
-[Description("@#")]
 public record VueQueryDefaultOptions
 {
     /// <summary>查询默认选项。The default query options.</summary>
@@ -163,7 +159,6 @@ public record VueQueryDefaultOptions
 /// 查询默认选项；只收录首期需要的确定行为。
 /// Default query options; only the deterministic behaviors required by the first slice.
 /// </summary>
-[Description("@#")]
 public record VueQueryQueryDefaults
 {
     /// <summary>数据被视为过期前的毫秒数。Milliseconds before data is considered stale.</summary>
@@ -191,7 +186,6 @@ public record VueQueryQueryDefaults
 /// mutation 默认选项。
 /// Default mutation options.
 /// </summary>
-[Description("@#")]
 public record VueQueryMutationDefaults
 {
     /// <summary>失败后的重试次数。The number of retries after a failure.</summary>
@@ -204,7 +198,6 @@ public record VueQueryMutationDefaults
 /// The query cache; created and maintained by TanStack Query.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class VueQueryQueryCache
 {
     private VueQueryQueryCache()
@@ -217,7 +210,6 @@ public sealed class VueQueryQueryCache
 /// The mutation cache; created and maintained by TanStack Query.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class VueQueryMutationCache
 {
     private VueQueryMutationCache()
@@ -230,7 +222,6 @@ public sealed class VueQueryMutationCache
 /// Options shared by <c>useQuery()</c> and <c>fetchQuery()</c>.
 /// </summary>
 /// <typeparam name="TData">查询结果类型。The query result type.</typeparam>
-[Description("@#")]
 public record VueQueryQueryOptions<TData>
 {
     /// <summary>query key；决定缓存身份。The query key; it determines the cache identity.</summary>
@@ -286,7 +277,6 @@ public record VueQueryQueryOptions<TData>
 /// 失效、重取、移除等批量操作的过滤条件。
 /// Filter criteria for bulk operations such as invalidation, refetching, and removal.
 /// </summary>
-[Description("@#")]
 public record VueQueryFilterOptions
 {
     /// <summary>按 query key 前缀过滤。Filter by query key prefix.</summary>
@@ -312,7 +302,6 @@ public record VueQueryFilterOptions
 /// </summary>
 /// <typeparam name="TData">查询结果类型。The query result type.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueQueryQueryReturn<TData>
 {
     /// <summary>
@@ -381,7 +370,6 @@ public abstract class VueQueryQueryReturn<TData>
 /// </summary>
 /// <typeparam name="TData">提交结果类型。The submission result type.</typeparam>
 /// <typeparam name="TVariables">变量类型。The variables type.</typeparam>
-[Description("@#")]
 public record VueQueryMutationOptions<TData, TVariables>
 {
     /// <summary>mutation key；用于 devtools 与缓存身份。The mutation key; used by devtools and the cache identity.</summary>
@@ -412,7 +400,6 @@ public record VueQueryMutationOptions<TData, TVariables>
 /// <typeparam name="TData">提交结果类型。The submission result type.</typeparam>
 /// <typeparam name="TVariables">变量类型。The variables type.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueQueryMutationReturn<TData, TVariables>
 {
     /// <summary>
@@ -474,7 +461,6 @@ public abstract class VueQueryMutationReturn<TData, TVariables>
 /// The query client: cache reads and writes, invalidation, and bulk operation entries.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueQueryClient
 {
     /// <summary>

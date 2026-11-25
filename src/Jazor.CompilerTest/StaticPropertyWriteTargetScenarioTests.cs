@@ -259,7 +259,7 @@ internal static class StaticPropertyWriteTargetScenarioCatalog
             using ECMAScript;
 
             [ECMAScript]
-            [Description("@#")]
+            [Boundary]
             public static class GlobalState
             {
                 [Description("@#globalValue")]

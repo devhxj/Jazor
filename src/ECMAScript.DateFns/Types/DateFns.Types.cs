@@ -165,7 +165,6 @@ public enum DateFnsAdditionalDigits
 /// date-fns 时间段对象；各分量按日历语义独立叠加，字段可省略。
 /// The date-fns duration object; components add up independently with calendar semantics and may be omitted.
 /// </summary>
-[Description("@#")]
 public record DateFnsDuration
 {
     /// <summary>年分量。The year component.</summary>
@@ -201,7 +200,6 @@ public record DateFnsDuration
 /// date-fns 区间对象；start/end 为区间端点。
 /// The date-fns interval object; start/end are the interval endpoints.
 /// </summary>
-[Description("@#")]
 public record DateFnsInterval
 {
     /// <summary>区间起点。The start of the interval.</summary>
@@ -218,7 +216,6 @@ public record DateFnsInterval
 /// Host projection of a date-fns locale object; obtain instances from <see cref="DateFnsLocale"/>.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class DateFnsLocaleObject
 {
     private DateFnsLocaleObject()
@@ -230,7 +227,6 @@ public sealed class DateFnsLocaleObject
 /// <c>format</c> 的选项对象。
 /// Options for <c>format</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsFormatOptions
 {
     /// <summary>格式化使用的 locale。The locale used for formatting.</summary>
@@ -258,7 +254,6 @@ public record DateFnsFormatOptions
 /// <c>parse</c> 的选项对象。
 /// Options for <c>parse</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsParseOptions
 {
     /// <summary>解析使用的 locale。The locale used for parsing.</summary>
@@ -286,7 +281,6 @@ public record DateFnsParseOptions
 /// <c>parseISO</c> 的选项对象。
 /// Options for <c>parseISO</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsParseISOOptions
 {
     /// <summary>扩展年份格式的额外位数。The additional digits of the extended year format.</summary>
@@ -298,7 +292,6 @@ public record DateFnsParseISOOptions
 /// <c>formatISO</c> 的选项对象。
 /// Options for <c>formatISO</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsFormatISOOptions
 {
     /// <summary>ISO 分隔风格。The ISO separator style.</summary>
@@ -314,7 +307,6 @@ public record DateFnsFormatISOOptions
 /// <c>formatDistance</c> 与 <c>formatDistanceToNow</c> 的选项对象。
 /// Options for <c>formatDistance</c> and <c>formatDistanceToNow</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsFormatDistanceOptions
 {
     /// <summary>距离描述使用的 locale。The locale used for the distance description.</summary>
@@ -334,7 +326,6 @@ public record DateFnsFormatDistanceOptions
 /// <c>formatDistanceStrict</c> 与 <c>formatDistanceToNowStrict</c> 的选项对象。
 /// Options for <c>formatDistanceStrict</c> and <c>formatDistanceToNowStrict</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsFormatDistanceStrictOptions
 {
     /// <summary>距离描述使用的 locale。The locale used for the distance description.</summary>
@@ -358,7 +349,6 @@ public record DateFnsFormatDistanceStrictOptions
 /// <c>formatDuration</c> 的选项对象。
 /// Options for <c>formatDuration</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsFormatDurationOptions
 {
     /// <summary>时长描述使用的 locale。The locale used for the duration description.</summary>
@@ -382,7 +372,6 @@ public record DateFnsFormatDurationOptions
 /// <c>formatRelative</c> 的选项对象。
 /// Options for <c>formatRelative</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsFormatRelativeOptions
 {
     /// <summary>相对描述使用的 locale。The locale used for the relative description.</summary>
@@ -398,7 +387,6 @@ public record DateFnsFormatRelativeOptions
 /// <c>differenceInSeconds</c>/<c>differenceInMinutes</c>/<c>differenceInHours</c> 的选项对象。
 /// Options for <c>differenceInSeconds</c>/<c>differenceInMinutes</c>/<c>differenceInHours</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsRoundingOptions
 {
     /// <summary>数值取整方法。The numeric rounding method.</summary>
@@ -410,7 +398,6 @@ public record DateFnsRoundingOptions
 /// <c>eachDayOfInterval</c> 的选项对象。
 /// Options for <c>eachDayOfInterval</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsEachDayOfIntervalOptions
 {
     /// <summary>迭代步长。The step used when iterating days.</summary>
@@ -422,7 +409,6 @@ public record DateFnsEachDayOfIntervalOptions
 /// <c>areIntervalsOverlapping</c> 的选项对象。
 /// Options for <c>areIntervalsOverlapping</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsAreIntervalsOverlappingOptions
 {
     /// <summary>比较是否包含区间端点。Whether the comparison includes the interval endpoints.</summary>
@@ -434,7 +420,6 @@ public record DateFnsAreIntervalsOverlappingOptions
 /// date-fns 模块级默认选项；通过 <c>setDefaultOptions</c>/<c>getDefaultOptions</c> 读写。
 /// The date-fns module-level default options, read and written via <c>setDefaultOptions</c>/<c>getDefaultOptions</c>.
 /// </summary>
-[Description("@#")]
 public record DateFnsDefaultOptions
 {
     /// <summary>默认使用的 locale。The locale used by default.</summary>

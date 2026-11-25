@@ -20,7 +20,7 @@ namespace ECMAScript;
 /// <c>new QueryClient()</c> constructor.
 /// </remarks>
 [ECMAScript("@tanstack/vue-query")]
-[Description("@#")]
+[Boundary]
 public static partial class VueQuery
 {
 }

@@ -37,7 +37,7 @@ public sealed class EcmaScriptVueRouteLayoutGuardTests
         var source = System.IO.File.ReadAllText(shellPath);
 
         StringAssert.Contains(source, "[ECMAScript(\"vue-router\")]");
-        StringAssert.Contains(source, "[Description(\"@#\")]");
+        StringAssert.Contains(source, "[Boundary]");
         StringAssert.Contains(source, "public static partial class VueRoute");
         Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "VueRoute shell file should not contain static API members.");
 

@@ -2561,14 +2561,6 @@ public sealed class CompilerLoweringCoverageRegressionTests
             {
             }
 
-            [global::System.AttributeUsage(global::System.AttributeTargets.All)]
-            public sealed class DescriptionAttribute : global::System.Attribute
-            {
-                public DescriptionAttribute(string value)
-                {
-                }
-            }
-
             [global::System.AttributeUsage(global::System.AttributeTargets.Property)]
             public sealed class JazorAttribute : global::System.Attribute
             {
@@ -2578,7 +2570,7 @@ public sealed class CompilerLoweringCoverageRegressionTests
             }
 
             [ECMAScript.ECMAScript]
-            [Description("@#runtime-boundary")]
+            [global::System.ComponentModel.Description("@#runtime-boundary")]
             [EmptyMetadata]
             public record RuntimeRecord
             {
@@ -2587,7 +2579,7 @@ public sealed class CompilerLoweringCoverageRegressionTests
                 [ECMAScript.ECMAScriptName("named")]
                 public int Named { get; set; }
 
-                [Description("@#")]
+                [global::System.ComponentModel.Description("@#")]
                 public int Boundary { get; set; }
 
                 [Jazor(3, "mapped-member", "mapped-runtime")]
@@ -2688,7 +2680,7 @@ public sealed class CompilerLoweringCoverageRegressionTests
 
         var metadata = Util.GetJavaScriptNameMetadata(record);
         Assert.IsFalse(metadata.HasECMAScriptNameAttribute);
-        Assert.IsFalse(metadata.HasDescriptionBoundary);
+        Assert.IsFalse(metadata.HasBoundary);
         Assert.AreEqual("runtime-boundary", metadata.DescriptionName);
 
         var namedMetadata = Util.GetJavaScriptNameMetadata(namedProperty);
@@ -2696,7 +2688,7 @@ public sealed class CompilerLoweringCoverageRegressionTests
         Assert.AreEqual("named", namedMetadata.ECMAScriptName);
 
         var boundaryMetadata = Util.GetJavaScriptNameMetadata(boundaryProperty);
-        Assert.IsTrue(boundaryMetadata.HasDescriptionBoundary);
+        Assert.IsFalse(boundaryMetadata.HasBoundary);
         Assert.IsNull(boundaryMetadata.DescriptionName);
 
         var importedGetter = record.GetMembers("Imported").OfType<IPropertySymbol>().Single().GetMethod;

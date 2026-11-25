@@ -6,7 +6,6 @@ using static ECMAScript.Vue;
 
 namespace Pinia.Counter.Host;
 
-[Description("@#")]
 public sealed record CounterStatePatch : PiniaStatePatch<CounterState>
 {
     public int? Count { get; init; }

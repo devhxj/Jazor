@@ -11,7 +11,6 @@ namespace ECMAScript;
 /// <c>AsX</c> 属性保持精确分支投影，不应将其视为可反射的 CLR union 对象。
 /// </remarks>
 [ECMAScript]
-[Description("@#")]
 public readonly union PropertyKeyRef(string, Number, Symbol)
 {
 	/// <summary>Gets the string branch, or <see langword="null"/> for another branch. 获取 string 分支；其他分支时为 <see langword="null"/>。</summary>
@@ -46,7 +45,6 @@ public readonly union PropertyKeyRef(string, Number, Symbol)
 
 /// <summary>JavaScript Date constructor primitive input union. JavaScript Date 构造器原始值输入联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union DatePrimitive(string, Number)
 {
 	/// <summary>Gets the date-string branch. 获取日期字符串分支。</summary>
@@ -78,7 +76,6 @@ public readonly union DatePrimitive(string, Number)
 
 /// <summary>Result value union returned by <c>Atomics.waitAsync</c>. <c>Atomics.waitAsync</c> 返回的结果值联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union AtomicsWaitAsyncValue(string, Promise<string>)
 {
 	/// <summary>Gets the synchronous status branch. 获取同步状态分支。</summary>
@@ -90,7 +87,6 @@ public readonly union AtomicsWaitAsyncValue(string, Promise<string>)
 
 /// <summary>JavaScript <c>Intl.NumberFormat.useGrouping</c> input union. JavaScript <c>Intl.NumberFormat.useGrouping</c> 输入联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union IntlUseGrouping(bool, Intl.NumberFormatUseGrouping)
 {
 	/// <summary>Gets the Boolean branch. 获取布尔值分支。</summary>
@@ -102,7 +98,6 @@ public readonly union IntlUseGrouping(bool, Intl.NumberFormatUseGrouping)
 
 /// <summary>Mathematical-value union accepted by ECMA-402 number APIs. ECMA-402 数值 API 接受的数学值联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union IntlNumberInput(Number, BigInt, string)
 {
 	/// <summary>Gets the JavaScript number branch. 获取 JavaScript Number 分支。</summary>
@@ -137,7 +132,6 @@ public readonly union IntlNumberInput(Number, BigInt, string)
 
 /// <summary>Date-or-timestamp union accepted by ECMA-402 date/time APIs. ECMA-402 日期时间 API 接受的 Date 或时间戳联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union IntlDateTimeInput(Date, Number)
 {
 	/// <summary>Gets the Date object branch. 获取 Date 对象分支。</summary>
@@ -169,7 +163,6 @@ public readonly union IntlDateTimeInput(Date, Number)
 
 /// <summary>Month-style union for ECMA-402 date/time formatting. ECMA-402 日期时间格式化的月份样式联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union IntlMonthStyle(Intl.NumericTwoDigit, Intl.LongShortNarrow)
 {
 	/// <summary>Gets the numeric or two-digit branch. 获取 numeric 或 two-digit 分支。</summary>
@@ -181,7 +174,6 @@ public readonly union IntlMonthStyle(Intl.NumericTwoDigit, Intl.LongShortNarrow)
 
 /// <summary>Duration text-or-numeric style union. Duration 的文本或数值样式联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union IntlDurationTextStyle(Intl.LongShortNarrow, Intl.NumericTwoDigit)
 {
 	/// <summary>Gets the textual-style branch. 获取文本样式分支。</summary>
@@ -193,7 +185,6 @@ public readonly union IntlDurationTextStyle(Intl.LongShortNarrow, Intl.NumericTw
 
 /// <summary>Duration fractional-second text-or-numeric style union. Duration 小数秒的文本或数值样式联合。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union IntlDurationFractionStyle(Intl.LongShortNarrow, Intl.DurationNumericStyle)
 {
 	/// <summary>Gets the textual-style branch. 获取文本样式分支。</summary>

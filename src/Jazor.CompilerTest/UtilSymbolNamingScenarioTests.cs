@@ -12,7 +12,7 @@ namespace Jazor.CompilerTest;
 public sealed class UtilSymbolNamingScenarioTests
 {
     [TestMethod]
-    public void SymbolNaming_UsesExplicitDescriptionBoundaryAndOverloadContracts()
+    public void SymbolNaming_UsesExplicitBoundaryAndOverloadContracts()
     {
         var fixture = Compile(
             """
@@ -20,10 +20,12 @@ public sealed class UtilSymbolNamingScenarioTests
             using ECMAScript;
 
             [ECMAScript]
-            [Description("@#")]
-            public sealed class BoundaryHost
+            [Boundary]
+            public class BoundaryHost
             {
             }
+
+            public sealed class DerivedHost : BoundaryHost;
 
             [Description("@#description-name")]
             public sealed class DescriptionNamedHost
@@ -95,6 +97,8 @@ public sealed class UtilSymbolNamingScenarioTests
 
         Assert.IsTrue(Util.IsECMAScriptRuntimeType(boundaryHost));
         Assert.IsTrue(Util.HasNameResolutionBoundary(boundaryHost));
+        Assert.IsFalse(Util.HasNameResolutionBoundary(fixture.GetType("DerivedHost")));
+        Assert.IsFalse(Util.HasNameResolutionBoundary(blankNamedHost));
         Assert.AreEqual("description-name", Util.GetSymbolConfigName(descriptionNamedHost));
         Assert.AreEqual("explicit-name", Util.GetSymbolConfigName(explicitlyNamedHost));
         Assert.IsNull(Util.GetSymbolConfigName(blankNamedHost));
@@ -125,6 +129,7 @@ public sealed class UtilSymbolNamingScenarioTests
             public sealed class NamingSample
             {
                 public (int count, string label) Tuple;
+                public (int, string) Unnamed;
 
                 public void Build()
                 {
@@ -141,6 +146,9 @@ public sealed class UtilSymbolNamingScenarioTests
         Assert.AreEqual("symbol", exception.ParamName);
         Assert.AreEqual("count", Util.GetConfigOrSymbolName(tuple.TupleElements[0]));
         Assert.AreEqual("label", Util.GetConfigOrSymbolName(tuple.TupleElements[1]));
+        var unnamed = (INamedTypeSymbol)sample.GetMembers("Unnamed").OfType<IFieldSymbol>().Single().Type;
+        Assert.AreEqual("Item1", Util.GetConfigOrSymbolName(unnamed.TupleElements[0]));
+        Assert.AreEqual("Item1", Util.GetConfigOrSymbolName(tuple.TupleElements[0].CorrespondingTupleField!));
     }
 
     [TestMethod]
@@ -341,6 +349,8 @@ public sealed class UtilSymbolNamingScenarioTests
             [ECMAScriptName("second")]
             public sealed class RecoveredNameHost
             {
+                [Boundary]
+                public void Method() { }
             }
             """;
         var syntaxTree = CSharpSyntaxTree.ParseText(source, TestMetadataReferences.PreviewParseOptions);
@@ -360,6 +370,58 @@ public sealed class UtilSymbolNamingScenarioTests
         Assert.HasCount(2, host.GetAttributes().Where(static attribute =>
             attribute.AttributeClass?.Name == "ECMAScriptNameAttribute"));
         Assert.IsFalse(metadata.HasConflictingExplicitNames);
+        var method = host.GetMembers("Method").OfType<IMethodSymbol>().Single();
+        Assert.IsTrue(compilation.GetDiagnostics().Any(static diagnostic => diagnostic.Id == "CS0592"));
+        Assert.IsFalse(Util.GetJavaScriptNameMetadata(method).HasBoundary);
+    }
+
+    [TestMethod]
+    public void JavaScriptNameMetadata_DistinguishesAttributeNamespacesFromCSharpAliases()
+    {
+        var fixture = Compile(
+            """
+            using System;
+            using HostName = ECMAScript.ECMAScriptNameAttribute;
+            using HostBoundary = ECMAScript.BoundaryAttribute;
+            using HostDescription = System.ComponentModel.DescriptionAttribute;
+
+            namespace Other
+            {
+                public sealed class BoundaryAttribute : Attribute { }
+                public sealed class ECMAScriptNameAttribute(string value) : Attribute { }
+                public sealed class DescriptionAttribute(string value) : Attribute { }
+            }
+
+            [Other.Boundary, Other.ECMAScriptName("wrong"), Other.Description("@#wrong")]
+            public class Ordinary { }
+
+            [Other.Boundary, HostBoundary, Other.ECMAScriptName("wrong"), HostName("Host")]
+            public class RuntimeHost
+            {
+                [Other.Description("@#wrong"), HostDescription("@#read")]
+                public int Read() => 1;
+            }
+
+            [ECMAScript.ECMAScript(null)]
+            public class MissingImport { }
+
+            [ECMAScript.Style(null)]
+            public class MissingStyle { }
+            """);
+
+        var ordinary = fixture.GetType("Ordinary");
+        Assert.IsFalse(Util.HasNameResolutionBoundary(ordinary));
+        Assert.AreEqual("Ordinary", Util.GetConfigOrSymbolName(ordinary));
+        var host = fixture.GetType("RuntimeHost");
+        Assert.IsTrue(Util.HasNameResolutionBoundary(host));
+        Assert.AreEqual("Host", Util.GetConfigOrSymbolName(host));
+        var method = host.GetMembers("Read").OfType<IMethodSymbol>().Single();
+        Assert.AreEqual("read", Util.GetConfigOrSymbolName(method));
+        var missingImport = fixture.GetType("MissingImport");
+        Assert.IsNull(Util.GetECMAScriptModuleImportPath(missingImport));
+        Assert.IsFalse(Util.IsExternalECMAScriptImport(missingImport));
+        Assert.IsEmpty(Util.GetStyleSpecifiers(fixture.GetType("MissingStyle")));
+        Assert.IsFalse(Util.IsECMAScriptSupportMarkerAttributeData(null));
     }
 
     private static SymbolFixture Compile(string source)

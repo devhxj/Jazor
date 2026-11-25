@@ -8,7 +8,6 @@ namespace ECMAScript.Style;
 /// 属性特定的作者检查，但仍是 CSS 值，而不是普通字符串声明。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssRaw : ICssBorderPart
 {
     internal CssRaw() { }
@@ -31,7 +30,6 @@ public sealed class CssRaw : ICssBorderPart
 /// 带声明优先级的 CSS 值；泛型参数保持值域精确，编译输出在声明处擦除为 value!important。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssImportant<TValue>
 {
     internal CssImportant() { }
@@ -47,7 +45,6 @@ public sealed class CssImportant<TValue>
 /// 值域接受。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssVariable : ICssBorderPart
 {
     internal CssVariable() { }
@@ -72,7 +69,6 @@ public sealed class CssVariable : ICssBorderPart
 /// <see cref="CssLengthPercentage"/>，从而让属性保留 grammar 区别而不接受所有数值表达式。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed partial class CssLength : ICssBorderPart
 {
     internal CssLength() { }
@@ -136,7 +132,6 @@ public sealed partial class CssLength : ICssBorderPart
 /// 扩展为 <see cref="CssLengthPercentage"/>。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed partial class CssPercentage
 {
     internal CssPercentage() { }
@@ -176,7 +171,6 @@ public sealed partial class CssPercentage
 /// 算术结果，避免无关数值域被静默接受。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed partial class CssLengthPercentage
 {
     internal CssLengthPercentage() { }
@@ -249,7 +243,6 @@ public sealed partial class CssLengthPercentage
 /// 盒尺寸属性都可接受该函数，同时不会意外接受任意轨道表达式。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssFitContent
 {
     internal CssFitContent() { }
@@ -265,7 +258,6 @@ public sealed class CssFitContent
 /// dashed-identifier 形式。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssAnchorName
 {
     internal CssAnchorName() { }
@@ -282,7 +274,6 @@ public sealed class CssAnchorName
 /// 无关的任意标识符列表被赋给这些属性。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssAnchorNameList
 {
     internal CssAnchorNameList() { }
@@ -297,7 +288,6 @@ public sealed class CssAnchorNameList
 /// 表示 <c>anchor(...)</c> 位置表达式。它仅可用于支持锚点的 inset 属性，不能作为通用长度值使用。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssAnchor
 {
     internal CssAnchor() { }
@@ -313,7 +303,6 @@ public sealed class CssAnchor
 /// 属性值域中分别允许这两个函数。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssAnchorSize
 {
     internal CssAnchorSize() { }
@@ -329,7 +318,6 @@ public sealed class CssAnchorSize
 /// 被误认为普通的 <c>calc(...)</c> 长度。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssCalcSize
 {
     internal CssCalcSize() { }
@@ -346,7 +334,6 @@ public sealed class CssCalcSize
 /// 以保留输出 CSS 表达式，而不是退回为原始字符串。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssCalcSizeExpression
 {
     internal CssCalcSizeExpression() { }
@@ -398,7 +385,6 @@ public sealed class CssCalcSizeExpression
 /// 需要长度或时间的属性。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssAngle
 {
     internal CssAngle() { }
@@ -430,7 +416,6 @@ public sealed class CssAngle
 /// 与普通数值混淆。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssTime
 {
     internal CssTime() { }
@@ -461,7 +446,6 @@ public sealed class CssTime
 /// 表示声音或媒体相关 grammar 位置使用的 CSS 频率值。即使运行时都会序列化为文本，它仍与数值和时间值域分离。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssFrequency
 {
     internal CssFrequency() { }
@@ -476,7 +460,6 @@ public sealed class CssFrequency
 /// 表示如 <c>dpi</c>、<c>dppx</c> 的 CSS 分辨率值。仅应在 grammar 明确接受分辨率的属性中使用。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssResolution
 {
     internal CssResolution() { }
@@ -491,7 +474,6 @@ public sealed class CssResolution
 /// 表示具体 CSS 颜色函数、十六进制颜色或已验证的具名颜色。它可参与 border 简写组合，但不会扩展为任意 CSS 文本。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssColor : ICssBorderPart
 {
     internal CssColor() { }
@@ -515,7 +497,6 @@ public sealed class CssColor : ICssBorderPart
 /// 却不接受独立 URL 分支。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssImage
 {
     internal CssImage() { }
@@ -530,7 +511,6 @@ public sealed class CssImage
 /// 表示安全引用的 CSS <c>url(...)</c> 函数。源文本由 <c>url(...)</c> 负责引号处理，而不作为未转义的 CSS 语法。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssUrl
 {
     internal CssUrl() { }
@@ -544,7 +524,6 @@ public sealed class CssUrl
 /// 表示带引号的 CSS 字符串 token。应使用 <c>str(...)</c>，而不是把引号手动拼接进 raw 值。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssString
 {
     internal CssString() { }
@@ -560,7 +539,6 @@ public sealed class CssString
 /// <see cref="CssKeyword"/>，后者的输入不能使用该前缀。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssIdent
 {
     internal CssIdent() { }
@@ -575,7 +553,6 @@ public sealed class CssIdent
 /// 表示不属于某个封闭 enum 值域的已验证 CSS 关键字 token。目标属性已有专用 enum 或值载体时应优先使用它。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssKeyword
 {
     internal CssKeyword() { }
@@ -590,7 +567,6 @@ public sealed class CssKeyword
 /// 表示一个 CSS transform 函数或有序 transform 函数组合。即使参数是长度，transform 载体也不能赋给几何属性。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssTransform
 {
     internal CssTransform() { }
@@ -608,7 +584,6 @@ public sealed class CssTransform
 /// 已组合的 <c>filter</c> 或 <c>backdrop-filter</c> 函数列表。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssFilter
 {
     internal CssFilter() { }
@@ -627,7 +602,6 @@ public sealed class CssFilter
 /// 已组合的 border 简写：可由 <c>border(...)</c> 或 <c>|</c> 连接 token 得到。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssBorder
 {
     internal CssBorder() { }
@@ -650,7 +624,6 @@ public sealed class CssBorder
 /// 已序列化的 <c>box-shadow</c> 列表；保持不透明，避免误赋值到其他 CSS 属性域。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssShadowList
 {
     internal CssShadowList() { }
@@ -667,7 +640,6 @@ public sealed class CssShadowList
 /// <c>repeat(...)</c>、<c>minmax(...)</c> 即使包含类似长度的参数，也具有仅限网格的语义。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssTrack
 {
     internal CssTrack() { }
@@ -682,7 +654,6 @@ public sealed class CssTrack
 /// 一至四值的 padding 简写；使用独立载体，避免盒模型简写误入 width 等单值属性。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssPadding
 {
     internal CssPadding() { }
@@ -696,7 +667,6 @@ public sealed class CssPadding
 /// 一至四值的 margin 简写，可在任意位置使用 <c>auto</c>。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssMargin
 {
     internal CssMargin() { }
@@ -712,7 +682,6 @@ public sealed class CssMargin
 /// <c>top</c> 等单独边。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssInset
 {
     internal CssInset() { }
@@ -726,7 +695,6 @@ public sealed class CssInset
 /// row/column 的 gap 组合值，不能赋给普通长度属性。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssGap
 {
     internal CssGap() { }
@@ -740,7 +708,6 @@ public sealed class CssGap
 /// 一至四角的圆角简写。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssRadius
 {
     internal CssRadius() { }
@@ -754,7 +721,6 @@ public sealed class CssRadius
 /// 结构化的 <c>flex-grow flex-shrink flex-basis</c> 简写。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssFlex
 {
     internal CssFlex() { }
@@ -768,7 +734,6 @@ public sealed class CssFlex
 /// 双值 background-size 表达式。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssBackgroundSize
 {
     internal CssBackgroundSize() { }
@@ -782,7 +747,6 @@ public sealed class CssBackgroundSize
 /// 网格线或网格线区间，例如 <c>1 / -1</c>。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssGridLine
 {
     internal CssGridLine() { }
@@ -796,7 +760,6 @@ public sealed class CssGridLine
 /// 可用于 image/background 值域的强类型 CSS 渐变。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssGradient
 {
     internal CssGradient() { }
@@ -810,7 +773,6 @@ public sealed class CssGradient
 /// 结构化 animation 简写。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssAnimation
 {
     internal CssAnimation() { }
@@ -824,7 +786,6 @@ public sealed class CssAnimation
 /// 以逗号连接的 font-family 后备列表。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssFontFamily
 {
     internal CssFontFamily() { }
@@ -838,7 +799,6 @@ public sealed class CssFontFamily
 /// 单个引号字体族或通用字体族条目。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssFontFamilyName
 {
     internal CssFontFamilyName() { }
@@ -854,7 +814,6 @@ public sealed class CssFontFamilyName
 /// 因而在 CSS 序列化前拒绝无效分母。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssRatio
 {
     internal CssRatio() { }
@@ -1123,7 +1082,6 @@ public enum CssOverflowKeyword
 /// 可参与 border 简写的具名线宽。使用 token 类型而非 enum，原因是 C# enum 不能定义 <c>|</c>。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssBorderWidth : ICssBorderPart
 {
     internal CssBorderWidth() { }
@@ -1145,7 +1103,6 @@ public sealed class CssBorderWidth : ICssBorderPart
 /// CSS border/outline 线型 token，可通过 <c>|</c> 保留简写表达顺序。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class CssBorderStyle : ICssBorderPart
 {
     internal CssBorderStyle() { }
@@ -1378,7 +1335,6 @@ public enum CssTimingFunctionKeyword
 /// 暴露更窄的 union，因此直接使用该类型意味着有意绕开属性特定检查。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssValue(
     double,
     CssRaw,
@@ -1477,7 +1433,6 @@ public readonly union CssValue(
 /// 简写的属性。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssKeywordValue(
     CssRaw, CssVariable, CssIdent, CssKeyword, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssSizingKeyword, CssDisplayKeyword, CssPositionKeyword, CssOverflowKeyword, CssBorderWidth,
@@ -1496,29 +1451,24 @@ public readonly union CssKeywordValue(
 
 /// <summary>One side accepted by padding shorthands。padding 简写接受的单边值。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssPaddingPart(CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage);
 
 /// <summary>One side accepted by margin shorthands, including anchor-size and auto。margin 简写接受的单边值，可含 anchor-size 和 auto。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssMarginPart(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssAnchorSize, CssAutoKeyword);
 
 /// <summary>One row or column gap component。单个 row 或 column gap 分量。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssGapPart(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssNormalKeyword);
 
 /// <summary>One corner component accepted by radius shorthands。radius 简写接受的单角分量。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssRadiusPart(CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage);
 
 /// <summary>Value domain for padding properties, including the dedicated shorthand carrier。padding 属性值域，包含专用简写载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssPaddingValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssPadding, CssPaddingPair, CssPaddingTriple, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1527,7 +1477,6 @@ public readonly union CssPaddingValue(
 
 /// <summary>Value domain for margin properties, including anchor-size where CSS permits it。margin 属性值域，在 CSS 允许处包含 anchor-size。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssMarginValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssAnchorSize, CssMargin, CssAutoKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1535,7 +1484,6 @@ public readonly union CssMarginValue(
 
 /// <summary>Value domain for gap, row-gap, and column-gap properties。gap、row-gap 与 column-gap 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssGapValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssGap, CssNormalKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1543,7 +1491,6 @@ public readonly union CssGapValue(
 
 /// <summary>Value domain for corner-radius properties and their shorthand。corner-radius 属性及其简写的值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssRadiusValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssRadius, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1551,7 +1498,6 @@ public readonly union CssRadiusValue(
 
 /// <summary>Value domain for the flex shorthand, preserving its structured carrier。flex 简写的值域，保留其结构化载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssFlexValue(
     double, CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssFlex, CssAutoKeyword,
     CssNoneKeyword, CssWideKeyword, CssImportant<double>, CssImportant<CssRaw>, CssImportant<CssVariable>,
@@ -1560,7 +1506,6 @@ public readonly union CssFlexValue(
 
 /// <summary>Value domain for grid line placement, including a line/range carrier。grid 线定位值域，包含线/区间专用载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssGridLineValue(
     int, CssRaw, CssVariable, CssIdent, CssGridLine, CssAutoKeyword, CssWideKeyword, CssImportant<int>,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssIdent>, CssImportant<CssGridLine>,
@@ -1568,14 +1513,12 @@ public readonly union CssGridLineValue(
 
 /// <summary>Value domain for text alignment properties。文本对齐属性的值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssTextAlignValue(
     CssRaw, CssVariable, CssKeyword, CssAlignmentKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssKeyword>, CssImportant<CssAlignmentKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Length-only property domain; percentages and length-percentage arithmetic remain excluded。仅长度属性值域；百分比与 length-percentage 算术仍被排除。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssLengthValue(
     CssRaw, CssVariable, CssLength, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssSizingKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>,
@@ -1584,7 +1527,6 @@ public readonly union CssLengthValue(
 
 /// <summary>Property domain that permits lengths, percentages, and their typed calc result。允许长度、百分比及其类型化 calc 结果的属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssLengthPercentageValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssWideKeyword, CssAutoKeyword, CssNoneKeyword,
     CssNormalKeyword, CssSizingKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>,
@@ -1597,7 +1539,6 @@ public readonly union CssLengthPercentageValue(
 /// 接受 <c>anchor(...)</c> 的一个边选择器。它只允许标准边关键字或百分比，而不接受任意标识符文本。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAnchorSideValue(CssAnchorSide, CssPercentage);
 
 /// <summary>
@@ -1607,7 +1548,6 @@ public readonly union CssAnchorSideValue(CssAnchorSide, CssPercentage);
 /// 它不会作为普通声明值域暴露。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssCalcSizeBasis(
     CssRaw, CssVariable, CssAutoKeyword, CssSizingKeyword, CssSizingFunctionKeyword, CssFitContent,
     CssCalcSize, CssCalcSizeBasisKeyword);
@@ -1620,7 +1560,6 @@ public readonly union CssCalcSizeBasis(
 /// <c>anchor-size()</c>。它刻意排除角度、border 简写和通用 CSS 值。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssSizingValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssFitContent, CssCalcSize, CssAnchorSize,
     CssAutoKeyword, CssNoneKeyword, CssSizingKeyword, CssSizingFunctionKeyword, CssWideKeyword,
@@ -1636,7 +1575,6 @@ public readonly union CssSizingValue(
 /// 不会接受所有关键字。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssFlexBasisValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssFitContent, CssCalcSize, CssAnchorSize,
     CssAutoKeyword, CssNoneKeyword, CssSizingKeyword, CssSizingFunctionKeyword, CssFlexBasisKeyword, CssWideKeyword,
@@ -1652,7 +1590,6 @@ public readonly union CssFlexBasisValue(
 /// 除函数形式外，百分比仍会被拒绝。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssColumnWidthValue(
     CssRaw, CssVariable, CssLength, CssFitContent, CssAutoKeyword, CssSizingKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssFitContent>,
@@ -1665,7 +1602,6 @@ public readonly union CssColumnWidthValue(
 /// <c>anchor-size()</c>，但不接受盒模型简写。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAnchorPositionValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssAnchor, CssAnchorSize, CssAutoKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1679,7 +1615,6 @@ public readonly union CssAnchorPositionValue(
 /// 因而四值 margin 简写不能赋给 <c>margin-top</c>。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAnchorMarginValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssAnchorSize, CssAutoKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1690,7 +1625,6 @@ public readonly union CssAnchorMarginValue(
 /// 表示一至四边的支持锚点 <c>inset</c> 简写。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssInsetPart(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssAnchor, CssAnchorSize, CssAutoKeyword);
 
@@ -1701,7 +1635,6 @@ public readonly union CssInsetPart(
 /// 专用简写载体。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssInsetValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssAnchor, CssAnchorSize, CssInset,
     CssAutoKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>,
@@ -1713,7 +1646,6 @@ public readonly union CssInsetValue(
 /// 表示 <c>anchor-name</c> 可接受的值，包括单个名称或显式名称列表。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAnchorNameValue(
     CssRaw, CssVariable, CssAnchorName, CssAnchorNameList, CssNoneKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssAnchorName>, CssImportant<CssAnchorNameList>,
@@ -1724,7 +1656,6 @@ public readonly union CssAnchorNameValue(
 /// 表示 <c>anchor-scope</c> 可接受的值，包括专用 <c>all</c> 关键字。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAnchorScopeValue(
     CssRaw, CssVariable, CssAnchorName, CssAnchorNameList, CssNoneKeyword, CssAnchorScopeKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssAnchorName>, CssImportant<CssAnchorNameList>,
@@ -1737,7 +1668,6 @@ public readonly union CssAnchorScopeValue(
 /// 更窄的契约。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssPositionAnchorValue(
     CssRaw, CssVariable, CssAnchorName, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword, CssPositionAnchorKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssAnchorName>, CssImportant<CssAutoKeyword>,
@@ -1745,7 +1675,6 @@ public readonly union CssPositionAnchorValue(
 
 /// <summary>Domain for properties that allow a number, length, or percentage. 数值、长度或百分比均可用的属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssLengthPercentageNumberValue(
     double, CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssWideKeyword, CssAutoKeyword, CssNoneKeyword,
     CssNormalKeyword, CssSizingKeyword, CssImportant<double>, CssImportant<CssRaw>, CssImportant<CssVariable>,
@@ -1754,7 +1683,6 @@ public readonly union CssLengthPercentageNumberValue(
 
 /// <summary>Percentage-only property domain with CSS-wide and variable branches. 百分比专用属性值域，包含 CSS-wide 和变量分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssPercentageValue(
     CssRaw, CssVariable, CssPercentage, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssPercentage>, CssImportant<CssWideKeyword>,
@@ -1762,7 +1690,6 @@ public readonly union CssPercentageValue(
 
 /// <summary>Numeric property domain that accepts a scalar but not dimensional units. 只接受标量、不接受带单位值的数值属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssNumberValue(
     double, CssRaw, CssVariable, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssImportant<double>, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssWideKeyword>,
@@ -1770,7 +1697,6 @@ public readonly union CssNumberValue(
 
 /// <summary>Integer-only property domain, for example count-like CSS grammar branches. 整数专用属性值域，例如计数类 CSS grammar 分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssIntegerValue(
     int, CssRaw, CssVariable, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssImportant<int>, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssWideKeyword>,
@@ -1778,7 +1704,6 @@ public readonly union CssIntegerValue(
 
 /// <summary>Domain for properties that allow either a unitless number or percentage. 允许无单位数或百分比的属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssNumberPercentageValue(
     double, CssRaw, CssVariable, CssPercentage, CssWideKeyword, CssAutoKeyword, CssNoneKeyword,
     CssNormalKeyword, CssImportant<double>, CssImportant<CssRaw>, CssImportant<CssVariable>,
@@ -1787,7 +1712,6 @@ public readonly union CssNumberPercentageValue(
 
 /// <summary>Angle-valued property domain, including variables and CSS-wide branches. 角度属性值域，包含变量与 CSS-wide 分支。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAngleValue(
     CssRaw, CssVariable, CssAngle, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssAngle>, CssImportant<CssWideKeyword>,
@@ -1795,7 +1719,6 @@ public readonly union CssAngleValue(
 
 /// <summary>Time-valued property domain for animation and transition timing. animation 与 transition 时间属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssTimeValue(
     CssRaw, CssVariable, CssTime, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssTime>, CssImportant<CssWideKeyword>,
@@ -1803,7 +1726,6 @@ public readonly union CssTimeValue(
 
 /// <summary>Frequency-valued property domain. 频率属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssFrequencyValue(
     CssRaw, CssVariable, CssFrequency, CssPercentage, CssWideKeyword, CssAutoKeyword, CssNoneKeyword,
     CssNormalKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssFrequency>,
@@ -1812,7 +1734,6 @@ public readonly union CssFrequencyValue(
 
 /// <summary>Resolution-valued property domain. 分辨率属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssResolutionValue(
     CssRaw, CssVariable, CssResolution, CssWideKeyword, CssAutoKeyword, CssNoneKeyword, CssNormalKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssResolution>, CssImportant<CssWideKeyword>,
@@ -1820,31 +1741,26 @@ public readonly union CssResolutionValue(
 
 /// <summary>Color property domain, deliberately excluding image and identifier carriers. 颜色属性值域，刻意排除 image 和 identifier 载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssColorValue(
     CssRaw, CssVariable, CssColor, CssColorKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssColor>, CssImportant<CssColorKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>One length component inside a typed box-shadow descriptor。类型化 box-shadow 描述符中的长度分量。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssShadowLength(CssLength, CssVariable);
 
 /// <summary>One color component inside a typed box-shadow descriptor。类型化 box-shadow 描述符中的颜色分量。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssShadowColor(CssColor, CssColorKeyword, CssVariable);
 
 /// <summary>Value domain for box-shadow properties, including the dedicated shadow-list carrier。box-shadow 属性值域，包含专用 shadow-list 载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssBoxShadowValue(
     CssRaw, CssVariable, CssNoneKeyword, CssWideKeyword, CssShadowList, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssNoneKeyword>, CssImportant<CssWideKeyword>, CssImportant<CssShadowList>);
 
 /// <summary>Value domain for image-taking properties such as backgrounds and masks. background、mask 等图像属性的值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssImageValue(
     CssRaw, CssVariable, CssImage, CssUrl, CssGradient, CssNoneKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssImage>, CssImportant<CssUrl>, CssImportant<CssGradient>,
@@ -1852,7 +1768,6 @@ public readonly union CssImageValue(
 
 /// <summary>Value domain for quoted CSS strings and the keyword branches that permit them. 引号 CSS 字符串及其允许关键字分支的值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssStringValue(
     CssRaw, CssVariable, CssString, CssNoneKeyword, CssNormalKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssString>, CssImportant<CssNoneKeyword>,
@@ -1860,49 +1775,42 @@ public readonly union CssStringValue(
 
 /// <summary>Value domain for transform properties, including none and the typed transform carrier。transform 属性值域，包含 none 与类型化 transform 载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssTransformValue(
     CssRaw, CssVariable, CssTransform, CssNoneKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssTransform>, CssImportant<CssNoneKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for border and outline line width. border、outline 线宽值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssLineWidthValue(
     CssRaw, CssVariable, CssLength, CssBorderWidth, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssLength>, CssImportant<CssBorderWidth>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for border and outline line style. border、outline 线型值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssLineStyleValue(
     CssRaw, CssVariable, CssNoneKeyword, CssBorderStyle, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssNoneKeyword>, CssImportant<CssBorderStyle>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for display properties. display 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssDisplayValue(
     CssRaw, CssVariable, CssNoneKeyword, CssDisplayKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssNoneKeyword>, CssImportant<CssDisplayKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for the position property, separate from position-anchor. position 属性值域，与 position-anchor 分离。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssPositionValue(
     CssRaw, CssVariable, CssPositionKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssPositionKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for overflow properties. overflow 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssOverflowValue(
     CssRaw, CssVariable, CssAutoKeyword, CssOverflowKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssAutoKeyword>, CssImportant<CssOverflowKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for grid-template tracks and track-size positions. grid-template 轨道和 track-size 位置的值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssTrackValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssTrack, CssFitContent, CssAutoKeyword, CssSizingKeyword, CssWideKeyword,
     CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>, CssImportant<CssPercentage>,
@@ -1910,14 +1818,12 @@ public readonly union CssTrackValue(
 
 /// <summary>Value domain for aspect-ratio-like properties. aspect-ratio 类属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssRatioValue(
     CssRaw, CssVariable, CssRatio, CssAutoKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssRatio>, CssImportant<CssAutoKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for alignment properties shared by layout modules. layout 模块共享的对齐属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssAlignmentValue(
     CssRaw, CssVariable, CssAlignmentKeyword, CssAutoKeyword, CssNormalKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssAlignmentKeyword>, CssImportant<CssAutoKeyword>,
@@ -1925,21 +1831,18 @@ public readonly union CssAlignmentValue(
 
 /// <summary>Value domain for flex-direction. flex-direction 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssFlexDirectionValue(
     CssRaw, CssVariable, CssFlexDirectionKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssFlexDirectionKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for flex-wrap. flex-wrap 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssFlexWrapValue(
     CssRaw, CssVariable, CssFlexWrapKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssFlexWrapKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for background-size, including its paired size carrier. background-size 属性值域，包含成对尺寸载体。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssBackgroundSizeValue(
     CssRaw, CssVariable, CssLength, CssPercentage, CssLengthPercentage, CssBackgroundSize, CssBackgroundSizeKeyword, CssAutoKeyword,
     CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>, CssImportant<CssLength>,
@@ -1948,63 +1851,54 @@ public readonly union CssBackgroundSizeValue(
 
 /// <summary>Value domain for box-sizing. box-sizing 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssBoxSizingValue(
     CssRaw, CssVariable, CssBoxSizingKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssBoxSizingKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for cursor properties. cursor 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssCursorValue(
     CssRaw, CssVariable, CssCursorKeyword, CssAutoKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssCursorKeyword>, CssImportant<CssAutoKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for text-transform properties. text-transform 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssTextTransformValue(
     CssRaw, CssVariable, CssTextTransformKeyword, CssNoneKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssTextTransformKeyword>, CssImportant<CssNoneKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for white-space processing properties. white-space 处理属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssWhiteSpaceValue(
     CssRaw, CssVariable, CssWhiteSpaceKeyword, CssNormalKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssWhiteSpaceKeyword>, CssImportant<CssNormalKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for text-overflow. text-overflow 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssTextOverflowValue(
     CssRaw, CssVariable, CssTextOverflowKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssTextOverflowKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for isolation. isolation 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssIsolationValue(
     CssRaw, CssVariable, CssIsolationKeyword, CssAutoKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssIsolationKeyword>, CssImportant<CssAutoKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for color-scheme. color-scheme 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssColorSchemeValue(
     CssRaw, CssVariable, CssColorSchemeKeyword, CssNormalKeyword, CssWideKeyword, CssImportant<CssRaw>,
     CssImportant<CssVariable>, CssImportant<CssColorSchemeKeyword>, CssImportant<CssNormalKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for filter and backdrop-filter. filter 与 backdrop-filter 属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssFilterValue(
     CssRaw, CssVariable, CssFilter, CssNoneKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssFilter>, CssImportant<CssNoneKeyword>, CssImportant<CssWideKeyword>);
 
 /// <summary>Value domain for border shorthand properties. border 简写属性值域。</summary>
 [ECMAScript]
-[Description("@#")]
 public readonly union CssBorderValue(
     CssRaw, CssVariable, CssBorder, CssNoneKeyword, CssWideKeyword, CssImportant<CssRaw>, CssImportant<CssVariable>,
     CssImportant<CssBorder>, CssImportant<CssNoneKeyword>, CssImportant<CssWideKeyword>);

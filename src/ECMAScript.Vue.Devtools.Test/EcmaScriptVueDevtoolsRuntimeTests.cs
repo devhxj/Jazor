@@ -74,14 +74,12 @@ public sealed class EcmaScriptVueDevtoolsRuntimeTests
         namespace RuntimeDemo
         {
             [ECMAScript]
-            [Description("@#")]
             public sealed record RuntimeTimelineData : Vue.VueProps
             {
                 public string Name { get; init; } = "";
             }
 
             [ECMAScript]
-            [Description("@#")]
             public sealed record RuntimeTimelineMeta : Vue.VueProps
             {
                 public int Sequence { get; init; }

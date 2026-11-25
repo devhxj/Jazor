@@ -17,7 +17,7 @@ namespace ECMAScript;
 /// (the TZDate extension seam) or the <c>fp</c> functional entry.
 /// </remarks>
 [ECMAScript("date-fns")]
-[Description("@#")]
+[Boundary]
 public static partial class DateFns
 {
 }

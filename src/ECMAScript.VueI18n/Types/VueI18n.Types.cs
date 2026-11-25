@@ -28,7 +28,6 @@ public enum VueI18nScope
 /// <c>createI18n()</c> 的选项对象。
 /// Options for <c>createI18n()</c>.
 /// </summary>
-[Description("@#")]
 public record VueI18nCreateOptions
 {
     /// <summary>当前 locale，例如 <c>en-US</c>。The current locale, for example <c>en-US</c>.</summary>
@@ -84,7 +83,6 @@ public record VueI18nCreateOptions
 /// <c>useI18n()</c> 的选项对象。
 /// Options for <c>useI18n()</c>.
 /// </summary>
-[Description("@#")]
 public record VueI18nUseOptions
 {
     /// <summary>当前 locale。The current locale.</summary>
@@ -128,7 +126,6 @@ public record VueI18nUseOptions
 /// <c>t()</c> 的命名选项对象；覆盖 named 插值、复数与 locale 等参数。
 /// The named options object for <c>t()</c>; it covers named interpolation, pluralization, and locale overrides.
 /// </summary>
-[Description("@#")]
 public record VueI18nTranslateOptions
 {
     /// <summary>命名插值参数。The named interpolation parameters.</summary>
@@ -188,7 +185,6 @@ public abstract record VueI18nInstance : Vue.VuePlugin
 /// The vue-i18n Composer: locale switching, message lookup, and datetime/number formatting entries.
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 public abstract class VueI18nComposer
 {
     /// <summary>

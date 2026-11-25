@@ -146,7 +146,7 @@ public delegate IPromise<VueDevtools.ScreenshotOverlayRenderResult> DevtoolsAsyn
 /// 不暴露浏览器扩展、Vite/Electron RPC 或 <c>@vue/devtools-kit</c> 内部对象。
 /// </summary>
 [ECMAScript("@vue/devtools-api")]
-[Description("@#")]
+[Boundary]
 public static partial class VueDevtools
 {
 }

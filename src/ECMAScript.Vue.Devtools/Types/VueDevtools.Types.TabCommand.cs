@@ -31,13 +31,11 @@ public static partial class VueDevtools
 
     /// <summary>custom tab 可使用的 Devtools view 类型。</summary>
     [ECMAScript]
-    [Description("@#")]
     public readonly union ModuleView(IframeView, VNodeView, SfcView)
     {
     }
 
     /// <summary>iframe custom tab view 的输入形状。</summary>
-    [Description("@#")]
     public record IframeViewOptions : Vue.VueProps
     {
         /// <summary>iframe URL。</summary>
@@ -51,7 +49,6 @@ public static partial class VueDevtools
 
     /// <summary>以 iframe 承载 custom tab 的 opaque view result。</summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record IframeView : Vue.VueProps
     {
         private IframeView()
@@ -64,7 +61,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>VNode custom tab view 的输入形状。</summary>
-    [Description("@#")]
     public record VNodeViewOptions : Vue.VueProps
     {
         /// <summary>需要可序列化且静态的 Vue VNode。</summary>
@@ -74,7 +70,6 @@ public static partial class VueDevtools
 
     /// <summary>以 Vue VNode 承载 custom tab 的 opaque view result。</summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record VNodeView : Vue.VueProps
     {
         private VNodeView()
@@ -87,7 +82,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>SFC custom tab view 的输入形状。</summary>
-    [Description("@#")]
     public record SfcViewOptions : Vue.VueProps
     {
         /// <summary>Devtools client 负责解析的 SFC 内容。</summary>
@@ -97,7 +91,6 @@ public static partial class VueDevtools
 
     /// <summary>以 SFC 源码字符串承载 custom tab 的 opaque view result。</summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record SfcView : Vue.VueProps
     {
         private SfcView()
@@ -110,7 +103,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>使用 <see cref="AddCustomTab"/> 注册的 custom tab。</summary>
-    [Description("@#")]
     public record CustomTab : Vue.VueProps
     {
         /// <summary>tab 唯一名称。Stable unique tab name.</summary>
@@ -135,7 +127,6 @@ public static partial class VueDevtools
     }
 
     /// <summary>URL custom command action 的输入形状。</summary>
-    [Description("@#")]
     public record CustomCommandUrlActionOptions : Vue.VueProps
     {
         /// <summary>执行 command 时打开的 URL。</summary>
@@ -145,7 +136,6 @@ public static partial class VueDevtools
 
     /// <summary>当前官方 public API 支持的 URL custom command action opaque result。</summary>
     [ECMAScript]
-    [Description("@#")]
     public sealed record CustomCommandUrlAction : Vue.VueProps
     {
         private CustomCommandUrlAction()
@@ -161,7 +151,6 @@ public static partial class VueDevtools
     /// custom command 的一级子项。官方 API 明确排除嵌套 <c>children</c>，
     /// 所以它不是 <see cref="CustomCommand"/> 的递归别名。
     /// </summary>
-    [Description("@#")]
     public record CustomCommandChild : Vue.VueProps
     {
         /// <summary>子 command 的唯一 id。Stable unique child command id.</summary>
@@ -193,7 +182,6 @@ public static partial class VueDevtools
     /// Devtools command palette 中的 command。<see cref="Children"/> 非空时，
     /// 上游会忽略 <see cref="Action"/>，因此二者不应同时用于同一业务命令。
     /// </summary>
-    [Description("@#")]
     public record CustomCommand : Vue.VueProps
     {
         /// <summary>command 唯一 id。Stable unique command id.</summary>

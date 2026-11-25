@@ -3,7 +3,6 @@ namespace ECMAScript.CSS;
 /// <summary>WebIDL 联合值：AnimationEffect、AnimationEffect[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(StructuralCacheCollectionBuilder), nameof(StructuralCacheCollectionBuilder.Create))]
 public readonly union StructuralCache(AnimationEffect, AnimationEffect[]) : IEnumerable<AnimationEffect>
 {
@@ -47,7 +46,6 @@ public static StructuralCache Create(ReadOnlySpan<AnimationEffect> items)
 /// <summary>WebIDL 联合值：AnimationEffect、AnimationEffect[]。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 [System.Runtime.CompilerServices.CollectionBuilder(typeof(WorkletAnimationEffectsCollectionBuilder), nameof(WorkletAnimationEffectsCollectionBuilder.Create))]
 public readonly union WorkletAnimationEffects(AnimationEffect, AnimationEffect[]) : IEnumerable<AnimationEffect>
 {
@@ -91,7 +89,6 @@ public static WorkletAnimationEffects Create(ReadOnlySpan<AnimationEffect> items
 /// <summary>WebIDL 联合值：CSSColorValue、CSSStyleValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly struct CSSColorValueParseResult : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
@@ -146,7 +143,6 @@ public static implicit operator CSSColorValueParseResult(CSSStyleValue value)
 /// <summary>WebIDL 联合值：CSSColorValue、CSSStyleValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly struct StructuralCacheValue2 : System.Runtime.CompilerServices.IUnion
 {
     private readonly byte _kind;
@@ -201,7 +197,6 @@ public static implicit operator StructuralCacheValue2(CSSStyleValue value)
 /// <summary>WebIDL 联合值：CSSStyleValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union AppendValues(CSSStyleValue, string)
 {
 
@@ -227,7 +222,6 @@ public static implicit operator AppendValues(string value)
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSColorAngle(CSSNumberish, CSSKeywordish)
 {
 
@@ -259,7 +253,6 @@ public string? AsString => AsCSSKeywordish?.AsString;
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSColorNumber(CSSNumberish, CSSKeywordish)
 {
 
@@ -291,7 +284,6 @@ public string? AsString => AsCSSKeywordish?.AsString;
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSColorPercent(CSSNumberish, CSSKeywordish)
 {
 
@@ -323,7 +315,6 @@ public string? AsString => AsCSSKeywordish?.AsString;
 /// <summary>WebIDL 联合值：CSSNumberish、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSColorRGBComp(CSSNumberish, CSSKeywordish)
 {
 
@@ -355,7 +346,6 @@ public string? AsString => AsCSSKeywordish?.AsString;
 /// <summary>WebIDL 联合值：string、CSSKeywordValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSKeywordish(string, CSSKeywordValue)
 {
 
@@ -381,7 +371,6 @@ public static implicit operator CSSKeywordish(CSSKeywordValue value)
 /// <summary>WebIDL 联合值：double、CSSNumericValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSNumberish(double, CSSNumericValue)
 {
 
@@ -407,7 +396,6 @@ public static implicit operator CSSNumberish(CSSNumericValue value)
 /// <summary>WebIDL 联合值：CSSNumericValue、CSSKeywordish。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSPerspectiveValue(CSSNumericValue, CSSKeywordish)
 {
 
@@ -437,7 +425,6 @@ public string? AsString => AsCSSKeywordish?.AsString;
 /// <summary>WebIDL 联合值：string、ReadableStream。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSStringSource(string, ReadableStream)
 {
 
@@ -463,7 +450,6 @@ public static implicit operator CSSStringSource(ReadableStream value)
 /// <summary>WebIDL 联合值：MediaList、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSStyleSheetInitMedia(MediaList, string)
 {
 
@@ -489,7 +475,6 @@ public static implicit operator CSSStyleSheetInitMedia(string value)
 /// <summary>WebIDL 联合值：string、CSSStyleValue、CSSParserValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSToken(string, CSSStyleValue, CSSParserValue)
 {
 
@@ -524,7 +509,6 @@ public static implicit operator CSSToken(CSSParserValue value)
 /// <summary>WebIDL 联合值：string、CSSVariableReferenceValue。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union CSSUnparsedSegment(string, CSSVariableReferenceValue)
 {
 
@@ -550,7 +534,6 @@ public static implicit operator CSSUnparsedSegment(CSSVariableReferenceValue val
 /// <summary>WebIDL 联合值：CSSStyleValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union SetValues(CSSStyleValue, string)
 {
 
@@ -576,7 +559,6 @@ public static implicit operator SetValues(string value)
 /// <summary>WebIDL 联合值：CSSStyleValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue(CSSStyleValue, string)
 {
 
@@ -602,7 +584,6 @@ public static implicit operator StructuralCacheValue(string value)
 /// <summary>WebIDL 联合值：Element、ProcessingInstruction。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StructuralCacheValue3(Element, ProcessingInstruction)
 {
 
@@ -628,7 +609,6 @@ public static implicit operator StructuralCacheValue3(ProcessingInstruction valu
 /// <summary>WebIDL 联合值：CSSStyleValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StylePropertyMapAppendValues(CSSStyleValue, string)
 {
 
@@ -654,7 +634,6 @@ public static implicit operator StylePropertyMapAppendValues(string value)
 /// <summary>WebIDL 联合值：CSSStyleValue、string。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StylePropertyMapSetValues(CSSStyleValue, string)
 {
 
@@ -680,7 +659,6 @@ public static implicit operator StylePropertyMapSetValues(string value)
 /// <summary>WebIDL 联合值：Element、ProcessingInstruction。传给 JavaScript 时使用所选分支的原始值；As* 属性用于读取对应分支。</summary>
 [ECMAScript]
 [System.Runtime.CompilerServices.Union]
-[Description("@#")]
 public readonly union StyleSheetOwnerNode(Element, ProcessingInstruction)
 {
 

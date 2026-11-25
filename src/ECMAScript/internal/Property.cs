@@ -4,7 +4,6 @@ namespace ECMAScript;
 /// JavaScript own-property descriptor object shape.
 /// JavaScript 自身属性描述符对象形状。
 /// </summary>
-[Description("@#")]
 public record PropertyDescriptorRef
 {
 	/// <summary>

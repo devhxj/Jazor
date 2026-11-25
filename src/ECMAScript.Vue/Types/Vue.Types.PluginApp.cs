@@ -18,7 +18,6 @@ public static partial class Vue
 	/// <see cref="VueApp.Use(VuePlugin)"/> or <see cref="VueApp.Use(VuePlugin, VuePluginOptions)"/>.
 	/// For typed install options, use <see cref="VuePlugin{TOptions}"/>.
 	/// </summary>
-	[Description("@#")]
 	public record VuePlugin : IVueOptionsBag, IVuePlugin
 	{
 		/// <summary>
@@ -36,7 +35,6 @@ public static partial class Vue
 	/// keeps the declared <typeparamref name="TOptions"/> contract at authoring time.
 	/// </summary>
 	/// <typeparam name="TOptions">类型化的安装选项契约。The typed install options contract.</typeparam>
-	[Description("@#")]
 	public record VuePlugin<TOptions> : IVueOptionsBag
 		where TOptions : VuePluginOptions
 	{

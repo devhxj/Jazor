@@ -4,7 +4,6 @@ namespace ECMAScript;
 /// JavaScript <c>Error</c> constructor options object binding.
 /// JavaScript <c>Error</c> 构造器可接受的 options 对象绑定。
 /// </summary>
-[Description("@#")]
 public sealed record ErrorOptions
 {
 	/// <summary>

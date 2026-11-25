@@ -13,7 +13,6 @@ public static class Intl
 	/// This is not a runtime global; it models the part records produced by Intl host objects.
 	/// Intl <c>formatToParts()</c> API 返回的通用 JavaScript 对象形状；不是运行时全局对象，而是 Intl 宿主生成的 part 记录模型。
 	/// </summary>
-	[Description("@#")]
 	public sealed class FormatPart
 	{
 		/// <summary>Gets the semantic part type, such as <c>integer</c> or <c>currency</c>. 获取语义 part 类型，例如 <c>integer</c> 或 <c>currency</c>。</summary>
@@ -29,7 +28,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.ListFormat.prototype.formatToParts()</c>.
 	/// <c>Intl.ListFormat.prototype.formatToParts()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public sealed class ListFormatPart
 	{
 		/// <summary>Gets the list part type, such as <c>element</c> or <c>literal</c>. 获取列表 part 类型，例如 <c>element</c> 或 <c>literal</c>。</summary>
@@ -46,7 +44,6 @@ public static class Intl
 	/// In addition to <c>type</c> and <c>value</c>, the runtime exposes a <c>source</c> field telling whether a part came from the start range, end range, or a shared section.
 	/// Intl <c>formatRangeToParts()</c> API 返回的 JavaScript 对象形状；除 <c>type</c>、<c>value</c> 外，运行时还通过 <c>source</c> 表示 part 来自起始、结束或共享区段。
 	/// </summary>
-	[Description("@#")]
 	public sealed class RangeFormatPart
 	{
 		/// <summary>Gets the semantic part type. 获取语义 part 类型。</summary>
@@ -89,7 +86,6 @@ public static class Intl
 	/// 指定 <c>Intl.Collator</c> 用途：<c>"sort"</c> 或 <c>"search"</c>。
 	/// </summary>
 	[String]
-	[Description("@#")]
 	public enum CollatorUsage
 	{
 		/// <summary>
@@ -110,7 +106,6 @@ public static class Intl
 	/// 选择本地化匹配算法：<c>"lookup"</c> 或 <c>"best fit"</c>。
 	/// </summary>
 	[String]
-	[Description("@#")]
 	public enum LocaleMatcher
 	{
 		/// <summary>
@@ -130,7 +125,6 @@ public static class Intl
 	/// 控制大小写字母的排序顺序。
 	/// </summary>
 	[String]
-	[Description("@#")]
 	public enum CaseFirst
 	{
 		/// <summary>
@@ -155,7 +149,6 @@ public static class Intl
 	/// 指定比较敏感度级别：base、accent、case 或 variant。
 	/// </summary>
 	[String]
-	[Description("@#")]
 	public enum Sensitivity
 	{
 		/// <summary>
@@ -186,7 +179,6 @@ public static class Intl
 	/// 指定 JavaScript 运行时支持的 locale 特定排序算法；省略时使用 locale 默认规则。
 	/// </summary>
 	[String]
-	[Description("@#")]
 	public enum Collation
 	{
 		/// <summary>
@@ -287,7 +279,6 @@ public static class Intl
 	/// <param name="Sensitivity">Base, accent, case, or variant sensitivity. base、accent、case 或 variant 敏感度。</param>
 	/// <param name="Collation">Locale-specific collation algorithm. locale 特定排序算法。</param>
 	/// <param name="IgnorePunctuation">Whether punctuation participates in comparison. 标点是否参与比较。</param>
-	[Description("@#")]
 	public record CollatorOptions(
 		[property: Description("@#usage")] CollatorUsage? Usage,
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher,
@@ -308,7 +299,6 @@ public static class Intl
 	/// <param name="collation">Resolved collation. 解析后的排序规则。</param>
 	/// <param name="caseFirst">Resolved case ordering. 解析后的大小写排序。</param>
 	/// <param name="numeric">Resolved numeric comparison setting. 解析后的数值比较设置。</param>
-	[Description("@#")]
 	public record ResolvedCollatorOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#usage")] CollatorUsage usage,
@@ -383,7 +373,6 @@ public static class Intl
 
 	/// <summary>Output style for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的输出样式。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumberFormatOptionsStyle
 	{
 		/// <summary>
@@ -410,7 +399,6 @@ public static class Intl
 
 	/// <summary>Currency display form for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的货币显示形式。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumberFormatOptionsCurrencyDisplay
 	{
 		/// <summary>
@@ -437,7 +425,6 @@ public static class Intl
 
 	/// <summary>Currency-sign treatment for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的货币符号处理方式。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumberFormatCurrencySign
 	{
 		/// <summary>
@@ -454,7 +441,6 @@ public static class Intl
 
 	/// <summary>Number notation style for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的数值记法样式。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumberFormatNotation
 	{
 		/// <summary>
@@ -481,7 +467,6 @@ public static class Intl
 
 	/// <summary>Display width for compact notation. 紧凑记法的显示宽度。</summary>
 	[String]
-	[Description("@#")]
 	public enum CompactDisplay
 	{
 		/// <summary>
@@ -498,7 +483,6 @@ public static class Intl
 
 	/// <summary>Sign display policy for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的符号显示策略。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumberFormatSignDisplay
 	{
 		/// <summary>
@@ -530,7 +514,6 @@ public static class Intl
 
 	/// <summary>Grouping mode for <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 的分组模式。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumberFormatUseGrouping
 	{
 		/// <summary>
@@ -552,7 +535,6 @@ public static class Intl
 
 	/// <summary>Rounding algorithm for ECMA-402 formatting. ECMA-402 格式化舍入算法。</summary>
 	[String]
-	[Description("@#")]
 	public enum RoundingMode
 	{
 		/// <summary>
@@ -604,7 +586,6 @@ public static class Intl
 
 	/// <summary>Priority when fraction and significant-digit options coexist. 小数位和有效位选项共存时的优先级。</summary>
 	[String]
-	[Description("@#")]
 	public enum RoundingPriority
 	{
 		/// <summary>
@@ -626,7 +607,6 @@ public static class Intl
 
 	/// <summary>Trailing-zero display policy. 尾随零显示策略。</summary>
 	[String]
-	[Description("@#")]
 	public enum TrailingZeroDisplay
 	{
 		/// <summary>
@@ -647,7 +627,6 @@ public static class Intl
 		/// The union keeps the public host close to the runtime surface without forcing callers through CLR-only helper wrappers.
 		/// JavaScript 在此接受布尔值和字符串模式；联合类型使公开宿主接近运行时表面，无需调用方通过仅 CLR 的辅助包装器。
 		/// </summary>
-	[Description("@#")]
 	public record NumberFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#numberingSystem")] string? NumberingSystem = null,
@@ -672,7 +651,6 @@ public static class Intl
 		[property: Description("@#trailingZeroDisplay")] TrailingZeroDisplay? TrailingZeroDisplay = null);
 
 	/// <summary>Resolved options returned by <c>Intl.NumberFormat</c>. <c>Intl.NumberFormat</c> 返回的解析后选项。</summary>
-	[Description("@#")]
 	public record ResolvedNumberFormatOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#numberingSystem")] string NumberingSystem,
@@ -984,7 +962,6 @@ public static class Intl
 
 	/// <summary>Unicode hour-cycle identifiers. Unicode 小时制标识符。</summary>
 	[String]
-	[Description("@#")]
 	public enum HourCycle
 	{
 		/// <summary>
@@ -1013,7 +990,6 @@ public static class Intl
 	/// JavaScript options bag for <c>Intl.Locale</c>.
 	/// JavaScript <c>Intl.Locale</c> 的 options bag。
 	/// </summary>
-	[Description("@#")]
 	public record LocaleOptions(
 		[property: Description("@#language")] string? Language = null,
 		[property: Description("@#script")] string? Script = null,
@@ -1031,7 +1007,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.Locale.prototype.getTextInfo()</c>.
 	/// <c>Intl.Locale.prototype.getTextInfo()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public sealed class LocaleTextInfo
 	{
 		/// <summary>Gets text direction, such as <c>ltr</c> or <c>rtl</c>. 获取文本方向，例如 <c>ltr</c> 或 <c>rtl</c>。</summary>
@@ -1043,7 +1018,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.Locale.prototype.getWeekInfo()</c>.
 	/// <c>Intl.Locale.prototype.getWeekInfo()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public sealed class LocaleWeekInfo
 	{
 		/// <summary>Gets the locale first day of week. 获取 locale 一周的首日。</summary>
@@ -1057,7 +1031,6 @@ public static class Intl
 
 	/// <summary>Date/time format-matching algorithm. 日期时间格式匹配算法。</summary>
 	[String]
-	[Description("@#")]
 	public enum FormatMatcher
 	{
 		/// <summary>
@@ -1074,7 +1047,6 @@ public static class Intl
 
 	/// <summary>Long, short, and narrow localized display widths. long、short 和 narrow 的本地化显示宽度。</summary>
 	[String]
-	[Description("@#")]
 	public enum LongShortNarrow
 	{
 		/// <summary>
@@ -1096,7 +1068,6 @@ public static class Intl
 
 	/// <summary>Numeric or two-digit date/time field style. 数值或两位数字的日期时间字段样式。</summary>
 	[String]
-	[Description("@#")]
 	public enum NumericTwoDigit
 	{
 		/// <summary>
@@ -1113,7 +1084,6 @@ public static class Intl
 
 	/// <summary>Date/time preset style. 日期时间预设样式。</summary>
 	[String]
-	[Description("@#")]
 	public enum DateTimeStyle
 	{
 		/// <summary>
@@ -1140,7 +1110,6 @@ public static class Intl
 
 	/// <summary>Time-zone name display style. 时区名称显示样式。</summary>
 	[String]
-	[Description("@#")]
 	public enum TimeZoneName
 	{
 		/// <summary>
@@ -1176,7 +1145,6 @@ public static class Intl
 	}
 
 	/// <summary>Fractional-second precision from one through three digits. 一至三位的小数秒精度。</summary>
-	[Description("@#")]
 	public enum FractionalSecondDigits
 	{
 		/// <summary>
@@ -1197,7 +1165,6 @@ public static class Intl
 	}
 
 	/// <summary>Configuration object for <c>Intl.DateTimeFormat</c>. <c>Intl.DateTimeFormat</c> 的配置对象。</summary>
-	[Description("@#")]
 	public record DateTimeFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#calendar")] string? Calendar = null,
@@ -1221,7 +1188,6 @@ public static class Intl
 		[property: Description("@#timeZone")] string? TimeZone = null);
 
 	/// <summary>Resolved options returned by <c>Intl.DateTimeFormat</c>. <c>Intl.DateTimeFormat</c> 返回的解析后选项。</summary>
-	[Description("@#")]
 	public record ResolvedDateTimeFormatOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#calendar")] string Calendar,
@@ -1392,7 +1358,6 @@ public static class Intl
 
 	/// <summary>Relative-time display width. 相对时间显示宽度。</summary>
 	[String]
-	[Description("@#")]
 	public enum RelativeTimeFormatStyle
 	{
 		/// <summary>
@@ -1414,7 +1379,6 @@ public static class Intl
 
 	/// <summary>Relative-time numeric wording policy. 相对时间数值措辞策略。</summary>
 	[String]
-	[Description("@#")]
 	public enum RelativeTimeFormatNumeric
 	{
 		/// <summary>
@@ -1431,7 +1395,6 @@ public static class Intl
 
 	/// <summary>Unit accepted by <c>Intl.RelativeTimeFormat</c>. <c>Intl.RelativeTimeFormat</c> 接受的单位。</summary>
 	[String]
-	[Description("@#")]
 	public enum RelativeTimeUnit
 	{
 		/// <summary>
@@ -1481,7 +1444,6 @@ public static class Intl
 	/// Relative time parts may also carry the formatted unit that produced the part.
 	/// <c>Intl.RelativeTimeFormat.prototype.formatToParts()</c> 返回的 JavaScript 对象形状；相对时间 part 还可能携带生成它的格式化单位。
 	/// </summary>
-	[Description("@#")]
 	public sealed class RelativeTimeFormatPart
 	{
 		/// <summary>Gets the semantic part type. 获取语义 part 类型。</summary>
@@ -1502,7 +1464,6 @@ public static class Intl
 	/// It stays explicit so callers can see JavaScript option names and value domains directly from C#.
 	/// <c>Intl.RelativeTimeFormat</c> 的配置对象；保持显式使调用方可从 C# 直接了解 JavaScript 选项名称和值域。
 	/// </summary>
-	[Description("@#")]
 	public record RelativeTimeFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#numeric")] RelativeTimeFormatNumeric? Numeric = null,
@@ -1512,7 +1473,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.RelativeTimeFormat.prototype.resolvedOptions()</c>.
 	/// <c>Intl.RelativeTimeFormat.prototype.resolvedOptions()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public record ResolvedRelativeTimeFormatOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#style")] RelativeTimeFormatStyle Style,
@@ -1597,7 +1557,6 @@ public static class Intl
 
 	/// <summary>Duration output style. Duration 输出样式。</summary>
 	[String]
-	[Description("@#")]
 	public enum DurationFormatStyle
 	{
 		/// <summary>
@@ -1624,7 +1583,6 @@ public static class Intl
 
 	/// <summary>Whether a duration unit is automatically omitted or always shown. Duration 单位自动省略或始终显示的策略。</summary>
 	[String]
-	[Description("@#")]
 	public enum DurationDisplay
 	{
 		/// <summary>
@@ -1645,7 +1603,6 @@ public static class Intl
 	/// 用于次秒单位的仅数值 Duration 样式；JavaScript 对这些单位允许 <c>numeric</c> 而不允许 <c>2-digit</c>，故单独建模。
 	/// </summary>
 	[String]
-	[Description("@#")]
 	public enum DurationNumericStyle
 	{
 		/// <summary>
@@ -1660,7 +1617,6 @@ public static class Intl
 	/// Per-unit style properties mirror runtime option names directly; the runtime still validates legal combinations for each unit.
 	/// JavaScript <c>Intl.DurationFormat</c> 的 options bag；按单位的样式属性直接映射运行时选项名称，合法组合仍由运行时验证。
 	/// </summary>
-	[Description("@#")]
 	public record DurationFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#numberingSystem")] string? NumberingSystem = null,
@@ -1691,7 +1647,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.DurationFormat.prototype.resolvedOptions()</c>.
 	/// <c>Intl.DurationFormat.prototype.resolvedOptions()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public record ResolvedDurationFormatOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#numberingSystem")] string NumberingSystem,
@@ -1723,7 +1678,6 @@ public static class Intl
 	/// This is not a global host; it models the object-shaped runtime input directly.
 	/// <c>Intl.DurationFormat</c> 使用的 JavaScript duration 类输入；不是全局宿主，直接建模对象形状的运行时输入。
 	/// </summary>
-	[Description("@#")]
 	public record DurationInput(
 		[property: Description("@#years")] Number? Years = null,
 		[property: Description("@#months")] Number? Months = null,
@@ -1740,7 +1694,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.DurationFormat.prototype.formatToParts()</c>.
 	/// <c>Intl.DurationFormat.prototype.formatToParts()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public sealed class DurationFormatPart
 	{
 		/// <summary>Gets the semantic part type. 获取语义 part 类型。</summary>
@@ -1840,7 +1793,6 @@ public static class Intl
 
 	/// <summary>List relationship type: conjunction, disjunction, or unit. 列表关系类型：合取、析取或单位。</summary>
 	[String]
-	[Description("@#")]
 	public enum ListFormatType
 	{
 		/// <summary>
@@ -1864,7 +1816,6 @@ public static class Intl
 	/// Configuration object for <c>Intl.ListFormat</c>.
 	/// <c>Intl.ListFormat</c> 的配置对象。
 	/// </summary>
-	[Description("@#")]
 	public record ListFormatOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#type")] ListFormatType? Type = null,
@@ -1874,7 +1825,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.ListFormat.prototype.resolvedOptions()</c>.
 	/// <c>Intl.ListFormat.prototype.resolvedOptions()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public record ResolvedListFormatOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#type")] ListFormatType Type,
@@ -1981,7 +1931,6 @@ public static class Intl
 
 	/// <summary>Plural-rule category family. 复数规则类别族。</summary>
 	[String]
-	[Description("@#")]
 	public enum PluralRulesType
 	{
 		/// <summary>
@@ -2000,7 +1949,6 @@ public static class Intl
 	/// Configuration object for <c>Intl.PluralRules</c>.
 	/// <c>Intl.PluralRules</c> 的配置对象。
 	/// </summary>
-	[Description("@#")]
 	public record PluralRulesOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#type")] PluralRulesType? Type = null,
@@ -2020,7 +1968,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.PluralRules.prototype.resolvedOptions()</c>.
 	/// <c>Intl.PluralRules.prototype.resolvedOptions()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public record ResolvedPluralRulesOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#type")] PluralRulesType Type,
@@ -2134,7 +2081,6 @@ public static class Intl
 
 	/// <summary>Code domain accepted by <c>Intl.DisplayNames</c>. <c>Intl.DisplayNames</c> 接受的代码域。</summary>
 	[String]
-	[Description("@#")]
 	public enum DisplayNamesType
 	{
 		/// <summary>
@@ -2171,7 +2117,6 @@ public static class Intl
 
 	/// <summary>Fallback policy when a display name is unavailable. 显示名称不可用时的回退策略。</summary>
 	[String]
-	[Description("@#")]
 	public enum DisplayNamesFallback
 	{
 		/// <summary>
@@ -2188,7 +2133,6 @@ public static class Intl
 
 	/// <summary>Language-name display form. 语言名称显示形式。</summary>
 	[String]
-	[Description("@#")]
 	public enum DisplayNamesLanguageDisplay
 	{
 		/// <summary>
@@ -2207,7 +2151,6 @@ public static class Intl
 	/// Configuration object for <c>Intl.DisplayNames</c>.
 	/// <c>Intl.DisplayNames</c> 的配置对象。
 	/// </summary>
-	[Description("@#")]
 	public record DisplayNamesOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#style")] LongShortNarrow? Style = null,
@@ -2219,7 +2162,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.DisplayNames.prototype.resolvedOptions()</c>.
 	/// <c>Intl.DisplayNames.prototype.resolvedOptions()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public record ResolvedDisplayNamesOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#style")] LongShortNarrow Style,
@@ -2296,7 +2238,6 @@ public static class Intl
 
 	/// <summary>Text segmentation granularity. 文本分词粒度。</summary>
 	[String]
-	[Description("@#")]
 	public enum SegmenterGranularity
 	{
 		/// <summary>
@@ -2320,7 +2261,6 @@ public static class Intl
 	/// Configuration object for <c>Intl.Segmenter</c>.
 	/// <c>Intl.Segmenter</c> 的配置对象。
 	/// </summary>
-	[Description("@#")]
 	public record SegmenterOptions(
 		[property: Description("@#localeMatcher")] LocaleMatcher? LocaleMatcher = null,
 		[property: Description("@#granularity")] SegmenterGranularity? Granularity = null);
@@ -2329,7 +2269,6 @@ public static class Intl
 	/// JavaScript object shape returned by <c>Intl.Segmenter.prototype.resolvedOptions()</c>.
 	/// <c>Intl.Segmenter.prototype.resolvedOptions()</c> 返回的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public record ResolvedSegmenterOptions(
 		[property: Description("@#locale")] string Locale,
 		[property: Description("@#granularity")] SegmenterGranularity Granularity);
@@ -2338,7 +2277,6 @@ public static class Intl
 	/// JavaScript object shape produced while iterating <c>Intl.Segmenter</c> results.
 	/// 迭代 <c>Intl.Segmenter</c> 结果时产生的 JavaScript 对象形状。
 	/// </summary>
-	[Description("@#")]
 	public sealed class SegmentData
 	{
 		/// <summary>Gets the segmented text. 获取分段文本。</summary>
@@ -2367,7 +2305,6 @@ public static class Intl
 	/// This is not a global host; it models the runtime result object directly, including <c>containing()</c>.
 	/// <c>Intl.Segmenter.prototype.segment()</c> 返回的 JavaScript iterable 对象；不是全局宿主，直接建模运行时结果对象（包括 <c>containing()</c>）。
 	/// </summary>
-	[Description("@#")]
 	public sealed class Segments : IEnumerable<SegmentData>
 	{
 		/// <summary>

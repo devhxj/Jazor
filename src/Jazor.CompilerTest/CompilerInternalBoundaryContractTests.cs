@@ -752,16 +752,16 @@ public sealed class CompilerInternalBoundaryContractTests
                 }
             }
 
-            [AttributeUsage(AttributeTargets.All, Inherited = false)]
-            public sealed class ECMAScriptNameAttribute : Attribute
-            {
-                public ECMAScriptNameAttribute(string name)
-                {
-                }
-            }
-
             namespace ECMAScript
             {
+                [AttributeUsage(AttributeTargets.All, Inherited = false)]
+                public sealed class ECMAScriptNameAttribute : Attribute
+                {
+                    public ECMAScriptNameAttribute(string name)
+                    {
+                    }
+                }
+
                 [AttributeUsage(AttributeTargets.Class, Inherited = false)]
                 public sealed class ECMAScriptModuleAttribute : Attribute
                 {
@@ -795,7 +795,7 @@ public sealed class CompilerInternalBoundaryContractTests
                     {
                     }
 
-                    [ECMAScriptName("configured")]
+                    [ECMAScript.ECMAScriptName("configured")]
                     public static void Configured()
                     {
                     }

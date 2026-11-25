@@ -17,7 +17,7 @@ namespace ECMAScript;
 /// <c>getOverflowAncestors</c>, or MiddlewareState-level custom middleware.
 /// </remarks>
 [ECMAScript("@floating-ui/vue")]
-[Description("@#")]
+[Boundary]
 public static partial class FloatingUi
 {
 }

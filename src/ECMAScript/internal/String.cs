@@ -5,7 +5,6 @@ namespace ECMAScript;
 /// JavaScript <c>@@replace</c> 模式对象的协议桥接；隐藏该接口是因为它表达协议能力，而不是独立运行时宿主。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPattern
 {
@@ -19,7 +18,6 @@ public interface IPattern
 
 /// <summary>Protocol bridge for JavaScript <c>@@match</c>. JavaScript <c>@@match</c> 的协议桥接。</summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IMatchPattern
 {
@@ -32,7 +30,6 @@ public interface IMatchPattern
 
 /// <summary>Protocol bridge for JavaScript <c>@@matchAll</c>. JavaScript <c>@@matchAll</c> 的协议桥接。</summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IMatchAllPattern
 {
@@ -45,7 +42,6 @@ public interface IMatchAllPattern
 
 /// <summary>Protocol bridge for JavaScript <c>@@search</c>. JavaScript <c>@@search</c> 的协议桥接。</summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface ISearchPattern
 {
@@ -58,7 +54,6 @@ public interface ISearchPattern
 
 /// <summary>Protocol bridge for JavaScript <c>@@split</c>. JavaScript <c>@@split</c> 的协议桥接。</summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface ISplitPattern
 {
@@ -75,7 +70,6 @@ public interface ISplitPattern
 /// 供 <c>String.raw</c> 等 JavaScript tagged template 帮助器使用的桥接形状；它是协议对象而不是独立运行时宿主，因此保持隐藏。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface ITemplateStringsArray : IArray<string>
 {

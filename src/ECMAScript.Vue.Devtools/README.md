@@ -10,8 +10,8 @@
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.7.0" />
-  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.0" />
+  <PackageReference Include="Jazor" Version="2.7.1" />
+  <PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.1" />
 </ItemGroup>
 ```
 
@@ -22,19 +22,14 @@
 将 plugin 注册放在创建同一个 `VueApp` 的模块中。`PluginApi` 由 Devtools callback 提供，不能自行构造；`Id` 需要在 reload 之间保持稳定。
 
 ```csharp
-using System.ComponentModel;
 using ECMAScript;
 using static ECMAScript.VueDevtools;
 
-[ECMAScript]
-[Description("@#")]
 public sealed record DiagnosticsSettings : Vue.VueProps
 {
     public bool Verbose { get; init; }
 }
 
-[ECMAScript]
-[Description("@#")]
 public sealed record TimelineData : Vue.VueProps
 {
     public string Message { get; init; } = "";

@@ -16,7 +16,7 @@ public enum RequestDestination
     /// <remarks>
     /// <see href="https://fetch.spec.whatwg.org/">Fetch Standard: RequestDestination.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -2359,7 +2359,7 @@ public enum CanPlayTypeResult
     /// <remarks>
     /// <see href="https://html.spec.whatwg.org/multipage/">HTML Standard: CanPlayTypeResult.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -6891,7 +6891,7 @@ public enum ReferrerPolicy
     /// <remarks>
     /// <see href="https://w3c.github.io/webappsec-referrer-policy/">Referrer Policy: ReferrerPolicy.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -8539,7 +8539,7 @@ public enum DirectionSetting
     /// <remarks>
     /// <see href="https://w3c.github.io/webvtt/">WebVTT: The Web Video Text Tracks Format: DirectionSetting.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -8662,7 +8662,7 @@ public enum ScrollSetting
     /// <remarks>
     /// <see href="https://w3c.github.io/webvtt/">WebVTT: The Web Video Text Tracks Format: ScrollSetting.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -10520,7 +10520,7 @@ public enum ActivationBlockersMixinBlockerReason
     /// <remarks>
     /// <see href="https://wicg.github.io/PEPC/geolocation-element.html">The HTML Geolocation Element: ActivationBlockersMixinBlockerReason.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -10612,7 +10612,7 @@ public enum BackgroundFetchFailureReason
     /// <remarks>
     /// <see href="https://wicg.github.io/background-fetch/">Background Fetch: BackgroundFetchFailureReason.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -10677,7 +10677,7 @@ public enum BackgroundFetchResult
     /// <remarks>
     /// <see href="https://wicg.github.io/background-fetch/">Background Fetch: BackgroundFetchResult.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -10744,7 +10744,7 @@ public enum ContentCategory
     /// <remarks>
     /// <see href="https://wicg.github.io/content-index/spec/">Content Index: ContentCategory.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -12095,7 +12095,7 @@ public enum XMLHttpRequestResponseType
     /// <remarks>
     /// <see href="https://xhr.spec.whatwg.org/">XMLHttpRequest Standard: XMLHttpRequestResponseType.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -12397,7 +12397,7 @@ public enum GamepadHand
     /// <remarks>
     /// <see href="https://w3c.github.io/gamepad/extensions.html">Gamepad Extensions: GamepadHand.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>
@@ -14333,7 +14333,7 @@ public enum GamepadMappingType
     /// <remarks>
     /// <see href="https://w3c.github.io/gamepad/">Gamepad: GamepadMappingType.</see>
     /// </remarks>
-[Description("@#")]
+    [ECMAScriptName("")]
     Empty = 0,
 
     /// <summary>

@@ -322,11 +322,10 @@ public sealed class SemanticWalkerLanguageProtocolScenarioTests
     {
         var block = GetBlock(
             """
-            using System.ComponentModel;
             using ECMAScript;
 
             [ECMAScript]
-            [Description("@#")]
+            [Boundary]
             sealed class RuntimeAttributes
             {
                 public RuntimeAttributes(string title)

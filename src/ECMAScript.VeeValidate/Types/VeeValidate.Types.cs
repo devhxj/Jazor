@@ -8,7 +8,6 @@ namespace ECMAScript;
 /// 表单校验结果：整体是否有效、按字段路径索引的错误与校验来源。
 /// The validation result: overall validity, per-path errors, and the validation source.
 /// </summary>
-[Description("@#")]
 public record VeeValidateValidationResult
 {
     /// <summary>全部字段是否通过校验。Whether every field passed validation.</summary>
@@ -28,7 +27,6 @@ public record VeeValidateValidationResult
 /// 字段元数据；与 <c>useField</c> 返回的 <c>meta</c> 一致。
 /// Field metadata; mirrors the <c>meta</c> returned by <c>useField</c>.
 /// </summary>
-[Description("@#")]
 public record VeeValidateFieldMeta
 {
     /// <summary>字段是否通过校验。Whether the field passed validation.</summary>
@@ -56,7 +54,6 @@ public record VeeValidateFieldMeta
 /// 表单元数据；与 <c>useForm</c> 返回的 <c>meta</c> 一致。
 /// Form metadata; mirrors the <c>meta</c> returned by <c>useForm</c>.
 /// </summary>
-[Description("@#")]
 public record VeeValidateFormMeta
 {
     /// <summary>表单是否通过校验。Whether the form passed validation.</summary>
@@ -84,7 +81,6 @@ public record VeeValidateFormMeta
 /// 校验失败时提交回调收到的上下文。
 /// The context passed to the invalid-submit callback.
 /// </summary>
-[Description("@#")]
 public record VeeValidateInvalidSubmitContext
 {
     /// <summary>提交时的表单值。The form values at submission time.</summary>
@@ -105,7 +101,6 @@ public record VeeValidateInvalidSubmitContext
 /// Options for <c>useForm()</c>.
 /// </summary>
 /// <typeparam name="TValues">表单值契约。The form value contract.</typeparam>
-[Description("@#")]
 public record VeeValidateFormOptions<TValues>
 {
     /// <summary>表单显示名，用于 devtools 与诊断消息。The form display name used by devtools and diagnostics.</summary>
@@ -134,7 +129,6 @@ public record VeeValidateFormOptions<TValues>
 /// Options for <c>useField()</c>.
 /// </summary>
 /// <typeparam name="TValue">字段值类型。The field value type.</typeparam>
-[Description("@#")]
 public record VeeValidateFieldOptions<TValue>
 {
     /// <summary>字段初始值。The field initial value.</summary>
@@ -166,7 +160,6 @@ public record VeeValidateFieldOptions<TValue>
 /// <c>configure()</c> 的全局配置；影响所有字段的默认校验触发方式。
 /// Global configuration for <c>configure()</c>; it changes the default validation triggers for every field.
 /// </summary>
-[Description("@#")]
 public record VeeValidateConfig
 {
     /// <summary>blur 事件时校验。Validate on the blur event.</summary>
@@ -259,7 +252,6 @@ public delegate PromiseResult<VeeValidateValidationResult> VeeValidateValidateHa
 /// </summary>
 /// <typeparam name="TValues">表单值契约。The form value contract.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class VeeValidateFormReturn<TValues>
 {
     /// <summary>
@@ -370,7 +362,6 @@ public abstract class VeeValidateFormReturn<TValues>
 /// <c>resetForm()</c> 的重置目标状态。
 /// The reset target state used by <c>resetForm()</c>.
 /// </summary>
-[Description("@#")]
 public record VeeValidateFormResetState
 {
     /// <summary>按字段路径索引的 touched 覆盖值。Touched overrides keyed by field path.</summary>
@@ -387,7 +378,6 @@ public record VeeValidateFormResetState
 /// The reset target state used by <c>resetForm()</c>, with typed form values.
 /// </summary>
 /// <typeparam name="TValues">表单值契约。The form value contract.</typeparam>
-[Description("@#")]
 public record VeeValidateFormResetState<TValues> : VeeValidateFormResetState
 {
     /// <summary>重置后的表单值。The form values after the reset.</summary>
@@ -401,7 +391,6 @@ public record VeeValidateFormResetState<TValues> : VeeValidateFormResetState
 /// </summary>
 /// <typeparam name="TValue">字段值类型。The field value type.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class VeeValidateFieldReturn<TValue>
 {
     /// <summary>
@@ -461,7 +450,6 @@ public abstract class VeeValidateFieldReturn<TValue>
 /// </summary>
 /// <typeparam name="TItem">数组元素类型。The array element type.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class VeeValidateFieldArrayEntry<TItem>
 {
     /// <summary>
@@ -494,7 +482,6 @@ public abstract class VeeValidateFieldArrayEntry<TItem>
 /// </summary>
 /// <typeparam name="TItem">数组元素类型。The array element type.</typeparam>
 [ECMAScript]
-[Description("@#")]
 public abstract class VeeValidateFieldArrayReturn<TItem>
 {
     /// <summary>

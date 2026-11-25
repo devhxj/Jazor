@@ -651,7 +651,6 @@ public sealed class EcmaScriptPiniaImportTests
 			namespace Demo
 			{
 				[ECMAScript]
-				[Description("@#")]
 				public sealed record CounterSetupStore : Vue.VueProps
 				{
 					public int Count { get; init; }
@@ -699,7 +698,6 @@ public sealed class EcmaScriptPiniaImportTests
 			namespace Demo
 			{
 				[ECMAScript]
-				[Description("@#")]
 				public sealed record CounterSetupStore : Vue.VueProps
 				{
 					public Action<int, int, int, int> Report { get; init; } = default!;
@@ -750,14 +748,12 @@ public sealed class EcmaScriptPiniaImportTests
 			namespace Demo
 			{
 				[ECMAScript]
-				[Description("@#")]
 				public sealed record CounterSetupStore : Vue.VueProps
 				{
 					public Action Increment { get; init; } = default!;
 				}
 
 				[ECMAScript]
-				[Description("@#")]
 				public sealed record CounterSetupActions : Vue.VueProps
 				{
 					public Action Increment { get; init; } = default!;

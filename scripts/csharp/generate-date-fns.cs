@@ -249,7 +249,7 @@ static void WriteLocaleContract(string projectRoot, string version, (string Code
         .AppendLine("/// Curated date-fns locale contract; properties mirror the date-fns/locale named exports.")
         .AppendLine("/// </summary>")
         .AppendLine("[ECMAScript(\"date-fns/locale\")]")
-        .AppendLine("[Description(\"@#\")]")
+        .AppendLine("[Boundary]")
         .Append("public static partial class DateFnsLocale\n{\n");
     foreach (var (code, export) in locales.OrderBy(static locale => locale.Export, StringComparer.Ordinal))
     {

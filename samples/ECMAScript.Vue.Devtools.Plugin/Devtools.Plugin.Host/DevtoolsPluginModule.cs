@@ -4,7 +4,6 @@ using static ECMAScript.VueDevtools;
 
 namespace Devtools.Plugin.Host;
 
-[Description("@#")]
 public sealed record DiagnosticsSettings : Vue.VueProps
 {
     public bool Verbose { get; init; }
@@ -12,13 +11,11 @@ public sealed record DiagnosticsSettings : Vue.VueProps
     public string Theme { get; init; } = "system";
 }
 
-[Description("@#")]
 public sealed record DiagnosticsTimelineData : Vue.VueProps
 {
     public string Message { get; init; } = "";
 }
 
-[Description("@#")]
 public sealed record DiagnosticsTimelineMeta : Vue.VueProps
 {
     public int Sequence { get; init; }

@@ -51,7 +51,6 @@ public sealed class EcmaScriptVueDevtoolsImportTests
             namespace Demo
             {
                 [ECMAScript]
-                [Description("@#")]
                 public sealed record DevtoolsSettings : Vue.VueProps
                 {
                     public bool Verbose { get; init; }
@@ -60,14 +59,12 @@ public sealed class EcmaScriptVueDevtoolsImportTests
                 }
 
                 [ECMAScript]
-                [Description("@#")]
                 public sealed record TimelineData : Vue.VueProps
                 {
                     public string Name { get; init; } = "";
                 }
 
                 [ECMAScript]
-                [Description("@#")]
                 public sealed record TimelineMeta : Vue.VueProps
                 {
                     public int Sequence { get; init; }

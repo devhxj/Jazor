@@ -12,7 +12,6 @@ namespace ECMAScript;
 /// 使编辑器补全聚焦于 <see cref="Promise"/> 等运行时宿主。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPromise
 {
@@ -211,7 +210,6 @@ public interface IPromise
 /// 带兑现值类型标注的 JavaScript Promise 实例形状；它是桥接契约，故对正常编辑器补全隐藏。
 /// </summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IPromise<T> : IPromise
 {
@@ -387,7 +385,6 @@ public interface IPromise<T> : IPromise
 /// <remarks>It connects JavaScript Promise values to C# await/awaiter authoring and does not imply synchronous Promise execution.
 /// 它用于把 JavaScript Promise 接入 C# await/awaiter 编写，不代表同步执行 Promise。</remarks>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromiseResult : IAsyncResult
 {
@@ -422,7 +419,6 @@ public sealed class PromiseResult : IAsyncResult
 /// </summary>
 /// <summary>Awaiter adapter carrier for a typed Promise result. 带结果值的 Promise await 适配载体。</summary>
 [ECMAScript]
-[Description("@#")]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class PromiseResult<TResult> : IAsyncResult
 {
@@ -458,7 +454,6 @@ public sealed class PromiseResult<TResult> : IAsyncResult
 /// </summary>
 /// <summary>Fulfilled/rejected union-like result shape returned by <c>Promise.allSettled</c>. Promise.allSettled 返回的 fulfilled/rejected 结果联合形状。</summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class PromiseSettledResult<T>
 {
 	/// <summary>
@@ -492,7 +487,6 @@ public sealed class PromiseSettledResult<T>
 /// </summary>
 /// <summary>Promise plus resolve/reject functions returned by <c>Promise.withResolvers</c>. Promise.withResolvers 返回的 Promise 与 resolve/reject 函数集合。</summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class PromiseWithResolvers
 {
 	/// <summary>
@@ -526,7 +520,6 @@ public sealed class PromiseWithResolvers
 /// </summary>
 /// <summary>Typed resolver record returned by <c>Promise.withResolvers</c>. 泛型 Promise.withResolvers 返回的结果集合。</summary>
 [ECMAScript]
-[Description("@#")]
 public sealed class PromiseWithResolvers<T>
 {
 	/// <summary>

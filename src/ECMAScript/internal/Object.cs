@@ -9,7 +9,6 @@ namespace ECMAScript;
 /// <remarks>This interface is an authoring-time type constraint and does not automatically emit a CLR-style wrapper object.
 /// 该接口用于 authoring 类型约束，不会自动发射 CLR 风格包装对象。</remarks>
 [ECMAScript]
-[Description("@#")]
 public interface IReadOnly<T>
 {
 	/// <summary>Gets the projected value. 获取投影后的值。</summary>

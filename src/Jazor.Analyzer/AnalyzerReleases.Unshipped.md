@@ -13,3 +13,4 @@ JAZOR005 | Security | Error | Description and ECMAScriptName specify different J
 JAZOR006 | Security | Error | Duplicate JavaScript name in one emitted scope
 JAZOR007 | Jazor.Compiler | Error | Ordinary library implementation resolution or recovery failed
 JAZOR008 | Security | Error | Invalid JavaScript property path
+JAZOR009 | Jazor.Compiler | Error | Empty JavaScript name in binding metadata

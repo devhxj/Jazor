@@ -19,7 +19,7 @@ namespace ECMAScript;
 /// components or the <c>vTDirective</c> directive.
 /// </remarks>
 [ECMAScript("vue-i18n")]
-[Description("@#")]
+[Boundary]
 public static partial class VueI18n
 {
 }

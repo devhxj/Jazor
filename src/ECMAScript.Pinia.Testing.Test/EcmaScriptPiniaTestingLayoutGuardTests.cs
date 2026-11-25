@@ -36,7 +36,7 @@ public sealed class EcmaScriptPiniaTestingLayoutGuardTests
 		var source = System.IO.File.ReadAllText(shellPath);
 
 		StringAssert.Contains(source, "[ECMAScript(\"@pinia/testing\")]");
-		StringAssert.Contains(source, "[Description(\"@#\")]");
+		StringAssert.Contains(source, "[Boundary]");
 		StringAssert.Contains(source, "public static partial class PiniaTesting");
 		Assert.IsFalse(source.Contains("public extern static", StringComparison.Ordinal), "PiniaTesting shell file should not contain static API members.");
 
