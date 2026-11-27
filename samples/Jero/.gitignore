@@ -1,6 +1,6 @@
 # Sample inputs that the parent repository's log rules would otherwise omit.
 !/src/Jero.Core/Service/Log/
-!/src/Jero.Web/App/Logs/
+!/src/Jero.Web/Pages/Logs/
 
 # Sample-local outputs and runtime data.
 /.tmp/
@@ -13,7 +13,6 @@
 /src/Jero.Web/wwwroot/[Uu]pload/
 /src/Jero.Web/wwwroot/[Aa]vatar/
 /src/Jero.Web/wwwroot/[Ss]ignature/
-/src/Jero.Web/wwwroot/[Cc]odeGen/
 /src/Jero.Web/wwwroot/is-cache/
 /src/Jero.Web/Properties/PublishProfiles/
 /src/Jero.Web/publish/

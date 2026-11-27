@@ -1,0 +1,46 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Region
+
+<ElTable @attributes="@(new TableData<RegionFlatView>(Rows))" border="true" stripe="true" RowKey="id" EmptyText="暂无行政区域">
+                        <ElTableColumn type="index" label="序号" width="70" align="center" />
+                        <ElTableColumn label="行政名称" MinWidth="220" ShowOverflowTooltip="true">
+                            <template #default context="cell">@{ var row = ((TableSlot<RegionFlatView>)(object)cell).Row; }
+                                <span style='@(TableNameStyle(row))'>@(row.Name)</span>
+                            </template>
+                        </ElTableColumn>
+                        <ElTableColumn prop="@(nameof(RegionFlatView.Code))" label="行政代码" MinWidth="150" ShowOverflowTooltip="true" />
+                        <ElTableColumn label="区号" width="100" align="center">
+                            <template #default context="cell">@{ var row = ((TableSlot<RegionFlatView>)(object)cell).Row; }@(DisplayValue(row.CityCode))</template>
+                        </ElTableColumn>
+                        <ElTableColumn prop="@(nameof(RegionFlatView.OrderNo))" label="排序" width="90" align="center" />
+                        <ElTableColumn label="备注" MinWidth="180" ShowOverflowTooltip="true">
+                            <template #default context="cell">@{ var row = ((TableSlot<RegionFlatView>)(object)cell).Row; }@(DisplayValue(row.Remark))</template>
+                        </ElTableColumn>
+                            @if (HasActionColumn) { <ElTableColumn label="操作" width="160" align="center">
+                                <template #default context="cell">@{ var row = ((TableSlot<RegionFlatView>)(object)cell).Row; }
+                                    @if (CanEdit) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenEdit(row.Id))'>编辑</ElButton> }
+                                    @if (CanDelete) { <ElPopconfirm title='@(DeleteTitle(row))' ConfirmButtonText="确定删除" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.Id))'>
+                                            <template #reference>
+                                                <ElButton link="true" type="danger" loading='@(DeletingId == row.Id)' disabled='@(DeletingId.Length > 0 || Syncing)'>删除</ElButton>
+                                            </template>
+                                        </ElPopconfirm> }
+                                </template>
+                            </ElTableColumn> }
+                    </ElTable>
+
+@code {
+    [Parameter] public RegionFlatView[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public string DeletingId { get; set; } = "";
+    [Parameter] public bool Syncing { get; set; }
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+
+    private static string TableNameStyle(RegionFlatView row) => "display:inline-block;padding-left:" + row.Depth * 20 + "px;";
+    private static string DisplayValue(string value) => string.IsNullOrEmpty(value) ? "-" : value;
+    private static string DeleteTitle(RegionFlatView row) => "确定删除行政区域【" + row.Name + "】吗？该操作会同时删除其所有下级节点。";
+}

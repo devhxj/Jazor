@@ -1,0 +1,109 @@
+@using Jero.Web.Application
+@using static ECMAScript.Vue
+@using Jero.Web.Pages.Auth
+@using Jero.Web.Pages.Components
+
+<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#f5f7fa;box-sizing:border-box;">
+    <section style="width:min(100%,520px);">
+        <LoginCard Title="创建账号">
+            <p style="margin:0 0 20px;color:#909399;line-height:1.6;">展示当前租户的注册配置；服务端契约修复前不能提交。</p>
+
+            <div style='@(_error.Value is null ? "display:none" : "margin-bottom:16px")'>
+                <ElAlert Type="error" Title="@(_error.Value ?? "")" ShowIcon="true" Closable="true" @onclose="DismissError" />
+            </div>
+            <div style="margin-bottom:16px;">
+                <ElAlert Type="warning" Title="@RegistrationUnavailableReason" ShowIcon="true" Closable="false" />
+            </div>
+            <div style='@(_registrationEnabled.Value || _loading.Value ? "display:none" : "margin-bottom:16px")'>
+                <ElAlert Type="warning" Title="当前租户未启用用户注册。" ShowIcon="true" Closable="false" />
+            </div>
+
+            <ElForm LabelWidth="92px">
+                <ElFormItem Label="真实姓名">
+                    <ElInput ModelValue="@_realName.Value" @onupdate:modelValue="SetRealName" Placeholder="请输入真实姓名" Clearable="true" Disabled="true" />
+                </ElFormItem>
+                <ElFormItem Label="账号">
+                    <ElInput ModelValue="@_account.Value" @onupdate:modelValue="SetAccount" Placeholder="至少 6 个字符" Clearable="true" Disabled="true" />
+                </ElFormItem>
+                <ElFormItem Label="手机号">
+                    <ElInput ModelValue="@_phone.Value" @onupdate:modelValue="SetPhone" Placeholder="请输入 11 位手机号码" Maxlength="11" Clearable="true" Disabled="true" />
+                </ElFormItem>
+                <ElFormItem Label="注册方案">
+                    <AuthOptionSelect Value="@_wayId.Value" Options="@(_registrationWays.Value.Select(option => new ConfigurationOption(option.Value, option.Label)).ToArray())" Placeholder="请选择注册方案" Disabled="true" Change="@SetWayId" />
+                </ElFormItem>
+                <ElFormItem Label="密码">
+                    <ElInput ModelValue="@_password.Value" @onupdate:modelValue="SetPassword" Type="password" ShowPassword="true" Placeholder="请输入密码" Disabled="true" />
+                </ElFormItem>
+                <ElFormItem Label="确认密码">
+                    <ElInput ModelValue="@_confirmPassword.Value" @onupdate:modelValue="SetConfirmPassword" Type="password" ShowPassword="true" Placeholder="请再次输入密码" Disabled="true" />
+                </ElFormItem>
+                @if (_captchaEnabled.Value)
+                {
+                    <ElFormItem Label="验证码">
+                        <ElInput ModelValue="@_captchaCode.Value" @onupdate:modelValue="SetCaptchaCode" Placeholder="服务端仍强制校验验证码" Disabled="true" />
+                    </ElFormItem>
+                }
+            </ElForm>
+
+            <div style="display:grid;gap:12px;">
+                <ElButton Type="primary" Disabled="true">注册暂不可用</ElButton>
+                <ElButton @onclick="BackToLogin">已有账号，返回登录</ElButton>
+            </div>
+        </LoginCard>
+    </section>
+</main>
+
+@code {
+    private readonly IVueRef<string> _realName = Ref<string>("");
+    private readonly IVueRef<string> _account = Ref<string>("");
+    private readonly IVueRef<string> _phone = Ref<string>("");
+    private readonly IVueRef<string> _password = Ref<string>("");
+    private readonly IVueRef<string> _confirmPassword = Ref<string>("");
+    private readonly IVueRef<string> _wayId = Ref<string>("");
+    private readonly IVueRef<string> _captchaCode = Ref<string>("");
+    private readonly IVueRef<bool> _registrationEnabled = Ref<bool>(false);
+    private readonly IVueRef<bool> _captchaEnabled = Ref<bool>(true);
+    private readonly IVueRef<bool> _loading = Ref<bool>(true);
+    private readonly IVueRef<string?> _error = Ref<string?>(null);
+    private readonly IVueRef<AuthRegistrationWayOption[]> _registrationWays = Ref<AuthRegistrationWayOption[]>([]);
+
+    private ECMAScript.Router _router = default!;
+
+    private void BackToLogin() => _router.Push("/login");
+
+    private const string RegistrationUnavailableReason = "注册端点在验证码关闭时仍强制校验验证码，且非空密码存储协议未闭环，注册暂不可用。";
+
+    [Setup]
+    private void Configure()
+    {
+        _router = ECMAScript.VueRoute.UseRouter();
+        OnMounted(LoadConfiguration);
+    }
+
+    private void LoadConfiguration()
+    {
+        PublicAuth.SystemInfo().Then(result =>
+        {
+            if (!result.Ok)
+            {
+                _error.Value = result.Error ?? "加载注册配置失败。";
+                return;
+            }
+            _registrationEnabled.Value = PublicAuth.ReadRegistrationEnabled(result.Data);
+            _captchaEnabled.Value = PublicAuth.ReadCaptchaEnabled(result.Data);
+            _registrationWays.Value = PublicAuth.ReadRegistrationWays(result.Data);
+            _wayId.Value = PublicAuth.ReadDefaultRegistrationWayId(result.Data);
+            if (_wayId.Value.Length == 0 && _registrationWays.Value.Length > 0)
+                _wayId.Value = _registrationWays.Value[0].Value;
+        }).Catch(_ => _error.Value = "加载注册配置失败，请检查网络后重试。").Finally(() => _loading.Value = false);
+    }
+
+    private void DismissError() => _error.Value = null;
+    private void SetRealName(string? value) => _realName.Value = value ?? "";
+    private void SetAccount(string? value) => _account.Value = value ?? "";
+    private void SetPhone(string? value) => _phone.Value = value ?? "";
+    private void SetPassword(string? value) => _password.Value = value ?? "";
+    private void SetConfirmPassword(string? value) => _confirmPassword.Value = value ?? "";
+    private void SetWayId(string? value) => _wayId.Value = value ?? "";
+    private void SetCaptchaCode(string? value) => _captchaCode.Value = value ?? "";
+}

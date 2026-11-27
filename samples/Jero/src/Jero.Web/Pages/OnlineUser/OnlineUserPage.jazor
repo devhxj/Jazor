@@ -1,0 +1,124 @@
+@using Jero.Web.Application
+@using Jero.Web.Pages.OnlineUser
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElCard Header="在线用户" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        查询当前在线连接，并在确认后向指定连接发送强制下线指令。
+    </p>
+    <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        @if (Connected)
+        {
+            <ElTag Type="success">SignalR @RealtimeText</ElTag>
+        }
+        else if (Connecting)
+        {
+            <ElTag Type="warning">SignalR @RealtimeText</ElTag>
+        }
+        else
+        {
+            <ElTag Type="info">SignalR @RealtimeText</ElTag>
+        }
+        <span style="color:#909399;font-size:13px;">实时通道不可用时仍可手动查询和刷新。</span>
+    </div>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="@(_ => DismissError())" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            @if (IsSuperAdmin)
+            {
+                <ElFormItem Label="租户">
+                    <div style="width:260px">
+                        <OnlineUserTenantSelect Value="@TenantId" Options="@TenantOptions" Loading="@TenantLoading" Change="@TenantChanged" />
+                    </div>
+                </ElFormItem>
+            }
+            <ElFormItem Label="账号">
+                <ElInput ModelValue="@UserName"
+                         @onupdate:modelValue="SetUserName"
+                         Placeholder="请输入账号"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="姓名">
+                <ElInput ModelValue="@RealName"
+                         @onupdate:modelValue="SetRealName"
+                         Placeholder="请输入姓名"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading" Disabled="@(!CanQuery)">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@(Loading || !CanQuery)">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
+            <ElButton @onclick="@(_ => Refresh())" Loading="@Loading" Disabled="@(!CanQuery)">刷新</ElButton>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载在线用户…</ElText>
+        }
+
+        <div class="jero-list-scroll">
+            <OnlineUserTable Rows="@Rows" CanForceOffline="@CanForceOffline" Forcing="@Forcing" ForceOffline="@ForceOffline" />
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@_pageSizes"
+                              Background="true"
+                              Layout="total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+@code {
+
+    [Parameter] public OnlineUserView[] Rows { get; set; } = [];
+    [Parameter] public OnlineUserTenantOption[] TenantOptions { get; set; } = [];
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public bool CanForceOffline { get; set; }
+    [Parameter] public bool Forcing { get; set; }
+    [Parameter] public bool Connected { get; set; }
+    [Parameter] public bool Connecting { get; set; }
+    [Parameter] public string RealtimeText { get; set; } = "";
+    [Parameter] public Action<string> TenantChanged { get; set; } = default!;
+    [Parameter] public Action<string> ForceOffline { get; set; } = default!;
+
+    private readonly double[] _pageSizes = [10, 20, 50, 100];
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanQuery { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string UserName { get; set; } = "";
+    [Parameter] public string RealName { get; set; } = "";
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action<string> SetUserName { get; set; } = default!;
+    [Parameter] public Action<string> SetRealName { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+}

@@ -1,0 +1,51 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Template
+
+<ElTable @attributes="@(new TableData<TemplateView>(Rows) { OnSortChange = SortRows })" border="true" stripe="true" RowKey="@(nameof(TemplateView.Id))" EmptyText="暂无模板">
+    <ElTableColumn type="index" label="序号" width="70" align="center" />
+    <ElTableColumn prop="name" label="模板名称" MinWidth="180" sortable="custom" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="code" label="模板编码" MinWidth="180" sortable="custom" ShowOverflowTooltip="true" />
+    <ElTableColumn label="模板类型" MinWidth="120" align="center">
+        <template #default context="cell">@{ var row = ((TableSlot<TemplateView>)(object)cell).Row; }<ElTag @attributes="@(new TableTagProps(TypeTag(row.Type)))">@(TypeLabel(row.Type))</ElTag></template>
+    </ElTableColumn>
+    <ElTableColumn prop="groupName" label="分组名称" MinWidth="140" sortable="custom" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="orderNo" label="排序" width="90" align="center" sortable="custom" />
+    <ElTableColumn label="修改记录" width="110" align="center">
+        <template #default context="cell">@{ var row = ((TableSlot<TemplateView>)(object)cell).Row; }<ElButton link="true" type="primary" @onclick="@(() => Audit(row.Id))">详情</ElButton></template>
+    </ElTableColumn>
+    @if (CanEdit || CanPreview || CanDelete) { <ElTableColumn label="操作" width="210" align="center" fixed="right">
+        <template #default context="cell">@{ var row = ((TableSlot<TemplateView>)(object)cell).Row; }
+            @if (CanPreview) { <ElButton link="true" type="primary" @onclick="@(() => Preview(row.Id))">预览</ElButton> }
+            @if (CanEdit) { <ElButton link="true" type="primary" @onclick="@(() => Edit(row.Id))">编辑</ElButton> }
+            @if (CanDelete) { <ElPopconfirm Title='@("确定删除模板【" + row.Name + "】吗？")'
+                          ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.Id))">
+                <template #reference><ElButton link="true" type="danger">删除</ElButton></template>
+            </ElPopconfirm> }
+        </template>
+    </ElTableColumn> }
+</ElTable>
+
+@code {
+    [Parameter] public TemplateView[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanPreview { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public Action<string> Edit { get; set; } = default!;
+    [Parameter] public Action<string> Preview { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string> Audit { get; set; } = default!;
+    [Parameter] public TemplateTypeOption[] Options { get; set; } = [];
+    [Parameter] public Action<string, string> Sort { get; set; } = default!;
+
+    private void SortRows(TableSortScope value) => Sort(value.Prop ?? "", value.Order ?? "");
+    private string TypeLabel(int type) => Options.FirstOrDefault(option => option.Value == type)?.Label ?? (type > 0 ? "类型" + type : "-");
+    private string TypeTag(int type)
+    {
+        var option = Options.FirstOrDefault(item => item.Value == type);
+        if (option is not null)
+            return option.TagType is "success" or "warning" or "danger" or "info" ? option.TagType : "primary";
+        return type == 2 ? "warning" : type is 3 or 4 ? "success" : type == 5 ? "info" : "primary";
+    }
+}

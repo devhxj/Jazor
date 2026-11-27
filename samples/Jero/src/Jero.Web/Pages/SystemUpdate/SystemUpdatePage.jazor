@@ -1,0 +1,238 @@
+@using Jero.Web.Application
+@using Jero.Web.Pages.SystemUpdate
+@using Npm.ElementPlus
+
+<style>
+    .update-page { display: grid; gap: 16px; }
+    .update-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 4px 2px; }
+    .update-heading h1 { margin: 0; color: #303133; font-size: 23px; line-height: 1.25; }
+    .update-heading p { margin: 7px 0 0; color: #909399; font-size: 13px; }
+    .update-layout { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: 16px; min-height: 690px; }
+    .update-layout--single { grid-template-columns: minmax(0, 1fr); }
+    .update-card { min-width: 0; height: 100%; }
+    .update-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .update-section-title { color: #303133; font-size: 16px; font-weight: 650; }
+    .update-section-note { margin-top: 4px; color: #909399; font-size: 12px; }
+    .update-backup-list { max-height: 590px; display: flex; flex-direction: column; gap: 9px; overflow: auto; padding-right: 3px; }
+    .update-backup-item { width: 100%; border: 1px solid #dcdfe6; border-radius: 8px; padding: 12px; background: #fff; color: #303133; cursor: pointer; text-align: left; transition: border-color .18s ease, background-color .18s ease, transform .18s ease; }
+    .update-backup-item:hover { border-color: #409eff; transform: translateY(-1px); }
+    .update-backup-item--active { border-color: #409eff; background: #ecf5ff; }
+    .update-backup-name { word-break: break-all; font-size: 13px; font-weight: 650; }
+    .update-backup-time { margin-top: 7px; color: #909399; font-size: 11px; }
+    .update-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 14px 0; }
+    .update-status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; color: #909399; font-size: 12px; }
+    .update-terminal { min-height: 520px; height: 590px; overflow: auto; border-radius: 8px; padding: 18px; background: #17212b; color: #f5f7fa; box-shadow: inset 0 0 0 1px rgba(255,255,255,.05); }
+    .update-terminal pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: Consolas, "SFMono-Regular", Menlo, monospace; font-size: 13px; line-height: 1.6; }
+    .update-terminal-empty { height: 100%; display: grid; place-items: center; color: rgba(245,247,250,.65); }
+    .update-key { margin: 4px 0 0; max-height: 280px; overflow: auto; border: 1px solid #dcdfe6; border-radius: 6px; padding: 14px; background: #f5f7fa; color: #303133; font-family: Consolas, "SFMono-Regular", Menlo, monospace; white-space: pre-wrap; word-break: break-all; }
+    @@media (max-width: 900px) {
+        .update-layout { grid-template-columns: 1fr; }
+        .update-terminal { height: 520px; }
+    }
+</style>
+
+<div class="update-page">
+    <div class="update-heading">
+        <div>
+            <h1>系统更新</h1>
+            <p>查看部署备份与实时更新日志，并在明确确认后执行更新或还原。</p>
+        </div>
+        @if (HasPageAccess)
+        {
+            <ElButton @onclick="@(_ => RefreshAll())" Loading="@(BackupLoading || LogLoading)" Disabled="@IsRunning">刷新全部</ElButton>
+        }
+    </div>
+
+    <ElAlert Type="warning"
+             Title="系统更新会拉取远端仓库、重新发布后端并覆盖输出目录，请确认持续部署配置后再执行。"
+             ShowIcon="true"
+             Closable="false" />
+
+    <div style='@(Error is null ? "display:none" : "")'>
+        <ElAlert Type="error" Title="@(Error ?? "")" ShowIcon="true" Closable="false" />
+    </div>
+
+    @if (!HasPageAccess)
+    {
+        <ElCard><ElEmpty Description="当前角色没有查看系统更新数据的权限" /></ElCard>
+    }
+    else
+    {
+        <div class="@LayoutClass()">
+            @if (CanViewBackups)
+            {
+                <ElCard class="update-card">
+                    <div class="update-section-head">
+                        <div>
+                            <div class="update-section-title">备份列表</div>
+                            <div class="update-section-note">选择备份后可执行还原。</div>
+                        </div>
+                        <ElButton @onclick="@(_ => LoadBackups())" Loading="@BackupLoading" Disabled="@IsRunning">刷新</ElButton>
+                    </div>
+
+                    @if (BackupLoading && Backups.Length == 0)
+                    {
+                        <ElText>正在加载备份列表…</ElText>
+                    }
+                    else if (Backups.Length == 0)
+                    {
+                        <ElEmpty Description="暂无备份数据" />
+                    }
+                    else
+                    {
+                        <div class="update-backup-list">
+                            @foreach (var backup in Backups)
+                            {
+                                <button type="button"
+                                        class="@BackupItemClass(backup, SelectedFileName)"
+                                        disabled="@IsRunning"
+                                        @key="backup.FileName"
+                                        @onclick="@(_ => SelectBackup(backup.FileName))">
+                                    <div class="update-backup-name">@Display(backup.FileName)</div>
+                                    <div class="update-backup-time">@Display(backup.CreateTime)</div>
+                                </button>
+                            }
+                        </div>
+                    }
+                </ElCard>
+            }
+
+            @if (CanViewLogs)
+            {
+                <ElCard class="update-card">
+                    <div class="update-section-head">
+                        <div>
+                            <div class="update-section-title">更新日志</div>
+                            <div class="update-section-note">空闲时每 1.5 秒刷新，长任务期间每 0.5 秒刷新。</div>
+                        </div>
+                        <ElButton @onclick="@(_ => LoadLogs())" Loading="@LogLoading">刷新日志</ElButton>
+                    </div>
+
+                    <div class="update-toolbar">
+                        @if (CanUpdate)
+                        {
+                            <ElPopconfirm Title="确定从远端仓库执行系统更新吗？该操作会重新发布后端并覆盖输出目录。"
+                                          ConfirmButtonText="确定更新"
+                                          CancelButtonText="取消"
+                                          @onconfirm="@(_ => RunUpdate())">
+                                <template #reference><ElButton Type="primary"
+                                              Loading="@(RunningAction == "update")"
+                                              Disabled="@IsRunning">更新</ElButton></template>
+                            </ElPopconfirm>
+                        }
+                        @if (CanRestore)
+                        {
+                            <ElPopconfirm Title="@RestoreConfirmTitle()"
+                                          ConfirmButtonText="确定还原"
+                                          CancelButtonText="取消"
+                                          @onconfirm="@(_ => RunRestore())">
+                                <template #reference><ElButton Type="warning"
+                                              Loading="@(RunningAction == "restore")"
+                                              Disabled="@(!CanRunRestore)">还原</ElButton></template>
+                            </ElPopconfirm>
+                        }
+                        @if (CanClear)
+                        {
+                            <ElPopconfirm Title="确定清空全部系统更新日志吗？此操作不可恢复。"
+                                          ConfirmButtonText="确定清空"
+                                          CancelButtonText="取消"
+                                          @onconfirm="@(_ => ClearLogs())">
+                                <template #reference><ElButton Type="danger"
+                                              Plain="true"
+                                              Loading="@ClearingLogs"
+                                              Disabled="@(IsRunning || ClearingLogs)">清空日志</ElButton></template>
+                            </ElPopconfirm>
+                        }
+                        @if (CanViewWebHookKey)
+                        {
+                            <ElButton @onclick="@(_ => LoadWebHookKey())"
+                                      Loading="@WebHookLoading"
+                                      Disabled="@(IsRunning || WebHookLoading)">获取 WebHook 密钥</ElButton>
+                        }
+                    </div>
+
+                    <div class="update-status">
+                        <span>@(IsRunning ? ActionText(RunningAction) : "日志轮询中")</span>
+                        <span>最近刷新：@Display(LastLogRefreshTime)</span>
+                    </div>
+
+                    <div class="update-terminal">
+                        @if (HasLogs)
+                        {
+                            <pre>@LogOutput</pre>
+                        }
+                        else if (LogLoading)
+                        {
+                            <pre>正在读取更新日志…</pre>
+                        }
+                        else
+                        {
+                            <pre>暂无日志输出</pre>
+                        }
+                    </div>
+                </ElCard>
+            }
+        </div>
+    }
+</div>
+
+<ElDialog ModelValue="@WebHookDialogVisible"
+          @onupdate:modelValue="SetWebHookDialogVisible"
+          Title="WebHook 密钥"
+          Width="680px"
+          DestroyOnClose="true">
+    <p style="margin-top:0;color:#606266;">当前持续部署 WebHook 密钥：</p>
+    <pre class="update-key">@Display(WebHookKey)</pre>
+    <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+        <ElButton Type="primary" @onclick="@(_ => SetWebHookDialogVisible(false))">关闭</ElButton>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public SystemBackupView[] Backups { get; set; } = [];
+    [Parameter] public string SelectedFileName { get; set; } = "";
+    [Parameter] public string RunningAction { get; set; } = "";
+    [Parameter] public string WebHookKey { get; set; } = "";
+    [Parameter] public string LastLogRefreshTime { get; set; } = "";
+    [Parameter] public bool BackupLoading { get; set; }
+    [Parameter] public bool LogLoading { get; set; }
+    [Parameter] public bool ClearingLogs { get; set; }
+    [Parameter] public bool WebHookLoading { get; set; }
+    [Parameter] public bool WebHookDialogVisible { get; set; }
+    [Parameter] public bool CanViewBackups { get; set; }
+    [Parameter] public bool CanViewLogs { get; set; }
+    [Parameter] public bool CanUpdate { get; set; }
+    [Parameter] public bool CanRestore { get; set; }
+    [Parameter] public bool CanClear { get; set; }
+    [Parameter] public bool CanViewWebHookKey { get; set; }
+    [Parameter] public bool IsRunning { get; set; }
+    [Parameter] public bool HasPageAccess { get; set; }
+    [Parameter] public bool CanRunRestore { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string LogOutput { get; set; } = "";
+    [Parameter] public Action RefreshAll { get; set; } = default!;
+    [Parameter] public Action LoadBackups { get; set; } = default!;
+    [Parameter] public Action LoadLogs { get; set; } = default!;
+    [Parameter] public Action<string> SelectBackup { get; set; } = default!;
+    [Parameter] public Action RunUpdate { get; set; } = default!;
+    [Parameter] public Action RunRestore { get; set; } = default!;
+    [Parameter] public Action ClearLogs { get; set; } = default!;
+    [Parameter] public Action LoadWebHookKey { get; set; } = default!;
+    [Parameter] public Action<bool> SetWebHookDialogVisible { get; set; } = default!;
+    [Parameter] public bool HasLogs { get; set; }
+
+    private static string Display(string value)
+        => value.Length == 0 ? "-" : value;
+
+    private static string BackupItemClass(SystemBackupView backup, string selected)
+        => backup.FileName == selected ? "update-backup-item update-backup-item--active" : "update-backup-item";
+
+    private string LayoutClass()
+        => CanViewBackups && CanViewLogs ? "update-layout" : "update-layout update-layout--single";
+
+    private string RestoreConfirmTitle()
+        => "确定将系统还原到备份【" + SelectedFileName + "】吗？还原会覆盖当前输出目录。";
+
+    private static string ActionText(string action)
+        => action == "restore" ? "正在还原系统并持续读取日志…" : "正在更新系统并持续读取日志…";
+}

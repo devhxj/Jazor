@@ -1,0 +1,170 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using ECMAScript
+@using Jero.Web.Pages.File
+
+<ElDialog ModelValue='@(UploadDialogVisible)'
+          @onupdate:modelValue='@(value => UploadDialogChanged(value))'
+          title="上传文件"
+          width="520px"
+          DestroyOnClose='@(true)'
+          CloseOnClickModal='@(false)'>
+    <ElForm LabelWidth="96px">
+        <ElFormItem label="上传目录">
+            <ElInput ModelValue='@(UploadFilePath)'
+                     @onupdate:modelValue='@(value => SetUploadFilePath(value ?? ""))'
+                     placeholder="留空则使用系统默认目录"
+                     Clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="文件类型">
+            <ElInput ModelValue='@(UploadFileType)'
+                     @onupdate:modelValue='@(value => SetUploadFileType(value ?? ""))'
+                     placeholder="可选的业务文件类型"
+                     Clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="可见性">
+            <ElRadioGroup ModelValue="@UploadVisibility" @attributes='@(new ModelUpdate<string>(value => SetUploadVisibility(value == "public" ? "public" : "private")))'>
+                <ElRadio Value="private">私有</ElRadio>
+                <ElRadio Value="public">公开</ElRadio>
+            </ElRadioGroup>
+        </ElFormItem>
+        <ElFormItem label="选择文件">
+            <div class="file-native-upload">
+                <input id='@(UploadInputIdValue)'
+                       type="file"
+                       @onchange="SelectUploadFile"
+                       accept=".jpg,.jpeg,.png,.bmp,.gif,.txt,.xml,.pdf,.xlsx,.xls,.docx,.doc" />
+                <div class="file-upload-name">支持图片、文本、PDF、Word、Excel 等常用文件类型；文件大小与 MIME 类型以服务端配置为准</div>
+            </div>
+        </ElFormItem>
+    </ElForm>
+    <div class="file-dialog-actions">
+        <ElButton @onclick='@(() => UploadDialogChanged(false))' Disabled='@(Uploading)'>取消</ElButton>
+        <ElButton type="primary" @onclick='@(() => SubmitUpload())' Loading='@(Uploading)'>确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(EditDialogVisible)'
+          @onupdate:modelValue='@(value => EditDialogChanged(value))'
+          title="编辑文件"
+          width="560px"
+          DestroyOnClose='@(true)'
+          CloseOnClickModal='@(false)'>
+    <ElForm LabelWidth="104px">
+        <ElFormItem label="文件名称">
+            <ElInput ModelValue='@(EditFileName)'
+                     @onupdate:modelValue='@(value => SetEditFileName(value ?? ""))'
+                     placeholder="文件名称"
+                     Clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="文件类型">
+            <ElInput ModelValue='@(EditFileType)'
+                     @onupdate:modelValue='@(value => SetEditFileType(value ?? ""))'
+                     placeholder="文件类型"
+                     Clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="文件别名">
+            <ElInput ModelValue='@(EditFileAlias)'
+                     @onupdate:modelValue='@(value => SetEditFileAlias(value ?? ""))'
+                     placeholder="文件别名"
+                     Clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="业务数据 ID">
+            <ElInput ModelValue='@(EditDataId)'
+                     @onupdate:modelValue='@(value => SetEditDataId(value ?? ""))'
+                     placeholder="业务数据 ID"
+                     Clearable='@(true)' />
+        </ElFormItem>
+        <ElFormItem label="可见性">
+            <ElRadioGroup ModelValue="@EditVisibility" @attributes='@(new ModelUpdate<string>(value => SetEditVisibility(value == "public" ? "public" : "private")))'>
+                <ElRadio Value="private">私有</ElRadio>
+                <ElRadio Value="public">公开</ElRadio>
+            </ElRadioGroup>
+        </ElFormItem>
+    </ElForm>
+    <div class="file-dialog-actions">
+        <ElButton @onclick='@(() => EditDialogChanged(false))' Disabled='@(Saving)'>取消</ElButton>
+        <ElButton type="primary" @onclick='@(() => SaveEdit())' Loading='@(Saving)'>确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(PreviewDialogVisible)'
+          @onupdate:modelValue='@(value => PreviewDialogChanged(value))'
+          title='@(PreviewFileName)'
+          width="88%"
+          top="5vh"
+          DestroyOnClose='@(true)'>
+    <div class="file-preview-shell">
+        @if (PreviewKind == "image") {
+            <img class="file-preview-image" src='@(PreviewUrl)' alt='@(PreviewFileName)' />
+        }
+        else if (PreviewKind == "pdf") {
+            <iframe class="file-preview-frame" src='@(PreviewUrl)' title='@(PreviewFileName)'></iframe>
+        }
+        else if ((PreviewKind == "docx" || PreviewKind == "excel") && PreviewBlob is { } blob) {
+            <FileOfficePreview @key="@PreviewVersion" Source="@blob" Kind="@PreviewKind" RenderFailed="@PreviewRenderFailed" />
+        }
+        else {
+            <ElEmpty description="暂无可预览内容" />
+        }
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(AuditDialogVisible)'
+          @onupdate:modelValue='@(value => SetAuditDialogVisible(value == true))'
+          title='@(AuditDialogTitle)'
+          width="600px">
+    <div class="file-audit-grid">
+        <strong>创建人</strong><span>@(AuditCreateUser)</span>
+        <strong>创建时间</strong><span>@(AuditCreateTime)</span>
+        <strong>最后修改人</strong><span>@(AuditUpdateUser)</span>
+        <strong>最后修改时间</strong><span>@(AuditUpdateTime)</span>
+    </div>
+</ElDialog>
+
+
+
+@code {
+    [Parameter] public string UploadInputIdValue { get; set; } = default!;
+    [Parameter] public bool UploadDialogVisible { get; set; } = default!;
+    [Parameter] public bool Uploading { get; set; } = default!;
+    [Parameter] public string UploadFilePath { get; set; } = default!;
+    [Parameter] public string UploadFileType { get; set; } = default!;
+    [Parameter] public string UploadVisibility { get; set; } = default!;
+    [Parameter] public bool PreviewDialogVisible { get; set; } = default!;
+    [Parameter] public string PreviewKind { get; set; } = default!;
+    [Parameter] public string PreviewFileName { get; set; } = default!;
+    [Parameter] public string PreviewUrl { get; set; } = default!;
+    [Parameter] public bool EditDialogVisible { get; set; } = default!;
+    [Parameter] public bool Saving { get; set; } = default!;
+    [Parameter] public string EditFileName { get; set; } = default!;
+    [Parameter] public string EditFileType { get; set; } = default!;
+    [Parameter] public string EditFileAlias { get; set; } = default!;
+    [Parameter] public string EditDataId { get; set; } = default!;
+    [Parameter] public string EditVisibility { get; set; } = default!;
+    [Parameter] public bool AuditDialogVisible { get; set; } = default!;
+    [Parameter] public string AuditDialogTitle { get; set; } = default!;
+    [Parameter] public string AuditCreateUser { get; set; } = default!;
+    [Parameter] public string AuditCreateTime { get; set; } = default!;
+    [Parameter] public string AuditUpdateUser { get; set; } = default!;
+    [Parameter] public string AuditUpdateTime { get; set; } = default!;
+    [Parameter] public Action<bool?> UploadDialogChanged { get; set; } = default!;
+    [Parameter] public Action<string> SetUploadFilePath { get; set; } = default!;
+    [Parameter] public Action<string> SetUploadFileType { get; set; } = default!;
+    [Parameter] public Action<string> SetUploadVisibility { get; set; } = default!;
+    [Parameter] public Action SelectUploadFile { get; set; } = default!;
+    [Parameter] public Action SubmitUpload { get; set; } = default!;
+    [Parameter] public Action<bool?> EditDialogChanged { get; set; } = default!;
+    [Parameter] public Action<string> SetEditFileName { get; set; } = default!;
+    [Parameter] public Action<string> SetEditFileType { get; set; } = default!;
+    [Parameter] public Action<string> SetEditFileAlias { get; set; } = default!;
+    [Parameter] public Action<string> SetEditDataId { get; set; } = default!;
+    [Parameter] public Action<string> SetEditVisibility { get; set; } = default!;
+    [Parameter] public Action SaveEdit { get; set; } = default!;
+    [Parameter] public Action<bool?> PreviewDialogChanged { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public ECMAScript.Blob? PreviewBlob { get; set; }
+    // 新文件使用新 key，让旧 Office 预览卸载，避免沿用上一个文件的渲染实例。
+    [Parameter] public int PreviewVersion { get; set; }
+    [Parameter] public Action PreviewRenderFailed { get; set; } = default!;
+}

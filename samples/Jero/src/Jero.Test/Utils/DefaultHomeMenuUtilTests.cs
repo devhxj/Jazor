@@ -10,13 +10,13 @@ public class DefaultHomeMenuUtilTests
     {
         var menus = new[]
         {
-            new SysMenu { Id = 1, Pid = 0, Title = "医线生机", Path = "/save-life", Name = "saveLife", Type = MenuTypeEnum.Dir },
-            new SysMenu { Id = 2, Pid = 1, Title = "仪表盘", Path = "/save-life/dashboard", Name = "saveLifeDashboard", Type = MenuTypeEnum.Menu },
+            new SysMenu { Id = 1, Pid = 0, Title = "运营中心", Path = "/operations", Name = "operations", Type = MenuTypeEnum.Dir },
+            new SysMenu { Id = 2, Pid = 1, Title = "仪表盘", Path = "/operations/dashboard", Name = "operationsDashboard", Type = MenuTypeEnum.Menu },
             new SysMenu { Id = 3, Pid = 0, Title = "工作台", Path = "/dashboard", Name = "dashboard", Type = MenuTypeEnum.Dir },
             new SysMenu { Id = 4, Pid = 3, Title = "工作台", Path = DefaultHomePathUtil.FallbackHomePath, Name = "home", Type = MenuTypeEnum.Menu },
         };
 
-        var menu = DefaultHomeMenuUtil.FindDefaultHomeMenu(menus, " /save-life/dashboard?tab=today ");
+        var menu = DefaultHomeMenuUtil.FindDefaultHomeMenu(menus, " /operations/dashboard?tab=today ");
 
         Assert.NotNull(menu);
         Assert.Equal(2, menu.Id);
@@ -27,13 +27,13 @@ public class DefaultHomeMenuUtilTests
     {
         var menus = new[]
         {
-            new SysMenu { Id = 1, Pid = 0, Title = "医线生机", Path = "/save-life", Type = MenuTypeEnum.Dir },
-            new SysMenu { Id = 2, Pid = 1, Title = "仪表盘", Path = "/save-life/dashboard", Type = MenuTypeEnum.Menu },
-            new SysMenu { Id = 3, Pid = 2, Title = "查询", Permission = "saveLifeDashboard:page", Type = MenuTypeEnum.Btn },
+            new SysMenu { Id = 1, Pid = 0, Title = "运营中心", Path = "/operations", Type = MenuTypeEnum.Dir },
+            new SysMenu { Id = 2, Pid = 1, Title = "仪表盘", Path = "/operations/dashboard", Type = MenuTypeEnum.Menu },
+            new SysMenu { Id = 3, Pid = 2, Title = "查询", Permission = "operationsDashboard:page", Type = MenuTypeEnum.Btn },
         };
 
         var menuIds = DefaultHomeMenuUtil
-            .GetDefaultHomeMenuTree(menus, "/save-life/dashboard")
+            .GetDefaultHomeMenuTree(menus, "/operations/dashboard")
             .Select(u => u.Id)
             .ToList();
 
@@ -45,8 +45,8 @@ public class DefaultHomeMenuUtilTests
     {
         var menus = new[]
         {
-            new SysMenu { Id = 1, Pid = 0, Title = "医线生机", Path = "/save-life", Type = MenuTypeEnum.Dir },
-            new SysMenu { Id = 2, Pid = 1, Title = "仪表盘", Path = "/save-life/dashboard", Type = MenuTypeEnum.Menu },
+            new SysMenu { Id = 1, Pid = 0, Title = "运营中心", Path = "/operations", Type = MenuTypeEnum.Dir },
+            new SysMenu { Id = 2, Pid = 1, Title = "仪表盘", Path = "/operations/dashboard", Type = MenuTypeEnum.Menu },
             new SysMenu { Id = 3, Pid = 0, Title = "控制台", Path = "/dashboard", Name = "dashboard", Type = MenuTypeEnum.Dir },
             new SysMenu { Id = 4, Pid = 3, Title = "首页", Path = DefaultHomePathUtil.FallbackHomePath, Name = "home", Type = MenuTypeEnum.Menu },
         };
@@ -72,13 +72,13 @@ public class DefaultHomeMenuUtilTests
         {
             Id = 2,
             Title = "仪表盘",
-            Path = "/save-life/dashboard",
+            Path = "/operations/dashboard",
             IsAffix = false,
             Type = MenuTypeEnum.Menu,
         };
         var menus = new[] { fallbackHome, configuredHome };
 
-        DefaultHomeMenuUtil.ApplyDefaultHomeAffix(menus, "/save-life/dashboard");
+        DefaultHomeMenuUtil.ApplyDefaultHomeAffix(menus, "/operations/dashboard");
 
         Assert.False(fallbackHome.IsAffix);
         Assert.True(configuredHome.IsAffix);

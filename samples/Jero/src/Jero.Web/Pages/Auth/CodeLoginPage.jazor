@@ -1,0 +1,137 @@
+@using Jero.Web.Application
+@using static ECMAScript.Vue
+@using Jero.Web.Pages.Auth
+@using Jero.Web.Pages.Components
+
+<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#f5f7fa;box-sizing:border-box;">
+    <section style="width:min(100%,440px);">
+        <LoginCard Title="验证码登录">
+            <p style="margin:0 0 20px;color:#909399;line-height:1.6;">使用手机短信验证码登录 Jero。</p>
+
+            <div style='@(_error.Value is null ? "display:none" : "margin-bottom:16px")'>
+                <ElAlert Type="error" Title="@(_error.Value ?? "")" ShowIcon="true" Closable="true" @onclose="DismissError" />
+            </div>
+            <div style='@(_message.Value is null ? "display:none" : "margin-bottom:16px")'>
+                <ElAlert Type="success" Title="@(_message.Value ?? "")" ShowIcon="true" />
+            </div>
+
+            <ElForm LabelWidth="78px">
+                <ElFormItem Label="租户">
+                    <AuthOptionSelect Value="@_tenantId.Value" Options="@(_tenants.Value.Select(option => new ConfigurationOption(option.Value, option.Label)).ToArray())" Placeholder="请选择租户" Loading="@_loadingTenants.Value" Disabled="@_signingIn.Value" Change="@SetTenantId" />
+                </ElFormItem>
+                <ElFormItem Label="手机号">
+                    <ElInput ModelValue="@_phone.Value"
+                             @onupdate:modelValue="SetPhone"
+                             Placeholder="请输入 11 位手机号码"
+                             Maxlength="11"
+                             Clearable="true"
+                             Disabled="@_signingIn.Value" />
+                </ElFormItem>
+                <ElFormItem Label="验证码">
+                    <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;width:100%;">
+                        <ElInput ModelValue="@_smsCode.Value"
+                                 @onupdate:modelValue="SetSmsCode"
+                                 Placeholder="请输入 6 位验证码"
+                                 Maxlength="6"
+                                 Clearable="true"
+                                 Disabled="@_signingIn.Value" />
+                        <ElButton @onclick="SendCode" Loading="@_sendingCode.Value" Disabled="@(_signingIn.Value || _sendingCode.Value)">发送验证码</ElButton>
+                    </div>
+                </ElFormItem>
+            </ElForm>
+
+            <div style="display:grid;gap:12px;">
+                <ElButton Type="primary" @onclick="Submit" Loading="@_signingIn.Value" Disabled="@(_loadingTenants.Value || _signingIn.Value)">登 录</ElButton>
+                <ElButton @onclick="BackToLogin" Disabled="@_signingIn.Value">返回账号登录</ElButton>
+            </div>
+        </LoginCard>
+    </section>
+</main>
+
+@code {
+    private readonly IVueRef<string> _tenantId = Ref<string>("");
+    private readonly IVueRef<string> _phone = Ref<string>("");
+    private readonly IVueRef<string> _smsCode = Ref<string>("");
+    private readonly IVueRef<bool> _loadingTenants = Ref<bool>(true);
+    private readonly IVueRef<bool> _sendingCode = Ref<bool>(false);
+    private readonly IVueRef<bool> _signingIn = Ref<bool>(false);
+    private readonly IVueRef<string?> _error = Ref<string?>(null);
+    private readonly IVueRef<string?> _message = Ref<string?>(null);
+    private readonly IVueRef<AuthTenantOption[]> _tenants = Ref<AuthTenantOption[]>([]);
+
+    private ECMAScript.Router _router = default!;
+
+    private void BackToLogin() => _router.Push("/login");
+
+    [Setup]
+    private void Configure()
+    {
+        _router = ECMAScript.VueRoute.UseRouter();
+        OnMounted(LoadTenants);
+    }
+
+    private void LoadTenants()
+    {
+        PublicAuth.TenantList().Then(result =>
+        {
+            if (!result.Ok)
+            {
+                _error.Value = result.Error ?? "加载租户失败。";
+                return;
+            }
+            _tenants.Value = PublicAuth.ReadTenants(result.Data);
+            if (_tenantId.Value.Length == 0 && _tenants.Value.Length > 0)
+                _tenantId.Value = _tenants.Value[0].Value;
+        }).Catch(_ => _error.Value = "加载租户失败，请检查网络后重试。").Finally(() => _loadingTenants.Value = false);
+    }
+
+    private void SendCode()
+    {
+        _error.Value = null;
+        _message.Value = null;
+        if (_phone.Value.Length != 11)
+        {
+            _error.Value = "请输入 11 位手机号码。";
+            return;
+        }
+        _sendingCode.Value = true;
+        PublicAuth.SendSms(_phone.Value).Then(result =>
+        {
+            if (result.Ok)
+                _message.Value = "短信验证码已发送。";
+            else
+                _error.Value = result.Error ?? "短信验证码发送失败。";
+        }).Catch(_ => _error.Value = "短信验证码发送失败，请检查网络后重试。").Finally(() => _sendingCode.Value = false);
+    }
+
+    private void Submit()
+    {
+        _message.Value = null;
+        _error.Value = _tenantId.Value.Length == 0 ? "请选择租户。"
+            : _phone.Value.Length != 11 ? "请输入 11 位手机号码。"
+            : _smsCode.Value.Length != 6 ? "请输入 6 位短信验证码。" : null;
+        if (_error.Value is not null)
+            return;
+
+        _signingIn.Value = true;
+        PublicAuth.LoginPhone(_phone.Value, _smsCode.Value, _tenantId.Value).Then(result =>
+        {
+            if (!result.Ok)
+            {
+                _error.Value = result.Error ?? "验证码登录失败。";
+                return ECMAScript.Promise.Resolve();
+            }
+            _message.Value = "登录成功，正在进入系统…";
+            return SignedIn(result.Data);
+        }).Catch(_ => _error.Value = "验证码登录请求失败，请检查网络后重试。").Finally(() => _signingIn.Value = false);
+    }
+
+    private void DismissError() => _error.Value = null;
+    private ECMAScript.IPromise<ECMAScript.RouteNavigationResult?> SignedIn(AuthResponseData? data)
+    {
+        return AuthSession.CompleteSignIn(_router, data?.AccessToken, data?.RefreshToken, data?.Homepage);
+    }
+    private void SetTenantId(string? value) => _tenantId.Value = value ?? "";
+    private void SetPhone(string? value) => _phone.Value = value ?? "";
+    private void SetSmsCode(string? value) => _smsCode.Value = value ?? "";
+}

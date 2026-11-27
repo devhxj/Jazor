@@ -257,6 +257,13 @@ public class GM
         return kpGen.GenerateKeyPair();
     }
 
+    public static (string PublicKey, string PrivateKey) GenerateHexKeyPair()
+    {
+        var pair = GenerateKeyPair();
+        return (Convert.ToHexString(((ECPublicKeyParameters)pair.Public).Q.GetEncoded()),
+            Convert.ToHexString(((ECPrivateKeyParameters)pair.Private).D.ToByteArrayUnsigned()));
+    }
+
     public static ECPrivateKeyParameters GetPrivatekeyFromD(BigInteger d)
     {
         return new ECPrivateKeyParameters(d, ecDomainParameters);

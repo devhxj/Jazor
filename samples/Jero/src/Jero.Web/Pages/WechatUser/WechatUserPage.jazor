@@ -1,0 +1,145 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElCard Header="三方账号" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        支持微信昵称和手机号码查询、分页浏览、平台与地区信息展示，以及账号昵称编辑和删除。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="@(_ => DismissError())" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="微信昵称">
+                <ElInput ModelValue="@QueryNickName"
+                         @onupdate:modelValue="SetQueryNickName"
+                         Placeholder="微信昵称"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="手机号码">
+                <ElInput ModelValue="@QueryMobile"
+                         @onupdate:modelValue="SetQueryMobile"
+                         Placeholder="手机号码"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        @if (Loading)
+        {
+            <ElText>正在加载三方账号…</ElText>
+        }
+
+        <div class="jero-list-scroll"><slot /></div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@(new double[] { 10, 20, 50, 100 })"
+                              Background="true"
+                              Layout="total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="编辑微信账号"
+          Width="720px"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="96px">
+        <ElFormItem Label="头像">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <ElAvatar Size="@(48)" Src="@(EditAvatar)" />
+                <span style="color:#909399;">@(EditOpenId)</span>
+            </div>
+        </ElFormItem>
+        <ElFormItem Label="昵称">
+            <ElInput ModelValue="@EditNickName"
+                     @onupdate:modelValue="SetEditNickName"
+                     Placeholder="昵称，最多64个字符"
+                     Maxlength="64"
+                     ShowWordLimit="true"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="手机号">
+            <ElInput ModelValue="@(EditMobile)"
+                     Placeholder="手机号"
+                     Disabled="true" />
+        </ElFormItem>
+        <ElFormItem Label="UnionId">
+            <ElInput ModelValue="@(EditUnionId)"
+                     Placeholder="UnionId"
+                     Disabled="true" />
+        </ElFormItem>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="@(_ => CancelEdit())" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary" @onclick="@(_ => Save())" Loading="@Saving">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="560px">
+    <div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px 16px;line-height:1.6;">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public Action<string> SetQueryNickName { get; set; } = default!;
+    [Parameter] public Action<string> SetQueryMobile { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string> SetEditNickName { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action CancelEdit { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public string EditAvatar { get; set; } = "";
+    [Parameter] public string EditOpenId { get; set; } = "";
+    [Parameter] public string EditMobile { get; set; } = "";
+    [Parameter] public string EditUnionId { get; set; } = "";
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public string QueryNickName { get; set; } = "";
+    [Parameter] public string QueryMobile { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public string EditNickName { get; set; } = "";
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+}

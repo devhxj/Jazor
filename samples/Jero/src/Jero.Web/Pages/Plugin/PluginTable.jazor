@@ -1,0 +1,61 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Plugin
+
+<ElTable @attributes="@(new TableData<PluginTableRow>(Rows))" border="true" stripe="true" RowKey="@(nameof(PluginTableRow.Id))" EmptyText="暂无动态插件">
+    <ElTableColumn type="index" label="序号" width="70" align="center" />
+    <ElTableColumn prop="@(nameof(PluginTableRow.Name))" label="功能名称" MinWidth="180" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="@(nameof(PluginTableRow.AssemblyName))" label="程序集名称" MinWidth="260" ShowOverflowTooltip="true">
+        <template #default context="cell">@{ var row = ((TableSlot<PluginTableRow>)(object)cell).Row; }@((string.IsNullOrEmpty(row.AssemblyName) ? "-" : row.AssemblyName))</template>
+        </ElTableColumn>
+        <ElTableColumn label="状态" width="90" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<PluginTableRow>)(object)cell).Row; }
+                    <ElTag @attributes='@(new TableTagProps(row.Status == 2 ? "info" : "success"))'>@(row.Status == 2 ? "禁用" : "启用")</ElTag>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn prop="@(nameof(PluginTableRow.OrderNo))" label="排序" width="80" align="center" />
+            <ElTableColumn prop="@(nameof(PluginTableRow.Remark))" label="备注" MinWidth="180" ShowOverflowTooltip="true">
+                <template #default context="cell">@{ var row = ((TableSlot<PluginTableRow>)(object)cell).Row; }@((string.IsNullOrEmpty(row.Remark) ? "-" : row.Remark))</template>
+                </ElTableColumn>
+                <ElTableColumn label="修改记录" width="105" align="center">
+                    <template #default context="cell">@{ var row = ((TableSlot<PluginTableRow>)(object)cell).Row; }
+                            <ElButton link="true" type="primary" @onclick="@(() => OpenAudit(row.Id))">详情</ElButton>
+                        </template>
+                    </ElTableColumn>
+                    @if (CanEdit || CanDelete) { <ElTableColumn label="操作" width="300" align="center" fixed="right">
+                        <template #default context="cell">@{ var row = ((TableSlot<PluginTableRow>)(object)cell).Row; }
+                                @if (CanEdit) {
+                                    <ElButton link="true" type="primary" @onclick="@(() => OpenEdit(row.Id))">编辑</ElButton>
+                                    <ElPopconfirm title='@("确定重新编译并加载【" + row.Name + "】吗？该操作会修改当前运行时接口集合。")'
+                                    ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Compile(row.Id))">
+                                    <template #reference>
+                                        <ElButton link="true" type="warning" loading='@(BusyActionId == row.Id)'>编译/加载</ElButton>
+                                    </template>
+                                </ElPopconfirm>
+                                <ElPopconfirm title='@("确定从当前运行时卸载程序集【" + row.AssemblyName + "】吗？数据库记录不会改变。")'
+                                ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Unload(row.Id))">
+                                <template #reference>
+                                    <ElButton link="true" type="warning" disabled='@(row.AssemblyName.Length == 0)'>卸载</ElButton>
+                                </template>
+                            </ElPopconfirm>
+                        }
+                        @if (CanDelete) { <ElPopconfirm
+                        title='@("确定删除动态插件【" + row.Name + "】吗？后端会先卸载程序集，再删除数据库记录。")'
+                        ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.Id))">
+                        <template #reference><ElButton link="true" type="danger">删除</ElButton></template>
+                    </ElPopconfirm> }
+                </template>
+            </ElTableColumn> }
+        </ElTable>
+
+@code {
+    [Parameter] public PluginTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public string BusyActionId { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Compile { get; set; } = default!;
+    [Parameter] public Action<string> Unload { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+}

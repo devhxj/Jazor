@@ -1,0 +1,117 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+@using Npm.ElementPlus
+@using Jero.Web.Pages.FormDesign
+
+<style>
+    .form-design-page { display: grid; gap: 16px; }
+    .form-design-heading h1 { margin: 0; color: #303133; font-size: 23px; line-height: 1.25; }
+    .form-design-heading p { margin: 7px 0 0; color: #909399; font-size: 13px; line-height: 1.6; }
+    .form-design-card { min-height: 760px; }
+    .form-design-card > .el-card__body { min-height: 760px; padding: 0; }
+    .form-design-host { min-height: 760px; }
+    .form-design-host .form-designer { overflow: visible !important; }
+    /* VForm fixes this header at 42px. Wrapped actions must reserve their actual height
+       so the form canvas cannot cover preview/export buttons on a narrow desktop. */
+    .form-design-host .toolbar-header { height: auto !important; min-height: 42px; }
+    @@media (max-width: 700px) {
+        .form-design-card, .form-design-card > .el-card__body, .form-design-host { min-height: 680px; }
+    }
+</style>
+
+<div class="form-design-page">
+    <header class="form-design-heading">
+        <h1>表单设计</h1>
+        <p>VForm 3 可视化表单设计器，支持组件拖拽、导入导出、历史记录和渲染预览。</p>
+    </header>
+
+    <ElAlert Type="info"
+             Title="设计内容保存在当前设计器会话中；导入、导出、预览和历史操作由 VForm 3 本地完成。"
+             ShowIcon="true"
+             Closable="false" />
+
+    <ElCard class="form-design-card">
+        @if (_loading)
+        {
+            <p role="status">正在加载表单设计器…</p>
+        }
+        @if (_loadError is not null)
+        {
+            <ElAlert Type="error" Title="@(_loadError ?? "")" ShowIcon="true" Closable="false" />
+        }
+        <div @ref="_host" class="form-design-host"></div>
+    </ElCard>
+</div>
+
+@code {
+    private HTMLDivElement? _host;
+    private VueApp? _app;
+    private bool _active;
+    private bool _loading = true;
+    private string? _loadError;
+    private Action? _restoreResizeHandler;
+
+    [Setup]
+    private void Configure()
+    {
+        OnMounted(Load);
+        OnBeforeUnmount(Unmount);
+    }
+
+    private void Load()
+    {
+        _active = true;
+        FormDesignerRuntime.Load().Then(Mount, failure =>
+        {
+            if (_active)
+            {
+                _loadError = "表单设计器加载失败：" + failure;
+                _loading = false;
+            }
+        });
+    }
+
+    private void Mount(FormDesignerPlugin plugin)
+    {
+        if (!_active || _host is null)
+            return;
+
+        try
+        {
+            var designer = CreateApp(plugin.Component);
+            designer.Use(FormDesignerElementPlus.Plugin);
+            designer.Use(plugin);
+            var previousResize = Global.Window.Onresize;
+            try
+            {
+                designer.Mount(_host);
+                _app = designer;
+            }
+            finally
+            {
+                // 设计器卸载时会留下全局 resize 处理器。仅在该处理器仍归本实例时恢复旧值。
+                var designerResize = Global.Window.Onresize;
+                _restoreResizeHandler = () =>
+                {
+                    if (Global.Window.Onresize == designerResize)
+                        Global.Window.Onresize = previousResize;
+                };
+            }
+        }
+        catch (Exception failure)
+        {
+            _loadError = "表单设计器加载失败：" + failure.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Unmount()
+    {
+        _active = false;
+        _app?.Unmount();
+        _restoreResizeHandler?.Invoke();
+    }
+}

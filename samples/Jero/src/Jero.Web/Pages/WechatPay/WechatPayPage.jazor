@@ -1,0 +1,99 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElCard Header="微信支付" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        支持订单分页查询、Native 下单、付款二维码、退款记录、全额退款和微信状态同步。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="@(_ => DismissError())" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="订单号">
+                <ElInput ModelValue="@Keyword"
+                         @onupdate:modelValue="SetKeyword"
+                         Placeholder="商户订单号或支付订单号"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="开始日期">
+                <div style="width:180px">
+                    <WechatPayDatePicker Value="@StartDate"
+                                      OnChange="@SetStartDate"
+                                         Placeholder="开始日期" />
+                </div>
+            </ElFormItem>
+            <ElFormItem Label="结束日期">
+                <div style="width:180px">
+                    <WechatPayDatePicker Value="@EndDate"
+                                      OnChange="@SetEndDate"
+                                         Placeholder="结束日期" />
+                </div>
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+            @if (CanCreate)
+            {
+                <ElFormItem>
+                    <ElButton Type="primary" @onclick="@(_ => OpenCreate())">新增模拟数据</ElButton>
+                </ElFormItem>
+            }
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
+            <ElButton @onclick="@(_ => LoadPage())" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载微信支付订单…</ElText>
+        }
+
+        <div class="jero-list-scroll"><slot /></div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage"
+                              PageSize="@PageSize"
+                              Total="@Total"
+                              PageSizes="@(new double[] { 10, 20, 50, 100 })"
+                              Background="true"
+                              Layout="total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage"
+                              @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+@code {
+    [Parameter] public Action<string> SetKeyword { get; set; } = default!;
+    [Parameter] public Action<string> SetStartDate { get; set; } = default!;
+    [Parameter] public Action<string> SetEndDate { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public bool CanCreate { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public string Keyword { get; set; } = "";
+    [Parameter] public string StartDate { get; set; } = "";
+    [Parameter] public string EndDate { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string? Error { get; set; }
+}

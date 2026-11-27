@@ -1,0 +1,141 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.User
+
+<style scoped>
+    .user-status-cell, .user-action-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .user-action-buttons { flex-wrap: wrap; }
+    .user-action-buttons :deep(.el-button + .el-button) { margin-left: 0; }
+</style>
+
+<ElTable @attributes="@(new TableData<UserTableRow>(Model.Rows))"
+    border="true"
+    stripe="true"
+    RowKey="@(nameof(UserTableRow.Id))"
+    EmptyText="暂无账号">
+    <ElTableColumn type="index" label="序号" width="70" align="center" />
+    <ElTableColumn label="头像" width="76" align="center">
+        <template #default context="cell">
+            @{ var row = ((TableSlot<UserTableRow>)(object)cell).Row; }
+            <ElAvatar size='@(32)' src='@(row.AvatarSource)' />
+        </template>
+    </ElTableColumn>
+    <ElTableColumn prop="@(nameof(UserTableRow.Account))" label="账号" MinWidth="140" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="@(nameof(UserTableRow.RealName))" label="姓名" MinWidth="120" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="@(nameof(UserTableRow.Phone))" label="手机" MinWidth="130" ShowOverflowTooltip="true" />
+    <ElTableColumn label="账号类型" width="110" align="center">
+        <template #default context="cell">
+            @{ var row = ((TableSlot<UserTableRow>)(object)cell).Row; }
+            <ElTag @attributes='@(new TableTagProps(Tag(row.AccountTypeTag)))'>@(row.AccountTypeLabel)</ElTag>
+        </template>
+    </ElTableColumn>
+    <ElTableColumn prop="@(nameof(UserTableRow.RoleName))" label="角色" MinWidth="170" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="@(nameof(UserTableRow.OrgName))" label="机构" MinWidth="150" ShowOverflowTooltip="true" />
+    <ElTableColumn prop="@(nameof(UserTableRow.PosName))" label="职位" MinWidth="130" ShowOverflowTooltip="true" />
+    <ElTableColumn label="状态" width="126" align="center">
+        <template #default context="cell">
+            @{ var row = ((TableSlot<UserTableRow>)(object)cell).Row; }
+            <div class="user-status-cell">
+                <ElTag @attributes='@(new TableTagProps(Tag(row.StatusTag)))'>@(row.StatusText)</ElTag>
+                @if (Model.CanSetStatus) {
+                    <ElPopconfirm title='@(row.StatusConfirm)'
+                        ConfirmButtonText="确定"
+                        CancelButtonText="取消"
+                        @onconfirm="@(() => Model.SetStatus(row.Id))">
+                        <template #reference>
+                            <ElButton link="true"
+                                type="primary"
+                                loading='@(row.IsChangingStatus)'
+                                disabled='@(Model.StatusLoadingId.Length > 0)'>@(row.StatusAction)</ElButton>
+                        </template>
+                    </ElPopconfirm>
+                }
+            </div>
+        </template>
+    </ElTableColumn>
+    <ElTableColumn prop="@(nameof(UserTableRow.OrderNo))" label="排序" width="80" align="center" />
+    <ElTableColumn label="修改记录" width="110" align="center">
+        <template #default context="cell">
+            @{ var row = ((TableSlot<UserTableRow>)(object)cell).Row; }
+            @if (Model.CanDetail) {
+                <ElButton link="true" type="primary" @onclick="@(() => Model.OpenDetail(row.Id))">查看</ElButton>
+            }
+            else
+            {
+                <span>@(row.UpdateTime)</span>
+            }
+        </template>
+    </ElTableColumn>
+    @if (Model.HasActionColumn) {
+        <!-- 410px 固定列会在常见桌面宽度覆盖状态列并截获点击；操作区随表格横向滚动才可保证相邻列可用。 -->
+        <ElTableColumn label="操作" MinWidth="410" align="center">
+            <template #default context="cell">
+                @{ var row = ((TableSlot<UserTableRow>)(object)cell).Row; }
+                <div class="user-action-buttons">
+                    @if (Model.CanDetail) {
+                        <ElButton link="true" type="primary" @onclick="@(() => Model.OpenDetail(row.Id))">详情</ElButton>
+                    }
+                    @if (Model.CanEdit) {
+                        <ElButton link="true" type="primary" @onclick="@(() => Model.OpenEdit(row.Id))">编辑</ElButton>
+                    }
+                    @if (Model.CanGrantRole) {
+                        <ElButton link="true" type="primary" @onclick="@(() => Model.OpenGrantRoles(row.Id))">授权角色</ElButton>
+                    }
+                    @if (Model.CanAdd) {
+                        <ElButton link="true" type="primary" @onclick="@(() => Model.OpenCopy(row.Id))">复制</ElButton>
+                    }
+                    @if (Model.CanResetPassword) {
+                        <ElPopconfirm title='@("确定重置账号【" + row.Account + "】的密码吗？")'
+                            ConfirmButtonText="确定"
+                            CancelButtonText="取消"
+                            @onconfirm="@(() => Model.ResetPassword(row.Id))">
+                            <template #reference>
+                                <ElButton link="true"
+                                    type="warning"
+                                    loading='@(row.IsResetting)'
+                                    disabled='@(Model.ResetLoadingId.Length > 0)'>重置密码</ElButton>
+                            </template>
+                        </ElPopconfirm>
+                    }
+                    @if (Model.CanUnlockLogin) {
+                        <ElPopconfirm title='@("确定解除账号【" + row.Account + "】的登录锁定吗？")'
+                            ConfirmButtonText="确定"
+                            CancelButtonText="取消"
+                            @onconfirm="@(() => Model.UnlockLogin(row.Id))">
+                            <template #reference>
+                                <ElButton link="true"
+                                    type="primary"
+                                    loading='@(row.IsUnlocking)'
+                                    disabled='@(Model.UnlockLoadingId.Length > 0)'>解除锁定</ElButton>
+                            </template>
+                        </ElPopconfirm>
+                    }
+                    @if (Model.CanDelete) {
+                        <ElPopconfirm title='@("确定删除账号【" + row.Account + "】吗？")'
+                            ConfirmButtonText="确定"
+                            CancelButtonText="取消"
+                            @onconfirm="@(() => Model.Delete(row.Id))">
+                            <template #reference>
+                                <ElButton link="true"
+                                    type="danger"
+                                    loading='@(row.IsDeleting)'
+                                    disabled='@(Model.DeletingId.Length > 0)'>删除</ElButton>
+                            </template>
+                        </ElPopconfirm>
+                    }
+                </div>
+            </template>
+        </ElTableColumn>
+    }
+</ElTable>
+
+@code {
+    [Parameter] public UserTableModel Model { get; set; } = default!;
+
+    private static string Tag(string value) => value is "success" or "warning" or "danger" or "info" ? value : "primary";
+}

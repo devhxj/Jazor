@@ -1,0 +1,18 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.OpenAccess
+@using Jero.Web.Pages.Components
+
+<ElSelect ModelValue="@(Value)" Placeholder="方法" @attributes="@(new ModelUpdate<object?>(Update))">
+    @foreach (var option in Options)
+    {
+        <ElOption @key="option.Value" Value="@option.Value" Label='@option.Label' />
+    }
+</ElSelect>
+
+@code {
+    [Parameter] public ConfigurationOption[] Options { get; set; } = [];
+    [Parameter] public string Value { get; set; } = default!;
+    [Parameter] public Action<string> Change { get; set; } = default!;
+
+    private void Update(object? value) => Change(value as string ?? "");
+}

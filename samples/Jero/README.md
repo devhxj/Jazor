@@ -1,110 +1,65 @@
 # Jero
 
-Jero 是一个后端基于 Admin.NET、前端使用 [Jazor](https://github.com/devhxj/Jazor) 开发的后台管理项目。
-
-后端使用 ASP.NET Core、Furion 和 SqlSugar。前端使用原生 Jolt 页面、Vue Router 和 Element Plus，普通 C# 浏览器模块负责页面状态、权限判断和业务请求。ASP.NET Core 宿主统一构建、运行和发布前后端。
-
-[English](README.en.md)
-
-## 项目架构
-
-| 部分 | 技术与职责 |
-| --- | --- |
-| 后端 | ASP.NET Core、Furion、SqlSugar，提供业务服务、数据访问和管理 API |
-| 前端 | `.jazor` 页面与共享控件、C# 路由和状态、Vue Router、Element Plus |
-| 宿主 | 托管 API 和构建后的 SPA，业务深链接由 SPA 回退处理 |
-| 扩展 | 通过插件工程组织审批流、第三方集成和业务模块 |
-
-浏览器通过宿主根路径访问后台页面，使用同源 `/api/**` 请求后端，前端生成资源位于 `/assets/**`。
-
-## 主要功能
-
-- 用户、角色、菜单、组织、职位与租户管理。
-- 系统配置、字典、多语言、通知公告与文件管理。
-- 操作日志、异常日志、在线用户与任务调度。
-- 表单设计、打印模板设计与动态插件代码编辑。
-- 审批流及业务插件扩展。
-
-## 目录结构
-
-样例位于 `samples/Jero`。解决方案入口是 [src/Jero.slnx](src/Jero.slnx)。
-
-| 目录 | 内容 |
-| --- | --- |
-| `src/Jero.Web` | 统一 Web 启动宿主、后端 HTTP 管线与前端生成发布 |
-| `src/Jero.Web/SPA` | ASP.NET Core 托管打包后的静态资源，向直接访问页面路由的请求返回 SPA 入口 |
-| `src/Jero.Web/App` | 按功能组织的 `.jazor` 组件、C# 页面状态、API 客户端和共享契约 |
-| `src/Jero.Web/App/Shell` | 浏览器端的应用布局、导航和共享状态 |
-| `src/Jero.Core` | 后端基础服务、实体与数据访问 |
-| `src/Jero.Application` | 应用层与共享配置 |
-| `src/Plugins` | 业务与集成插件 |
-| `src/Jero.Test` | 自动化测试 |
-| `scripts/csharp` | 验证脚本与工具 |
+Jero 是一个用 C# 开发的后台管理 SPA。ASP.NET Core、Furion 和 SqlSugar 提供业务 API。浏览器端使用 Jolt 的 `.jazor` 组件、Vue Router 和 Element Plus，普通 C# 模块负责导航、页面状态和同源 API 调用。[English](README.en.md)
 
 ## 开发与运行
 
-使用 [`src/global.json`](src/global.json) 指定的 .NET 11 SDK。从 Jero 的 `src` 目录还原依赖。Jazor、ECMAScript.Vue、ECMAScript.VueRoute 和 Jazor.Jolt 均使用 NuGet.org 上发布的 `2.7.2`。
+在本仓库中打开 [src/Jero.slnx](src/Jero.slnx)，使用 [global.json](src/global.json) 指定的 .NET 11 SDK。将 **Jero.Web** 设为启动项目，选择 **Jero.Web** 配置后按 **F5**。默认地址为 `http://localhost:5095`。该示例直接引用当前仓库的 Jazor 和 Jolt 源码，首次构建需要还原 NuGet 和锁文件中指定的 npm 依赖。
 
-MVC 与 SignalR 共用 `System.Text.Json` 配置。响应中的 `long` ID 写为字符串，日期使用 `yyyy-MM-dd HH:mm:ss`。静态图片仍支持 URL 变换，例如 `/images/logo.png?width=32&format=jpg`。
-
-`Jero.Web.csproj` 编译服务端和 `App` 下的 C#，Jazor 从应用的 `package.json` 投影 Element Plus 和 `sm2`，并将浏览器模块写入 `App/.jazor/modules`。Jolt 使用同一份 `App/pnpm-lock.yaml` 将这些模块与 Vue 页面打包，宿主发布 `App/dist`。公开登录页只加载表单依赖，登录后再加载后台布局。代码编辑器、打印设计器以及 Word 和 Excel 预览器在打开对应功能时加载。
-
-首次运行前，将 JWT 配置示例复制为本机配置，并填写自己的签名参数；数据库连接与初始化选项在 `Jero.Application/Configuration/Database.json` 中配置。
-
-密码登录需要为当前环境配置自己的 SM2 密钥对（`Cryptogram__PublicKey`、`Cryptogram__PrivateKey`）。使用 Redis、Elasticsearch、消息队列或外部文件存储时，填写相应服务的本机凭据。
+命令行从 `samples/Jero/src` 启动同一个开发配置：
 
 ```sh
-cp Jero.Application/Configuration/JWT.json.example Jero.Application/Configuration/JWT.json
+dotnet run --project Jero.Web/Jero.Web.csproj --launch-profile Jero.Web
 ```
 
-邮件、短信、OAuth、微信和支付宝按所需功能复制相应的 `*.json.example`，填写本机配置；DeepSeek 使用 `DeepSeek.example` 复制为 `DeepSeek.json`。支付宝证书按配置路径在本机准备。
+Debug 构建会检查 `.jazor`，错误定位到组件中的行和列。开发宿主启动 Jolt 并代理 Vite 的 HTTP 请求和热更新。打开宿主地址即可同时调试页面和同源 `/api`。[启动配置](src/Jero.Web/Startup.cs)
 
-```powershell
-dotnet tool restore
-dotnet restore Jero.Web/Jero.Web.csproj
-dotnet build Jero.Web/Jero.Web.csproj -c Debug --no-restore
-dotnet run --project Jero.Web/Jero.Web.csproj -c Debug --no-build --launch-profile Jero.Web
-```
+Jazor Emit 与 Jolt 共用项目下的 `.jazor/` 作为生成根。举例来说，`AppBootstrap` 声明的模块名是 `components/app-bootstrap.js`，磁盘文件是 `.jazor/components/app-bootstrap.js`，HTML 入口写 `src="/components/app-bootstrap.js"`。覆盖 MSBuild 的 `JazorDir` 即可改变磁盘位置，组件、C# 导入和 HTML 继续使用相同的模块路径。[模块声明](src/Jero.Web/Composition/AppBootstrap.cs) · [HTML 入口](src/Jero.Web/index.html)
 
-默认访问地址为 `http://localhost:5095`，监听端口在 `Jero.Web/appsettings.json` 的 `Kestrel` 中配置，开发启动选项见 `Jero.Web/Properties/launchSettings.json`。路由和导航守卫在 `App/AppBootstrap.cs` 中声明，`App/route-modules.mjs` 为 Vite 提供可静态识别的懒加载入口。例如，用户列表的视图、页面状态和 API 客户端均位于 `Jero.Web/App/User`。构建生成的浏览器模块位于 `Jero.Web/App/.jazor/modules`，打包资产位于 `Jero.Web/App/dist/assets`。
+数据库连接及种子设置在 `Jero.Application/Configuration/Database.json`，默认使用 SQLite。首次开发启动会为缺失的 JWT 签名密钥和 SM2 密钥对生成本机值并保存在用户配置目录，重启后复用。
 
-首次构建会在 `Jero.Web/App/Components/element-plus/obj` 生成 Jolt CLI 和编辑器使用的 Element Plus 插槽声明。从 `src` 单独运行 Jolt 前，可用 `dotnet msbuild Jero.Web/Jero.Web.csproj -t:GenerateElementPlusContract` 生成这份声明。
+## 目录和依赖
 
-## 发布
+| 路径（相对 `src`） | 内容 |
+| --- | --- |
+| `Jero.Web/` | ASP.NET Core 启动项目，也是前端根目录。包含 HTML 入口、Vite 配置、npm 清单和锁文件 |
+| `Jero.Web/Pages/` | 按功能组织的 `.jazor` 页面和 C# 页面状态，共享组件位于 `Components` |
+| `Jero.Web/Application/` | 客户端会话、菜单、路由和业务状态 |
+| `Jero.Web/Infrastructure/` | HTTP 请求、业务 API 客户端、浏览器存储和实时连接 |
+| `Jero.Web/Composition/` | Vue 应用入口、路由表和页面懒加载 |
+| `Jero.Core/` | 后端实体、基础服务、数据访问和系统管理 API |
+| `Jero.Application/Modules/` | 随应用编译的审批流、钉钉、GoView、K3Cloud、ReZero 和企业微信模块 |
+| `Jero.Test/` | 服务和 HTTP 契约测试 |
 
-```powershell
+例如，用户页位于 `Jero.Web/Pages/User`，请求实现在 `Jero.Web/Infrastructure/Api/User`。公开登录页面独立加载，后台布局、Monaco 编辑器、打印设计器和 Office 预览按功能载入。Element Plus 的组件、属性和插槽信息来自锁定的上游 npm 包。
+
+## 运行与发布
+
+从 `samples/Jero/src` 构建发布目录：
+
+```sh
 dotnet publish Jero.Web/Jero.Web.csproj -c Release -o ../output/publish
 ```
 
-Release 发布会同时生成前端资源。部署时使用完整发布目录，以 `dotnet Jero.Web.dll` 启动，并配置目标环境的数据库及所需集成服务。
+Vite 将生产资源构建到 `.jazor/dist/`。`dotnet publish` 将其中的文件放进发布目录的 `wwwroot/`，与宿主原有静态文件一起部署。在完整发布目录启动 Jero.Web 后，SPA 深链接由 `wwwroot/index.html` 响应。图片支持 URL 变换，例如 `/images/logo.png?width=32&format=jpg`。API 与 SignalR 共用 System.Text.Json 配置，长整型 ID 输出为字符串。
 
-## Jolt 路由验收
+生产环境需配置自己的 JWT 签名和 SM2 密钥。JWT 配置见 `Jero.Application/Configuration/JWT.json.example`，SM2 使用 `Cryptogram__PublicKey` 和 `Cryptogram__PrivateKey`。邮件、短信、OAuth、微信、支付宝等按实际启用的功能配置。模块的启用条件见[内置业务模块](src/Jero.Application/Modules/README.md)。若部署在子路径，使用 `SPA:PathBase` 设置路径前缀。
 
-从 `samples/Jero` 目录运行以下 PowerShell 命令。验收启动真实的 Release 发布宿主，并在 Chromium 中模拟会话与 API 响应。请使用一次性的发布副本。以下配置使用该副本里的空 SQLite 文件，关闭数据库初始化，并用仅供本地验收的值替换 OAuth 和 JWT 配置。
+## 验证
+
+从 `samples/Jero/src` 运行测试。`dotnet test` 会为浏览器测试启动独立宿主，运行前须安装该测试项目使用的 Playwright Chromium。单独执行路由验收脚本时，传入上一步的发布目录和 Chrome 或 Chromium 可执行文件。脚本验证生产入口、图片 URL 和浏览器路由，业务交互使用模拟会话和 API 响应。
+
+验收使用仓库根目录的 `test/jero/`。路由脚本为每轮运行创建独立目录，保存宿主副本、SQLite、浏览器配置和日志。并行运行时各自使用独立目录。
+
+首次安装测试使用的浏览器，可在 `samples/Jero/src` 下的 PowerShell 中运行以下命令。Playwright 安装脚本由测试项目的 NuGet 依赖在构建时提供。同一终端继续运行测试即可使用仓库内的浏览器缓存。
 
 ```powershell
-$fixture = ".tmp/jero-routes-$([Guid]::NewGuid().ToString('N'))"
-New-Item -ItemType Directory -Force .tmp | Out-Null
-Copy-Item output/publish $fixture -Recurse
-$db = (New-Item -ItemType File "$fixture/Smoke.db").FullName
-@{
-    DbConnection = @{ ConnectionConfigs = @(@{
-        DbType = "Sqlite"
-        ConnectionString = "Data Source=$db"
-        DbSettings = @{ EnableInitDb = $false; EnableInitView = $false }
-        TableSettings = @{ EnableInitTable = $false }
-        SeedSettings = @{ EnableInitSeed = $false }
-    }) }
-} | ConvertTo-Json -Depth 8 | Set-Content "$fixture/Configuration/Database.json" -Encoding utf8
-'{"OAuth":{"Gitee":{"ClientId":"browser-smoke","ClientSecret":"browser-smoke"},"Weixin":{"ClientId":"browser-smoke","ClientSecret":"browser-smoke"}}}' |
-    Set-Content "$fixture/Configuration/OAuth.json" -Encoding utf8
-'{"JWTSettings":{"IssuerSigningKey":"local-jero-route-smoke-only-dummy-signing-key"}}' |
-    Set-Content "$fixture/Configuration/JWT.json" -Encoding utf8
-dotnet run --file scripts/csharp/verify-jolt-routes.cs -- $fixture "C:/Program Files/Google/Chrome/Application/chrome.exe"
+dotnet build Jero.Test/Jero.Test.csproj
+$env:PLAYWRIGHT_BROWSERS_PATH = [IO.Path]::GetFullPath('../../../test/jero/browser/browsers')
+pwsh Jero.Test/bin/Debug/net11.0/playwright.ps1 install chromium --only-shell
 ```
 
-脚本在回环地址启动宿主和 Chromium 调试端口，使用独立的浏览器配置，并输出宿主日志所在的临时目录。
-
-## 仓库文件范围
-
-仓库保留源码、配置示例、自动化测试、项目说明及运行所需的静态资源。数据库、日志、上传文件、业务导入数据、调试截图、临时验收输出、本机配置和部署材料通过 `.gitignore` 排除，由各环境自行维护。
+```sh
+dotnet test --project Jero.Test/Jero.Test.csproj
+dotnet run --file ../scripts/csharp/verify-jolt-routes.cs -- ../output/publish "C:/Program Files/Google/Chrome/Application/chrome.exe"
+```

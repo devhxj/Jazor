@@ -1,0 +1,20 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElDropdown SplitButton="true" trigger="click" disabled="@Disabled"
+@onclick="Page" @attributes="@(new ExportMenuCommand(Command))">
+导出
+<template #dropdown>
+    <ElDropdownMenu>
+        <ElDropdownItem command="page">导出本页数据</ElDropdownItem>
+        <ElDropdownItem command="all">导出全部数据</ElDropdownItem>
+    </ElDropdownMenu>
+</template>
+</ElDropdown>
+
+@code {
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public Action Page { get; set; } = default!;
+    [Parameter] public Action<string> Command { get; set; } = default!;
+
+}

@@ -1,0 +1,64 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.UserRegWay
+
+<ElTable @attributes="@(new TableData<UserRegWayTableRow>(Rows) { OnSortChange = SortChanged })"
+    border="true"
+    stripe="true"
+    RowKey="@(nameof(UserRegWayTableRow.Id))"
+    EmptyText="暂无注册方案"
+    >
+    <ElTableColumn type="index" label="序号" width="70" align="center" />
+    <ElTableColumn prop="name" label="方案名称" MinWidth="180" sortable="custom" ShowOverflowTooltip="true" />
+    <ElTableColumn label="账户类型" MinWidth="120" align="center">
+        <template #default context="cell">@{ var row = ((TableSlot<UserRegWayTableRow>)(object)cell).Row; }
+                <ElTag @attributes='@(new TableTagProps(Tag(row.AccountTypeTag)))'>@(row.AccountTypeLabel)</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="机构" MinWidth="180" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<UserRegWayTableRow>)(object)cell).Row; }@((string.IsNullOrEmpty(row.OrgName) ? "-" : row.OrgName))</template>
+            </ElTableColumn>
+            <ElTableColumn label="角色" MinWidth="180" ShowOverflowTooltip="true">
+                <template #default context="cell">@{ var row = ((TableSlot<UserRegWayTableRow>)(object)cell).Row; }@((string.IsNullOrEmpty(row.RoleName) ? "-" : row.RoleName))</template>
+                </ElTableColumn>
+                <ElTableColumn label="职位" MinWidth="160" ShowOverflowTooltip="true">
+                    <template #default context="cell">@{ var row = ((TableSlot<UserRegWayTableRow>)(object)cell).Row; }@((string.IsNullOrEmpty(row.PosName) ? "-" : row.PosName))</template>
+                    </ElTableColumn>
+                    <ElTableColumn prop="orderNo" label="排序" width="90" align="center" sortable="custom" />
+                    <ElTableColumn label="修改记录" width="110" align="center">
+                        <template #default context="cell">@{ var row = ((TableSlot<UserRegWayTableRow>)(object)cell).Row; }
+                                <ElButton link="true" type="primary" @onclick="@(() => OpenAudit(row.Id))">详情</ElButton>
+                            </template>
+                        </ElTableColumn>
+                        @if (HasActionColumn) {<ElTableColumn label="操作" width="180" align="center" fixed="right">
+                            <template #default context="cell">@{ var row = ((TableSlot<UserRegWayTableRow>)(object)cell).Row; }
+                                    @if (CanEdit) {<ElButton link="true" type="primary" @onclick="@(() => OpenEdit(row.Id))">编辑</ElButton>
+                                }
+                                @if (CanDelete) {<ElPopconfirm title='@("确定删除方案【" + row.Name + "】吗？删除后引用该方案的租户将关闭注册功能。")'
+                                ConfirmButtonText="确定"
+                                CancelButtonText="取消"
+                                @onconfirm="@(() => Delete(row.Id))">
+                                <template #reference>
+                                    <ElButton link="true" type="danger">删除</ElButton>
+                                </template>
+                            </ElPopconfirm>
+                        }
+                    </template>
+                </ElTableColumn>
+            }
+        </ElTable>
+
+@code {
+    private void SortChanged(TableSortScope value) => Sort(string.IsNullOrEmpty(value.Prop) ? "orderNo" : value.Prop, string.IsNullOrEmpty(value.Order) ? "ascending" : value.Order);
+
+    [Parameter] public UserRegWayTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string, string> Sort { get; set; } = default!;
+
+    private static string Tag(string value) => value is "success" or "warning" or "danger" or "info" ? value : "primary";
+}

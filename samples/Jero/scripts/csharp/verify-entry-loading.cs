@@ -1,4 +1,7 @@
+#!/usr/bin/env dotnet run
 #:property PublishAot=false
+#:include ../../src/Jero.Test/TestWorkspace.cs
+using Jero.Test;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net;
@@ -16,8 +19,8 @@ var target = Path.GetFullPath(args[0]);
 var chromium = Path.GetFullPath(args[1]);
 if (!File.Exists(Path.Combine(target, "Jero.Web.dll")) || !File.Exists(chromium))
     throw new ArgumentException("Provide an isolated Jero.Web publish directory and a Chromium executable.");
-var work = Directory.CreateTempSubdirectory("jero-entry-loading-").FullName;
-var output = Path.GetFullPath(args.Length == 3 ? args[2] : "output/entry-loading");
+var work = TestWorkspace.Create("entry-loading");
+var output = args.Length == 3 ? Path.GetFullPath(args[2]) : work;
 Directory.CreateDirectory(output);
 Console.WriteLine($"Browser profile and host log: {work}");
 using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(4));

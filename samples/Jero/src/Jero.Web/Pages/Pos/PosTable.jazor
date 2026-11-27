@@ -1,0 +1,55 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Pos
+
+    <ElTable @attributes="@(new TableData<PosTableRow>(Rows))" border="true" stripe="true" RowKey="@(nameof(PosTableRow.Id))" EmptyText="暂无职位">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="@(nameof(PosTableRow.Name))" label="职位名称" MinWidth="180" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(PosTableRow.Code))" label="职位编码" MinWidth="180" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(PosTableRow.UserCount))" label="在职人数" width="100" align="center" />
+        <ElTableColumn label="人员明细" width="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<PosTableRow>)(object)cell).Row; }
+                @if (row.UserCount > 0) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenUsers(row.Id))'>查看</ElButton> }
+                else { <span>-</span> }
+            </template>
+        </ElTableColumn>
+        <ElTableColumn prop="@(nameof(PosTableRow.OrderNo))" label="排序" width="90" align="center" />
+        <ElTableColumn label="状态" width="90" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<PosTableRow>)(object)cell).Row; }
+                <ElTag @attributes="@(new TableTagProps(row.Status == 1 ? "success" : "info"))">@(row.Status == 1 ? "启用" : "停用")</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="修改记录" width="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<PosTableRow>)(object)cell).Row; }
+                <ElButton link="true" type="primary" @onclick='@(() => OnOpenAudit(row.Id))'>查看</ElButton>
+            </template>
+        </ElTableColumn>
+        @if (HasActionColumn) { <ElTableColumn label="操作" width="190" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<PosTableRow>)(object)cell).Row; }
+                @if (CanEdit) { <span title='@(row.EditDisabledReason)'>
+                    <ElButton link="true" type="primary" disabled='@(!row.CanEdit)' @onclick='@(() => OnOpenEdit(row.Id))'>编辑</ElButton>
+                </span> }
+                @if (CanDelete) { <ElPopconfirm title='@("确定删除职位【" + row.Name + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(() => OnDelete(row.Id))'>
+                    <template #reference>
+                        <span title='@(row.DeleteDisabledReason)'>
+                            <ElButton link="true" type="danger" disabled='@(!row.CanDelete)'>删除</ElButton>
+                        </span>
+                    </template>
+                </ElPopconfirm> }
+                @if (CanAdd) { <ElButton link="true" type="primary" @onclick='@(() => OnOpenCopy(row.Id))'>复制</ElButton> }
+            </template>
+        </ElTableColumn> }
+    </ElTable>
+
+@code {
+    [Parameter] public PosTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public Action<string> OnOpenUsers { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> OnOpenCopy { get; set; } = default!;
+    [Parameter] public Action<string> OnDelete { get; set; } = default!;
+}

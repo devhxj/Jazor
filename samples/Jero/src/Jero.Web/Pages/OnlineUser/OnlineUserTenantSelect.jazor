@@ -1,0 +1,20 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.OnlineUser
+@using Jero.Web.Pages.Components
+
+<ElSelect ModelValue="@(Value)" Placeholder="请选择租户" Loading="@Loading" Filterable="true" Clearable="true" @attributes="@(new ModelUpdate<object?>(Update))">
+    @foreach (var option in Options)
+    {
+        <ElOption @key="option.Value" Value="@option.Value" Label='@(string.IsNullOrEmpty(option.Host) ? option.Label : option.Label + " (" + option.Host + ")")' />
+    }
+</ElSelect>
+
+@code {
+    [Parameter] public OnlineUserTenantOption[] Options { get; set; } = [];
+    [Parameter] public string Value { get; set; } = default!;
+    [Parameter] public Action<string> Change { get; set; } = default!;
+    [Parameter] public bool Loading { get; set; } = default!;
+
+    private void Update(object? value) => Change(value as string ?? "");
+}

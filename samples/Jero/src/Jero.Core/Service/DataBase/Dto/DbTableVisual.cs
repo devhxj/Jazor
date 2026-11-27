@@ -1,5 +1,7 @@
 namespace Jero.Core.Service;
 
+public sealed record DatabaseEntityTable(string TableName, string? TableComment, string EntityName);
+
 public class VisualDb
 {
     public string ConfigId { get; set; } = string.Empty;

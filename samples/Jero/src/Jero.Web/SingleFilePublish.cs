@@ -3,29 +3,23 @@ using System.Reflection;
 namespace Jero.Web;
 
 /// <summary>
-/// 解决单文件发布问题
+/// 将随宿主打包的应用程序集加入 Furion 的扫描范围，以发现其中的服务和端点。
 /// </summary>
 public class SingleFilePublish : ISingleFilePublish
 {
     /// <summary>
-    /// 解决单文件不能扫描的程序集
+    /// 提供按程序集实例补充扫描范围的入口。Jero 当前使用程序集名称注册。
     /// </summary>
-    /// <remarks>和 <see cref="IncludeAssemblyNames"/>可同时配置</remarks>
-    /// <returns></returns>
     public Assembly[] IncludeAssemblies()
     {
-        // 需要 Furion 框架扫描哪些程序集就写上去即可
         return Array.Empty<Assembly>();
     }
 
     /// <summary>
-    /// 解决单文件不能扫描的程序集名称
+    /// 按程序集名称登记应用、核心和 Web 宿主，使扫描无需依赖发布目录中的独立 DLL。
     /// </summary>
-    /// <remarks>和 <see cref="IncludeAssemblies"/>可同时配置</remarks>
-    /// <returns></returns>
     public string[] IncludeAssemblyNames()
     {
-        // 需要 Furion 框架扫描哪些程序集就写上去即可
         return new[]
         {
             "Jero.Application",

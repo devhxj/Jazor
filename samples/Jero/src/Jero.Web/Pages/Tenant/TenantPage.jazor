@@ -1,0 +1,378 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Auth
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Tenant
+
+<style scoped>
+    .tenant-page__toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+    .tenant-form-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0 20px; }
+    .tenant-form-wide { grid-column:1 / -1; }
+    .tenant-logo { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+    .tenant-logo__preview { width:88px; height:88px; display:grid; place-items:center; overflow:hidden; border:1px dashed #c0c4cc; border-radius:10px; background:#fafafa; color:#909399; font-size:12px; }
+    .tenant-logo__preview img { width:100%; height:100%; object-fit:contain; }
+    .tenant-logo__controls { min-width:0; display:grid; gap:8px; }
+    .tenant-logo__controls input { max-width:100%; }
+    .tenant-tree { width:100%; max-height:min(520px, 55vh); min-height:260px; overflow:auto; border:1px solid #dcdfe6; border-radius:6px; padding:8px 4px; background:#fff; }
+    .tenant-tree__row { min-height:34px; display:flex; align-items:center; gap:8px; padding-right:8px; border-radius:4px; color:#303133; }
+    .tenant-tree__row:hover { background:#f5f7fa; }
+    .tenant-tree__check { width:18px; height:18px; flex:none; display:grid; place-items:center; padding:0; border:1px solid #dcdfe6; border-radius:4px; background:#fff; color:#fff; cursor:pointer; font-size:13px; line-height:1; }
+    .tenant-tree__check.is-checked, .tenant-tree__check.is-partial { border-color:#409eff; background:#409eff; }
+    .tenant-tree__label { min-width:0; overflow-wrap:anywhere; }
+    .tenant-tree__path { color:#909399; font-size:12px; }
+    .tenant-tree__empty { min-height:240px; display:grid; place-items:center; color:#909399; }
+    .tenant-audit { display:grid; grid-template-columns:110px minmax(0,1fr); gap:12px 16px; line-height:1.6; }
+    .tenant-password { padding:12px 14px; border-radius:6px; background:#f5f7fa; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; }
+    @media (max-width: 700px) {
+        .tenant-form-grid { grid-template-columns:1fr; }
+        .tenant-form-wide { grid-column:auto; }
+        .tenant-tree { max-height:44vh; }
+    }
+    @media (max-width: 420px) {
+        .tenant-audit { grid-template-columns:1fr; gap:4px; }
+        .tenant-audit strong:not(:first-child) { margin-top:8px; }
+    }
+</style>
+
+<ElCard Header="租户管理" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">查询和维护租户、站点信息、数据库配置、菜单授权及租户上下文。</p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error" Title="@(Error ?? "")" ShowIcon="true" Closable="true" @onclose="DismissError" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="租户名称">
+                <ElInput ModelValue="@QueryName"
+                         @onupdate:modelValue="SetQueryName"
+                         Placeholder="租户名称"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="联系电话">
+                <ElInput ModelValue="@QueryPhone"
+                         @onupdate:modelValue="SetQueryPhone"
+                         Placeholder="联系电话"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+
+    <ElCard class="jero-list-card">
+        <div class="tenant-page__toolbar">
+            <div>
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="OpenCreate">新增租户</ElButton>
+                }
+            </div>
+            <ElButton @onclick="LoadPage" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        <div style='@(Loading ? "" : "display:none")'>
+            <ElText>正在加载租户…</ElText>
+        </div>
+
+        <div class="jero-list-scroll">
+    <TenantTable Rows="@Rows"
+                CanSetStatus="@CanSetStatus" HasActionColumn="@HasActionColumn" CanCreateDb="@CanCreateDb" CanGrantMenu="@CanGrantMenu" CanSyncGrantMenu="@CanSyncGrantMenu" CanGoTenant="@CanGoTenant" CanChangeTenant="@CanChangeTenant" CanResetPassword="@CanResetPassword" CanEdit="@CanEdit" CanDelete="@CanDelete" Busy="@Busy" BusyId="@BusyId" BusyAction="@BusyAction" DefaultTenantId="@DefaultTenantId"
+                ToggleStatus="@ToggleStatus" OpenAudit="@OpenAudit" CreateDatabase="@CreateDatabase" OpenGrantMenu="@OpenGrantMenu" SyncGrantMenu="@SyncGrantMenu" GoTenant="@GoTenant" ChangeTenant="@ChangeTenant" ResetPassword="@ResetPassword" OpenEdit="@OpenEdit" Delete="@Delete" />
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total" PageSizes="@PageSizes"
+                              Background="true" Layout="total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage" @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="min(900px, calc(100vw - 24px))"
+          Top="3vh"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <TenantEditTabs Value="@EditTab" SiteDisabled="@(!SiteEnabled)" Change="@SetEditTab">
+        <template #basic>
+            <ElForm LabelWidth="96px">
+                <div class="tenant-form-grid">
+                    <div class="tenant-form-wide">
+                        <ElFormItem Label="租户类型">
+                            <TenantRadio Value="@EditTenantType" FirstValue="@(0)" FirstLabel="ID隔离" SecondValue="@(1)" SecondLabel="库隔离" Disabled="@(Editing)" Change="@SetEditTenantType" />
+                        </ElFormItem>
+                    </div>
+                    <ElFormItem Label="租户名称">
+                        <ElInput ModelValue="@EditName" @onupdate:modelValue="SetEditName" Maxlength="64" ShowWordLimit="true" Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="租管账号">
+                        <ElInput ModelValue="@EditAdminAccount" @onupdate:modelValue="SetEditAdminAccount" Maxlength="64" Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="联系电话">
+                        <ElInput ModelValue="@EditPhone" @onupdate:modelValue="SetEditPhone" Maxlength="32" Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="电子邮箱">
+                        <ElInput ModelValue="@EditEmail" @onupdate:modelValue="SetEditEmail" Maxlength="128" Clearable="true" />
+                    </ElFormItem>
+                    <div class="tenant-form-wide">
+                        <ElFormItem Label="站点域名">
+                            <ElInput ModelValue="@EditHost" @onupdate:modelValue="SetEditHost" Maxlength="128" Placeholder="留空则不启用独立站点信息" Clearable="true" />
+                        </ElFormItem>
+                    </div>
+                    <ElFormItem Label="排序">
+                        <ConfigurationNumber Value="@EditOrderNo" Minimum="@(0)" Change="@SetEditOrderNo" />
+                    </ElFormItem>
+                    <ElFormItem Label="状态">
+                        <TenantRadio Value="@EditStatus" FirstValue="@(1)" FirstLabel="启用" SecondValue="@(2)" SecondLabel="停用" Change="@SetEditStatus" />
+                    </ElFormItem>
+                    <div class="tenant-form-wide">
+                        <ElFormItem Label="备注">
+                            <ElInput ModelValue="@EditRemark" @onupdate:modelValue="SetEditRemark" Type="textarea" Rows="3" Maxlength="128" ShowWordLimit="true" />
+                        </ElFormItem>
+                    </div>
+                </div>
+            </ElForm>
+        </template>
+
+        <template #database>
+            <ElForm LabelWidth="104px">
+                <div class="tenant-form-grid">
+                    <ElFormItem Label="数据库类型">
+                        <AuthOptionSelect Value="@EditDbType" Options="@DbOptions" Placeholder="数据库类型" Disabled="@(EditTenantType == 0)" Change="@SetEditDbType" />
+                    </ElFormItem>
+                    <div></div>
+                    <div class="tenant-form-wide">
+                        <ElFormItem Label="数据库连接">
+                            <ElInput ModelValue="@EditConnection" @onupdate:modelValue="SetEditConnection" Type="textarea" Rows="4" Disabled="@(EditTenantType == 0)" Placeholder="库隔离租户必填" />
+                        </ElFormItem>
+                    </div>
+                    <div class="tenant-form-wide">
+                        <ElFormItem Label="从库连接">
+                            <ElInput ModelValue="@EditSlaveConnections" @onupdate:modelValue="SetEditSlaveConnections" Type="textarea" Rows="5" Disabled="@(EditTenantType == 0)" Placeholder="JSON 配置，留空则不启用读写分离" />
+                        </ElFormItem>
+                    </div>
+                </div>
+            </ElForm>
+        </template>
+
+        <template #site>
+            <ElForm LabelWidth="96px">
+                <div class="tenant-form-grid">
+                    <div class="tenant-form-wide">
+                        <ElFormItem Label="Logo">
+                            <div class="tenant-logo">
+                                <div class="tenant-logo__preview">
+                                    <img src="@EditLogoPreview" alt="Logo 预览" style='@(EditLogoPreview.Length > 0 ? "" : "display:none")' />
+                                    <span style='@(EditLogoPreview.Length == 0 ? "" : "display:none")'>暂无 Logo</span>
+                                </div>
+                                <div class="tenant-logo__controls">
+                                    <input id="@LogoInputId" type="file" accept=".jpg,.jpeg,.png,.svg,.webp" @onchange="@(_ => ReadSelectedLogo())" />
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                                        <ElButton @onclick="ReadSelectedLogo" Loading="@LogoReading">读取预览</ElButton>
+                                        <ElButton @onclick="ClearLogoSelection" Disabled="@(EditLogoBase64.Length == 0)">撤销换图</ElButton>
+                                    </div>
+                                    <ElText>@EditLogoFileNameText</ElText>
+                                </div>
+                            </div>
+                        </ElFormItem>
+                    </div>
+                    <ElFormItem Label="标题"><ElInput ModelValue="@EditTitle" @onupdate:modelValue="SetEditTitle" Maxlength="32" Clearable="true" /></ElFormItem>
+                    <ElFormItem Label="副标题"><ElInput ModelValue="@EditViceTitle" @onupdate:modelValue="SetEditViceTitle" Maxlength="32" Clearable="true" /></ElFormItem>
+                    <div class="tenant-form-wide"><ElFormItem Label="副标题描述"><ElInput ModelValue="@EditViceDesc" @onupdate:modelValue="SetEditViceDesc" Maxlength="64" Clearable="true" /></ElFormItem></div>
+                    <div class="tenant-form-wide"><ElFormItem Label="版权信息"><ElInput ModelValue="@EditCopyright" @onupdate:modelValue="SetEditCopyright" Maxlength="64" Clearable="true" /></ElFormItem></div>
+                    <ElFormItem Label="备案号"><ElInput ModelValue="@EditIcp" @onupdate:modelValue="SetEditIcp" Maxlength="32" Clearable="true" /></ElFormItem>
+                    <ElFormItem Label="ICP 地址"><ElInput ModelValue="@EditIcpUrl" @onupdate:modelValue="SetEditIcpUrl" Maxlength="64" Clearable="true" /></ElFormItem>
+                    <div class="tenant-form-wide"><ElFormItem Label="水印"><ElInput ModelValue="@EditWatermark" @onupdate:modelValue="SetEditWatermark" Maxlength="32" Placeholder="留空则不启用水印" Clearable="true" /></ElFormItem></div>
+                </div>
+            </ElForm>
+        </template>
+    </TenantEditTabs>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+        <ElButton @onclick="CloseEditDialogVisible" Disabled="@Saving">取消</ElButton>
+        <ElButton Type="primary" @onclick="Save" Loading="@Saving" Disabled="@LogoReading">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@MenuDialogVisible"
+          @onupdate:modelValue="SetMenuDialogVisible"
+          Title="@("授权租户菜单 · " + MenuTenantName)"
+          Width="min(760px, calc(100vw - 24px))"
+          Top="4vh"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false">
+    <div class="tenant-tree" role="tree" aria-label="租户菜单权限">
+        @if (MenuBusy)
+        {
+            <div class="tenant-tree__empty">正在加载菜单权限…</div>
+        }
+        else if (MenuNodes.Length == 0)
+        {
+            <div class="tenant-tree__empty">暂无菜单权限</div>
+        }
+        else
+        {
+            @foreach (var node in MenuNodes)
+            {
+                <div class="tenant-tree__row" style="@node.RowStyle" role="treeitem" aria-level="@(node.Depth + 1)">
+                    <button type="button" class="@node.CheckboxClass" aria-label="@("选择菜单 " + node.Label)" aria-checked="@node.AriaChecked" @onclick="@(_ => ToggleMenuNode(node.Id))">@node.CheckMark</button>
+                    <span class="tenant-tree__label">@node.Label</span>
+                    <span class="tenant-tree__path" style='@(node.Path.Length > 0 ? "" : "display:none")'>@node.Path</span>
+                </div>
+            }
+        }
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+        <ElButton @onclick="CloseMenuDialogVisible" Disabled="@MenuSaving">取消</ElButton>
+        <ElPopconfirm Title="@("确定更新租户【" + MenuTenantName + "】的菜单授权吗？")" ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="SaveMenu">
+            <template #reference><ElButton Type="primary" Loading="@MenuSaving" Disabled="@MenuBusy">确定</ElButton></template>
+        </ElPopconfirm>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible" @onupdate:modelValue="SetAuditDialogVisible" Title="@AuditDialogTitle" Width="min(560px, calc(100vw - 24px))">
+    <div class="tenant-audit">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+        <strong>备注</strong><span>@AuditRemark</span>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@PasswordDialogVisible" @onupdate:modelValue="SetPasswordDialogVisible" Title="@("密码重置结果 · " + PasswordTenantName)" Width="min(520px, calc(100vw - 24px))">
+    <p style="margin-top:0;color:#606266;">租户管理员的新密码：</p>
+    <div class="tenant-password">@ResetPasswordText</div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px;"><ElButton Type="primary" @onclick="ClosePasswordDialogVisible">关闭</ElButton></div>
+</ElDialog>
+
+@code {
+    [Parameter] public TenantTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanSetStatus { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool CanCreateDb { get; set; }
+    [Parameter] public bool CanGrantMenu { get; set; }
+    [Parameter] public bool CanSyncGrantMenu { get; set; }
+    [Parameter] public bool CanGoTenant { get; set; }
+    [Parameter] public bool CanChangeTenant { get; set; }
+    [Parameter] public bool CanResetPassword { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string BusyId { get; set; } = "";
+    [Parameter] public string BusyAction { get; set; } = "";
+    [Parameter] public string DefaultTenantId { get; set; } = "";
+    [Parameter] public Action<string> ToggleStatus { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> CreateDatabase { get; set; } = default!;
+    [Parameter] public Action<string> OpenGrantMenu { get; set; } = default!;
+    [Parameter] public Action<string> SyncGrantMenu { get; set; } = default!;
+    [Parameter] public Action<string> GoTenant { get; set; } = default!;
+    [Parameter] public Action<string> ChangeTenant { get; set; } = default!;
+    [Parameter] public Action<string> ResetPassword { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public string EditDbType { get; set; } = "";
+    [Parameter] public ConfigurationOption[] DbOptions { get; set; } = [];
+    [Parameter] public Action<string> SetEditDbType { get; set; } = default!;
+    [Parameter] public string EditLogoFileNameText { get; set; } = "";
+    [Parameter] public string ResetPasswordText { get; set; } = "";
+    [Parameter] public Action<string> ToggleMenuNode { get; set; } = default!;
+    [Parameter] public Action ReadSelectedLogo { get; set; } = default!;
+    [Parameter] public TenantMenuRow[] MenuNodes { get; set; } = [];
+    [Parameter] public int EditTenantType { get; set; }
+    [Parameter] public Action<double> SetEditTenantType { get; set; } = default!;
+    [Parameter] public int EditStatus { get; set; }
+    [Parameter] public Action<double> SetEditStatus { get; set; } = default!;
+    [Parameter] public int EditOrderNo { get; set; }
+    [Parameter] public Action<double?> SetEditOrderNo { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryName { get; set; } = default!;
+    [Parameter] public Action<string?> SetQueryPhone { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTab { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditAdminAccount { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditPhone { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditEmail { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditHost { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditRemark { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditConnection { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditSlaveConnections { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTitle { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditViceTitle { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditViceDesc { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditCopyright { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditIcp { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditIcpUrl { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditWatermark { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetMenuDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetPasswordDialogVisible { get; set; } = default!;
+    [Parameter] public Action CloseEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action CloseMenuDialogVisible { get; set; } = default!;
+    [Parameter] public Action ClosePasswordDialogVisible { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    [Parameter] public Action ClearLogoSelection { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action SaveMenu { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public bool Editing { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public double[] PageSizes { get; set; } = [];
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool LogoReading { get; set; }
+    [Parameter] public bool MenuSaving { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool MenuDialogVisible { get; set; }
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public bool PasswordDialogVisible { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool MenuBusy { get; set; }
+    [Parameter] public bool SiteEnabled { get; set; }
+    [Parameter] public string QueryName { get; set; } = "";
+    [Parameter] public string QueryPhone { get; set; } = "";
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditTab { get; set; } = "";
+    [Parameter] public string EditName { get; set; } = "";
+    [Parameter] public string EditAdminAccount { get; set; } = "";
+    [Parameter] public string EditPhone { get; set; } = "";
+    [Parameter] public string EditEmail { get; set; } = "";
+    [Parameter] public string EditHost { get; set; } = "";
+    [Parameter] public string EditRemark { get; set; } = "";
+    [Parameter] public string EditConnection { get; set; } = "";
+    [Parameter] public string EditSlaveConnections { get; set; } = "";
+    [Parameter] public string EditLogoPreview { get; set; } = "";
+    [Parameter] public string EditLogoBase64 { get; set; } = "";
+    [Parameter] public string EditTitle { get; set; } = "";
+    [Parameter] public string EditViceTitle { get; set; } = "";
+    [Parameter] public string EditViceDesc { get; set; } = "";
+    [Parameter] public string EditCopyright { get; set; } = "";
+    [Parameter] public string EditIcp { get; set; } = "";
+    [Parameter] public string EditIcpUrl { get; set; } = "";
+    [Parameter] public string EditWatermark { get; set; } = "";
+    [Parameter] public string MenuTenantName { get; set; } = "";
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public string AuditRemark { get; set; } = "";
+    [Parameter] public string PasswordTenantName { get; set; } = "";
+    [Parameter] public string LogoInputId { get; set; } = "";
+}

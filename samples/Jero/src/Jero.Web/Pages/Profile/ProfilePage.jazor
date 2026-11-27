@@ -1,0 +1,267 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Profile
+
+<style>
+    .profile-shell { display:grid; grid-template-columns:minmax(220px, 1fr) minmax(0, 5fr); gap:16px; min-height:520px; }
+    .profile-side { border:1px solid #ebeef5; border-radius:8px; background:#fff; overflow:hidden; }
+    .profile-identity { min-height:180px; padding:24px 16px 20px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; }
+    .profile-avatar { width:80px; height:80px; border-radius:50%; overflow:hidden; display:grid; place-items:center; background:#ecf5ff; color:#409eff; font-size:28px; font-weight:700; }
+    .profile-avatar img { width:100%; height:100%; object-fit:cover; }
+    .profile-name { color:#303133; font-size:18px; font-weight:600; word-break:break-word; }
+    .profile-account { color:#606266; font-size:13px; word-break:break-word; }
+    .profile-tabs { border-top:1px solid #ebeef5; padding:16px; display:grid; gap:8px; }
+    .profile-tab { width:100%; height:44px; padding:0 14px; border:0; border-radius:7px; background:transparent; color:#606266; cursor:pointer; text-align:left; font-size:14px; }
+    .profile-tab:hover { background:#f5f7fa; color:#409eff; }
+    .profile-tab.is-active { background:#409eff; color:#fff; }
+    .profile-content { min-width:0; border:1px solid #ebeef5; border-radius:8px; background:#fff; padding:28px; }
+    .profile-section-title { margin:0 0 22px; color:#303133; font-size:20px; }
+    .profile-form { max-width:680px; }
+    .profile-role-list { min-height:32px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .profile-assets { margin-top:28px; padding-top:24px; border-top:1px solid #ebeef5; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+    .profile-asset { min-width:0; padding:18px; border:1px solid #ebeef5; border-radius:8px; }
+    .profile-asset h3 { margin:0 0 8px; color:#303133; font-size:16px; }
+    .profile-asset p { min-height:40px; margin:0 0 14px; color:#909399; font-size:13px; line-height:1.55; }
+    .profile-asset-preview { height:112px; margin-bottom:14px; border:1px dashed #dcdfe6; border-radius:7px; background:#fafafa; display:flex; align-items:center; justify-content:center; overflow:hidden; color:#909399; }
+    .profile-asset-preview img { max-width:100%; max-height:100%; object-fit:contain; }
+    .profile-file { width:100%; max-width:100%; color:#606266; }
+    .profile-file-name { min-height:20px; margin:8px 0; color:#606266; font-size:12px; overflow-wrap:anywhere; }
+    .profile-settings { display:grid; gap:14px; }
+    .profile-setting { min-width:0; padding:16px; border:1px solid #dcdfe6; border-radius:8px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+    .profile-setting-copy { min-width:0; }
+    .profile-setting-label { margin-bottom:5px; color:#303133; font-size:16px; font-weight:500; }
+    .profile-setting-description { color:#909399; line-height:1.55; overflow-wrap:anywhere; }
+    .profile-switch { width:42px; height:22px; flex:none; accent-color:#409eff; cursor:pointer; }
+    .profile-permission-empty { padding:48px 16px; }
+    @@media (max-width: 860px) {
+        .profile-shell { grid-template-columns:1fr; }
+        .profile-identity { min-height:auto; padding:20px 16px; }
+        .profile-tabs { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .profile-tab { text-align:center; }
+        .profile-content { padding:20px 16px; }
+        .profile-assets { grid-template-columns:1fr; }
+    }
+    @@media (max-width: 420px) {
+        .profile-tabs { grid-template-columns:1fr; }
+        .profile-setting { align-items:flex-start; }
+    }
+</style>
+
+<ElCard Header="个人中心">
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error" Title="@(Error ?? "")" ShowIcon="true" Closable="true" @onclose="DismissError" />
+    </div>
+
+    <div class="profile-shell">
+        <aside class="profile-side">
+            <div class="profile-identity">
+                <div class="profile-avatar">
+                    @if (DisplayAvatar.Length > 0)
+                    {
+                        <img src="@AvatarSource" alt="@DisplayRealName" />
+                    }
+                    else
+                    {
+                        <span>@AvatarInitial</span>
+                    }
+                </div>
+                <div class="profile-name">@DisplayRealName</div>
+                <div class="profile-account">@DisplayAccount</div>
+            </div>
+            <nav class="profile-tabs" aria-label="个人中心设置">
+                <button class='@("profile-tab" + (ActiveTab == "basic" ? " is-active" : ""))' @onclick='@(() => SelectTab("basic"))'>基本设置</button>
+                <button class='@("profile-tab" + (ActiveTab == "security" ? " is-active" : ""))' @onclick='@(() => SelectTab("security"))'>安全设置</button>
+                <button class='@("profile-tab" + (ActiveTab == "password" ? " is-active" : ""))' @onclick='@(() => SelectTab("password"))'>修改密码</button>
+                <button class='@("profile-tab" + (ActiveTab == "notice" ? " is-active" : ""))' @onclick='@(() => SelectTab("notice"))'>新消息提醒</button>
+            </nav>
+        </aside>
+
+        <section class="profile-content">
+            <div style='@(ActiveTab == "basic" ? "" : "display:none")'>
+                <h2 class="profile-section-title">基本设置</h2>
+                @if (Loading)
+                {
+                    <ElText>正在加载个人信息…</ElText>
+                }
+                else if (!HasProfile)
+                {
+                    <ElEmpty Description="暂无个人信息" />
+                }
+                else
+                {
+                    <div class="profile-form">
+                        <ElForm LabelWidth="96px">
+                            <ElFormItem Label="姓名">
+                                <ElInput ModelValue="@EditRealName" @onupdate:modelValue="SetEditRealName" Maxlength="32" ShowWordLimit="true" Clearable="true" />
+                            </ElFormItem>
+                            <ElFormItem Label="用户名">
+                                <ElInput ModelValue="@Account" Disabled="true" />
+                            </ElFormItem>
+                            <ElFormItem Label="角色">
+                                <div class="profile-role-list">
+                                    @if (RoleIds.Length == 0)
+                                    {
+                                        <span style="color:#909399;">未分配角色</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var role in RoleIds)
+                                        {
+                                            <ElTag>@RoleLabel(role)</ElTag>
+                                        }
+                                    }
+                                </div>
+                            </ElFormItem>
+                            <ElFormItem Label="个人简介">
+                                <ElInput ModelValue="@EditIntroduction" @onupdate:modelValue="SetEditIntroduction" Type="textarea" Rows="5" Maxlength="512" ShowWordLimit="true" Placeholder="请输入个人简介" />
+                            </ElFormItem>
+                            @if (CanBaseInfo)
+                            {
+                                <ElFormItem>
+                                    <ElButton Type="primary" @onclick="SaveBaseInfo" Loading="@Saving">更新基本信息</ElButton>
+                                </ElFormItem>
+                            }
+                        </ElForm>
+                    </div>
+
+                    @if (CanUploadAvatar || CanUploadSignature)
+                    {
+                        <div class="profile-assets">
+                            @if (CanUploadAvatar)
+                            {
+                                <div class="profile-asset">
+                                    <h3>上传头像</h3>
+                                    <p>支持 jpg、jpeg、png、bmp、gif，大小与 MIME 类型按服务端上传配置校验。</p>
+                                    <div class="profile-asset-preview">
+                                        <img src="@AvatarSource" alt="当前头像" style='@(DisplayAvatar.Length > 0 ? "" : "display:none")' />
+                                        <span style='@(DisplayAvatar.Length == 0 ? "" : "display:none")'>暂无头像</span>
+                                    </div>
+                                    <ProfileFileInput Id="@AvatarInputId" Change="@SelectAvatar" />
+                                    <ElButton Type="primary" @onclick="UploadAvatar" Loading="@UploadingAvatar">上传头像</ElButton>
+                                </div>
+                            }
+                            @if (CanUploadSignature)
+                            {
+                                <div class="profile-asset">
+                                    <h3>电子签名</h3>
+                                    <p>上传后替换当前电子签名，文件格式遵循头像上传的图片白名单。</p>
+                                    <div class="profile-asset-preview">
+                                        <img src="@SignatureSource" alt="当前电子签名" style='@(DisplaySignature.Length > 0 ? "" : "display:none")' />
+                                        <span style='@(DisplaySignature.Length == 0 ? "" : "display:none")'>暂无电子签名</span>
+                                    </div>
+                                    <ProfileFileInput Id="@SignatureInputId" Change="@SelectSignature" />
+                                    <ElButton Type="primary" @onclick="UploadSignature" Loading="@UploadingSignature">上传电子签名</ElButton>
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+            <div style='@(ActiveTab == "security" ? "" : "display:none")'>
+                <h2 class="profile-section-title">安全设置</h2>
+                <div class="profile-settings">
+                    @foreach (var item in SecurityItems)
+                    {
+                        <div class="profile-setting">
+                            <div class="profile-setting-copy">
+                                <div class="profile-setting-label">@item.Label</div>
+                                <div class="profile-setting-description">@item.Description</div>
+                            </div>
+                            <input class="profile-switch" type="checkbox" checked="@item.Value" aria-label="@item.Label" @onclick="@(() => ToggleSecurity(FindSettingIndex(SecurityItems, item.FieldName)))" />
+                        </div>
+                    }
+                </div>
+            </div>
+            <div style='@(ActiveTab == "password" ? "" : "display:none")'>
+                <h2 class="profile-section-title">修改密码</h2>
+                @if (!CanChangePassword)
+                {
+                    <div class="profile-permission-empty"><ElEmpty Description="当前角色没有修改密码的权限" /></div>
+                }
+                else
+                {
+                    <div class="profile-form">
+                        <ElForm LabelWidth="110px">
+                            <ElFormItem Label="旧密码"><ElInput ModelValue="@PasswordOld" @onupdate:modelValue="SetPasswordOld" Type="password" ShowPassword="true" Placeholder="请输入旧密码" /></ElFormItem>
+                            <ElFormItem Label="新密码"><ElInput ModelValue="@PasswordNew" @onupdate:modelValue="SetPasswordNew" Type="password" ShowPassword="true" Placeholder="请输入新密码" /></ElFormItem>
+                            <ElFormItem Label="确认密码"><ElInput ModelValue="@PasswordConfirm" @onupdate:modelValue="SetPasswordConfirm" Type="password" ShowPassword="true" Placeholder="请再次输入新密码" /></ElFormItem>
+                            <ElFormItem><ElButton Type="primary" @onclick="ChangePassword" Loading="@ChangingPassword">更新密码</ElButton></ElFormItem>
+                        </ElForm>
+                    </div>
+                }
+            </div>
+            <div style='@(ActiveTab == "notice" ? "" : "display:none")'>
+                <h2 class="profile-section-title">新消息提醒</h2>
+                <div class="profile-settings">
+                    @foreach (var item in NotificationItems)
+                    {
+                        <div class="profile-setting">
+                            <div class="profile-setting-copy">
+                                <div class="profile-setting-label">@item.Label</div>
+                                <div class="profile-setting-description">@item.Description</div>
+                            </div>
+                            <input class="profile-switch" type="checkbox" checked="@item.Value" aria-label="@item.Label" @onclick="@(() => ToggleNotification(FindSettingIndex(NotificationItems, item.FieldName)))" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+</ElCard>
+
+@code {
+    [Parameter] public bool HasProfile { get; set; }
+    [Parameter] public string Account { get; set; } = "";
+    [Parameter] public string DisplayRealName { get; set; } = "";
+    [Parameter] public string DisplayAccount { get; set; } = "";
+    [Parameter] public string AvatarInitial { get; set; } = "";
+    [Parameter] public string DisplayAvatar { get; set; } = "";
+    [Parameter] public string DisplaySignature { get; set; } = "";
+    [Parameter] public string AvatarSource { get; set; } = "";
+    [Parameter] public string SignatureSource { get; set; } = "";
+    [Parameter] public string AvatarInputId { get; set; } = "";
+    [Parameter] public string SignatureInputId { get; set; } = "";
+    [Parameter] public bool CanBaseInfo { get; set; }
+    [Parameter] public bool CanChangePassword { get; set; }
+    [Parameter] public bool CanUploadAvatar { get; set; }
+    [Parameter] public bool CanUploadSignature { get; set; }
+    [Parameter] public string ActiveTab { get; set; } = "";
+    [Parameter] public string EditRealName { get; set; } = "";
+    [Parameter] public Action<string?> SetEditRealName { get; set; } = default!;
+    [Parameter] public string EditIntroduction { get; set; } = "";
+    [Parameter] public Action<string?> SetEditIntroduction { get; set; } = default!;
+    [Parameter] public string PasswordOld { get; set; } = "";
+    [Parameter] public Action<string?> SetPasswordOld { get; set; } = default!;
+    [Parameter] public string PasswordNew { get; set; } = "";
+    [Parameter] public Action<string?> SetPasswordNew { get; set; } = default!;
+    [Parameter] public string PasswordConfirm { get; set; } = "";
+    [Parameter] public Action<string?> SetPasswordConfirm { get; set; } = default!;
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool ChangingPassword { get; set; }
+    [Parameter] public bool UploadingAvatar { get; set; }
+    [Parameter] public bool UploadingSignature { get; set; }
+    [Parameter] public Action SaveBaseInfo { get; set; } = default!;
+    [Parameter] public Action ChangePassword { get; set; } = default!;
+    [Parameter] public Action UploadAvatar { get; set; } = default!;
+    [Parameter] public Action UploadSignature { get; set; } = default!;
+    [Parameter] public Action SelectAvatar { get; set; } = default!;
+    [Parameter] public Action SelectSignature { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action<string> SelectTab { get; set; } = default!;
+    [Parameter] public Action<int> ToggleSecurity { get; set; } = default!;
+    [Parameter] public Action<int> ToggleNotification { get; set; } = default!;
+    [Parameter] public string[] RoleIds { get; set; } = [];
+    [Parameter] public ProfileSettingItem[] SecurityItems { get; set; } = [];
+    [Parameter] public ProfileSettingItem[] NotificationItems { get; set; } = [];
+
+    private static string RoleLabel(string role) => role == "super" ? "管理员" : role == "user" ? "用户" : role == "test" ? "测试" : role;
+
+    private static int FindSettingIndex(ProfileSettingItem[] settings, string name)
+    {
+        for (var index = 0; index < settings.Length; index++)
+            if (settings[index].FieldName == name)
+                return index;
+        return -1;
+    }
+}

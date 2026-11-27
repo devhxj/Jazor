@@ -1,0 +1,147 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Database
+
+<div class="database-graph-stage">
+    <div @ref="_host" class="database-graph-host"></div>
+    <div class="database-graph-tools">
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Zoom(10))">放大</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Zoom(-10))">缩小</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Center())">居中</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Fit())">适应画布</ElButton>
+        <ElButton Size="small" Disabled="@(Nodes.Length == 0)" @onclick="@(() => Reset())">100%</ElButton>
+    </div>
+    <div class="database-graph-legend">
+        <span>图例：</span>
+        <span class="database-graph-legend__item"><span>一对多</span><span class="database-graph-legend__line database-graph-legend__many"></span></span>
+        <span class="database-graph-legend__item"><span>一对一</span><span class="database-graph-legend__line database-graph-legend__single"></span></span>
+    </div>
+    @if (Loading)
+    {
+        <div class="database-graph-loading">正在读取并布局库表关系…</div>
+    }
+    else if (Nodes.Length == 0)
+    {
+        <div class="database-graph-empty">暂无可视化表结构</div>
+    }
+</div>
+
+@code {
+    [Parameter] public DatabaseDiagramNode[] Nodes { get; set; } = [];
+    [Parameter] public DatabaseDiagramRelation[] Relations { get; set; } = [];
+    [Parameter] public bool Loading { get; set; }
+
+    private HTMLDivElement? _host;
+    private VueApp? _app;
+    private DatabaseGraphComponent? _graph;
+    private DatabaseDiagramNode[]? _previousNodes;
+    private int _revision;
+
+    [Setup]
+    private void Configure()
+    {
+        OnMounted(Mount);
+        OnUpdated(Update);
+        OnBeforeUnmount(Dispose);
+    }
+
+    private void Mount()
+    {
+        if (_host is null)
+            return;
+
+        var options = new DatabaseGraphOptions(
+            DefaultJunctionPoint: "border",
+            AllowShowMiniToolBar: false,
+            AllowShowZoomMenu: false,
+            AllowShowRefreshButton: false,
+            AllowShowDownloadButton: false,
+            AllowShowFullscreenMenu: false,
+            MoveToCenterWhenRefresh: false,
+            ZoomToFitWhenRefresh: false,
+            UseAnimationWhenRefresh: false,
+            DisableNodeClickEffect: true,
+            DisableLineClickEffect: true,
+            MinCanvasZoom: 10,
+            BackgroundColor: "#f7f9fc");
+        _app = CreateApp(DatabaseGraphPackage.Component, new DatabaseGraphProps(options));
+        _graph = (DatabaseGraphComponent)(object)_app.Mount(_host);
+        Update();
+    }
+
+    private void Update()
+    {
+        var nodes = Nodes;
+        var relations = Relations;
+        // 页面状态每次成对替换节点和连线，因此用节点数组的引用判断是否需要重新布局。
+        NextTick(() =>
+        {
+            var instance = _graph?.GetInstance();
+            if (instance is null || nodes == _previousNodes)
+                return;
+
+            _previousNodes = nodes;
+            var current = ++_revision;
+            instance.StopAutoLayout();
+            // Relation Graph 会修改输入。复制节点供布局使用，待新节点布局完成后再添加锚点连线。
+            var graphNodes = new DatabaseGraphNode[nodes.Length];
+            for (var index = 0; index < nodes.Length; index++)
+            {
+                var node = nodes[index];
+                graphNodes[index] = new DatabaseGraphNode(node.Id, node.Text, node.Html, node.X, node.Y, 1);
+            }
+
+            instance.SetJsonData(new DatabaseGraphData(graphNodes, []), true).Then(() =>
+            {
+                if (current != _revision || nodes.Length == 0)
+                    return;
+
+                var lines = new DatabaseGraphLine[relations.Length];
+                for (var index = 0; index < relations.Length; index++)
+                {
+                    var line = relations[index];
+                    lines[index] = new DatabaseGraphLine(line.Id, line.From, line.To, line.Color, "", "left", "lr", 6, 3);
+                }
+                instance.AddElementLines(lines);
+                instance.MoveToCenter();
+                instance.ZoomToFit();
+            });
+        });
+    }
+
+    private void Dispose()
+    {
+        // 先使在途布局回调失效，再销毁画布，防止回调继续添加连线。
+        ++_revision;
+        var instance = _graph?.GetInstance();
+        instance?.StopAutoLayout();
+        instance?.ClearGraph();
+        _app?.Unmount();
+        _graph = null;
+        _app = null;
+        _previousNodes = null;
+    }
+
+    private void Zoom(double offset)
+    {
+        var instance = _graph?.GetInstance();
+        if (instance is not null && instance.Options.CanvasZoom is double zoom)
+            instance.SetZoom(zoom + offset);
+    }
+
+    private void Center() => _graph?.GetInstance().MoveToCenter();
+
+    private void Fit()
+    {
+        _graph?.OnGraphResize();
+        _graph?.GetInstance().ZoomToFit();
+    }
+
+    private void Reset()
+    {
+        var instance = _graph?.GetInstance();
+        instance?.SetZoom(100);
+        instance?.MoveToCenter();
+    }
+}

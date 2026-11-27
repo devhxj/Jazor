@@ -8,7 +8,7 @@ public class FileHelperPatternTests
     [Fact]
     public void FindPathsByPatterns_MatchesNestedGlobAndRuntimeDirectory()
     {
-        var root = CreateTempRoot();
+        var root = TestWorkspace.Create("files");
         try
         {
             var configDir = Path.Combine(root, "Configuration");
@@ -41,7 +41,7 @@ public class FileHelperPatternTests
     [Fact]
     public void DeleteByPatterns_RemovesMatchedPathsOnly()
     {
-        var root = CreateTempRoot();
+        var root = TestWorkspace.Create("files");
         try
         {
             var configDir = Path.Combine(root, "Configuration");
@@ -70,13 +70,6 @@ public class FileHelperPatternTests
         {
             FileHelper.TryDelete(root);
         }
-    }
-
-    private static string CreateTempRoot()
-    {
-        var root = Path.Combine(Path.GetTempPath(), "jero-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-        return root;
     }
 
     private static string FullPath(params string[] paths)

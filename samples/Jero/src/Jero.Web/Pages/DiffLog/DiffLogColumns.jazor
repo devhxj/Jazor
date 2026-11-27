@@ -1,0 +1,30 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.DiffLog
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<DiffLogColumnView>(Rows))" border="true" stripe="true" EmptyText="暂无字段差异">
+                <ElTableColumn label="字段描述" MinWidth="240">
+                    <template #default context="cell">@{ var row = ((TableSlot<DiffLogColumnView>)(object)cell).Row; }@(ColumnLabel(row))</template>
+                </ElTableColumn>
+                <ElTableColumn label="主键" width="80" align="center">
+                    <template #default context="cell">@{ var row = ((TableSlot<DiffLogColumnView>)(object)cell).Row; }@(row.IsPrimaryKey ? "是" : "否")</template>
+                </ElTableColumn>
+                <ElTableColumn label="修改前" MinWidth="320">
+                    <template #default context="cell">@{ var row = ((TableSlot<DiffLogColumnView>)(object)cell).Row; }
+                        <pre style="margin:0;white-space:pre-wrap;word-break:break-word;color:#f56c6c;">@(Display(row.BeforeValue))</pre>
+                    </template>
+                </ElTableColumn>
+                <ElTableColumn label="修改后" MinWidth="320">
+                    <template #default context="cell">@{ var row = ((TableSlot<DiffLogColumnView>)(object)cell).Row; }
+                        <pre style="margin:0;white-space:pre-wrap;word-break:break-word;color:#67c23a;">@(Display(row.AfterValue))</pre>
+                    </template>
+                </ElTableColumn>
+            </ElTable>
+
+@code {
+    [Parameter] public DiffLogColumnView[] Rows { get; set; } = [];
+
+    private static string Display(string value) => string.IsNullOrEmpty(value) ? "-" : value;
+    private static string ColumnLabel(DiffLogColumnView row) => Display(string.IsNullOrEmpty(row.ColumnName) ? row.ColumnDescription : string.IsNullOrEmpty(row.ColumnDescription) ? row.ColumnName : row.ColumnName + " - " + row.ColumnDescription);
+}

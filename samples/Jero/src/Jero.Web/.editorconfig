@@ -1,0 +1,18 @@
+[*.cs]
+dotnet_naming_rule.jero_web_private_constants.severity = suggestion
+dotnet_naming_rule.jero_web_private_constants.symbols = jero_web_private_constants
+dotnet_naming_rule.jero_web_private_constants.style = pascal_case
+
+dotnet_naming_rule.jero_web_private_fields.severity = suggestion
+dotnet_naming_rule.jero_web_private_fields.symbols = jero_web_private_fields
+dotnet_naming_rule.jero_web_private_fields.style = jero_web_underscore_camel_case
+
+dotnet_naming_symbols.jero_web_private_constants.applicable_kinds = field
+dotnet_naming_symbols.jero_web_private_constants.applicable_accessibilities = private
+dotnet_naming_symbols.jero_web_private_constants.required_modifiers = const
+
+dotnet_naming_symbols.jero_web_private_fields.applicable_kinds = field
+dotnet_naming_symbols.jero_web_private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.jero_web_underscore_camel_case.required_prefix = _
+dotnet_naming_style.jero_web_underscore_camel_case.capitalization = camel_case

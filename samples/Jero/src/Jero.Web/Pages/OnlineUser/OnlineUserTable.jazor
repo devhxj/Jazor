@@ -1,0 +1,42 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.OnlineUser
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<OnlineUserView>(Rows))" border="true" stripe="true" RowKey="@(nameof(OnlineUserView.Id))" EmptyText="暂无在线用户">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="@(nameof(OnlineUserView.UserName))" label="账号" MinWidth="120" ShowOverflowTooltip="true" />
+        <ElTableColumn label="姓名" MinWidth="120" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OnlineUserView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.RealName) ? "-" : row.RealName))</template>
+        </ElTableColumn>
+        <ElTableColumn label="IP 地址" MinWidth="140" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OnlineUserView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.Ip) ? "-" : row.Ip))</template>
+        </ElTableColumn>
+        <ElTableColumn label="浏览器" MinWidth="140" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OnlineUserView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.Browser) ? "-" : row.Browser))</template>
+        </ElTableColumn>
+        <ElTableColumn label="操作系统" MinWidth="140" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OnlineUserView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.Os) ? "-" : row.Os))</template>
+        </ElTableColumn>
+        <ElTableColumn label="登录时间" MinWidth="170" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<OnlineUserView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.Time) ? "-" : row.Time))</template>
+        </ElTableColumn>
+        @if (CanForceOffline) { <ElTableColumn label="操作" width="120" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<OnlineUserView>)(object)cell).Row; }
+                <ElPopconfirm title='@("确定强制下线【" + (!string.IsNullOrEmpty(row.RealName) ? row.RealName : string.IsNullOrEmpty(row.UserName) ? "当前用户" : row.UserName) + "】吗？")'
+                              ConfirmButtonText="确定" CancelButtonText="取消"
+                              @onconfirm="@(() => ForceOffline(row.Id))">
+                    <template #reference>
+                        <ElButton link="true" type="danger" loading='@(Forcing)' disabled='@(Forcing)'>下线</ElButton>
+                    </template>
+                </ElPopconfirm>
+            </template>
+        </ElTableColumn> }
+    </ElTable>
+
+@code {
+    [Parameter] public OnlineUserView[] Rows { get; set; } = [];
+    [Parameter] public bool CanForceOffline { get; set; } = default!;
+    [Parameter] public bool Forcing { get; set; } = default!;
+    [Parameter] public Action<string> ForceOffline { get; set; } = default!;
+}

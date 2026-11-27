@@ -1,0 +1,62 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+@using Jero.Web.Pages.File
+@using Npm.ElementPlus
+
+<div @ref="_host"></div>
+@if (_loading)
+{
+    <ElEmpty Description="正在加载预览" />
+}
+else if (_loadFailed)
+{
+    <ElEmpty Description="加载预览组件失败，请尝试下载后查看" />
+}
+
+@code {
+    [Parameter] public Blob Source { get; set; } = default!;
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public Action RenderFailed { get; set; } = default!;
+
+    private HTMLDivElement? _host;
+    private VueApp? _app;
+    private bool _active;
+    private bool _loading = true;
+    private bool _loadFailed;
+
+    [Setup]
+    private void Configure()
+    {
+        OnMounted(Mount);
+        OnBeforeUnmount(Unmount);
+    }
+
+    private void Mount()
+    {
+        _active = true;
+        var load = Kind == "docx" ? FileOfficeLoaders.LoadDocx() : FileOfficeLoaders.LoadExcel();
+        load.Then(component =>
+        {
+            if (_active && _host is not null)
+            {
+                // 动态导入可能晚于弹窗关闭。仍有效的预览各自挂载一个 Vue app，卸载时一起销毁。
+                _app = CreateApp(component, new FileOfficeProps(Source, () => RenderFailed()));
+                _app.Mount(_host);
+                _loading = false;
+            }
+        }, _ =>
+        {
+            if (_active)
+            {
+                _loadFailed = true;
+                _loading = false;
+            }
+        });
+    }
+
+    private void Unmount()
+    {
+        _active = false;
+        _app?.Unmount();
+    }
+}

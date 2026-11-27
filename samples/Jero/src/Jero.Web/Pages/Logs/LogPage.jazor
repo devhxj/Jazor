@@ -1,0 +1,141 @@
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Logs
+
+<ElCard Header="@Title" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">@Description</p>
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error" Title='@(Error ?? "")' ShowIcon="true" Closable="true" @onclose="@(_ => DismissError())" />
+    </div>
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            @if (IsSuperAdmin)
+            {
+                <ElFormItem Label="租户"><div style="width:260px">
+                    <LogSelect Value="@TenantId" Placeholder="请选择租户" Options="@Tenants"
+                               Loading="@TenantLoading" Filterable="true" Change="@SetTenant" />
+                </div></ElFormItem>
+            }
+            <ElFormItem Label="开始时间"><div style='@(IsVisit ? "width:220px" : "")'>
+                <LogDateInput Value="@StartTime" Placeholder="开始时间" Change="@SetStartTime" />
+            </div></ElFormItem>
+            <ElFormItem Label="结束时间"><div style='@(IsVisit ? "width:220px" : "")'>
+                <LogDateInput Value="@EndTime" Placeholder="结束时间" Change="@SetEndTime" />
+            </div></ElFormItem>
+            @if (!IsVisit)
+            {
+                <ElFormItem Label="模块名称"><ElInput ModelValue="@ControllerName" @onupdate:modelValue="SetControllerName" Placeholder="模块名称" Clearable="true" /></ElFormItem>
+            }
+            <ElFormItem Label="方法名称"><ElInput ModelValue="@ActionName" @onupdate:modelValue="SetActionName" Placeholder="方法名称" Clearable="true" /></ElFormItem>
+            <ElFormItem Label="账号名称"><ElInput ModelValue="@Account" @onupdate:modelValue="SetAccount" Placeholder="账号名称" Clearable="true" /></ElFormItem>
+            @if (IsVisit)
+            {
+                <ElFormItem Label="状态"><div style="width:140px"><LogSelect Value="@Status" Options="@_statuses" Placeholder="状态" Loading="false" Filterable="false" Change="@SetStatus" /></div></ElFormItem>
+            }
+            <ElFormItem Label="耗时"><ElInput ModelValue="@Elapsed" @onupdate:modelValue="SetElapsed" Placeholder="耗时大于多少毫秒" Clearable="true" /></ElFormItem>
+            <ElFormItem Label="IP 地址"><ElInput ModelValue="@RemoteIp" @onupdate:modelValue="SetRemoteIp" Placeholder="IP 地址" Clearable="true" /></ElFormItem>
+            @if (Kind == "exception")
+            {
+                <ElFormItem Label="状态"><div style="width:140px"><LogSelect Value="@Status" Options="@_statuses" Placeholder="状态" Loading="false" Filterable="false" Change="@SetStatus" /></div></ElFormItem>
+            }
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@Loading">重置</ElButton>
+                @if (!IsVisit && CanClear)
+                {
+                    <ElPopconfirm Title='@("确定清空" + Title + "吗？该操作不可恢复。")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(_ => ClearLogs())">
+                        <template #reference><ElButton Type="danger" Loading="@Clearing">清空</ElButton></template>
+                    </ElPopconfirm>
+                }
+                @if (CanExport)
+                {
+                    <ElButton @onclick="@(_ => ExportLogs())" Loading="@Exporting">导出</ElButton>
+                }
+            </ElFormItem>
+            @if (IsVisit && CanClear)
+            {
+                <ElFormItem><span title="沿用旧版行为，访问日志清空暂未开放"><ElButton Type="danger" Disabled="true">清空</ElButton></span></ElFormItem>
+            }
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px"></div>
+    <ElCard class="jero-list-card">
+        <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
+            <ElButton @onclick="@(_ => Refresh())" Loading="@Loading">刷新</ElButton>
+        </div>
+        @if (Loading)
+        {
+            <ElText>@("正在加载" + Title + "…")</ElText>
+        }
+        <div class="jero-list-scroll">
+            <LogTable Rows="@Rows" Kind="@Kind" EmptyText='@("暂无" + Title)' CanViewDetail="@CanViewDetail"
+                      Sort="@Sort" Detail="@OpenDetail" />
+        </div>
+        <LogPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total"
+                       ChangePage="@ChangePage" ChangePageSize="@ChangePageSize" />
+    </ElCard>
+</ElCard>
+
+@if (!IsVisit)
+{
+    <LogDetail Visible="@DetailDialogVisible" Title='@(Title + "详情")' Loading="@DetailLoading"
+               Content="@DetailContent" SetVisible="@SetDialogVisible" />
+}
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public LogRow[] Rows { get; set; } = [];
+    [Parameter] public LogOption[] Tenants { get; set; } = [];
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public string StartTime { get; set; } = "";
+    [Parameter] public string EndTime { get; set; } = "";
+    [Parameter] public string ControllerName { get; set; } = "";
+    [Parameter] public string ActionName { get; set; } = "";
+    [Parameter] public string Account { get; set; } = "";
+    [Parameter] public string Status { get; set; } = "";
+    [Parameter] public string Elapsed { get; set; } = "";
+    [Parameter] public string RemoteIp { get; set; } = "";
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool CanClear { get; set; }
+    [Parameter] public bool Clearing { get; set; }
+    [Parameter] public bool CanExport { get; set; }
+    [Parameter] public bool Exporting { get; set; }
+    [Parameter] public bool CanViewDetail { get; set; }
+    [Parameter] public bool DetailDialogVisible { get; set; }
+    [Parameter] public bool DetailLoading { get; set; }
+    [Parameter] public string DetailContent { get; set; } = "";
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action ClearLogs { get; set; } = default!;
+    [Parameter] public Action ExportLogs { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action<string> SetTenant { get; set; } = default!;
+    [Parameter] public Action<string> SetStartTime { get; set; } = default!;
+    [Parameter] public Action<string> SetEndTime { get; set; } = default!;
+    [Parameter] public Action<string> SetControllerName { get; set; } = default!;
+    [Parameter] public Action<string> SetActionName { get; set; } = default!;
+    [Parameter] public Action<string> SetAccount { get; set; } = default!;
+    [Parameter] public Action<string> SetStatus { get; set; } = default!;
+    [Parameter] public Action<string> SetElapsed { get; set; } = default!;
+    [Parameter] public Action<string> SetRemoteIp { get; set; } = default!;
+    [Parameter] public Action<string, string> Sort { get; set; } = default!;
+    [Parameter] public Action<string> OpenDetail { get; set; } = default!;
+    [Parameter] public Action<bool> SetDialogVisible { get; set; } = default!;
+
+    private bool IsVisit => Kind == "visit";
+    private readonly LogOption[] _statuses = [
+        new() { Value = "200", Label = "成功" },
+        new() { Value = "400", Label = "失败" }
+    ];
+}

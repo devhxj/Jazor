@@ -1,0 +1,20 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.DiffLog
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<DiffLogParameterView>(Rows))" border="true" stripe="true" EmptyText="暂无参数">
+            <ElTableColumn prop="@(nameof(DiffLogParameterView.ParameterName))" label="参数名" MinWidth="220" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="@(nameof(DiffLogParameterView.TypeName))" label="类型" MinWidth="180" ShowOverflowTooltip="true" />
+            <ElTableColumn label="值" MinWidth="420">
+                <template #default context="cell">@{ var row = ((TableSlot<DiffLogParameterView>)(object)cell).Row; }
+                    <pre style="margin:0;white-space:pre-wrap;word-break:break-word;">@(Display(row.Value))</pre>
+                </template>
+            </ElTableColumn>
+        </ElTable>
+
+@code {
+    [Parameter] public DiffLogParameterView[] Rows { get; set; } = [];
+
+    private static string Display(string value) => string.IsNullOrEmpty(value) ? "-" : value;
+}

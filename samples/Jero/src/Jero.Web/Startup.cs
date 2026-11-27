@@ -4,18 +4,17 @@ using Furion.Logging;
 using Furion.SpecificationDocument;
 using Furion.VirtualFileServer;
 using IPTools.Core;
+using Jazor.AspNetCore.Dev;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.OpenApi;
 using OnceMi.AspNetCore.OSS;
 using Scalar.AspNetCore;
@@ -26,7 +25,6 @@ using Jero.Core.ElasticSearch;
 using Jero.Core.Service;
 using Jero.Core.Update;
 using Jero.Web.Handlers;
-using Jero.Plugin.SaveLife.Service;
 using FurionApp = Furion.App;
 
 namespace Jero.Web;
@@ -36,7 +34,16 @@ public class Startup : AppStartup
 {
     public void ConfigureServices(IServiceCollection services)
     {
+        // 开发密钥先进入配置源，后续认证注册与初始化数据才能读到同一份值。
+        DevelopmentKeys.Apply(FurionApp.WebHostEnvironment, FurionApp.Configuration);
         services.AddProjectOptions();
+        services.AddJazorSPA(options =>
+        {
+            options.PathBase = FurionApp.Configuration["SPA:PathBase"]?.TrimEnd('/') ?? "";
+            // 保留服务端路由命名空间。即使这些地址未命中端点，也不应回退成 SPA HTML。
+            foreach (var prefix in new[] { "/hubs", "/swagger", "/sapi", "/schedule", "/rezero" })
+                options.Fallback.ExcludedPathPrefixes.Add(prefix);
+        });
         services.AddRequestTimeouts();
 
         services.AddCache();
@@ -110,7 +117,9 @@ public class Startup : AppStartup
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseResponseCompression();
+        // 由反向代理恢复请求信息，再按 SPA:PathBase 拆分路径供路由和代理使用。
         app.UseForwardedHeaders();
+        app.UseJazorPathBase();
 
         if (env.IsDevelopment())
         {
@@ -118,14 +127,16 @@ public class Startup : AppStartup
         }
         else
         {
-            app.UseExceptionHandler("/Home/Error");
+            app.UseExceptionHandler();
             app.UseHsts();
         }
 
         app.Use((context, next) =>
         {
             context.Response.Headers.Append("Jero", "Jero");
-            // Static HTML and the SPA fallback both set Content-Type later in the pipeline.
+            // 管理页面通过同源 iframe 嵌入 Swagger 和 ReZero。
+            context.Response.Headers.XFrameOptions = "SAMEORIGIN";
+            // 静态文件与 SPA 回退都在后续中间件设置 Content-Type，提交响应头时再判断缓存策略。
             context.Response.OnStarting(() =>
             {
                 ApplyHtmlCacheHeaders(context.Response);
@@ -140,7 +151,7 @@ public class Startup : AppStartup
         app.UseOAuth();
         app.UseUnifyResultStatusCodes();
 
-        // Furion localization must run before endpoint routing.
+        // Furion 从请求中选定语言后，端点路由才开始匹配。
         app.UseAppLocalization();
 
         app.UseRouting();
@@ -166,12 +177,11 @@ public class Startup : AppStartup
         MapEndpoints(app);
 
         // 仅在 API、Swagger、Schedule、ReZero 等服务端 endpoint 都未处理请求后返回 Jolt 壳。
-        app.UseSpaFallback();
+        app.UseJazorSPA();
     }
 
     private static void AddJeroAuthentication(IServiceCollection services)
     {
-        // SignalR clients can supply their JWT in the query string.
         services.AddJwt<JwtHandler>(enableGlobalAuthorize: true, jwtBearerConfigure: options =>
         {
             options.Events = new JwtBearerEvents
@@ -179,7 +189,7 @@ public class Startup : AppStartup
                 OnMessageReceived = context =>
                 {
                     var httpContext = context.HttpContext;
-                    // 若请求 Url 包含 token 参数，则设置 Token 值
+                    // 浏览器建立 SignalR WebSocket 时通过查询参数 token 传递 JWT。
                     if (httpContext.Request.Query.ContainsKey("token"))
                         context.Token = httpContext.Request.Query["token"];
                     return Task.CompletedTask;
@@ -193,7 +203,8 @@ public class Startup : AppStartup
 
     private static void AddApi(IServiceCollection services)
     {
-        services.AddControllersWithViews()
+        services.AddProblemDetails();
+        services.AddControllers()
             .AddAppLocalization()
             .AddInjectWithUnifyResult<AdminResultProvider>()
             .AddJsonOptions(options => WebProtocols.ConfigureJson(options.JsonSerializerOptions));
@@ -236,15 +247,16 @@ public class Startup : AppStartup
         services.AddSignalR(options =>
         {
             options.EnableDetailedErrors = true;
-            options.KeepAliveInterval = TimeSpan.FromSeconds(15); // 服务器端向客户端ping的间隔
-            options.ClientTimeoutInterval = TimeSpan.FromSeconds(30); // 客户端向服务器端ping的间隔
-            options.MaximumReceiveMessageSize = 1024 * 1014 * 10; // 数据包大小10M，默认最大为32K
+            options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+            // 服务端在这段时间内收不到客户端消息才判为断线，心跳也计入活动。
+            options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+            options.MaximumReceiveMessageSize = 1024 * 1014 * 10;
         }).AddJsonProtocol(options => WebProtocols.ConfigureJson(options.PayloadSerializerOptions));
     }
 
     private static void UseFileHosting(IApplicationBuilder app)
     {
-        // ImageSharp must see source image requests before the static-file handlers.
+        // 带缩放参数的图片请求先交给 ImageSharp，否则静态文件中间件会直接返回原图。
         app.UseImageSharp();
 
         var contentTypeProvider = FS.GetFileExtensionContentTypeProvider();
@@ -252,9 +264,6 @@ public class Startup : AppStartup
         {
             ContentTypeProvider = contentTypeProvider
         });
-
-        // Vite 生成资产挂在 /assets；根路径与业务深链由 endpoints 后的 SPA fallback 接管。
-        app.UseSpaAssets();
 
         if (!string.IsNullOrEmpty(FurionApp.Settings.VirtualPath))
         {
@@ -311,11 +320,6 @@ public class Startup : AppStartup
             }
 
             endpoints.MapHubs();
-
-            endpoints
-                .MapAGUIServer(SaveLifeMafAgent.Name, "/api/v1/agent/ag-ui")
-                .WithMetadata(new RequestSizeLimitAttribute(1024 * 1024))
-                .RequireAuthorization();
 
             endpoints.MapControllers();
         });

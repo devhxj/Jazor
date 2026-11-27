@@ -1,0 +1,14 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Lang
+
+    <ElRadioGroup ModelValue='@(Value)' @attributes="@(new ModelUpdate<double>(Update))">
+        <ElRadio value='@(1)'>是</ElRadio>
+        <ElRadio value='@(2)'>否</ElRadio>
+    </ElRadioGroup>
+
+@code {
+    private void Update(double value) => OnChange(value == 1 ? 1 : 2);
+    [Parameter] public double Value { get; set; }
+    [Parameter] public Action<double> OnChange { get; set; } = default!;
+}

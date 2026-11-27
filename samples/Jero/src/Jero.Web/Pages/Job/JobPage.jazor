@@ -1,0 +1,127 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<style>
+    .job-page { min-width:0; display:grid; gap:16px; flex:1; min-height:0; grid-template-rows:auto minmax(0,1fr); }
+    .job-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+    .job-heading h1 { margin:0; color:#303133; font-size:23px; }
+    .job-heading p { margin:7px 0 0; color:#909399; font-size:13px; }
+    .job-toolbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    @@media(max-width:700px) {
+        .job-heading { flex-direction:column; }
+    }
+</style>
+
+<div class="job-page">
+    <div class="job-heading">
+        <div>
+            <h1>任务调度</h1>
+            <p>管理作业、触发器、运行记录与集群状态；调度副作用由后端 Furion Scheduler 执行。</p>
+        </div>
+        <ElButton @onclick="@(_ => RefreshAll())" Loading="@Loading">刷新</ElButton>
+    </div>
+
+    <div style='@(Error is null ? "display:none" : "")'>
+        <ElAlert Type="error" Title="@(Error ?? "")" ShowIcon="true" Closable="true" @onclose="@(_ => DismissError())" />
+    </div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            <ElFormItem Label="作业编号">
+                <ElInput ModelValue="@QueryJobId" @onupdate:modelValue="SetQueryJobId" Placeholder="请输入作业编号" Clearable="true" />
+            </ElFormItem>
+            <ElFormItem Label="组名称">
+                <JobGroupSelect Value="@QueryGroupName" Options="@GroupOptions" Loading="@LoadingGroups" OnChange="@SetQueryGroupName" />
+            </ElFormItem>
+            <ElFormItem Label="描述信息">
+                <ElInput ModelValue="@QueryDescription" @onupdate:modelValue="SetQueryDescription" Placeholder="请输入描述信息" Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="@(_ => Search())" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="@(_ => ResetSearch())" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <ElCard class="jero-list-page jero-list-card">
+        <div class="job-toolbar">
+            <div class="job-actions">
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="@(_ => OpenCreateJob())" Disabled="@Busy">增加作业</ElButton>
+                }
+                <ElButton @onclick="@(_ => StartAll())" Loading="@StartAllBusy" Disabled="@Busy">启动所有作业</ElButton>
+                <ElButton @onclick="@(_ => PauseAll())" Loading="@PauseAllBusy" Disabled="@Busy">暂停所有作业</ElButton>
+                <ElButton @onclick="@(_ => CancelSleep())" Loading="@CancelSleepBusy" Disabled="@Busy">强制唤醒调度器</ElButton>
+                <ElButton @onclick="@(_ => PersistAll())" Loading="@PersistAllBusy" Disabled="@Busy">强制持久化</ElButton>
+                <ElButton @onclick="@(_ => OpenClusters())" Disabled="@ClusterLoading">集群控制</ElButton>
+                <ElButton @onclick="@(_ => OpenDashboard())">任务看板</ElButton>
+            </div>
+            <span style="color:#909399;font-size:12px;">共 @Total 个作业</span>
+        </div>
+
+        <div style='@(Loading ? "" : "display:none")'>
+            <ElText>正在加载任务调度数据…</ElText>
+        </div>
+
+        <div class="jero-list-scroll">
+            <slot />
+        </div>
+
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+            <ElPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total" PageSizes="@(new double[] { 10, 20, 50, 100 })"
+                              Background="true" Layout="total, sizes, prev, pager, next, jumper"
+                              @oncurrent-change="ChangePage" @onsize-change="ChangePageSize" />
+        </div>
+    </ElCard>
+</div>
+
+@code {
+    [Parameter] public Action<string> SetQueryGroupName { get; set; } = default!;
+    [Parameter] public Action<string> SetQueryJobId { get; set; } = default!;
+    [Parameter] public Action<string> SetQueryDescription { get; set; } = default!;
+    [Parameter] public Action RefreshAll { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreateJob { get; set; } = default!;
+    [Parameter] public Action StartAll { get; set; } = default!;
+    [Parameter] public Action PauseAll { get; set; } = default!;
+    [Parameter] public Action CancelSleep { get; set; } = default!;
+    [Parameter] public Action PersistAll { get; set; } = default!;
+    [Parameter] public Action OpenClusters { get; set; } = default!;
+    [Parameter] public Action OpenDashboard { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public bool StartAllBusy { get; set; }
+    [Parameter] public bool PauseAllBusy { get; set; }
+    [Parameter] public bool CancelSleepBusy { get; set; }
+    [Parameter] public bool PersistAllBusy { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string QueryJobId { get; set; } = "";
+    [Parameter] public string QueryDescription { get; set; } = "";
+    [Parameter] public string QueryGroupName { get; set; } = "";
+    [Parameter] public bool LoadingGroups { get; set; }
+    [Parameter] public string[] GroupOptions { get; set; } = [];
+    [Parameter] public int Total { get; set; }
+    [Parameter] public bool ClusterLoading { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool Busy { get; set; }
+}
+
+<style>
+    .job-actions { display:flex; align-items:center; gap:4px 8px; flex-wrap:wrap; }
+    .job-trigger-panel { min-width:0; padding:12px; background:#f8fafc; }
+    .job-trigger-actions { display:flex; justify-content:flex-end; margin-bottom:10px; }
+    .job-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 18px; }
+    .job-form-wide { grid-column:1 / -1; }
+    .job-dialog-note { margin-bottom:14px; }
+    .job-script { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    @@media(max-width:700px) {
+        .job-form-grid { grid-template-columns:1fr; }
+        .job-form-wide { grid-column:auto; }
+    }
+</style>

@@ -1,0 +1,26 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Npm.Echarts
+
+<ElSelect ModelValue="@(Value)" Placeholder="@Placeholder" Filterable="true" Clearable="@Clearable"
+          AllowCreate="@AllowCreate" DefaultFirstOption="@DefaultFirstOption" Loading="@Loading" Disabled="@Disabled"
+          @attributes="@(new ModelUpdate<string>(Update))">
+    @foreach (var option in Options)
+    {
+        <ElOption @key="option.Value" Label="@option.Label" Value="@option.Value" />
+    }
+</ElSelect>
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public ConfigurationOption[] Options { get; set; } = [];
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Clearable { get; set; }
+    [Parameter] public bool AllowCreate { get; set; }
+    [Parameter] public bool DefaultFirstOption { get; set; }
+    [Parameter] public Action<string>? Change { get; set; }
+
+    private void Update(string? value) => Change?.Invoke(value ?? "");
+}

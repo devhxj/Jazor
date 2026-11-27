@@ -1,0 +1,12 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElDatePicker ModelValue="@Value" Placeholder="@Placeholder" Type="date" ValueFormat="YYYY-MM-DD"
+              Format="YYYY-MM-DD" Clearable="true"
+              @attributes='@(new ModelUpdate<object?>(value => OnChange(value is string text ? text : "")))' />
+
+@code {
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public Action<string> OnChange { get; set; } = default!;
+}

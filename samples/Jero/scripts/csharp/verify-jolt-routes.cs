@@ -1,10 +1,15 @@
+#!/usr/bin/env dotnet run
 #:property PublishAot=false
 #:package BouncyCastle.Cryptography@2.7.0
+#:include ../../src/Jero.Test/TestWorkspace.cs
+using Jero.Test;
 using System.Diagnostics;
 using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Org.BouncyCastle.Asn1.GM;
@@ -15,21 +20,37 @@ using Org.BouncyCastle.Math;
 if (args is not [var publishDirectory, var chromiumPath])
     throw new ArgumentException("Usage: verify-jolt-routes.cs <isolated-publish-directory> <chromium-executable>");
 
-var target = Path.GetFullPath(publishDirectory);
+var published = Path.GetFullPath(publishDirectory);
 var chromium = Path.GetFullPath(chromiumPath);
-if (!File.Exists(Path.Combine(target, "Jero.Web.dll")) || !File.Exists(chromium))
+if (!File.Exists(Path.Combine(published, "Jero.Web.dll")) || !File.Exists(chromium))
     throw new ArgumentException("Provide an isolated Jero.Web publish directory and a Chromium executable.");
-var work = Directory.CreateTempSubdirectory("jero-jolt-routes-").FullName;
+var work = TestWorkspace.Create("routes");
 Console.WriteLine($"Browser profile and host log: {work}");
+var target = Path.Combine(work, "host");
+Directory.CreateDirectory(target);
+foreach (var file in Directory.EnumerateFiles(published, "*", SearchOption.AllDirectories))
+{
+    var relative = Path.GetRelativePath(published, file);
+    var destination = Path.Combine(target, relative);
+    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+    // Share packaged runtime and web assets. Copy mutable state, including configuration and databases.
+    var directory = relative.Split(Path.DirectorySeparatorChar)[0];
+    var extension = Path.GetExtension(relative).ToLowerInvariant();
+    var linkable = directory is "runtimes" or "wwwroot" || extension is ".dll" or ".exe" or ".pdb";
+    if (!linkable || !OperatingSystem.IsWindows() || !CreateHardLink(destination, file, IntPtr.Zero))
+        File.Copy(file, destination);
+}
 using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(4));
 var stop = timeout.Token;
 var hostPort = FreePort();
 var chromePort = FreePort();
 var hostOrigin = $"http://127.0.0.1:{hostPort}";
 var cdpOrigin = $"http://127.0.0.1:{chromePort}";
+var browserProfile = Path.Combine(work, "chromium-profile");
+var passed = false;
 using var host = new Process
 {
-    StartInfo = new ProcessStartInfo("dotnet")
+    StartInfo = new ProcessStartInfo(Path.Combine(target, OperatingSystem.IsWindows() ? "Jero.Web.exe" : "Jero.Web"))
     {
         WorkingDirectory = target,
         RedirectStandardOutput = true,
@@ -38,10 +59,26 @@ using var host = new Process
         CreateNoWindow = true,
     }
 };
-host.StartInfo.ArgumentList.Add("Jero.Web.dll");
 host.StartInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Production";
 host.StartInfo.Environment["DOTNET_ENVIRONMENT"] = "Production";
 host.StartInfo.Environment["Kestrel__Endpoints__Http__Url"] = hostOrigin;
+host.StartInfo.Environment["JWTSettings__IssuerSigningKey"] = Convert.ToHexString(RandomNumberGenerator.GetBytes(64));
+var hostCurve = GMNamedCurves.GetByName("sm2p256v1");
+var hostKey = new BigInteger(1, RandomNumberGenerator.GetBytes(32)).Mod(hostCurve.N.Subtract(BigInteger.One)).Add(BigInteger.One);
+host.StartInfo.Environment["Logging__EventLog__LogLevel__Default"] = "None";
+// Furion loads modular Configuration files after the default providers.
+var appConfiguration = Path.Combine(target, "Configuration", "App.json");
+var appOptions = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(appConfiguration),
+    documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true })!;
+appOptions["Cryptogram"]!["PrivateKey"] = Convert.ToHexString(hostKey.ToByteArrayUnsigned());
+appOptions["Cryptogram"]!["PublicKey"] = Convert.ToHexString(hostCurve.G.Multiply(hostKey).GetEncoded(false));
+File.WriteAllText(appConfiguration, appOptions.ToJsonString());
+var databaseConfiguration = Path.Combine(target, "Configuration", "Database.json");
+var databaseOptions = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(databaseConfiguration),
+    documentOptions: new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true })!;
+databaseOptions["DbConnection"]!["ConnectionConfigs"]![0]!["ConnectionString"] =
+    $"DataSource={Path.Combine(work, "route-test.db")}";
+File.WriteAllText(databaseConfiguration, databaseOptions.ToJsonString());
 var hostLog = new StringBuilder();
 void Log(object sender, DataReceivedEventArgs e)
 {
@@ -61,7 +98,7 @@ using var chrome = new Process
     }
 };
 foreach (var argument in new[] { "--headless=new", "--no-first-run", "--no-default-browser-check",
-         "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=" + chromePort, "--user-data-dir=" + Path.Combine(work, "chromium-profile"),
+         "--remote-debugging-address=127.0.0.1", "--remote-debugging-port=" + chromePort, "--user-data-dir=" + browserProfile,
          "--disable-background-networking", "about:blank" })
     chrome.StartInfo.ArgumentList.Add(argument);
 try
@@ -74,12 +111,16 @@ try
     {
         try { return await http.GetStringAsync(hostOrigin + "/about", stop); }
         catch (HttpRequestException error) when (error.StatusCode is null && !host.HasExited) { return null; }
+        catch (HttpRequestException error) when (host.HasExited)
+        {
+            throw new InvalidOperationException($"The published Jero host exited with code {host.ExitCode}. See {Path.Combine(work, "host.log")}.", error);
+        }
     }, stop);
     var entry = System.Text.RegularExpressions.Regex.Match(shell, "<script\\s+type=\"module\"(?:\\s+crossorigin)?\\s+src=\"([^\"]+)\"></script>");
     var entryPath = entry.Groups[1].Value;
     if (!entry.Success || !System.Text.RegularExpressions.Regex.IsMatch(entryPath, @"^\./assets/[^/]+-[\w-]+\.js$"))
         throw new InvalidOperationException("No hashed Vite production entry in Jero shell.");
-    var assetsDirectory = Path.Combine(target, "App", "dist", "assets");
+    var assetsDirectory = Path.Combine(target, "wwwroot", "assets");
     var entryFile = Path.Combine(assetsDirectory, Path.GetFileName(entryPath));
     if (!File.Exists(entryFile))
         throw new InvalidOperationException($"The Jolt entry is missing from the publish directory: {entryFile}");
@@ -186,7 +227,7 @@ try
             let result = [];
             if (path.endsWith('/sysauth/userinfo')) result = {
                 id: '1', account: 'smoke', realName: 'Shell smoke', accountType: 777,
-                tenantId: '1', currentTenantId: '1', homePath: '/about', buttons: ['sysCache:keyList', 'sysDifflog:page', 'sysUpdate:list', 'sysUpdate:logs', 'sysMenu:update', 'sysMenu:setStatus', 'sysFile:page', 'sysConfig:page', 'sysConfig:batchDelete', 'sysTenantConfig:batchDelete', 'sysLangText:batchDelete', 'sysOnlineUser:page', 'sysPlugin:add', 'sysUser:changePwd'], roleIds: []
+                tenantId: '1', currentTenantId: '1', homePath: '/about', buttons: ['sysCache:keyList', 'sysDifflog:page', 'sysUpdate:list', 'sysUpdate:logs', 'sysMenu:update', 'sysMenu:setStatus', 'sysFile:page', 'sysConfig:page', 'sysConfig:batchDelete', 'sysTenantConfig:batchDelete', 'sysLangText:batchDelete', 'sysOnlineUser:page', 'sysPlugin:add', 'sysUser:changePwd', 'sysUser:update', 'sysPrint:update', 'sysWechatPay:listRefund'], roleIds: []
             };
             else if (path.endsWith('/sysmenu/loginmenutree')) result = [
                 { id: '1', path: '/about', type: 2, meta: {title:'关于项目'}, children: [] },
@@ -233,7 +274,9 @@ try
                 { id: '99', path: '/mock-iframe', type: 2, meta: {title:'Shell iframe fixture', isIframe: true, isLink: 'about:blank'}, children: [] }
             ];
             else if (path.endsWith('/sysconfig/sysinfo')) result = { title: 'Shell smoke', viceTitle: 'Fixture subtitle', viceDesc: 'Fixture description', copyright: 'Fixture copyright', icp: 'Fixture ICP', icpUrl: 'https://example.test', enableReg: 2, wayList: [{value:'fixture-way',label:'Fixture registration'}] };
-            else if (path.endsWith('/approvalflow/page')) result = { total: 0, items: [] };
+            else if (path.endsWith('/approvalflow/page')) result = { total: 1, items: [{id:'951', name:'Fixture approval flow', code:'fixture-flow'}] };
+            else if (path.endsWith('/approvalflow/detail')) result = {id:'951', name:'Fixture approval flow', code:'fixture-flow'};
+            else if (path.endsWith('/approvalflow/formroutes')) result = [];
             else if (path.endsWith('/sysconfig/page')) result = { total: 2, items: [
                 {id:'901', name:'fixture-platform-custom', code:'fixture-custom', value:'true', sysFlag:2},
                 {id:'902', name:'fixture-platform-built-in', code:'fixture-built-in', value:'false', sysFlag:1}] };
@@ -250,8 +293,13 @@ try
             else if (path.endsWith('/sysauth/login')) result = { accessToken: 'signed-in-fixture', homepage: '/plugin' };
             else if (path.endsWith('/sysuser/changepwd')) result = true;
             else if (path.endsWith('/sysuser/baseinfo')) result = { id:'1', account:'smoke', realName:'Shell smoke', introduction:'fixture-profile-introduction' };
-            else if (path.endsWith('/sysuser/page')) result = {total: 18, items: [
-                {id: '101', account: 'fixture-user', realName: 'fixture-user-name', status: 1, accountType: 777}]};
+            else if (path.endsWith('/sysuser/page')) {
+                const items = [
+                {id: '101', account: 'fixture-user', realName: 'fixture-user-name', phone: '17700000001', roleName: 'fixture-role-cell', orgName: 'fixture-org-cell', posName: 'fixture-pos-cell', status: 1, accountType: 777},
+                {id: '102', account: 'fixture-second', realName: 'fixture-second-name', status: 1, accountType: 777}];
+                if (window.__jeroRequests.filter(([url]) => url.endsWith('/sysuser/page')).length > 1) items.reverse();
+                result = {total: 18, items};
+            }
             else if (path.endsWith('/systenant/page')) result = { total: 13, items: [
                 {id:'201', name:'fixture-tenant', phone:'12345678', status:1}] };
             else if (path.endsWith('/sysmenu/list')) result = [
@@ -268,6 +316,9 @@ try
                 {id:'601', name:'fixture-setting', code:'fixture-config-key', value:'true'}]};
             else if (path.endsWith('/sysprint/page')) result = {total:1, items:[
                 {id:'801', name:'fixture-print', status:1, printType:1, createUserName:'fixture-print-author'}]};
+            else if (path.endsWith('/syswechatpay/page')) result = {total:1, items:[
+                {id:'22', outTradeNumber:'fixture-payment', total:12345, tradeState:'REFUND', qrcodeContent:'https://example.test/pay', transactionId:'transaction-fixture'}]};
+            else if (path.endsWith('/syswechatpay/listrefund')) result = [{id:'23', outRefundNumber:'fixture-refund', refund:2345}];
             else if (path.endsWith('/syslangtext/page')) result = {total:1, items:[
                 {id:'701', entityName:'FixtureEntity', entityId:'702', fieldName:'title', langCode:'en', content:'fixture-translation'}]};
             else if (path.endsWith('/sysjob/pagejobdetail')) result = { total: 7, items: [] };
@@ -275,6 +326,8 @@ try
             else if (path.endsWith('/sysrole/page')) result = {total: 1, items: [{id:'103', name:'fixture-role', code:'role-code'}]};
             else if (path.endsWith('/syslang/page')) result = {total: 1, items: [{id:'104', name:'fixture-language', code:'lang-code'}]};
             else if (path.endsWith('/sysdatabase/list')) result = [{configId:'catalog', dbNickName:'fixture-catalog'}];
+            else if (path.endsWith('/sysdatabase/entitytables/catalog')) result = [
+                {tableName:'order_request', tableComment:'Fixture order requests', entityName:'OrderRequest'}];
             else if (path.endsWith('/sysdatabase/visualdbtable/catalog')) result = {
                 visualTableList: [{tableName:'Orders', x:50, y:50}, {tableName:'Items', x:300, y:50}],
                 visualColumnList: [{tableName:'Orders', columnName:'id'}, {tableName:'Items', columnName:'orderId'}],
@@ -336,7 +389,7 @@ try
         catch (OperationCanceledException) when (!stop.IsCancellationRequested)
         {
             var state = await Evaluate("({ path: location.pathname, text: document.body?.innerText?.slice(-1500), requests: window.__jeroRequests })");
-            throw new InvalidOperationException($"Browser check timed out: {expression}. Page: {state}");
+            throw new InvalidOperationException($"Browser check timed out: {expression}. Page: {state}; JS: {string.Join(Environment.NewLine, exceptions)}");
         }
     }
     async Task WaitForPage(string path, string marker)
@@ -351,7 +404,7 @@ try
             var expectedLocation = JsonSerializer.Serialize(path);
             await WaitFor(async () =>
             {
-                var content = await Evaluate($"location.pathname + location.search === {expectedLocation} ? document.body?.innerText ?? '' : ''");
+                var content = await Evaluate($"location.pathname + location.search === {expectedLocation} ? (document.querySelector('.jero-shell__main') ?? document.querySelector('#app'))?.innerText ?? '' : ''");
                 return content.ValueKind == JsonValueKind.String && content.GetString()!.Contains(marker, StringComparison.Ordinal) ? marker : null;
             }, deadline.Token);
         }
@@ -362,7 +415,8 @@ try
         }
         Console.WriteLine($"{path} mounted {marker}.");
     }
-    await WaitForPage("/about", "生产环境依赖");
+    await WaitForPage("/about", "关于项目");
+    await Expect("document.querySelector('.about-card')?.innerText.includes('Element Plus') && document.querySelector('.about-card a')?.href === 'https://github.com/devhxj/Jazor'");
     string[] expectedRoutes =
     [
         "/", "/403", "/404", "/500", "/:pathMatch(.*)*", "/about", "/analytics", "/approval-flow",
@@ -383,12 +437,8 @@ try
         throw new InvalidOperationException($"Unexpected Vue Router inventory. Missing: {string.Join(", ", missingRoutes)}. Extra: {string.Join(", ", extraRoutes)}.");
     Console.WriteLine($"Vue Router registered {actualRoutes.Count} distinct paths.");
     await WaitForPage("/403", "无权访问");
-    await Evaluate("[...document.querySelectorAll('button')].find(button => button.textContent.trim() === '返回首页').click()");
-    await WaitFor(async () =>
-    {
-        var path = await Evaluate("location.pathname");
-        return path.ValueKind == JsonValueKind.String && path.GetString() == "/home" ? "home" : null;
-    }, stop);
+    await Evaluate("document.querySelector('.jero-fallback button').click()");
+    await Expect("location.pathname === '/home'");
     Console.WriteLine("ErrorPage Action navigated to /home.");
     await WaitForPage("/404", "访问地址不存在");
     await WaitForPage("/500", "页面加载过程中发生异常");
@@ -425,6 +475,30 @@ try
     await WaitForPage("/user-reg-way", "fixture-registration");
     await WaitForPage("/role", "fixture-role");
     await WaitForPage("/user", "fixture-user-name");
+    await Evaluate("window.__jeroUserRows = [...document.querySelectorAll('.el-table__row')]; [...document.querySelectorAll('button')].find(button => button.textContent.trim() === '刷新').click()");
+    await Expect("""
+        (() => {
+            const rows = [...document.querySelectorAll('.el-table__row')];
+            return rows.length === 2 && rows[0].innerText.includes('fixture-second-name') &&
+                rows[1].innerText.includes('fixture-user-name') &&
+                rows[0] === window.__jeroUserRows[1] && rows[1] === window.__jeroUserRows[0];
+        })()
+        """);
+    foreach (var (account, userId) in new[] { ("fixture-user", "101"), ("fixture-second", "102") })
+    {
+        var exactAccount = JsonSerializer.Serialize(account);
+        await Evaluate($"[...[...document.querySelectorAll('.el-table__row')].find(row => [...row.cells].some(cell => cell.innerText.trim() === {exactAccount})).querySelectorAll('.user-action-buttons button')].find(button => button.textContent.trim() === '编辑').click()");
+        await Expect($"window.__jeroRequests.some(([url]) => url.endsWith('/sysuser/ownrolelist/{userId}')) && [...document.querySelectorAll('[role=dialog] input')].some(input => input.value === {exactAccount} && input.getClientRects().length > 0)");
+        await Evaluate("[...document.querySelectorAll('[role=dialog] button')].find(button => button.textContent.trim() === '取消' && button.getClientRects().length > 0).click()");
+        await Expect("![...document.querySelectorAll('[role=dialog] input')].some(input => input.getClientRects().length > 0)");
+    }
+    await Expect("['fixture-user','fixture-user-name','17700000001','fixture-role-cell','fixture-org-cell','fixture-pos-cell'].every(value => [...document.querySelectorAll('.el-table__row td')].some(cell => cell.innerText.trim() === value))");
+    await Expect("window.__jeroRequests.some(([url, body]) => { if (!url.endsWith('/sysuser/page')) return false; const input = JSON.parse(body); return input.page === 1 && input.pageSize === 20 && ['account','realName','posName','phone','orgId'].every(key => Object.hasOwn(input, key)) && !Object.hasOwn(input, 'PageSize'); })");
+    await Expect("document.querySelector('.el-pagination__total')?.textContent.includes('18') && !!document.querySelector('.el-table__row') && !document.querySelector('.el-table__body')?.textContent.includes('else')");
+    await WaitForPage("/analytics", "访问来源");
+    await Expect("document.querySelector('#jero-analytics-main-chart canvas, #jero-analytics-main-chart svg') !== null");
+    Console.WriteLine("Verified user wire keys, Element Plus cells, both row edit IDs, and ECharts rendering.");
+
     await WaitForPage("/notice", "fixture-announcement");
     await WaitForPage("/lang", "fixture-language");
     await WaitForPage("/database/visual?configId=catalog", "库表可视化");
@@ -479,10 +553,26 @@ try
     }
 
     await WaitForPage("/print", "fixture-print");
-    await Evaluate("[...document.querySelectorAll('tr')].find(row => row.innerText.includes('fixture-print')).querySelector('button').click()");
-    await Expect("[...document.querySelectorAll('[role=dialog]')].some(dialog => dialog.innerText.includes('fixture-print-author'))");
+    await Evaluate("[...[...document.querySelectorAll('.jero-shell__main tbody tr')].find(row => row.innerText.includes('fixture-print')).querySelectorAll('button')].find(button => button.innerText.trim() === '详情').click()");
+    await Expect("[...document.querySelectorAll('[role=dialog]')].some(dialog => dialog.getClientRects().length && dialog.innerText.includes('fixture-print-author'))");
+    await Evaluate("[...document.querySelectorAll('[role=dialog]')].find(dialog => dialog.getClientRects().length && dialog.innerText.includes('fixture-print-author')).querySelector('.el-dialog__headerbtn').click()");
+    await Expect("![...document.querySelectorAll('[role=dialog]')].some(dialog => dialog.getClientRects().length && dialog.innerText.includes('fixture-print-author'))");
+    await Evaluate("[...[...document.querySelectorAll('.jero-shell__main tbody tr')].find(row => row.innerText.includes('fixture-print')).querySelectorAll('button')].find(button => button.innerText.trim() === '编辑').click()");
+    await Expect("document.querySelector('#jero-print-template .hiprint-printPanel') && document.querySelectorAll('#jero-print-elements [tid]').length >= 5");
+    Console.WriteLine("Hiprint rendered the template and its element palette.");
+
+    await WaitForPage("/wechat-pay", "fixture-payment");
+    await Expect("[...document.querySelectorAll('.jero-shell__main tbody tr')].some(row => row.innerText.includes('fixture-payment') && row.innerText.includes('123.45') && row.innerText.includes('付款二维码'))");
+    await Evaluate("[...[...document.querySelectorAll('.jero-shell__main tbody tr')].find(row => row.innerText.includes('fixture-payment')).querySelectorAll('button')].find(button => button.innerText.trim() === '查看退款').click()");
+    await Expect("[...document.querySelectorAll('[role=dialog] tr')].some(row => row.innerText.includes('fixture-refund') && row.innerText.includes('23.45'))");
+    Console.WriteLine("WeChat Pay rendered payment and refund amounts and the payment QR action.");
 
     await WaitForPage("/received-notice", "Shell notice fixture");
+    await Expect("document.querySelector('.jero-query-card__head')?.getAttribute('aria-expanded') === 'false'");
+    await Evaluate("document.querySelector('.jero-query-card__head').click()");
+    await Expect("document.querySelector('.jero-query-card input[placeholder=\"搜索站内信标题\"]') !== null && localStorage.getItem('jero-query-open:received-notice') === '1'");
+    await Evaluate("document.querySelector('.jero-query-card__head').click()");
+    await Expect("document.querySelector('.jero-query-card__body') === null && localStorage.getItem('jero-query-open:received-notice') === '0'");
     await Evaluate("[...document.querySelectorAll('button')].find(button => button.textContent.trim() === '详情').click()");
     await WaitFor(async () =>
     {
@@ -508,11 +598,8 @@ try
         throw new InvalidOperationException("Cache read unexpectedly sent a destructive request.");
     Console.WriteLine("/cache loaded keys and rendered the mock value without delete or clear requests.");
     await WaitForPage("/iframe/99", "Shell iframe fixture");
-    await WaitFor(async () =>
-    {
-        var frame = await Evaluate("document.querySelector('iframe.jero-iframe__frame')?.getAttribute('src')");
-        return frame.ValueKind == JsonValueKind.String && frame.GetString() == "about:blank" ? "iframe" : null;
-    }, stop);
+    // The menu, breadcrumbs and tab can show the fixture title before the iframe renders.
+    await Expect("document.querySelector('iframe.jero-iframe__frame')?.getAttribute('src') === 'about:blank'");
     await Evaluate("[...document.querySelectorAll('button')].find(button => button.textContent.trim() === '新窗口打开').click()");
     var opened = await Evaluate("window.__jeroOpened");
     if (opened.ValueKind != JsonValueKind.Array || opened[0].GetString() != "about:blank" || opened[1].GetString() != "_blank")
@@ -546,8 +633,24 @@ try
         await WaitForPage(route, marker);
         // The shell can contain the same title in the menu or open tabs.
         await Expect($"document.querySelector('.jero-shell__main')?.innerText.includes({JsonSerializer.Serialize(marker)}) === true");
+        if (route == "/approval-flow")
+        {
+            await Expect("[...document.querySelectorAll('.jero-shell__main button')].some(button => button.textContent.trim() === '表单配置')");
+            await Evaluate("[...document.querySelectorAll('.jero-shell__main button')].find(button => button.textContent.trim() === '表单配置').click()");
+            await Expect("[...document.querySelectorAll('.el-dialog .el-form-item')].find(field => field.querySelector('label')?.textContent.trim() === '库定位器')?.querySelector('.el-select input')?.disabled === false");
+            await Evaluate("[...document.querySelectorAll('.el-dialog .el-form-item')].find(field => field.querySelector('label')?.textContent.trim() === '库定位器').querySelector('.el-select').click()");
+            await Expect("[...document.querySelectorAll('.el-select-dropdown__item')].some(item => item.textContent.includes('fixture-catalog'))");
+            await Evaluate("[...document.querySelectorAll('.el-select-dropdown__item')].find(item => item.textContent.includes('fixture-catalog')).click()");
+            await Expect("[...document.querySelectorAll('.el-dialog .el-form-item')].find(field => field.querySelector('label')?.textContent.trim() === '数据库表')?.querySelector('.el-select input')?.disabled === false");
+            await Evaluate("[...document.querySelectorAll('.el-dialog .el-form-item')].find(field => field.querySelector('label')?.textContent.trim() === '数据库表').querySelector('.el-select').click()");
+            await Expect("[...document.querySelectorAll('.el-select-dropdown__item')].some(item => item.textContent.includes('order_request'))");
+            await Evaluate("[...document.querySelectorAll('.el-select-dropdown__item')].find(item => item.textContent.includes('order_request')).click()");
+            await Expect("document.querySelector('input[placeholder=\"例如 OrderRequest\"]')?.value === 'OrderRequest'");
+        }
+        if (route == "/database")
+            await Expect("![...document.querySelectorAll('.jero-shell__main button')].some(button => ['生成实体', '生成种子'].includes(button.textContent.trim()))");
         if (route == "/form-design")
-            await Expect("document.querySelectorAll('#jero-vform-designer').length === 1");
+            await Expect("document.querySelectorAll('.form-design-host').length === 1");
         if (route == "/online-user")
             await Expect("![...document.querySelectorAll('.jero-shell__main button')].some(button => button.textContent.trim() === '下线')");
         if (route == "/profile")
@@ -636,11 +739,11 @@ try
     Console.WriteLine("Monaco requested its editor chunk on the code tab and remounted once after reopening.");
 
     await Evaluate("window.__jeroResizeBeforeDesigner = window.onresize; void document.querySelector('#app').__vue_app__.config.globalProperties.$router.push('/form-design')");
-    await Expect("document.querySelectorAll('#jero-vform-designer .main-container').length === 1 && (" + designerAssets + ")");
+    await Expect("document.querySelectorAll('.form-design-host .main-container').length === 1 && (" + designerAssets + ")");
     await Evaluate("void document.querySelector('#app').__vue_app__.config.globalProperties.$router.push('/plugin')");
-    await Expect("document.querySelector('#jero-vform-designer') === null && window.onresize === window.__jeroResizeBeforeDesigner");
+    await Expect("document.querySelector('.form-design-host') === null && window.onresize === window.__jeroResizeBeforeDesigner");
     await Evaluate("void document.querySelector('#app').__vue_app__.config.globalProperties.$router.push('/form-design')");
-    await Expect("document.querySelectorAll('#jero-vform-designer .main-container').length === 1");
+    await Expect("document.querySelectorAll('.form-design-host .main-container').length === 1");
     Console.WriteLine("VForm loaded on route entry and remounted once after leaving and returning.");
 
     await WaitForPage("/login", "登录 Jero");
@@ -671,6 +774,7 @@ try
     await Expect("document.querySelector('.qr-login-code img')?.naturalWidth > 0 && getComputedStyle(document.querySelector('.qr-login-code')).width === '220px'");
     if (exceptions.Count > 0)
         throw new InvalidOperationException(string.Join(Environment.NewLine, exceptions));
+    passed = true;
     return 0;
 }
 finally
@@ -682,7 +786,23 @@ finally
         }
         catch (InvalidOperationException) { }
     File.WriteAllText(Path.Combine(work, "host.log"), hostLog.ToString());
+    if (passed)
+    {
+        // Keep diagnostics and the test database, and release the large disposable copies.
+        foreach (var directory in new[] { target, browserProfile })
+            try
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            {
+                Console.Error.WriteLine($"Could not remove test artifacts at {directory}: {error.Message}");
+            }
+    }
 }
+
+[DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = CharSet.Unicode)]
+static extern bool CreateHardLink(string destination, string source, IntPtr attributes);
 
 static int FreePort()
 {

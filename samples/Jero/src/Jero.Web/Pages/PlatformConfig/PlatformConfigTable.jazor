@@ -1,0 +1,76 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.PlatformConfig
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<PlatformConfigTableRow>(Rows) { OnSortChange = SortRows, OnSelectionChange = SelectRows })"
+                     border="true"
+                     stripe="true"
+                     RowKey="@(nameof(PlatformConfigTableRow.Id))"
+                     EmptyText="暂无平台参数">
+            @if (CanBatchDelete) {
+<ElTableColumn type="selection" width="46" @attributes="@(new SelectableRows<PlatformConfigTableRow>((row, _) => row.SysFlag != 1))" />
+
+}
+            <ElTableColumn type="index" label="序号" width="70" align="center" />
+            <ElTableColumn prop="name" label="配置名称" MinWidth="150" sortable="custom" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="code" label="配置编码" MinWidth="190" sortable="custom" ShowOverflowTooltip="true" />
+            <ElTableColumn prop="@(nameof(PlatformConfigTableRow.Value))" label="属性值" MinWidth="180" ShowOverflowTooltip="true" />
+            <ElTableColumn label="内置参数" width="105" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<PlatformConfigTableRow>)(object)cell).Row; }
+                    <ElTag @attributes="@(new TableTagProps(row.SysFlag == 1 ? "success" : "info"))">@(row.SysFlag == 1 ? "是" : "否")</ElTag>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn label="分组编码" MinWidth="140" prop="groupCode" sortable="custom" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<PlatformConfigTableRow>)(object)cell).Row; }
+                    @((string.IsNullOrEmpty(row.GroupCode) ? "-" : row.GroupCode))
+                </template>
+            </ElTableColumn>
+            <ElTableColumn prop="orderNo" label="排序" width="88" align="center" sortable="custom" />
+            <ElTableColumn label="修改记录" width="105" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<PlatformConfigTableRow>)(object)cell).Row; }
+                    <ElButton link="true" type="primary" @onclick="@(() => OpenAudit(row.Id))">详情</ElButton>
+                </template>
+            </ElTableColumn>
+            @if (CanEdit || CanDelete) {
+<ElTableColumn label="操作" width="140" align="center" fixed="right">
+                    <template #default context="cell">@{ var row = ((TableSlot<PlatformConfigTableRow>)(object)cell).Row; }
+                        @if (CanEdit) {
+<ElButton link="true"
+                                      type="primary"
+                                      disabled='@(!row.CanEditRow)' @attributes="@(new ButtonTitle(row.EditDisabledReason))" @onclick="@(() => OpenEdit(row.Id))">编辑</ElButton>
+
+}
+                        @if (CanDelete) {
+<ElPopconfirm title='@("确定删除配置【" + row.Name + "】吗？")'
+                                          ConfirmButtonText="确定"
+                                          CancelButtonText="取消"
+                                          @onconfirm="@(() => Delete(row.Id))">
+                                <template #reference>
+                                    <ElButton link="true"
+                                              type="danger"
+                                              disabled='@(!row.CanDeleteRow)'
+                                              @attributes="@(new ButtonTitle(row.DeleteDisabledReason))">删除</ElButton>
+                                </template>
+                            </ElPopconfirm>
+
+}
+                    </template>
+                </ElTableColumn>
+
+}
+        </ElTable>
+
+@code {
+    [Parameter] public PlatformConfigTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanBatchDelete { get; set; } = default!;
+    [Parameter] public bool CanEdit { get; set; } = default!;
+    [Parameter] public bool CanDelete { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string, string> Sort { get; set; } = default!;
+    [Parameter] public Action<string[]> Selection { get; set; } = default!;
+
+    private void SortRows(TableSortScope change) => Sort(change.Prop ?? "orderNo", change.Order ?? "ascending");
+    private void SelectRows(PlatformConfigTableRow[] rows) => Selection(rows.Select(row => row.Id).ToArray());
+}

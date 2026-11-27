@@ -1,0 +1,63 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Database
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<DatabaseColumnView>(Rows))" border="true" stripe="true" RowKey="@(nameof(DatabaseColumnView.DbColumnName))" EmptyText="暂无字段">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnView.DbColumnName))" label="列名" MinWidth="160" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnView.PropertyName))" label="属性名" MinWidth="150" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnView.DataType))" label="类型" MinWidth="110" />
+        <ElTableColumn label="长度" width="90" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnView>)(object)cell).Row; }@(DisplayLength(row))</template>
+        </ElTableColumn>
+        <ElTableColumn label="主键" width="82" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnView>)(object)cell).Row; }
+                <ElTag @attributes="@(new TableTagProps(row.IsPrimarykey ? "success" : "info"))">@(row.IsPrimarykey ? "是" : "否")</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="自增" width="82" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnView>)(object)cell).Row; }
+                <ElTag @attributes="@(new TableTagProps(row.IsIdentity ? "success" : "info"))">@(row.IsIdentity ? "是" : "否")</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn label="可空" width="82" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnView>)(object)cell).Row; }
+                <ElTag @attributes="@(new TableTagProps(row.IsNullable ? "success" : "info"))">@(row.IsNullable ? "是" : "否")</ElTag>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn prop="@(nameof(DatabaseColumnView.DefaultValue))" label="默认值" MinWidth="120" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnView.ColumnDescription))" label="描述" MinWidth="180" ShowOverflowTooltip="true" />
+        <ElTableColumn label="操作" width="264" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnView>)(object)cell).Row; }
+                <ElPopconfirm title='@("确定将列【" + row.DbColumnName + "】上移吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => MoveUp(row.DbColumnName))">
+                    <template #reference>
+                        <ElButton link="true" type="primary" disabled='@(((TableSlot<DatabaseColumnView>)(object)cell).Index == 0 || Busy)' loading='@(BusyKey == "move-column:" + row.DbColumnName)'>上移</ElButton>
+                    </template>
+                </ElPopconfirm>
+                <ElPopconfirm title='@("确定将列【" + row.DbColumnName + "】下移吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => MoveDown(row.DbColumnName))">
+                    <template #reference>
+                        <ElButton link="true" type="primary" disabled='@(((TableSlot<DatabaseColumnView>)(object)cell).Index == Rows.Length - 1 || Busy)' loading='@(BusyKey == "move-column:" + row.DbColumnName)'>下移</ElButton>
+                    </template>
+                </ElPopconfirm>
+                <ElButton link="true" type="primary" disabled='@(Busy)' @onclick="@(() => Edit(row.DbColumnName))">编辑</ElButton>
+                <ElPopconfirm title='@("确定删除数据列【" + row.DbColumnName + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.DbColumnName))">
+                    <template #reference>
+                        <ElButton link="true" type="danger" disabled='@(Busy)' loading='@(BusyKey == "delete-column:" + row.DbColumnName)'>删除</ElButton>
+                    </template>
+                </ElPopconfirm>
+            </template>
+        </ElTableColumn>
+    </ElTable>
+
+@code {
+    [Parameter] public DatabaseColumnView[] Rows { get; set; } = [];
+    [Parameter] public bool Busy { get; set; } = default!;
+    [Parameter] public string BusyKey { get; set; } = default!;
+    [Parameter] public Action<string> MoveUp { get; set; } = default!;
+    [Parameter] public Action<string> MoveDown { get; set; } = default!;
+    [Parameter] public Action<string> Edit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+
+    private static string DisplayLength(DatabaseColumnView row) => row.Length <= 0 ? "-" : row.DecimalDigits > 0 ? row.Length + "," + row.DecimalDigits : row.Length.ToString();
+}

@@ -1,12 +1,13 @@
 using System.Text;
 
+// 控制台统一以 UTF-8 输出中文日志，且首条输出不带 BOM。
 Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
 
 Serve.Run(RunOptions.Default.AddWebComponent<JeroHostComponent>());
 
 public class JeroHostComponent : IWebComponent
 {
-    private static readonly string[] SuppressedLogCategories = ["Microsoft.Hosting", "Microsoft.AspNetCore"];
+    private static readonly string[] _suppressedLogCategories = ["Microsoft.Hosting", "Microsoft.AspNetCore"];
 
     public void Load(WebApplicationBuilder builder, ComponentContext componentContext)
     {
@@ -18,10 +19,11 @@ public class JeroHostComponent : IWebComponent
                 return false;
             }
 
-            return !SuppressedLogCategories.Any(prefix => category?.StartsWith(prefix, StringComparison.Ordinal) == true);
+            return !_suppressedLogCategories.Any(prefix => category?.StartsWith(prefix, StringComparison.Ordinal) == true);
         });
 
-        // 设置接口超时时间和上传大小-Kestrel
+        // 先读 Kestrel 配置，再覆盖连接保活和请求头超时。
+        // MaxRequestBodySize 为 null 时 Kestrel 不主动限制请求体大小。
         builder.WebHost.ConfigureKestrel((context, options) =>
         {
             options.Configure(context.Configuration.GetSection("Kestrel"));

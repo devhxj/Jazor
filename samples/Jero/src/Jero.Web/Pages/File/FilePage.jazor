@@ -1,0 +1,228 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.File
+
+<style>
+    .file-page { display: grid; gap: 16px; }
+    .file-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 4px 2px; }
+    .file-heading h1 { margin: 0; color: #303133; font-size: 23px; line-height: 1.25; }
+    .file-heading p { margin: 7px 0 0; color: #909399; font-size: 13px; }
+    .file-layout { display: grid; grid-template-columns: minmax(250px, 300px) minmax(0, 1fr); gap: 16px; align-items: start; }
+    .file-folder-panel { display: grid; gap: 12px; min-height: 580px; }
+    .file-folder-current { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #909399; font-size: 12px; }
+    .file-folder-current strong { min-width: 0; color: #409eff; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-folder-list { display: flex; flex-direction: column; gap: 3px; max-height: 620px; overflow: auto; padding-right: 3px; }
+    .file-folder-item { width: 100%; border: 0; border-radius: 6px; padding: 9px 10px; background: transparent; color: #606266; cursor: pointer; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: background-color .16s ease, color .16s ease; }
+    .file-folder-item:hover { background: #f5f7fa; color: #409eff; }
+    .file-folder-item--active { background: #ecf5ff; color: #409eff; font-weight: 650; }
+    .file-content { min-width: 0; display: grid; gap: 16px; }
+    .file-filter-grid { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 16px; }
+    .file-filter-field { min-width: 180px; flex: 1 1 190px; }
+    .file-filter-field--name { min-width: 220px; flex-basis: 240px; }
+    .file-filter-label { display: block; margin-bottom: 7px; color: #606266; font-size: 13px; }
+    .file-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .file-toolbar-copy { color: #909399; font-size: 12px; }
+    @@media (max-width: 980px) {
+        .file-layout { grid-template-columns: 1fr; }
+        .file-folder-panel { min-height: auto; }
+        .file-folder-list { max-height: 280px; }
+    }
+</style>
+
+<div class="file-page">
+    <div class="file-heading">
+        <div>
+            <h1>文件管理</h1>
+            <p>按目录和时间查询文件，支持单文件上传、鉴权预览、下载和元数据维护。</p>
+        </div>
+        @if (CanView)
+        {
+            <ElButton @onclick="RefreshWorkspace" Loading="@(Loading || FolderLoading)">刷新全部</ElButton>
+        }
+    </div>
+
+    <div style='@(Error is null ? "display:none" : "")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    @if (!CanView)
+    {
+        <ElCard><ElEmpty Description="当前角色没有查看文件管理的权限" /></ElCard>
+    }
+    else
+    {
+        <div class="file-layout">
+            <ElCard Header="目录">
+                <div class="file-folder-panel">
+                    <ElInput ModelValue="@FolderKeyword"
+                             @onupdate:modelValue="SetFolderKeyword"
+                             Placeholder="筛选目录关键字"
+                             Clearable="true" />
+
+                    <div class="file-folder-current">
+                        <span>当前目录</span>
+                        <strong title="@CurrentFolderLabel">@CurrentFolderLabel</strong>
+                    </div>
+
+                    <div class="file-folder-list">
+                        <button type="button"
+                                class='@(SelectedFolderPath.Length == 0 ? "file-folder-item file-folder-item--active" : "file-folder-item")'
+                                @onclick='@(() => SelectFolder(""))'>全部目录</button>
+
+                        @if (FolderLoading && Folders.Length == 0)
+                        {
+                            <ElText>正在加载目录…</ElText>
+                        }
+                        else
+                        {
+                            @foreach (var folder in Folders)
+                            {
+                                @if (FolderVisible(folder))
+                                {
+                                    <button type="button"
+                                            class="@FolderClass(folder)"
+                                            style="@FolderIndent(folder)"
+                                            title="@folder.FullPath"
+                                            @onclick="@(() => SelectFolder(folder.FullPath))">@folder.Label</button>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </ElCard>
+
+            <div class="file-content">
+                <ElCard>
+                    <div class="file-filter-grid">
+                        <div class="file-filter-field file-filter-field--name">
+                            <label class="file-filter-label">文件名称</label>
+                            <ElInput ModelValue="@FileName"
+                                     @onupdate:modelValue="SetFileName"
+                                     Placeholder="文件名称"
+                                     Clearable="true" />
+                        </div>
+                        <div class="file-filter-field">
+                            <label class="file-filter-label">开始时间</label>
+                            <ElDatePicker ModelValue="@StartTime" Placeholder="开始时间" Type="datetime"
+                                          Format="YYYY-MM-DD HH:mm:ss" ValueFormat="YYYY-MM-DD HH:mm:ss" Clearable="true"
+                                          @attributes='@(new ModelUpdate<string>(value => SetStartTime(value ?? "")))' />
+                        </div>
+                        <div class="file-filter-field">
+                            <label class="file-filter-label">结束时间</label>
+                            <ElDatePicker ModelValue="@EndTime" Placeholder="结束时间" Type="datetime"
+                                          Format="YYYY-MM-DD HH:mm:ss" ValueFormat="YYYY-MM-DD HH:mm:ss" Clearable="true"
+                                          @attributes='@(new ModelUpdate<string>(value => SetEndTime(value ?? "")))' />
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:center;padding-bottom:1px;">
+                            <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                            <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+                            @if (CanUpload)
+                            {
+                                <ElButton Type="primary" Plain="true" @onclick="OpenUpload">上传</ElButton>
+                            }
+                        </div>
+                    </div>
+                </ElCard>
+
+                <ElCard>
+                    <div class="file-toolbar">
+                        <div>
+                            <strong>文件列表</strong>
+                            <div class="file-toolbar-copy">当前目录：@CurrentFolderLabel · 共 @Total 条</div>
+                        </div>
+                        <ElButton @onclick="RefreshList" Loading="@Loading">刷新列表</ElButton>
+                    </div>
+
+                    @if (Loading && Rows.Length == 0)
+                    {
+                        <ElText>正在加载文件列表…</ElText>
+                    }
+                    <FileTable Rows="@Rows" CanDownload="@CanDownload" CanEdit="@CanEdit" CanDelete="@CanDelete"
+                               PreviewingId="@PreviewingId" DownloadingId="@DownloadingId" DeletingId="@DeletingId"
+                               Preview="@Preview" Download="@Download" Edit="@Edit" Delete="@Delete" Audit="@Audit" />
+
+                    <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+                        <ElPagination CurrentPage="@CurrentPage"
+                                          PageSize="@PageSize"
+                                          Total="@Total"
+                                          PageSizes="@(new double[] { 10, 20, 50, 100 })"
+                                          Background="true"
+                                          Layout="total, sizes, prev, pager, next, jumper"
+                                          @oncurrent-change="ChangePage"
+                                          @onsize-change="ChangePageSize" />
+                    </div>
+                </ElCard>
+            </div>
+        </div>
+    }
+</div>
+
+<slot />
+
+@code {
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool CanView { get; set; }
+    [Parameter] public bool CanUpload { get; set; }
+    [Parameter] public bool CanDownload { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool FolderLoading { get; set; }
+    [Parameter] public string FolderKeyword { get; set; } = default!;
+    [Parameter] public string SelectedFolderPath { get; set; } = default!;
+    [Parameter] public FileFolderView[] Folders { get; set; } = default!;
+    [Parameter] public FileView[] Rows { get; set; } = default!;
+    [Parameter] public string FileName { get; set; } = default!;
+    [Parameter] public string StartTime { get; set; } = default!;
+    [Parameter] public string EndTime { get; set; } = default!;
+    [Parameter] public int Total { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public string PreviewingId { get; set; } = default!;
+    [Parameter] public string DownloadingId { get; set; } = default!;
+    [Parameter] public string DeletingId { get; set; } = default!;
+    [Parameter] public Action RefreshWorkspace { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action<string> SetFolderKeyword { get; set; } = default!;
+    [Parameter] public Action<string> SelectFolder { get; set; } = default!;
+    [Parameter] public Action<string> SetFileName { get; set; } = default!;
+    [Parameter] public Action<string> SetStartTime { get; set; } = default!;
+    [Parameter] public Action<string> SetEndTime { get; set; } = default!;
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenUpload { get; set; } = default!;
+    [Parameter] public Action RefreshList { get; set; } = default!;
+    [Parameter] public Action<string> Preview { get; set; } = default!;
+    [Parameter] public Action<string> Download { get; set; } = default!;
+    [Parameter] public Action<string> Edit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string> Audit { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+
+    private string CurrentFolderLabel => SelectedFolderPath.Length == 0 ? "全部目录" : SelectedFolderPath;
+
+    private bool FolderVisible(FileFolderView folder)
+        => FolderKeyword.Trim().Length == 0 || folder.FullPath.ToLowerInvariant().Contains(FolderKeyword.Trim().ToLowerInvariant());
+
+    private static string FolderIndent(FileFolderView folder) => "padding-left:" + (12 + folder.Depth * 18) + "px";
+
+    private string FolderClass(FileFolderView folder)
+        => folder.FullPath == SelectedFolderPath ? "file-folder-item file-folder-item--active" : "file-folder-item";
+}
+
+<style>
+    .file-preview-shell { min-height: 66vh; height: 72vh; overflow: auto; background: #f5f7fa; }
+    .file-preview-image { display: block; max-width: 100%; max-height: 70vh; margin: auto; object-fit: contain; }
+    .file-preview-frame { width: 100%; height: 70vh; border: 0; background: #fff; }
+    .file-native-upload { display: grid; place-items: center; gap: 8px; min-height: 130px; border: 1px dashed #c0c4cc; border-radius: 8px; padding: 18px; background: #fafafa; }
+    .file-native-upload input { max-width: 100%; }
+    .file-upload-name { color: #606266; font-size: 12px; word-break: break-all; }
+    .file-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .file-audit-grid { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px 16px; line-height: 1.6; }
+</style>

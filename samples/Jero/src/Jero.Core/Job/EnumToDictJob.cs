@@ -117,7 +117,7 @@ public class EnumToDictJob : IJob
         {
             var dictType = new SysDictType
             {
-                Id = 900000000000 + CommonUtil.GetFixedHashCode(type.TypeFullName),
+                Id = 900000000000 + CommonUtil.GetFixedHashCode(GetPersistedEnumKey(type.TypeFullName)),
                 SysFlag = YesNoEnum.Y,
                 Code = type.TypeName,
                 Name = type.TypeDescribe,
@@ -137,4 +137,14 @@ public class EnumToDictJob : IJob
         }
         return list;
     }
+
+    // These modules moved assemblies and namespaces. Keep their existing dictionary IDs
+    // so the synchronization job does not delete and recreate rows during upgrade.
+    private static string GetPersistedEnumKey(string fullName) => fullName switch
+    {
+        "Jero.Application.Modules.ApprovalFlow.FlowTypeEnum" => "Jero.Plugin.ApprovalFlow.FlowTypeEnum",
+        "Jero.Application.Modules.DingTalk.DingTalkConversationTypeEnum" => "Jero.Plugin.DingTalk.DingTalkConversationTypeEnum",
+        "Jero.Application.Modules.GoView.GoViewProStateEnum" => "Jero.Plugin.GoView.GoViewProStateEnum",
+        _ => fullName
+    };
 }

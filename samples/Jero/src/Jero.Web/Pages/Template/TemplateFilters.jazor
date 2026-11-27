@@ -1,0 +1,34 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using static ECMAScript.Vue
+@using Jero.Web.Pages.Template
+
+@if (Kind == "type")
+{
+    <ElSelect ModelValue="@(TypeValue == 0 ? (VueBooleanStringNumberValue?)null : TypeValue)" Placeholder="模板类型" Clearable="true" Filterable="true" @attributes="@(new ModelUpdate<double?>(value => TypeChange(value ?? 0)))">
+        @foreach (var option in Options)
+        {
+            <ElOption @key="option.Value" Label="@option.Label" Value="@option.Value" />
+        }
+    </ElSelect>
+}
+else
+{
+    <ElSelect ModelValue="@GroupValue" Placeholder="选择或输入分组名称" Clearable="true" Filterable="true" AllowCreate="true" DefaultFirstOption="true" @attributes='@(new ModelUpdate<string>(value => GroupChange(value ?? "")))'>
+        @foreach (var group in Groups)
+        {
+            <ElOption @key="group" Label="@group" Value="@group" />
+        }
+    </ElSelect>
+}
+
+@code {
+    [Parameter] public string Kind { get; set; } = "";
+    [Parameter] public double TypeValue { get; set; }
+    [Parameter] public string GroupValue { get; set; } = "";
+    [Parameter] public TemplateTypeOption[] Options { get; set; } = [];
+    [Parameter] public string[] Groups { get; set; } = [];
+    [Parameter] public Action<double> TypeChange { get; set; } = default!;
+    [Parameter] public Action<string> GroupChange { get; set; } = default!;
+}

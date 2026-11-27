@@ -1,0 +1,51 @@
+@using ECMAScript
+@using Npm.ElementPlus
+@using Jero.Web.Pages.StressTest
+
+<div class="stress-pair-tabs">
+    @foreach (var tab in Tabs())
+    {
+        <button @key="tab.Id" type="button" class='@(ActiveTab == tab.Id ? "stress-pair-tab is-active" : "stress-pair-tab")' @onclick="@(() => TabChange(tab.Id))">
+            @tab.Label (@tab.Pairs.Length)
+        </button>
+    }
+</div>
+<div class="stress-pair-head"><strong>请求参数</strong><ElButton @onclick="@(() => Add())">新增当前参数</ElButton></div>
+@foreach (var tab in Tabs())
+{
+    <div @key="tab.Id" class="stress-pair-panel" style='@(ActiveTab == tab.Id ? "" : "display:none")'>
+        @if (tab.Pairs.Length == 0)
+        {
+            <div class="stress-empty">当前没有参数，可点击上方按钮添加。</div>
+        }
+        <div class="stress-pair-list">
+            @for (var index = 0; index < tab.Pairs.Length; index++)
+            {
+                var pair = tab.Pairs[index];
+                var pairIndex = index;
+                <div @key="pairIndex" class="stress-pair-row">
+                    <input class="stress-pair-input" value="@pair.Key" placeholder="参数名" @oninput="@(e => UpdatePair(tab.Id, pairIndex, true, ((HTMLInputElement)e.CurrentTarget!).Value))" />
+                    <input class="stress-pair-input" value="@pair.Value" placeholder="参数值" @oninput="@(e => UpdatePair(tab.Id, pairIndex, false, ((HTMLInputElement)e.CurrentTarget!).Value))" />
+                    <ElButton Link="true" Type="danger" @onclick="@(() => Remove(pairIndex))">删除</ElButton>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private sealed record PairTab(string Id, string Label, StressPairView[] Pairs);
+
+    [Parameter] public string ActiveTab { get; set; } = "";
+    [Parameter] public StressPairView[] Headers { get; set; } = [];
+    [Parameter] public StressPairView[] Body { get; set; } = [];
+    [Parameter] public StressPairView[] PathPairs { get; set; } = [];
+    [Parameter] public StressPairView[] Query { get; set; } = [];
+    [Parameter] public Action<string> TabChange { get; set; } = default!;
+    [Parameter] public Action Add { get; set; } = default!;
+    [Parameter] public Action<double> Remove { get; set; } = default!;
+    [Parameter] public Action<string, double, bool, string> UpdatePair { get; set; } = default!;
+
+    private PairTab[] Tabs() =>
+        [new("headers", "Headers", Headers), new("body", "Body", Body), new("path", "Path", PathPairs), new("query", "Query", Query)];
+}

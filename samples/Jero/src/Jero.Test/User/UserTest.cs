@@ -1,35 +1,28 @@
-﻿
+
 using Microsoft.Playwright;
+using static Microsoft.Playwright.Assertions;
 using Xunit;
 
 namespace Jero.Test.User;
 
-public class UserTest : BaseTest
+public class UserTest(BrowserHost host) : BaseTest(host), IClassFixture<BrowserHost>
 {
-    public UserTest()
-        : base(Environment.GetEnvironmentVariable("JERO_TEST_LOGIN_TOKEN"))
-    {
-    }
-
-    public static bool BrowserTestsEnabled =>
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("JERO_TEST_BASE_URL"));
-
-    [Fact(Skip = "Set JERO_TEST_BASE_URL to an isolated running Jero host.", SkipUnless = nameof(BrowserTestsEnabled))]
+    [Fact]
     public async Task UserLogin_ValidCredentials_CompletesAuthentication()
     {
         await LoginAsync();
 
-        await Expect(Page.GetByPlaceholder("请输入账号")).ToBeHiddenAsync(new LocatorAssertionsToBeHiddenOptions
+        await Expect(Page.Locator(".jero-shell__main")).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions
         {
             Timeout = 30_000,
         });
     }
 
-    [Fact(Skip = "Set JERO_TEST_BASE_URL to an isolated running Jero host.", SkipUnless = nameof(BrowserTestsEnabled))]
+    [Fact]
     public async Task AddUser_OpenForm_FillsBasicFields()
     {
         await AuthenticateAsync();
-        await GoToUrlAsync("/#/system/user");
+        await GoToUrlAsync("/user");
 
         await Expect(Page.GetByText("账号管理").First).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions
         {
@@ -41,12 +34,12 @@ public class UserTest : BaseTest
             Name = "新增",
         }).First.ClickAsync();
 
-        var dialog = Page.Locator(".user-form-dialog");
+        var dialog = Page.GetByRole(AriaRole.Dialog);
         await Expect(dialog).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions
         {
             Timeout = 30_000,
         });
-        await Expect(dialog.GetByRole(AriaRole.Tab, new LocatorGetByRoleOptions
+        await Expect(dialog.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions
         {
             Name = "基础信息",
         })).ToBeVisibleAsync();

@@ -12,7 +12,8 @@ public class JobTriggerRecordRetentionTests
     [Fact]
     public async Task ClearJobTriggerRecord_SnowflakeTable_DeletesRowsWithoutIdentitySequence()
     {
-        var dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        var root = TestWorkspace.Create("jobs");
+        var dbPath = Path.Combine(root, "records.db");
         var tenantField = typeof(SqlSugarSetup)
             .GetField("_tenant", BindingFlags.NonPublic | BindingFlags.Static)!;
         var originalTenant = tenantField.GetValue(null);
@@ -40,15 +41,15 @@ public class JobTriggerRecordRetentionTests
         finally
         {
             tenantField.SetValue(null, originalTenant);
-            if (File.Exists(dbPath))
-                File.Delete(dbPath);
+            Directory.Delete(root, recursive: true);
         }
     }
 
     [Fact]
     public async Task ClearExpireJobTriggerRecord_MoreThanLimit_KeepsNewestRecordsForTrigger()
     {
-        var dbPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.db");
+        var root = TestWorkspace.Create("jobs");
+        var dbPath = Path.Combine(root, "records.db");
         var tenantField = typeof(SqlSugarSetup)
             .GetField("_tenant", BindingFlags.NonPublic | BindingFlags.Static)!;
         var originalTenant = tenantField.GetValue(null);
@@ -87,8 +88,7 @@ public class JobTriggerRecordRetentionTests
         finally
         {
             tenantField.SetValue(null, originalTenant);
-            if (File.Exists(dbPath))
-                File.Delete(dbPath);
+            Directory.Delete(root, recursive: true);
         }
     }
 

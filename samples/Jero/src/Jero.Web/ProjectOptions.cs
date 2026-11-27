@@ -1,4 +1,4 @@
-﻿
+
 
 
 using Jero.Core;
@@ -10,13 +10,10 @@ namespace Jero.Web;
 public static class ProjectOptions
 {
     /// <summary>
-    /// 注册项目配置选项
+    /// 将应用配置绑定到各模块的选项类型，并分别绑定 IP 和客户端限流的默认配置与策略表。
     /// </summary>
-    /// <param name="services"></param>
-    /// <returns></returns>
     public static IServiceCollection AddProjectOptions(this IServiceCollection services)
     {
-        services.AddConfigurableOptions<SpaOptions>();
         services.AddConfigurableOptions<DbConnectionOptions>();
         services.AddConfigurableOptions<SnowIdOptions>();
         services.AddConfigurableOptions<CacheOptions>();
@@ -26,7 +23,6 @@ public static class ProjectOptions
         services.AddConfigurableOptions<WechatOptions>();
         services.AddConfigurableOptions<WechatPayOptions>();
         services.AddConfigurableOptions<PayCallBackOptions>();
-        services.AddConfigurableOptions<CodeGenOptions>();
         services.AddConfigurableOptions<EnumOptions>();
         services.AddConfigurableOptions<APIJSONOptions>();
         services.AddConfigurableOptions<EmailOptions>();

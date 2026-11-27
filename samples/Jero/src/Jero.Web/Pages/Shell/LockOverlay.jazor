@@ -1,0 +1,52 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Shell
+
+<section class="lock-screen" role="dialog" aria-modal="true" aria-label="锁屏">
+        @if (!ShowForm) {
+            <button class="lock-screen__unlock-trigger" @onclick="Show"><span class="lock-screen__lock-icon">⌾</span><span>解锁</span></button>
+            <div class="lock-screen__clock" aria-label='@("当前时间 " + Hour + ":" + Minute)'>
+                <div class="lock-screen__clock-tile"><span class="lock-screen__period">24H</span><strong>@Hour</strong></div>
+                <div class="lock-screen__clock-tile"><strong>@Minute</strong></div>
+            </div>
+        }
+        else { <form class="lock-screen__unlock-panel" @attributes="@FormHandlers">
+            <div class="lock-screen__avatar">
+                @if (Avatar.Length != 0) { <img src="@Avatar" alt="@Username" /> } else { <span>@Initial</span> }
+            </div>
+            <div class="lock-screen__user">@Username</div>
+            <div class="lock-screen__password">
+                <ElInput Id="@PasswordInputId" ModelValue="@Password" @onupdate:modelValue="UpdatePassword" Placeholder="请输入锁屏密码" Type="password" ShowPassword="true" />
+            </div>
+            @if (Error.Length > 0) { <div class="lock-screen__error">@Error</div> }
+            <button class="lock-screen__primary" type="submit">进入系统</button>
+            <button class="lock-screen__secondary" type="button" @onclick="Logout">返回登录</button>
+            <button class="lock-screen__secondary" type="button" @onclick="Hide">返回时钟</button>
+        </form> }
+        <footer class="lock-screen__date">
+            @if (ShowForm) { <div class="lock-screen__compact-time">@(Hour + ":" + Minute)</div> }
+            <div>@Date</div>
+        </footer>
+    </section>
+
+
+<style>
+.lock-screen{position:fixed;inset:0;z-index:2400;display:grid;place-items:center;overflow:hidden;background:#f4f7fb;color:#172033;font-family:inherit}.lock-screen__unlock-trigger{position:absolute;top:24px;left:50%;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateX(-50%);border:0;background:transparent;color:#526174;font-size:16px;font-weight:650;cursor:pointer}.lock-screen__unlock-trigger:hover{color:#172033}.lock-screen__lock-icon{font-size:28px;line-height:1;transition:transform .18s ease}.lock-screen__unlock-trigger:hover .lock-screen__lock-icon{transform:scale(1.12)}.lock-screen__clock{display:flex;width:min(640px,92vw);justify-content:center;gap:28px}.lock-screen__clock-tile{position:relative;display:grid;width:min(260px,40vw);aspect-ratio:1;place-items:center;border:1px solid #dce4ef;border-radius:28px;background:#e9eff7;box-shadow:0 22px 50px rgba(55,72,95,.12)}.lock-screen__clock-tile strong{font-size:clamp(64px,11vw,112px);font-weight:650;letter-spacing:-.06em}.lock-screen__period{position:absolute;top:22px;left:24px;color:#6b7788;font-size:15px;font-weight:700}.lock-screen__unlock-panel{display:flex;width:min(340px,90vw);flex-direction:column;align-items:center}.lock-screen__avatar{display:grid;width:84px;height:84px;place-items:center;overflow:hidden;border-radius:50%;background:#dce7f5;color:#315b8b;font-size:30px;font-weight:700}.lock-screen__avatar img{width:100%;height:100%;object-fit:cover}.lock-screen__user{margin:14px 0 20px;font-size:18px;font-weight:650}.lock-screen__password{width:100%}.lock-screen__error{width:100%;margin-top:8px;color:#d93025;font-size:13px}.lock-screen__primary,.lock-screen__secondary{width:100%;height:42px;margin-top:12px;border-radius:8px;font:inherit;font-weight:650;cursor:pointer}.lock-screen__primary{border:1px solid #2468b4;background:#2468b4;color:#fff}.lock-screen__secondary{border:1px solid transparent;background:transparent;color:#526174}.lock-screen__secondary:hover{background:#e7edf5;color:#172033}.lock-screen__date{position:absolute;right:0;bottom:26px;left:0;text-align:center;color:#435168;font-size:clamp(18px,2.5vw,26px)}.lock-screen__compact-time{margin-bottom:5px;color:#172033;font-size:clamp(26px,4vw,38px);font-weight:650}@media(max-width:560px){.lock-screen__clock{gap:12px}.lock-screen__clock-tile{width:42vw;border-radius:20px}.lock-screen__clock-tile strong{font-size:18vw}.lock-screen__period{top:14px;left:16px;font-size:12px}.lock-screen__unlock-panel{margin-bottom:48px}.lock-screen__date{bottom:18px;padding:0 16px;font-size:18px}}
+</style>
+
+@code {
+    [Parameter] public string Avatar { get; set; } = "";
+    [Parameter] public string Username { get; set; } = "";
+    [Parameter] public string Initial { get; set; } = "";
+    [Parameter] public string Hour { get; set; } = "";
+    [Parameter] public string Minute { get; set; } = "";
+    [Parameter] public string Date { get; set; } = "";
+    [Parameter] public bool ShowForm { get; set; }
+    [Parameter] public string Password { get; set; } = "";
+    [Parameter] public string Error { get; set; } = "";
+    [Parameter] public string PasswordInputId { get; set; } = "";
+    [Parameter] public LockFormHandlers FormHandlers { get; set; } = default!;
+    [Parameter] public Action Show { get; set; } = default!;
+    [Parameter] public Action Hide { get; set; } = default!;
+    [Parameter] public Action Logout { get; set; } = default!;
+    [Parameter] public Action<string> UpdatePassword { get; set; } = default!;
+}

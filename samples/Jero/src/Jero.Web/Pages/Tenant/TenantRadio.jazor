@@ -1,0 +1,17 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElRadioGroup ModelValue="@Value" disabled="@Disabled" @attributes="@(new ModelUpdate<double>(Change))">
+    <ElRadio value="@FirstValue">@FirstLabel</ElRadio>
+    <ElRadio value="@SecondValue">@SecondLabel</ElRadio>
+</ElRadioGroup>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double FirstValue { get; set; }
+    [Parameter] public string FirstLabel { get; set; } = default!;
+    [Parameter] public double SecondValue { get; set; }
+    [Parameter] public string SecondLabel { get; set; } = default!;
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public Action<double> Change { get; set; } = default!;
+}

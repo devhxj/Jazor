@@ -1,0 +1,33 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.DiffLog
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<DiffLogView>(Rows))" border="true" stripe="true" RowKey="@(nameof(DiffLogView.Id))" EmptyText="暂无差异日志">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn label="差异操作" MinWidth="120" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DiffLogView>)(object)cell).Row; }<ElTag @attributes="@(new TableTagProps(TagType(row.DiffType)))">@((string.IsNullOrEmpty(row.DiffType) ? "-" : row.DiffType))</ElTag></template>
+        </ElTableColumn>
+        <ElTableColumn label="耗时(ms)" MinWidth="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DiffLogView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.Elapsed) ? "-" : row.Elapsed))</template>
+        </ElTableColumn>
+        <ElTableColumn label="业务对象" MinWidth="260" ShowOverflowTooltip="true">
+            <template #default context="cell">@{ var row = ((TableSlot<DiffLogView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.BusinessData) ? "-" : row.BusinessData))</template>
+        </ElTableColumn>
+        <ElTableColumn label="操作时间" MinWidth="180" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DiffLogView>)(object)cell).Row; }@((string.IsNullOrEmpty(row.CreateTime) ? "-" : row.CreateTime))</template>
+        </ElTableColumn>
+        <ElTableColumn label="详情" width="100" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<DiffLogView>)(object)cell).Row; }
+                <ElButton link="true" type="primary" disabled='@(!CanQuery)' @onclick="@(() => Detail(row.Id))">查看</ElButton>
+            </template>
+        </ElTableColumn>
+    </ElTable>
+
+@code {
+    [Parameter] public DiffLogView[] Rows { get; set; } = [];
+    [Parameter] public bool CanQuery { get; set; } = default!;
+    [Parameter] public Action<string> Detail { get; set; } = default!;
+
+    private static string TagType(string value) => value.ToLowerInvariant() switch { "insert" => "success", "delete" => "danger", "update" => "warning", _ => "info" };
+}

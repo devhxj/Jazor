@@ -1,0 +1,29 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Database
+@using Jero.Web.Pages.Components
+
+<ElTable @attributes="@(new TableData<DatabaseColumnDraft>(Rows))" border="true" stripe="true" RowKey="@(nameof(DatabaseColumnDraft.Key))" MaxHeight="300" EmptyText="请添加字段">
+        <ElTableColumn type="index" label="序号" width="66" align="center" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnDraft.DbColumnName))" label="字段名" MinWidth="140" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnDraft.ColumnDescription))" label="描述" MinWidth="150" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnDraft.DataType))" label="类型" MinWidth="100" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnDraft.Length))" label="长度" width="82" align="center" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnDraft.DecimalDigits))" label="小数位" width="82" align="center" />
+        <ElTableColumn prop="@(nameof(DatabaseColumnDraft.DefaultValue))" label="默认值" MinWidth="110" />
+        <ElTableColumn label="操作" width="240" align="center" fixed="right">
+            <template #default context="cell">@{ var row = ((TableSlot<DatabaseColumnDraft>)(object)cell).Row; }
+                <ElButton link="true" type="primary" disabled='@(((TableSlot<DatabaseColumnDraft>)(object)cell).Index == 0)' @onclick="@(() => MoveUp(row.Key))">上移</ElButton>
+                <ElButton link="true" type="primary" disabled='@(((TableSlot<DatabaseColumnDraft>)(object)cell).Index == Rows.Length - 1)' @onclick="@(() => MoveDown(row.Key))">下移</ElButton>
+                <ElButton link="true" type="primary" @onclick="@(() => Edit(row.Key))">编辑</ElButton>
+                <ElButton link="true" type="danger" @onclick="@(() => Delete(row.Key))">删除</ElButton>
+            </template>
+        </ElTableColumn>
+    </ElTable>
+
+@code {
+    [Parameter] public DatabaseColumnDraft[] Rows { get; set; } = [];
+    [Parameter] public Action<double> MoveUp { get; set; } = default!;
+    [Parameter] public Action<double> MoveDown { get; set; } = default!;
+    [Parameter] public Action<double> Edit { get; set; } = default!;
+    [Parameter] public Action<double> Delete { get; set; } = default!;
+}

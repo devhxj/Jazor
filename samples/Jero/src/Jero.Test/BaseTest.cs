@@ -1,6 +1,6 @@
-﻿
+
 using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
+using static Microsoft.Playwright.Assertions;
 using Xunit;
 
 namespace Jero.Test;
@@ -8,55 +8,60 @@ namespace Jero.Test;
 /// <summary>
 /// 浏览器端到端测试基类
 /// </summary>
-public abstract class BaseTest : PageTest
+public abstract class BaseTest : IAsyncLifetime
 {
     private const int DefaultTimeoutMilliseconds = 30_000;
-    private const string DefaultBaseUrl = "http://localhost:5095";
     private const string DefaultLoginAccount = "superJero";
     private const string DefaultLoginPassword = "Jero++010101";
     private const string DefaultLoginCaptcha = "0";
 
-    private static readonly HttpClient AvailabilityClient = new()
+    private readonly BrowserHost _host;
+    private IPlaywright? _playwright;
+    private IBrowserContext? _context;
+    private string? _profile;
+
+    protected BaseTest(BrowserHost host) => _host = host;
+
+    protected IPage Page { get; private set; } = null!;
+
+    public async ValueTask InitializeAsync()
     {
-        Timeout = TimeSpan.FromSeconds(5),
-    };
+        _profile = TestWorkspace.Create("browser-profile");
 
-    private readonly string? _loginToken;
-
-    protected BaseTest(string? loginToken = null)
-    {
-        BaseUrl = ResolveBaseUrl();
-        _loginToken = NormalizeOptionalText(loginToken);
-    }
-
-    protected string BaseUrl { get; }
-
-    public override BrowserNewContextOptions ContextOptions()
-    {
-        return new BrowserNewContextOptions
+        try
         {
-            BaseURL = BaseUrl,
-            IgnoreHTTPSErrors = true,
-            ViewportSize = new ViewportSize
-            {
-                Width = 1920,
-                Height = 1080,
-            },
-        };
-    }
-
-    /// <summary>
-    /// 确认本地 Web 应用可访问。浏览器测试依赖外部宿主进程，未启动时跳过而不是报红。
-    /// </summary>
-    protected async Task EnsureApplicationAvailableAsync()
-    {
-        if (await IsApplicationAvailableAsync())
-        {
-            return;
+            _playwright = await Playwright.CreateAsync();
+            _context = await _playwright.Chromium.LaunchPersistentContextAsync(_profile,
+                new BrowserTypeLaunchPersistentContextOptions
+                {
+                    BaseURL = _host.BaseUrl,
+                    ArtifactsDir = _profile,
+                    DownloadsPath = _profile,
+                    IgnoreHTTPSErrors = true,
+                    ViewportSize = new ViewportSize { Width = 1920, Height = 1080 }
+                });
+            Page = _context.Pages.FirstOrDefault() ?? await _context.NewPageAsync();
         }
+        catch
+        {
+            await DisposeAsync();
+            throw;
+        }
+    }
 
-        Assert.Skip(
-            $"Jero Web 应用未在 {BaseUrl} 响应，已跳过浏览器集成测试。请按 README 的开发命令构建并启动 Jero.Web，或通过 JERO_TEST_BASE_URL 指向已启动的测试环境。");
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_context is not null)
+                await _context.CloseAsync();
+        }
+        finally
+        {
+            _playwright?.Dispose();
+            if (_profile is not null && Directory.Exists(_profile))
+                Directory.Delete(_profile, recursive: true);
+        }
     }
 
     /// <summary>
@@ -64,9 +69,11 @@ public abstract class BaseTest : PageTest
     /// </summary>
     protected async Task AuthenticateAsync()
     {
-        if (!string.IsNullOrWhiteSpace(_loginToken))
+        if (_host.IsExternal && NormalizeOptionalText(Environment.GetEnvironmentVariable("JERO_TEST_LOGIN_TOKEN")) is { } loginToken)
         {
-            await GoToUrlAsync($"/#/login?token={Uri.EscapeDataString(_loginToken)}");
+            await Page.AddInitScriptAsync("localStorage.setItem('jero.jazor.access-token', " +
+                System.Text.Json.JsonSerializer.Serialize(loginToken) + ");");
+            await GoToUrlAsync("/workspace");
             return;
         }
 
@@ -78,11 +85,12 @@ public abstract class BaseTest : PageTest
     /// </summary>
     protected async Task LoginAsync(string? account = null, string? password = null)
     {
-        await EnsureApplicationAvailableAsync();
-        await GoToUrlAsync("/#/login");
+        await Page.RunAndWaitForResponseAsync(() => GoToUrlAsync("/login"),
+            response => response.Ok && response.Url.EndsWith("/api/sysAuth/loginConfig", StringComparison.OrdinalIgnoreCase));
 
-        var accountInput = Page.GetByPlaceholder("请输入账号");
-        var passwordInput = Page.GetByPlaceholder("请输入密码");
+        var login = Page.Locator(".login-page");
+        var accountInput = login.GetByRole(AriaRole.Textbox).First;
+        var passwordInput = login.Locator("input[type=password]");
 
         await Expect(accountInput).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions
         {
@@ -91,15 +99,15 @@ public abstract class BaseTest : PageTest
         await accountInput.FillAsync(ResolveEnvironmentValue("JERO_TEST_LOGIN_ACCOUNT", account, DefaultLoginAccount));
         await passwordInput.FillAsync(ResolveEnvironmentValue("JERO_TEST_LOGIN_PASSWORD", password, DefaultLoginPassword));
 
-        var captchaInput = Page.GetByPlaceholder("请输入验证码").First;
+        var captchaInput = login.GetByPlaceholder("输入右侧字符");
         if (await captchaInput.CountAsync() > 0 && await captchaInput.IsVisibleAsync())
         {
             await captchaInput.FillAsync(ResolveEnvironmentValue("JERO_TEST_LOGIN_CAPTCHA", null, DefaultLoginCaptcha));
         }
 
-        await Page.GetByRole(AriaRole.Button, new PageGetByRoleOptions
+        await login.GetByRole(AriaRole.Button, new LocatorGetByRoleOptions
         {
-            Name = "登录",
+            NameRegex = new System.Text.RegularExpressions.Regex(@"^登\s*录$"),
         }).ClickAsync();
 
         await accountInput.WaitForAsync(new LocatorWaitForOptions
@@ -116,7 +124,6 @@ public abstract class BaseTest : PageTest
     /// <param name="url"></param>
     protected async Task GoToUrlAsync(string url)
     {
-        await EnsureApplicationAvailableAsync();
         await Page.GotoAsync(NormalizeRoute(url), new PageGotoOptions
         {
             Timeout = DefaultTimeoutMilliseconds,
@@ -143,33 +150,6 @@ public abstract class BaseTest : PageTest
             });
     }
 
-    private async Task<bool> IsApplicationAvailableAsync()
-    {
-        try
-        {
-            using var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl);
-            using var response = await AvailabilityClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            return true;
-        }
-        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or OperationCanceledException)
-        {
-            return false;
-        }
-    }
-
-    private static string ResolveBaseUrl()
-    {
-        var candidate = NormalizeOptionalText(Environment.GetEnvironmentVariable("JERO_TEST_BASE_URL")) ?? DefaultBaseUrl;
-        if (!Uri.TryCreate(candidate, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            throw new InvalidOperationException(
-                $"JERO_TEST_BASE_URL 必须是 http/https 绝对地址，当前值：{candidate}");
-        }
-
-        return candidate.TrimEnd('/');
-    }
-
     private static string NormalizeRoute(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -183,15 +163,13 @@ public abstract class BaseTest : PageTest
             return trimmed;
         }
 
-        return trimmed.StartsWith("#/", StringComparison.Ordinal)
-            ? $"/{trimmed}"
-            : $"/{trimmed.TrimStart('/')}";
+        return $"/{trimmed.TrimStart('/')}";
     }
 
-    private static string ResolveEnvironmentValue(string name, string? overrideValue, string fallback)
+    private string ResolveEnvironmentValue(string name, string? overrideValue, string fallback)
     {
         return NormalizeOptionalText(overrideValue) ??
-               NormalizeOptionalText(Environment.GetEnvironmentVariable(name)) ??
+               (_host.IsExternal ? NormalizeOptionalText(Environment.GetEnvironmentVariable(name)) : null) ??
                fallback;
     }
 

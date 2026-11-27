@@ -1,0 +1,261 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Logs
+@using Jero.Web.Pages.Auth
+@using Jero.Web.Pages.Ldap
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Plugin
+
+<ElCard Header="动态插件" class="jero-list-page">
+    <p style="margin-top:0;color:#606266;">
+        管理可在运行时编译和加载的 C# 动态 API。新增即安装；保存编辑会先卸载旧程序集，再重新编译并加载。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="DismissError" />
+    </div>
+
+    <ElAlert Type="warning"
+             ShowIcon="true"
+             Closable="false"
+             Title="状态字段当前只保存到数据库，不直接控制已加载程序集。即使选择禁用，新增和更新仍会立即编译并加载，应用启动时也会加载全部插件记录。" />
+
+    <div style="height:16px;"></div>
+
+    <JeroQueryCard Title="查询条件">
+        <ElForm Inline="true">
+            @if (IsSuperAdmin)
+            {
+                <ElFormItem Label="租户">
+                    <div style="width:260px;">
+                        <AuthOptionSelect Value="@TenantId" Options="@TenantOptions" Placeholder="全部租户" Loading="@TenantLoading" Change="@TenantChanged" />
+                    </div>
+                </ElFormItem>
+            }
+            <ElFormItem Label="功能名称">
+                <ElInput ModelValue="@Name"
+                         @onupdate:modelValue="SetName"
+                         Placeholder="请输入功能名称"
+                         Clearable="true" />
+            </ElFormItem>
+            <ElFormItem>
+                <ElButton Type="primary" @onclick="Search" Loading="@Loading">查询</ElButton>
+                <ElButton @onclick="ResetSearch" Disabled="@Loading">重置</ElButton>
+            </ElFormItem>
+        </ElForm>
+    </JeroQueryCard>
+
+    <div style="height:16px;"></div>
+
+    <ElCard class="jero-list-card">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">
+            <div>
+                @if (CanAdd)
+                {
+                    <ElButton Type="primary" @onclick="OpenCreate">新增并安装</ElButton>
+                }
+            </div>
+            <ElButton @onclick="LoadPage" Loading="@Loading">刷新</ElButton>
+        </div>
+
+        @if (Loading)
+        {
+            <ElText>正在加载动态插件…</ElText>
+        }
+
+        <div class="jero-list-scroll">
+            <PluginTable Rows="@Rows" CanEdit="@CanEdit" CanDelete="@CanDelete" BusyActionId="@BusyActionId"
+                         OpenAudit="@OpenAudit" OpenEdit="@OpenEdit" Compile="@CompileAndLoad"
+                         Unload="@RemoveAssembly" Delete="@Delete" />
+        </div>
+
+        <LogPagination CurrentPage="@CurrentPage" PageSize="@PageSize" Total="@Total"
+                       ChangePage="@ChangePage" ChangePageSize="@ChangePageSize" />
+    </ElCard>
+</ElCard>
+
+<ElDialog ModelValue="@EditDialogVisible"
+          @onupdate:modelValue="SetEditDialogVisible"
+          Title="@EditDialogTitle"
+          Width="94%"
+          Top="4vh"
+          Draggable="true"
+          DestroyOnClose="true"
+          CloseOnClickModal="false"
+          @onopened="EditorDialogOpened"
+          @onclosed="CleanupEditor">
+
+        <ElAlert Type="warning"
+                 ShowIcon="true"
+                 Closable="false"
+                 Title="保存会立即编译并热加载程序集。请确认 ApiDescriptionSettings、类名和路由不会与现有接口冲突。" />
+        <div style="height:12px;"></div>
+
+        <PluginEditorTabs Value="@EditorTab" Change="@EditorTabChanged">
+            <template #basic>
+                <ElForm LabelWidth="110px">
+                    @if (IsSuperAdmin)
+                    {
+                        <ElFormItem Label="租户">
+                            <AuthOptionSelect Value="@EditTenantId" Options="@TenantOptions" Placeholder="请选择租户" Change="@SetEditTenantId" />
+                        </ElFormItem>
+                    }
+                    <ElFormItem Label="功能名称">
+                        <ElInput ModelValue="@EditName"
+                                 @onupdate:modelValue="SetEditName"
+                                 Maxlength="64"
+                                 ShowWordLimit="true"
+                                 Placeholder="请输入功能名称"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="程序集名称">
+                        <ElInput ModelValue="@EditAssemblyName"
+                                 @onupdate:modelValue="SetEditAssemblyName"
+                                 Maxlength="512"
+                                 ShowWordLimit="true"
+                                 Placeholder="留空则由后端编译时生成"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 24px;">
+                        <ElFormItem Label="排序">
+                            <ElInputNumber ModelValue="@EditOrderNo"
+                                           @onupdate:modelValue="SetEditOrderNo"
+                                           Min="0"
+                                           Step="1"
+                                           ControlsPosition="right" />
+                        </ElFormItem>
+                        <ElFormItem Label="状态">
+                            <LdapStatusInput Value="@EditStatus" OnChange="@SetEditStatus" />
+                        </ElFormItem>
+                    </div>
+                    <ElFormItem Label="备注">
+                        <ElInput ModelValue="@EditRemark"
+                                 @onupdate:modelValue="SetEditRemark"
+                                 Type="textarea"
+                                 Rows="3"
+                                 Maxlength="128"
+                                 ShowWordLimit="true"
+                                 Placeholder="请输入备注内容" />
+                    </ElFormItem>
+                </ElForm>
+            </template>
+
+            <template #code>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <ElAlert Type="info"
+                             ShowIcon="true"
+                             Closable="false"
+                             Title="示例模板用于起步；重新生成会覆盖当前编辑内容。" />
+                    <ElPopconfirm Title="确定覆盖当前 C# 代码并重新生成示例模板吗？"
+                                  ConfirmButtonText="确定"
+                                  CancelButtonText="取消"
+                                  @onconfirm="RegenerateExampleCode">
+                        <template #reference>
+                            <ElButton>生成示例模板</ElButton>
+                        </template>
+                    </ElPopconfirm>
+                </div>
+                @if (EditorLoading)
+                {
+                    <ElText>正在加载代码编辑器…</ElText>
+                }
+                @if (EditorLoadError is not null)
+                {
+                    <ElAlert Type="error" Title="@(EditorLoadError ?? "")" ShowIcon="true" Closable="false" />
+                }
+                <div id="jero-plugin-monaco"
+                     style="height:520px;min-height:420px;border:1px solid #dcdfe6;border-radius:4px;overflow:hidden;"></div>
+            </template>
+        </PluginEditorTabs>
+
+    <template #footer>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <ElButton @onclick="CloseEditor" Disabled="@Saving">取消</ElButton>
+            <ElButton Type="primary" @onclick="Save" Loading="@Saving">
+                @(!Editing ? "新增并安装" : "保存并重新加载")
+            </ElButton>
+        </div>
+    </template>
+</ElDialog>
+
+<ElDialog ModelValue="@AuditDialogVisible"
+          @onupdate:modelValue="SetAuditDialogVisible"
+          Title="@AuditDialogTitle"
+          Width="600px">
+    <div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px 16px;line-height:1.6;">
+        <strong>创建人</strong><span>@AuditCreateUser</span>
+        <strong>创建时间</strong><span>@AuditCreateTime</span>
+        <strong>最后修改人</strong><span>@AuditUpdateUser</span>
+        <strong>最后修改时间</strong><span>@AuditUpdateTime</span>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string Name { get; set; } = "";
+    [Parameter] public string EditDialogTitle { get; set; } = "";
+    [Parameter] public string EditTenantId { get; set; } = "";
+    [Parameter] public string EditName { get; set; } = "";
+    [Parameter] public string EditAssemblyName { get; set; } = "";
+    [Parameter] public string EditRemark { get; set; } = "";
+    [Parameter] public string EditorTab { get; set; } = "";
+    [Parameter] public string? EditorLoadError { get; set; }
+    [Parameter] public string AuditDialogTitle { get; set; } = "";
+    [Parameter] public string AuditCreateUser { get; set; } = "";
+    [Parameter] public string AuditCreateTime { get; set; } = "";
+    [Parameter] public string AuditUpdateUser { get; set; } = "";
+    [Parameter] public string AuditUpdateTime { get; set; } = "";
+    [Parameter] public string BusyActionId { get; set; } = "";
+    [Parameter] public string TenantId { get; set; } = "";
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanAdd { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool TenantLoading { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool EditDialogVisible { get; set; }
+    [Parameter] public bool EditorLoading { get; set; }
+    [Parameter] public bool Saving { get; set; }
+    [Parameter] public bool AuditDialogVisible { get; set; }
+    [Parameter] public bool Editing { get; set; }
+    [Parameter] public int CurrentPage { get; set; }
+    [Parameter] public int PageSize { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public int EditOrderNo { get; set; }
+    [Parameter] public int EditStatus { get; set; }
+    [Parameter] public ConfigurationOption[] TenantOptions { get; set; } = [];
+    [Parameter] public PluginTableRow[] Rows { get; set; } = [];
+    [Parameter] public Action Search { get; set; } = default!;
+    [Parameter] public Action ResetSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreate { get; set; } = default!;
+    [Parameter] public Action LoadPage { get; set; } = default!;
+    // 对话框的 opened 事件发生在入场动画之后，届时 Monaco 才能按实际容器尺寸挂载。
+    [Parameter] public Action EditorDialogOpened { get; set; } = default!;
+    [Parameter] public Action CleanupEditor { get; set; } = default!;
+    [Parameter] public Action RegenerateExampleCode { get; set; } = default!;
+    [Parameter] public Action CloseEditor { get; set; } = default!;
+    [Parameter] public Action Save { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> CompileAndLoad { get; set; } = default!;
+    [Parameter] public Action<string> RemoveAssembly { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+    [Parameter] public Action<string?> TenantChanged { get; set; } = default!;
+    [Parameter] public Action<string> EditorTabChanged { get; set; } = default!;
+    [Parameter] public Action<string?> SetName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditAssemblyName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditRemark { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTenantId { get; set; } = default!;
+    [Parameter] public Action<double?> SetEditOrderNo { get; set; } = default!;
+    [Parameter] public Action<double> SetEditStatus { get; set; } = default!;
+    [Parameter] public Action<double> ChangePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangePageSize { get; set; } = default!;
+    [Parameter] public Action<bool> SetEditDialogVisible { get; set; } = default!;
+    [Parameter] public Action<bool> SetAuditDialogVisible { get; set; } = default!;
+}
+

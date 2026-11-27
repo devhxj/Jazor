@@ -1,0 +1,20 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.ReceivedNotice
+@using Jero.Web.Pages.Components
+
+<ElSelect ModelValue="@(Value > 0 ? (global::ECMAScript.Vue.VueBooleanStringNumberValue?)Value : null)" Placeholder="站内信类型" Loading="@Loading" Filterable="true" Clearable="true" @attributes="@(new ModelUpdate<double?>(Update))">
+    @foreach (var option in Options)
+    {
+        <ElOption @key="option.Value" Value="@option.Value" Label='@option.Label' />
+    }
+</ElSelect>
+
+@code {
+    [Parameter] public ReceivedNoticeOption[] Options { get; set; } = [];
+    [Parameter] public double Value { get; set; } = default!;
+    [Parameter] public Action<double> Change { get; set; } = default!;
+    [Parameter] public bool Loading { get; set; } = default!;
+
+    private void Update(double? value) => Change(value ?? 0);
+}

@@ -1,0 +1,62 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Job
+
+<div class="job-dashboard-grid">
+        <div class="job-dashboard-section">
+            <h2 class="job-dashboard-title">分组分布</h2>
+            <ElTable @attributes='@(new TableData<JobDashboardGroupView>(GroupRows))' border stripe EmptyText="暂无作业分组数据">
+                <ElTableColumn prop="@(nameof(JobDashboardGroupView.GroupName))" label="组名称" MinWidth="150" />
+                <ElTableColumn prop="@(nameof(JobDashboardGroupView.JobCount))" label="作业数" width="100" align="center" />
+                <ElTableColumn prop="@(nameof(JobDashboardGroupView.TriggerCount))" label="触发器数" width="110" align="center" />
+                <ElTableColumn prop="@(nameof(JobDashboardGroupView.RunningTriggerCount))" label="运行中" width="100" align="center" />
+            </ElTable>
+        </div>
+
+        <div class="job-dashboard-section">
+            <h2 class="job-dashboard-title">集群状态</h2>
+            <ElTable @attributes='@(new TableData<JobClusterView>(ClusterRows))' border stripe RowKey="@(nameof(JobClusterView.ClusterId))" EmptyText="暂无集群数据">
+                <ElTableColumn prop="@(nameof(JobClusterView.ClusterId))" label="集群编号" MinWidth="160" ShowOverflowTooltip="true" />
+                <ElTableColumn label="状态" width="110" align="center"><template #default context="scope">@{ var row = ((TableSlot<JobClusterView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(clusterTag(row.Status)))'>@(clusterText(row.Status))</ElTag></template></ElTableColumn>
+                <ElTableColumn label="更新时间" MinWidth="170" ShowOverflowTooltip="true"><template #default context="scope">@{ var row = ((TableSlot<JobClusterView>)(object)scope).Row; }@((string.IsNullOrEmpty(row.UpdatedTime) ? "-" : row.UpdatedTime))</template></ElTableColumn>
+            </ElTable>
+        </div>
+
+        <div class="job-dashboard-section">
+            <h2 class="job-dashboard-title">最近更新作业</h2>
+            <ElTable @attributes='@(new TableData<JobView>(JobRows))' border stripe RowKey="jobId" EmptyText="暂无作业数据">
+                <ElTableColumn prop="jobId" label="作业编号" MinWidth="160" ShowOverflowTooltip="true" />
+                <ElTableColumn label="创建类型" width="110" align="center"><template #default context="scope">@{ var row = ((TableSlot<JobView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(createTag(row.CreateType)))'>@(createText(row.CreateType))</ElTag></template></ElTableColumn>
+                <ElTableColumn label="描述" MinWidth="170" ShowOverflowTooltip="true"><template #default context="scope">@{ var row = ((TableSlot<JobView>)(object)scope).Row; }@((string.IsNullOrEmpty(row.Description) ? "-" : row.Description))</template></ElTableColumn>
+                <ElTableColumn label="更新时间" MinWidth="170" ShowOverflowTooltip="true"><template #default context="scope">@{ var row = ((TableSlot<JobView>)(object)scope).Row; }@((string.IsNullOrEmpty(row.UpdatedTime) ? "-" : row.UpdatedTime))</template></ElTableColumn>
+            </ElTable>
+        </div>
+
+        <div class="job-dashboard-section">
+            <h2 class="job-dashboard-title">最近执行记录</h2>
+            <ElTable @attributes='@(new TableData<JobTriggerRecordView>(RecordRows))' border stripe RowKey="@(nameof(JobTriggerRecordView.Id))" EmptyText="暂无执行记录">
+                <ElTableColumn prop="@(nameof(JobTriggerRecordView.JobId))" label="作业编号" MinWidth="140" ShowOverflowTooltip="true" />
+                <ElTableColumn prop="@(nameof(JobTriggerRecordView.TriggerId))" label="触发器编号" MinWidth="140" ShowOverflowTooltip="true" />
+                <ElTableColumn label="状态" width="110" align="center"><template #default context="scope">@{ var row = ((TableSlot<JobTriggerRecordView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(triggerTag(row.Status)))'>@(triggerText(row.Status))</ElTag></template></ElTableColumn>
+                <ElTableColumn prop="@(nameof(JobTriggerRecordView.ElapsedTime))" label="耗时(ms)" width="100" align="center" />
+                <ElTableColumn label="创建时间" MinWidth="170" ShowOverflowTooltip="true"><template #default context="scope">@{ var row = ((TableSlot<JobTriggerRecordView>)(object)scope).Row; }@((string.IsNullOrEmpty(row.CreatedTime) ? "-" : row.CreatedTime))</template></ElTableColumn>
+            </ElTable>
+        </div>
+    </div>
+
+
+
+@code {
+    [Parameter] public JobDashboardGroupView[] GroupRows { get; set; } = [];
+    [Parameter] public JobClusterView[] ClusterRows { get; set; } = [];
+    [Parameter] public JobView[] JobRows { get; set; } = [];
+    [Parameter] public JobTriggerRecordView[] RecordRows { get; set; } = [];
+    private static readonly string[] _triggerLabels = ["积压", "就绪", "正在运行", "暂停", "阻塞", "由失败进入就绪", "归档", "崩溃", "超限", "无触发时间", "未启动", "未知作业触发器", "未知作业处理程序"];
+    private static string triggerText(int status) => status >= 0 && status < _triggerLabels.Length ? _triggerLabels[status] : "未知";
+    private static string triggerTag(int status) => status == 2 ? "success" : status == 1 ? "info" : status is 0 or 5 or 10 ? "warning" : "danger";
+    private static string clusterText(int status) => status == 1 ? "工作中" : status == 2 ? "等待唤醒" : "宕机";
+    private static string clusterTag(int status) => status == 1 ? "success" : status == 2 ? "warning" : "danger";
+    private static string createText(int type) => type == 1 ? "脚本" : type == 2 ? "HTTP请求" : "内置";
+    private static string createTag(int type) => type == 1 ? "warning" : type == 2 ? "success" : "info";
+}

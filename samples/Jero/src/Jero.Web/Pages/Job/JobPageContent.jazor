@@ -1,0 +1,400 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Job
+
+<ElTable @attributes='@(new TableData<JobView>(State.Rows))' border='@(true)' stripe='@(true)' RowKey="jobId" EmptyText="暂无作业">
+            <ElTableColumn type="expand" width='@(52)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }
+                    <div class="job-trigger-panel">
+                        <div class="job-trigger-actions">
+                            <ElButton type="primary" @onclick='@(_ => State.OpenCreateTrigger(cell))' disabled='@(State.Busy)'>新增触发器</ElButton>
+                        </div>
+                        <ElTable @attributes='@(new TableData<JobTriggerView>(State.TriggerRows(cell)))' border='@(true)' stripe='@(true)' RowKey="triggerId" EmptyText="暂无触发器">
+                            <ElTableColumn type="index" label="序号" width='@(70)' align="center" />
+                            <ElTableColumn prop="triggerId" label="触发器编号" MinWidth='@(180)' ShowOverflowTooltip='@(true)' />
+                            <ElTableColumn label="类型" width='@(90)' align="center">
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }@(State.TriggerTypeTextForView(triggerCell))</template>
+                            </ElTableColumn>
+                            <ElTableColumn prop="@(nameof(JobTriggerView.Args))" label="参数" MinWidth='@(170)' ShowOverflowTooltip='@(true)' />
+                            <ElTableColumn label="状态" MinWidth='@(130)' align="center">
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.TriggerStatusTagForView(triggerCell)))'>@(State.TriggerStatusTextForRow(triggerCell))</ElTag></template>
+                            </ElTableColumn>
+                            <ElTableColumn label="起始时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(triggerCell, "startTime")))</template>
+                            </ElTableColumn>
+                            <ElTableColumn label="结束时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(triggerCell, "endTime")))</template>
+                            </ElTableColumn>
+                            <ElTableColumn label="最近运行" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(triggerCell, "lastRunTime")))</template>
+                            </ElTableColumn>
+                            <ElTableColumn label="下一次运行" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(triggerCell, "nextRunTime")))</template>
+                            </ElTableColumn>
+                            <ElTableColumn prop="@(nameof(JobTriggerView.NumberOfRuns))" label="触发次数" width='@(110)' align="center" />
+                            <ElTableColumn prop="@(nameof(JobTriggerView.MaxNumberOfRuns))" label="最大触发次数" width='@(130)' align="center" />
+                            <ElTableColumn prop="@(nameof(JobTriggerView.NumberOfErrors))" label="出错次数" width='@(110)' align="center" />
+                            <ElTableColumn prop="@(nameof(JobTriggerView.MaxNumberOfErrors))" label="最大出错次数" width='@(130)' align="center" />
+                            <ElTableColumn prop="@(nameof(JobTriggerView.NumRetries))" label="重试次数" width='@(100)' align="center" />
+                            <ElTableColumn prop="@(nameof(JobTriggerView.RetryTimeout))" label="重试间隔(ms)" width='@(130)' align="center" />
+                            <ElTableColumn label="立即启动" width='@(100)' align="center">
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.RowBoolForView(triggerCell, "startNow") ? "success" : "info"))'>@(State.RowBoolForView(triggerCell, "startNow") ? "是" : "否")</ElTag></template>
+                            </ElTableColumn>
+                            <ElTableColumn label="启动时执行" width='@(120)' align="center">
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.RowBoolForView(triggerCell, "runOnStart") ? "success" : "info"))'>@(State.RowBoolForView(triggerCell, "runOnStart") ? "是" : "否")</ElTag></template>
+                            </ElTableColumn>
+                            <ElTableColumn label="重置次数" width='@(110)' align="center">
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.RowBoolForView(triggerCell, "resetOnlyOnce") ? "success" : "info"))'>@(State.RowBoolForView(triggerCell, "resetOnlyOnce") ? "是" : "否")</ElTag></template>
+                            </ElTableColumn>
+                            <ElTableColumn prop="@(nameof(JobTriggerView.UpdatedTime))" label="更新时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)' />
+                            <ElTableColumn label="操作" width='@(250)' align="center" fixed="right">
+                                <template #default context="scope">@{ var triggerCell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerView>)(object)scope).Row; }
+                                    <div class="job-actions">
+                                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.StartTrigger(triggerCell))'
+                                                  loading='@(State.IsBusy("start-trigger:" + State.RowStringForView(triggerCell, "jobId") + ":" + State.RowStringForView(triggerCell, "triggerId")))' disabled='@(State.Busy)'>启动</ElButton>
+                                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.PauseTrigger(triggerCell))'
+                                                  loading='@(State.IsBusy("pause-trigger:" + State.RowStringForView(triggerCell, "jobId") + ":" + State.RowStringForView(triggerCell, "triggerId")))' disabled='@(State.Busy)'>暂停</ElButton>
+                                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.OpenEditTrigger(triggerCell))' disabled='@(State.Busy)'>编辑</ElButton>
+                                        <ElPopconfirm title='@("确定删除触发器【" + State.RowStringForView(triggerCell, "triggerId") + "】吗？")'
+                                                      ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(_ => State.DeleteTrigger(triggerCell))'>
+                                            <template #reference>
+                                                <ElButton link='@(true)' type="danger"
+                                                          loading='@(State.IsBusy("delete-trigger:" + State.RowStringForView(triggerCell, "jobId") + ":" + State.RowStringForView(triggerCell, "triggerId")))'
+                                                          disabled='@(State.Busy)'>删除</ElButton>
+                                            </template>
+                                        </ElPopconfirm>
+                                    </div>
+                                </template>
+                            </ElTableColumn>
+                        </ElTable>
+                    </div>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn type="index" label="序号" width='@(70)' align="center" />
+            <ElTableColumn prop="jobId" label="作业编号" MinWidth='@(180)' ShowOverflowTooltip='@(true)' />
+            <ElTableColumn label="作业状态" width='@(110)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.JobStatusTagForView(cell)))'>@(State.JobStatusTextForView(cell))</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn prop="@(nameof(JobView.GroupName))" label="组名称" width='@(120)' align="center" />
+            <ElTableColumn prop="@(nameof(JobView.JobType))" label="类型" MinWidth='@(190)' ShowOverflowTooltip='@(true)' />
+            <ElTableColumn label="执行方式" width='@(100)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.RowBoolForView(cell, "concurrent") ? "success" : "warning"))'>@(State.RowBoolForView(cell, "concurrent") ? "并行" : "串行")</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn label="创建类型" width='@(110)' align="center">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.CreateTypeTagForView(cell)))'>@(State.CreateTypeTextForRow(cell))</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn label="描述" MinWidth='@(180)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "description")))</template>
+            </ElTableColumn>
+            <ElTableColumn label="额外数据" MinWidth='@(220)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "properties")))</template>
+            </ElTableColumn>
+            <ElTableColumn label="更新时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)'>
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "updatedTime")))</template>
+            </ElTableColumn>
+            <ElTableColumn label="操作" width='@(430)' align="center" fixed="right">
+                <template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobView>)(object)scope).Row; }
+                    <div class="job-actions">
+                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.OpenRecords(cell))'>记录</ElButton>
+                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.OpenCreateTrigger(cell))' disabled='@(State.Busy)'>触发器</ElButton>
+                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.RunJob(cell))'
+                                  loading='@(State.IsBusy("run-job:" + State.RowStringForView(cell, "jobId")))' disabled='@(State.Busy)'>执行</ElButton>
+                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.StartJob(cell))'
+                                  loading='@(State.IsBusy("start-job:" + State.RowStringForView(cell, "jobId")))' disabled='@(State.Busy)'>启动</ElButton>
+                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.PauseJob(cell))'
+                                  loading='@(State.IsBusy("pause-job:" + State.RowStringForView(cell, "jobId")))' disabled='@(State.Busy)'>暂停</ElButton>
+                        <ElButton link='@(true)' type="primary" @onclick='@(_ => State.CancelJob(cell))'
+                                  loading='@(State.IsBusy("cancel-job:" + State.RowStringForView(cell, "jobId")))' disabled='@(State.Busy)'>取消</ElButton>
+                        @if (State.CanEdit) {
+                            <ElButton link='@(true)' type="primary" @onclick='@(_ => State.OpenEditJob(cell))' disabled='@(State.Busy)'>编辑</ElButton>
+                        }
+                        @if (State.CanDelete) {
+                            <ElPopconfirm title='@("确定删除作业【" + State.RowStringForView(cell, "jobId") + "】吗？对应触发器会一并删除。")'
+                                          ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(_ => State.DeleteJob(cell))'>
+                                <template #reference>
+                                    <ElButton link='@(true)' type="danger" loading='@(State.IsBusy("delete-job:" + State.RowStringForView(cell, "jobId")))' disabled='@(State.Busy)'>删除</ElButton>
+                                </template>
+                            </ElPopconfirm>
+                        }
+                    </div>
+                </template>
+            </ElTableColumn>
+        </ElTable>
+
+<ElDialog ModelValue='@(State.JobDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.JobDialogVisible = value == true))'
+          title='@(State.JobDialogTitle)'
+          width="min(960px, calc(100vw - 24px))"
+          top="3vh"
+          draggable='@(true)'
+          DestroyOnClose='@(true)'
+          CloseOnClickModal='@(false)'>
+    <div class="job-dialog-note">
+        @if (State.JobIsBuiltIn) {
+            <ElAlert type="warning" title="内置作业来自后端注册；编辑时保留作业类型、程序集与运行快照。" ShowIcon='@(true)' closable='@(false)' />
+        } else if (State.JobIsHttp && !State.EditHttpPropertiesValid) {
+            <ElAlert type="warning" title="当前 HTTP 作业属性无法解析，表单已回退为空值；保存前请核对请求信息。" ShowIcon='@(true)' closable='@(false)' />
+        } else {
+            <ElAlert type="info" title="脚本作业保存时会由后端直接编译；HTTP 作业按 Furion HttpJob 属性格式提交。" ShowIcon='@(true)' closable='@(false)' />
+        }
+    </div>
+
+    <ElForm LabelWidth="112px">
+        <div class="job-form-grid">
+            <ElFormItem label="作业编号">
+                <ElInput ModelValue='@(State.EditJobId)' @attributes='@(new ModelUpdate<string>(value => State.EditJobId = value ?? ""))'
+                         disabled='@(State.EditingJob)' maxlength='@(64)' ShowWordLimit='@(true)' clearable='@(true)' />
+            </ElFormItem>
+            <ElFormItem label="组名称">
+                <ElInput ModelValue='@(State.EditJobGroupName)' @attributes='@(new ModelUpdate<string>(value => State.EditJobGroupName = value ?? ""))'
+                         maxlength='@(128)' ShowWordLimit='@(true)' clearable='@(true)' />
+            </ElFormItem>
+            <div class="job-form-wide">
+                <ElFormItem label="创建类型">
+                    <ElInput ModelValue='@(State.CreateTypeTextForCode(State.EditJobCreateType))' readonly='@(true)' />
+                </ElFormItem>
+            </div>
+            <ElFormItem label="执行方式">
+                <ElRadioGroup ModelValue='@(State.EditJobConcurrent)' @attributes='@(new ModelUpdate<bool>(value => State.EditJobConcurrent = value == true))'>
+                    <ElRadio value='@(true)'>并行</ElRadio>
+                    <ElRadio value='@(false)'>串行</ElRadio>
+                </ElRadioGroup>
+            </ElFormItem>
+            <ElFormItem label="扫描触发器">
+                <ElRadioGroup ModelValue='@(State.EditJobIncludeAnnotation)' @attributes='@(new ModelUpdate<bool>(value => State.EditJobIncludeAnnotation = value == true))'
+                              disabled='@(State.EditingJob || State.JobIsHttp)'>
+                    <ElRadio value='@(true)'>是</ElRadio>
+                    <ElRadio value='@(false)'>否</ElRadio>
+                </ElRadioGroup>
+            </ElFormItem>
+            <div class="job-form-wide">
+                <ElFormItem label="描述信息">
+                    <ElInput ModelValue='@(State.EditJobDescription)' @attributes='@(new ModelUpdate<string>(value => State.EditJobDescription = value ?? ""))'
+                             type="textarea" rows='@(2)' maxlength='@(128)' ShowWordLimit='@(true)' />
+                </ElFormItem>
+            </div>
+            @if (State.JobIsHttp) {
+                <div class="job-form-wide">
+                    <ElFormItem label="请求地址">
+                        <ElInput ModelValue='@(State.EditHttpRequestUri)' @attributes='@(new ModelUpdate<string>(value => State.EditHttpRequestUri = value ?? ""))' clearable='@(true)' />
+                    </ElFormItem>
+                </div>
+                <div class="job-form-wide">
+                    <ElFormItem label="请求方法">
+                        <ElRadioGroup ModelValue='@(State.EditHttpMethod)' @attributes='@(new ModelUpdate<object?>(value => State.EditHttpMethod = value is string text ? text : "GET"))'>
+                            <ElRadio value="GET">GET</ElRadio>
+                            <ElRadio value="POST">POST</ElRadio>
+                            <ElRadio value="PUT">PUT</ElRadio>
+                            <ElRadio value="DELETE">DELETE</ElRadio>
+                        </ElRadioGroup>
+                    </ElFormItem>
+                </div>
+                <div class="job-form-wide">
+                    <ElFormItem label="请求报文体">
+                        <ElInput ModelValue='@(State.EditHttpBody)' @attributes='@(new ModelUpdate<string>(value => State.EditHttpBody = value ?? ""))' type="textarea" rows='@(4)' />
+                    </ElFormItem>
+                </div>
+            } else {
+                <div class="job-form-wide">
+                    <ElFormItem label="额外数据">
+                        <ElInput ModelValue='@(State.EditJobProperties)' @attributes='@(new ModelUpdate<string>(value => State.EditJobProperties = value ?? ""))' type="textarea" rows='@(4)' />
+                    </ElFormItem>
+                </div>
+            }
+            @if (State.JobIsScript) {
+                <div class="job-form-wide">
+                    <ElAlert type="info" title="脚本中的 JobDetail 作业编号必须与表单完全一致。当前使用纯文本编辑器；Monaco worker/layout 仍需独立绑定。" ShowIcon='@(true)' closable='@(false)' />
+                    <div style="height:10px"></div>
+                    <ElFormItem label="脚本代码">
+                        <ElInput class="job-script" ModelValue='@(State.EditJobScriptCode)' @attributes='@(new ModelUpdate<string>(value => State.EditJobScriptCode = value ?? ""))'
+                                 type="textarea" rows='@(20)' />
+                    </ElFormItem>
+                </div>
+            }
+        </div>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+        <ElButton @onclick='@(_ => State.JobDialogVisible = false)' disabled='@(State.SavingJob)'>取消</ElButton>
+        <ElButton type="primary" @onclick='@(_ => State.SaveJob())' loading='@(State.SavingJob)'>确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(State.TriggerDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.TriggerDialogVisible = value == true))'
+          title='@(State.TriggerDialogTitle)'
+          width="min(820px, calc(100vw - 24px))"
+          top="3vh"
+          draggable='@(true)'
+          DestroyOnClose='@(true)'
+          CloseOnClickModal='@(false)'>
+    <ElForm LabelWidth="122px">
+        <div class="job-form-grid">
+            <ElFormItem label="作业编号">
+                <ElInput ModelValue='@(State.EditTriggerJobId)' readonly='@(true)' />
+            </ElFormItem>
+            <ElFormItem label="触发器编号">
+                <ElInput ModelValue='@(State.EditTriggerId)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerId = value ?? ""))'
+                         maxlength='@(64)' ShowWordLimit='@(true)' clearable='@(true)' />
+            </ElFormItem>
+            <div class="job-form-wide">
+                <ElFormItem label="触发器类型">
+                    <ElRadioGroup ModelValue='@(State.EditTriggerType)' @attributes='@(new ModelUpdate<object?>(value => State.EditTriggerType = value is string text ? text : "Furion.Schedule.PeriodTrigger"))'>
+                        <ElRadio value="Furion.Schedule.PeriodTrigger">间隔</ElRadio>
+                        <ElRadio value="Furion.Schedule.CronTrigger">Cron表达式</ElRadio>
+                    </ElRadioGroup>
+                </ElFormItem>
+            </div>
+            @if (State.TriggerIsCron) {
+                <div class="job-form-wide">
+                    <ElFormItem label="Cron Macro">
+                        <ElSelect ModelValue='@(State.EditTriggerCron)' @attributes='@(new ModelUpdate<string>(value => State.ApplyCronMacro(value ?? "")))'
+                                      placeholder="选择 Macro 或在下方直接输入" clearable='@(true)' filterable='@(true)'>
+                            <ElOption label="@@secondly · 每秒" value="@@secondly" />
+                            <ElOption label="@@minutely · 每分钟" value="@@minutely" />
+                            <ElOption label="@@hourly · 每小时" value="@@hourly" />
+                            <ElOption label="@@daily · 每天" value="@@daily" />
+                            <ElOption label="@@monthly · 每月" value="@@monthly" />
+                            <ElOption label="@@weekly · 每周" value="@@weekly" />
+                            <ElOption label="@@yearly · 每年" value="@@yearly" />
+                            <ElOption label="@@workday · 工作日" value="@@workday" />
+                        </ElSelect>
+                    </ElFormItem>
+                </div>
+                <div class="job-form-wide">
+                    <ElFormItem label="Cron表达式">
+                        <ElInput ModelValue='@(State.EditTriggerCron)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerCron = value ?? ""))'
+                                 placeholder="例如 0 0/5 * * * ?" />
+                    </ElFormItem>
+                </div>
+            } else {
+                <ElFormItem label="间隔时间(ms)">
+                    <ElInput ModelValue='@(State.EditTriggerPeriod)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerPeriod = value ?? ""))' />
+                </ElFormItem>
+            }
+            <ElFormItem label="起始时间">
+                <ElDatePicker ModelValue='@(State.EditTriggerStartTime)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerStartTime = value ?? ""))'
+                                  type="datetime" format="YYYY-MM-DD HH:mm:ss" ValueFormat="YYYY-MM-DD HH:mm:ss"
+                                  placeholder="请选择起始时间" clearable='@(true)' />
+            </ElFormItem>
+            <ElFormItem label="结束时间">
+                <ElDatePicker ModelValue='@(State.EditTriggerEndTime)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerEndTime = value ?? ""))'
+                                  type="datetime" format="YYYY-MM-DD HH:mm:ss" ValueFormat="YYYY-MM-DD HH:mm:ss"
+                                  placeholder="请选择结束时间" clearable='@(true)' />
+            </ElFormItem>
+            <ElFormItem label="最大触发次数">
+                <ElInput ModelValue='@(State.EditTriggerMaxNumberOfRuns)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerMaxNumberOfRuns = value ?? "0"))' />
+            </ElFormItem>
+            <ElFormItem label="最大出错次数">
+                <ElInput ModelValue='@(State.EditTriggerMaxNumberOfErrors)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerMaxNumberOfErrors = value ?? "0"))' />
+            </ElFormItem>
+            <ElFormItem label="重试次数">
+                <ElInput ModelValue='@(State.EditTriggerNumRetries)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerNumRetries = value ?? "0"))' />
+            </ElFormItem>
+            <ElFormItem label="重试间隔(ms)">
+                <ElInput ModelValue='@(State.EditTriggerRetryTimeout)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerRetryTimeout = value ?? "1000"))' />
+            </ElFormItem>
+            <ElFormItem label="立即启动">
+                <ElRadioGroup ModelValue='@(State.EditTriggerStartNow)' @attributes='@(new ModelUpdate<bool>(value => State.EditTriggerStartNow = value == true))'>
+                    <ElRadio value='@(true)'>是</ElRadio><ElRadio value='@(false)'>否</ElRadio>
+                </ElRadioGroup>
+            </ElFormItem>
+            <ElFormItem label="启动时执行一次">
+                <ElRadioGroup ModelValue='@(State.EditTriggerRunOnStart)' @attributes='@(new ModelUpdate<bool>(value => State.EditTriggerRunOnStart = value == true))'>
+                    <ElRadio value='@(true)'>是</ElRadio><ElRadio value='@(false)'>否</ElRadio>
+                </ElRadioGroup>
+            </ElFormItem>
+            <div class="job-form-wide">
+                <ElFormItem label="重置触发次数">
+                    <ElRadioGroup ModelValue='@(State.EditTriggerResetOnlyOnce)' @attributes='@(new ModelUpdate<bool>(value => State.EditTriggerResetOnlyOnce = value == true))'>
+                        <ElRadio value='@(true)'>是</ElRadio><ElRadio value='@(false)'>否</ElRadio>
+                    </ElRadioGroup>
+                </ElFormItem>
+            </div>
+            <div class="job-form-wide">
+                <ElFormItem label="描述信息">
+                    <ElInput ModelValue='@(State.EditTriggerDescription)' @attributes='@(new ModelUpdate<string>(value => State.EditTriggerDescription = value ?? ""))'
+                             type="textarea" rows='@(3)' maxlength='@(128)' ShowWordLimit='@(true)' />
+                </ElFormItem>
+            </div>
+        </div>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+        <ElButton @onclick='@(_ => State.TriggerDialogVisible = false)' disabled='@(State.SavingTrigger)'>取消</ElButton>
+        <ElButton type="primary" @onclick='@(_ => State.SaveTrigger())' loading='@(State.SavingTrigger)'>确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(State.RecordDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.RecordDialogVisible = value == true))'
+          title='@("作业触发器运行记录 · " + State.RecordJobId)'
+          width="min(1120px, calc(100vw - 24px))"
+          top="3vh">
+    <div class="job-toolbar">
+        <ElForm inline='@(true)'>
+            <ElFormItem label="触发器">
+                <ElSelect ModelValue='@(State.RecordTriggerId)' @attributes='@(new ModelUpdate<string>(value => State.FilterRecords(value)))' placeholder="全部触发器" clearable='@(true)' filterable='@(true)'>
+                    @foreach (var trigger in State.RecordTriggerOptions) {
+                        <ElOption label='@(trigger.TriggerId)' value='@(trigger.TriggerId)' />
+                    }
+                </ElSelect>
+            </ElFormItem>
+            <ElFormItem><ElButton @onclick='@(_ => State.LoadRecords())' loading='@(State.RecordLoading)'>刷新</ElButton></ElFormItem>
+        </ElForm>
+        <ElPopconfirm title="后端接口会清空所有作业触发器运行记录，确定继续吗？"
+                      ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm='@(_ => State.ClearRecords())'>
+            <template #reference><ElButton type="danger" disabled='@(State.RecordLoading || State.Busy)'>清空记录</ElButton></template>
+        </ElPopconfirm>
+    </div>
+    <div style='@(State.RecordLoading ? "" : "display:none")'><ElText>正在加载运行记录…</ElText></div>
+    <ElTable @attributes='@(new TableData<JobTriggerRecordView>(State.RecordRows))' border='@(true)' stripe='@(true)' RowKey="@(nameof(JobTriggerRecordView.Id))" EmptyText="暂无运行记录">
+        <ElTableColumn type="index" label="序号" width='@(70)' align="center" />
+        <ElTableColumn prop="@(nameof(JobTriggerRecordView.JobId))" label="作业编号" MinWidth='@(150)' ShowOverflowTooltip='@(true)' />
+        <ElTableColumn prop="@(nameof(JobTriggerRecordView.TriggerId))" label="触发器编号" MinWidth='@(150)' ShowOverflowTooltip='@(true)' />
+        <ElTableColumn prop="@(nameof(JobTriggerRecordView.NumberOfRuns))" label="当前运行次数" width='@(120)' align="center" />
+        <ElTableColumn label="最近运行时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)'><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerRecordView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "lastRunTime")))</template></ElTableColumn>
+        <ElTableColumn label="下一次运行时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)'><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerRecordView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "nextRunTime")))</template></ElTableColumn>
+        <ElTableColumn label="状态" width='@(130)' align="center"><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerRecordView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.TriggerStatusTagForView(cell)))'>@(State.TriggerStatusTextForRow(cell))</ElTag></template></ElTableColumn>
+        <ElTableColumn label="执行结果" MinWidth='@(180)' ShowOverflowTooltip='@(true)'><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerRecordView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "result")))</template></ElTableColumn>
+        <ElTableColumn prop="@(nameof(JobTriggerRecordView.ElapsedTime))" label="耗时(ms)" width='@(100)' align="center" />
+        <ElTableColumn label="创建时间" MinWidth='@(170)' ShowOverflowTooltip='@(true)'><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobTriggerRecordView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "createdTime")))</template></ElTableColumn>
+    </ElTable>
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+        <ElPagination CurrentPage='@(State.RecordPage)' PageSize='@(State.RecordPageSize)' total='@(State.RecordTotal)' PageSizes="@State.PageSizes"
+                          background='@(true)' layout="total, sizes, prev, pager, next, jumper"
+                          @oncurrent-change='@(value => State.ChangeRecordPage(value))' @onsize-change='@(value => State.ChangeRecordPageSize(value))' />
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue='@(State.ClusterDialogVisible)'
+          @attributes='@(new ModelUpdate<bool>(value => State.ClusterDialogVisible = value == true))'
+          title="作业集群"
+          width="min(760px, calc(100vw - 24px))">
+    <div class="job-toolbar"><span></span><ElButton @onclick='@(_ => State.LoadClusters())' loading='@(State.ClusterLoading)'>刷新</ElButton></div>
+    <div style='@(State.ClusterLoading ? "" : "display:none")'><ElText>正在加载集群…</ElText></div>
+    <ElTable @attributes='@(new TableData<JobClusterView>(State.ClusterRows))' border='@(true)' stripe='@(true)' RowKey="@(nameof(JobClusterView.ClusterId))" EmptyText="暂无作业集群数据">
+        <ElTableColumn type="index" label="序号" width='@(70)' align="center" />
+        <ElTableColumn prop="@(nameof(JobClusterView.ClusterId))" label="集群编号" MinWidth='@(180)' ShowOverflowTooltip='@(true)' />
+        <ElTableColumn label="状态" width='@(120)' align="center"><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobClusterView>)(object)scope).Row; }<ElTag @attributes='@(new TableTagProps(State.ClusterStatusTagForView(cell)))'>@(State.ClusterStatusTextForView(cell))</ElTag></template></ElTableColumn>
+        <ElTableColumn label="描述" MinWidth='@(180)' ShowOverflowTooltip='@(true)'><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobClusterView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "description")))</template></ElTableColumn>
+        <ElTableColumn label="更新时间" MinWidth='@(180)' ShowOverflowTooltip='@(true)'><template #default context="scope">@{ var cell = (ECMAScript.Vue.VueProps)(object)((TableSlot<JobClusterView>)(object)scope).Row; }@(State.DisplayValueForView(State.RowStringForView(cell, "updatedTime")))</template></ElTableColumn>
+    </ElTable>
+</ElDialog>
+
+<style>
+    .job-actions { display:flex; align-items:center; gap:4px 8px; flex-wrap:wrap; }
+    .job-trigger-panel { min-width:0; padding:12px; background:#f8fafc; }
+    .job-trigger-actions { display:flex; justify-content:flex-end; margin-bottom:10px; }
+    .job-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 18px; }
+    .job-form-wide { grid-column:1 / -1; }
+    .job-dialog-note { margin-bottom:14px; }
+    .job-script { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    @media(max-width:700px) {
+        .job-form-grid { grid-template-columns:1fr; }
+        .job-form-wide { grid-column:auto; }
+    }
+</style>
+
+@code {
+    [Parameter] public IJobContentState State { get; set; } = default!;
+}

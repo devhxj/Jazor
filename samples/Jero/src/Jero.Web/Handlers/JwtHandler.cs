@@ -11,14 +11,11 @@ public class JwtHandler : AppAuthorizeHandler
 {
     private readonly SysCacheService _sysCacheService = Furion.App.GetRequiredService<SysCacheService>();
     private readonly SysConfigService _sysConfigService = Furion.App.GetRequiredService<SysConfigService>();
-    private static readonly SysMenuService SysMenuService = Furion.App.GetRequiredService<SysMenuService>();
+    private static readonly SysMenuService _sysMenuService = Furion.App.GetRequiredService<SysMenuService>();
 
     /// <summary>
-    /// 自动刷新Token
+    /// 先检查用户和令牌是否已被拉黑，再按系统配置刷新令牌并进入权限管道。
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="httpContext"></param>
-    /// <returns></returns>
     public override async Task HandleAsync(AuthorizationHandlerContext context, DefaultHttpContext httpContext)
     {
         var userId = context.User.FindFirst(ClaimConst.UserId)?.Value;
@@ -78,12 +75,12 @@ public class JwtHandler : AppAuthorizeHandler
             : httpContext.Request.Path.Value![1..].Replace("/", ":");
 
         // 获取用户拥有按钮权限集合
-        var ownBtnPermList = await SysMenuService.GetOwnBtnPermList();
+        var ownBtnPermList = await _sysMenuService.GetOwnBtnPermList();
         if (ownBtnPermList.Exists(u => routeName.Equals(u, StringComparison.CurrentCultureIgnoreCase)))
             return true;
 
-        // 获取系统所有按钮权限集合
-        var allBtnPermList = await SysMenuService.GetAllBtnPermList();
+        // 只有已登记为按钮权限的路由才要求用户持有对应权限。
+        var allBtnPermList = await _sysMenuService.GetAllBtnPermList();
         return allBtnPermList.TrueForAll(u => !routeName.Equals(u, StringComparison.CurrentCultureIgnoreCase));
     }
 }

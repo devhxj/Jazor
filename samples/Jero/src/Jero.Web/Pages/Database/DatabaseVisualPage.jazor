@@ -1,0 +1,84 @@
+<style>
+    .database-visual { min-width:0; display:grid; gap:16px; }
+    .database-visual__heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+    .database-visual__heading h1 { margin:0; color:#303133; font-size:23px; }
+    .database-visual__heading p { margin:7px 0 0; color:#909399; font-size:13px; }
+    .database-visual__actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .database-visual__meta { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .database-visual__counts { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .database-graph-stage { position:relative; height:calc(100vh - 280px); min-height:560px; overflow:hidden; border:1px solid #dcdfe6; border-radius:8px; background:#f7f9fc; }
+    .database-graph-host, .database-graph-host > .relation-graph { width:100%; height:100%; }
+    .database-graph-tools { position:absolute; z-index:1300; top:12px; right:12px; display:flex; gap:6px; flex-wrap:wrap; padding:8px; border:1px solid #ebeef5; border-radius:8px; background:rgba(255,255,255,.94); box-shadow:0 2px 10px rgba(31,45,61,.08); }
+    .database-graph-legend { position:absolute; z-index:1300; bottom:12px; left:12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:10px 14px; border:1px solid #ebeef5; border-radius:8px; background:rgba(255,255,255,.94); font-size:12px; }
+    .database-graph-legend__item { display:flex; align-items:center; gap:7px; }
+    .database-graph-legend__line { width:58px; height:5px; border-radius:999px; }
+    .database-graph-legend__many { background:rgba(0,255,0,.5); }
+    .database-graph-legend__single { background:rgba(255,0,0,.5); }
+    .database-graph-loading, .database-graph-empty { position:absolute; z-index:1250; inset:0; display:flex; align-items:center; justify-content:center; color:#606266; background:rgba(247,249,252,.82); pointer-events:none; }
+    .database-rg-card { width:500px; overflow:hidden; border-radius:6px; background:#f39930; box-shadow:0 8px 24px rgba(48,49,51,.16); }
+    .database-rg-card__title { display:flex; align-items:center; justify-content:center; min-height:34px; padding:4px 12px; color:#303133; font-weight:650; }
+    .database-rg-card__table { width:100%; border-collapse:collapse; background:#fff; color:#333; font-size:12px; }
+    .database-rg-card__table th, .database-rg-card__table td { border:1px solid #f39930; padding:6px 12px; text-align:left; white-space:nowrap; }
+    .database-rg-card__table th { background:#fff7ed; font-weight:650; }
+    .database-rg-card__anchor { border-radius:4px; padding:2px 6px; background:var(--el-color-primary-light-3); color:#fff; }
+    .relation-graph .rel-node-shape-1 { overflow:hidden; }
+    @media (max-width: 760px) {
+        .database-visual__heading { flex-direction:column; }
+        .database-graph-stage { height:calc(100vh - 330px); min-height:520px; }
+        .database-graph-tools { left:8px; right:8px; justify-content:center; }
+        .database-graph-legend { left:8px; right:8px; justify-content:center; }
+    }
+</style>
+
+<div class="database-visual">
+    <div class="database-visual__heading">
+        <div>
+            <h1>库表可视化</h1>
+            <p>表结构以节点呈现，字段作为连线锚点，一对一和一对多关系使用不同颜色。</p>
+        </div>
+        <div class="database-visual__actions">
+            <ElButton @onclick="BackToDatabase">返回库表管理</ElButton>
+            <ElButton Type="primary" @onclick="Refresh" Loading="@LoadingVisual" Disabled="@(ConfigId.Length == 0)">刷新结构</ElButton>
+        </div>
+    </div>
+
+    <div style='@(Error is null ? "display:none" : "")'>
+        <ElAlert Type="error" Title="@(Error ?? "")" ShowIcon="true" Closable="true" @onclose="DismissError" />
+    </div>
+
+    <ElCard>
+        <div class="database-visual__meta">
+            <ElForm Inline="true" LabelWidth="72px">
+                <ElFormItem Label="库名">
+                    <div style="width:min(340px, 78vw);">
+                        <AuthOptionSelect Value="@ConfigId" Options="@DatabaseOptions" Placeholder="请选择库名" Loading="@LoadingDatabases" Change="@ChangeDatabase" />
+                    </div>
+                </ElFormItem>
+            </ElForm>
+            <div class="database-visual__counts">
+                <ElTag Type="info">@TableCount 个表</ElTag>
+                <ElTag Type="info">@ColumnCount 个字段</ElTag>
+                <ElTag Type="info">@RelationCount 条关系</ElTag>
+            </div>
+        </div>
+
+        <DatabaseGraph Nodes="@Nodes" Relations="@Relations" Loading="@LoadingVisual" />
+    </ElCard>
+</div>
+
+@code {
+    [Parameter] public string ConfigId { get; set; } = "";
+    [Parameter] public ConfigurationOption[] DatabaseOptions { get; set; } = [];
+    [Parameter] public DatabaseDiagramNode[] Nodes { get; set; } = [];
+    [Parameter] public DatabaseDiagramRelation[] Relations { get; set; } = [];
+    [Parameter] public int TableCount { get; set; }
+    [Parameter] public int ColumnCount { get; set; }
+    [Parameter] public int RelationCount { get; set; }
+    [Parameter] public bool LoadingDatabases { get; set; }
+    [Parameter] public bool LoadingVisual { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public Action<string> ChangeDatabase { get; set; } = default!;
+    [Parameter] public Action BackToDatabase { get; set; } = default!;
+    [Parameter] public Action Refresh { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+}

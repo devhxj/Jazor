@@ -9,7 +9,8 @@
   <ItemGroup>
     <PackageReference Include="Furion.Xunit" Version="4.9.9.100" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
-    <PackageReference Include="Microsoft.Playwright.Xunit.v3" Version="1.65.1" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.65.1" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" Aliases="BouncyCastleV2" />
     <PackageReference Include="xunit.v3" Version="4.0.3" ExcludeAssets="analyzers" />
     <PackageReference Include="xunit.v3.assert" Version="4.0.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1">
@@ -19,13 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Plugins\Jero.Plugin.SaveLife.DocumentWorker\Jero.Plugin.SaveLife.DocumentWorker.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Plugins\Jero.Plugin.SaveLife\Jero.Plugin.SaveLife.csproj" />
     <ProjectReference Include="..\Jero.Core\Jero.Core.csproj" />
     <ProjectReference Include="..\Jero.Web\Jero.Web.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="SaveLife\TestData\*.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 </Project>

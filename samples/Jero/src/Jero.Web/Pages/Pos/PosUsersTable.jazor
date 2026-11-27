@@ -1,0 +1,13 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Pos
+
+    <ElTable @attributes="@(new TableData<PosUserTableRow>(Rows))" border="true" stripe="true" RowKey="@(nameof(PosUserTableRow.Id))" EmptyText="暂无在职人员">
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="@(nameof(PosUserTableRow.Account))" label="账号" MinWidth="180" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(PosUserTableRow.RealName))" label="姓名" MinWidth="160" ShowOverflowTooltip="true" />
+    </ElTable>
+
+@code {
+    [Parameter] public PosUserTableRow[] Rows { get; set; } = [];
+}

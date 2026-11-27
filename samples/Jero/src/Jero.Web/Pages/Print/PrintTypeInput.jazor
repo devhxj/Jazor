@@ -1,0 +1,12 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElRadioGroup ModelValue="@Value" @attributes="@(new ModelUpdate<double>(Change))">
+    <ElRadio value="@(1d)">浏览器打印</ElRadio>
+    <ElRadio value="@(2d)">客户端打印</ElRadio>
+</ElRadioGroup>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public Action<double> Change { get; set; } = default!;
+}

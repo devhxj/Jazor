@@ -1,0 +1,191 @@
+@using static ECMAScript.Vue
+@using Jero.Web.Pages.Auth
+@using SmCrypto = Npm.SmCryptoV2.Exports
+@using Jero.Web.Pages.Components
+
+<style>
+    /* 登录页独立于壳布局：自带背景与暗色适配，主题类名由宿主壳脚本在文档早期写入 */
+    .login-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: linear-gradient(160deg, #f6faff 0%, #e9f0fa 100%); }
+    html.dark .login-page { background: linear-gradient(160deg, #10182b 0%, #0d1322 100%); }
+</style>
+
+<div class="login-page">
+<div style="max-width: 420px; width: 100%;">
+
+    <LoginCard Title="登录 Jero">
+
+
+        <div style='@(_error.Value is null ? "display:none" : "")'>
+            <ElAlert Type="error"
+                     Title="@(_error.Value ?? "")"
+                     ShowIcon="true"
+                     Closable="true"
+                     @onclose="DismissError" />
+        </div>
+
+        <div style='@(_message.Value is null ? "display:none" : "")'>
+            <ElAlert Type="success"
+                     Title="@(_message.Value ?? "")"
+                     ShowIcon="true" />
+        </div>
+
+        <ElForm LabelWidth="70px">
+            <ElFormItem Label="账号">
+                <ElInput ModelValue="@_account.Value"
+                         @onupdate:modelValue="SetAccount" />
+            </ElFormItem>
+            <ElFormItem Label="密码">
+                <ElInput ModelValue="@_password.Value"
+                         @onupdate:modelValue="SetPassword"
+                         Type="password"
+                         ShowPassword="true" />
+            </ElFormItem>
+            @if (_captchaEnabled.Value)
+            {
+                <ElFormItem Label="验证码">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <ElInput ModelValue="@_captchaCode.Value"
+                                 @onupdate:modelValue="SetCaptchaCode"
+                                 Placeholder="输入右侧字符" />
+
+                        <img src="@_captchaImage.Value"
+                             alt="验证码"
+                             title="点击刷新"
+                             @onclick="LoadCaptcha"
+                             style="height: 32px; cursor: pointer; border: 1px solid #dcdfe6; border-radius: 4px;" />
+                    </div>
+                </ElFormItem>
+            }
+        </ElForm>
+
+        <div style="display:grid;gap:12px;">
+            <ElButton Type="primary" @onclick="Submit" Disabled="@_busy.Value">登 录</ElButton>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;">
+                <ElButton @onclick="GoToCodeLogin" Disabled="@_busy.Value">验证码登录</ElButton>
+                <ElButton @onclick="GoToForgetPassword" Disabled="@_busy.Value">找回密码</ElButton>
+                <ElButton @onclick="GoToRegister" Disabled="@_busy.Value">注册</ElButton>
+            </div>
+        </div>
+
+    </LoginCard>
+
+</div>
+</div>
+
+@code {
+    private readonly IVueRef<string> _account = Ref<string>("");
+    private readonly IVueRef<string> _password = Ref<string>("");
+    private readonly IVueRef<string> _captchaCode = Ref<string>("");
+    private readonly IVueRef<string> _captchaImage = Ref<string>("");
+    private readonly IVueRef<bool> _captchaEnabled = Ref<bool>(true);
+    private readonly IVueRef<bool> _busy = Ref<bool>(false);
+    private readonly IVueRef<string?> _error = Ref<string?>(null);
+    private readonly IVueRef<string?> _message = Ref<string?>(null);
+
+    private string _publicKey = "";
+    private double _captchaId;
+    private ECMAScript.Router _router = default!;
+
+    [Setup]
+    private void Configure()
+    {
+        _router = ECMAScript.VueRoute.UseRouter();
+        OnMounted(LoadConfig);
+    }
+
+    private void LoadConfig()
+    {
+        PasswordAuth.LoginConfig().Then(result =>
+        {
+            if (!result.Ok)
+            {
+                _error.Value = result.Error ?? "加载登录配置失败。";
+                RefreshCaptcha(false);
+                return;
+            }
+            _publicKey = PasswordAuth.ReadPublicKey(result.Data);
+            _captchaEnabled.Value = PasswordAuth.ReadCaptchaEnabled(result.Data);
+            if (_captchaEnabled.Value)
+                LoadCaptcha();
+        }).Catch(_ => _error.Value = "加载登录配置失败，请检查网络后重试。");
+    }
+
+    private void LoadCaptcha() => RefreshCaptcha(true);
+
+    // 登录失败也会换题，此时应保留登录错误，刷新成功后只清掉上一题的答案。
+    private void RefreshCaptcha(bool clearError)
+    {
+        PasswordAuth.Captcha().Then(result =>
+        {
+            if (!result.Ok || result.Data is null)
+            {
+                if (clearError || _error.Value is null)
+                    _error.Value = result.Error ?? "获取验证码失败。";
+                return;
+            }
+            _captchaId = PasswordAuth.ReadCaptchaId(result.Data);
+            _captchaImage.Value = "data:image/png;base64," + PasswordAuth.ReadCaptchaImage(result.Data);
+            _captchaCode.Value = "";
+            if (clearError)
+                _error.Value = null;
+        }).Catch(_ =>
+        {
+            if (clearError || _error.Value is null)
+                _error.Value = "获取验证码失败，请检查网络后重试。";
+        });
+    }
+
+    private void Submit()
+    {
+        _error.Value = null;
+        _message.Value = null;
+        if (_publicKey.Length == 0)
+        {
+            _error.Value = "服务端未提供 SM2 公钥，无法安全提交密码。";
+            return;
+        }
+
+        _busy.Value = true;
+        try
+        {
+            // mode 1 对应 C1C3C2 密文顺序，须与服务端解密配置一致。
+            var encrypted = SmCrypto.Sm2.DoEncrypt(_password.Value, _publicKey, 1);
+            PasswordAuth.Login(_account.Value, encrypted, _captchaCode.Value, _captchaId).Then(result =>
+            {
+                if (result.Ok)
+                {
+                    _message.Value = "登录成功，正在进入系统…";
+                    return SignedIn(result.Data);
+                }
+                _error.Value = result.Error ?? "登录失败。";
+                if (_captchaEnabled.Value)
+                    RefreshCaptcha(false);
+                return ECMAScript.Promise.Resolve();
+            }).Catch(_ => LoginFailed()).Finally(() => _busy.Value = false);
+        }
+        catch
+        {
+            _busy.Value = false;
+            LoginFailed();
+        }
+    }
+
+    private void LoginFailed()
+    {
+        _error.Value = "登录请求失败，请检查网络后重试。";
+        if (_captchaEnabled.Value)
+            RefreshCaptcha(false);
+    }
+
+    private void DismissError() => _error.Value = null;
+    private void GoToCodeLogin() => _router.Push("/code-login");
+    private void GoToForgetPassword() => _router.Push("/forget-password");
+    private void GoToRegister() => _router.Push("/register");
+    private ECMAScript.IPromise<ECMAScript.RouteNavigationResult?> SignedIn(AuthResponseData? data)
+    {
+        return AuthSession.CompleteSignIn(_router, data?.AccessToken, data?.RefreshToken, data?.Homepage);
+    }
+    private void SetAccount(string? value) => _account.Value = value ?? "";
+    private void SetPassword(string? value) => _password.Value = value ?? "";
+    private void SetCaptchaCode(string? value) => _captchaCode.Value = value ?? "";
+}

@@ -11,21 +11,22 @@ namespace Jero.Web;
 
 internal static class WebProtocols
 {
-    // MVC and SignalR use the same field types and date formats for the browser.
+    // MVC 与 SignalR 共用浏览器端的数据类型和日期格式。
     internal static void ConfigureJson(JsonSerializerOptions options)
     {
         options.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
         options.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        // Preserve the wire type of all Int64 IDs, including small and nullable values.
+        // Int64 统一用十进制文本传输，避免超过 JavaScript 的安全整数范围，并让小值与可空字段使用同一传输类型。
         options.Converters.AddLongConverters();
         const string dateFormat = "yyyy-MM-dd HH:mm:ss";
-        // The API localizes UTC DateTime values. A DateTimeOffset retains its own wall-clock time.
+        // UTC DateTime 转为宿主本地时间，DateTimeOffset 则保留值自身的时钟时间。
         options.Converters.Add(new DateTimeJsonConverter(dateFormat, outputToLocalDateTime: true));
         options.Converters.Add(new DateTimeOffsetJsonConverter(dateFormat));
         options.Converters.AddDataTableConverters();
         options.Converters.AddDataSetConverters();
     }
 
+    // 存储过程结果的表名和列名随查询变化，OpenAPI 按实际 JSON 结构描述行数组和表名映射。
     internal static void ConfigureSchemas(SwaggerGenOptions options)
     {
         options.SchemaGeneratorOptions.CustomTypeMappings[typeof(DataTable)] = CreateDataTableSchema;

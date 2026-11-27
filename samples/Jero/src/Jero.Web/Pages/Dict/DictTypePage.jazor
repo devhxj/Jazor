@@ -1,0 +1,352 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Dict
+
+<style>
+    /* 双栏面板：两定列各自吃满高度，窄桌面仍两列（表格横向滚动），≤860 走壳层移动端回退 */
+    .dict-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: 16px; flex: 1; min-height: 0; }
+    @@media (max-width: 860px) {
+        .dict-panels { grid-template-columns: 1fr; grid-template-rows: none; }
+    }
+</style>
+
+<ElCard Header="字典管理" class="jero-list-page">
+    <p style="margin-top: 0; color: #606266;">
+        字典类型与字典值双栏联动，支持权限控制、分页、排序、复制和系统字典保护。
+    </p>
+
+    <div style='@(Error is null ? "display:none" : "margin-bottom:16px")'>
+        <ElAlert Type="error"
+                 Title="@(Error ?? "")"
+                 ShowIcon="true"
+                 Closable="true"
+                 @onclose="@(_ => DismissError())" />
+    </div>
+
+    <div class="dict-panels">
+        <ElCard Header="字典" class="jero-list-card">
+            <ElForm Inline="true">
+                <ElFormItem Label="名称">
+                    <ElInput ModelValue="@TypeName"
+                             @onupdate:modelValue="SetTypeName"
+                             Placeholder="字典名称"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem Label="编码">
+                    <ElInput ModelValue="@TypeCode"
+                             @onupdate:modelValue="SetTypeCode"
+                             Placeholder="字典编码"
+                             Clearable="true" />
+                </ElFormItem>
+                <ElFormItem>
+                    <ElButton Type="primary" @onclick="@(_ => SearchTypes())" Loading="@TypeLoading">查询</ElButton>
+                    <ElButton @onclick="@(_ => ResetTypeSearch())" Disabled="@TypeLoading">重置</ElButton>
+                    @if (CanAddType)
+                    {
+                        <ElButton Type="primary" @onclick="@(_ => OpenCreateType())">新增</ElButton>
+                    }
+                </ElFormItem>
+            </ElForm>
+
+            @if (TypeLoading)
+            {
+                <ElText>正在加载字典类型…</ElText>
+            }
+
+            <div class="jero-list-scroll">
+<TypeTable Rows="@TypeRows" IsSuperAdmin="@IsSuperAdmin" CanEditType="@CanEditType" CanDeleteType="@CanDeleteType" OnSelectTypeRow="@SelectTypeRow" OnOpenEditType="@OpenEditType" OnDeleteType="@DeleteType" OnSortTypes="@SortTypes" />
+            </div>
+
+            <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+                <ElPagination CurrentPage="@TypePage"
+                                  PageSize="@TypePageSize"
+                                  Total="@TypeTotal"
+                                  PageSizes="@PageSizes"
+                                  Background="true"
+                                  Layout="total, sizes, prev, pager, next, jumper"
+                                  @oncurrent-change="ChangeTypePage"
+                                  @onsize-change="ChangeTypePageSize" />
+            </div>
+        </ElCard>
+
+        <ElCard class="jero-list-card" Header="@("字典值" + (SelectedType is null ? "" : " · " + SelectedType.Name))">
+            @if (SelectedType is null)
+            {
+                <div style="min-height:360px;display:flex;align-items:center;justify-content:center;">
+                    <ElEmpty Description="请选择左侧字典后查看字典值" />
+                </div>
+            }
+            else
+            {
+                <ElForm Inline="true">
+                    <ElFormItem Label="显示文本">
+                        <ElInput ModelValue="@DataLabel"
+                                 @onupdate:modelValue="SetDataLabel"
+                                 Placeholder="显示文本"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem Label="编码">
+                        <ElInput ModelValue="@DataCode"
+                                 @onupdate:modelValue="SetDataCode"
+                                 Placeholder="编码"
+                                 Clearable="true" />
+                    </ElFormItem>
+                    <ElFormItem>
+                        <ElButton Type="primary" @onclick="@(_ => SearchData())" Loading="@DataLoading">查询</ElButton>
+                        <ElButton @onclick="@(_ => ResetDataSearch())" Disabled="@DataLoading">重置</ElButton>
+                        @if (CanAddData)
+                        {
+                            <ElButton Type="primary"
+                                      @onclick="@(_ => OpenCreateData())"
+                                      Disabled="@(!CanOperateSelectedType)">新增</ElButton>
+                        }
+                    </ElFormItem>
+                </ElForm>
+
+                @if (DataLoading)
+                {
+                    <ElText>正在加载字典值…</ElText>
+                }
+
+                <div class="jero-list-scroll">
+<DataTable Rows="@DataRows" CanAddData="@CanAddData" CanEditData="@CanEditData" CanDeleteData="@CanDeleteData" CanOperateSelectedType="@CanOperateSelectedType" OnOpenEditData="@OpenEditData" OnOpenCopyData="@OpenCopyData" OnDeleteData="@DeleteData" OnSortData="@SortData" />
+                </div>
+
+                <div style="margin-top:16px;display:flex;justify-content:flex-end;">
+                    <ElPagination CurrentPage="@DataPage"
+                                      PageSize="@DataPageSize"
+                                      Total="@DataTotal"
+                                      PageSizes="@PageSizes"
+                                      Background="true"
+                                      Layout="total, sizes, prev, pager, next, jumper"
+                                      @oncurrent-change="ChangeDataPage"
+                                      @onsize-change="ChangeDataPageSize" />
+                </div>
+            }
+        </ElCard>
+    </div>
+</ElCard>
+
+<ElDialog ModelValue="@TypeDialogVisible"
+          @onupdate:modelValue="SetTypeDialogVisible"
+          Title="@TypeDialogTitle"
+          Width="680px"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="92px">
+        <ElFormItem Label="字典名称">
+            <ElInput ModelValue="@EditTypeName"
+                     @onupdate:modelValue="SetEditTypeName"
+                     Placeholder="字典名称"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="字典编码">
+            <ElInput ModelValue="@EditTypeCode"
+                     @onupdate:modelValue="SetEditTypeCode"
+                     Placeholder="字典编码"
+                     Clearable="true" />
+        </ElFormItem>
+        @if (IsSuperAdmin)
+        {
+            <ElFormItem Label="内置参数">
+                <DictFlagInput Value="@EditTypeSysFlag" First="是" Second="否" OnChange="@SetEditTypeSysFlag" />
+            </ElFormItem>
+            <ElFormItem Label="租户字典">
+                <DictFlagInput Value="@EditTypeIsTenant" First="是" Second="否" OnChange="@SetEditTypeIsTenant" />
+            </ElFormItem>
+        }
+        <ElFormItem Label="状态">
+            <DictFlagInput Value="@EditTypeStatus" First="启用" Second="停用" OnChange="@SetEditTypeStatus" />
+        </ElFormItem>
+        <ElFormItem Label="排序">
+            <ElInputNumber ModelValue="@EditTypeOrderNo"
+                           @onupdate:modelValue="SetEditTypeOrderNo"
+                           Min="0" />
+        </ElFormItem>
+        <ElFormItem Label="备注">
+            <ElInput ModelValue="@EditTypeRemark"
+                     @onupdate:modelValue="SetEditTypeRemark"
+                     Type="textarea"
+                     Rows="3" />
+        </ElFormItem>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="@(_ => CancelType())" Disabled="@TypeSaving">取消</ElButton>
+        <ElButton Type="primary" @onclick="@(_ => SaveType())" Loading="@TypeSaving">确定</ElButton>
+    </div>
+</ElDialog>
+
+<ElDialog ModelValue="@DataDialogVisible"
+          @onupdate:modelValue="SetDataDialogVisible"
+          Title="@DataDialogTitle"
+          Width="720px"
+          CloseOnClickModal="false">
+    <ElForm LabelWidth="96px">
+        <ElFormItem Label="显示文本">
+            <ElInput ModelValue="@EditDataLabel"
+                     @onupdate:modelValue="SetEditDataLabel"
+                     Placeholder="显示文本"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="字典值">
+            <ElInput ModelValue="@EditDataValue"
+                     @onupdate:modelValue="SetEditDataValue"
+                     Placeholder="字典值"
+                     Disabled="@EditDataSystemLocked"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="编码">
+            <ElInput ModelValue="@EditDataCode"
+                     @onupdate:modelValue="SetEditDataCode"
+                     Placeholder="编码"
+                     Disabled="@EditDataSystemLocked"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="名称">
+            <ElInput ModelValue="@EditDataName"
+                     @onupdate:modelValue="SetEditDataName"
+                     Placeholder="名称"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="标签类型">
+            <DictTagInput Value="@EditDataTagType" OnChange="@SetEditDataTagType" />
+        </ElFormItem>
+        <ElFormItem Label="样式(Style)">
+            <ElInput ModelValue="@EditDataStyle"
+                     @onupdate:modelValue="SetEditDataStyle"
+                     Placeholder="内联样式"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="样式(Class)">
+            <ElInput ModelValue="@EditDataClass"
+                     @onupdate:modelValue="SetEditDataClass"
+                     Placeholder="CSS Class"
+                     Clearable="true" />
+        </ElFormItem>
+        <ElFormItem Label="状态">
+            <DictFlagInput Value="@EditDataStatus" First="启用" Second="停用" OnChange="@SetEditDataStatus" Disabled="@EditDataSystemLocked" />
+        </ElFormItem>
+        <ElFormItem Label="排序">
+            <ElInputNumber ModelValue="@EditDataOrderNo"
+                           @onupdate:modelValue="SetEditDataOrderNo"
+                           Min="0" />
+        </ElFormItem>
+        <ElFormItem Label="备注">
+            <ElInput ModelValue="@EditDataRemark"
+                     @onupdate:modelValue="SetEditDataRemark"
+                     Type="textarea"
+                     Rows="3" />
+        </ElFormItem>
+        <ElFormItem Label="拓展数据">
+            <ElInput ModelValue="@EditDataExtData"
+                     @onupdate:modelValue="SetEditDataExtData"
+                     Type="textarea"
+                     Rows="6" />
+        </ElFormItem>
+    </ElForm>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <ElButton @onclick="@(_ => CancelData())" Disabled="@DataSaving">取消</ElButton>
+        <ElButton Type="primary" @onclick="@(_ => SaveData())" Loading="@DataSaving">确定</ElButton>
+    </div>
+</ElDialog>
+
+@code {
+    [Parameter] public Action<string?> SetTypeName { get; set; } = default!;
+    [Parameter] public Action<string?> SetTypeCode { get; set; } = default!;
+    [Parameter] public Action<string?> SetDataLabel { get; set; } = default!;
+    [Parameter] public Action<string?> SetDataCode { get; set; } = default!;
+    [Parameter] public Action<bool> SetTypeDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTypeName { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTypeCode { get; set; } = default!;
+    [Parameter] public Action<double> SetEditTypeSysFlag { get; set; } = default!;
+    [Parameter] public Action<double> SetEditTypeIsTenant { get; set; } = default!;
+    [Parameter] public Action<double> SetEditTypeStatus { get; set; } = default!;
+    [Parameter] public Action<double?> SetEditTypeOrderNo { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditTypeRemark { get; set; } = default!;
+    [Parameter] public Action<bool> SetDataDialogVisible { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataLabel { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataValue { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataCode { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataName { get; set; } = default!;
+    [Parameter] public Action<string> SetEditDataTagType { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataStyle { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataClass { get; set; } = default!;
+    [Parameter] public Action<double> SetEditDataStatus { get; set; } = default!;
+    [Parameter] public Action<double?> SetEditDataOrderNo { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataRemark { get; set; } = default!;
+    [Parameter] public Action<string?> SetEditDataExtData { get; set; } = default!;
+    [Parameter] public bool IsSuperAdmin { get; set; }
+    [Parameter] public bool CanEditType { get; set; }
+    [Parameter] public bool CanDeleteType { get; set; }
+    [Parameter] public Action<string> SelectTypeRow { get; set; } = default!;
+    [Parameter] public Action<string> OpenEditType { get; set; } = default!;
+    [Parameter] public Action<string> DeleteType { get; set; } = default!;
+    [Parameter] public Action<string, string> SortTypes { get; set; } = default!;
+    [Parameter] public bool CanAddData { get; set; }
+    [Parameter] public bool CanEditData { get; set; }
+    [Parameter] public bool CanDeleteData { get; set; }
+    [Parameter] public bool CanOperateSelectedType { get; set; }
+    [Parameter] public Action<string> OpenEditData { get; set; } = default!;
+    [Parameter] public Action<string> OpenCopyData { get; set; } = default!;
+    [Parameter] public Action<string> DeleteData { get; set; } = default!;
+    [Parameter] public Action<string, string> SortData { get; set; } = default!;
+    [Parameter] public Action DismissError { get; set; } = default!;
+    [Parameter] public Action SearchTypes { get; set; } = default!;
+    [Parameter] public Action ResetTypeSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreateType { get; set; } = default!;
+    [Parameter] public Action<double> ChangeTypePage { get; set; } = default!;
+    [Parameter] public Action<double> ChangeTypePageSize { get; set; } = default!;
+    [Parameter] public Action SearchData { get; set; } = default!;
+    [Parameter] public Action ResetDataSearch { get; set; } = default!;
+    [Parameter] public Action OpenCreateData { get; set; } = default!;
+    [Parameter] public Action<double> ChangeDataPage { get; set; } = default!;
+    [Parameter] public Action<double> ChangeDataPageSize { get; set; } = default!;
+    [Parameter] public Action CancelType { get; set; } = default!;
+    [Parameter] public Action SaveType { get; set; } = default!;
+    [Parameter] public Action CancelData { get; set; } = default!;
+    [Parameter] public Action SaveData { get; set; } = default!;
+    [Parameter] public double[] PageSizes { get; set; } = [];
+    [Parameter] public DictTypeView[] TypeRows { get; set; } = [];
+    [Parameter] public int TypePage { get; set; }
+    [Parameter] public int TypePageSize { get; set; }
+    [Parameter] public int TypeTotal { get; set; }
+    [Parameter] public string TypeName { get; set; } = "";
+    [Parameter] public string TypeCode { get; set; } = "";
+    [Parameter] public bool TypeLoading { get; set; }
+    [Parameter] public DictDataView[] DataRows { get; set; } = [];
+    [Parameter] public int DataPage { get; set; }
+    [Parameter] public int DataPageSize { get; set; }
+    [Parameter] public int DataTotal { get; set; }
+    [Parameter] public string DataLabel { get; set; } = "";
+    [Parameter] public string DataCode { get; set; } = "";
+    [Parameter] public bool DataLoading { get; set; }
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public bool TypeDialogVisible { get; set; }
+    [Parameter] public string TypeDialogTitle { get; set; } = "";
+    [Parameter] public bool TypeSaving { get; set; }
+    [Parameter] public string EditTypeId { get; set; } = "";
+    [Parameter] public string EditTypeName { get; set; } = "";
+    [Parameter] public string EditTypeCode { get; set; } = "";
+    [Parameter] public int EditTypeOrderNo { get; set; }
+    [Parameter] public string EditTypeRemark { get; set; } = "";
+    [Parameter] public int EditTypeStatus { get; set; }
+    [Parameter] public int EditTypeSysFlag { get; set; }
+    [Parameter] public int EditTypeIsTenant { get; set; }
+    [Parameter] public bool DataDialogVisible { get; set; }
+    [Parameter] public string DataDialogTitle { get; set; } = "";
+    [Parameter] public bool DataSaving { get; set; }
+    [Parameter] public string EditDataLabel { get; set; } = "";
+    [Parameter] public string EditDataValue { get; set; } = "";
+    [Parameter] public string EditDataCode { get; set; } = "";
+    [Parameter] public string EditDataName { get; set; } = "";
+    [Parameter] public string EditDataTagType { get; set; } = "";
+    [Parameter] public string EditDataStyle { get; set; } = "";
+    [Parameter] public string EditDataClass { get; set; } = "";
+    [Parameter] public int EditDataOrderNo { get; set; }
+    [Parameter] public string EditDataRemark { get; set; } = "";
+    [Parameter] public string EditDataExtData { get; set; } = "";
+    [Parameter] public int EditDataStatus { get; set; }
+    [Parameter] public bool EditDataSystemLocked { get; set; }
+    [Parameter] public bool CanAddType { get; set; }
+    [Parameter] public DictTypeView? SelectedType { get; set; }
+}

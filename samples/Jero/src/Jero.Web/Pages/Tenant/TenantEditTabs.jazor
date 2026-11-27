@@ -1,0 +1,16 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+
+<ElTabs ModelValue="@Value" @attributes="@(new ModelUpdate<object?>(Update))">
+    <ElTabPane label="基本信息" name="basic"><slot name="basic" /></ElTabPane>
+    <ElTabPane label="数据库配置" name="database"><slot name="database" /></ElTabPane>
+    <ElTabPane label="站点信息" name="site" disabled="@SiteDisabled"><slot name="site" /></ElTabPane>
+</ElTabs>
+
+@code {
+    [Parameter] public string Value { get; set; } = default!;
+    [Parameter] public bool SiteDisabled { get; set; }
+    [Parameter] public Action<string> Change { get; set; } = default!;
+
+    private void Update(object? value) => Change(value as string ?? "basic");
+}

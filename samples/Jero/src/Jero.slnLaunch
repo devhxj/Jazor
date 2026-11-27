@@ -1,0 +1,11 @@
+[
+  {
+    "Name": "Jero.Web",
+    "Projects": [
+      {
+        "Path": "Jero.Web\\Jero.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

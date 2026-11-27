@@ -1,0 +1,17 @@
+@using Jero.Web.Application
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Org
+
+    <ElSelect ModelValue='@(Value)' placeholder='@(Placeholder)' clearable='@(Clearable)' filterable="true" @attributes="@(new ModelUpdate<string?>(Update))">
+        @foreach (var option in Options) { <ElOption @key="option.Id" value='@(option.Id)' label='@(option.Label)' /> }
+    </ElSelect>
+
+@code {
+    private void Update(string? value) => OnChange(value ?? "");
+    [Parameter] public OrgParentOption[] Options { get; set; } = [];
+    [Parameter] public string Placeholder { get; set; } = "";
+    [Parameter] public bool Clearable { get; set; }
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public Action<string> OnChange { get; set; } = default!;
+}

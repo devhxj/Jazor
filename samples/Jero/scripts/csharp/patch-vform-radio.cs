@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
-const string bundlePath = "src/Jero.Web/App/FormDesign/runtime/designer.umd.js";
+const string bundlePath = "src/Jero.Web/Pages/FormDesign/runtime/designer.umd.js";
 const string baseHash = "aa4cfb7a50db71885b8902ac3d35e2cbb33d892521923fb930268c3faa378da4";
 const string patchedHash = "41638c71e37a8e649dd3a8a64b60f22fc9383d1219b9a06be50eb65a2b0d5ff0";
 if (args is ["--check"])

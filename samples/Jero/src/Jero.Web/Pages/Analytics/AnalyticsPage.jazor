@@ -1,0 +1,129 @@
+@using ECMAScript
+@using static ECMAScript.Vue
+
+<style>
+    .analytics-page { min-width:0; display:grid; gap:20px; }
+    .analytics-overview { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+    .analytics-overview__item { min-width:0; display:grid; grid-template-columns:48px minmax(0,1fr); gap:14px; align-items:center; overflow:hidden; border:1px solid #e9edf3; border-radius:12px; padding:18px; background:#fff; box-shadow:0 8px 24px rgba(31,45,61,.04); animation:analytics-rise .32s ease both; }
+    .analytics-overview__item:nth-child(2) { animation-delay:.04s; }
+    .analytics-overview__item:nth-child(3) { animation-delay:.08s; }
+    .analytics-overview__item:nth-child(4) { animation-delay:.12s; }
+    .analytics-overview__icon { width:48px; height:48px; display:grid; place-items:center; border-radius:13px; font-size:18px; font-weight:750; }
+    .analytics-overview__copy { min-width:0; }
+    .analytics-overview__title { color:#606266; font-size:13px; }
+    .analytics-overview__value { margin-top:5px; color:#202938; font-size:27px; font-variant-numeric:tabular-nums; font-weight:760; line-height:1.15; }
+    .analytics-overview__total { display:flex; justify-content:space-between; gap:8px; margin-top:11px; color:#909399; font-size:12px; }
+    .analytics-overview__total strong { color:#606266; font-weight:650; }
+    .analytics-panel { min-width:0; overflow:hidden; border:1px solid #e9edf3; border-radius:12px; background:#fff; box-shadow:0 8px 24px rgba(31,45,61,.04); }
+    .analytics-main { padding:0 18px 18px; }
+    .analytics-main .el-tabs__header { margin:0 0 14px; }
+    .analytics-main .el-tabs__item { height:52px; }
+    .analytics-chart--main { width:100%; height:360px; }
+    .analytics-bottom { min-width:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .analytics-chart-card { min-width:0; padding:18px; }
+    .analytics-chart-card h2 { margin:0 0 6px; color:#303133; font-size:16px; font-weight:680; }
+    .analytics-chart-card p { margin:0; color:#909399; font-size:12px; line-height:1.6; }
+    .analytics-chart--small { width:100%; height:300px; margin-top:8px; }
+    @@keyframes analytics-rise { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+    @@media(max-width:1100px) {
+        .analytics-overview { grid-template-columns:repeat(2,minmax(0,1fr)); }
+        .analytics-bottom { grid-template-columns:1fr; }
+        .analytics-chart--small { height:320px; }
+    }
+    @@media(max-width:560px) {
+        .analytics-page { gap:14px; }
+        .analytics-overview { grid-template-columns:1fr; gap:12px; }
+        .analytics-overview__item { padding:16px; }
+        .analytics-main, .analytics-chart-card { padding-left:12px; padding-right:12px; }
+        .analytics-chart--main { height:310px; }
+        .analytics-chart--small { height:280px; }
+    }
+    @@media(prefers-reduced-motion:reduce) {
+        .analytics-overview__item { animation:none; }
+    }
+</style>
+
+<div class="analytics-page">
+    <section class="analytics-overview" aria-label="分析概览">
+        <article class="analytics-overview__item">
+            <span class="analytics-overview__icon" style="background:#eff6ff;color:#2563eb;">用</span>
+            <div class="analytics-overview__copy">
+                <div class="analytics-overview__title">用户量</div>
+                <div class="analytics-overview__value">2,000</div>
+                <div class="analytics-overview__total"><span>总用户量</span><strong>120,000</strong></div>
+            </div>
+        </article>
+        <article class="analytics-overview__item">
+            <span class="analytics-overview__icon" style="background:#ecfdf5;color:#0f766e;">访</span>
+            <div class="analytics-overview__copy">
+                <div class="analytics-overview__title">访问量</div>
+                <div class="analytics-overview__value">20,000</div>
+                <div class="analytics-overview__total"><span>总访问量</span><strong>500,000</strong></div>
+            </div>
+        </article>
+        <article class="analytics-overview__item">
+            <span class="analytics-overview__icon" style="background:#f5f3ff;color:#7c3aed;">下</span>
+            <div class="analytics-overview__copy">
+                <div class="analytics-overview__title">下载量</div>
+                <div class="analytics-overview__value">8,000</div>
+                <div class="analytics-overview__total"><span>总下载量</span><strong>120,000</strong></div>
+            </div>
+        </article>
+        <article class="analytics-overview__item">
+            <span class="analytics-overview__icon" style="background:#fff7ed;color:#c2410c;">使</span>
+            <div class="analytics-overview__copy">
+                <div class="analytics-overview__title">使用量</div>
+                <div class="analytics-overview__value">5,000</div>
+                <div class="analytics-overview__total"><span>总使用量</span><strong>50,000</strong></div>
+            </div>
+        </article>
+    </section>
+
+    <section class="analytics-panel analytics-main">
+        <AnalyticsTabs Active="@_activeTab.Value" Change="@ChangeTab" />
+        <div id="jero-analytics-main-chart" class="analytics-chart--main" role="img" aria-label="@(_activeTab.Value == "visits" ? "月访问量柱状图" : "流量趋势折线图")"></div>
+    </section>
+
+    <section class="analytics-bottom" aria-label="访问分析图表">
+        <article class="analytics-panel analytics-chart-card">
+            <h2>访问数量</h2>
+            <p>按终端类型对比访问量与趋势。</p>
+            <div id="jero-analytics-visits-data" class="analytics-chart--small" role="img" aria-label="访问数量雷达图"></div>
+        </article>
+        <article class="analytics-panel analytics-chart-card">
+            <h2>访问来源</h2>
+            <p>搜索、直接访问、邮件和联盟广告构成。</p>
+            <div id="jero-analytics-visits-source" class="analytics-chart--small" role="img" aria-label="访问来源环形图"></div>
+        </article>
+        <article class="analytics-panel analytics-chart-card">
+            <h2>商业占比</h2>
+            <p>外包、定制、技术支持和远程服务分布。</p>
+            <div id="jero-analytics-visits-sales" class="analytics-chart--small" role="img" aria-label="商业占比玫瑰图"></div>
+        </article>
+    </section>
+</div>
+
+@code {
+    [Parameter] public Action<string> MountCharts { get; set; } = default!;
+    [Parameter] public Action<string> SwitchChart { get; set; } = default!;
+    [Parameter] public Action DestroyCharts { get; set; } = default!;
+
+    private readonly IVueRef<string> _activeTab = Ref("trends");
+
+    [Setup]
+    private void SetupCharts()
+    {
+        // ECharts 初始化需要已挂载的容器，离开页面时须释放实例和 resize 监听。
+        OnMounted(() => MountCharts(_activeTab.Value));
+        OnBeforeUnmount(() => DestroyCharts());
+    }
+
+    private void ChangeTab(string value)
+    {
+        var next = value == "visits" ? "visits" : "trends";
+        if (next == _activeTab.Value)
+            return;
+        _activeTab.Value = next;
+        SwitchChart(next);
+    }
+}

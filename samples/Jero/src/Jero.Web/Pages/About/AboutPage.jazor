@@ -1,0 +1,14 @@
+@using Npm.ElementPlus
+
+<ElCard class="about-card">
+    <h1>关于项目</h1>
+    <p>Jero 是一个后台管理示例。服务端使用 ASP.NET Core，前端使用 Jolt 编写 .jazor 页面，由 Vue 和 Vue Router 负责渲染与路由，Element Plus 提供界面组件，Vite 打包前端资源。</p>
+    <p><a href="https://github.com/devhxj/Jazor">Jazor 源代码与文档</a></p>
+</ElCard>
+
+<style>
+    .about-card { max-width: 760px; }
+    .about-card h1 { margin: 0; font-size: 23px; line-height: 1.25; }
+    .about-card p { margin: 12px 0 0; font-size: 14px; line-height: 1.7; }
+    .about-card a { color: var(--el-color-primary); }
+</style>

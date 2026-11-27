@@ -438,6 +438,49 @@ public static class SqlSugarSetup
 
         // 初始化种子数据
         if (config.SeedSettings.EnableInitSeed) InitSeedData(db, config);
+
+        if (config.ConfigId.ToString() == SqlSugarConst.MainConfigId)
+            RemoveRetiredCodeGenerationSeeds(dbProvider);
+    }
+
+    private static void RemoveRetiredCodeGenerationSeeds(SqlSugarScopeProvider db)
+    {
+        const long menuId = 1300500020101;
+        var menuTable = db.EntityMaintenance.GetEntityInfo<SysMenu>().DbTableName;
+        var hasMenu = db.DbMaintenance.IsAnyTable(menuTable, false) &&
+            db.Queryable<SysMenu>().Any(menu => menu.Id == menuId && menu.Path == "/develop/codeGen");
+        var dictTypeTable = db.EntityMaintenance.GetEntityInfo<SysDictType>().DbTableName;
+        long[] retiredIds = [1300000000111, 1300000000121, 1300000000131, 1300000000141, 1300000000151, 1300000000161];
+        var dictIds = db.DbMaintenance.IsAnyTable(dictTypeTable, false)
+            ? db.Queryable<SysDictType>().Where(type => retiredIds.Contains(type.Id) && type.Code.StartsWith("code_gen_"))
+                .Select(type => type.Id).ToList()
+            : [];
+        if (!hasMenu && dictIds.Count == 0)
+            return;
+
+        // Keep the seeded menu and its grants in one transaction on existing installations.
+        db.Ado.BeginTran();
+        try
+        {
+            if (hasMenu)
+            {
+                db.Deleteable<SysRoleMenu>().Where(item => item.MenuId == menuId).ExecuteCommand();
+                db.Deleteable<SysTenantMenu>().Where(item => item.MenuId == menuId).ExecuteCommand();
+                db.Deleteable<SysUserMenu>().Where(item => item.MenuId == menuId).ExecuteCommand();
+                db.Deleteable<SysMenu>().Where(menu => menu.Id == menuId).ExecuteCommand();
+            }
+            if (dictIds.Count > 0)
+            {
+                db.Deleteable<SysDictData>().Where(item => dictIds.Contains(item.DictTypeId)).ExecuteCommand();
+                db.Deleteable<SysDictType>().Where(type => dictIds.Contains(type.Id)).ExecuteCommand();
+            }
+            db.Ado.CommitTran();
+        }
+        catch
+        {
+            db.Ado.RollbackTran();
+            throw;
+        }
     }
 
     /// <summary>
@@ -563,7 +606,20 @@ public static class SqlSugarSetup
         var seedDataTypes = GetSeedDataTypes(config);
 
         int count = 0, sum = seedDataTypes.Count;
-        var tasks = seedDataTypes.Select(seedType => Task.Run(() =>
+        // SQLite 的种子写入按 SeedData 顺序执行，避免初始化任务并发写入同一个数据库。
+        if (config.DbType == DbType.Sqlite)
+        {
+            foreach (var seedType in seedDataTypes)
+                ApplySeed(seedType);
+        }
+        else
+        {
+            var tasks = seedDataTypes.Select(seedType => Task.Run(() => ApplySeed(seedType)));
+            Task.WhenAll(tasks).GetAwaiter().GetResult();
+        }
+        _isHandlingSeedData = false;
+
+        void ApplySeed(Type seedType)
         {
             var entityType = seedType.GetInterfaces().First().GetGenericArguments().First();
             if (!IsEntityForConfig(entityType, config)) return;
@@ -573,10 +629,7 @@ public static class SqlSugarSetup
 
             AdjustSeedDataIds(seedData, config);
             InsertOrUpdateSeedData(dbProvider, seedType, entityType, seedData, config, ref count, sum);
-        }));
-
-        Task.WhenAll(tasks).GetAwaiter().GetResult();
-        _isHandlingSeedData = false;
+        }
     }
 
     /// <summary>

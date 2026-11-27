@@ -1,0 +1,158 @@
+@using Npm.ElementPlus
+@using Jero.Web.Pages.Components
+@using Jero.Web.Pages.Tenant
+
+<style scoped>
+.tenant-page__actions { display:flex; align-items:center; justify-content:center; gap:2px 8px; flex-wrap:wrap; }
+.tenant-detail { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px 24px; padding:18px 24px; background:#f8fafc; }
+.tenant-detail__item { min-width:0; display:grid; gap:4px; }
+.tenant-detail__item.is-wide { grid-column:span 3; }
+.tenant-detail__label { color:#909399; font-size:12px; }
+.tenant-detail__value { color:#303133; overflow-wrap:anywhere; white-space:pre-wrap; }
+.tenant-detail__logo { width:48px; height:48px; object-fit:contain; border:1px solid #e4e7ed; border-radius:8px; background:#fff; }
+@media (max-width: 860px) {
+.tenant-detail { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.tenant-detail__item.is-wide { grid-column:span 2; }
+}
+
+@media (max-width: 700px) {
+.tenant-detail { grid-template-columns:1fr; }
+.tenant-detail__item.is-wide { grid-column:auto; }
+}
+</style>
+
+<ElTable @attributes="@(new TableData<TenantTableRow>(Rows))" border="true" stripe="true" RowKey="@(nameof(TenantTableRow.Id))" EmptyText="暂无租户">
+    <ElTableColumn type="expand" width="52">
+        <template #default context="cell">@{ var row = ((TableSlot<TenantTableRow>)(object)cell).Row; }
+                <div class="tenant-detail">
+                    <div class="tenant-detail__item">
+                        <span class="tenant-detail__label">LOGO</span>
+                        <div>
+                            @if (!string.IsNullOrEmpty(row.TenantLogoUrl)) { <img class="tenant-detail__logo" src='@(row.TenantLogoUrl)' alt="租户 Logo" /> }
+                            @if (string.IsNullOrEmpty(row.TenantLogoUrl)) { <span>-</span> }
+                        </div>
+                    </div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">标题</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.Title) ? "-" : row.Title))</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">副标题</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.ViceTitle) ? "-" : row.ViceTitle))</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">站点域名</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.Host) ? "-" : row.Host))</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">数据库类型</span><span class="tenant-detail__value">@(row.DbTypeText)</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">数据库标识</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.ConfigId) ? "-" : row.ConfigId))</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">备案号</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.Icp) ? "-" : row.Icp))</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">水印</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.Watermark) ? "-" : row.Watermark))</span></div>
+                    <div class="tenant-detail__item"><span class="tenant-detail__label">版权信息</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.Copyright) ? "-" : row.Copyright))</span></div>
+                    <div class="tenant-detail__item is-wide"><span class="tenant-detail__label">数据库连接</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.Connection) ? "-" : row.Connection))</span></div>
+                    <div class="tenant-detail__item is-wide"><span class="tenant-detail__label">从库连接</span><span class="tenant-detail__value">@((string.IsNullOrEmpty(row.SlaveConnections) ? "-" : row.SlaveConnections))</span></div>
+                </div>
+            </template>
+        </ElTableColumn>
+        <ElTableColumn type="index" label="序号" width="70" align="center" />
+        <ElTableColumn prop="@(nameof(TenantTableRow.Name))" label="租户名称" MinWidth="170" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(TenantTableRow.AdminAccount))" label="租管账号" MinWidth="150" ShowOverflowTooltip="true" />
+        <ElTableColumn prop="@(nameof(TenantTableRow.Phone))" label="联系电话" MinWidth="135" ShowOverflowTooltip="true" />
+        <ElTableColumn label="租户类型" MinWidth="110" align="center">
+            <template #default context="cell">@{ var row = ((TableSlot<TenantTableRow>)(object)cell).Row; }<ElTag @attributes='@(new TableTagProps(Tag(row.TenantTypeTag)))'>@(row.TenantTypeText)</ElTag></template>
+            </ElTableColumn>
+            <ElTableColumn label="状态" MinWidth="145" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<TenantTableRow>)(object)cell).Row; }
+                        <div style="display:flex;align-items:center;justify-content:center;gap:8px;">
+                            <ElTag @attributes='@(new TableTagProps(Tag(row.StatusTag)))'>@(row.StatusText)</ElTag>
+                            @if (CanSetStatus) {
+                                <ElPopconfirm title='@($"确定将租户【{row.Name}】切换为{row.StatusActionText}状态吗？")'
+                                ConfirmButtonText="确定" CancelButtonText="取消"
+                                @onconfirm="@(() => ToggleStatus(row.Id))">
+                                <template #reference>
+                                    <ElButton link="true" type="primary" loading='@(BusyId == row.Id && BusyAction == "status")' disabled='@(Busy)'>@(row.StatusActionText)</ElButton>
+                                </template>
+                            </ElPopconfirm>
+
+                        }
+                    </div>
+                </template>
+            </ElTableColumn>
+            <ElTableColumn label="修改记录" width="110" align="center">
+                <template #default context="cell">@{ var row = ((TableSlot<TenantTableRow>)(object)cell).Row; }<ElButton link="true" type="primary" @onclick="@(() => OpenAudit(row.Id))">查看</ElButton></template>
+                </ElTableColumn>
+                @if (HasActionColumn) {
+                    <ElTableColumn label="操作" MinWidth="520" align="center" fixed="right">
+                        <template #default context="cell">@{ var row = ((TableSlot<TenantTableRow>)(object)cell).Row; }
+                                <div class="tenant-page__actions">
+                                    @if (CanCreateDb) {
+                                        <ElPopconfirm title='@("确定创建或更新租户数据库【" + row.Name + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => CreateDatabase(row.Id))">
+                                            <template #reference><ElButton link="true" type="primary" loading='@(BusyId == row.Id && BusyAction == "database")' disabled='@(Busy)'>建库</ElButton></template>
+                                        </ElPopconfirm>
+
+                                    }
+                                    @if (CanGrantMenu) {
+                                        <ElButton link="true" type="primary" disabled='@(Busy)' @onclick="@(() => OpenGrantMenu(row.Id))">菜单授权</ElButton>
+
+                                    }
+                                    @if (CanSyncGrantMenu) {
+                                        <ElPopconfirm title='@("确定同步租户【" + row.Name + "】的授权数据吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => SyncGrantMenu(row.Id))">
+                                            <template #reference><ElButton link="true" type="primary" loading='@(BusyId == row.Id && BusyAction == "sync")' disabled='@(Busy)'>同步授权</ElButton></template>
+                                        </ElPopconfirm>
+
+                                    }
+                                    @if (CanGoTenant) {
+                                        <ElPopconfirm title='@("确定进入【" + row.Name + "】租管端吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => GoTenant(row.Id))">
+                                            <template #reference><ElButton link="true" type="primary" loading='@(BusyId == row.Id && BusyAction == "go")' disabled='@(Busy)'>进入租管端</ElButton></template>
+                                        </ElPopconfirm>
+
+                                    }
+                                    @if (CanChangeTenant) {
+                                        <ElPopconfirm title='@("确定将当前用户切换到【" + row.Name + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => ChangeTenant(row.Id))">
+                                            <template #reference><ElButton link="true" type="primary" loading='@(BusyId == row.Id && BusyAction == "change")' disabled='@(Busy)'>切换租户</ElButton></template>
+                                        </ElPopconfirm>
+
+                                    }
+                                    @if (CanResetPassword) {
+                                        <ElPopconfirm title='@("确定重置租户【" + row.Name + "】的管理员密码吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => ResetPassword(row.Id))">
+                                            <template #reference><ElButton link="true" type="warning" loading='@(BusyId == row.Id && BusyAction == "password")' disabled='@(Busy)'>重置密码</ElButton></template>
+                                        </ElPopconfirm>
+
+                                    }
+                                    @if (CanEdit) {
+                                        <ElButton link="true" type="primary" disabled='@(Busy)' @onclick="@(() => OpenEdit(row.Id))">编辑</ElButton>
+
+                                    }
+                                    @if (CanDelete) {
+                                        <ElPopconfirm title='@("确定删除租户【" + row.Name + "】吗？")' ConfirmButtonText="确定" CancelButtonText="取消" @onconfirm="@(() => Delete(row.Id))">
+                                            <template #reference><ElButton link="true" type="danger" loading='@(BusyId == row.Id && BusyAction == "delete")' disabled='@(Busy || row.Id == DefaultTenantId)'>删除</ElButton></template>
+                                        </ElPopconfirm>
+
+                                    }
+                                </div>
+                            </template>
+                        </ElTableColumn>
+
+                    }
+                </ElTable>
+
+@code {
+    [Parameter] public TenantTableRow[] Rows { get; set; } = [];
+    [Parameter] public bool CanSetStatus { get; set; }
+    [Parameter] public bool HasActionColumn { get; set; }
+    [Parameter] public bool CanCreateDb { get; set; }
+    [Parameter] public bool CanGrantMenu { get; set; }
+    [Parameter] public bool CanSyncGrantMenu { get; set; }
+    [Parameter] public bool CanGoTenant { get; set; }
+    [Parameter] public bool CanChangeTenant { get; set; }
+    [Parameter] public bool CanResetPassword { get; set; }
+    [Parameter] public bool CanEdit { get; set; }
+    [Parameter] public bool CanDelete { get; set; }
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public string BusyId { get; set; } = default!;
+    [Parameter] public string BusyAction { get; set; } = default!;
+    [Parameter] public string DefaultTenantId { get; set; } = default!;
+    [Parameter] public Action<string> ToggleStatus { get; set; } = default!;
+    [Parameter] public Action<string> OpenAudit { get; set; } = default!;
+    [Parameter] public Action<string> CreateDatabase { get; set; } = default!;
+    [Parameter] public Action<string> OpenGrantMenu { get; set; } = default!;
+    [Parameter] public Action<string> SyncGrantMenu { get; set; } = default!;
+    [Parameter] public Action<string> GoTenant { get; set; } = default!;
+    [Parameter] public Action<string> ChangeTenant { get; set; } = default!;
+    [Parameter] public Action<string> ResetPassword { get; set; } = default!;
+    [Parameter] public Action<string> OpenEdit { get; set; } = default!;
+    [Parameter] public Action<string> Delete { get; set; } = default!;
+
+    private static string Tag(string value) => value is "success" or "warning" or "danger" or "info" ? value : "primary";
+}

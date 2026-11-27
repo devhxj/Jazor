@@ -16,7 +16,7 @@ public static class OAuthSetup
     public static void AddOAuth(this IServiceCollection services)
     {
         var authOpt = App.GetConfig<OAuthOptions>("OAuth", true);
-        services.AddAuthentication(options =>
+        var authentication = services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -24,16 +24,20 @@ public static class OAuthSetup
             .AddCookie(options =>
             {
                 options.Cookie.SameSite = SameSiteMode.Lax;
-            })
-            .AddWeixin(options =>
+            });
+
+        // Remote handlers validate credentials on the first request, even for a local login.
+        if (authOpt?.Weixin is { ClientId.Length: > 0, ClientSecret.Length: > 0 } weixin)
+            authentication.AddWeixin(options =>
             {
-                options.ClientId = authOpt.Weixin?.ClientId!;
-                options.ClientSecret = authOpt.Weixin?.ClientSecret!;
-            })
-            .AddGitee(options =>
+                options.ClientId = weixin.ClientId;
+                options.ClientSecret = weixin.ClientSecret;
+            });
+        if (authOpt?.Gitee is { ClientId.Length: > 0, ClientSecret.Length: > 0 } gitee)
+            authentication.AddGitee(options =>
             {
-                options.ClientId = authOpt.Gitee?.ClientId!;
-                options.ClientSecret = authOpt.Gitee?.ClientSecret!;
+                options.ClientId = gitee.ClientId;
+                options.ClientSecret = gitee.ClientSecret;
 
                 options.ClaimActions.MapJsonKey(OAuthClaim.GiteeAvatarUrl, "avatar_url");
             });
