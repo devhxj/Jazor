@@ -8,7 +8,7 @@ for (const name of ['window', 'document', 'Element', 'SVGElement'])
 const { useQueryClient } = await import('@tanstack/vue-query');
 const { createApp, createSSRApp, nextTick } = await import('vue');
 const { renderToString } = await import('vue/server-renderer');
-const { default: Query, Install } = await import('./.jolt/Query.mjs');
+const { default: Query, Install } = await import('./.jazor/Query.mjs');
 
 // Infinite GC avoids a package timer keeping the embedded Node worker alive after disposal.
 const options = { queries: { retry: false, gcTime: Infinity }, mutations: { gcTime: Infinity } };

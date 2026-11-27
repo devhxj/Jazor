@@ -255,11 +255,13 @@ exports.check = async (requestJson) => {
 
 let ownedViteServer;
 exports.startVite = async (requestJson) => {
-    const { projectDirectory, host, port, base, pluginsModule } = JSON.parse(requestJson);
+    const { projectDirectory, host, port, base, pluginsModule, generatedDirectory } = JSON.parse(requestJson);
     const vite = await loadVite(projectDirectory);
     ownedViteServer = await vite.createServer({ root: projectDirectory, ...(base == null ? {} : { base }),
-        server: { host, port, strictPort: true, open: false },
-        plugins: pluginsModule ? await require(pluginsModule).plugins(projectDirectory, true) : [] });
+        // Vite treats port 0 as its default port. Enable its bind-and-retry path
+        // for automatic allocation so concurrent hosts never share a listener.
+        server: { host, port, strictPort: port !== 0, open: false, watch: { ignored: ['**/.vs/**'] } },
+        plugins: pluginsModule ? await require(pluginsModule).plugins(projectDirectory, true, generatedDirectory) : [] });
     try {
         await ownedViteServer.listen();
         return JSON.stringify({ operation: 'vite', status: 'listening', pid: process.pid, origin: ownedViteServer.resolvedUrls.local[0] });

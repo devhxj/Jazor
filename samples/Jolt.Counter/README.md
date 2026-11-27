@@ -14,23 +14,23 @@ To run with the CLI built from source, use `dotnet run --project src/Jolt.Cli --
 dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:15658/ samples/Jolt.Counter/CounterButton.jazor
 ```
 
-Build the production assets in `samples/Jolt.Counter/dist`.
+Build the production assets in `samples/Jolt.Counter/.jazor/dist`.
 
 ```sh
 jolt bundle samples/Jolt.Counter
 ```
 
-Serve `dist` with a static HTTP server and run the same browser check against that URL without the source-file argument. The dev server and production bundle both use Vite in the embedded LibNode host. The generated maps include the original `.jazor` source.
+Serve `.jazor/dist` with a static HTTP server and run the same browser check against that URL without the source-file argument. The dev server and production bundle both use Vite in the embedded LibNode host. The generated maps include the original `.jazor` source.
 
 ## Scoped styles and generic components
 
 Prepare an isolated copy of the authoring fixture and start it with the candidate CLI.
 
 ```sh
-dotnet run --file samples/Jolt.Counter/verify-browser.cs -- --prepare .tmp/jolt-feature-web
-jolt dev .tmp/jolt-feature-web --port 15658
-dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:15658/ .tmp/jolt-feature-web/CounterButton.jazor --features
-jolt bundle .tmp/jolt-feature-web
+dotnet run --file samples/Jolt.Counter/verify-browser.cs -- --prepare test/jolt-feature-web
+jolt dev test/jolt-feature-web --port 15658
+dotnet run --file samples/Jolt.Counter/verify-browser.cs -- chromium http://127.0.0.1:15658/ test/jolt-feature-web/CounterButton.jazor --features
+jolt bundle test/jolt-feature-web
 ```
 
 Run the browser check against the served production directory with `--features`. It checks scoped CSS and HMR, Reka UI bindings, and a local table whose rows and status values come from two inferred type parameters. Reversing the table must reuse the same DOM rows and evaluate each row key once. The editor fixture verifies model writes, focus through an exposed method, and the lifetime of the component reference when the editor is removed and mounted again. The form fixture checks setter normalization and veto, post-assignment callbacks, radio buttons, selects and nullable numbers. [Table consumer](.fixtures/TableDemo.jazor) · [Table declaration](.fixtures/TypedTable.jazor) · [Native controls](.fixtures/NativeForm.jazor)

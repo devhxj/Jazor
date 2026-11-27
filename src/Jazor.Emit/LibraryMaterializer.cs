@@ -25,7 +25,8 @@ internal sealed class LibraryMaterializer
         BuildMode mode,
         IEnumerable<string>? requiredImports = null,
         IEnumerable<string>? providedModulePaths = null,
-        IEnumerable<ProjectedNpmPackage>? projectedPackages = null)
+        IEnumerable<ProjectedNpmPackage>? projectedPackages = null,
+        IReadOnlySet<string>? bundlerPackages = null)
     {
         ArgumentNullException.ThrowIfNull(manifestPaths);
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationRoot);
@@ -52,7 +53,8 @@ internal sealed class LibraryMaterializer
             requiredImports,
             providedModulePaths,
             unresolvedExternalPackages,
-            projectedDependencies);
+            projectedDependencies,
+            bundlerPackages);
         var selectedManifests = ResolveManifestClosure(selectedImports, manifests);
         var providersById = selectedManifests.ToDictionary(static manifest => manifest.LibraryId, StringComparer.Ordinal);
         selectedManifests = OrderByDependencies(selectedManifests, providersById);
@@ -361,7 +363,8 @@ internal sealed class LibraryMaterializer
         IEnumerable<string>? requiredImports,
         IEnumerable<string>? providedModulePaths,
         IDictionary<string, LibraryPackageReference> unresolvedExternalPackages,
-        ILookup<string, string> projectedDependencies)
+        ILookup<string, string> projectedDependencies,
+        IReadOnlySet<string>? bundlerPackages)
     {
         var requested = requiredImports is null
             ? importsBySpecifier.Keys
@@ -435,6 +438,11 @@ internal sealed class LibraryMaterializer
                     AddExternal(new LibraryPackageReference(LibraryPackageIdentity.GetPackageName(specifier), dependencies[0], "npm"));
                     return;
                 }
+
+                // The consuming bundler resolves declared package subpaths. Explicit
+                // providers above still own embedded assets and package metadata.
+                if (bundlerPackages?.Contains(LibraryPackageIdentity.GetPackageName(specifier)) == true)
+                    return;
 
                 throw new LibraryException(
                     "JAZOR_LIBRARY_IMPORT_MISSING",

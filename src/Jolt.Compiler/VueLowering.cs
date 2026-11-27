@@ -136,7 +136,8 @@ internal sealed partial class VueLowering(Projection projection, ComponentContra
                 // runtime copy shared by components in every directory.
                 clrImports.Add(import.Source.Value[2..]);
                 var depth = path.Count(character => character == '/');
-                var specifier = depth == 0 ? import.Source.Value : string.Concat(Enumerable.Repeat("../", depth)) + import.Source.Value[2..];
+                var runtime = ".jolt-runtime/" + import.Source.Value[2..];
+                var specifier = (depth == 0 ? "./" : string.Concat(Enumerable.Repeat("../", depth))) + runtime;
                 statements.Add(ImportDeclarationFactory.WithModulePath(import, specifier));
             }
             else

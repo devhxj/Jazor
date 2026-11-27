@@ -20,7 +20,8 @@ public sealed class ProjectImportsTests
             var initial = await JoltProjectLoader.LoadSourcesAsync(directory.FullName, null, CancellationToken.None);
             var overlay = new Dictionary<string, string> { [page] = "<p>B</p>" };
             var edited = await JoltProjectLoader.LoadSourcesAsync(directory.FullName, overlay, CancellationToken.None, initial.Sources);
-            var before = JoltProjectImports.Parse(initial.Sources).Documents;
+            var before = JoltProjectImports.ParseCold(initial.Sources.Reverse().ToArray(), CancellationToken.None).Documents;
+            CollectionAssert.AreEqual(new[] { "Card.jazor", "Page.jazor" }, before.Select(document => document.Path).ToArray());
             var after = JoltProjectImports.Parse(edited.Sources).Documents;
             Assert.AreSame(before.Single(doc => doc.Path == "Card.jazor"), after.Single(doc => doc.Path == "Card.jazor"));
             Assert.AreEqual(overlay[page], after.Single(doc => doc.Path == "Page.jazor").Source);
@@ -211,6 +212,63 @@ public sealed class ProjectImportsTests
     }
 
     [TestMethod]
+    public void PortableSnapshot_RebasesDefinitionAndRealpathsWithoutChangingDocumentation()
+    {
+        const string json = """
+            {"definition":{"path":"producer/types.d.ts","start":12,"length":6,
+            "documentation":{"parameters":{"modulePath":"producer/example", "realpaths":"producer/example", "inputs":"producer/example"}}},
+            "realpaths":{"producer/second":"producer/types.d.ts","producer/first":"producer/index.d.ts"},
+            "inputs":["producer/types.d.ts",null]}
+            """;
+        var snapshot = System.Text.Json.Nodes.JsonNode.Parse(json)!;
+        var definition = snapshot["definition"]!;
+        var documentation = definition["documentation"];
+        var rebased = NpmValueMetadataProvider.RebaseSnapshot(snapshot, value =>
+            value.StartsWith("producer/", StringComparison.Ordinal) ? "consumer/" + value["producer/".Length..] : null);
+        Assert.AreSame(snapshot, rebased);
+        Assert.AreSame(documentation, definition["documentation"]);
+        Assert.AreEqual("producer/example", (string?)documentation!["parameters"]!["modulePath"]);
+        Assert.AreEqual("producer/example", (string?)documentation["parameters"]!["realpaths"]);
+        Assert.AreEqual("producer/example", (string?)documentation["parameters"]!["inputs"]);
+        Assert.AreEqual("consumer/types.d.ts", (string?)definition["path"]);
+        Assert.AreEqual(12, (int)definition["start"]!);
+        Assert.AreEqual(6, (int)definition["length"]!);
+        Assert.AreEqual("""{"consumer/second":"consumer/types.d.ts","consumer/first":"consumer/index.d.ts"}""",
+            snapshot["realpaths"]!.ToJsonString());
+        Assert.AreEqual("""["consumer/types.d.ts",null]""", snapshot["inputs"]!.ToJsonString());
+    }
+
+    [TestMethod]
+    public void NpmValidation_ReadsPackageSelectorsAgainInANewValidation()
+    {
+        var project = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-manifest-validation-" + Guid.NewGuid()));
+        try
+        {
+            var manifest = Path.Combine(project.FullName, "package.json");
+            File.WriteAllText(manifest, """{"type":"module"}""");
+            var timestamp = File.GetLastWriteTimeUtc(manifest);
+            var validation = new NpmValueMetadataProvider.Validation();
+            var original = validation.ReadPackageFingerprints(manifest);
+            Assert.AreEqual(original.Full, validation.ReadFingerprint(manifest));
+
+            File.WriteAllText(manifest, """{"type":"commonjs"}""");
+            File.SetLastWriteTimeUtc(manifest, timestamp);
+            Assert.AreEqual(original, validation.ReadPackageFingerprints(manifest));
+            var refreshed = new NpmValueMetadataProvider.Validation().ReadPackageFingerprints(manifest);
+            Assert.AreNotEqual(original.Full, refreshed.Full);
+            Assert.AreNotEqual(original.Selectors, refreshed.Selectors);
+
+            validation.Clear();
+            Assert.AreEqual(refreshed, validation.ReadPackageFingerprints(manifest));
+            Assert.AreEqual(refreshed.Full, validation.ReadFingerprint(manifest));
+        }
+        finally
+        {
+            project.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task LoadAsync_BatchesUsedNpmComponentsAcrossDocumentsAndRefreshesDeclarations()
     {
         var root = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-component-imports-" + Guid.NewGuid()));
@@ -221,13 +279,34 @@ public sealed class ProjectImportsTests
                 {"private":true,"dependencies":{"component-fixture":"link:./fixture","vue":"3.5.30"}}
                 """);
             await File.WriteAllTextAsync(Path.Combine(package.FullName, "package.json"), """
-                {"name":"component-fixture","version":"1.0.0","type":"module","exports":{"types":"./index.d.ts","import":"./index.js"}}
+                {"name":"component-fixture","version":"1.0.0","type":"module","exports":{"types":"./index.d.ts","import":"./index.js"},"web-types":"./web-types.json"}
                 """);
+            var webTypes = Path.Combine(package.FullName, "web-types.json");
+            const string metadata = """
+                {"contributions":{"html":{"vue-components":[{
+                    "name":"fixture-card","source":{"symbol":"Card"},"description":"Card from Web Types",
+                    "props":[
+                        {"name":"label","description":"Label from Web Types"},
+                        {"name":"item-count","description":"Count from Web Types"}
+                    ],"slots":[
+                        {"name":"default","description":"Card contents"},
+                        {"name":"detail"}
+                    ]
+                },{
+                    "name":"fixture-dialog","source":{"symbol":"Dialog"},"description":"Dialog from Web Types"
+                }]}}}
+                """;
+            await File.WriteAllTextAsync(webTypes, metadata);
             await File.WriteAllTextAsync(Path.Combine(package.FullName, "index.d.ts"), "export { Card, Dialog, Unused } from './types.js';");
             var declaration = Path.Combine(package.FullName, "types.d.ts");
             const string types = """
-                type Component<Props> = new () => { $props: Props; $emit: {}; $slots: {} };
-                export declare const Card: Component<{ label: string }>;
+                type Component<Props, Slots = {}, Emit = {}> = new () => { $props: Props; $emit: Emit; $slots: Slots };
+                export declare const Card: Component<{
+                    /** Label from declarations. */
+                    label: string;
+                    itemCount?: number;
+                }, { detail: (scope: { count: number }) => unknown }, (name: "click", ...args: any[]) => void>;
+                /** Dialog from declarations. */
                 export declare const Dialog: Component<{ open: boolean }>;
                 export declare const Unused: Component<{}>;
                 """;
@@ -267,6 +346,29 @@ public sealed class ProjectImportsTests
             CollectionAssert.AreEqual(new[] { "Card", "Dialog" }, components.Select(component => component.ExportName).ToArray());
             Assert.AreEqual("string", components[0].Props["label"].Type);
             Assert.AreEqual("boolean", components[1].Props["open"].Type);
+            Assert.AreEqual("Card from Web Types", components[0].Definition?.Documentation?.Summary);
+            Assert.AreEqual("Dialog from declarations.", components[1].Definition?.Documentation?.Summary);
+            Assert.AreEqual("Label from declarations.", components[0].Props["label"].Definition?.Documentation?.Summary);
+            Assert.AreEqual("Count from Web Types", components[0].Props["itemCount"].Definition?.Documentation?.Summary);
+            Assert.AreEqual("types.d.ts", Path.GetFileName(components[0].Definition?.Path));
+            Assert.AreEqual("types.d.ts", Path.GetFileName(components[0].Props["itemCount"].Definition?.Path));
+            Assert.AreEqual("Card contents", components[0].Slots["default"].Definition?.Documentation?.Summary);
+            var slotDefinition = components[0].Slots["default"].Definition!;
+            Assert.AreEqual("web-types.json", Path.GetFileName(slotDefinition.Path));
+            Assert.AreEqual("default", (await File.ReadAllTextAsync(slotDefinition.Path)).Substring(slotDefinition.Start, slotDefinition.Length));
+            Assert.AreEqual("number", components[0].Slots["detail"].Signatures.Single().Single().Properties!["count"]);
+            Assert.IsTrue(components[0].Events["click"].Signatures.Single().Single().UntypedRest);
+
+            var webTypesTimestamp = File.GetLastWriteTimeUtc(webTypes);
+            await File.WriteAllTextAsync(webTypes, metadata
+                .Replace("Card contents", "Updated card contents", StringComparison.Ordinal)
+                .Replace("Card from Web Types", "New description", StringComparison.Ordinal)
+                .Replace("Count from Web Types", "New count description", StringComparison.Ordinal));
+            File.SetLastWriteTimeUtc(webTypes, webTypesTimestamp);
+            var updated = await provider.ReadComponentsAsync(second, "component-fixture", ["Card", "Dialog"]);
+            Assert.AreEqual("Updated card contents", updated["Card"].Component!.Slots["default"].Definition?.Documentation?.Summary);
+            Assert.AreEqual("New description", updated["Card"].Component!.Definition?.Documentation?.Summary);
+            Assert.AreEqual("New count description", updated["Card"].Component!.Props["itemCount"].Definition?.Documentation?.Summary);
 
             var timestamp = File.GetLastWriteTimeUtc(declaration);
             await File.WriteAllTextAsync(declaration, types.Replace("label: string", "label: number", StringComparison.Ordinal));

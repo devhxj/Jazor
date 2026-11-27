@@ -11,11 +11,11 @@ using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.AddJazorFrontend();
+builder.AddJazorSPA();
 var app = builder.Build();
 
 app.UseJazorPathBase();
-app.UseJazorFrontend();
+app.UseJazorSPA();
 app.MapGet("/api/health", () => new { status = "ok" });
 app.UseJazorSpaFallback("index.html");
 app.Run();
@@ -29,9 +29,9 @@ app.Run();
 
 | 入口 | 职责 |
 | --- | --- |
-| `AddJazorFrontend` | 注册统一前端 options 与进程内 Vite 生命周期 |
+| `AddJazorSPA` | 注册统一前端 options 与进程内 Vite 生命周期 |
 | `UseJazorPathBase` | 在调用方选择的位置应用统一配置的 PathBase |
-| `UseJazorFrontend` | Development 代理 Vite，其他环境组合 `UseJazorHost` 托管 Release 产物 |
+| `UseJazorSPA` | Development 代理 Vite，其他环境组合 `UseJazorHost` 托管 Release 产物 |
 | `UseJazorHost` | 依次注册响应头和 `UseJazorAssets`；供不使用统一前端入口的高级场景调用 |
 | `UseJazorAssets` | 默认仅解析默认文件并托管 web root；产物挂载需显式启用 |
 | `UseJazorArtifacts` | 只挂载生成产物，默认 `/jazor` |
@@ -40,7 +40,7 @@ app.Run();
 | `UseJazorSpaFallback` | 下游未处理的 HTML 导航使用静态页或自定义 writer |
 | `AddJazorSsr` / `UseJazorSsr` | 分别注册 SSR 服务 / 将导航 fallback 改为 SSR |
 
-统一前端 options 同时驱动 Vite `base`、代理、发布挂载和浏览器 URL。配置 PathBase 时先调用 `UseJazorPathBase`；开发 reload 位于静态文件、SPA、SSR 之前。`UseJazorFrontend` 不自动添加 reload、SPA 或 SSR。常规 ASP.NET Core 路由、异常处理等仍由宿主配置。
+统一前端 options 同时驱动 Vite `base`、代理、发布挂载和浏览器 URL。配置 PathBase 时先调用 `UseJazorPathBase`。`UseJazorSPA` 在开发环境代理 Vite HTTP 与 HMR，SPA fallback 与 SSR 由宿主注册。常规 ASP.NET Core 路由、异常处理等仍由宿主配置。
 
 SPA fallback 只在下游返回 **404**、响应尚未开始、没有选中 endpoint 时执行，并且只处理 GET/HEAD。默认排除 `/api`、`/assets`、`/health`、`/jazor` 路径段及带扩展名的路径。无 `Accept` 头允许通过；有该头时须包含可接受的 `text/html` 或 `application/xhtml+xml`，仅 `*/*` 不够。已匹配 API endpoint 返回的 404 不会被改成 HTML。
 
@@ -75,7 +75,7 @@ using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
 
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.AddJazorFrontend();
+builder.AddJazorSPA();
 builder.Services.AddJazorSsr(options =>
 {
     options.WorkerCount = 2;
@@ -83,7 +83,7 @@ builder.Services.AddJazorSsr(options =>
 var app = builder.Build();
 
 app.UseJazorPathBase();
-app.UseJazorFrontend();
+app.UseJazorSPA();
 app.UseJazorSsr((context, cancellationToken) =>
     Task.FromResult(new JazorSsrRequest(
         "components/app.js",

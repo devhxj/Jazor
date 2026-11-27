@@ -13,7 +13,9 @@ A host that starts its own development server can run `jolt dev . --port 15658 -
 
 With the Jazor SDK built from this checkout, ordinary C# projects can use `using Npm…` and `dotnet build` to resolve npm bindings. To test the matching Jolt tool locally, run the package verifier below. [Authoring guide](../../docs/03-guides/jolt-authoring.md#普通-c-类库的公开投影)
 
-`jolt bundle . --ssr entry-server.ts` compiles the components once, then builds both production entries with Vite. The client starts at `index.html` and emits `dist/client/index.html`, hashed assets, and `dist/client/.vite/manifest.json`. The server entry exports a named `render` function and bundles to `dist/server/entry-server.mjs`. A successful SSR build replaces the project's `dist` directory. Failed builds preserve the previous output.
+`jolt build` writes component modules and declarations under the project's `.jazor` directory by default. In a .NET project, the SDK and standalone tool both honor the evaluated `JazorDir`. For example, import `/cart/checkout.mjs` for a module declared as `cart/checkout.mjs`. `jolt bundle` writes the Vite application under the generated root's `dist/`. `jolt library` publishes a package under the project's `dist/` by default.
+
+`jolt bundle . --ssr entry-server.ts` compiles the components once, then builds both production entries with Vite. The client starts at `index.html` and emits `.jazor/dist/client/index.html`, hashed assets, and `.jazor/dist/client/.vite/manifest.json`. The server entry exports a named `render` function and bundles to `.jazor/dist/server/entry-server.mjs`. Failed SSR builds preserve the previous output.
 
 To pack and verify the tool from the Jazor repository, run:
 

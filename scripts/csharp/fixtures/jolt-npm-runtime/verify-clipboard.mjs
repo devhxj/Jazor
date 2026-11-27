@@ -12,7 +12,7 @@ try {
         return true;
     };
     const { createApp, nextTick } = await import('vue');
-    const { default: Clipboard } = await import('./.jolt/Clipboard.mjs');
+    const { default: Clipboard } = await import('./.jazor/Clipboard.mjs');
     const mount = window.document.querySelector('main');
     const app = createApp(Clipboard);
     app.mount(mount);

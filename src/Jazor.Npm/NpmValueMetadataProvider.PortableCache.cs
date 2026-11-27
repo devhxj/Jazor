@@ -42,7 +42,9 @@ public sealed partial class NpmValueMetadataProvider
                 if (paths.Expand(label) is not { } absolute) return null;
                 if (label == ProjectPrefix + "package.json")
                 {
-                    var (full, selectors) = ReadPackageFingerprints(absolute);
+                    var (full, selectors) = validation is null
+                        ? ReadPackageFingerprints(absolute)
+                        : validation.ReadPackageFingerprints(absolute);
                     if (selectors != expected) return null;
                     inputs[absolute] = full;
                 }
@@ -146,31 +148,53 @@ public sealed partial class NpmValueMetadataProvider
             Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(relevant))));
     }
 
-    private static JsonNode? RebaseSnapshot(JsonNode? node, Func<string, string?> rebase, string? key = null)
+    // Both callers own the JSON tree. Mutate it before deserializing or publishing
+    // the snapshot so no request observes a partially rebased tree.
+    internal static JsonNode? RebaseSnapshot(JsonNode? node, Func<string, string?> rebase, string? key = null)
     {
-        JsonNode? RebasePath(JsonNode? item) => item is JsonValue value && value.TryGetValue<string>(out var text)
-            ? JsonValue.Create(rebase(text) ?? text) : item?.DeepClone();
+        JsonNode? RebasePath(JsonNode? item) => item is JsonValue value && value.TryGetValue<string>(out var text) &&
+            rebase(text) is { } path && path != text ? JsonValue.Create(path) : item;
 
-        return node switch
+        switch (node)
         {
-            JsonObject map when key == "realpaths" => new JsonObject(map.Select(property =>
-                KeyValuePair.Create(rebase(property.Key) ?? property.Key, RebasePath(property.Value)))),
-            JsonObject obj => new JsonObject(obj.Select(property =>
-                KeyValuePair.Create(property.Key, property.Key switch
+            case JsonObject map when key == "realpaths":
+                // Replacing a key through remove/add changes its position. This
+                // small map is rebuilt in traversal order for resolution keys.
+                return new JsonObject(map.Select(property =>
                 {
-                    "modulePath" or "declarationPath" => RebasePath(property.Value),
-                    "path" when IsDefinition(obj) => RebasePath(property.Value),
-                    // JSDoc parameter names are authored data. A parameter called
-                    // "modulePath" must not turn its description into a filesystem path.
-                    "documentation" when IsDefinition(obj) => property.Value?.DeepClone(),
-                    _ => RebaseSnapshot(property.Value, rebase, property.Key),
-                }))),
-            JsonArray array when key == "inputs" => new JsonArray(array.Select(RebasePath).ToArray()),
-            JsonArray array => new JsonArray(array.Select(item => RebaseSnapshot(item, rebase)).ToArray()),
-            _ => node?.DeepClone(),
-        };
+                    var path = RebasePath(property.Value);
+                    return KeyValuePair.Create(rebase(property.Key) ?? property.Key,
+                        ReferenceEquals(path, property.Value) ? path?.DeepClone() : path);
+                }));
+            case JsonObject obj:
+                var definition = obj.ContainsKey("start") && obj.ContainsKey("length") && obj.ContainsKey("path");
+                for (var index = 0; index < obj.Count; index++)
+                {
+                    var (name, value) = obj.GetAt(index);
+                    var replacement = name switch
+                    {
+                        "modulePath" or "declarationPath" => RebasePath(value),
+                        "path" when definition => RebasePath(value),
+                        // JSDoc parameter names and text are authored data.
+                        "documentation" when definition => value,
+                        _ => RebaseSnapshot(value, rebase, name),
+                    };
+                    if (!ReferenceEquals(value, replacement))
+                        obj.SetAt(index, replacement);
+                }
+                break;
+            case JsonArray array:
+                for (var index = 0; index < array.Count; index++)
+                {
+                    var value = array[index];
+                    var replacement = key == "inputs" ? RebasePath(value) : RebaseSnapshot(value, rebase);
+                    if (!ReferenceEquals(value, replacement))
+                        array[index] = replacement;
+                }
+                break;
+        }
 
-        static bool IsDefinition(JsonObject obj) => obj.ContainsKey("start") && obj.ContainsKey("length") && obj.ContainsKey("path");
+        return node;
     }
 
     private sealed class SnapshotPaths(string project, string typescript)

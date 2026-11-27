@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Jazor.Common;
 using Microsoft.AspNetCore.Builder;
 
 namespace Jazor.AspNetCore;
@@ -33,7 +34,8 @@ public static class JazorWebApplication
         // A publish directory owns its generated jazor/ graph and must win even when the
         // original source tree is still present on the machine. An empty copied jazor/
         // directory is not a ready artifact graph.
-        if (HasReadyArtifactGraph(appBaseDirectory))
+        if (HasReadyArtifactGraph(appBaseDirectory) ||
+            File.Exists(Path.Combine(appBaseDirectory, "wwwroot", "bundle.js")))
             return appBaseDirectory;
 
         var sourceDirectory = Path.GetDirectoryName(sourceFilePath)
@@ -53,7 +55,7 @@ public static class JazorWebApplication
 
     private static bool HasReadyArtifactGraph(string rootPath)
     {
-        var artifactRoot = Path.Combine(rootPath, "jazor");
+        var artifactRoot = Path.Combine(rootPath, JazorArtifactDefaults.DirectoryName);
         return File.Exists(Path.Combine(artifactRoot, JazorArtifactOptions.EntryProbeRelativePath)) ||
                File.Exists(Path.Combine(artifactRoot, JazorArtifactOptions.BundleProbeRelativePath));
     }

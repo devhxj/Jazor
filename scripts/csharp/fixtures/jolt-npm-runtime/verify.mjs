@@ -4,12 +4,12 @@ import { renderToString } from 'vue/server-renderer';
 import { provideSSRWidth } from '@vueuse/core';
 import { offset } from '@floating-ui/dom';
 import { JSDOM } from 'jsdom';
-import App, { ReadFrenchDistance, ReadSundayDefault, ReadWeekDefaults } from './.jolt/App.mjs';
+import App, { ReadFrenchDistance, ReadSundayDefault, ReadWeekDefaults } from './.jazor/App.mjs';
 import { getDefaultOptions, setDefaultOptions } from 'date-fns';
 import { defineRule } from 'vee-validate';
-import Vee from './.jolt/Vee.mjs';
-import { Copy, Position, Track } from './.jolt/Floating.mjs';
-import { Exercise } from './.jolt/EventHook.mjs';
+import Vee from './.jazor/Vee.mjs';
+import { Copy, Position, Track } from './.jazor/Floating.mjs';
+import { Exercise } from './.jazor/EventHook.mjs';
 
 assert.equal(await Exercise(), 'A1B1B2C4array');
 

@@ -35,6 +35,7 @@ foreach (var package in selectedPackages)
         {
             "restore",
             package.ProjectPath,
+            "-p:Configuration=" + options.Configuration,
             "-v",
             "minimal",
             "/nr:false",

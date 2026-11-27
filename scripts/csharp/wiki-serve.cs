@@ -13,7 +13,7 @@ var generatedCatalog = Path.Combine(sampleRoot, "obj", "wiki", "WikiDocsContent.
 var publishRoot = Path.Combine(repoRoot, ".tmp", "wiki-publish-preview", options.Configuration);
 var hostRoot = sampleRoot;
 var webRoot = Path.Combine(sampleRoot, "wwwroot");
-var jazorRoot = Path.Combine(sampleRoot, "jazor");
+var jazorRoot = Path.Combine(sampleRoot, ".jazor");
 var browserEntryPath = Path.Combine(jazorRoot, "entry.js");
 var dotnetCliHome = Path.Combine(repoRoot, ".dotnet");
 var configuration = options.Publish && !options.ConfigurationWasExplicit ? "Release" : options.Configuration;
@@ -63,8 +63,8 @@ if (options.Publish)
 
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
-    jazorRoot = Path.Combine(hostRoot, "jazor");
-    browserEntryPath = Path.Combine(jazorRoot, "dist", "bundle.js");
+    jazorRoot = Path.Combine(hostRoot, "wwwroot");
+    browserEntryPath = Path.Combine(jazorRoot, "bundle.js");
 
     if (!Directory.Exists(jazorRoot))
     {

@@ -57,6 +57,17 @@ public sealed class JoltProjectImports
             return ParseDocument(source);
         }).ToArray());
 
+    internal static JoltProjectImports ParseCold(IReadOnlyList<JoltSource> sources, CancellationToken cancellationToken)
+    {
+        var ordered = sources.OrderBy(source => source.Path, StringComparer.Ordinal).ToArray();
+        var documents = new JoltDocument[ordered.Length];
+        // Each source owns its parser. Populate fixed slots so scheduling cannot
+        // change import precedence, component order, or diagnostic locations.
+        Parallel.For(0, ordered.Length, new ParallelOptions { CancellationToken = cancellationToken },
+            index => documents[index] = ParseDocument(ordered[index]));
+        return new(documents);
+    }
+
     internal static JoltDocument ParseDocument(JoltSource source) =>
         ParsedSources.GetValue(source, static input =>
             new Lazy<JoltDocument>(() => JoltParser.Parse(input.Content, input.Path))).Value;

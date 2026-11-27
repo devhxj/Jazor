@@ -14,7 +14,8 @@ internal sealed record EmitOptions(
     string? RuntimeIdentifier = null,
     string? RuntimeIdentifierGraphPath = null,
     IReadOnlyList<string>? BrowserEntries = null,
-    string? PnpmStoreDirectory = null)
+    string? PnpmStoreDirectory = null,
+    bool BundlerHandoff = false)
 {
     public static bool TryParse(string[] args, out EmitOptions? options, out string? error)
     {
@@ -31,6 +32,7 @@ internal sealed record EmitOptions(
         var sourceRoot = string.Empty;
         var libraryManifests = new List<string>();
         var enableSsr = false;
+        var bundlerHandoff = false;
         string? runtimeIdentifier = null;
         string? runtimeIdentifierGraphPath = null;
         string? pnpmStoreDirectory = null;
@@ -108,6 +110,13 @@ internal sealed record EmitOptions(
                     }
 
                     break;
+                case "--handoff":
+                    if (!bool.TryParse(value, out bundlerHandoff))
+                    {
+                        error = $"Invalid boolean for --handoff: '{value}'.";
+                        return false;
+                    }
+                    break;
                 case "--runtime-identifier":
                     runtimeIdentifier = value;
                     break;
@@ -158,7 +167,8 @@ internal sealed record EmitOptions(
             string.IsNullOrWhiteSpace(runtimeIdentifier) ? null : runtimeIdentifier.Trim(),
             string.IsNullOrWhiteSpace(runtimeIdentifierGraphPath) ? null : Path.GetFullPath(runtimeIdentifierGraphPath),
             browserEntries,
-            string.IsNullOrWhiteSpace(pnpmStoreDirectory) ? null : Path.GetFullPath(pnpmStoreDirectory));
+            string.IsNullOrWhiteSpace(pnpmStoreDirectory) ? null : Path.GetFullPath(pnpmStoreDirectory),
+            bundlerHandoff);
         return true;
     }
 

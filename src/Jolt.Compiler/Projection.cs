@@ -218,7 +218,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             : null;
     }
 
-    internal void CheckLiterals(SemanticModel model)
+    internal void CheckLiterals(SemanticModel model, List<Diagnostic> validationDiagnostics)
     {
         var root = model.SyntaxTree.GetRoot();
         foreach (var check in _literalChecks)
@@ -241,11 +241,11 @@ internal sealed partial class Projection(JoltDocument document, string name, str
             if (value is { HasValue: true, Value: string literal } &&
                 check.Property.Literals!.Contains(literal, StringComparer.Ordinal))
                 continue;
-            Report("JOLT1006", check.Source.CodeSpan, $"Prop '{check.Property.Name}' expects a constant from {string.Join(", ", check.Property.Literals!)}.");
+            ReportValidation(validationDiagnostics, "JOLT1006", check.Source.CodeSpan, $"Prop '{check.Property.Name}' expects a constant from {string.Join(", ", check.Property.Literals!)}.");
         }
     }
 
-    internal void CheckRecordArrays(SemanticModel model)
+    internal void CheckRecordArrays(SemanticModel model, List<Diagnostic> validationDiagnostics)
     {
         var root = model.SyntaxTree.GetRoot();
         foreach (var check in _recordArrayChecks)
@@ -259,7 +259,7 @@ internal sealed partial class Projection(JoltDocument document, string name, str
                 input.Nullability.FlowState != NullableFlowState.MaybeNull &&
                 check.Property.InputRecordFields!.All(field => MatchesField(record, field.Key, field.Value)))
                 continue;
-            Report("JOLT1014", check.Source.CodeSpan,
+            ReportValidation(validationDiagnostics, "JOLT1014", check.Source.CodeSpan,
                 $"Prop '{check.Property.Name}' expects a non-null array of structural records with the declared Vue fields.");
         }
     }
@@ -1113,6 +1113,9 @@ internal sealed partial class Projection(JoltDocument document, string name, str
 
     private void Write(string text) => _code.Append(text);
     private static string Literal(string text) => SymbolDisplay.FormatLiteral(text, true);
+    private void ReportValidation(List<Diagnostic> validationDiagnostics, string id, TextSpan span, string message)
+        => validationDiagnostics.Add(JoltProjectCompiler.Error(id, Location(span), message));
+
     private void Report(string id, TextSpan span, string message)
         => diagnostics.Add(JoltProjectCompiler.Error(id, Location(span), message));
 }

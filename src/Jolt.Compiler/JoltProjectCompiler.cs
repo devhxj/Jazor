@@ -39,7 +39,9 @@ public static partial class JoltProjectCompiler
 
     internal static readonly Lazy<ImmutableArray<MetadataReference>> PlatformReferences = new(() =>
         ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
-        .Select(path => (MetadataReference)MetadataReference.CreateFromFile(path)).ToImmutableArray());
+        // These assemblies already belong to the running host. Map their metadata once
+        // instead of copying entire PE images (including ReadyToRun code) into memory.
+        .Select(path => (MetadataReference)AssemblyMetadata.CreateFromFile(path).GetReference(filePath: path)).ToImmutableArray());
 
     public static JoltAnalysis Analyze(IEnumerable<JoltSource> sources, JoltCompileOptions? options = null, CancellationToken cancellationToken = default)
         => Analyze(sources, options ?? new(), cancellationToken, diagnosticPaths: null);
@@ -54,9 +56,12 @@ public static partial class JoltProjectCompiler
         Build(sources, options, cancellationToken, aliasPaths: aliasPaths).Documents.Select(document =>
             (document.Projection.Document, document.Model, (IReadOnlyList<JoltProjectionSpan>)document.Projection.Spans));
 
-    private static JoltAnalysis CreateAnalysis(BuildResult analysis, JoltCompileOptions options)
+    private static JoltAnalysis CreateAnalysis(BuildResult analysis, JoltCompileOptions options,
+        IReadOnlyList<JoltLocalComponent>? previousLocals = null, int changedIndex = -1)
     {
-        var locals = analysis.Documents.Select(document => document.ToLocalComponent()).ToArray();
+        // Incremental body edits preserve all other component declarations and their XML docs.
+        var locals = analysis.Documents.Select((document, index) => previousLocals is not null && index != changedIndex
+            ? previousLocals[index] : document.ToLocalComponent()).ToArray();
         return new JoltAnalysis(analysis.Documents.Select(document => document.ToProjectedDocument(locals, options)).ToArray(), analysis.Diagnostics)
         {
             LocalComponents = locals,
@@ -126,7 +131,8 @@ public static partial class JoltProjectCompiler
 
     private static BuildResult Build(IEnumerable<JoltSource> sources, JoltCompileOptions options, CancellationToken cancellationToken,
         Dictionary<string, string>? declarations = null, bool capture = false, IReadOnlySet<string>? diagnosticPaths = null,
-        Action<AnalysisState>? rememberAnalysis = null, IReadOnlySet<string>? aliasPaths = null)
+        Action<AnalysisState>? rememberAnalysis = null, IReadOnlySet<string>? aliasPaths = null,
+        Action<JoltAnalysis>? authorDeclarationsReady = null)
     {
         var diagnostics = new List<Diagnostic>();
         var projections = new List<Projection>();
@@ -178,10 +184,11 @@ public static partial class JoltProjectCompiler
                 ? NpmProjectionCache.LoadComponent(NpmProjectionCache.ProjectionDirectory, valueNamespaces, options.NpmValues, ParseOptions, cancellationToken)
                 : new NpmValueProjection(valueNamespaces, options.NpmValues, ParseOptions)
             : null;
-        var sharedSourceTrees = options.CSharpSources.Select(source => CSharpSyntaxTree.ParseText(
-            source.Content, ParseOptions, source.Path, cancellationToken: cancellationToken)).ToArray();
+        var sharedSourceTrees = ParseSharedSources(options.CSharpSources, cancellationToken);
         var sharedTrees = new List<SyntaxTree> { Authoring };
         sharedTrees.AddRange(sharedSourceTrees);
+        var hostTrees = ParseProjectSources(options, cancellationToken);
+        sharedTrees.AddRange(hostTrees);
         if (valueProjection is not null)
             sharedTrees.Add(valueProjection.Tree);
         if (options.VueComponents.Count != 0)
@@ -194,6 +201,14 @@ public static partial class JoltProjectCompiler
         });
         var compilation = CSharpCompilation.Create("JoltComponents", authorTrees.Values.Concat(sharedTrees),
             references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        if (authorDeclarationsReady is not null)
+        {
+            // Render projection rewrites the span list in place. Keep the declaration
+            // offsets paired with their original Roslyn trees for the editor.
+            var authors = authorTrees.Select(pair => new JoltProjectedDocument(pair.Key.Document,
+                compilation.GetSemanticModel(pair.Value), pair.Key.Spans.ToArray(), [])).ToArray();
+            authorDeclarationsReady(new JoltAnalysis(authors, []));
+        }
         var local = projections.Select(projection => ComponentContract.FromLocal(projection,
             compilation.Assembly.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}+{projection.StateMetadataName}")!, compilation)).ToArray();
         // The declaration pass already types literal and boolean outlet fields.
@@ -304,14 +319,14 @@ public static partial class JoltProjectCompiler
             return result;
         }
 
-        if (aliasPaths is null)
-            compilation = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(trees.Keys.Concat(sharedTrees));
-        else
+        // Replace the author trees in place so Roslyn retains its declaration
+        // state for the shared C# sources and metadata from the contract pass.
+        foreach (var (tree, projection) in trees)
+            compilation = compilation.ReplaceSyntaxTree(authorTrees[projection], tree);
+        if (aliasPaths is not null)
         {
             // npm alias discovery reads only importing files. Other files still
             // supply their C# declarations and the slot probe runs independently.
-            foreach (var (tree, projection) in trees)
-                compilation = compilation.ReplaceSyntaxTree(authorTrees[projection], tree);
             var contractsByPath = local.ToDictionary(contract => contract.Path, StringComparer.Ordinal);
             var aliases = trees.Select(pair => BindDocument(compilation, pair.Key, pair.Value,
                 contractsByPath[pair.Value.Document.Path], options, valueProjection, diagnostics, cancellationToken, validate: false)).ToList();
@@ -324,22 +339,36 @@ public static partial class JoltProjectCompiler
         }
 
         var localByPath = local.ToDictionary(contract => contract.Path, StringComparer.Ordinal);
-        var diagnosticTrees = diagnosticPaths is null ? trees.Keys.Concat(sharedSourceTrees) :
-            trees.Where(pair => diagnosticPaths.Contains(pair.Value.Document.Path)).Select(pair => pair.Key);
-        var models = diagnosticTrees.Select(tree => compilation.GetSemanticModel(tree)).ToArray();
-        AddCompilerDiagnostics(diagnosticPaths is null
-            ? compilation.GetDiagnostics(cancellationToken).AsEnumerable()
-            : models.SelectMany(model => model.GetDiagnostics(cancellationToken: cancellationToken)), models, trees, diagnostics, cancellationToken);
+        if (diagnosticPaths is not null)
+        {
+            var editorDocuments = trees.Select(pair => BindDocument(compilation, pair.Key, pair.Value,
+                localByPath[pair.Value.Document.Path], options, valueProjection, diagnostics, cancellationToken, validate: false)).ToList();
+            var editorRouter = options.Router
+                ? JoltRouter.Build(editorDocuments.Select(document => (document.Projection, document.Contract)).ToArray(), diagnostics)
+                : null;
+            var editorState = new AnalysisState(compilation, authorTrees, editorDocuments, valueProjection,
+                diagnostics.ToArray(), canUpdateSource: typeArguments is null);
+            rememberAnalysis?.Invoke(editorState);
+            return new(editorDocuments, editorState.CollectDiagnostics(options, diagnosticPaths, cancellationToken),
+                valueProjection?.Bind(compilation), editorRouter);
+        }
+        var models = trees.Keys.Concat(sharedSourceTrees).Select(tree => compilation.GetSemanticModel(tree)).ToArray();
+        // Host declarations participate in binding. Their implementation diagnostics belong to the .NET build.
+        var diagnosedTrees = trees.Keys.Concat(sharedSourceTrees).ToHashSet();
+        var compilerDiagnostics = options.ProjectSources.Count == 0
+            ? compilation.GetDiagnostics(cancellationToken)
+            : models.SelectMany(model => model.GetDiagnostics(cancellationToken: cancellationToken))
+                .Concat(compilation.GetDeclarationDiagnostics(cancellationToken).Where(diagnostic =>
+                    diagnostic.Location.SourceTree is null || diagnosedTrees.Contains(diagnostic.Location.SourceTree)));
+        AddCompilerDiagnostics(compilerDiagnostics, models, trees, diagnostics, cancellationToken);
         var documents = trees.Select(pair =>
         {
             return BindDocument(compilation, pair.Key, pair.Value, localByPath[pair.Value.Document.Path],
-                options, valueProjection, diagnostics, cancellationToken, diagnosticPaths?.Contains(pair.Value.Document.Path) ?? true);
+                options, valueProjection, diagnostics, cancellationToken);
         }).ToList();
         var routerModule = options.Router
             ? JoltRouter.Build(documents.Select(document => (document.Projection, document.Contract)).ToArray(), diagnostics)
             : null;
-        if (rememberAnalysis is not null && typeArguments is null)
-            rememberAnalysis(new(compilation, authorTrees, documents, valueProjection));
         return new(documents, diagnostics, valueProjection?.Bind(compilation), routerModule,
             canCapture && diagnostics.Count == 0 ? DevSnapshot.Create(compilation, trees, valueProjection) : null);
     }
@@ -382,8 +411,16 @@ public static partial class JoltProjectCompiler
         var model = compilation.GetSemanticModel(tree);
         var module = compilation.Assembly.GetTypeByMetadataName($"{projection.Namespace}.{projection.ModuleName}")!;
         var bound = new BoundDocument(projection, model, module, contract);
-        if (!validate)
-            return bound;
+        if (validate)
+            ValidateBoundDocument(bound, options, valueProjection, diagnostics, cancellationToken, prepareLowering: true);
+        return bound;
+    }
+
+    private static void ValidateBoundDocument(BoundDocument bound, JoltCompileOptions options,
+        NpmValueProjection? valueProjection, List<Diagnostic> diagnostics, CancellationToken cancellationToken, bool prepareLowering)
+    {
+        var (projection, model, module, _) = bound;
+        var tree = model.SyntaxTree;
         if (valueProjection?.HasPropertyPaths == true || options.References is { Count: > 0 })
         {
             foreach (var syntax in tree.GetRoot(cancellationToken).DescendantNodes().OfType<InvocationExpressionSyntax>())
@@ -398,14 +435,13 @@ public static partial class JoltProjectCompiler
                 }
             }
         }
-        projection.CheckLiterals(model);
-        projection.CheckRecordArrays(model);
-        projection.CheckBindings(model);
-        projection.CheckSlotOutlets(model);
+        projection.CheckLiterals(model, diagnostics);
+        projection.CheckRecordArrays(model, diagnostics);
+        projection.CheckBindings(model, diagnostics);
+        projection.CheckSlotOutlets(model, diagnostics);
         var state = module.GetTypeMembers(projection.StateName).Single();
-        projection.CheckReferences(model, state);
-        projection.CheckSetup(model, state);
-        return bound;
+        projection.CheckReferences(model, state, diagnostics, prepareLowering);
+        projection.CheckSetup(model, state, diagnostics, prepareLowering);
     }
 
     private static bool HandledByRouter(JoltCompileOptions options, JoltDocument document, JoltDiagnostic diagnostic) =>
@@ -462,7 +498,11 @@ public static partial class JoltProjectCompiler
     internal sealed record BoundDocument(Projection Projection, SemanticModel Model, INamedTypeSymbol Module, ComponentContract Contract)
     {
         internal JoltLocalComponent ToLocalComponent() => new(Contract.Name, Contract.Path,
-            Contract.Properties.Select(property => new JoltLocalProperty(property.Name, property.Type, property.Required, property.Source)).ToArray(),
+            Contract.Properties.Select(property => new JoltLocalProperty(property.Name, property.Type, property.Required, property.Source)
+            {
+                DocumentationXml = Module.GetTypeMembers(Projection.StateName).Single().GetMembers(property.Name)
+                    .OfType<IPropertySymbol>().FirstOrDefault()?.GetDocumentationCommentXml(),
+            }).ToArray(),
             Contract.Slots.Select(slot => slot.Name).ToArray())
         {
             Namespace = Projection.Namespace,

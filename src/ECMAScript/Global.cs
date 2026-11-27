@@ -15,6 +15,17 @@ namespace ECMAScript;
 public static partial class Global
 {
 	/// <summary>
+	/// Loads an ES module with the JavaScript <c>import()</c> expression. TModule describes its exports.
+	/// A literal specifier remains a literal in the emitted expression for bundler discovery.
+	/// </summary>
+	[ECMAScriptInline("import(__arg1)")]
+	public static extern IPromise<TModule> Import<TModule>(string specifier);
+
+	/// <summary>Loads an ES module for its side effects.</summary>
+	[ECMAScriptInline("import(__arg1)")]
+	public static extern IPromise Import(string specifier);
+
+	/// <summary>
 	/// Returns the JavaScript undefined value.
 	/// 返回 JavaScript 的 <c>undefined</c> 值；泛型参数只提供调用点的静态类型投影。
 	/// </summary>

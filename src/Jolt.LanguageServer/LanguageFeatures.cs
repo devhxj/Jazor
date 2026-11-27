@@ -24,6 +24,7 @@ internal sealed partial class LanguageFeatures(
     long snapshotId)
 {
     private readonly SourceText _text = SourceText.From(projection.Document.Source);
+    private static CompletionSnapshot? _lastCompletion;
     private static readonly Lazy<MefHostServices> Host = new(() => MefHostServices.Create(
         MefHostServices.DefaultAssemblies.Append(System.Reflection.Assembly.Load("Microsoft.CodeAnalysis.CSharp.Features")).Distinct()));
     private static readonly string[] HtmlTags =
@@ -58,7 +59,7 @@ internal sealed partial class LanguageFeatures(
                     ? suggestions.Items.Concat(await CSharpCompletionAsync(generated, cancellationToken, version)).ToArray()
                     : await CSharpCompletionAsync(generated, cancellationToken, version),
                 "textDocument/hover" => SymbolAt(generated, cancellationToken) is { } symbol
-                    ? CSharpHover(symbol, cancellationToken)
+                    ? await CSharpHoverAsync(symbol, generated, cancellationToken)
                     : null,
                 "textDocument/definition" => CSharpDefinition(generated, cancellationToken),
                 "textDocument/signatureHelp" => SignatureHelp(generated, cancellationToken),
@@ -80,7 +81,7 @@ internal sealed partial class LanguageFeatures(
         if (authoring is { } remaining)
             return remaining.Items;
         if (method == "textDocument/completion")
-            return MarkupCompletion(offset, element, attribute, component, parentComponent, local, localParent, builtInParent);
+            return MarkupCompletion(offset, element, attribute, component, parentComponent, local, localParent, builtInParent, version);
         if (element is null)
             return null;
         if (method == "textDocument/hover" && component is null && local is null && VueBuiltIns.Find(element.Name) is { } builtIn)
@@ -93,7 +94,7 @@ internal sealed partial class LanguageFeatures(
         if (method == "textDocument/hover" && attribute is not null && local is not null &&
             MarkupAt(offset)?.Symbol is { Kind: JoltMarkupKind.Property } member &&
             local.Properties.FirstOrDefault(property => property.Name == member.Name) is { } property)
-            return Hover($"{property.Name}: {property.Type}");
+            return DocumentedHover($"{property.Name}: {property.Type}", LocalDocumentation(property));
 
         if (attribute is not null && component is not null)
         {
@@ -122,24 +123,31 @@ internal sealed partial class LanguageFeatures(
         return local is not null && method == "textDocument/hover" ? Hover(element.Name) : null;
     }
 
-    private static object MarkupHover(string label, NpmDefinition? definition)
+    private static object MarkupHover(string label, NpmDefinition? definition) =>
+        DocumentedHover(label, MarkupDocumentation(definition));
+
+    private static object DocumentedHover(string label, string? documentation) =>
+        Hover(documentation is null ? label : $"{label}\n\n{documentation}");
+
+    private static string? MarkupDocumentation(NpmDefinition? definition)
     {
-        var docs = definition?.Documentation;
-        if (docs is null) return Hover(label);
-        var deprecated = docs.Deprecated switch { null => null, "" => "Deprecated", var text => $"Deprecated — {text}" };
-        return Hover(string.Join("\n\n", new[] { label, docs.Summary, docs.Remarks, deprecated }.Where(part => !string.IsNullOrWhiteSpace(part))));
+        if (definition?.Documentation is not { } docs)
+            return null;
+        var deprecated = docs.Deprecated switch { null => null, "" => "Deprecated", var message => $"Deprecated — {message}" };
+        var parts = new[] { docs.Summary, docs.Remarks, deprecated }.Where(part => !string.IsNullOrWhiteSpace(part));
+        var text = string.Join("\n\n", parts);
+        return text.Length == 0 ? null : text;
     }
+
+    private static string? LocalDocumentation(JoltLocalProperty property) =>
+        FormatDocumentation(ParseDocumentation(property.DocumentationXml), includeParameters: false);
 
     private async Task<object[]> CSharpCompletionAsync(int position, CancellationToken cancellationToken, int? version, int? sourceAfterTrailingDot = null)
     {
-        var document = await CreateCompletionDocumentAsync(position, sourceAfterTrailingDot.HasValue, cancellationToken);
+        if (await GetCompletionSnapshotAsync(position, sourceAfterTrailingDot.HasValue, cancellationToken) is not { } completion)
+            return [];
+        var (document, service, result) = (completion.Document, completion.Service, completion.List);
         var generated = await document.GetTextAsync(cancellationToken);
-        var service = CompletionService.GetService(document);
-        if (service is null)
-            return [];
-        var result = await service.GetCompletionsAsync(document, position, cancellationToken: cancellationToken);
-        if (result is null)
-            return [];
         var items = new List<object>();
         var typed = result.Span.Start <= position ? generated.ToString(TextSpan.FromBounds(result.Span.Start, position)) : "";
         var candidates = result.ItemsList
@@ -195,13 +203,23 @@ internal sealed partial class LanguageFeatures(
 
     internal async Task<object> ResolveCompletionAsync(JsonElement item, JsonElement data, CancellationToken cancellationToken)
     {
+        if (data.TryGetProperty("codeMemberOffset", out var offset))
+            return await ResolveBoundCodeMemberAsync(item, offset.GetInt32(), cancellationToken);
+        if (data.TryGetProperty("npmTag", out var tagName))
+        {
+            var documentation = MarkupDocumentation(Component(tagName.GetString())?.Definition);
+            if (documentation is null)
+                return item;
+            var documented = JsonNode.Parse(item.GetRawText())!.AsObject();
+            documented["documentation"] = documentation;
+            return documented;
+        }
+
         var position = data.GetProperty("position").GetInt32();
-        var document = await CreateCompletionDocumentAsync(position,
-            data.GetProperty("sourceAfterTrailingDot").ValueKind == JsonValueKind.Number, cancellationToken);
-        var service = CompletionService.GetService(document);
-        if (position > (await document.GetTextAsync(cancellationToken)).Length || service is null ||
-            await service.GetCompletionsAsync(document, position, cancellationToken: cancellationToken) is not { } completions)
+        var trailingDot = data.GetProperty("sourceAfterTrailingDot").ValueKind == JsonValueKind.Number;
+        if (await GetCompletionSnapshotAsync(position, trailingDot, cancellationToken) is not { } completion)
             return item;
+        var (document, service, completions) = (completion.Document, completion.Service, completion.List);
 
         var label = item.GetProperty("label").GetString();
         var sort = data.GetProperty("sortText").GetString();
@@ -209,13 +227,38 @@ internal sealed partial class LanguageFeatures(
         var tag = data.GetProperty("tag").GetString();
         var candidate = completions.ItemsList.FirstOrDefault(entry => entry.DisplayText == label && entry.SortText == sort &&
             entry.FilterText == filter && entry.Tags.FirstOrDefault() == tag);
-        if (candidate is null || await service.GetDescriptionAsync(document, candidate, cancellationToken) is not { Text.Length: > 0 } description)
+        if (candidate is null || await service.GetDescriptionAsync(document, candidate, cancellationToken) is not { Text.Length: > 0 } providerDescription)
             return item;
 
         var resolved = JsonNode.Parse(item.GetRawText())!.AsObject();
-        resolved["documentation"] = description.Text;
+        resolved["documentation"] = providerDescription.Text;
         return resolved;
     }
+
+    private async Task<CompletionSnapshot?> GetCompletionSnapshotAsync(int position, bool trailingDot,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (Volatile.Read(ref _lastCompletion) is { } previous &&
+            ReferenceEquals(previous.Projection, projection) && previous.SnapshotId == snapshotId &&
+            previous.Position == position && previous.TrailingDot == trailingDot)
+            return previous;
+
+        var document = await CreateCompletionDocumentAsync(position, trailingDot, cancellationToken);
+        var service = CompletionService.GetService(document);
+        if (service is null || position > (await document.GetTextAsync(cancellationToken)).Length ||
+            await service.GetCompletionsAsync(document, position, cancellationToken: cancellationToken) is not { } list)
+            return null;
+
+        // Resolve uses the same Roslyn document as the list, including temporary npm contracts or a trailing dot.
+        cancellationToken.ThrowIfCancellationRequested();
+        var completion = new CompletionSnapshot(projection, snapshotId, position, trailingDot, document, service, list);
+        Volatile.Write(ref _lastCompletion, completion);
+        return completion;
+    }
+
+    private sealed record CompletionSnapshot(JoltProjectedDocument Projection, long SnapshotId, int Position, bool TrailingDot,
+        Document Document, CompletionService Service, CompletionList List);
 
     private async Task<Document> CreateCompletionDocumentAsync(int position, bool trailingDot,
         CancellationToken cancellationToken)
@@ -331,7 +374,8 @@ internal sealed partial class LanguageFeatures(
                 ToSource(author, location.SourceSpan) is { } span)
                 return Location(author.Document.Path, SourceText.From(author.Document.Source), span);
             // The selected shared tree already contains the current editor overlay.
-            if (workspace.Options.CSharpSources.Any(source => StringComparer.Ordinal.Equals(source.Path, tree.FilePath)))
+            if (workspace.Options.CSharpSources.Concat(workspace.Options.ProjectSources)
+                .Any(source => StringComparer.Ordinal.Equals(source.Path, tree.FilePath)))
                 return Location(tree.FilePath, tree.GetText(cancellationToken), location.SourceSpan);
         }
         return null;
@@ -340,30 +384,54 @@ internal sealed partial class LanguageFeatures(
     private NpmDefinition? NpmValueDefinition(ISymbol symbol) =>
         analysis.NpmValueDefinitions.GetValueOrDefault(symbol.OriginalDefinition);
 
-    private object CSharpHover(ISymbol symbol, CancellationToken cancellationToken)
+    private async Task<object> CSharpHoverAsync(ISymbol symbol, int position, CancellationToken cancellationToken)
     {
-        if (NpmValueDefinition(symbol) is null)
-            return Hover(symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat));
-
-        var label = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
-        var documentation = FormatNpmDocumentation(ProjectedDocumentation(symbol, cancellationToken), includeParameters: true);
-        return Hover(documentation is null ? label : label + "\n\n" + documentation);
+        var format = NpmValueDefinition(symbol) is null
+            ? SymbolDisplayFormat.CSharpErrorMessageFormat
+            : SymbolDisplayFormat.MinimallyQualifiedFormat;
+        var documentation = ProjectedDocumentation(symbol, cancellationToken);
+        if (documentation is null && symbol.Locations.Any(location => location.IsInMetadata))
+        {
+            // Workspace references attach the adjacent XML documentation files.
+            var editor = GetEditorProject(cancellationToken).GetDocument(projection.SemanticModel.SyntaxTree);
+            if (await editor.GetSemanticModelAsync(cancellationToken) is { } model &&
+                SymbolAt(model, position, cancellationToken, allowCandidate: false) is { } documentedSymbol &&
+                symbol.OriginalDefinition.GetDocumentationCommentId() == documentedSymbol.OriginalDefinition.GetDocumentationCommentId() &&
+                Equals(symbol.ContainingAssembly?.Identity, documentedSymbol.ContainingAssembly?.Identity))
+                documentation = ProjectedDocumentation(documentedSymbol, cancellationToken);
+        }
+        return DocumentedHover(symbol.ToDisplayString(format), FormatDocumentation(documentation, includeParameters: true));
     }
 
     private static XElement? ProjectedDocumentation(ISymbol symbol, CancellationToken cancellationToken)
     {
         var xml = symbol.OriginalDefinition.GetDocumentationCommentXml(cancellationToken: cancellationToken);
-        return string.IsNullOrWhiteSpace(xml) ? null : XElement.Parse(xml, LoadOptions.PreserveWhitespace);
+        return ParseDocumentation(xml);
     }
 
-    private static string? FormatNpmDocumentation(XElement? documentation, bool includeParameters)
+    private static XElement? ParseDocumentation(string? xml)
+    {
+        if (string.IsNullOrWhiteSpace(xml))
+            return null;
+        try
+        {
+            return XElement.Parse(xml, LoadOptions.PreserveWhitespace);
+        }
+        catch (System.Xml.XmlException)
+        {
+            // Source comments can be temporarily malformed during an edit.
+            return null;
+        }
+    }
+
+    private static string? FormatDocumentation(XElement? documentation, bool includeParameters)
     {
         if (documentation is null)
             return null;
         var sections = new List<string>();
         foreach (var element in documentation.Elements())
         {
-            var text = element.Value.Trim();
+            var text = string.Join('\n', element.Value.ReplaceLineEndings("\n").Split('\n').Select(line => line.Trim())).Trim();
             if (text.Length == 0)
                 continue;
             switch (element.Name.LocalName)
@@ -419,14 +487,14 @@ internal sealed partial class LanguageFeatures(
     {
         var label = method.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
         // Read the generated XML so overloads describe only their own projected parameters.
-        var xml = NpmValueDefinition(method) is null ? null : ProjectedDocumentation(method, cancellationToken);
+        var xml = ProjectedDocumentation(method, cancellationToken);
         var parameters = method.Parameters.Select(parameter =>
         {
             var label = parameter.ToDisplayString();
             var description = xml?.Elements("param").FirstOrDefault(element => element.Attribute("name")?.Value == parameter.Name)?.Value.Trim();
             return description is null ? (object)new { label } : new { label, documentation = description };
         }).ToArray();
-        var documentation = FormatNpmDocumentation(xml, includeParameters: false);
+        var documentation = FormatDocumentation(xml, includeParameters: false);
         return documentation is null ? new { label, parameters } : new { label, parameters, documentation };
     }
 
@@ -449,6 +517,97 @@ internal sealed partial class LanguageFeatures(
         else if (!tag.NameSpan.Contains(offset) && attribute is null)
             return NpmMetadataKind.None;
         return tag.Name.Length > 0 && char.IsUpper(tag.Name[0]) ? NpmMetadataKind.Component : NpmMetadataKind.None;
+    }
+
+    internal object[]? BoundCodeMemberCompletions(int offset, int version, CancellationToken cancellationToken)
+    {
+        var symbols = BoundCodeMembers(offset, cancellationToken);
+        if (symbols is null)
+            return null;
+        var start = offset;
+        while (start > 0 && SyntaxFacts.IsIdentifierPartCharacter(_text[start - 1]))
+            start--;
+        if (start > 0 && _text[start - 1] == '@')
+            start--;
+        var end = offset;
+        while (end < _text.Length && SyntaxFacts.IsIdentifierPartCharacter(_text[end]))
+            end++;
+        var prefix = _text.ToString(TextSpan.FromBounds(start, offset)).TrimStart('@');
+        var range = Range(TextSpan.FromBounds(start, end));
+        var uri = new Uri(Path.GetFullPath(projection.Document.Path, projectDirectory)).AbsoluteUri;
+        return symbols.GroupBy(symbol => symbol.Name, StringComparer.Ordinal)
+            .OrderByDescending(group => group.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            .ThenBy(group => group.Key, StringComparer.Ordinal)
+            .Take(100).Select(group => (object)new
+            {
+                label = group.Key,
+                kind = group.First() switch
+                {
+                    IMethodSymbol => 2, IFieldSymbol => 5, IPropertySymbol => 10, IEventSymbol => 23, _ => 1,
+                },
+                sortText = (group.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "0:" : "1:") + group.Key,
+                textEdit = new { range, newText = SyntaxFacts.GetKeywordKind(group.Key) == SyntaxKind.None ? group.Key : "@" + group.Key },
+                data = new { uri, version, snapshotId, codeMemberOffset = offset },
+            }).ToArray();
+    }
+
+    private async Task<object> ResolveBoundCodeMemberAsync(JsonElement item, int offset, CancellationToken cancellationToken)
+    {
+        var name = item.GetProperty("label").GetString();
+        var symbol = BoundCodeMembers(offset, cancellationToken)?.FirstOrDefault(candidate => candidate.Name == name);
+        if (symbol is null)
+            return item;
+        var documentation = ProjectedDocumentation(symbol, cancellationToken);
+        if (documentation is null && symbol.Locations.Any(location => location.IsInMetadata))
+        {
+            var editor = GetEditorProject(cancellationToken).GetDocument(projection.SemanticModel.SyntaxTree);
+            if (await editor.GetSemanticModelAsync(cancellationToken) is { } model)
+                documentation = ProjectedDocumentation(BoundCodeMembers(offset, cancellationToken, model)?
+                    .FirstOrDefault(candidate => candidate.OriginalDefinition.GetDocumentationCommentId() ==
+                        symbol.OriginalDefinition.GetDocumentationCommentId() &&
+                        Equals(candidate.ContainingAssembly?.Identity, symbol.ContainingAssembly?.Identity)) ?? symbol, cancellationToken);
+        }
+        var resolved = JsonNode.Parse(item.GetRawText())!.AsObject();
+        var display = symbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
+        var description = FormatDocumentation(documentation, includeParameters: true);
+        resolved["documentation"] = description is null ? display : $"{display}\n\n{description}";
+        return resolved;
+    }
+
+    private IEnumerable<ISymbol>? BoundCodeMembers(int offset, CancellationToken cancellationToken, SemanticModel? model = null)
+    {
+        if (offset == 0 || !projection.Document.Nodes.OfType<JoltCode>().Any(code => code.CodeSpan.Contains(offset - 1)))
+            return null;
+        var span = projection.Spans.FirstOrDefault(span => span.Source.Contains(offset - 1));
+        if (span is null)
+            return null;
+        var position = span.Generated.Start + offset - span.Source.Start;
+        model ??= projection.SemanticModel;
+        var token = model.SyntaxTree.GetRoot(cancellationToken).FindToken(position - 1);
+        var access = token.Parent?.AncestorsAndSelf().OfType<MemberAccessExpressionSyntax>()
+            .FirstOrDefault(node => node.OperatorToken == token || node.Name.Identifier == token);
+        if (access is null || !access.IsKind(SyntaxKind.SimpleMemberAccessExpression))
+            return null;
+        // Only use a focused view for an instance bound to metadata or a shared
+        // C# source. Component and npm declarations can require the full projection.
+        var receiverType = model.GetSymbolInfo(access.Expression, cancellationToken).Symbol switch
+        {
+            IFieldSymbol field => field.Type,
+            ILocalSymbol local => local.Type,
+            IParameterSymbol parameter => parameter.Type,
+            IPropertySymbol property => property.Type,
+            _ => null,
+        };
+        if (receiverType is not INamedTypeSymbol { TypeKind: not TypeKind.Error } type ||
+            type.TypeArguments.Any(argument => argument.TypeKind == TypeKind.Error) ||
+            !type.Locations.All(location => location.IsInMetadata ||
+                workspace.Options.CSharpSources.Concat(workspace.Options.ProjectSources)
+                    .Any(source => source.Path == location.SourceTree?.FilePath)))
+            return null;
+        // Roslyn's bound lookup includes inherited and imported extension members.
+        return model.LookupSymbols(position, type, includeReducedExtensionMethods: true)
+            .Where(symbol => !symbol.IsStatic && symbol.CanBeReferencedByName &&
+                symbol is IMethodSymbol or IPropertySymbol or IFieldSymbol or IEventSymbol);
     }
 
     internal static NpmMetadataKind CompletionMetadata(JoltProjectedDocument document, SourceText text, int offset, CancellationToken cancellationToken)
@@ -531,7 +690,7 @@ internal sealed partial class LanguageFeatures(
     }
 
     private object[] MarkupCompletion(int offset, JoltElement? element, JoltAttribute? attribute, NpmVueComponent? component,
-        NpmVueComponent? parentComponent, JoltLocalComponent? local, JoltLocalComponent? localParent, ComponentContract? builtInParent)
+        NpmVueComponent? parentComponent, JoltLocalComponent? local, JoltLocalComponent? localParent, ComponentContract? builtInParent, int? version)
     {
         var prefixStart = offset;
         while (prefixStart > 0 && IsMarkupNameCharacter(_text[prefixStart - 1]))
@@ -543,6 +702,8 @@ internal sealed partial class LanguageFeatures(
         if (prefixStart > 0 && _text[prefixStart - 1] == '<')
         {
             var names = new Dictionary<string, string?>(StringComparer.Ordinal);
+            var npmTags = new HashSet<string>(StringComparer.Ordinal);
+            var vueDocumentation = new Dictionary<string, string?>(StringComparer.Ordinal);
             foreach (var name in HtmlTags)
                 names[name] = null;
             foreach (var candidate in VueBuiltIns.Components)
@@ -550,18 +711,33 @@ internal sealed partial class LanguageFeatures(
             foreach (var candidate in projection.LocalComponents)
                 names[candidate.Name] = candidate.Path;
             foreach (var candidate in projection.VueComponents)
-                names.TryAdd(Path.GetFileNameWithoutExtension(candidate.LocalPath!), candidate.LocalPath);
+            {
+                var tag = Path.GetFileNameWithoutExtension(candidate.LocalPath!);
+                if (names.TryAdd(tag, candidate.LocalPath))
+                    vueDocumentation[tag] = MarkupDocumentation(candidate.Definition);
+            }
             foreach (var (module, exports) in workspace.Exports.Where(item => UsesPackage(item.Key)))
                 foreach (var export in exports)
-                    names.TryAdd(NpmNames.TagFor(module, export), module);
+                {
+                    var tag = NpmNames.TagFor(module, export);
+                    if (names.TryAdd(tag, module))
+                        npmTags.Add(tag);
+                }
             return names.OrderBy(item => item.Key, StringComparer.Ordinal)
-                .Select(item => Completion(item.Key, prefix, item.Value, item.Value is null ? 10 : 7))
+                .Select(item => Completion(item.Key, prefix, item.Value, item.Value is null ? 10 : 7,
+                    documentation: vueDocumentation.GetValueOrDefault(item.Key),
+                    data: npmTags.Contains(item.Key) ? new
+                    {
+                        uri = new Uri(Path.GetFullPath(projection.Document.Path, projectDirectory)).AbsoluteUri,
+                        version, snapshotId, npmTag = item.Key,
+                    } : null))
                 .Concat(AutoImportCompletions(prefix, names.Keys, offset)).ToArray();
         }
         if (element?.Name == "template" && prefixStart > 0 && _text[prefixStart - 1] == '#')
         {
             if (parentComponent is not null)
-                return parentComponent.Slots.Select(item => Completion(item.Key, prefix, Signatures(item.Key, item.Value.Signatures), 10)).ToArray();
+                return parentComponent.Slots.Select(item => Completion(item.Key, prefix, Signatures(item.Key, item.Value.Signatures), 10,
+                    documentation: MarkupDocumentation(item.Value.Definition))).ToArray();
             if (localParent is not null)
                 return localParent.Slots.Select(name => Completion(name, prefix, $"Slot of {localParent.Name}", 10)).ToArray();
             return builtInParent?.Slots
@@ -607,7 +783,7 @@ internal sealed partial class LanguageFeatures(
             return directivePrefix ? directives.ToArray() : local.Properties
                 .Where(property => Available(name => name.Equals(property.Name, StringComparison.OrdinalIgnoreCase)))
                 .OrderByDescending(property => property.Required)
-                .Select(property => Completion(property.Name, prefix, PropertyDetail(property.Type, property.Required), 10, property.Required))
+                .Select(property => Completion(property.Name, prefix, PropertyDetail(property.Type, property.Required), 10, property.Required, LocalDocumentation(property)))
                 .Concat(directives).ToArray();
         if (component is null)
             return builtIn is null || directivePrefix ? directives.ToArray() : builtIn.Properties
@@ -618,9 +794,11 @@ internal sealed partial class LanguageFeatures(
 
         var props = component.Props.Where(item => Available(name => MatchesProp(name, item.Key)))
             .OrderByDescending(item => item.Value.Required)
-            .Select(item => Completion(Pascal(item.Key), prefix, PropertyDetail(item.Value.Type, item.Value.Required), 10, item.Value.Required));
+            .Select(item => Completion(Pascal(item.Key), prefix, PropertyDetail(item.Value.Type, item.Value.Required), 10, item.Value.Required,
+                MarkupDocumentation(item.Value.Definition)));
         var events = component.Events.Where(item => Available(name => MatchesEvent(name, item.Key)))
-            .Select(item => Completion(directivePrefix ? "@on" + item.Key : EventName(item.Key), directiveSpan, Signatures(item.Key, item.Value.Signatures), 23));
+            .Select(item => Completion(directivePrefix ? "@on" + item.Key : EventName(item.Key), directiveSpan, Signatures(item.Key, item.Value.Signatures), 23,
+                documentation: MarkupDocumentation(item.Value.Definition)));
         if (directivePrefix)
             return _text.ToString(directiveSpan).StartsWith("@on", StringComparison.OrdinalIgnoreCase) ||
                 directiveSpan.Length == 1 ? directives.Concat(events).ToArray() : directives.ToArray();
@@ -761,9 +939,9 @@ internal sealed partial class LanguageFeatures(
 
     private object ProtocolEdit(TextChange edit) => new { range = Range(edit.Span), newText = edit.NewText };
 
-    private object Completion(string name, TextSpan span, string? detail, int kind, bool required = false) => new
+    private object Completion(string name, TextSpan span, string? detail, int kind, bool required = false, string? documentation = null, object? data = null) => new
     {
-        label = name, detail, kind, sortText = (required ? "0" : "1") + name, textEdit = new { range = Range(span), newText = name },
+        label = name, detail, documentation, data, kind, sortText = (required ? "0" : "1") + name, textEdit = new { range = Range(span), newText = name },
     };
 
     private NpmVueComponent? Component(string? name) =>

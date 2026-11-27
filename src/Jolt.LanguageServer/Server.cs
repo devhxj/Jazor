@@ -31,6 +31,7 @@ public sealed partial class Server(Stream input, Stream output)
     {
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _lifetime = lifetime.Token;
+        LanguageFeatures.PrepareEditor();
         var pending = new List<Task>();
         try
         {
@@ -75,7 +76,12 @@ public sealed partial class Server(Stream input, Stream output)
                 if (method == "$/cancelRequest")
                 {
                     if (_requests.TryGetValue(args.GetProperty("id").GetRawText(), out var request))
-                        request.Cancel();
+                    {
+                        // A response can remove and dispose this request after lookup.
+                        // A late client cancellation already has its intended effect.
+                        try { request.Cancel(); }
+                        catch (ObjectDisposedException) { }
+                    }
                     continue;
                 }
                 if (!_shutdown)
@@ -125,6 +131,8 @@ public sealed partial class Server(Stream input, Stream output)
             _visualStudioClassifications = args.TryGetProperty("initializationOptions", out var options) &&
                 options.ValueKind == JsonValueKind.Object &&
                 options.TryGetProperty("visualStudioClassifications", out var classify) && classify.ValueKind == JsonValueKind.True;
+            _projectSources = options.ValueKind == JsonValueKind.Object &&
+                options.TryGetProperty("projectSources", out var sourceNotifications) && sourceNotifications.ValueKind == JsonValueKind.True;
             _refreshSemanticTokens = args.TryGetProperty("capabilities", out var client) &&
                 client.TryGetProperty("workspace", out var workspace) && workspace.TryGetProperty("semanticTokens", out var tokens) &&
                 tokens.TryGetProperty("refreshSupport", out var refresh) && refresh.ValueKind == JsonValueKind.True;
@@ -171,6 +179,11 @@ public sealed partial class Server(Stream input, Stream output)
             "textDocument/signatureHelp" or "textDocument/semanticTokens/full" or "textDocument/semanticTokens/range"))
             throw new NotSupportedException(method);
 
+        // The client asks for quick fixes as soon as the caret moves, even before
+        // it has received any diagnostics. There is no action to bind in that case.
+        if (method == "textDocument/codeAction" && args.GetProperty("context").GetProperty("diagnostics").GetArrayLength() == 0)
+            return Array.Empty<object>();
+
         var resolve = method == "completionItem/resolve";
         JsonElement completionData = default;
         if (resolve && (!args.TryGetProperty("data", out completionData) || completionData.ValueKind != JsonValueKind.Object))
@@ -192,16 +205,74 @@ public sealed partial class Server(Stream input, Stream output)
                 ? NpmValueMetadataProvider.ListPackageNames(project.Directory) : [];
             return import.Completions(packages);
         }
-        var versioned = GetProject(project);
+        var completionOffset = method == "textDocument/completion" && requestedBuffer is not null
+            ? Offset(requestedBuffer.Text, args.GetProperty("position")) : 0;
+        var priority = import is null && completionOffset > 0 && IsMemberPosition(requestedBuffer!.Text, completionOffset)
+            ? new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) : null;
+        var versioned = GetProject(project, priority?.Task);
+        if (versioned.Declarations is { } declarations && requestedBuffer is not null)
+        {
+            var offset = completionOffset;
+            if (resolve && completionData.TryGetProperty("snapshotId", out var sourceId))
+            {
+                ProjectSnapshot? early = null;
+                lock (_projectsLock)
+                    if (versioned.FocusedDocuments.TryGetValue(authorPath, out var focused) && focused.IsCompletedSuccessfully &&
+                        focused.Result is { } available && sourceId.GetInt64() == available.Id)
+                        early = available;
+                if (early is null && declarations.IsCompletedSuccessfully && sourceId.GetInt64() == declarations.Result.Id)
+                    early = declarations.Result;
+                if (early?.Analysis.Documents.FirstOrDefault(item => PathEquals(item.Document.Path, authorPath)) is { } origin)
+                    return await TryRespondAsync(early, origin);
+            }
+            else if (method == "textDocument/completion" && import is null && !versioned.Input.IsCompleted)
+            {
+                if (!declarations.IsCompleted && priority is not null)
+                {
+                    try
+                    {
+                        var focused = FocusedDocumentAsync(project, versioned, authorPath);
+                        if (await Task.WhenAny((Task)focused, declarations, versioned.Input).WaitAsync(cancellationToken) == focused &&
+                            await focused is { } candidate &&
+                            await TryRespondAsync(candidate, candidate.Analysis.Documents[0]) is { } focusedCompletion)
+                            return focusedCompletion;
+                    }
+                    finally
+                    {
+                        priority.TrySetResult();
+                    }
+                }
+                if (await Task.WhenAny(declarations, versioned.Input).WaitAsync(cancellationToken) == declarations &&
+                    await declarations is { } complete &&
+                    complete.Analysis.Documents.FirstOrDefault(item => PathEquals(item.Document.Path, authorPath)) is { } declared &&
+                    await TryRespondAsync(complete, declared) is { } completion)
+                    return completion;
+            }
+
+            async Task<object?> TryRespondAsync(ProjectSnapshot view, JoltProjectedDocument author)
+            {
+                var code = new LanguageFeatures(author, view.Analysis, view.Workspace, view.Directory, view.Id);
+                var response = resolve ? await code.ResolveCompletionAsync(args, completionData, cancellationToken)
+                    : code.BoundCodeMemberCompletions(offset, requestedBuffer.Version, cancellationToken);
+                if (!IsCurrent(project, versioned) || !_buffers.TryGetValue(path, out var current) || current != requestedBuffer)
+                    throw new OperationCanceledException("The author document changed while handling the request.");
+                return response;
+            }
+        }
         var snapshot = await versioned.Input.WaitAsync(cancellationToken);
+        var resolveNpmTag = resolve && completionData.TryGetProperty("npmTag", out _);
+        var initialSnapshotId = snapshot.Id;
         if (snapshot.Npm is { IsCompletedSuccessfully: true } ready)
             snapshot = ready.Result;
         if (resolve && (!completionData.TryGetProperty("snapshotId", out var snapshotId) ||
-            !snapshotId.TryGetInt64(out var id) || id != snapshot.Id))
+            !snapshotId.TryGetInt64(out var id) || id != snapshot.Id && !(resolveNpmTag && id == initialSnapshotId)))
             return args;
         JoltProjectedDocument? FindDocument(ProjectSnapshot current) =>
             current.Analysis.Documents.FirstOrDefault(item => PathEquals(item.Document.Path, authorPath));
         var document = FindDocument(snapshot);
+        if (resolveNpmTag && snapshot.NpmComponents is { } componentMetadata &&
+            await componentMetadata.WaitAsync(cancellationToken) is { } resolvedContracts)
+            snapshot = snapshot with { Workspace = snapshot.Workspace with { Options = snapshot.Workspace.Options with { NpmComponents = resolvedContracts } } };
         if (method == "textDocument/completion" && requestedBuffer is not null)
         {
             var offset = Offset(requestedBuffer.Text, args.GetProperty("position"));
@@ -289,10 +360,20 @@ public sealed partial class Server(Stream input, Stream output)
                 {
                     var doc = args.GetProperty("textDocument");
                     var path = FilePath(doc.GetProperty("uri"));
-                    _buffers[path] = new(SourceText.From(doc.GetProperty("text").GetString()!), doc.GetProperty("version").GetInt32());
-                    if (IsJazor(path))
-                        ProjectFor(path);
+                    // Package declarations are read from disk. F12 opens them as
+                    // TypeScript buffers but does not change the project's inputs.
+                    if (IsInstalledPackageDocument(path))
+                        return;
+                    var content = doc.GetProperty("text").GetString()!;
+                    _buffers[path] = new(SourceText.From(content), doc.GetProperty("version").GetInt32());
+                    var project = IsJazor(path) ? ProjectFor(path) : null;
                     affected.UnionWith(Invalidate(path));
+                    if (project is not null)
+                    {
+                        lock (_projectsLock)
+                            if (project.Sources is null)
+                                GetProject(project, openedSource: new(Path.GetRelativePath(project.Directory, path).Replace('\\', '/'), content));
+                    }
                     break;
                 }
                 case "textDocument/didChange":
@@ -322,7 +403,8 @@ public sealed partial class Server(Stream input, Stream output)
                 {
                     var uri = args.GetProperty("textDocument").GetProperty("uri");
                     var path = FilePath(uri);
-                    _buffers.TryRemove(path, out _);
+                    if (!_buffers.TryRemove(path, out _))
+                        return;
                     affected.UnionWith(Invalidate(path));
                     if (IsJazor(path))
                         await PublishAsync(uri.GetString()!, null, [], stopping);
@@ -358,6 +440,18 @@ public sealed partial class Server(Stream input, Stream output)
             Console.Error.WriteLine(error);
         }
     }
+
+    private static bool IsMemberPosition(SourceText text, int offset)
+    {
+        while (offset > 0 && Microsoft.CodeAnalysis.CSharp.SyntaxFacts.IsIdentifierPartCharacter(text[offset - 1]))
+            offset--;
+        if (offset > 0 && text[offset - 1] == '@')
+            offset--;
+        return offset > 0 && text[offset - 1] == '.';
+    }
+
+    private static bool IsInstalledPackageDocument(string path)
+        => path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Contains("node_modules", PathComparer);
 
     private async Task ValidateChangesAsync(IEnumerable<ProjectState> affected, CancellationToken stopping)
     {

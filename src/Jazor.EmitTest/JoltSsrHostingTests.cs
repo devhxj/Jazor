@@ -91,12 +91,17 @@ public sealed class JoltSsrHostingTests
             Task<bool> Build() => Jolt.Vite.JoltViteToolchain.BuildSsrAsync(source.FullName, entry,
                 _ => Task.FromResult(true), store, timeout.Token);
             Assert.IsTrue(await Build());
+            var distribution = Path.Combine(source.FullName, ".jazor", "dist");
+            Assert.IsTrue(File.Exists(Path.Combine(distribution, "client", "index.html")));
+            var serverOutput = Path.Combine(distribution, "server", "entry-server.mjs");
+            var previousServer = await File.ReadAllTextAsync(serverOutput, timeout.Token);
 
             File.WriteAllText(Path.Combine(source.FullName, "vite.config.mjs"),
                 """export default { build: { rolldownOptions: { external: ['vue'] } } };""");
             var error = await Assert.ThrowsExactlyAsync<JSException>(() => Build());
             StringAssert.Contains(error.Message, "imports 'vue' outside the server bundle");
             StringAssert.Contains(error.Message, "Vite's SSR or Rolldown externals");
+            Assert.AreEqual(previousServer, await File.ReadAllTextAsync(serverOutput, timeout.Token));
         }
         finally
         {

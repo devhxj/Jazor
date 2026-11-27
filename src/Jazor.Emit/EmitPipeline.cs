@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Jazor.Common;
 
 namespace Jazor.Emit;
@@ -70,7 +71,7 @@ internal sealed class EmitPipeline
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var entryPaths = ProjectEntryWriter.Write(
+            var entryPaths = options.BundlerHandoff ? [] : ProjectEntryWriter.Write(
                 outputRoot,
                 applicationManifest.Entries,
                 options.EnableSsr,
@@ -84,13 +85,15 @@ internal sealed class EmitPipeline
             // explicit (possibly empty) root set prevents unused package entries from leaking
             // into the output merely because their manifest was transitively available.
             var materializer = new LibraryMaterializer();
+            var bundlerPackages = options.BundlerHandoff ? ReadBundlerPackages(options.SourceRoot) : null;
             var browserLibraries = materializer.Materialize(
                 options.LibraryManifests,
                 outputRoot,
                 options.Mode,
                 browserImports,
                 applicationManifest.Modules.Select(static module => module.RelativePath),
-                collection.ProjectedPackages);
+                collection.ProjectedPackages,
+                bundlerPackages);
             var packageLibraries = browserLibraries;
             if (options.EnableSsr)
             {
@@ -104,48 +107,43 @@ internal sealed class EmitPipeline
                     options.Mode,
                     ssrImports,
                     applicationManifest.Modules.Select(static module => module.RelativePath),
-                    collection.ProjectedPackages);
+                    collection.ProjectedPackages,
+                    bundlerPackages);
             }
             // Standard JavaScript tooling and NodeApi consume this same package.json/node_modules from jazor/.
-            LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);
+            if (!options.BundlerHandoff)
+                LibraryPackageWriter.WritePackageProject(outputRoot, packageLibraries, options.EnableSsr);
             FinishStage("completed");
-            StartStage("restore/check packages");
-            // Lazy/unreferenced modules still belong to the authored graph. A smaller browser
-            // entry must not hide missing imports or syntax failures until a user opens a page.
-            var checkPaths = entryPaths.Concat(applicationManifest.Modules.Select(module =>
-                Path.Combine(outputRoot, module.RelativePath))).ToArray();
-            await NodePackageRestorer.RestoreAndCheckAsync(
-                outputRoot,
-                checkPaths,
-                cancellationToken,
-                _progress, options.PnpmStoreDirectory).ConfigureAwait(false);
-            FinishStage("completed");
-            if (options.Mode == BuildMode.Production)
+            // The consumer bundler resolves templates, aliases and dynamic imports in a handoff.
+            if (!options.BundlerHandoff)
             {
-                StartStage("bundle browser");
-                var bundleResult = await BuildBrowserBundleAsync(
-                    options,
-                    outputRoot,
-                    manifestPath,
-                    cancellationToken).ConfigureAwait(false);
-                if (!bundleResult.IsSuccess)
-                    return Fail(
-                        bundleResult.ExitCode,
-                        bundleResult.Diagnostic?.Message ?? "Jazor browser bundle failed.");
+                StartStage("restore/check packages");
+                // A standalone build checks lazy modules even when the entry cannot reach them.
+                var checkPaths = entryPaths.Concat(applicationManifest.Modules.Select(module =>
+                    Path.Combine(outputRoot, module.RelativePath))).ToArray();
+                await NodePackageRestorer.RestoreAndCheckAsync(
+                    outputRoot, checkPaths, cancellationToken, _progress, options.PnpmStoreDirectory).ConfigureAwait(false);
                 FinishStage("completed");
-
-                if (options.EnableSsr)
+                if (options.Mode == BuildMode.Production)
                 {
-                    StartStage("bundle SSR");
-                    var ssrBundleResult = await new JavaScriptProjectBuilder().BuildAsync(
-                        outputRoot, cancellationToken, "build:ssr", _progress).ConfigureAwait(false);
-                    if (!ssrBundleResult.IsSuccess)
-                        return Fail(ssrBundleResult.ExitCode,
-                            ssrBundleResult.Diagnostic?.Message ?? "Jazor SSR bundle failed.");
-                    ProjectEntryWriter.WriteSsrRuntimePackage(outputRoot);
+                    StartStage("bundle browser");
+                    var bundleResult = await BuildBrowserBundleAsync(
+                        options, outputRoot, manifestPath, cancellationToken).ConfigureAwait(false);
+                    if (!bundleResult.IsSuccess)
+                        return Fail(bundleResult.ExitCode, bundleResult.Diagnostic?.Message ?? "Jazor browser bundle failed.");
                     FinishStage("completed");
-                }
 
+                    if (options.EnableSsr)
+                    {
+                        StartStage("bundle SSR");
+                        var ssrBundleResult = await new JavaScriptProjectBuilder().BuildAsync(
+                            outputRoot, cancellationToken, "build:ssr", _progress).ConfigureAwait(false);
+                        if (!ssrBundleResult.IsSuccess)
+                            return Fail(ssrBundleResult.ExitCode, ssrBundleResult.Diagnostic?.Message ?? "Jazor SSR bundle failed.");
+                        ProjectEntryWriter.WriteSsrRuntimePackage(outputRoot);
+                        FinishStage("completed");
+                    }
+                }
             }
 
             StartStage("finalize");
@@ -217,6 +215,20 @@ internal sealed class EmitPipeline
             // release the collectible context before any output transaction can hold a DLL open.
             loadContext.Unload();
         }
+    }
+
+    private static IReadOnlySet<string>? ReadBundlerPackages(string? sourceRoot)
+    {
+        if (sourceRoot is null || !File.Exists(Path.Combine(sourceRoot, "package.json")))
+            return null;
+
+        using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(sourceRoot, "package.json")));
+        var packages = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var section in new[] { "dependencies", "devDependencies", "peerDependencies", "optionalDependencies" })
+            if (manifest.RootElement.TryGetProperty(section, out var dependencies) && dependencies.ValueKind == JsonValueKind.Object)
+                foreach (var dependency in dependencies.EnumerateObject())
+                    packages.Add(dependency.Name);
+        return packages;
     }
 
     private static IReadOnlyList<string> GetPackageImports(ManifestModel manifest)

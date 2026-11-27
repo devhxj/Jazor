@@ -7,6 +7,28 @@ namespace Jolt.Compiler.Test;
 public sealed class NpmHandleTests
 {
     [TestMethod]
+    public async Task Compile_HostMethodWithObjectNamePreservesJavaScriptDispatch()
+    {
+        var text = new NpmValueType("string");
+        var handle = new NpmValueType("handle", Name: "Formatter", Members:
+        [
+            new("toString", new("method", Signatures: [new([], text)]), true),
+            new("getHashCode", new("method", Signatures: [new([new("text", text, false)], text)]), true),
+        ]);
+        var export = new NpmValueExport("tool", "create", "tool", "1.0.0", "index.js", "index.d.ts", null,
+            [new([], handle)], null);
+        var binding = NpmBindings.GenerateSource([], [export]);
+        StringAssert.Contains(binding, "public new extern string @ToString()");
+        StringAssert.Contains(binding, "public extern string @GetHashCode(string @text)");
+        var compiled = await JoltProjectCompiler.CompileAsync([new("App.jazor", """
+            @using Tool = Npm.Tool.Exports
+            @code { private string Format() => Tool.Create().ToString(); }
+            """)], new JoltCompileOptions { NpmValues = [export] });
+        Assert.IsEmpty(compiled.Diagnostics, string.Join(Environment.NewLine, compiled.Diagnostics));
+        StringAssert.Contains(compiled.Modules.Single().Content, "().toString()");
+    }
+
+    [TestMethod]
     public async Task Compile_PreservesEnrichedRefAndItsClosedWriteDomain()
     {
         var domain = new NpmValueType("stringEnum", Name: "Color", StringLiterals: ["dark", "light"]);

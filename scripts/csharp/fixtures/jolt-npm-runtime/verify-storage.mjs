@@ -6,7 +6,7 @@ try {
     for (const name of ['window', 'document', 'Element', 'SVGElement', 'Event', 'StorageEvent', 'CustomEvent', 'Storage'])
         globalThis[name] = window[name];
     const { createApp, nextTick } = await import('vue');
-    const { default: Storage } = await import('./.jolt/Storage.mjs');
+    const { default: Storage } = await import('./.jazor/Storage.mjs');
     const mount = window.document.querySelector('main');
     const key = 'jolt-storage-options';
     const app = createApp(Storage);

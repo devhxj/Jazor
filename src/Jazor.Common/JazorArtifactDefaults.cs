@@ -4,7 +4,7 @@ namespace Jazor.Common;
 public static class JazorArtifactDefaults
 {
     /// <summary>Default content-root directory containing the generated JavaScript project.</summary>
-    public const string DirectoryName = "jazor";
+    public const string DirectoryName = ".jazor";
 
     /// <summary>Default browser request prefix for generated artifacts.</summary>
     public const string RequestPath = "/jazor";
@@ -15,7 +15,7 @@ public static class JazorArtifactDefaults
     /// <summary>Vite browser client mounted under the generated project request prefix.</summary>
     public const string DevelopmentClientRelativePath = "@vite/client";
 
-    /// <summary>Deno task generated for the standard Vite development server.</summary>
+    /// <summary>Package script name for the generated Vite development project.</summary>
     public const string DevelopmentTaskName = "dev";
 
     /// <summary>Loopback host used by the standard Vite development server.</summary>

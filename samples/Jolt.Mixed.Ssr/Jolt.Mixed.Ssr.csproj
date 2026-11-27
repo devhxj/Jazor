@@ -9,6 +9,6 @@
     </PropertyGroup>
     <ItemGroup>
         <ProjectReference Include="../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj" />
-        <Content Include="frontend/dist/**/*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="frontend/.jazor/dist/**/*" Link="frontend/dist/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 </Project>

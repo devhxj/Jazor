@@ -40,7 +40,9 @@ if (args.Length is < 2 or > 3 || (editableOnly || ssr) && args.Length != 2 || pr
     throw new ArgumentException("Usage: verify-browser.cs <browser-executable> <app-url> [component-source or module handoff scratch root] [--features | --editable-only | --mixed | --mixed-benchmark=<rounds> | --ssr | --monaco | --module-handoff | --proxy-hmr]");
 
 var origin = new Uri(args[1]);
-var profile = Directory.CreateTempSubdirectory("jolt-browser-");
+var sampleDirectory = Path.GetDirectoryName(ScriptPath())!;
+var profile = Directory.CreateDirectory(Path.GetFullPath(
+    Path.Combine("../../test/jolt/browser", Guid.NewGuid().ToString("N")), sampleDirectory));
 try
 {
     var start = new ProcessStartInfo(args[0]);

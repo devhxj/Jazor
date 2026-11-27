@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <_JazorVueProject>true</_JazorVueProject>
+    <_JoltToolVersion Condition="'$(_JoltToolVersion)' == '' and Exists('$(MSBuildThisFileDirectory)../.nupkg.metadata')">$([System.IO.Path]::GetFileName($([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..'))))</_JoltToolVersion>
+  </PropertyGroup>
+</Project>

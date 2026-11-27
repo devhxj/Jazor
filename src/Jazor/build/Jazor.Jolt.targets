@@ -1,0 +1,121 @@
+<Project>
+  <PropertyGroup>
+    <_JoltRoot>$(_JazorGeneratedRoot)</_JoltRoot>
+    <_JoltRoot Condition="'$(_JoltRoot)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(JazorDir)'))</_JoltRoot>
+    <_JoltTool Condition="'$(_JoltTool)' == ''">Jazor.Jolt</_JoltTool>
+    <_JoltPackageSpec>$(_JoltTool)</_JoltPackageSpec>
+    <_JoltPackageSpec Condition="'$(_JoltToolVersion)' != ''">$(_JoltTool)@$(_JoltToolVersion)</_JoltPackageSpec>
+    <_JoltEnvironment>JAZOR_GENERATED_ROOT=$(_JoltRoot)</_JoltEnvironment>
+    <_JoltEnvironment Condition="'$(JazorPnpmStoreDirectory)' != ''">$(_JoltEnvironment);JazorPnpmStoreDirectory=$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(JazorPnpmStoreDirectory)'))</_JoltEnvironment>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Update="package.json;pnpm-lock.yaml;index.html;vite.config.*;public/**/*"
+             CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+    <UpToDateCheckInput Include="**/*.jazor;**/*.vue;index.html;package.json;vite.config.*"
+                        Exclude="$(DefaultItemExcludes);$(_JoltRoot)**/*" />
+    <UpToDateCheckInput Include="pnpm-lock.yaml" Condition="Exists('pnpm-lock.yaml')" />
+    <UpToDateCheckInput Include=".npmrc" Condition="Exists('.npmrc')" />
+    <UpToDateCheckBuilt Include="$(_JoltRoot)jolt.modules.json" Set="JoltOutputs" />
+    <UpToDateCheckBuilt Include="$(_JoltRoot)dist/index.html" Set="JoltOutputs" Condition="'$(Configuration)' != 'Debug'" />
+  </ItemGroup>
+
+  <Target Name="_ResolveJoltTool" BeforeTargets="GetAssemblyAttributes" Condition="'$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <_JoltProject Include="@(ProjectReference)" Condition="'%(ProjectReference.Filename)' == 'Jolt.Cli'" />
+    </ItemGroup>
+    <MSBuild Projects="@(_JoltProject)" Targets="GetTargetPath" Condition="'@(_JoltProject)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="_JoltAssembly" />
+    </MSBuild>
+    <PropertyGroup>
+      <_JoltAssemblyPath>@(_JoltAssembly)</_JoltAssemblyPath>
+      <_JoltToolDirectory Condition="'$(_JoltAssemblyPath)' != ''">$([System.IO.Path]::GetDirectoryName('$(_JoltAssemblyPath)'))</_JoltToolDirectory>
+      <_JoltHost Condition="'$(_JoltToolDirectory)' != ''">$([MSBuild]::NormalizePath('$(_JoltToolDirectory)', '$([System.IO.Path]::GetFileNameWithoutExtension('$(_JoltAssemblyPath)'))$(_NativeExecutableExtension)'))</_JoltHost>
+      <_JoltDotnet>$(DOTNET_HOST_PATH)</_JoltDotnet>
+      <_JoltDotnet Condition="'$(_JoltDotnet)' == ''">$([MSBuild]::NormalizePath('$(NetCoreRoot)', 'dotnet$(_NativeExecutableExtension)'))</_JoltDotnet>
+      <_JoltCommand Condition="'$(_JoltHost)' != ''">&quot;$(_JoltHost)&quot;</_JoltCommand>
+      <_JoltCommand Condition="'$(_JoltHost)' == ''">&quot;$(_JoltDotnet)&quot; tool exec $(_JoltPackageSpec) --</_JoltCommand>
+    </PropertyGroup>
+    <ItemGroup>
+      <AssemblyMetadata Include="JoltHost" Value="$(_JoltHost)" Condition="'$(_JoltHost)' != ''" />
+      <AssemblyMetadata Include="JoltTool" Value="$(_JoltPackageSpec)" Condition="'$(_JoltHost)' == ''" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CollectJoltBuildInputs">
+    <ItemGroup>
+      <_JoltBuildInput Include="@(None);@(Content)"
+                       Condition="($([System.Text.RegularExpressions.Regex]::IsMatch('%(Extension)', '(?i)^\.(jazor|vue|ts|tsx|js|mjs|css|html|json)$')) or $([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '^(?i)public[\\/]'))) and !$([System.Text.RegularExpressions.Regex]::IsMatch('%(Identity)', '(?i)(^|[\\/])(node_modules|\.jazor|dist)[\\/]')) and !$([System.String]::Copy('%(FullPath)').StartsWith('$(_JoltRoot)'))" />
+      <_JoltBuildInput Include="pnpm-lock.yaml" Condition="Exists('pnpm-lock.yaml')" />
+      <_JoltBuildInput Include=".npmrc" Condition="Exists('.npmrc')" />
+      <!-- The assembly inputs track CLR module changes independently of Jolt's generated modules. -->
+      <_JoltBuildInput Include="$(TargetPath);$(_JoltHost)" />
+      <!-- Copied source-tool dependencies can change without rebuilding the entry assembly or apphost. -->
+      <_JoltBuildInput Include="$(_JoltToolDirectory)/*;$(_JoltToolDirectory)/runtimes/**/*"
+                       Exclude="$(_JoltToolDirectory)/*.pdb;$(_JoltToolDirectory)/*.xml"
+                       Condition="'$(_JoltToolDirectory)' != ''" />
+      <_JoltBuildInput Include="@(_JazorSourceEmitToolInput)" Condition="'$(_JoltEmitTarget)' == 'JazorModules'" />
+      <_JoltBuildInput Include="$(_JoltRoot)jazor.modules.json" Condition="Exists('$(_JoltRoot)jazor.modules.json')" />
+      <_JoltBuildInput Include="$(MSBuildProjectDirectory)/.jazor/project.inputs"
+                       Condition="Exists('$(MSBuildProjectDirectory)/.jazor/project.inputs')" />
+    </ItemGroup>
+    <!-- Track membership changes, including deleted components, without invalidating no-op builds. -->
+    <WriteLinesToFile File="$(IntermediateOutputPath)jolt.inputs" Lines="@(_JoltBuildInput)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <Target Name="_FindMissingJoltOutputs">
+    <ReadLinesFromFile File="$(IntermediateOutputPath)jolt.check.outputs" Condition="Exists('$(IntermediateOutputPath)jolt.check.outputs')">
+      <Output TaskParameter="Lines" ItemName="_JoltCheckOutputs" />
+    </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(IntermediateOutputPath)jolt.bundle.outputs" Condition="Exists('$(IntermediateOutputPath)jolt.bundle.outputs')">
+      <Output TaskParameter="Lines" ItemName="_JoltBundleOutputs" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_JoltCheckMissing Include="$(_JoltRoot)jolt.modules.json;$(IntermediateOutputPath)jolt.check.outputs;@(_JoltCheckOutputs)" />
+      <_JoltCheckMissing Remove="@(_JoltCheckMissing)" Condition="Exists('%(_JoltCheckMissing.Identity)')" />
+      <_JoltBundleMissing Include="$(_JoltRoot)dist/index.html;$(IntermediateOutputPath)jolt.bundle.outputs;@(_JoltBundleOutputs)" />
+      <_JoltBundleMissing Remove="@(_JoltBundleMissing)" Condition="Exists('%(_JoltBundleMissing.Identity)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CheckJolt" AfterTargets="Build"
+          DependsOnTargets="_ResolveJoltTool;$(_JoltEmitTarget);_CollectJoltBuildInputs;_FindMissingJoltOutputs"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(Configuration)' == 'Debug' and '$(_JoltRefreshModules)' != 'true'"
+          Inputs="@(_JoltBuildInput);$(IntermediateOutputPath)jolt.inputs;$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
+          Outputs="$(IntermediateOutputPath)jolt.check;@(_JoltCheckMissing)">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" EnvironmentVariables="$(_JoltEnvironment)"
+          Command="$(_JoltCommand) build ." />
+    <ItemGroup>
+      <_JoltCheckProduct Include="$(_JoltRoot)**/*.mjs;$(_JoltRoot)**/*.mjs.map;$(_JoltRoot)**/*.d.mts;$(_JoltRoot)**/*.d.mts.map;$(_JoltRoot)**/*.d.jazor.ts;$(_JoltRoot)**/*.d.jazor.ts.map;$(_JoltRoot)**/*.jolt.css;$(_JoltRoot)clr/**/*.js;$(_JoltRoot).jolt-runtime/clr/**/*.js"
+                         Exclude="$(_JoltRoot)dist/**/*;$(_JoltRoot)pnpm-store/**/*;$(_JoltRoot)cache/**/*;$(_JoltRoot)node_modules/**/*" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(IntermediateOutputPath)jolt.check.outputs" Lines="@(_JoltCheckProduct)" Overwrite="true" />
+    <Touch Files="$(IntermediateOutputPath)jolt.check" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="_BundleJoltOnBuild" AfterTargets="Build" DependsOnTargets="_BundleJolt"
+          Condition="'$(DesignTimeBuild)' != 'true' and '$(Configuration)' != 'Debug' and '$(_JoltRefreshModules)' != 'true'" />
+  <Target Name="_BundleJolt" DependsOnTargets="_ResolveJoltTool;$(_JoltEmitTarget);_CollectJoltBuildInputs;_FindMissingJoltOutputs"
+          Condition="'$(DesignTimeBuild)' != 'true'"
+          Inputs="@(_JoltBuildInput);$(IntermediateOutputPath)jolt.inputs;$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
+          Outputs="$(IntermediateOutputPath)jolt.bundle;@(_JoltBundleMissing)">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" EnvironmentVariables="$(_JoltEnvironment)"
+          Command="$(_JoltCommand) bundle ." />
+    <ItemGroup>
+      <_JoltBundleProduct Include="$(_JoltRoot)dist/**/*" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(IntermediateOutputPath)jolt.bundle.outputs" Lines="@(_JoltBundleProduct)" Overwrite="true" />
+    <Touch Files="$(IntermediateOutputPath)jolt.bundle" AlwaysCreate="true" />
+  </Target>
+
+  <Target Name="_PublishJolt" AfterTargets="ComputeFilesToPublish" DependsOnTargets="_BundleJolt">
+    <ItemGroup>
+      <_JoltAsset Include="$(_JoltRoot)dist/**/*" />
+      <_JoltAsset Remove="@(_JoltAsset)" Condition="'$(JazorPublishSourceMaps)' != 'true' and '%(_JoltAsset.Extension)' == '.map'" />
+      <ResolvedFileToPublish Include="@(_JoltAsset)">
+        <RelativePath>wwwroot/%(_JoltAsset.RecursiveDir)%(_JoltAsset.Filename)%(_JoltAsset.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+</Project>

@@ -39,7 +39,9 @@ internal sealed class JoltDevCompilation
         (left.References ?? []).SequenceEqual(right.References ?? []) &&
         SameMetadata(left.NpmComponents ?? [], right.NpmComponents ?? []) &&
         SameMetadata(left.NpmValues, right.NpmValues) && SameMetadata(left.VueComponents, right.VueComponents) &&
-        left.CSharpSources.SequenceEqual(right.CSharpSources);
+        left.CSharpSources.SequenceEqual(right.CSharpSources) &&
+        left.ProjectSources.SequenceEqual(right.ProjectSources) &&
+        left.ProjectDefines.SequenceEqual(right.ProjectDefines);
 
     private static bool SameMetadata<T>(IReadOnlyList<T> left, IReadOnlyList<T> right) =>
         left.SequenceEqual(right) || JsonSerializer.Serialize(left) == JsonSerializer.Serialize(right);

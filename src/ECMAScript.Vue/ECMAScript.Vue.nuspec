@@ -22,6 +22,7 @@
     <file src="$buildOutputDir$ECMAScript.Vue.dll" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Vue.pdb" target="lib/net11.0" />
     <file src="$buildOutputDir$ECMAScript.Vue.xml" target="lib/net11.0" />
+    <file src="$projectDir$buildTransitive\ECMAScript.Vue.props" target="buildTransitive" />
     <file src="$projectDir$buildTransitive\ECMAScript.Vue.targets" target="buildTransitive" />
     <file src="$projectDir$manifest.json" target="jazor/vue3" />
     <file src="$projectDir$licenses\**\*" target="jazor/vue3/licenses" />

@@ -34,7 +34,7 @@ public sealed class WikiStandardProjectShellTests
                 EnvironmentName = environment
             });
             builder.WebHost.UseTestServer();
-            builder.Services.Configure<JazorFrontendOptions>(options => options.PathBase = "/docs");
+            builder.Services.Configure<JazorSPAOptions>(options => options.PathBase = "/docs");
             await using var app = builder.Build();
             app.UsePathBase("/docs");
             app.Run(context => Wiki.WikiHostShell.WriteHtmlAsync(context));

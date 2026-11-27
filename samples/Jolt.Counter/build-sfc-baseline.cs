@@ -62,10 +62,9 @@ else
 }
 var component = jolt ? "EditableList.jazor" : "EditableList.vue";
 File.Copy(Path.Combine(fixtures, component), Path.Combine(project, component), overwrite: true);
-var componentModule = jolt ? ".jolt/EditableList.mjs" : component;
 await File.WriteAllTextAsync(Path.Combine(project, "main.js"), $$"""
     import { createApp } from 'vue';
-    import EditableList from './{{componentModule}}';
+    import EditableList from './{{component}}';
     createApp(EditableList).mount('#app');
     """);
 

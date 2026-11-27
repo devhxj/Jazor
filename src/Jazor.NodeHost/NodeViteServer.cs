@@ -14,9 +14,9 @@ internal sealed class NodeViteServer : IAsyncDisposable
     }
 
     public Task<string> StartAsync(string projectDirectory, string host, int port, string? @base,
-        CancellationToken cancellationToken = default, string? pluginsModule = null)
+        CancellationToken cancellationToken = default, string? pluginsModule = null, string? generatedDirectory = null)
         => _environment.InvokeAsync(_bridge, "startVite", cancellationToken,
-            JsonSerializer.Serialize(new { projectDirectory, host, port, @base, pluginsModule }));
+            JsonSerializer.Serialize(new { projectDirectory, host, port, @base, pluginsModule, generatedDirectory }));
 
     public ValueTask DisposeAsync() => StopAsync(CancellationToken.None);
 

@@ -4,7 +4,7 @@ import { createRouter, type RouterHistory } from 'vue-router';
 import App from './App.vue';
 import Editor from './Editor.vue';
 import Overview from './Overview.vue';
-import { routes as pageRoutes } from './.jolt/_routes.mjs';
+import { routes as pageRoutes } from '/_routes.mjs';
 import type { WorkspaceData } from './store';
 
 export interface WorkspaceState {

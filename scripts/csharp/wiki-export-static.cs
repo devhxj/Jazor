@@ -51,14 +51,19 @@ try
         repoRoot,
         dotnetCliHome);
 
-    var publishedBrowserRoot = Path.Combine(publishRoot, "jazor", "dist");
-    if (!Directory.Exists(publishedBrowserRoot))
+    var publishedBrowserRoot = Path.Combine(publishRoot, "wwwroot");
+    if (!File.Exists(Path.Combine(publishedBrowserRoot, "bundle.js")))
         throw new InvalidOperationException("Release publish did not contain the jazor browser distribution.");
 
     EnsureDirectoryDeletedWithinRepo(repoRoot, outputRoot);
     Directory.CreateDirectory(outputRoot);
-    CopyDirectory(Path.Combine(publishRoot, "wwwroot"), outputRoot);
-    CopyDirectory(publishedBrowserRoot, Path.Combine(outputRoot, "jazor", "dist"));
+    var browserDistribution = Path.Combine(sampleRoot, ".jazor", "dist");
+    var browserFiles = Directory.EnumerateFiles(browserDistribution, "*", SearchOption.AllDirectories)
+        .Select(file => Path.GetRelativePath(browserDistribution, file))
+        .ToHashSet(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+    // Recreate the browser bundle's HTTP mount without duplicating the site's static files.
+    CopyDirectory(publishedBrowserRoot, outputRoot,
+        relative => browserFiles.Contains(relative) ? Path.Combine("jazor", relative) : relative);
     File.WriteAllText(Path.Combine(outputRoot, ".nojekyll"), "GitHub Pages static export\n", new UTF8Encoding(false));
 
     hostProcess = StartProcess(
@@ -356,15 +361,15 @@ static void ValidateOutput(string outputRoot, IReadOnlyList<string> routes, stri
         }
     }
 
-    foreach (var required in new[] { "robots.txt", "sitemap.xml", "404.html", "site.css", "favicon.svg", "jazor/dist/bundle.js" })
+    foreach (var required in new[] { "robots.txt", "sitemap.xml", "404.html", "site.css", "favicon.svg", "jazor/bundle.js" })
         if (!File.Exists(Path.Combine(outputRoot, required)))
             throw new InvalidOperationException("Static output is missing " + required + ".");
 
-    if (File.Exists(Path.Combine(outputRoot, "jazor", "dist", "bundle.js.map")))
+    if (File.Exists(Path.Combine(outputRoot, "jazor", "bundle.js.map")))
         throw new InvalidOperationException("Static output included source maps without JazorPublishSourceMaps=true.");
 }
 
-static void CopyDirectory(string source, string destination)
+static void CopyDirectory(string source, string destination, Func<string, string> mapRelativePath)
 {
     if (!Directory.Exists(source))
         throw new DirectoryNotFoundException(source);
@@ -372,7 +377,7 @@ static void CopyDirectory(string source, string destination)
     foreach (var file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
     {
         var relative = Path.GetRelativePath(source, file);
-        var target = Path.Combine(destination, relative);
+        var target = Path.Combine(destination, mapRelativePath(relative));
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         File.Copy(file, target, true);
     }

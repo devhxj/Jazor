@@ -214,7 +214,7 @@ async Task VerifyMonaco(string browser)
         }
     }
 
-    var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = Path.Combine(workspace, "dist") });
+    var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = Path.Combine(workspace, ".jazor", "dist") });
     await using var production = builder.Build();
     production.Urls.Add("http://127.0.0.1:0");
     int workerResponses = 0;

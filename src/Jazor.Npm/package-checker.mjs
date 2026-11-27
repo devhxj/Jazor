@@ -31,6 +31,7 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
     };
     // Runtime conditions can change even when TypeScript follows the same types entry.
     let moduleType;
+    let packageManifest;
     for (let directory = path.dirname(modulePath); directory !== path.dirname(directory); directory = path.dirname(directory)) {
         const manifest = path.join(directory, 'package.json');
         inputs.add(manifest);
@@ -39,8 +40,10 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
         const metadata = JSON.parse(readInput(manifest));
         if (moduleType === undefined)
             moduleType = metadata.type ?? null;
-        if (metadata.name)
+        if (metadata.name) {
+            packageManifest = { path: manifest, metadata };
             break;
+        }
     }
     validateRuntime?.(ts, modulePath, options, moduleType, readInput);
     const host = ts.createCompilerHost(options);
@@ -118,5 +121,5 @@ export async function packageChecker(entryUrl, typescript, moduleSpecifier, sour
         };
     }
     return { ts, modulePath, entry, options, host, snapshotInputs, program,
-        source, definition, replaceSource: value => { source = value; }, packageIdentity };
+        source, definition, replaceSource: value => { source = value; }, packageIdentity, packageManifest, readInput };
 }

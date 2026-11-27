@@ -6,7 +6,7 @@ for (const name of ['window', 'document', 'Element', 'SVGElement'])
     globalThis[name] = name === 'window' ? window : window[name];
 
 const { createApp, nextTick } = await import('vue');
-const { default: I18nPlugin, MountClient } = await import('./.jolt/I18nPlugin.mjs');
+const { default: I18nPlugin, MountClient } = await import('./.jazor/I18nPlugin.mjs');
 const host = window.document.querySelector('main');
 const app = createApp(I18nPlugin);
 app.config.errorHandler = error => { throw error; };

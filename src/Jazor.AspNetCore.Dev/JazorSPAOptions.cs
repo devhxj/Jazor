@@ -1,18 +1,20 @@
+using System.Reflection;
+using Jazor.AspNetCore;
 using Jazor.Common;
 using Microsoft.AspNetCore.Http;
 
 namespace Jazor.AspNetCore.Dev;
 
 /// <summary>Configures the generated frontend project, its public paths, and its Vite development server.</summary>
-public sealed class JazorFrontendOptions
+public sealed class JazorSPAOptions
 {
     /// <summary>Initializes the standard generated-project and Vite settings.</summary>
-    public JazorFrontendOptions()
+    public JazorSPAOptions()
     {
         Vite = new JazorViteServerOptions();
     }
 
-    /// <summary>Browser request prefix for generated frontend assets, excluding <see cref="PathBase"/>.</summary>
+    /// <summary>Browser mount within <see cref="PathBase"/>. A Jolt site uses the application root by default.</summary>
     public PathString RequestPath { get; set; } = new(JazorArtifactDefaults.RequestPath);
 
     /// <summary>Public application path base included in Vite and generated frontend URLs.</summary>
@@ -30,6 +32,43 @@ public sealed class JazorFrontendOptions
     /// <summary>Vite process and readiness settings used only in Development.</summary>
     public JazorViteServerOptions Vite { get; }
 
+    /// <summary>Navigation requests eligible for the Jolt HTML entry after server routes have run.</summary>
+    public JazorSpaFallbackOptions Fallback { get; } = new();
+
+    internal string? JoltDevelopmentConfiguration { get; private set; }
+    internal string? JoltHost { get; private set; }
+    internal string? JoltTool { get; private set; }
+    internal string GeneratedRoot { get; private set; } = JazorArtifactDefaults.DirectoryName;
+    internal bool IsJoltApp => JoltHost is not null || JoltTool is not null;
+
+    internal void ApplyApplicationDefaults(string applicationName)
+    {
+        var application = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(
+            assembly => string.Equals(assembly.GetName().Name, applicationName, StringComparison.OrdinalIgnoreCase))
+            ?? Assembly.Load(new AssemblyName(applicationName));
+        foreach (var metadata in application.GetCustomAttributes<AssemblyMetadataAttribute>())
+        {
+            if (metadata.Key == "JoltDevelopmentConfiguration") JoltDevelopmentConfiguration = metadata.Value;
+            if (metadata.Key == "JoltHost") JoltHost = metadata.Value;
+            if (metadata.Key == "JoltTool") JoltTool = metadata.Value;
+            if (metadata.Key == "JazorGeneratedRoot" && metadata.Value is { Length: > 0 } root)
+                GeneratedRoot = root;
+        }
+        if (!IsJoltApp)
+        {
+            ProjectRootPath = GeneratedRoot;
+            return;
+        }
+
+        ProjectRootPath = ".";
+        RequestPath = PathString.Empty;
+        DevelopmentEntryRelativePath = "index.html";
+        ReleaseEntryRelativePath = "dist/index.html";
+    }
+
+    // A root SPA shares its origin with server routes. Only Vite traffic goes to the proxy.
+    internal PathString GetDevelopmentRequestPath() => RequestPath.HasValue ? RequestPath : new("/__jolt");
+
     internal string ResolveProjectRoot(string contentRootPath)
     {
         var candidate = Path.IsPathRooted(ProjectRootPath)
@@ -38,10 +77,26 @@ public sealed class JazorFrontendOptions
         return Path.GetFullPath(candidate);
     }
 
+    internal string ResolveGeneratedRoot(string projectRoot)
+        => Path.GetFullPath(GeneratedRoot, projectRoot);
+
+    internal string ResolveReleaseRoot(string contentRootPath, string? webRootPath)
+    {
+        var entry = Path.GetFileName(ReleaseEntryRelativePath.Replace('\\', '/'));
+        if (webRootPath is not null && File.Exists(Path.Combine(webRootPath, entry)))
+            return webRootPath;
+
+        var projectRoot = ResolveProjectRoot(contentRootPath);
+        var outputRoot = IsJoltApp ? ResolveGeneratedRoot(projectRoot) : projectRoot;
+        return Path.GetDirectoryName(Path.Combine(outputRoot, ReleaseEntryRelativePath))!;
+    }
+
+    internal string GetReleaseEntryName() => Path.GetFileName(ReleaseEntryRelativePath.Replace('\\', '/'));
+
     internal string GetPublicBasePath()
     {
         var pathBase = NormalizePrefix(PathBase);
-        var requestPath = NormalizePrefix(RequestPath);
+        var requestPath = NormalizePrefix(GetDevelopmentRequestPath());
         return pathBase + requestPath + "/";
     }
 
@@ -57,8 +112,9 @@ public sealed class JazorFrontendOptions
         return new Uri(GetServerOrigin(), path.TrimStart('/') + request.QueryString);
     }
 
-    private Uri GetServerOrigin()
-        => new(Vite.ServerOrigin.ToString().TrimEnd('/') + "/", UriKind.Absolute);
+    internal Uri? OwnedServerOrigin { get; set; }
+
+    internal Uri GetServerOrigin() => OwnedServerOrigin ?? Vite.ServerOrigin;
 
     private static string NormalizePrefix(PathString path)
     {
@@ -81,9 +137,10 @@ public sealed class JazorViteServerOptions
         UriKind.Absolute);
 
     /// <summary>Vite origin used for readiness probes and proxy forwarding.</summary>
+    /// <remarks>Host-owned Jolt automatically selects an available port with the default origin. Set LaunchServer to false to attach to this origin.</remarks>
     public Uri ServerOrigin { get; set; } = DefaultServerOrigin;
 
-    /// <summary>Whether NodeApi starts Vite when the configured origin is not already ready.</summary>
+    /// <summary>Whether the host may start Vite. A Jolt host attaches to an external server only when this is false.</summary>
     public bool LaunchServer { get; set; } = true;
 
     /// <summary>Maximum time allowed for Vite to serve the configured development entry.</summary>

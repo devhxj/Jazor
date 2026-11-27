@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Remove="verify.cs" />
+        <Compile Remove="verify.cs;verify-transport.cs" />
         <ProjectReference Include="../Jolt.Project/Jolt.Project.csproj" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(CodeAnalysisVersion)" />
     </ItemGroup>

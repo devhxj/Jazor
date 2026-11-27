@@ -6,7 +6,7 @@ try {
     for (const name of ['window', 'document', 'Element', 'SVGElement'])
         globalThis[name] = window[name];
     const { createApp, nextTick } = await import('vue');
-    const { default: Behavior } = await import('./.jolt/Behavior.mjs');
+    const { default: Behavior } = await import('./.jazor/Behavior.mjs');
     const target = document.querySelector('button');
     const outside = document.querySelector('aside');
     const container = document.querySelector('main');

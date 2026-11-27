@@ -593,7 +593,7 @@ public sealed partial class JazorSsrHostingTests
             app =>
             {
                 app.UseJazorPathBase();
-                app.UseJazorFrontend();
+                app.UseJazorSPA();
                 app.UseJazorSsr(new JazorSsrRequest(
                     "components/hydration.js",
                     new { Title = "SSR hydration" }));
@@ -696,7 +696,7 @@ public sealed partial class JazorSsrHostingTests
             options.RequestPath = "/jazor";
             options.HydrationEntryPath = "hydration.js";
         });
-        builder.AddJazorFrontend(options =>
+        builder.AddJazorSPA(options =>
         {
             options.PathBase = "/docs";
             options.ProjectRootPath = artifactRoot;

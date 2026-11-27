@@ -307,7 +307,7 @@ async Task BuildAndRunSpaAsync(string expected, Dictionary<string, byte[]> autho
     foreach (var (name, content) in authored)
         Require(File.ReadAllBytes(Path.Combine(front, name)).SequenceEqual(content), "Jolt/Emit rewrote frontend authored file " + name);
 
-    var dist = Path.Combine(front, "dist");
+    var dist = Path.Combine(front, ".jazor", "dist");
     var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = dist });
     builder.Logging.SetMinimumLevel(LogLevel.Warning);
     await using var http = builder.Build();

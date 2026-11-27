@@ -1,6 +1,9 @@
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Jolt.LanguageServer;
@@ -10,9 +13,46 @@ internal sealed partial class LanguageFeatures
     private static readonly Lazy<AdhocWorkspace> EditorWorkspace = new(() => new(Host.Value));
     private static readonly object EditorProjectLock = new();
     private static readonly ConditionalWeakTable<Compilation, EditorProject> EditorProjects = new();
+    private static readonly ConditionalWeakTable<PortableExecutableReference, PortableExecutableReference> EditorReferences = new();
+    private static readonly Lazy<Task<Microsoft.CodeAnalysis.Project>> BaseEditorProject = new(CreateBaseProjectAsync);
     // Keep one project available when the server has already replaced its compiler
     // snapshot. The weak table ties all other solutions to their compiler snapshot.
     private static EditorProject? _latestEditorProject;
+
+    internal static void PrepareEditor()
+    {
+        // The immutable platform reference set is independent of
+        // the open project. Warm it while the client initializes.
+        _ = Task.Run(() => Jolt.Compiler.JoltProjectCompiler.PlatformReferences.Value);
+    }
+
+    internal static void PrepareWorkspaceEditor() => _ = Task.Run(() => BaseEditorProject.Value);
+
+    private static async Task<Microsoft.CodeAnalysis.Project> CreateBaseProjectAsync()
+    {
+        var workspace = EditorWorkspace.Value;
+        _ = workspace.Services.GetLanguageServices(LanguageNames.CSharp).GetService<CompletionService>();
+        var info = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Jolt", "JoltComponents", LanguageNames.CSharp,
+            parseOptions: new CSharpParseOptions(LanguageVersion.Preview),
+            compilationOptions: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable),
+            metadataReferences: Jolt.Compiler.JoltProjectCompiler.PlatformReferences.Value.Select(EditorReference));
+        var project = workspace.CurrentSolution.AddProject(info).GetProject(info.Id)!;
+        // Subsequent documents fork this project. Bind its stable metadata graph once
+        // while the client opens the file; Roslyn can carry it across syntax-only edits.
+        var compilation = (await project.GetCompilationAsync().ConfigureAwait(false))!;
+        _ = compilation.GetSpecialType(SpecialType.System_Object);
+        return project;
+    }
+
+    private static MetadataReference EditorReference(MetadataReference reference) => reference is PortableExecutableReference file
+        ? EditorReferences.GetValue(file, static reference =>
+        {
+            var xml = Path.ChangeExtension(reference.FilePath, ".xml");
+            return File.Exists(xml) && reference.GetMetadata() is AssemblyMetadata metadata
+                ? metadata.GetReference(XmlDocumentationProvider.CreateFromFile(xml!), reference.Properties.Aliases,
+                    reference.Properties.EmbedInteropTypes, reference.FilePath, reference.Display) : reference;
+        })
+        : reference;
 
     private sealed record EditorProject(string Directory, long SnapshotId, Microsoft.CodeAnalysis.Project Project,
         Dictionary<(string Path, int Index), (DocumentId Id, SyntaxTree Tree)> Trees,
@@ -44,16 +84,17 @@ internal sealed partial class LanguageFeatures
         CancellationToken cancellationToken)
     {
         var compilation = model.Compilation;
-        var project = previous?.Project;
-        if (project is null || project.AssemblyName != compilation.AssemblyName ||
+        var references = compilation.References.Select(EditorReference).ToArray();
+        var project = previous?.Project ?? BaseEditorProject.Value.GetAwaiter().GetResult();
+        if (project.AssemblyName != compilation.AssemblyName ||
             !project.ParseOptions!.Equals(model.SyntaxTree.Options) ||
             !project.CompilationOptions!.Equals(compilation.Options) ||
-            !project.MetadataReferences.SequenceEqual(compilation.References))
+            !project.MetadataReferences.SequenceEqual(references))
         {
             previous = null;
             var info = ProjectInfo.Create(ProjectId.CreateNewId(), VersionStamp.Create(), "Jolt",
                 compilation.AssemblyName!, LanguageNames.CSharp, parseOptions: model.SyntaxTree.Options,
-                compilationOptions: compilation.Options, metadataReferences: compilation.References);
+                compilationOptions: compilation.Options, metadataReferences: references);
             project = EditorWorkspace.Value.CurrentSolution.AddProject(info).GetProject(info.Id)!;
         }
 
@@ -61,6 +102,8 @@ internal sealed partial class LanguageFeatures
         var trees = new Dictionary<(string Path, int Index), (DocumentId Id, SyntaxTree Tree)>();
         var ids = new Dictionary<SyntaxTree, DocumentId>();
         var indexes = new Dictionary<string, int>(StringComparer.Ordinal);
+        var projectedPaths = analysis.Documents.Select(document => document.SemanticModel.SyntaxTree.FilePath)
+            .ToHashSet(StringComparer.Ordinal);
         foreach (var tree in compilation.SyntaxTrees)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -87,8 +130,15 @@ internal sealed partial class LanguageFeatures
             else
             {
                 id = DocumentId.CreateNewId(project.Id);
-                solution = solution.AddDocument(id, Path.GetFileName(tree.FilePath), tree.GetRoot(cancellationToken),
-                    filePath: tree.FilePath, preservationMode: PreservationMode.PreserveIdentity);
+                var root = tree.GetRoot(cancellationToken);
+                // Lifted static extension methods live on the generated module. Let Roslyn
+                // index those trees for import completion along with the shared .cs files.
+                var generated = projectedPaths.Contains(tree.FilePath) &&
+                    !root.DescendantNodes(node => node is CompilationUnitSyntax or BaseNamespaceDeclarationSyntax or TypeDeclarationSyntax)
+                        .Any(node => node is ExtensionBlockDeclarationSyntax || node is MethodDeclarationSyntax method &&
+                            method.ParameterList.Parameters.FirstOrDefault()?.Modifiers.Any(Microsoft.CodeAnalysis.CSharp.SyntaxKind.ThisKeyword) == true);
+                solution = solution.AddDocument(id, Path.GetFileName(tree.FilePath), root,
+                    filePath: tree.FilePath, isGenerated: generated, preservationMode: PreservationMode.PreserveIdentity);
             }
             trees.Add(key, (id, tree));
             ids.Add(tree, id);

@@ -36,9 +36,28 @@ internal sealed class ModuleWriter
             var nextManifest = BuildManifest(rootAssemblyPath, preparedModules, preparedAssets, browserEntries);
             var desiredFiles = BuildDesiredFiles(outputRoot, preparedModules);
             ValidateManifestCollision(manifestFile, desiredFiles);
+            var joltManifest = Path.Combine(outputRoot, "jolt.modules.json");
+            var joltOwned = File.Exists(joltManifest)
+                ? (JsonSerializer.Deserialize<string[]>(File.ReadAllText(joltManifest)) ?? [])
+                    .Select(relative => Path.GetFullPath(relative, outputRoot))
+                    .ToHashSet(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
+                : [];
+            if (joltOwned.Count != 0)
+            {
+                // The pipeline copies catalog assets after this writer commits its modules.
+                // Check both sets before either producer's files can change.
+                var conflict = desiredFiles.Values.Where(file => joltOwned.Contains(file.TargetPath))
+                    .Select(file => file.RelativePath)
+                    .Concat(preparedAssets.Where(asset => joltOwned.Contains(Path.GetFullPath(asset.ArtifactPath, outputRoot)))
+                        .Select(asset => asset.ArtifactPath))
+                    .Min(StringComparer.Ordinal);
+                if (conflict is not null)
+                    throw new IOException($"Jolt and Jazor both generate '{conflict}'. Choose distinct module paths.");
+            }
 
             // 过期文件按清单差异就地删除，这是增量收敛的唯一机制。
-            var staleFiles = FindStaleFiles(outputRoot, existingManifest, desiredFiles);
+            var staleFiles = FindStaleFiles(outputRoot, existingManifest, desiredFiles)
+                .Where(file => !joltOwned.Contains(file)).ToArray();
             var writer = new InPlaceMaterializer(outputRoot, manifestFile);
             return writer.Commit(
                 desiredFiles,

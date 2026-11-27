@@ -1,4 +1,4 @@
 import { createApp } from 'vue';
-import App from './.jolt/App.mjs';
+import App from './App.jazor';
 
 createApp(App).mount('#app');

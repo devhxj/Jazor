@@ -34,7 +34,7 @@ public sealed class JazorArtifactOptions
     public string? RootPath { get; set; }
 
     /// <summary>Content-root directory used when <see cref="RootPath"/> is not configured.</summary>
-    /// <remarks>默认 jazor；RootPath 已配置时不使用此值。</remarks>
+    /// <remarks>默认使用项目下的 .jazor/。显式设置 RootPath 时使用该路径。</remarks>
     public string DirectoryName { get; set; } = JazorArtifactDefaults.DirectoryName;
 
     /// <summary>Probe files checked once when registering the artifact mount.</summary>

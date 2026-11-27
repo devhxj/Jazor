@@ -164,7 +164,7 @@ try
         await CheckIdle();
 
         // A shared DTO error must bind to the actual source and preserve the prior module.
-        var generated = Path.Combine(project, ".jolt", "App.mjs");
+        var generated = Path.Combine(project, ".jazor", "App.mjs");
         var lastGood = await File.ReadAllTextAsync(generated);
         await ReplaceAsync(contract, liveContract.Replace("Row(string Label)", "Row(MissingType Label)", StringComparison.Ordinal));
         await WaitFor(IsDtoError);
@@ -247,7 +247,7 @@ try
         }
 
         using var client = new HttpClient();
-        using var response = await client.GetAsync(new Uri(origin, ".jolt/App.mjs"), deadline.Token);
+        using var response = await client.GetAsync(new Uri(origin, ".jazor/App.mjs"), deadline.Token);
         response.EnsureSuccessStatusCode();
         using var vueResponse = await client.GetAsync(new Uri(origin, "LocalCard.vue"), deadline.Token);
         vueResponse.EnsureSuccessStatusCode();
@@ -287,7 +287,7 @@ try
         using var metadata = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(package, "package.json")));
         if (metadata.RootElement.GetProperty("version").GetString() != expected ||
             !File.Exists(Path.Combine(package, "string.d.ts")) ||
-            !(await File.ReadAllTextAsync(Path.Combine(project, ".jolt", "App.mjs"))).Contains("es-toolkit/string", StringComparison.Ordinal))
+            !(await File.ReadAllTextAsync(Path.Combine(project, ".jazor", "App.mjs"))).Contains("es-toolkit/string", StringComparison.Ordinal))
             throw new InvalidOperationException($"Expected the installed es-toolkit {expected} declarations and an emitted npm function import.");
     }
 

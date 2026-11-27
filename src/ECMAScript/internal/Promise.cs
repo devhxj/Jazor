@@ -682,7 +682,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise All(params IPromise[] promises);
+    public static extern IPromise All([Preserve] params IPromise[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
@@ -703,7 +703,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise All(params PromiseResult[] tasks);
+    public static extern IPromise All([Preserve] params PromiseResult[] tasks);
 
     /// <summary>
     /// Returns a promise that will resolve when all tasks in the Enumerable are resolved.
@@ -725,7 +725,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise<object?[]> All(params IPromise<object?>[] promises);
+    public static extern IPromise<object?[]> All([Preserve] params IPromise<object?>[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
@@ -750,7 +750,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#all")]
-    public static extern IPromise<object?[]> All(params PromiseResult<object?>[] tasks);
+    public static extern IPromise<object?[]> All([Preserve] params PromiseResult<object?>[] tasks);
 
     /// <summary>
     /// Returns a promise that will resolve when all tasks in the Enumerable are resolved.
@@ -782,7 +782,7 @@ public class Promise : IPromise
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#allSettled")]
-    public static extern IPromise<PromiseSettledResult<object?>[]> AllSettled(params IPromise[] promises);
+    public static extern IPromise<PromiseSettledResult<object?>[]> AllSettled([Preserve] params IPromise[] promises);
 
     /// <summary>
     /// Compatibility overload used by async lowering. JavaScript itself takes a single iterable.
@@ -798,7 +798,7 @@ public class Promise : IPromise
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#allSettled")]
-    public static extern IPromise<PromiseSettledResult<object?>[]> AllSettled(params PromiseResult[] tasks);
+    public static extern IPromise<PromiseSettledResult<object?>[]> AllSettled([Preserve] params PromiseResult[] tasks);
 
     /// <summary>
     /// C# projection of JavaScript <c>Promise.allSettled(iterable)</c> for typed promises.
@@ -815,7 +815,7 @@ public class Promise : IPromise
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#allSettled")]
-    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled<T>(params IPromise<T>[] promises);
+    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled<T>([Preserve] params IPromise<T>[] promises);
 
     /// <summary>
     /// Compatibility overload used by async lowering for typed promise results.
@@ -833,7 +833,7 @@ public class Promise : IPromise
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#allSettled")]
-    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled<T>(params PromiseResult<T>[] tasks);
+    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled<T>([Preserve] params PromiseResult<T>[] tasks);
 
     /// <summary>
     /// Compatibility overload that lets C# call <c>Promise.any</c> with separate arguments.
@@ -844,7 +844,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise Any(params IPromise[] promises);
+    public static extern IPromise Any([Preserve] params IPromise[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.any(iterable)</c> overload.
@@ -865,7 +865,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise Any(params PromiseResult[] tasks);
+    public static extern IPromise Any([Preserve] params PromiseResult[] tasks);
 
     /// <summary>
     /// Returns a promise that fulfills with the first fulfilled input, or rejects with JavaScript AggregateError semantics when all inputs reject.
@@ -884,7 +884,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<object?> Any(params PromiseResult<object?>[] tasks);
+    public static extern IPromise<object?> Any([Preserve] params PromiseResult<object?>[] tasks);
 
     /// <summary>
     /// <summary>Iterable bridge overload of <c>Promise.any</c> for typed async results. 面向类型化异步结果的 iterable <c>Promise.any</c> 桥接重载。</summary>
@@ -904,7 +904,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<object?> Any(params IPromise<object?>[] promises);
+    public static extern IPromise<object?> Any([Preserve] params IPromise<object?>[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.any(iterable)</c> overload.
@@ -927,7 +927,7 @@ public class Promise : IPromise
     /// <summary>C# params convenience overload for typed <c>Promise.any</c>. 类型化 <c>Promise.any</c> 的 C# 分散参数便利重载。</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<T> Any<T>(params IPromise<T>[] promises);
+    public static extern IPromise<T> Any<T>([Preserve] params IPromise<T>[] promises);
 
     /// <summary>
     /// Returns a <see cref="IPromise"/> that is resolved as soon as any one of the promises
@@ -948,7 +948,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise Race(params IPromise[] promises);
+    public static extern IPromise Race([Preserve] params IPromise[] promises);
 
     /// <summary>
     /// Returns a <see cref="IPromise"/> that is resolved as soon as any one of the passed in promises resolves.
@@ -968,7 +968,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise Race(params PromiseResult[] tasks);
+    public static extern IPromise Race([Preserve] params PromiseResult[] tasks);
 
     /// <summary>
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
@@ -989,7 +989,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<object?> Race(params IPromise<object?>[] promises);
+    public static extern IPromise<object?> Race([Preserve] params IPromise<object?>[] promises);
 
     /// <summary>
     /// Returns a <see cref="IPromise{T}"/> that is resolved as soon as any one of the passed in promises resolves.
@@ -1007,7 +1007,7 @@ public class Promise : IPromise
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<object?> Race(params PromiseResult<object?>[] tasks);
+    public static extern IPromise<object?> Race([Preserve] params PromiseResult<object?>[] tasks);
 
     /// <summary>
     /// 供派生绑定类型声明 Promise 宿主投影；实际 Promise 使用执行器构造或由 JavaScript API 返回。
@@ -1251,7 +1251,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#all")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static extern IPromise<T[]> All(params IPromise<T>[] promises);
+    public static extern IPromise<T[]> All([Preserve] params IPromise<T>[] promises);
 
     /// <summary>
     /// C# projection of the JavaScript <c>Promise.all(iterable)</c> overload.
@@ -1275,7 +1275,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// <returns>返回该 JavaScript API 的结果值；具体值遵循成员的运行时语义。</returns>
     [Description("@#all")]
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static extern IPromise<T[]> All(params PromiseResult<T>[] tasks);
+    public static extern IPromise<T[]> All([Preserve] params PromiseResult<T>[] tasks);
 
     /// <summary>
     /// Compatibility overload used by async lowering. JavaScript itself takes a single iterable.
@@ -1304,7 +1304,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#allSettled")]
-    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled(params IPromise<T>[] promises);
+    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled([Preserve] params IPromise<T>[] promises);
 
     /// <summary>
     /// Compatibility overload used by async lowering. JavaScript itself takes a single iterable.
@@ -1320,7 +1320,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#allSettled")]
-    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled(params PromiseResult<T>[] tasks);
+    public static extern IPromise<PromiseSettledResult<T>[]> AllSettled([Preserve] params PromiseResult<T>[] tasks);
 
     /// <summary>Returns the first fulfilled typed promise, or rejects when all inputs reject. 返回首个兑现的类型化 Promise；全部拒绝时拒绝。</summary>
     [Description("@#any")]
@@ -1329,7 +1329,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// <summary>Params convenience overload for typed <c>Promise.any</c>. 类型化 <c>Promise.any</c> 的分散参数便利重载。</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<T> Any(params IPromise<T>[] promises);
+    public static extern IPromise<T> Any([Preserve] params IPromise<T>[] promises);
 
     /// <summary>Async bridge overload for typed <c>Promise.any</c>. 类型化 <c>Promise.any</c> 的异步桥接重载。</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -1339,7 +1339,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// <summary>Params async bridge overload for typed <c>Promise.any</c>. 类型化 <c>Promise.any</c> 的分散参数异步桥接重载。</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#any")]
-    public static extern IPromise<T> Any(params PromiseResult<T>[] tasks);
+    public static extern IPromise<T> Any([Preserve] params PromiseResult<T>[] tasks);
 
     /// <summary>
     /// Returns a promise that settles with the first settled promise from the iterable.
@@ -1356,7 +1356,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<T> Race(params IPromise<T>[] promises);
+    public static extern IPromise<T> Race([Preserve] params IPromise<T>[] promises);
 
     /// <summary>
     /// Compatibility overload used by async lowering for typed promise results.
@@ -1374,7 +1374,7 @@ public sealed class Promise<T> : Promise, IPromise<T>
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Description("@#race")]
-    public static extern IPromise<T> Race(params PromiseResult<T>[] tasks);
+    public static extern IPromise<T> Race([Preserve] params PromiseResult<T>[] tasks);
 
     /// <summary>
     /// Creates a promise that can be resolved with the passed in <see cref="Action{T}"/>.

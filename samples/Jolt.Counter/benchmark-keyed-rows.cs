@@ -50,7 +50,7 @@ try
         var component = jolt ? "KeyedRows.jazor" : "KeyedRows.vue";
         File.Copy(Path.Combine(fixture, component), Path.Combine(project, component));
         await File.WriteAllTextAsync(Path.Combine(project, "component.js"),
-            jolt ? "export { default } from './.jolt/KeyedRows.mjs';" : "export { default } from './KeyedRows.vue';", token);
+            jolt ? "export { default } from './KeyedRows.jazor';" : "export { default } from './KeyedRows.vue';", token);
         var sfcCompiler = jolt ? "" : """
             import { compileScript, parse } from 'vue/compiler-sfc';
             const plugins = [{
@@ -80,7 +80,8 @@ try
         }
     }
 
-    var outputs = variantsToBuild.ToDictionary(variant => variant.Name, variant => Path.Combine(root.FullName, variant.Name, "dist"));
+    var outputs = variantsToBuild.ToDictionary(variant => variant.Name, variant =>
+        variant.Name == "jolt" ? Path.Combine(root.FullName, variant.Name, ".jazor", "dist") : Path.Combine(root.FullName, variant.Name, "dist"));
     var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { ContentRootPath = root.FullName });
     builder.Logging.ClearProviders();
     builder.WebHost.UseUrls("http://127.0.0.1:0");

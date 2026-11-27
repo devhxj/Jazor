@@ -6,7 +6,7 @@ try {
     for (const name of ['window', 'document', 'Element', 'SVGElement', 'MutationObserver'])
         globalThis[name] = window[name];
     const { createApp, nextTick } = await import('vue');
-    const { default: Events } = await import('./.jolt/Events.mjs');
+    const { default: Events } = await import('./.jazor/Events.mjs');
     const target = window.document.querySelector('button');
     const listeners = new Set();
     const add = target.addEventListener.bind(target);

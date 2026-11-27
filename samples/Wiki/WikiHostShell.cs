@@ -69,9 +69,9 @@ internal static class WikiHostShell
         var documentContentSecurityPolicy = BuildDocumentContentSecurityPolicy(scriptNonce);
         var responseContentSecurityPolicy = BuildResponseContentSecurityPolicy(scriptNonce);
         var pathBase = NormalizePathBase(context.Request.PathBase.Value);
-        var browserModuleUrl = JazorFrontendUrls.GetBrowserEntry(context);
+        var browserModuleUrl = JazorSPAUrls.GetBrowserEntry(context);
         var viteClient = context.RequestServices.GetRequiredService<IWebHostEnvironment>().IsDevelopment()
-            ? "<script type=\"module\" src=\"" + HtmlEncoder.Default.Encode(JazorFrontendUrls.GetDevelopmentClient(context)) + "\"></script>"
+            ? "<script type=\"module\" src=\"" + HtmlEncoder.Default.Encode(JazorSPAUrls.GetDevelopmentClient(context)) + "\"></script>"
             : string.Empty;
         var template = await LoadIndexTemplateAsync(context, cancellationToken);
         var renderedHtml = RenderIndexTemplate(

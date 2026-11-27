@@ -9,7 +9,7 @@ var benchmarkRounds = args is ["--benchmark-mixed", var rounds, _] && int.TryPar
     ? count : 0;
 using var timeout = new CancellationTokenSource(benchmarkRounds > 0 ? TimeSpan.FromMinutes(10) : TimeSpan.FromMinutes(2));
 var token = timeout.Token;
-var scratch = Directory.CreateDirectory(Path.GetFullPath(".tmp"));
+var scratch = Directory.CreateDirectory(Path.GetFullPath(Path.Combine("test", "jolt", "lsp")));
 var project = scratch.CreateSubdirectory("lsp-" + Guid.NewGuid().ToString("N")[..8]);
 var path = Path.Combine(project.FullName, "Counter.jazor");
 var canonicalUri = new Uri(path).AbsoluteUri;
@@ -109,6 +109,7 @@ try
     await Send("completionItem/resolve", countItem, 20);
     if ((await Response(20)).GetProperty("documentation").GetString()?.Contains("int", StringComparison.Ordinal) != true)
         throw new InvalidOperationException("Roslyn completion did not return type information for Count.");
+    await VerifyCaretCancellationsAsync();
     var metadataDirectories = new[] { "vue-metadata-", "npm-metadata-" }
         .Select(prefix => Path.Combine(project.FullName, ".jazor", prefix + Guid.NewGuid().ToString("N")));
     // Replay create/delete notifications for resources that may already be gone when the editor reports them.
@@ -120,6 +121,18 @@ try
     await Send("completionItem/resolve", countItem, 210);
     if (!(await Response(210)).TryGetProperty("documentation", out _))
         throw new InvalidOperationException("Internal metadata tooling events invalidated the current Jolt snapshot.");
+
+    // VS Code forwards the buffer it opens when F12 navigates to a package declaration.
+    var declaration = new { uri = ClientUri(Path.Combine(project.FullName, "node_modules", "widget", "index.d.ts")),
+        version = 1, languageId = "typescript", text = "export declare const Widget: string;" };
+    await Send("textDocument/didOpen", new { textDocument = declaration });
+    await Send("completionItem/resolve", countItem, 212);
+    if (!(await Response(212)).TryGetProperty("documentation", out _))
+        throw new InvalidOperationException("Opening an installed package declaration invalidated the current Jolt snapshot.");
+    await Send("textDocument/didClose", new { textDocument = new { declaration.uri } });
+    await Send("completionItem/resolve", countItem, 213);
+    if (!(await Response(213)).TryGetProperty("documentation", out _))
+        throw new InvalidOperationException("Closing an installed package declaration invalidated the current Jolt snapshot.");
 
     await Send("workspace/didChangeWatchedFiles", new
     {
@@ -199,6 +212,8 @@ try
     await At("completion", 43, 1, 17);
     var propItem = (await Response(43)).EnumerateArray().Single(item => item.GetProperty("label").GetString() == "Open");
     CheckEdit(propItem, "Open", 17, 21);
+    if (propItem.GetProperty("documentation").GetString()?.Contains("The controlled open state of the collapsible.", StringComparison.Ordinal) != true)
+        throw new InvalidOperationException("Missing Reka UI's documentation in the Open completion item.");
     await Send("textDocument/hover", new { textDocument = new { uri }, position = new { line = 1, character = 18 } }, 5);
     var openHover = (await Response(5)).GetProperty("contents").GetProperty("value").GetString();
     if (openHover?.StartsWith("Open: boolean", StringComparison.Ordinal) != true ||
@@ -307,7 +322,7 @@ async Task VerifyRouterAsync()
     await NotifyManifest();
     await ExpectDiagnostics(1, []);
     await Build(expectedSuccess: true);
-    var generated = Path.Combine(project.FullName, ".jolt", "_routes.mjs");
+    var generated = Path.Combine(project.FullName, ".jazor", "_routes.mjs");
     var first = await File.ReadAllTextAsync(generated, token);
 
     var renamed = page.Replace("/drafts/", "/notes/", StringComparison.Ordinal);
@@ -529,6 +544,10 @@ async Task VerifyLocalVueAsync()
             /** Title displayed by the card. */
             title: Title & NonNullable<InstanceType<typeof Contract>['$props']['Title']> }>()
         defineSlots<{ header: (scope: { count: number }) => unknown }>()
+        defineEmits<{
+            /** Emitted when the card is closed. */
+            (event: 'closed'): void
+        }>()
         </script>
         <template><slot name="header" :count="1" /></template>
         """;
@@ -560,6 +579,15 @@ async Task VerifyLocalVueAsync()
     var titleHover = (await Response(55)).GetProperty("contents").GetProperty("value").GetString();
     if (titleHover?.Contains("Title displayed by the card.", StringComparison.Ordinal) != true)
         throw new InvalidOperationException($"Missing the local Vue prop's JSDoc: {titleHover}");
+    var titleStart = jolt.IndexOf("Title", StringComparison.Ordinal);
+    await At("completion", 56, 0, titleStart + 1);
+    var localVueItems = (await Response(56)).EnumerateArray().ToArray();
+    foreach (var (name, documentation) in new[] { ("Title", "Title displayed by the card."), ("onClosed", "Emitted when the card is closed.") })
+    {
+        var item = localVueItems.Single(item => item.GetProperty("label").GetString() == name);
+        if (item.GetProperty("documentation").GetString()?.Contains(documentation, StringComparison.Ordinal) != true)
+            throw new InvalidOperationException($"Expected the local Vue JSDoc in completion: {item}");
+    }
     await Send("textDocument/didOpen", new
     {
         textDocument = new { uri = vueUri, version = 1, languageId = "vue", text = "\n\n" + vue },
@@ -1424,12 +1452,22 @@ async Task VerifySharedCSharpAsync()
     const string integer = "namespace Contracts; public static class Contract { public static int Value(int argument = 1) => argument; }";
     const string text = "namespace Contracts;\r\npublic static class Contract { /* 🐈 */ public static string Value(string argument = \"text\") => argument; }";
     await File.WriteAllTextAsync(source, integer, token);
+    const string page = "@code { private void Use() { var result = Contracts.Contract.Value(); } private string Render(Contracts.Row row) => row.Path; }";
+    await File.WriteAllTextAsync(Path.Combine(shared.FullName, "Row.cs"), "namespace Contracts; public record Row(string Path);", token);
     await Send("textDocument/didOpen", new
     {
-        textDocument = new { uri, version = 1, languageId = "jazor", text = "@code { private void Use() { var result = Contracts.Contract.Value(); } }" },
+        textDocument = new { uri, version = 1, languageId = "jazor", text = page },
     });
+    var member = page.IndexOf("row.Path", StringComparison.Ordinal) + "row.".Length;
+    await At("completion", 2020, 0, member);
+    var firstPath = (await Response(2020)).EnumerateArray().Single(item => item.GetProperty("label").GetString() == "Path");
     await ExpectHoverAsync(2001, "int");
     await ExpectDefinitionAsync(2009, source, integer);
+    // Navigation has already bound the render snapshot. The initial completion's
+    // generated offsets still belong to its original C# declaration tree.
+    await Send("completionItem/resolve", firstPath, 2021);
+    if (!(await Response(2021)).GetProperty("documentation").ToString().Contains("Row.Path", StringComparison.Ordinal))
+        throw new InvalidOperationException("The first shared C# member lost its completion documentation.");
     await Send("textDocument/didOpen", new
     {
         textDocument = new { uri = sourceUri, version = 1, languageId = "csharp", text = integer },
@@ -1647,7 +1685,9 @@ async Task VerifyEditorAsync(JsonElement legend)
     await File.WriteAllTextAsync(child, """
         <slot name="header" />
         @code {
+            /// <summary>Value rendered in the child.</summary>
             [Parameter, EditorRequired] public int Value { get; set; }
+            /// <summary>Whether the child can receive input.</summary>
             [Parameter] public bool Enabled { get; set; }
         }
         """, token);
@@ -1657,6 +1697,8 @@ async Task VerifyEditorAsync(JsonElement legend)
         </EditorChild>
         @code {
             private int Count;
+            /// <summary>Format the counter.</summary>
+            /// <param name="value">Current count.</param>
             private string Format(int value) => value.ToString();
         }
         """;
@@ -1669,7 +1711,7 @@ async Task VerifyEditorAsync(JsonElement legend)
     {
         (0, "EditorChild", "class name"), (0, "Value", "property name"), (0, "Count", "field name"),
         (1, "Format", "method name"), (2, "EditorChild", "class name"), (4, "Count", "field name"),
-        (5, "value", "parameter name"),
+        (7, "value", "parameter name"),
     })
         if (!classifications.Contains(expected))
             throw new InvalidOperationException($"Missing classification {expected}: {string.Join(", ", classifications)}");
@@ -1691,6 +1733,26 @@ async Task VerifyEditorAsync(JsonElement legend)
     if (!props.Any(item => item.GetProperty("label").GetString() == "Enabled" && item.GetProperty("kind").GetInt32() == 10) ||
         props.Any(item => item.GetProperty("label").GetString() == "Value"))
         throw new InvalidOperationException("Component completion lost the unused property or suggested the existing property.");
+
+    if (props.Single(item => item.GetProperty("label").GetString() == "Enabled")
+            .GetProperty("documentation").GetString() != "Whether the child can receive input.")
+        throw new InvalidOperationException("Local property completion lost its authored XML summary.");
+
+    await Send("textDocument/hover", new
+    {
+        textDocument = editorDocument,
+        position = new { line = 0, character = lines[0].IndexOf("Value", StringComparison.Ordinal) + 1 },
+    }, 231);
+    if (!(await Response(231)).GetProperty("contents").GetProperty("value").GetString()!.Contains("Value rendered in the child."))
+        throw new InvalidOperationException("Local property hover lost its authored XML summary.");
+
+    await Send("textDocument/hover", new
+    {
+        textDocument = editorDocument,
+        position = new { line = 1, character = lines[1].IndexOf("Format", StringComparison.Ordinal) + 1 },
+    }, 232);
+    if (!(await Response(232)).GetProperty("contents").GetProperty("value").GetString()!.Contains("Format the counter."))
+        throw new InvalidOperationException("C# hover lost the author's XML summary.");
 
     await Send("textDocument/completion", new
     {
@@ -1729,6 +1791,41 @@ async Task VerifyEditorAsync(JsonElement legend)
             result.Add((line, lines[line].Substring(column, data[index + 2]), legend[data[index + 3]].GetString()!));
         }
         return result;
+    }
+}
+
+async Task VerifyCaretCancellationsAsync()
+{
+    // VS Code requests a new quick fix on caret moves and can cancel the old one
+    // after its response was written. Consume replies while sending to avoid stdio backpressure.
+    const int first = 9000;
+    const int count = 80;
+    var at = new { line = 0, character = 0 };
+    var action = new
+    {
+        textDocument = new { uri }, range = new { start = at, end = at },
+        context = new { diagnostics = Array.Empty<object>() },
+    };
+    var replies = ReadRepliesAsync();
+    for (var id = first; id < first + count; id++)
+    {
+        await Send("textDocument/codeAction", action, id);
+        await Send("$/cancelRequest", new { id });
+    }
+    await replies;
+    Console.WriteLine("Verified rapid quick-fix requests and late caret cancellations.");
+
+    async Task ReadRepliesAsync()
+    {
+        var remaining = Enumerable.Range(first, count).ToHashSet();
+        while (remaining.Count != 0)
+        {
+            var reply = await Read();
+            if (!reply.TryGetProperty("id", out var id) || id.ValueKind != JsonValueKind.Number || !remaining.Remove(id.GetInt32()))
+                continue;
+            if (reply.TryGetProperty("error", out var error) && error.GetProperty("code").GetInt32() != -32800)
+                throw new InvalidOperationException(error.GetRawText());
+        }
     }
 }
 

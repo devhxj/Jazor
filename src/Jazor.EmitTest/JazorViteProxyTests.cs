@@ -19,7 +19,7 @@ namespace Jazor.EmitTest;
 public sealed class JazorViteProxyTests
 {
     [TestMethod]
-    public async Task Frontend_FailsBeforeLaunchingWhenDevelopmentEntryIsMissing()
+    public async Task SPA_FailsBeforeLaunchingWhenDevelopmentEntryIsMissing()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.MissingViteEntryTest", Guid.NewGuid().ToString("N"));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -38,14 +38,14 @@ public sealed class JazorViteProxyTests
             });
             builder.WebHost.UseUrls("http://127.0.0.1:0");
             builder.Logging.ClearProviders();
-            builder.AddJazorFrontend(options =>
+            builder.AddJazorSPA(options =>
             {
                 options.ProjectRootPath = root;
                 options.Vite.ServerOrigin = new Uri($"http://127.0.0.1:{vitePort}");
             });
 
             await using var host = builder.Build();
-            host.UseJazorFrontend();
+            host.UseJazorSPA();
             Exception? startupError = null;
             try
             {
@@ -79,7 +79,7 @@ public sealed class JazorViteProxyTests
     }
 
     [TestMethod]
-    public async Task Frontend_StartsProxiesAndStopsNodeApiOwnedVite()
+    public async Task SPA_StartsProxiesAndStopsNodeApiOwnedVite()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.ViteProxyTest", Guid.NewGuid().ToString("N"));
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -99,7 +99,7 @@ public sealed class JazorViteProxyTests
                 EnvironmentName = Environments.Development
             });
             builder.WebHost.UseUrls("http://127.0.0.1:0");
-            builder.AddJazorFrontend(options =>
+            builder.AddJazorSPA(options =>
             {
                 options.PathBase = "/docs";
                 options.ProjectRootPath = root;
@@ -108,7 +108,7 @@ public sealed class JazorViteProxyTests
 
             await using var host = builder.Build();
             host.UseJazorPathBase();
-            host.UseJazorFrontend();
+            host.UseJazorSPA();
             await host.StartAsync(timeout.Token);
 
             using var http = new HttpClient { BaseAddress = new Uri(host.Urls.Single()) };
@@ -162,7 +162,7 @@ public sealed class JazorViteProxyTests
     }
 
     [TestMethod]
-    public async Task Frontend_UsesButDoesNotStopExistingVite()
+    public async Task SPA_UsesButDoesNotStopExistingVite()
     {
         var root = Path.Combine(RepositoryTemp.Root, "Jazor.ExternalViteTest", Guid.NewGuid().ToString("N"));
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -184,7 +184,7 @@ public sealed class JazorViteProxyTests
                 EnvironmentName = Environments.Development
             });
             builder.WebHost.UseUrls("http://127.0.0.1:0");
-            builder.AddJazorFrontend(options =>
+            builder.AddJazorSPA(options =>
             {
                 options.ProjectRootPath = root;
                 options.Vite.ServerOrigin = origin;
@@ -192,7 +192,7 @@ public sealed class JazorViteProxyTests
             });
 
             await using var host = builder.Build();
-            host.UseJazorFrontend();
+            host.UseJazorSPA();
             await host.StartAsync(timeout.Token);
             using var client = new HttpClient { BaseAddress = new Uri(host.Urls.Single()) };
             StringAssert.Contains(

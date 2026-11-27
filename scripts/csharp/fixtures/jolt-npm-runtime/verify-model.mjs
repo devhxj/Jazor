@@ -6,7 +6,7 @@ try {
     for (const name of ['window', 'document', 'Element', 'SVGElement'])
         globalThis[name] = window[name];
     const { createApp, defineComponent, h, markRaw, nextTick, ref, shallowReactive, shallowRef, toRaw } = await import('vue');
-    const { default: Model } = await import('./.jolt/Model.mjs');
+    const { default: Model } = await import('./.jazor/Model.mjs');
     const amount = ref(7);
     const computedAmount = ref();
     const passiveAmount = ref();

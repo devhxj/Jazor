@@ -280,10 +280,10 @@ try
     await Run(["build", "."]);
     var projection = FixtureFiles(generated, "Projection.g.cs").SingleOrDefault() ??
         throw new InvalidOperationException($"No component projection for {fixturePackage} in {generated}. " +
-            $"Fixture outputs: {string.Join(", ", Directory.GetFiles(Path.Combine(project.FullName, ".jolt")))}");
+            $"Fixture outputs: {string.Join(", ", Directory.GetFiles(Path.Combine(project.FullName, ".jazor")))}");
     Check(Path.GetDirectoryName(projection)!, "symbols.json");
     var projectionStamp = Mark(projection);
-    var componentOutput = Path.Combine(project.FullName, ".jolt", "App.mjs");
+    var componentOutput = Path.Combine(project.FullName, ".jazor", "App.mjs");
     var componentText = File.ReadAllText(componentOutput);
     File.Delete(componentOutput);
     await Run(["build", "."]);
@@ -316,7 +316,7 @@ try
     var verification = Path.Combine(project.FullName, "verify.mjs");
     File.WriteAllText(verification, """
         import assert from 'node:assert/strict';
-        import { ReadRefs, ReadSelection, ReadRecord, ReadComputed, ReadModel, ReadSharedRef, ReadRegistry, Welcome, Cart, WriteMessages } from './.jolt/App.mjs';
+        import { ReadRefs, ReadSelection, ReadRecord, ReadComputed, ReadModel, ReadSharedRef, ReadRegistry, Welcome, Cart, WriteMessages } from './.jazor/App.mjs';
         assert.equal(ReadRefs(), 'updated/initial');
         assert.equal(ReadSelection(), 'ready');
         assert.equal(ReadRecord(), 'ready');
@@ -963,7 +963,7 @@ async Task VerifyGlobalCache()
         {
             await Stop(process);
         }
-        return await File.ReadAllTextAsync(Path.Combine(directory, ".jolt", "App.mjs"), stop);
+        return await File.ReadAllTextAsync(Path.Combine(directory, ".jazor", "App.mjs"), stop);
     }
 
     async Task<string> Create(string name)

@@ -42,6 +42,7 @@
     <None Include="build\Jazor.targets" Pack="true" PackagePath="build\Jazor.targets" />
     <None Include="build\Jazor.LibraryImports.targets" Pack="true" PackagePath="build\Jazor.LibraryImports.targets" />
     <None Include="build\Jazor.Npm.targets" Pack="true" PackagePath="build\Jazor.Npm.targets" />
+    <None Include="build\Jazor.Jolt.targets" Pack="true" PackagePath="build\Jazor.Jolt.targets" />
     <None Include="$(JazorPackageBuildOutputRoot)Jazor.Npm.Editor\bin\$(Configuration)\netstandard2.0\Jazor.Npm.Editor.dll" Pack="true" PackagePath="tools/net11.0/editor/%(Filename)%(Extension)" />
     <None Include="buildTransitive\Jazor.Resources.targets"
           Pack="true"

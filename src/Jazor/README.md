@@ -7,7 +7,7 @@
 > 资源契约：仓库自有 ECMAScript runtime 由 `ECMAScript` manifest 与
 > `src/ECMAScript/clr/**` 提供；其他运行时来自 manifest 声明的 npm/JSR package 或明确的
 > embedded carrier。Jazor 编译模块由程序集内的 `Jazor.Generated.ModuleCatalog` 携带，最终
-> 宿主在 MSBuild 阶段由 Emit 生成标准 `jazor/package.json` 并物化项目。
+> 宿主在 MSBuild 阶段由 Emit 生成标准 `.jazor/package.json` 并物化项目。
 
 类库的 JavaScript 来源由 package metadata 明确区分：`ECMAScript` 使用仓库内的
 `src/ECMAScript/clr/**` embedded carrier，外部绑定使用 npm/JSR package，少数需要随包交付
@@ -54,7 +54,6 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 ```xml
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
 </PropertyGroup>
 ```
 
@@ -64,7 +63,8 @@ ASP.NET Core 接入说明：[静态资源、SPA 与 SSR](../Jazor.AspNetCore/REA
 | `debug` | 生成标准 JS 项目、模块、source map、package.json 与入口 |
 | `release` | 从同一项目调用默认 Vite 构建，输出生产浏览器 bundle 与所需资源 |
 
-`JazorDir` 是最终输出目录。`Jazor.targets` 在最终 `Exe`/`WinExe` 的 `Build` 后调用
+`JazorDir` 指定开发和测试的生成根，默认在项目的 `.jazor/`。使用 Jolt 的 ASP.NET Core 应用将浏览器 bundle 写入 `$(JazorDir)/dist/`，发布时将其中的浏览器资源放入 `wwwroot/`。
+独立 ES 模块宿主选择 `debug` 或 `release` 时，`Jazor.targets` 在最终 `Exe`/`WinExe` 的 `Build` 后调用
 `Jazor.Emit`，Emit 在此生成标准 JS 项目。增量状态写入 `obj/jazor-manifest.json`，不参与运行。
 `JazorSSR=true` 会在同一依赖图下生成 SSR 与 hydration 入口。开发服务和 HMR 由标准前端工具
 负责，ASP.NET Core 代理 HTTP/WebSocket。输出目录不是类库 carrier，也不会成为下一次资源发现的输入。

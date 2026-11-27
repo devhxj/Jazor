@@ -22,7 +22,7 @@ var hostEnvironment = options.Publish ? "Production" : "Development";
 
 string hostRoot = sampleRoot;
 string webRoot = Path.Combine(sampleRoot, "wwwroot");
-string jazorRoot = Path.Combine(sampleRoot, "jazor");
+string jazorRoot = Path.Combine(sampleRoot, ".jazor");
 string indexTemplatePath = Path.Combine(sampleRoot, "host", "index.template.html");
 string faviconPath = Path.Combine(webRoot, "favicon.svg");
 string stdoutLog = Path.Combine(sampleRoot, $".wiki-smoke-{Environment.ProcessId}.stdout.log");
@@ -70,7 +70,7 @@ if (options.Publish)
 
     hostRoot = publishRoot;
     webRoot = Path.Combine(hostRoot, "wwwroot");
-    jazorRoot = Path.Combine(hostRoot, "jazor");
+    jazorRoot = Path.Combine(hostRoot, "wwwroot");
     indexTemplatePath = Path.Combine(hostRoot, "host", "index.template.html");
     faviconPath = Path.Combine(webRoot, "favicon.svg");
     stdoutLog = Path.Combine(hostRoot, ".wiki-publish-smoke.stdout.log");
@@ -173,7 +173,7 @@ foreach (var marker in new[]
     AssertContains(siteCssContent, marker, "Wiki shell CSS marker");
 }
 
-var browserEntryPath = options.Publish ? "/jazor/dist/bundle.js" : "/jazor/entry.js";
+var browserEntryPath = options.Publish ? "/jazor/bundle.js" : "/jazor/entry.js";
 if (options.Publish)
 {
     AssertReleaseArtifacts(jazorRoot);
@@ -192,7 +192,7 @@ var docsRoutes = ReadDocsRouteExpectations(Path.Combine(sampleRoot, "obj", "wiki
 var browserAssets = options.Publish
     ? new List<AssetExpectation>
     {
-        new("/jazor/dist/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "WikiDocsContent", "RenderDocsPage" }),
+        new("/jazor/bundle.js", "createApp(", null, new[] { "ecmascript-style:v1", "WikiDocsContent", "RenderDocsPage" }),
         new("/site.css", ".wiki-shell", null, Array.Empty<string>()),
         new("/favicon.svg", "<svg", null, Array.Empty<string>()),
         new("/vendor/vue@3.5.16.mjs", "createApp(", null, Array.Empty<string>()),
@@ -615,8 +615,8 @@ void AssertDebugArtifacts(string artifactRoot)
 
 void AssertReleaseArtifacts(string artifactRoot)
 {
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
-    if (File.Exists(Path.Combine(artifactRoot, "dist", "bundle.js.map")))
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js"), "production browser bundle");
+    if (File.Exists(Path.Combine(artifactRoot, "bundle.js.map")))
     {
         throw new InvalidOperationException("Release publish included source maps without JazorPublishSourceMaps=true.");
     }

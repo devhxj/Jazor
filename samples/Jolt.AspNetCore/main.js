@@ -1,4 +1,4 @@
 import { createApp } from 'vue';
-import Counter from './.jolt/Counter.mjs';
+import Counter from '/Counter.mjs';
 
 createApp(Counter).mount('#app');

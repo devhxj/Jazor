@@ -433,7 +433,12 @@ internal sealed class NpmValueProjection
                                 WriteLine($"[global::System.Runtime.CompilerServices.OverloadResolutionPriority({priority})]");
                             if (signature.ReturnType.Kind == "undefinedable")
                                 WriteLine(OptionalRead);
-                            Declare($"public extern {result} {Identifier(property)}{Generic(signature.TypeParameters)}({Parameters(signature, name + property, shapes, input: true)}){Constraints(signature)};", null, signature.Definition ?? member.Definition);
+                            // These host methods bind to JavaScript members independently of System.Object's CLR slots.
+                            var hidesObjectMethod = !constructible && signature.Parameters.Count == 0 &&
+                                signature.TypeParameters is not { Count: > 0 } &&
+                                property is "ToString" or "GetHashCode" or "GetType" or "MemberwiseClone";
+                            var hiding = hidesObjectMethod ? "new " : "";
+                            Declare($"public {hiding}extern {result} {Identifier(property)}{Generic(signature.TypeParameters)}({Parameters(signature, name + property, shapes, input: true)}){Constraints(signature)};", null, signature.Definition ?? member.Definition);
                         }
                         continue;
                     }

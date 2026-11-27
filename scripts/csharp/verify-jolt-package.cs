@@ -29,7 +29,7 @@ var rid = RuntimeInformation.ProcessArchitecture switch
     Architecture.Arm64 when OperatingSystem.IsWindows() => "win-arm64",
     _ => throw new PlatformNotSupportedException("Jolt packages target glibc Linux and Windows x64/ARM64."),
 };
-var scratch = Directory.CreateTempSubdirectory("jolt-package-");
+var scratch = Directory.CreateDirectory(Path.Combine(root, "test", "jolt", "package", Guid.NewGuid().ToString("N")));
 try
 {
     var feed = args.Length == 2 ? Path.GetFullPath(args[1]) : Path.Combine(scratch.FullName, "feed");
@@ -91,7 +91,7 @@ try
         packageCache: Path.Combine(scratch.FullName, "nuget"));
     // RID tools use an SDK-generated .cmd launcher on Windows.
     var commandPath = OperatingSystem.IsWindows() ? "cmd.exe" : Path.Combine(tools, "jolt");
-    var output = Path.Combine(consumer, ".jolt");
+    var output = Path.Combine(consumer, ".jazor");
     var npmStore = Path.GetFullPath(Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
         ?? Path.Combine(scratch.FullName, "npm-store"));
     var help = await RunInstalledAsync("--help", captureOutput: true);
@@ -120,10 +120,10 @@ try
     }
 
     await RunInstalledAsync("bundle");
-    if (!File.Exists(Path.Combine(consumer, "dist", "index.html")))
+    if (!File.Exists(Path.Combine(consumer, ".jazor", "dist", "index.html")))
         throw new InvalidOperationException("Installed Jolt did not produce the Vite release bundle.");
     if (editorFeatures && (!File.Exists(Path.Combine(output, "App.jolt.css")) ||
-        !Directory.EnumerateFiles(Path.Combine(consumer, "dist"), "*.css", SearchOption.AllDirectories)
+        !Directory.EnumerateFiles(Path.Combine(consumer, ".jazor", "dist"), "*.css", SearchOption.AllDirectories)
             .Any(path => File.ReadAllText(path).Contains("data-v-", StringComparison.Ordinal))))
         throw new InvalidOperationException("Installed Jolt did not emit and bundle scoped component styles.");
     var appHost = Directory.EnumerateFiles(Path.Combine(tools, ".store"),
@@ -218,7 +218,7 @@ static async Task VerifyHandwrittenBindingsAsync(string appHost, string root, st
         File.Copy(Path.Combine(fixture, file), Path.Combine(project, file));
 
     await RunProcessAsync(appHost, project, npmStore, ["build"]);
-    var module = await File.ReadAllTextAsync(Path.Combine(project, ".jolt", "App.mjs"));
+    var module = await File.ReadAllTextAsync(Path.Combine(project, ".jazor", "App.mjs"));
     foreach (var statement in new[]
     {
         """import { createTestingPinia } from "@pinia/testing";""",

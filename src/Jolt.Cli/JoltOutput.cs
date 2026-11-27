@@ -54,6 +54,22 @@ internal static class JoltOutput
             : [];
         var owned = new SortedSet<string>(earlier, StringComparer.Ordinal);
         var current = new SortedSet<string>(files.Keys.Concat(assets?.Keys ?? []), StringComparer.Ordinal);
+        var emitOwned = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var emitManifest = Path.Combine(output, "jazor.modules.json");
+        if (assets is null && File.Exists(emitManifest))
+        {
+            using var document = JsonDocument.Parse(await File.ReadAllTextAsync(emitManifest, token));
+            foreach (var group in new[] { "modules", "assets" })
+                if (document.RootElement.TryGetProperty(group, out var entries))
+                    foreach (var entry in entries.EnumerateArray())
+                    {
+                        emitOwned.Add(entry.GetProperty("path").GetString()!);
+                        if (entry.TryGetProperty("sourceMap", out var map) && map.GetString() is { } mapPath)
+                            emitOwned.Add(mapPath);
+                    }
+        }
+        if (current.FirstOrDefault(emitOwned.Contains) is { } conflict)
+            throw new IOException($"Jolt and Jazor both generate '{conflict}'. Choose distinct module paths.");
         if (assets is null)
         {
             // Older build manifests only tracked the .mjs, whose map was implicit.
@@ -64,21 +80,22 @@ internal static class JoltOutput
                     !path.EndsWith(".jolt.css", StringComparison.Ordinal) && !path.EndsWith(".d.mts", StringComparison.Ordinal) &&
                     !path.EndsWith(".d.mts.map", StringComparison.Ordinal) && !path.EndsWith(".d.jazor.ts", StringComparison.Ordinal) &&
                     !path.EndsWith(".d.jazor.ts.map", StringComparison.Ordinal) &&
-                    !(path.StartsWith("clr/", StringComparison.Ordinal) && path.EndsWith(".js", StringComparison.Ordinal)))
+                    !((path.StartsWith("clr/", StringComparison.Ordinal) || path.StartsWith(".jolt-runtime/clr/", StringComparison.Ordinal)) &&
+                      path.EndsWith(".js", StringComparison.Ordinal)))
                     throw new InvalidDataException($"Invalid module in {manifest}: {path}");
         }
-        else
-        {
-            foreach (var path in current.Except(owned))
-                if (File.Exists(Resolve(path)))
-                    throw new IOException($"Jolt library output would replace an existing file at '{Resolve(path)}'.");
-        }
+        foreach (var path in current.Except(owned))
+            if (File.Exists(Resolve(path)))
+                throw new IOException($"Jolt output would replace an existing file at '{Resolve(path)}'.");
 
         // Record ownership before replacing files so a retry can recover a partial write.
-        var obsolete = owned.Except(current).ToArray();
+        var obsolete = owned.Except(current)
+            // A previous build may have recorded CLR modules at shared paths.
+            // Only remove helpers from the private Jolt runtime subtree.
+            .Where(path => !emitOwned.Contains(path) &&
+                (assets is not null || !path.StartsWith("clr/", StringComparison.Ordinal))).ToArray();
         owned.UnionWith(current);
-        if (assets is not null)
-            await WriteChanged(manifestName, JsonSerializer.Serialize(owned));
+        await WriteChanged(manifestName, JsonSerializer.Serialize(owned));
         foreach (var (path, content) in files)
             await WriteChanged(path, content);
         if (assets is not null)

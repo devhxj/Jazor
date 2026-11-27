@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { effectScope } from 'vue';
 import { createSSRApp } from 'vue';
 import { renderToString } from 'vue/server-renderer';
-import Getters, { Evaluate, Inspect, ThrottleRefs } from './.jolt/Getters.mjs';
-import Constant from './.jolt/Constant.mjs';
+import Getters, { Evaluate, Inspect, ThrottleRefs } from './.jazor/Getters.mjs';
+import Constant from './.jazor/Constant.mjs';
 
 const scope = effectScope();
 try {

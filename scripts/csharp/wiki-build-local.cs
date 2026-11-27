@@ -8,7 +8,7 @@ var repoRoot = WikiScriptHelpers.RequireRepoRoot();
 WikiScriptHelpers.ConfigureRepositoryEnvironment(repoRoot);
 var sampleRoot = Path.Combine(repoRoot, "samples", "Wiki");
 var hostProject = Path.Combine(sampleRoot, "Wiki.csproj");
-var jazorRoot = Path.Combine(sampleRoot, "jazor");
+var jazorRoot = Path.Combine(sampleRoot, ".jazor");
 var entryPath = Path.Combine(jazorRoot, "entry.js");
 var componentModulePath = Path.Combine(jazorRoot, "components", "wiki-home.mjs");
 var bundlePath = Path.Combine(jazorRoot, "dist", "bundle.js");

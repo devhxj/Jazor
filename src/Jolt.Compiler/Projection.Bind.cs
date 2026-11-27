@@ -225,7 +225,7 @@ internal sealed partial class Projection
         };
     }
 
-    internal void CheckBindings(SemanticModel model)
+    internal void CheckBindings(SemanticModel model, List<Diagnostic> validationDiagnostics)
     {
         var root = model.SyntaxTree.GetRoot();
         foreach (var (generated, source, binding) in _bindingChecks)
@@ -236,7 +236,7 @@ internal sealed partial class Projection
             if (info.Type is { TypeKind: not TypeKind.Error } type && info.ConvertedType is { } expected &&
                 !SymbolEqualityComparer.Default.Equals(type, expected))
             {
-                Report("JOLT1023", source, $"The '{binding.Property}' binding target must have type '{binding.Type}'.");
+                ReportValidation(validationDiagnostics, "JOLT1023", source, $"The '{binding.Property}' binding target must have type '{binding.Type}'.");
             }
             while (syntax is ParenthesizedExpressionSyntax parenthesized)
                 syntax = parenthesized.Expression;
@@ -244,7 +244,7 @@ internal sealed partial class Projection
                 (property.ContainingType.Name.StartsWith("__JoltScope", StringComparison.Ordinal) ||
                 property.GetAttributes().Any(attribute => attribute.AttributeClass?.Name == "ParameterAttribute")))
             {
-                Report("JOLT1023", source, $"The '{binding.Property}' binding target is a read-only component input.");
+                ReportValidation(validationDiagnostics, "JOLT1023", source, $"The '{binding.Property}' binding target is a read-only component input.");
             }
         }
     }

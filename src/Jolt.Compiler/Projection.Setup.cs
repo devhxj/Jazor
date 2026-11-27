@@ -7,8 +7,9 @@ internal sealed partial class Projection
 {
     internal IMethodSymbol? SetupMethod { get; private set; }
 
-    internal void CheckSetup(SemanticModel model, INamedTypeSymbol state)
+    internal void CheckSetup(SemanticModel model, INamedTypeSymbol state, List<Diagnostic> validationDiagnostics, bool prepareLowering)
     {
+        IMethodSymbol? selected = null;
         var setupAttribute = model.Compilation.GetTypeByMetadataName("JoltAuthoring.SetupAttribute");
         var root = model.SyntaxTree.GetRoot();
         foreach (var attribute in root.DescendantNodes().OfType<AttributeSyntax>())
@@ -26,14 +27,16 @@ internal sealed partial class Projection
                 } ||
                 declaration is { Body: null, ExpressionBody: null })
             {
-                Report("JOLT1038", Map(attribute.Span) ?? default, "[Setup] requires a synchronous private instance method with a body, no parameters or type parameters, and a void return type.");
+                ReportValidation(validationDiagnostics, "JOLT1038", Map(attribute.Span) ?? default, "[Setup] requires a synchronous private instance method with a body, no parameters or type parameters, and a void return type.");
                 continue;
             }
 
-            if (SetupMethod is null)
-                SetupMethod = method;
+            if (selected is null)
+                selected = method;
             else
-                Report("JOLT1038", Map(attribute.Span) ?? default, "A component can declare only one [Setup] method.");
+                ReportValidation(validationDiagnostics, "JOLT1038", Map(attribute.Span) ?? default, "A component can declare only one [Setup] method.");
         }
+        if (prepareLowering)
+            SetupMethod = selected;
     }
 }

@@ -5,6 +5,9 @@
     <JazorPublishSourceMaps Condition="'$(JazorPublishSourceMaps)' == ''">false</JazorPublishSourceMaps>
     <_JazorGeneratedRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(JazorDir)'))</_JazorGeneratedRoot>
   </PropertyGroup>
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'">
+    <AssemblyMetadata Include="JazorGeneratedRoot" Value="$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(_JazorGeneratedRoot)'))" />
+  </ItemGroup>
 
   <!--
     This direct-reference target owns tooling activation. The transitive import is deliberately
@@ -13,6 +16,10 @@
   <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Jazor.Resources.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Jazor.LibraryImports.targets" />
   <Import Project="$(MSBuildThisFileDirectory)Jazor.Npm.targets" />
+  <PropertyGroup Condition="'$(_JazorVueProject)' == 'true' and '$(UsingMicrosoftNETSdkWeb)' == 'true' and Exists('$(MSBuildProjectDirectory)/package.json') and Exists('$(MSBuildProjectDirectory)/index.html')">
+    <_JoltEmitTarget>JazorModules</_JoltEmitTarget>
+  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)Jazor.Jolt.targets" Condition="'$(_JoltEmitTarget)' != ''" />
 
   <ItemGroup>
     <!-- Roslyn resolves analyzer dependencies only from registered analyzer paths. Register the
@@ -61,6 +68,7 @@
 
     <PropertyGroup>
       <_JazorToolPath Condition="'$(_JazorToolPath)' == '' and '@(_JazorEmitToolTarget)' != ''">@(_JazorEmitToolTarget)</_JazorToolPath>
+      <_JazorSourceEmitToolDirectory Condition="'@(_JazorEmitToolTarget)' != ''">$([System.IO.Path]::GetDirectoryName('$(_JazorToolPath)'))</_JazorSourceEmitToolDirectory>
     </PropertyGroup>
 
     <Error Condition="!Exists('$(_JazorToolPath)')"
@@ -78,17 +86,65 @@
            Text="JazorDenoPath has been removed. Jazor now uses the packaged in-process NodeApi toolchain." />
   </Target>
 
-  <!-- A host that hands raw modules to another bundler can depend on JazorDebug
-       explicitly. JazorMode controls the SDK's automatic build/publish workflow. -->
   <Target Name="_RunJazorDebugOnBuild"
           AfterTargets="Build"
           DependsOnTargets="JazorDebug"
-          Condition="'$(JazorMode)' == 'debug'" />
+          Condition="'$(_JoltEmitTarget)' == '' and '$(JazorMode)' == 'debug'" />
   <Target Name="JazorDebug"
+          DependsOnTargets="_JazorEmitDebug" />
+
+  <ItemGroup Condition="'$(_JoltEmitTarget)' != ''">
+    <AssemblyMetadata Include="JoltDevelopmentConfiguration" Value="$(Configuration)" />
+  </ItemGroup>
+
+  <!-- The development child builds into an isolated artifacts directory; Emit alone updates the browser modules. -->
+  <Target Name="_RefreshJoltDevelopmentModules" AfterTargets="Build"
+          DependsOnTargets="_JazorSelectHandoff;_JazorEmitDebug;_PublishJazorModuleInventory"
+          Condition="'$(_JoltRefreshModules)' == 'true' and '$(_JoltEmitTarget)' != ''" />
+  <!-- The consumer bundler owns its entry, dependency restore, and module resolution. -->
+  <Target Name="JazorModules" DependsOnTargets="_JazorSelectHandoff;_JazorEmitDebug;_WriteJoltProjectInputs;_PublishJazorModuleInventory">
+    <ItemGroup Condition="'$(_JazorSourceEmitToolDirectory)' != ''">
+      <_JazorSourceEmitToolInput Include="$(_JazorSourceEmitToolDirectory)/*;$(_JazorSourceEmitToolDirectory)/runtimes/**/*"
+                                 Exclude="$(_JazorSourceEmitToolDirectory)/*.pdb;$(_JazorSourceEmitToolDirectory)/*.xml" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_PublishJazorModuleInventory" Condition="Exists('$(_JazorDebugManifestPath)')">
+    <!-- Vite uses the Emit inventory to map public module URLs to generated files. -->
+    <Copy SourceFiles="$(_JazorDebugManifestPath)" DestinationFiles="$(_JazorGeneratedRoot)jazor.modules.json"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="_WriteJoltProjectInputsOnBuild" AfterTargets="Build" DependsOnTargets="_WriteJoltProjectInputs"
+          Condition="'$(_JoltRefreshModules)' != 'true' and ('$(_JoltEmitTarget)' != '' or @(AssemblyMetadata->WithMetadataValue('Identity', 'JoltHost')->Count()) != 0)" />
+
+  <Target Name="_WriteJoltProjectInputs" DependsOnTargets="ResolveReferences"
+          Condition="'$(DesignTimeBuild)' != 'true' and Exists('$(MSBuildProjectDirectory)/package.json')">
+    <ItemGroup>
+      <_JoltProjectInput Include="project|$(MSBuildProjectFullPath);namespace|$(RootNamespace)" />
+      <_JoltProjectInput Include="output|$(_JazorGeneratedRoot);output|$(BaseIntermediateOutputPath);output|$(IntermediateOutputPath);output|$(BaseOutputPath)" />
+      <_JoltDefine Include="$(DefineConstants)" />
+      <_JoltProjectInput Include="@(_JoltDefine->'define|%(Identity)')" />
+      <_JoltCompile Include="@(Compile)" Exclude="$(_JazorNpmSource)" />
+      <_JoltProjectInput Include="@(_JoltCompile->'source|%(FullPath)')" />
+      <_JoltProjectInput Include="@(Using->'using|%(Identity)|%(Alias)|%(Static)')" />
+      <_JoltProjectInput Include="@(ReferencePath->'reference|%(FullPath)')" />
+    </ItemGroup>
+    <!-- Project context is discoverable before the editor knows the generated output directory. -->
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)/.jazor/project.inputs"
+                      Lines="@(_JoltProjectInput)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
+  </Target>
+
+  <Target Name="_JazorSelectHandoff">
+    <PropertyGroup>
+      <_JazorBundlerHandoffArgument>--handoff true</_JazorBundlerHandoffArgument>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_JazorEmitDebug"
           DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorRuntimeIdentifier"
           Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and Exists('$(TargetPath)')">
     <PropertyGroup>
-      <_JazorDebugOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorDebugOutputDir>
       <_JazorDebugManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorDebugManifestPath>
       <_JazorDebugAssemblyListPath>$(IntermediateOutputPath)jazor-assemblies.txt</_JazorDebugAssemblyListPath>
       <_JazorDebugModuleAssemblyListPath>$(IntermediateOutputPath)jazor-module-assemblies.txt</_JazorDebugModuleAssemblyListPath>
@@ -115,25 +171,26 @@
     <WriteLinesToFile File="$(_JazorDebugLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <!-- Browser roots select only entry.js; all catalog modules remain available for lazy imports and SSR. -->
     <WriteLinesToFile File="$(_JazorDebugBrowserEntryListPath)" Lines="@(JazorBrowserEntry)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
-    <Exec Command="$(_JazorToolCommand) --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorDebugOutputDir)&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorPnpmStoreArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorDebugBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
+    <!-- A final dot keeps the quoted directory valid for Windows argv, including filesystem roots. -->
+    <Exec Command="$(_JazorToolCommand) --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorGeneratedRoot).&quot; --write-manifest &quot;$(_JazorDebugManifestPath)&quot; --mode debug $(_JazorBundlerHandoffArgument) --source-root &quot;$(_JazorDebugSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorPnpmStoreArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorDebugAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorDebugModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorDebugLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorDebugBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
+  <!-- Jolt owns the public entry and publish assets after the Emit handoff. -->
   <Target Name="JazorRelease"
           AfterTargets="Build"
           DependsOnTargets="_JazorEmitRelease"
-          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')" />
+          Condition="'$(_JoltEmitTarget)' == '' and '$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' == 'release' and Exists('$(TargetPath)')" />
 
   <!-- Folder Publish always materializes the runtime bundle, even after a Debug build.
        Both callers share this target so a Release publish emits only once. -->
   <Target Name="JazorPreparePublish"
           BeforeTargets="ComputeFilesToPublish"
           DependsOnTargets="_JazorEmitRelease"
-          Condition="'$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(TargetPath)')" />
+          Condition="'$(_JoltEmitTarget)' == '' and '$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(TargetPath)')" />
 
   <Target Name="_JazorEmitRelease"
           DependsOnTargets="_ResolveJazorEmitTool;_ResolveJazorRuntimeIdentifier">
     <PropertyGroup>
-      <_JazorReleaseOutputDir>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorReleaseOutputDir>
       <_JazorReleaseManifestPath>$(IntermediateOutputPath)jazor-manifest.json</_JazorReleaseManifestPath>
       <_JazorReleaseAssemblyListPath>$(IntermediateOutputPath)jazor-assemblies.txt</_JazorReleaseAssemblyListPath>
       <_JazorReleaseModuleAssemblyListPath>$(IntermediateOutputPath)jazor-module-assemblies.txt</_JazorReleaseModuleAssemblyListPath>
@@ -157,21 +214,20 @@
     <WriteLinesToFile File="$(_JazorReleaseModuleAssemblyListPath)" Lines="@(JazorAdditionalAssembly)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorReleaseLibraryManifestListPath)" Lines="@(JazorLibraryManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
     <WriteLinesToFile File="$(_JazorReleaseBrowserEntryListPath)" Lines="@(JazorBrowserEntry)" Overwrite="true" WriteOnlyWhenDifferent="true" Encoding="UTF-8" />
-    <Exec Command="$(_JazorToolCommand) --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorReleaseOutputDir)&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorPnpmStoreArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorReleaseBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
+    <Exec Command="$(_JazorToolCommand) --root &quot;$(TargetPath)&quot; --out &quot;$(_JazorGeneratedRoot).&quot; --write-manifest &quot;$(_JazorReleaseManifestPath)&quot; --mode release --source-root &quot;$(_JazorReleaseSourceRoot)&quot; --ssr &quot;$(JazorSSR)&quot; $(_JazorPnpmStoreArgument) $(_JazorRuntimeIdentifierArgument) $(_JazorRuntimeIdentifierGraphArgument) --assembly-list &quot;$(_JazorReleaseAssemblyListPath)&quot; --module-assembly-list &quot;$(_JazorReleaseModuleAssemblyListPath)&quot; --library-manifest-list &quot;$(_JazorReleaseLibraryManifestListPath)&quot; --browser-entry-list &quot;$(_JazorReleaseBrowserEntryListPath)&quot;" ConsoleToMSBuild="true" />
   </Target>
 
   <!--
-    Generated artifacts deliberately live beside the project rather than under wwwroot.
-    Publish copies that graph explicitly so Web and non-Web SDK hosts get one identical
-    /jazor layout without making the build output an authored static-file item.
+    Only browser build output enters the Web SDK's public web root. SSR and
+    non-Web runtime files keep their conventional deployment layout.
   -->
   <Target Name="AddJazorArtifactsToPublish"
           DependsOnTargets="JazorPreparePublish"
           AfterTargets="ComputeFilesToPublish"
           BeforeTargets="_HandleFileConflictsForPublish"
-          Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(JazorDir)')">
+          Condition="'$(_JoltEmitTarget)' == '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(JazorMode)' != 'none' and Exists('$(_JazorGeneratedRoot)')">
     <PropertyGroup>
-      <_JazorPublishRoot>$([System.Text.RegularExpressions.Regex]::Replace($([System.IO.Path]::GetFullPath('$(JazorDir)')), '[\\/]+$', ''))</_JazorPublishRoot>
+      <_JazorPublishRoot>$(_JazorGeneratedRoot)</_JazorPublishRoot>
     </PropertyGroup>
 
     <FindUnderPath Path="$(_JazorPublishRoot)"
@@ -191,14 +247,15 @@
       <!-- RecursiveDir starts after each glob root. Retain the runtime subtree explicitly
            so identically named browser/server chunks do not collide during publish. -->
       <_JazorArtifactFile Include="$(_JazorPublishRoot)\dist\**\*">
-        <JazorRuntimeSubtree>dist/</JazorRuntimeSubtree>
+        <JazorPublishPrefix>jazor/dist/</JazorPublishPrefix>
+        <JazorPublishPrefix Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'">wwwroot/</JazorPublishPrefix>
       </_JazorArtifactFile>
       <_JazorArtifactFile Include="$(_JazorPublishRoot)\ssr\**\*" Condition="'$(JazorSSR)' == 'true'">
-        <JazorRuntimeSubtree>ssr/</JazorRuntimeSubtree>
+        <JazorPublishPrefix>jazor/ssr/</JazorPublishPrefix>
       </_JazorArtifactFile>
       <_JazorArtifactFile Remove="@(_JazorArtifactFile)" Condition="'$(JazorPublishSourceMaps)' != 'true' and '%(_JazorArtifactFile.Extension)' == '.map'" />
       <ResolvedFileToPublish Include="@(_JazorArtifactFile)">
-        <RelativePath>jazor/%(_JazorArtifactFile.JazorRuntimeSubtree)%(_JazorArtifactFile.RecursiveDir)%(_JazorArtifactFile.Filename)%(_JazorArtifactFile.Extension)</RelativePath>
+        <RelativePath>%(_JazorArtifactFile.JazorPublishPrefix)%(_JazorArtifactFile.RecursiveDir)%(_JazorArtifactFile.Filename)%(_JazorArtifactFile.Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
     </ItemGroup>

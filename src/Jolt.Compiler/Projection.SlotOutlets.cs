@@ -12,7 +12,7 @@ internal sealed partial class Projection
         _ => "string",
     };
 
-    internal void CheckSlotOutlets(SemanticModel model)
+    internal void CheckSlotOutlets(SemanticModel model, List<Diagnostic> validationDiagnostics)
     {
         foreach (var group in ComponentContract.SlotOutlets(Document))
         {
@@ -21,20 +21,20 @@ internal sealed partial class Projection
             {
                 var members = ComponentContract.SlotMembers(outlet).ToLookup(attribute => attribute.Name, StringComparer.Ordinal);
                 foreach (var missing in first.Where(member => !members.Contains(member.Key)))
-                    Report("JOLT1037", outlet.NameSpan, $"Slot '{group.Key}' must supply field '{missing.Key}' at each outlet.");
+                    ReportValidation(validationDiagnostics, "JOLT1037", outlet.NameSpan, $"Slot '{group.Key}' must supply field '{missing.Key}' at each outlet.");
                 foreach (var member in members)
                 {
                     var current = member.First();
                     if (!first.Contains(member.Key))
                     {
-                        Report("JOLT1037", current.NameSpan, $"Slot '{group.Key}' must supply field '{member.Key}' at each outlet.");
+                        ReportValidation(validationDiagnostics, "JOLT1037", current.NameSpan, $"Slot '{group.Key}' must supply field '{member.Key}' at each outlet.");
                         continue;
                     }
 
                     var expected = GetSlotMemberType(first[member.Key].First(), model);
                     var actual = GetSlotMemberType(current, model);
                     if (expected != actual)
-                        Report("JOLT1037", current.Value.FirstOrDefault()?.Span ?? current.NameSpan,
+                        ReportValidation(validationDiagnostics, "JOLT1037", current.Value.FirstOrDefault()?.Span ?? current.NameSpan,
                             $"Slot '{group.Key}' field '{member.Key}' must have a consistent type at each outlet, but was '{expected ?? "untyped"}' and '{actual ?? "untyped"}'.");
                 }
             }

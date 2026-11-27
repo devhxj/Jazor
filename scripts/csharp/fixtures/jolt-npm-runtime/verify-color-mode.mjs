@@ -7,7 +7,7 @@ try {
         globalThis[name] = window[name];
     window.matchMedia = query => Object.assign(new window.EventTarget(), { media: query, matches: false });
     const { createApp, nextTick } = await import('vue');
-    const { default: ColorMode } = await import('./.jolt/ColorMode.mjs');
+    const { default: ColorMode } = await import('./.jazor/ColorMode.mjs');
     const mount = window.document.querySelector('main');
     const root = window.document.documentElement;
     const app = createApp(ColorMode);

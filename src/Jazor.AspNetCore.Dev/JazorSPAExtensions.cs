@@ -9,38 +9,39 @@ using Microsoft.Extensions.Options;
 
 namespace Jazor.AspNetCore.Dev;
 
-/// <summary>Registers and composes the generated Jazor frontend for development and deployment.</summary>
-public static class JazorFrontendExtensions
+/// <summary>Registers and serves a Jolt SPA or a Jazor ES module project.</summary>
+public static class JazorSPAExtensions
 {
-    private const string PathBaseRegisteredKey = "__JazorFrontendPathBaseRegistered";
-    private const string FrontendRegisteredKey = "__JazorFrontendRegistered";
+    private const string PathBaseRegisteredKey = "__JazorSPAPathBaseRegistered";
+    private const string SpaRegisteredKey = "__JazorSPARegistered";
 
-    /// <summary>Registers the generated frontend and its NodeApi-owned Vite development server.</summary>
-    public static WebApplicationBuilder AddJazorFrontend(
+    /// <summary>Registers SPA hosting and the project's development server.</summary>
+    public static WebApplicationBuilder AddJazorSPA(
         this WebApplicationBuilder builder,
-        Action<JazorFrontendOptions>? configure = null)
+        Action<JazorSPAOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        builder.Services.AddJazorFrontend(configure);
+        builder.Services.AddJazorSPA(configure);
         return builder;
     }
 
     /// <summary>Registers the generated frontend for hosts that compose services through Startup or a framework.</summary>
-    public static IServiceCollection AddJazorFrontend(
+    public static IServiceCollection AddJazorSPA(
         this IServiceCollection services,
-        Action<JazorFrontendOptions>? configure = null)
+        Action<JazorSPAOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = services.AddOptions<JazorFrontendOptions>();
+        var options = services.AddOptions<JazorSPAOptions>()
+            .Configure<IWebHostEnvironment>((settings, environment) => settings.ApplyApplicationDefaults(environment.ApplicationName));
         if (configure is not null)
             options.Configure(configure);
         options.ValidateOnStart();
 
         services.TryAddEnumerable(
-            ServiceDescriptor.Singleton<IValidateOptions<JazorFrontendOptions>, JazorFrontendOptionsValidator>());
-        services.TryAddSingleton<JazorFrontendRegistration>();
-        services.TryAddSingleton<JazorFrontendAssets>();
+            ServiceDescriptor.Singleton<IValidateOptions<JazorSPAOptions>, JazorSPAOptionsValidator>());
+        services.TryAddSingleton<JazorSPARegistration>();
+        services.TryAddSingleton<JazorSPAAssets>();
         services.AddHttpClient(JazorViteDevelopmentServer.HttpClientName, client =>
             {
                 client.Timeout = Timeout.InfiniteTimeSpan;
@@ -72,48 +73,53 @@ public static class JazorFrontendExtensions
             return app;
         properties[PathBaseRegisteredKey] = true;
 
-        var options = app.ApplicationServices.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var options = app.ApplicationServices.GetRequiredService<IOptions<JazorSPAOptions>>().Value;
         if (options.PathBase.HasValue)
             app.UsePathBase(options.PathBase);
         return app;
     }
 
     /// <summary>Proxies the generated project in Development and serves its built artifacts elsewhere.</summary>
-    public static WebApplication UseJazorFrontend(
+    public static WebApplication UseJazorSPA(
         this WebApplication app,
         Action<JazorHostOptions>? configure = null)
     {
-        ((IApplicationBuilder)app).UseJazorFrontend(configure);
+        ((IApplicationBuilder)app).UseJazorSPA(configure);
         return app;
     }
 
     /// <summary>Composes the development proxy or release artifact host in the middleware pipeline supplied by the host.</summary>
     /// <remarks>Startup and framework integrations must call this on their supplied builder so registration enters the executing pipeline.</remarks>
-    public static IApplicationBuilder UseJazorFrontend(
+    public static IApplicationBuilder UseJazorSPA(
         this IApplicationBuilder app,
         Action<JazorHostOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(app);
         EnsureRegistered(app);
         var properties = app.Properties;
-        if (properties.ContainsKey(FrontendRegisteredKey))
+        if (properties.ContainsKey(SpaRegisteredKey))
             return app;
-        properties[FrontendRegisteredKey] = true;
+        properties[SpaRegisteredKey] = true;
 
-        var options = app.ApplicationServices.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var options = app.ApplicationServices.GetRequiredService<IOptions<JazorSPAOptions>>().Value;
         var environment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
         app.UseJazorHost(hostOptions =>
         {
+            if (options.IsJoltApp)
+            {
+                // The shell serves only Vite's build output. The project directory contains server sources.
+                hostOptions.Assets.ServeDefaultFiles = false;
+                if (!environment.IsDevelopment() && !options.RequestPath.HasValue &&
+                    string.Equals(options.ResolveReleaseRoot(environment.ContentRootPath, environment.WebRootPath), environment.WebRootPath, StringComparison.Ordinal))
+                    hostOptions.Assets.ServeWebRoot = false;
+                configure?.Invoke(hostOptions);
+                hostOptions.Assets.ServeArtifacts = false;
+                return;
+            }
+
             hostOptions.Assets.ServeArtifacts = !environment.IsDevelopment();
             hostOptions.Assets.ArtifactProbeRelativePaths.Clear();
-            hostOptions.Assets.ArtifactProbeRelativePaths.Add(options.DevelopmentEntryRelativePath);
-            if (!string.Equals(
-                    options.ReleaseEntryRelativePath,
-                    options.DevelopmentEntryRelativePath,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                hostOptions.Assets.ArtifactProbeRelativePaths.Add(options.ReleaseEntryRelativePath);
-            }
+            hostOptions.Assets.ArtifactProbeRelativePaths.Add(options.GetReleaseEntryName());
 
             configure?.Invoke(hostOptions);
 
@@ -121,7 +127,7 @@ public static class JazorFrontendExtensions
             hostOptions.Assets.ConfigureArtifacts = artifactOptions =>
             {
                 artifactOptions.RequestPath = options.RequestPath;
-                artifactOptions.RootPath = options.ResolveProjectRoot(environment.ContentRootPath);
+                artifactOptions.RootPath = options.ResolveReleaseRoot(environment.ContentRootPath, environment.WebRootPath);
                 configureArtifacts?.Invoke(artifactOptions);
             };
         });
@@ -131,21 +137,24 @@ public static class JazorFrontendExtensions
             // Keep the proxy behind the shared host pipeline so development responses receive
             // the same configured security headers as release assets and application routes.
             app.UseWebSockets();
-            app.Map(options.RequestPath, branch =>
+            app.Map(options.GetDevelopmentRequestPath(), branch =>
                 branch.Run(context => JazorViteProxy.ForwardAsync(context, options)));
         }
+
+        if (options.IsJoltApp)
+            JazorSPAShell.Use(app, options, environment);
 
         return app;
     }
 
     private static void EnsureRegistered(IApplicationBuilder app)
     {
-        if (app.ApplicationServices.GetService<JazorFrontendRegistration>() is null)
+        if (app.ApplicationServices.GetService<JazorSPARegistration>() is null)
         {
             throw new InvalidOperationException(
-                "Register the Jazor frontend with builder.AddJazorFrontend(...) or services.AddJazorFrontend(...) before building the application.");
+                "Register Jazor SPA hosting with builder.AddJazorSPA(...) or services.AddJazorSPA(...) before building the application.");
         }
     }
 
-    private sealed class JazorFrontendRegistration;
+    private sealed class JazorSPARegistration;
 }

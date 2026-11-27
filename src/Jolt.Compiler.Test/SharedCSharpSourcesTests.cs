@@ -7,6 +7,68 @@ namespace Jolt.Compiler.Test;
 public sealed class SharedCSharpSourcesTests
 {
     [TestMethod]
+    public async Task GetGeneratedRoot_ReadsImportedJazorDirBeforeFirstBuild()
+    {
+        var fixture = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-direct-output-" + Guid.NewGuid()));
+        try
+        {
+            var project = fixture.CreateSubdirectory("Web");
+            Assert.AreEqual(Path.Combine(project.FullName, ".jazor"),
+                await JoltProjectLoader.GetGeneratedRootAsync(project.FullName, CancellationToken.None));
+            await File.WriteAllTextAsync(Path.Combine(project.FullName, "Web.csproj"), """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup>
+                  <Import Project="../Generated.props" />
+                </Project>
+                """);
+            await File.WriteAllTextAsync(Path.Combine(fixture.FullName, "Generated.props"), """
+                <Project><PropertyGroup>
+                  <JazorDir Condition="'$(TargetFramework)' == 'net11.0'">../generated</JazorDir>
+                </PropertyGroup></Project>
+                """);
+
+            Assert.AreEqual(Path.Combine(fixture.FullName, "generated"),
+                await JoltProjectLoader.GetGeneratedRootAsync(project.FullName, CancellationToken.None));
+        }
+        finally
+        {
+            fixture.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadSources_SkipsEvaluatedOutputDirectories()
+    {
+        var project = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-custom-output-" + Guid.NewGuid()));
+        try
+        {
+            var projectPath = Path.Combine(project.FullName, "App.csproj");
+            await File.WriteAllTextAsync(projectPath, """<Project Sdk="Microsoft.NET.Sdk" />""");
+            await File.WriteAllTextAsync(Path.Combine(project.FullName, "Main.jazor"), "<div/>");
+            var generated = project.CreateSubdirectory("custom-output");
+            var intermediate = project.CreateSubdirectory("custom-intermediate");
+            var context = project.CreateSubdirectory(".jazor");
+            await File.WriteAllLinesAsync(Path.Combine(context.FullName, "project.inputs"),
+                [$"project|{projectPath}", "namespace|Custom.App", $"output|{generated.FullName}", "output|custom-intermediate"]);
+            await File.WriteAllTextAsync(Path.Combine(generated.FullName, "Generated.jazor"), "<div/>");
+            await File.WriteAllTextAsync(Path.Combine(intermediate.FullName, "Intermediate.vue"), "<template/>");
+
+            var workspace = await JoltProjectLoader.LoadSourcesAsync(project.FullName, new Dictionary<string, string>
+            {
+                [Path.Combine(intermediate.FullName, "Unsaved.jazor")] = "<div/>",
+            }, CancellationToken.None);
+
+            Assert.AreEqual("Custom.App", workspace.Options.RootNamespace);
+            CollectionAssert.AreEqual(new[] { "Main.jazor" }, workspace.Sources.Select(source => source.Path).ToArray());
+            Assert.IsEmpty(workspace.VuePaths);
+        }
+        finally
+        {
+            project.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task LoadSources_ExpandsSharedGlobsAndOverlaysInStableOrder()
     {
         var project = Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "jolt-shared-glob-" + Guid.NewGuid()));

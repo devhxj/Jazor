@@ -16,6 +16,8 @@
         <UseAppHost>true</UseAppHost>
         <SelfContained>false</SelfContained>
         <PublishTrimmed>false</PublishTrimmed>
+        <!-- The outer Release restore needs Crossgen2 for the RID-specific inner publishes. -->
+        <PublishReadyToRun Condition="'$(Configuration)' == 'Release' and ('$(MSBuildIsRestoring)' == 'true' or ('$(RuntimeIdentifier)' != '' and '$(RuntimeIdentifier)' != 'any'))">true</PublishReadyToRun>
         <_JoltSdkRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildSDKsPath)', '..', '..', '..'))</_JoltSdkRoot>
     </PropertyGroup>
 

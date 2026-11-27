@@ -8,7 +8,7 @@ using Wiki;
 
 // 构建应用 / Build the application
 var builder = JazorWebApplication.CreateBuilder(args);
-builder.AddJazorFrontend(options =>
+builder.AddJazorSPA(options =>
 {
     options.PathBase = builder.Configuration["Wiki:PathBase"] ?? string.Empty;
     options.Vite.ServerOrigin = new Uri(
@@ -20,7 +20,7 @@ Wiki.WikiCatalogGuard.ValidateOrThrow();
 
 var app = builder.Build();
 app.UseJazorPathBase();
-app.UseJazorFrontend(options =>
+app.UseJazorSPA(options =>
 {
     options.SecurityHeaders.PermissionsPolicy =
         "accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), " +

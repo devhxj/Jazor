@@ -7,19 +7,29 @@ namespace Jolt.LanguageServer;
 internal sealed class Transport(Stream input, Stream output)
 {
     private readonly SemaphoreSlim _writer = new(1);
+    private readonly byte[] _readBuffer = new byte[4096];
+    private int _readOffset;
+    private int _readEnd;
     private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web);
 
     public async Task<JsonElement?> ReadAsync(CancellationToken cancellationToken)
     {
         var header = new StringBuilder();
-        var next = new byte[1];
+        var started = false;
         int length = -1;
         while (true)
         {
-            if (await input.ReadAsync(next, cancellationToken) == 0)
-                return null;
+            if (_readOffset == _readEnd)
+            {
+                _readEnd = await input.ReadAsync(_readBuffer, cancellationToken);
+                _readOffset = 0;
+                if (_readEnd == 0)
+                    return started ? throw new EndOfStreamException("The stream ended inside an LSP header.") : null;
+            }
 
-            if (next[0] == '\n')
+            started = true;
+            var next = _readBuffer[_readOffset++];
+            if (next == '\n')
             {
                 var line = header.ToString().TrimEnd('\r');
                 header.Clear();
@@ -29,13 +39,17 @@ internal sealed class Transport(Stream input, Stream output)
                     length = int.Parse(line.AsSpan("Content-Length:".Length).Trim(), CultureInfo.InvariantCulture);
             }
             else
-                header.Append((char)next[0]);
+                header.Append((char)next);
         }
 
         if (length < 0)
             throw new InvalidDataException("Missing LSP Content-Length.");
         var body = new byte[length];
-        await input.ReadExactlyAsync(body, cancellationToken);
+        // Keep any following frame in the buffer and read a large body remainder directly.
+        var buffered = Math.Min(_readEnd - _readOffset, length);
+        _readBuffer.AsSpan(_readOffset, buffered).CopyTo(body);
+        _readOffset += buffered;
+        await input.ReadExactlyAsync(body.AsMemory(buffered), cancellationToken);
         return JsonSerializer.Deserialize<JsonElement>(body);
     }
 

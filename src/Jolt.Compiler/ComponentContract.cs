@@ -176,7 +176,7 @@ internal sealed record ComponentContract(
             var type = signatures.Count == 1 ? DelegateType(signatures[0], parameter) : null;
             return new ComponentProperty(VueEventProperty(entry.Key), type, false,
                 Unsupported: signatures.Count == 1 ? Describe(signatures[0]) : "multiple or missing signatures")
-                { HasEventPayload = type is not null && signatures[0].Count > 0 };
+                { HasEventPayload = type is not null && signatures[0].Count > 0 && signatures[0] is not [{ UntypedRest: true }] };
         });
         var slots = component.Slots.Select(entry =>
         {
@@ -233,7 +233,9 @@ internal sealed record ComponentContract(
 
     private static string? DelegateType(IReadOnlyList<NpmVueParameter> parameters, string? typeParameter)
     {
-        if (parameters.Count == 0)
+        // Vue's string-list emits publish names with an any[] rest. A zero-argument
+        // listener can safely ignore that payload without asserting an argument type.
+        if (parameters.Count == 0 || parameters is [{ UntypedRest: true }])
             return "global::System.Action";
         var types = parameters.Select(parameter => parameter.WebType is { } host
             ? $"global::ECMAScript.{host}"

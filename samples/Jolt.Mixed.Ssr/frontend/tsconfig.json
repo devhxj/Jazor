@@ -5,7 +5,7 @@
         "moduleResolution": "Bundler",
         "strict": true,
         "allowArbitraryExtensions": true,
-        "rootDirs": [".", "./.jolt"],
+        "rootDirs": [".", "./.jazor"],
         "noEmit": true,
         "skipLibCheck": true
     },

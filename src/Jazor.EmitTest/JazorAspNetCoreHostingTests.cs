@@ -73,8 +73,8 @@ public sealed class JazorAspNetCoreHostingTests
         Directory.CreateDirectory(Path.Combine(appBaseDirectory, "jazor"));
         Directory.CreateDirectory(Path.Combine(sourceDirectory, "jazor"));
         // Bundle 输出固定在项目根的 dist/ 下。
-        Directory.CreateDirectory(Path.Combine(appBaseDirectory, "jazor", "dist"));
-        File.WriteAllText(Path.Combine(appBaseDirectory, "jazor", "dist", "bundle.js"), "export {};\n");
+        Directory.CreateDirectory(Path.Combine(appBaseDirectory, "wwwroot"));
+        File.WriteAllText(Path.Combine(appBaseDirectory, "wwwroot", "bundle.js"), "export {};\n");
         File.WriteAllText(Path.Combine(sourceDirectory, "jazor", "jazor-manifest.json"), "{}");
         File.WriteAllText(sourceFilePath, "var builder = JazorWebApplication.CreateBuilder(args);");
 
@@ -87,7 +87,7 @@ public sealed class JazorAspNetCoreHostingTests
     public async Task UseJazorArtifacts_ServesMountedAssetsAndReturns404ForMissingMountedFile()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
-        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        var jazorRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(jazorRoot);
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "jazor-manifest.json"), "{}");
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "entry.js"), "export {};");
@@ -134,7 +134,7 @@ public sealed class JazorAspNetCoreHostingTests
     public async Task UseJazorArtifacts_DoesNothingWhenManifestIsMissing()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
-        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        var jazorRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(jazorRoot);
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
 
@@ -157,7 +157,7 @@ public sealed class JazorAspNetCoreHostingTests
     public async Task UseJazorArtifacts_DoesNotTreatAlternateManifestNameAsDefaultProbe()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
-        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        var jazorRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(jazorRoot);
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "jazor-manifest-custom.json"), "{}");
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
@@ -181,7 +181,7 @@ public sealed class JazorAspNetCoreHostingTests
     public async Task UseJazorArtifacts_UsesConfiguredProbePath()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
-        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        var jazorRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(jazorRoot);
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "custom.probe.json"), "{}");
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
@@ -207,7 +207,7 @@ public sealed class JazorAspNetCoreHostingTests
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
         var webRootJazor = Path.Combine(webRoot, "jazor");
-        var artifactRoot = Path.Combine(workspace.RootPath, "jazor");
+        var artifactRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(webRootJazor);
         Directory.CreateDirectory(artifactRoot);
         await File.WriteAllTextAsync(Path.Combine(webRootJazor, "client-entry.js"), "export const stale = true;\n");
@@ -241,7 +241,7 @@ public sealed class JazorAspNetCoreHostingTests
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
         var vendorRoot = Path.Combine(webRoot, "vendor");
-        var developmentJazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        var developmentJazorRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(webRoot);
         Directory.CreateDirectory(vendorRoot);
         Directory.CreateDirectory(developmentJazorRoot);
@@ -291,7 +291,7 @@ public sealed class JazorAspNetCoreHostingTests
     public async Task UseJazorHost_AssetsSupportConfiguredProbePath()
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
-        var jazorRoot = Path.Combine(workspace.RootPath, "jazor");
+        var jazorRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(jazorRoot);
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "custom.probe.json"), "{}");
         await File.WriteAllTextAsync(Path.Combine(jazorRoot, "feature.mjs"), "export const value = 1;\n");
@@ -612,7 +612,7 @@ public sealed class JazorAspNetCoreHostingTests
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
-        var artifactRoot = Path.Combine(workspace.RootPath, "jazor");
+        var artifactRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(webRoot);
         Directory.CreateDirectory(artifactRoot);
         await File.WriteAllTextAsync(
@@ -660,7 +660,7 @@ public sealed class JazorAspNetCoreHostingTests
     {
         using var workspace = new AspNetCoreHostTestWorkspace();
         var webRoot = Path.Combine(workspace.RootPath, "wwwroot");
-        var artifactRoot = Path.Combine(workspace.RootPath, "jazor");
+        var artifactRoot = Path.Combine(workspace.RootPath, ".jazor");
         Directory.CreateDirectory(webRoot);
         Directory.CreateDirectory(artifactRoot);
         await File.WriteAllTextAsync(

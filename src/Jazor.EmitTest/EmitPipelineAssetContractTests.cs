@@ -11,6 +11,87 @@ namespace Jazor.EmitTest;
 public sealed class EmitPipelineAssetContractTests
 {
     [TestMethod]
+    public async Task ExecuteAsync_BundlerHandoffWritesModulesAndAssetsWithoutStandaloneProject()
+    {
+        const string javascript = """import locale from "@example/widgets/locale/en"; export const load = () => import("/Pages/View.jazor");""";
+        const string asset = "asset";
+        var root = Path.Combine(RepositoryTemp.Root, "Jazor.EmitTest", Guid.NewGuid().ToString("N"));
+        var sourceRoot = Path.Combine(root, "source");
+        var outputRoot = Path.Combine(root, "out");
+        var manifestPath = Path.Combine(root, "handoff-manifest.json");
+        try
+        {
+            Directory.CreateDirectory(sourceRoot);
+            await File.WriteAllTextAsync(Path.Combine(sourceRoot, "logo.txt"), asset);
+            await File.WriteAllTextAsync(Path.Combine(sourceRoot, "package.json"),
+                """{"dependencies":{"@example/widgets":"1.2.3"}}""");
+            var assembly = CompileCatalogAssemblyToPath(root, "Handoff.Host",
+                CreateCatalogSource(javascript, "logo.txt", "assets/logo.txt", Sha256(asset))
+                    .Replace("public string[] Dependencies { get; }", """
+                        public string[] Dependencies { get; }
+                        public string[] PackageImports => new[] { "@example/widgets/locale/en" };
+                        """, StringComparison.Ordinal));
+            var result = await new EmitPipeline().ExecuteAsync(
+                new EmitOptions(assembly, [], outputRoot, manifestPath, BuildMode.Development, sourceRoot, [],
+                    EnableSsr: false, BundlerHandoff: true));
+
+            Assert.IsTrue(result.IsSuccess, result.Error);
+            Assert.AreEqual(javascript, await File.ReadAllTextAsync(Path.Combine(outputRoot, "components", "app.mjs")));
+            Assert.AreEqual(asset, await File.ReadAllTextAsync(Path.Combine(outputRoot, "assets", "logo.txt")));
+            Assert.IsTrue(File.Exists(manifestPath));
+            Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "package.json")));
+            Assert.IsFalse(File.Exists(Path.Combine(outputRoot, "entry.js")));
+            Assert.IsFalse(Directory.Exists(Path.Combine(outputRoot, "node_modules")));
+            var standalone = await ExecuteAsync(assembly, sourceRoot, Path.Combine(root, "standalone"));
+            Assert.IsFalse(standalone.IsSuccess);
+            StringAssert.Contains(standalone.Error, "JAZOR_LIBRARY_IMPORT_MISSING");
+        }
+        finally
+        {
+            WaitForAssemblyUnload();
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_SharedRootRejectsJoltStyleCollisionBeforeWritingModules()
+    {
+        var root = RepositoryTemp.CreateDirectory("handoff-style-");
+        var source = Directory.CreateDirectory(Path.Combine(root, "source")).FullName;
+        var output = Directory.CreateDirectory(Path.Combine(root, "out")).FullName;
+        var style = Path.Combine(output, "Page.jolt.css");
+        var inventory = Path.Combine(output, "jolt.modules.json");
+        try
+        {
+            const string content = "body { color: blue; }";
+            await File.WriteAllTextAsync(Path.Combine(source, "theme.css"), content);
+            var assembly = CompileCatalogAssemblyToPath(root, "Style.Host",
+                CreateCatalogSource("export const app = true;", "theme.css", "Page.jolt.css", Sha256(content)));
+            var options = new EmitOptions(assembly, [], output, Path.Combine(root, "manifest.json"),
+                BuildMode.Development, source, [], EnableSsr: false, BundlerHandoff: true);
+            await File.WriteAllTextAsync(style, ".page { color: green; }");
+            await File.WriteAllTextAsync(inventory, """["Page.jolt.css"]""");
+
+            var collision = await new EmitPipeline().ExecuteAsync(options);
+            Assert.IsFalse(collision.IsSuccess);
+            StringAssert.Contains(collision.Error, "Jolt and Jazor both generate 'Page.jolt.css'");
+            Assert.AreEqual(".page { color: green; }", await File.ReadAllTextAsync(style));
+            Assert.IsFalse(File.Exists(Path.Combine(output, "components", "app.mjs")));
+
+            await File.WriteAllTextAsync(inventory, """["OtherPage.mjs"]""");
+            var retry = await new EmitPipeline().ExecuteAsync(options);
+            Assert.IsTrue(retry.IsSuccess, retry.Error);
+            Assert.AreEqual(content, await File.ReadAllTextAsync(style));
+        }
+        finally
+        {
+            WaitForAssemblyUnload();
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task ExecuteAsync_ValidatesAssetSourceHashBeforeReusingExistingOutput()
     {
         const string moduleContent = "export const app = true;";

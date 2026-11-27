@@ -108,6 +108,8 @@ export function readComponent(exportSymbol, { ts, source, checker, typeOf, displ
         return {
             name,
             type: display(type),
+            untypedRest: variadic && checker.isArrayType(type) &&
+                Boolean(checker.getTypeArguments(type)[0].flags & ts.TypeFlags.Any),
             webType: webType(type)?.name,
             // A listener can mutate a C# array. Only TS mutable arrays can
             // cross this boundary, and a variadic call delivers separate values.
@@ -142,7 +144,12 @@ export function readComponent(exportSymbol, { ts, source, checker, typeOf, displ
             const item = events[name.value] ??= { signatures: [], definition: null };
             item.signatures.push(parameters(signature, 1));
             const listener = types.Props.getProperty(listenerName(name.value)) ?? types.Props.getProperty(rawListenerName(name.value));
-            item.definition ??= definition(listener?.declarations?.[0] ?? signature.declaration);
+            const listenerDefinition = definition(listener?.declarations?.[0]);
+            const emitDefinition = listenerDefinition?.documentation ? null : definition(signature.declaration);
+            const location = listenerDefinition ?? emitDefinition;
+            item.definition ??= location;
+            if (item.definition && !item.definition.documentation && emitDefinition?.documentation)
+                item.definition.documentation = emitDefinition.documentation;
         }
     }
     const listeners = new Set(Object.keys(events).flatMap(name => [listenerName(name), rawListenerName(name)]));

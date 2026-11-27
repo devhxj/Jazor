@@ -6,13 +6,13 @@ using Microsoft.Extensions.Options;
 namespace Jazor.AspNetCore.Dev;
 
 /// <summary>Builds browser URLs from the same options used by Vite, proxying, and release artifact hosting.</summary>
-public static class JazorFrontendUrls
+public static class JazorSPAUrls
 {
     /// <summary>Returns the configured Vite browser-client URL.</summary>
     public static string GetDevelopmentClient(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var options = context.RequestServices.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var options = context.RequestServices.GetRequiredService<IOptions<JazorSPAOptions>>().Value;
         return options.BuildPublicUrl(Jazor.Common.JazorArtifactDefaults.DevelopmentClientRelativePath);
     }
 
@@ -20,15 +20,17 @@ public static class JazorFrontendUrls
     public static string GetBrowserEntry(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        var options = context.RequestServices.GetRequiredService<IOptions<JazorFrontendOptions>>().Value;
+        var options = context.RequestServices.GetRequiredService<IOptions<JazorSPAOptions>>().Value;
         var environment = context.RequestServices.GetRequiredService<IHostEnvironment>();
+        if (options.IsJoltApp)
+            return (options.PathBase + options.RequestPath).ToUriComponent() + "/";
         return options.BuildPublicUrl(environment.IsDevelopment()
             ? options.DevelopmentEntryRelativePath
-            : options.ReleaseEntryRelativePath);
+            : options.GetReleaseEntryName());
     }
 
     /// <summary>Returns the Release entry's stylesheets in dependency order; Development styles are loaded by Vite.</summary>
     /// <remarks>Reads the standard build's manifest.json beside the Release entry, once per host. Missing or invalid build metadata is propagated, not replaced by a directory scan.</remarks>
     public static IReadOnlyList<string> GetStylesheets(HttpContext context)
-        => context.RequestServices.GetRequiredService<JazorFrontendAssets>().Stylesheets;
+        => context.RequestServices.GetRequiredService<JazorSPAAssets>().Stylesheets;
 }

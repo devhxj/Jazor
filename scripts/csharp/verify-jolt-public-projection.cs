@@ -556,7 +556,7 @@ try
         "@using Fixture = Npm.ProjectionFixture.Exports\n\n<p>@ReadProjection()</p>\n\n@code {\n" +
         compareProjection + "\n}\n");
     await RunAsync(cli, scratch.FullName, ["build"]);
-    VerifyProjectionImport(File.ReadAllText(Path.Combine(scratch.FullName, ".jolt", "ProjectionParity.mjs")));
+    VerifyProjectionImport(File.ReadAllText(Path.Combine(scratch.FullName, ".jazor", "ProjectionParity.mjs")));
     var caller = Path.Combine(consumer.FullName, "Calendar.cs");
     const string calendar = """
         using Dates = Npm.DateFns.Exports;
@@ -944,7 +944,7 @@ try
         import { createRenderer, createSSRApp, h, nextTick, ref } from "vue";
         import { renderToString } from "vue/server-renderer";
         import { ReadProjection } from "./projection-parity.mjs";
-        import ProjectionParity, { ReadProjection as ReadJoltProjection } from "./.jolt/ProjectionParity.mjs";
+        import ProjectionParity, { ReadProjection as ReadJoltProjection } from "./.jazor/ProjectionParity.mjs";
         assert.equal(ReadProjection(), "doubled/6");
         assert.equal(ReadJoltProjection(), "doubled/6");
         assert.match(await renderToString(createSSRApp(ProjectionParity)), /<p>doubled\/6<\/p>/);
@@ -957,20 +957,20 @@ try
         assert.deepEqual(ReadRestEmit(true), [null, null, 0, false]);
         assert.deepEqual(ReadVueUseEmit(), [0]);
         assert.equal(ReadTypedEmit(), 0);
-        import { OptionalResults as JoltOptionalResults } from "./.jolt/Optional.mjs";
-        import { Locale } from "./.jolt/Mode.mjs";
-        import { TransformResult as JoltTransformResult } from "./.jolt/Transform.mjs";
-        import Catalog from "./.jolt/Catalog.mjs";
+        import { OptionalResults as JoltOptionalResults } from "./.jazor/Optional.mjs";
+        import { Locale } from "./.jazor/Mode.mjs";
+        import { TransformResult as JoltTransformResult } from "./.jazor/Transform.mjs";
+        import Catalog from "./.jazor/Catalog.mjs";
         import { ConstructEnvelope, LiteralSelection, MappedRoundTrip, RoundTrip } from "./direct-generics.mjs";
-        import { ConstructEnvelope as JoltConstructEnvelope, LiteralSelection as JoltLiteralSelection, MappedRoundTrip as JoltMappedRoundTrip, RoundTrip as JoltRoundTrip } from "./.jolt/DirectGenerics.mjs";
+        import { ConstructEnvelope as JoltConstructEnvelope, LiteralSelection as JoltLiteralSelection, MappedRoundTrip as JoltMappedRoundTrip, RoundTrip as JoltRoundTrip } from "./.jazor/DirectGenerics.mjs";
         import { OptionalSelection, RecursiveTree } from "./direct-generics.mjs";
-        import { OptionalSelection as JoltOptionalSelection, RecursiveTree as JoltRecursiveTree } from "./.jolt/DirectGenerics.mjs";
+        import { OptionalSelection as JoltOptionalSelection, RecursiveTree as JoltRecursiveTree } from "./.jazor/DirectGenerics.mjs";
         import { InspectDrafts, InspectNullableDrafts, ReadOmittedDraft } from "./direct-generics.mjs";
         import { AsymmetricRefs, AugmentedRef, EnrichedRef, WritableComputed } from "./direct-generics.mjs";
-        import { AsymmetricRefs as JoltAsymmetricRefs, AugmentedRef as JoltAugmentedRef, EnrichedRef as JoltEnrichedRef, WritableComputed as JoltWritableComputed } from "./.jolt/DirectGenerics.mjs";
-        import { InspectDrafts as JoltInspectDrafts, InspectNullableDrafts as JoltInspectNullableDrafts, ReadOmittedDraft as JoltReadOmittedDraft } from "./.jolt/DirectGenerics.mjs";
+        import { AsymmetricRefs as JoltAsymmetricRefs, AugmentedRef as JoltAugmentedRef, EnrichedRef as JoltEnrichedRef, WritableComputed as JoltWritableComputed } from "./.jazor/DirectGenerics.mjs";
+        import { InspectDrafts as JoltInspectDrafts, InspectNullableDrafts as JoltInspectNullableDrafts, ReadOmittedDraft as JoltReadOmittedDraft } from "./.jazor/DirectGenerics.mjs";
         import { ReadAndWriteKeys } from "./keyed-consumer.mjs";
-        import Keys from "./.jolt/Keys.mjs";
+        import Keys from "./.jazor/Keys.mjs";
         import { useQueryClient } from "@tanstack/vue-query";
         import { defineRule, useField } from "vee-validate";
         const field = { setup() {

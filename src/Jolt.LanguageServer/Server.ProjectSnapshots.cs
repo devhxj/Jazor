@@ -13,6 +13,7 @@ public sealed partial class Server
     private CancellationToken _lifetime;
     private int _serverRequestId;
     private long _nextSnapshotId;
+    private bool _projectSources;
 
     private ProjectState ProjectFor(string path)
     {
@@ -51,8 +52,18 @@ public sealed partial class Server
         {
             // Actual source selection is retained from the last manifest load. Ordinary
             // C# edits, including generated files, don't schedule a project reload.
-            var affected = _projects.Values.Where(project => IsWithin(project.Directory, path) &&
-                (!csharp || !project.HasLoadedCSharpSelection || project.CSharpSelection?.Includes(path) == true)).ToArray();
+            var contextChanged = fileSystem && (csharp ||
+                Path.GetExtension(path) is ".csproj" or ".props" or ".targets" ||
+                Path.GetFileName(path) is "project.inputs" or "project.assets.json" or "global.json");
+            var ancestorConfiguration = contextChanged && Path.GetFileName(path) is
+                "Directory.Build.props" or "Directory.Build.targets" or "Directory.Packages.props" or "global.json";
+            var affected = _projects.Values.Where(project => (IsWithin(project.Directory, path) ||
+                    ancestorConfiguration && IsWithin(Path.GetDirectoryName(path)!, project.Directory) ||
+                    csharp && project.CSharpSelection?.Includes(path) == true) &&
+                (!csharp || !project.HasLoadedCSharpSelection || project.CSharpSelection?.Includes(path) == true ||
+                    contextChanged && Directory.EnumerateFiles(project.Directory, "*.csproj").Any() &&
+                    IsWithin(project.Directory, path) && JoltProjectLoader.IsCSharpDiscoveryPath(project.Directory,
+                        Path.GetRelativePath(project.Directory, path).Replace('\\', '/')))).ToArray();
             foreach (var project in affected)
             {
                 if (PathComparer.Equals(Path.Combine(project.Directory, "package.json"), path))
@@ -60,6 +71,7 @@ public sealed partial class Server
                 project.Version?.Cancel();
                 project.Version = null;
                 project.SourceVersion++;
+                project.RefreshDotNetInputs |= contextChanged;
                 if (dependencyChanged)
                     project.DependencyVersion++;
             }
@@ -67,24 +79,74 @@ public sealed partial class Server
         }
     }
 
-    private VersionedProject GetProject(ProjectState project)
+    private VersionedProject GetProject(ProjectState project, Task? activeMemberRequest = null, JoltSource? openedSource = null)
     {
         lock (_projectsLock)
         {
             if (project.Version is { } current)
+            {
+                current.FirstMemberRequest ??= activeMemberRequest;
                 return current;
+            }
             var overlays = _buffers.ToArray()
-                .Where(entry => IsWithin(project.Directory, entry.Key) &&
+                .Where(entry => (IsWithin(project.Directory, entry.Key) ||
+                        project.CSharpSelection?.Includes(entry.Key) == true) &&
                     (!IsJazor(entry.Key) || PathComparer.Equals(ProjectDirectory(entry.Key), project.Directory)))
                 .ToDictionary(entry => entry.Key, entry => entry.Value.Text.ToString(), PathComparer);
             var dependencyVersion = project.DependencyVersion;
             var sourceVersion = project.SourceVersion;
+            var refreshDotNetInputs = project.RefreshDotNetInputs;
             var previousSources = project.Sources;
             var previousAnalysis = project.AnalysisDependencyVersion == dependencyVersion ? project.Analysis : null;
             var previousProvisional = project.ProvisionalDependencyVersion == dependencyVersion ? project.ProvisionalAnalysis : null;
             var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_lifetime);
             var token = cancellation.Token;
-            return project.Version = new(Task.Run(() => BuildSnapshotAsync(project, overlays, sourceVersion, dependencyVersion, previousSources, previousAnalysis, previousProvisional, token), token), cancellation);
+            // A cold @code member request can bind as soon as the component declarations exist.
+            var declarations = previousAnalysis is null && previousProvisional is null
+                ? new TaskCompletionSource<ProjectSnapshot>(TaskCreationOptions.RunContinuationsAsynchronously) : null;
+            // The loader retains matching source objects. Parse the actual open buffer while
+            // enumerating disk inputs so both the first request and validation reuse its Razor tree.
+            var openParse = openedSource is null ? Task.CompletedTask :
+                Task.Run(() => JoltProjectImports.ParseDocument(openedSource), token);
+            var needsFreshInputs = refreshDotNetInputs && previousSources is not null;
+            var sources = Task.Run(() => JoltProjectLoader.LoadSourcesAsync(project.Directory, overlays, token,
+                openedSource is null ? previousSources : [openedSource], evaluateDotNetProject: needsFreshInputs), token);
+            var version = new VersionedProject(cancellation, declarations?.Task, sources) { FirstMemberRequest = activeMemberRequest };
+            project.Version = version;
+            // Prepare declarations for the first opened file. An immediate member request
+            // reuses this work even when source discovery finishes before it arrives.
+            var openedDocument = openedSource is not null && declarations is not null
+                ? FocusedDocumentAsync(project, version, openedSource.Path) : null;
+            version.Input = Task.Run(async () =>
+            {
+                var workspace = await sources;
+                await openParse;
+                if (openedDocument is not null)
+                    await openedDocument;
+                Task? priority;
+                lock (_projectsLock)
+                    priority = version.FirstMemberRequest;
+                // If a member request arrived during discovery, let its Roslyn bind
+                // finish before cold-parsing every template on the same thread pool.
+                if (declarations is not null && priority is not null)
+                    await priority.WaitAsync(token);
+                if (declarations is not null)
+                    LanguageFeatures.PrepareWorkspaceEditor();
+                if (refreshDotNetInputs && !needsFreshInputs)
+                {
+                    workspace = await JoltProjectLoader.LoadSourcesAsync(project.Directory, overlays, token, workspace.Sources,
+                        evaluateDotNetProject: true);
+                }
+                if (refreshDotNetInputs)
+                {
+                    lock (_projectsLock)
+                        if (project.Version == version)
+                            project.RefreshDotNetInputs = false;
+                }
+                return await BuildSnapshotAsync(project, workspace, overlays, sourceVersion, dependencyVersion,
+                    previousSources, previousAnalysis, previousProvisional, declarations, token);
+            }, token);
+            return version;
         }
     }
 
@@ -94,15 +156,16 @@ public sealed partial class Server
             return project.Version == version;
     }
 
-    private async Task<ProjectSnapshot> BuildSnapshotAsync(ProjectState project, IReadOnlyDictionary<string, string> overlays,
+    private async Task<ProjectSnapshot> BuildSnapshotAsync(ProjectState project, JoltWorkspace workspace, IReadOnlyDictionary<string, string> overlays,
         int sourceVersion, int dependencyVersion, IReadOnlyList<JoltSource>? previousSources,
         JoltProjectCompiler.AnalysisState? previousAnalysis, JoltProjectCompiler.AnalysisState? previousProvisional,
-        CancellationToken cancellationToken)
+        TaskCompletionSource<ProjectSnapshot>? declarations, CancellationToken cancellationToken)
     {
-        var workspace = await JoltProjectLoader.LoadSourcesAsync(project.Directory, overlays, cancellationToken, previousSources);
         var diagnosticPaths = overlays.Keys.Where(IsJazor)
             .Select(path => Path.GetRelativePath(project.Directory, path).Replace('\\', '/')).ToHashSet(PathComparer);
-        var projectImports = JoltProjectImports.Parse(workspace.Sources, cancellationToken);
+        var projectImports = previousSources is null
+            ? JoltProjectImports.ParseCold(workspace.Sources, cancellationToken)
+            : JoltProjectImports.Parse(workspace.Sources, cancellationToken);
         var npmInputs = projectImports.Documents
             .Select(document =>
             {
@@ -120,10 +183,11 @@ public sealed partial class Server
             .Where(document => document.Imports.Length > 0).ToArray();
         var imports = npmInputs.Select(item => item.Path).ToHashSet(StringComparer.Ordinal);
         var hasMetadata = imports.Count > 0 || workspace.VuePaths.Count > 0;
+        var csharpSources = workspace.Options.CSharpSources.Concat(workspace.Options.ProjectSources).ToArray();
         var key = System.Text.Json.JsonSerializer.Serialize(new
         {
             dependencyVersion, workspace.Packages,
-            workspace.Options.CSharpSources,
+            csharpSources, workspace.Options.ProjectDefines,
             npmInputs, workspace.VuePaths,
             VueOverlays = workspace.VueSources.OrderBy(entry => entry.Key, PathComparer),
         });
@@ -135,6 +199,8 @@ public sealed partial class Server
             project.Sources = workspace.Sources;
             project.HasLoadedCSharpSelection = true;
             project.CSharpSelection = workspace.CSharpSelection;
+            if (_projectSources)
+                PublishLinkedSources(project);
 
             // Symbol requests share native work. Replacing a buffer only cancels the caller's wait.
             if (!hasMetadata)
@@ -148,7 +214,7 @@ public sealed partial class Server
             {
                 project.NpmKey = key;
                 var preceding = project.Npm;
-                var work = new NpmWork(workspace.Sources, workspace.Options.CSharpSources);
+                var work = new NpmWork(workspace.Sources, csharpSources);
                 work.Metadata = Task.Run(async () =>
                 {
                     if (preceding is not null)
@@ -171,14 +237,12 @@ public sealed partial class Server
             npm.Metadata.IsCompletedSuccessfully && (previousProvisional is null || previousAnalysis is not null))
             return await FinishAsync(npm);
 
-        // Overlap the cold metadata bind with the first provisional projection.
-        // On an edit, publish the quick incremental projection before queuing the bind.
-        Task<ProjectSnapshot> BindAsync() => Task.Run(() => FinishAsync(npm), cancellationToken);
-        var initialBind = previousProvisional is null ? BindAsync() : null;
+        // Metadata is already loading independently. Give the editor a usable
+        // projection before starting a second full Roslyn analysis.
         var provisional = Analyze(workspace, provisional: true);
         return provisional with
         {
-            Npm = initialBind ?? BindAsync(),
+            Npm = Task.Run(() => FinishAsync(npm), cancellationToken),
             NpmCatalog = npm.ReadPhaseAsync(npm.Progress.Catalog.Task),
             NpmComponents = npm.ReadPhaseAsync(npm.Progress.Components.Task),
             NpmIdentity = npm,
@@ -194,14 +258,15 @@ public sealed partial class Server
                 return false;
             // The local metadata provider compares the actual declarations before invoking TS again.
             return !workspace.Sources.SequenceEqual(previous.AuthorSources) ||
-                !workspace.Options.CSharpSources.SequenceEqual(previous.CSharpSources);
+                !csharpSources.SequenceEqual(previous.CSharpSources);
         }
 
         ProjectSnapshot Analyze(JoltWorkspace input, bool provisional = false)
         {
             var baseline = provisional ? previousProvisional : previousAnalysis;
             var (analysis, state) = JoltProjectCompiler.AnalyzeEditor(input.Sources, input.Options, diagnosticPaths,
-                baseline, cancellationToken);
+                baseline, cancellationToken, declarations is null || declarations.Task.IsCompleted ? null : authors =>
+                    declarations.TrySetResult(new(Interlocked.Increment(ref _nextSnapshotId), project.Directory, input, authors, imports)));
             lock (_projectsLock)
             {
                 if (project.SourceVersion != sourceVersion)
@@ -287,6 +352,36 @@ public sealed partial class Server
         return relative != ".." && !relative.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) && !Path.IsPathRooted(relative);
     }
 
+    private void PublishLinkedSources(ProjectState project)
+    {
+        var files = new HashSet<string>(PathComparer);
+        var owners = new Dictionary<string, string>(PathComparer);
+        for (var selection = project.CSharpSelection; selection is not null; selection = selection.Additional)
+            foreach (var relative in selection.ExplicitPaths)
+            {
+                var path = Path.GetFullPath(relative, selection.Root);
+                if (!IsWithin(project.Directory, path) || HasDifferentOwner(path))
+                    files.Add(path);
+            }
+        if (project.LinkedSources.SetEquals(files))
+            return;
+        project.LinkedSources = files;
+        _ = _transport.WriteAsync(new
+        {
+            jsonrpc = "2.0",
+            method = "jolt/projectSources",
+            @params = new { project = new Uri(project.Directory).AbsoluteUri, sources = files.Select(path => new Uri(path).AbsoluteUri).ToArray() },
+        }, _lifetime);
+
+        bool HasDifferentOwner(string path)
+        {
+            var directory = Path.GetDirectoryName(path)!;
+            if (!owners.TryGetValue(directory, out var owner))
+                owners[directory] = owner = ProjectDirectory(path);
+            return !PathComparer.Equals(owner, project.Directory);
+        }
+    }
+
     private sealed class ProjectState
     {
         internal ProjectState(string directory)
@@ -303,6 +398,8 @@ public sealed partial class Server
         internal int SourceVersion { get; set; }
         internal IReadOnlyList<JoltSource>? Sources { get; set; }
         internal bool HasLoadedCSharpSelection { get; set; }
+        internal HashSet<string> LinkedSources { get; set; } = new(PathComparer);
+        internal bool RefreshDotNetInputs { get; set; } = true;
         internal CSharpSourceSelection? CSharpSelection { get; set; }
         internal JoltProjectCompiler.AnalysisState? Analysis { get; set; }
         internal int AnalysisDependencyVersion { get; set; } = -1;
@@ -332,8 +429,35 @@ public sealed partial class Server
         }
     }
 
-    private sealed record VersionedProject(Task<ProjectSnapshot> Input, CancellationTokenSource Cancellation)
+    private Task<ProjectSnapshot?> FocusedDocumentAsync(ProjectState project, VersionedProject version, string authorPath)
     {
+        lock (_projectsLock)
+        {
+            if (project.Version != version)
+                throw new OperationCanceledException("The project changed while loading the document.");
+            if (version.FocusedDocuments.TryGetValue(authorPath, out var existing))
+                return existing;
+            var token = version.Cancellation.Token;
+            return version.FocusedDocuments[authorPath] = Task.Run(async () =>
+            {
+                var workspace = await version.Sources;
+                var source = workspace.Sources.FirstOrDefault(source => PathEquals(source.Path, authorPath));
+                if (source is null || JoltProjectCompiler.ProjectEditorDocument(source, workspace.Sources, workspace.Options, token) is not { } document)
+                    return (ProjectSnapshot?)null;
+                return new ProjectSnapshot(Interlocked.Increment(ref _nextSnapshotId), project.Directory, workspace,
+                    new JoltAnalysis([document], []), []);
+            }, token);
+        }
+    }
+
+    private sealed record VersionedProject(CancellationTokenSource Cancellation, Task<ProjectSnapshot>? Declarations, Task<JoltWorkspace> Sources)
+    {
+        internal Task<ProjectSnapshot> Input { get; set; } = null!;
+        internal Task? FirstMemberRequest { get; set; }
+        // A completion item keeps the exact same semantic model for resolve, even
+        // after the project-wide render and npm snapshots become available.
+        internal Dictionary<string, Task<ProjectSnapshot?>> FocusedDocuments { get; } = new(PathComparer);
+
         internal void Cancel()
         {
             Cancellation.Cancel();

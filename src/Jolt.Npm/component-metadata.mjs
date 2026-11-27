@@ -1,11 +1,12 @@
 import { packageChecker } from './package-checker.mjs';
 import { contractHelpers, contractAliases, readComponent } from './vue-contract.mjs';
 import { webIdlProjection } from './web-idl-projection.mjs';
+import { readWebTypes } from './vue-web-types.mjs';
 
 const [typescript, moduleSpecifier, exportNamesJson, webIdlCarriersJson] = globalThis.__jazorArguments;
 const exportNames = JSON.parse(exportNamesJson);
 // Keep per-component aliases in separate scopes while sharing the package and Vue imports.
-const { ts, source, program, host, snapshotInputs, definition, packageIdentity } =
+const { ts, source, program, host, snapshotInputs, definition, packageIdentity, packageManifest, readInput } =
     await packageChecker(import.meta.url, typescript, moduleSpecifier, () => `
         import * as packageExports from ${JSON.stringify(moduleSpecifier)};
         import type { VNodeProps, AllowedComponentProps, ComponentCustomProps } from 'vue';
@@ -38,6 +39,7 @@ if (exportNames.length) {
     const scopes = source.statements.filter(ts.isModuleDeclaration);
     const { webType } = webIdlProjection(ts, program, source, host, JSON.parse(webIdlCarriersJson));
     const identity = packageIdentity();
+    const webTypes = readWebTypes(ts, packageManifest, readInput);
     // Keep authored export names as values so snapshot path-field names remain unambiguous.
     result = { components: exportNames.map((exportName, index) => {
         try {
@@ -46,6 +48,17 @@ if (exportNames.length) {
                 throw new Error(`'${moduleSpecifier}' has no supported Vue component export named '${exportName}'.`);
             const component = readComponent(unalias(symbol), { ts, source, checker, typeOf, display, optional, definition,
                 identity, exportName, webType, scope: scopes[index].body });
+            const metadata = webTypes.get(symbol.name);
+            if (metadata) {
+                // Descriptions supplement the checker result. Navigation stays on the original declaration.
+                addDescription(component.definition, metadata.description);
+                for (const [name, prop] of Object.entries(component.props)) {
+                    const kebab = name.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase());
+                    addDescription(prop.definition, metadata.props.get(name) ?? metadata.props.get(kebab));
+                }
+                for (const [name, slot] of metadata.slots)
+                    component.slots[name] ??= slot;
+            }
             return { exportName, result: { component } };
         } catch (error) {
             return { exportName, result: { error: error.message } };
@@ -55,3 +68,8 @@ if (exportNames.length) {
     result = { exports: aliases.filter(isComponent).map(symbol => symbol.name).sort() };
 }
 console.log(JSON.stringify({ ...result, ...snapshotInputs() }));
+
+function addDescription(definition, summary) {
+    if (definition && summary?.trim() && !definition.documentation?.summary)
+        definition.documentation = { ...definition.documentation, summary };
+}

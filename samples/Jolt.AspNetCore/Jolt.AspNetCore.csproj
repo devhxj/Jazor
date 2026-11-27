@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
+  <Import Project="../../src/Jazor/build/Jazor.props" />
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DefaultItemExcludes>$(DefaultItemExcludes);frontend/**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);frontend/**;node_modules/**;.jazor/**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
-    <Content Include="frontend/dist/**/*" CopyToPublishDirectory="PreserveNewest" />
+    <ProjectReference Include="../../src/Jolt.Cli/Jolt.Cli.csproj"
+                      ReferenceOutputAssembly="false" Private="false" PrivateAssets="all" />
+    <AssemblyMetadata Include="JazorGeneratedRoot" Value="$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)', '$(JazorDir)'))" />
   </ItemGroup>
-  <Target Name="RequireFrontendBundle" BeforeTargets="ComputeFilesToPublish" Condition="!Exists('frontend/dist/index.html')">
-    <Error Text="Bundle the Jolt frontend before publishing. See README.md." />
-  </Target>
+  <Import Project="../../src/Jazor/build/Jazor.Jolt.targets" />
 </Project>

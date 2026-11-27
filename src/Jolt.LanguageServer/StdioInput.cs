@@ -12,7 +12,7 @@ internal static class StdioInput
             return input;
         var handle = GetStdHandle(-10);
         const int fileTypePipe = 3;
-        return GetFileType(handle) == fileTypePipe ? new BufferedStream(new PipeInput(input, handle)) : input;
+        return GetFileType(handle) == fileTypePipe ? new PipeInput(input, handle) : input;
     }
 
     // A blocking ReadFile on Windows' synchronous stdio pipe can stall embedded

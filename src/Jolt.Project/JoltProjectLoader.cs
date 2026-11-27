@@ -29,10 +29,12 @@ public sealed record JoltWorkspace(
 
 internal sealed record CSharpSourceSelection(string Root, HashSet<string> ExplicitPaths, Matcher? Matcher)
 {
+    internal CSharpSourceSelection? Additional { get; init; }
+
     internal bool Includes(string path)
     {
         var relative = Path.GetRelativePath(Root, path).Replace(Path.DirectorySeparatorChar, '/');
-        return JoltProjectLoader.IsProjectRelative(relative) && (ExplicitPaths.Contains(relative) || Matcher is not null &&
+        return Additional?.Includes(path) == true || ExplicitPaths.Contains(relative) || JoltProjectLoader.IsProjectRelative(relative) && (Matcher is not null &&
             Matcher.Match(Root, [relative]).HasMatches &&
             JoltProjectLoader.IsCSharpDiscoveryPath(Root, relative));
     }
@@ -47,7 +49,7 @@ internal sealed class JoltNpmLoadProgress
         new(TaskCreationOptions.RunContinuationsAsynchronously);
 }
 
-public static class JoltProjectLoader
+public static partial class JoltProjectLoader
 {
     private static readonly NpmVueMetadataProvider Metadata = new();
     private static readonly DiagnosticDescriptor ImportError = new("JOLT1001", "npm import", "{0}", "Jolt", DiagnosticSeverity.Error, true);
@@ -66,7 +68,8 @@ public static class JoltProjectLoader
         IReadOnlyDictionary<string, string>? overlays = null, CancellationToken cancellationToken = default,
         IReadOnlyList<JoltSource>? previousSources = null)
     {
-        var workspace = await LoadSourcesAsync(projectDirectory, overlays, cancellationToken, previousSources);
+        var workspace = await LoadSourcesAsync(projectDirectory, overlays, cancellationToken, previousSources,
+            evaluateDotNetProject: !File.Exists(Path.Combine(projectDirectory, ".jazor", "project.inputs")));
         return await LoadNpmAsync(projectDirectory, workspace, provider, cancellationToken);
     }
 
@@ -75,14 +78,16 @@ public static class JoltProjectLoader
         => LoadSourcesAsync(projectDirectory, overlays, cancellationToken, null);
 
     internal static async Task<JoltWorkspace> LoadSourcesAsync(string projectDirectory,
-        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken, IReadOnlyList<JoltSource>? previousSources)
+        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken, IReadOnlyList<JoltSource>? previousSources,
+        bool evaluateDotNetProject = false)
     {
         var root = Path.GetFullPath(projectDirectory);
+        var dotnet = await ReadDotNetProjectAsync(root, overlays, evaluateDotNetProject, cancellationToken);
         var sources = new SortedDictionary<string, JoltSource>(StringComparer.Ordinal);
         var previous = previousSources?.ToDictionary(source => source.Path, StringComparer.Ordinal);
         var vuePaths = new SortedSet<string>(StringComparer.Ordinal);
         var vueSources = new Dictionary<string, string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
-        foreach (var path in Discover(root))
+        foreach (var path in Discover(root, excludedDirectories: dotnet?.ExcludedDirectories))
         {
             var name = Relative(path);
             if (name.EndsWith(".vue", StringComparison.Ordinal))
@@ -105,6 +110,8 @@ public static class JoltProjectLoader
             foreach (var (path, content) in overlays)
             {
                 var absolute = Path.GetFullPath(path, root);
+                if (IsExcluded(absolute, dotnet?.ExcludedDirectories))
+                    continue;
                 var name = Relative(absolute);
                 if (name.StartsWith("../", StringComparison.Ordinal) || Path.IsPathRooted(name))
                     continue;
@@ -121,6 +128,7 @@ public static class JoltProjectLoader
         var manifest = Path.Combine(root, "package.json");
         var packages = new SortedSet<string>(StringComparer.Ordinal);
         var rootNamespace = "App";
+        bool hasRootNamespace = false;
         IReadOnlyList<JoltSource> csharpSources = [];
         CSharpSourceSelection? csharpSelection = null;
         bool router = false;
@@ -131,12 +139,15 @@ public static class JoltProjectLoader
             if (project.TryGetProperty("jolt", out var options))
             {
                 if (options.TryGetProperty("rootNamespace", out var ns))
+                {
                     rootNamespace = ns.GetString() ?? rootNamespace;
+                    hasRootNamespace = ns.ValueKind != JsonValueKind.Null;
+                }
                 router = options.TryGetProperty("router", out var routing) && routing.ValueKind == JsonValueKind.True;
                 if (options.TryGetProperty("csharpSources", out var configuredSources))
                 {
                     csharpSelection = ParseCSharpSelection(root, configuredSources);
-                    csharpSources = await LoadCSharpSourcesAsync(root, csharpSelection, overlays, cancellationToken);
+                    csharpSources = await LoadCSharpSourcesAsync(root, csharpSelection, overlays, cancellationToken, dotnet?.ExcludedDirectories);
                 }
             }
             foreach (var group in new[] { "dependencies", "devDependencies", "peerDependencies", "optionalDependencies" })
@@ -145,13 +156,17 @@ public static class JoltProjectLoader
                         packages.Add(dep.Name);
         }
 
-        return new(sources.Values.ToArray(), new(rootNamespace) {
+        if (dotnet is not null && !hasRootNamespace)
+            rootNamespace = dotnet.Namespace;
+        return new(sources.Values.ToArray(), new(rootNamespace, References: dotnet?.References) {
             CSharpSources = csharpSources,
+            ProjectSources = dotnet?.Sources.ExceptBy(csharpSources.Select(source => source.Path), source => source.Path, DotNetPaths).ToArray() ?? [],
+            ProjectDefines = dotnet?.Defines ?? [],
             Router = router,
         }, [], packages.ToArray(),
             new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal))
         {
-            CSharpSelection = csharpSelection,
+            CSharpSelection = csharpSelection is null ? dotnet?.Selection : csharpSelection with { Additional = dotnet?.Selection },
             VuePaths = vuePaths.ToArray(),
             VueSources = vueSources,
         };
@@ -196,7 +211,8 @@ public static class JoltProjectLoader
     }
 
     private static async Task<JoltSource[]> LoadCSharpSourcesAsync(string root, CSharpSourceSelection selection,
-        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken)
+        IReadOnlyDictionary<string, string>? overlays, CancellationToken cancellationToken,
+        IReadOnlySet<string>? excludedDirectories)
     {
         var (explicitPaths, matcher) = (selection.ExplicitPaths, selection.Matcher);
         var comparer = explicitPaths.Comparer;
@@ -212,13 +228,13 @@ public static class JoltProjectLoader
         var candidates = new HashSet<string>(comparer);
         if (matcher is not null)
         {
-            foreach (var file in Discover(root, csharp: true))
+            foreach (var file in Discover(root, csharp: true, excludedDirectories: excludedDirectories))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 candidates.Add(Relative(file));
             }
             foreach (var relative in currentSources.Keys)
-                if (IsCSharpDiscoveryPath(root, relative))
+                if (IsCSharpDiscoveryPath(root, relative) && !IsExcluded(Path.GetFullPath(relative, root), excludedDirectories))
                     candidates.Add(relative);
         }
 
@@ -566,12 +582,20 @@ public static class JoltProjectLoader
         return await Metadata.ReadValuesAsync(importPath, match.Key, names, cancellationToken);
     }
 
-    private static IEnumerable<string> Discover(string root, bool csharp = false)
+    private static bool IsExcluded(string path, IReadOnlySet<string>? excludedDirectories) =>
+        excludedDirectories is { Count: > 0 } &&
+        excludedDirectories.Any(directory => IsProjectRelative(Path.GetRelativePath(directory, path).Replace('\\', '/')));
+
+    private static IEnumerable<string> Discover(string root, bool csharp = false, bool stopAtNestedProjects = false,
+        IReadOnlySet<string>? excludedDirectories = null)
     {
         var directories = new Stack<string>();
         directories.Push(root);
         while (directories.TryPop(out var directory))
         {
+            if (stopAtNestedProjects && directory != root &&
+                Directory.EnumerateFiles(directory, "*.csproj").Any())
+                continue;
             foreach (var file in new DirectoryInfo(directory).EnumerateFiles())
                 if (csharp
                     ? file.Extension == ".cs" && !file.Name.StartsWith('.') &&
@@ -579,7 +603,7 @@ public static class JoltProjectLoader
                     : file.Extension is ".jazor" or ".vue")
                     yield return file.FullName;
             foreach (var child in new DirectoryInfo(directory).EnumerateDirectories())
-                if (!child.Name.StartsWith('.') && !Excluded.Contains(child.Name) &&
+                if (!child.Name.StartsWith('.') && !Excluded.Contains(child.Name) && excludedDirectories?.Contains(child.FullName) != true &&
                     (child.Attributes & (csharp ? FileAttributes.Hidden | FileAttributes.ReparsePoint : FileAttributes.ReparsePoint)) == 0)
                     directories.Push(child.FullName);
         }

@@ -18,7 +18,7 @@ internal static class JazorViteProxy
         "Upgrade"
     };
 
-    public static async Task ForwardAsync(HttpContext context, JazorFrontendOptions options)
+    public static async Task ForwardAsync(HttpContext context, JazorSPAOptions options)
     {
         if (context.WebSockets.IsWebSocketRequest)
         {
@@ -72,7 +72,7 @@ internal static class JazorViteProxy
         }
     }
 
-    private static async Task ProxyWebSocketAsync(HttpContext context, JazorFrontendOptions options)
+    private static async Task ProxyWebSocketAsync(HttpContext context, JazorSPAOptions options)
     {
         using var upstream = new ClientWebSocket();
         foreach (var header in context.Request.Headers)

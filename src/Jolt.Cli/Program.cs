@@ -21,13 +21,18 @@ try
     }
     var index = 1;
     var project = Path.GetFullPath(index < args.Length && !args[index].StartsWith('-') ? args[index++] : ".");
-    var output = Path.Combine(project, args[0] == "library" ? "dist" : ".jolt");
+    var generatedRoot = Environment.GetEnvironmentVariable("JAZOR_GENERATED_ROOT") is { Length: > 0 } selectedRoot
+        ? Path.GetFullPath(selectedRoot, project)
+        : await JoltProjectLoader.GetGeneratedRootAsync(project, stop.Token);
+    var output = args[0] == "library" ? Path.Combine(project, "dist") : generatedRoot;
     var port = JoltViteToolchain.DefaultPort;
     var stopOnStdinClose = false;
     using var externalDeclarations = args[0] == "dev" ? new JoltExternalDeclarations(project) : null;
     var devMetadata = externalDeclarations is null ? null : JoltProjectLoader.CreateDevMetadataProvider(externalDeclarations.Observe);
     var devCompilation = devMetadata is null ? null : new JoltDevCompilation();
     IReadOnlyList<JoltSource>? previousDevSources = null;
+    using var moduleRefresh = args[0] == "dev" && Environment.GetEnvironmentVariable("JOLT_DEVELOPMENT_CONFIGURATION") is { } configuration
+        ? new JoltDevelopmentModules(project, generatedRoot, configuration) : null;
     string? serverEntry = null;
     if (args[0] is "build" or "library" && args.Length == index + 2 && args[index] == "--output")
     {
@@ -71,16 +76,22 @@ try
             return await BuildLibrary(stop.Token) ? 0 : 1;
         case "bundle":
             if (serverEntry is null)
-                return await JoltViteToolchain.BuildAsync(project, Compile, cancellationToken: stop.Token) ? 0 : 1;
-            if (!await JoltViteToolchain.BuildSsrAsync(project, serverEntry, Compile, cancellationToken: stop.Token))
+                return await JoltViteToolchain.BuildAsync(project, generatedRoot, Compile, cancellationToken: stop.Token) ? 0 : 1;
+            if (!await JoltViteToolchain.BuildSsrAsync(project, generatedRoot, serverEntry, Compile, cancellationToken: stop.Token))
                 return 1;
-            Console.WriteLine($"Bundled SSR client and server to {Path.Combine(project, "dist")}");
+            Console.WriteLine($"Bundled SSR client and server to {Path.Combine(generatedRoot, "dist")}");
             return 0;
         case "dev":
             if (stopOnStdinClose)
                 JoltDevInput.StopOnClose(stop);
-            await using (var server = await JoltViteToolchain.ServeAsync(project, Compile, notify => externalDeclarations!.Changed = notify, port: port,
-                cancellationToken: stop.Token, reportError: ex => Console.Error.WriteLine(ex.Message)))
+            await using (var server = await JoltViteToolchain.ServeAsync(project, generatedRoot, Compile, notify =>
+            {
+                externalDeclarations!.Changed = notify;
+                if (moduleRefresh is not null)
+                    moduleRefresh.Changed = notify;
+            }, port: port,
+                cancellationToken: stop.Token, reportError: ex => Console.Error.WriteLine(ex.Message),
+                basePath: Environment.GetEnvironmentVariable("JOLT_VITE_BASE")))
             {
                 Console.WriteLine(server.Origin);
                 await Task.Delay(Timeout.Infinite, stop.Token);
@@ -111,6 +122,8 @@ try
         var result = await CompileModules(workspace, output, cancellationToken);
         if (result is null)
             return false;
+        if (moduleRefresh is not null && !await moduleRefresh.UpdateAsync(cancellationToken))
+            return false;
         await JoltOutput.WriteAsync(project, output, result.Modules, cancellationToken, result.RouterModule);
         Console.WriteLine($"Compiled {result.Modules.Count} component(s) to {output}");
         return true;
@@ -121,7 +134,7 @@ try
         var manifest = await JoltLibrary.ReadManifestAsync(project, cancellationToken);
         await JoltViteToolchain.RestoreAsync(project, cancellationToken: cancellationToken);
         var workspace = await JoltProjectLoader.LoadAsync(project, cancellationToken: cancellationToken);
-        var temporary = Path.Combine(project, ".jazor", "library-" + Guid.NewGuid().ToString("N"));
+        var temporary = Path.Combine(generatedRoot, "library-" + Guid.NewGuid().ToString("N"));
         var generated = Path.Combine(temporary, "generated");
         try
         {

@@ -7,6 +7,64 @@ namespace Jazor.EmitTest;
 public sealed class SdkFeedbackPublishTests
 {
     [TestMethod]
+    public async Task Build_SourceSdkHandoffMaterializesOnlyChangedModule()
+    {
+        using var workspace = new Workspace();
+        var emitHost = Path.Combine(AppContext.BaseDirectory, OperatingSystem.IsWindows() ? "Jazor.Emit.exe" : "Jazor.Emit");
+        var project = workspace.CreateProject("<JazorDir>frontend</JazorDir>", $$"""
+            <Target Name="_ResolveJazorEmitTool">
+              <PropertyGroup><_JazorToolCommand>&quot;{{emitHost}}&quot;</_JazorToolCommand></PropertyGroup>
+            </Target>
+            <Target Name="HandoffAfterBuild" AfterTargets="Build" DependsOnTargets="JazorModules" />
+            """);
+        var build = new[] { "build", project, "-nologo", "/m:1", "/nr:false" };
+        var changed = Path.Combine(workspace.Root, "frontend", "changed.mjs");
+        var stable = Path.Combine(workspace.Root, "frontend", "stable.mjs");
+        var before = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        WriteCatalog(1);
+        var initial = await RunAsync(workspace.Root, build);
+        Assert.AreEqual(0, initial.ExitCode, initial.Output);
+        File.SetLastWriteTimeUtc(stable, before);
+        File.SetLastWriteTimeUtc(changed, before);
+        var repeated = await RunAsync(workspace.Root, build);
+        Assert.AreEqual(0, repeated.ExitCode, repeated.Output);
+        Assert.AreEqual(before, File.GetLastWriteTimeUtc(changed));
+
+        WriteCatalog(2);
+        var updated = await RunAsync(workspace.Root, build);
+        Assert.AreEqual(0, updated.ExitCode, updated.Output);
+        StringAssert.Contains(await File.ReadAllTextAsync(changed), "export const version = 2;");
+        Assert.AreEqual(before, File.GetLastWriteTimeUtc(stable));
+        Assert.IsFalse(File.Exists(Path.Combine(workspace.Root, "frontend", "entry.js")));
+
+        void WriteCatalog(int version)
+        {
+            var body = $"export const version = {version};";
+            const string unchanged = """export const load = () => import("/Pages/View.jazor");""";
+            workspace.Write("ModuleCatalog.cs", $$"""
+                namespace Jazor.Generated;
+
+                internal static class ModuleCatalog
+                {
+                    internal const int SchemaVersion = 2;
+                    internal const string AssemblyName = "Fixture";
+                    internal static System.Collections.IEnumerable GetModules() => new Module[]
+                    {
+                        new("Changed", "Changed", "changed.mjs", "{{body}}", "{{Hash(body)}}", []),
+                        new("Stable", "Stable", "stable.mjs", {{JsonSerializer.Serialize(unchanged)}}, "{{Hash(unchanged)}}", []),
+                    };
+                    private sealed record Module(string Id, string DeclarationName, string RelativePath,
+                        string Content, string Hash, string[] PackageImports);
+                }
+                """);
+        }
+
+        static string Hash(string text) => Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
+    }
+
+    [TestMethod]
     public async Task SdkDefaults_ProjectConditionalModeRunsBeforeDefaultAndAuthoredJazorSourcesRemainInputs()
     {
         using var workspace = new Workspace();
@@ -15,7 +73,7 @@ public sealed class SdkFeedbackPublishTests
             """);
         workspace.Write("Jazor/Authored.cs", "public static class Authored { public const int Value = 8; }");
         workspace.Write("Jazor/Authored.razor", "<div>authored source</div>");
-        workspace.Write("jazor/runtime/generated.js", "export const value = 8;");
+        workspace.Write(".jazor/runtime/generated.js", "export const value = 8;");
         var result = await RunAsync(workspace.Root,
             ["msbuild", project, "-nologo", "-getProperty:JazorMode", "-getItem:Compile,Content,None"]);
         Assert.AreEqual(0, result.ExitCode, result.Output);
@@ -25,8 +83,8 @@ public sealed class SdkFeedbackPublishTests
         Assert.IsTrue(ItemsContain(items, "Compile", "Jazor/Authored.cs"), result.Output);
         Assert.IsTrue(ItemsContain(items, "Content", "Jazor/Authored.razor") ||
             ItemsContain(items, "None", "Jazor/Authored.razor"), result.Output);
-        Assert.IsFalse(ItemsContain(items, "Content", "jazor/runtime/generated.js"), result.Output);
-        Assert.IsFalse(ItemsContain(items, "None", "jazor/runtime/generated.js"), result.Output);
+        Assert.IsFalse(ItemsContain(items, "Content", ".jazor/runtime/generated.js"), result.Output);
+        Assert.IsFalse(ItemsContain(items, "None", ".jazor/runtime/generated.js"), result.Output);
     }
 
     [TestMethod]
@@ -91,6 +149,7 @@ public sealed class SdkFeedbackPublishTests
         workspace.Write("generated/frontend/node_modules/vue/package.json", "{}");
         workspace.Write("generated/frontend/package.json", "{}");
         workspace.Write("generated/frontend/vite.config.js", "export default {};");
+        workspace.Write("wwwroot/logo.txt", "authored public file");
         var result = await RunAsync(workspace.Root,
             ["publish", project, "-nologo", "-o", Path.Combine(workspace.Root, "deployment"), "/m:1", "/nr:false"]);
         Assert.AreEqual(0, result.ExitCode, result.Output);
@@ -100,11 +159,19 @@ public sealed class SdkFeedbackPublishTests
             .Select(path => Path.GetRelativePath(closureRoot, path).Replace('\\', '/')).OrderBy(path => path).ToArray();
         var expected = new List<string>
         {
-            "dist/bundle.js", "dist/chunks/view.js", "ssr/chunks/view.js", "ssr/package.json", "ssr/ssr-entry.js"
+            "ssr/chunks/view.js", "ssr/package.json", "ssr/ssr-entry.js"
         };
         if (includeSourceMaps)
-            expected.AddRange(["dist/bundle.js.map", "ssr/ssr-entry.js.map"]);
+            expected.Add("ssr/ssr-entry.js.map");
         CollectionAssert.AreEqual(expected.OrderBy(path => path).ToArray(), actual, result.Output);
+        var webRoot = Path.Combine(workspace.Root, "deployment", "wwwroot");
+        var browserFiles = Directory.EnumerateFiles(webRoot, "*", SearchOption.AllDirectories)
+            .Where(path => Path.GetExtension(path) is not (".gz" or ".br"))
+            .Select(path => Path.GetRelativePath(webRoot, path).Replace('\\', '/')).OrderBy(path => path).ToArray();
+        var expectedBrowserFiles = new List<string> { "bundle.js", "chunks/view.js", "logo.txt" };
+        if (includeSourceMaps)
+            expectedBrowserFiles.Add("bundle.js.map");
+        CollectionAssert.AreEqual(expectedBrowserFiles.OrderBy(path => path).ToArray(), browserFiles, result.Output);
     }
 
     [TestMethod]

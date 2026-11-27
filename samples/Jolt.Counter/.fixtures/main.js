@@ -1,7 +1,7 @@
 import { createApp, h, ref } from 'vue';
-import App, { Advance, Step } from './.jolt/App.mjs';
-import TableEditor from './.jolt/TableEditor.mjs';
-import NpmCounter from './.jolt/NpmCounter.mjs';
+import App, { Advance, Step } from './App.jazor';
+import TableEditor from './TableEditor.jazor';
+import NpmCounter from './NpmCounter.jazor';
 
 window.joltNamedExports = [Step, Advance(2)];
 

@@ -30,7 +30,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 | `run-quality-gate.cs` | 执行单项覆盖率门禁；可用 `--output-directory` 将报告归档到发布候选目录 |
 | `verify-binding-documentation.cs` | 校验绑定库公开声明、枚举值、XML 输出、上游快照和 nuspec 文档文件；支持 `--configuration`、`--no-build`、`--baseline`、`--library` 与仓库内 `--output-directory` |
 | `write-toolchain-matrix.cs` | 记录当前 commit、global.json SDK、.NET CLI、Node.js、Chrome 和操作系统版本到 Markdown，供兼容矩阵与门禁日志引用 |
-| `verify-development-hmr.cs` | 验证开发模式的 HMR artifact 和浏览器路径 |
+| `verify-development-hmr.cs` | 验证 Jolt 宿主的强制停止、开发代理与浏览器热更新 |
 | `wiki-import-docs.cs`、`wiki-build-local.cs`、`wiki-serve.cs`、`wiki-verify-*.cs`、`wiki-export-static.cs` | 导入 `docs/`、构建、预览、验证与静态导出 Jazor 官方网站；机器生成的 `*.snapshot.md` 默认只作为仓库证据，不进入浏览器目录 |
 | `verify-typed-bootstrap.cs` | 启动应用自有 typed bootstrap endpoint，验证 GET、过期版本 409、校验失败 422、客户端草稿保留和成功提交；支持 `--report` 生成可归档证据；不注册 Jazor runtime 服务 |
 | `publish-nuget.cs` | 本地打包 NuGet 验证；正式发布只走 tag 触发的 NuGet 工作流，本地必须 `--skip-push`；脚本不探测环境变量中的 `NUGET_API_KEY` |
@@ -41,6 +41,7 @@ dotnet run --file scripts/csharp/<script-name>.cs -- [arguments]
 
 覆盖率脚本默认把 TRX、Cobertura 和同轮临时结果写入仓库根目录的
 `test/coverage/<gate>/`；`test/` 是本地生成目录，不应把测试产物写到仓库外的盘符根目录。
+Jero 验收使用 `test/jero/`，Jolt 宿主热更新验收使用 `test/jolt/hmr/`。临时宿主、数据库、浏览器配置和日志按运行隔离。
 
 具体参数和验证范围以脚本开头的说明及相应项目 README 为准。
 

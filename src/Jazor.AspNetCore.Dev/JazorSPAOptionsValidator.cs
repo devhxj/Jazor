@@ -2,9 +2,9 @@ using Microsoft.Extensions.Options;
 
 namespace Jazor.AspNetCore.Dev;
 
-internal sealed class JazorFrontendOptionsValidator : IValidateOptions<JazorFrontendOptions>
+internal sealed class JazorSPAOptionsValidator : IValidateOptions<JazorSPAOptions>
 {
-    public ValidateOptionsResult Validate(string? name, JazorFrontendOptions options)
+    public ValidateOptionsResult Validate(string? name, JazorSPAOptions options)
     {
         if (!options.Vite.ServerOrigin.IsAbsoluteUri ||
             options.Vite.ServerOrigin.Scheme is not ("http" or "https") ||
@@ -16,8 +16,8 @@ internal sealed class JazorFrontendOptionsValidator : IValidateOptions<JazorFron
                 "Jazor Vite ServerOrigin must be an absolute HTTP(S) origin without a path, query, or fragment.");
         }
 
-        if (!IsCanonicalPrefix(options.RequestPath, allowEmpty: false))
-            return ValidateOptionsResult.Fail("Jazor frontend RequestPath must be a non-root path without a trailing slash.");
+        if (!IsCanonicalPrefix(options.RequestPath, allowEmpty: options.IsJoltApp))
+            return ValidateOptionsResult.Fail("Jazor SPA RequestPath must be a path without a trailing slash, or empty for a root Jolt site.");
 
         if (!IsCanonicalPrefix(options.PathBase, allowEmpty: true))
             return ValidateOptionsResult.Fail("Jazor frontend PathBase must be empty or a non-root path without a trailing slash.");
@@ -30,6 +30,10 @@ internal sealed class JazorFrontendOptionsValidator : IValidateOptions<JazorFron
 
         if (!IsSafeRelativePath(options.ReleaseEntryRelativePath))
             return ValidateOptionsResult.Fail("Jazor frontend ReleaseEntryRelativePath must be a project-relative path.");
+
+        if (options.IsJoltApp && options.ReleaseEntryRelativePath.Split('/', '\\')
+                .Count(segment => segment.Length > 0 && segment != ".") < 2)
+            return ValidateOptionsResult.Fail("Jolt ReleaseEntryRelativePath must be inside a build output directory, such as dist/index.html.");
 
         if (options.Vite.StartupTimeout <= TimeSpan.Zero)
             return ValidateOptionsResult.Fail("Jazor Vite StartupTimeout must be greater than zero.");

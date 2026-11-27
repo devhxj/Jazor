@@ -17,6 +17,7 @@ public sealed record NpmVueParameter(string Name, string Type, IReadOnlyDictiona
 {
     public string? WebType { get; init; }
     public string? ValueDomain { get; init; }
+    public bool UntypedRest { get; init; }
     public IReadOnlyDictionary<string, NpmDefinition>? PropertyDefinitions { get; init; }
 }
 

@@ -27,20 +27,25 @@ if (args is ["--build-consumer", var directory])
 
 var scriptDirectory = Path.GetDirectoryName(ScriptPath())!;
 var repo = Path.GetFullPath(Path.Combine(scriptDirectory, "..", ".."));
+if (args is ["--package-boundaries"])
+{
+    await VerifyPackageBoundaries(repo, scriptDirectory);
+    return;
+}
 var rounds = args is [_, _, "--benchmark", var count] && int.TryParse(count, out var parsed) ? parsed : 0;
 var handoffPackage = args is [_, _, "--module-handoff", var nupkg] ? Path.GetFullPath(nupkg, repo) : null;
 if (args.Length != 2 && handoffPackage is null && (rounds is < 1 or > 100))
-    throw new ArgumentException("Usage: verify-jolt-mixed.cs <Jolt CLI apphost> <Chromium executable> [--benchmark <1-100 rounds> | --module-handoff <Jazor.nupkg>]");
+    throw new ArgumentException("Usage: verify-jolt-mixed.cs <Jolt CLI apphost> <Chromium executable> [--benchmark <1-100 rounds> | --module-handoff <Jazor.nupkg>] or --package-boundaries");
 
 var appHost = Path.GetFullPath(args[0], repo);
 var browser = Path.GetFullPath(args[1], repo);
 var sample = Path.Combine(repo, "samples", "Jolt.Mixed");
 var browserCheck = Path.Combine(repo, "samples", "Jolt.Counter", "verify-browser.cs");
 var bridge = Path.Combine(scriptDirectory, "fixtures", "vue-typecheck.cjs");
-var store = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ?? Path.Combine(repo, ".tmp", "nodeapi-store");
+var store = Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory") ?? Path.Combine(repo, "test", "jolt", "pnpm-store");
 using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(240 + 20 * rounds));
 var stop = deadline.Token;
-var scratchRoot = Directory.CreateDirectory(Path.Combine(repo, ".tmp"));
+var scratchRoot = Directory.CreateDirectory(Path.Combine(repo, "test", "jolt", "mixed"));
 var scratch = scratchRoot.CreateSubdirectory($"jolt-mixed-{Guid.NewGuid():N}");
 var project = handoffPackage is null ? scratch : scratch.CreateSubdirectory("frontend");
 try
@@ -50,6 +55,8 @@ try
         await CheckModuleHandoff(handoffPackage);
         return;
     }
+    if (rounds == 0)
+        await VerifyPackageBoundaries(repo, scriptDirectory);
     // Copy only authored inputs so a previous local dev/build cannot seed this run.
     foreach (var relative in new[] { "package.json", "pnpm-lock.yaml", "index.html", "main.ts", "probe.tsx", "App.vue",
         "tsconfig.json", "editors/MixedEditor.jazor", "editors/NameInput.vue", "editors/draft.svg" })
@@ -106,8 +113,28 @@ try
     Require(badBuild.ExitCode != 0 && InvalidCaller(badBuild.Output), "Expected a typed SFC prop error in the authored Jolt caller.");
     await File.WriteAllTextAsync(editor, editorSource, stop);
 
+    var generated = Path.Combine(project.FullName, ".jazor");
+    var marker = "jolt-mixed-static-effect";
+    await File.WriteAllTextAsync(Path.Combine(generated, "static-entry.mjs"), """import "./static-effect.js";""", stop);
+    await File.WriteAllTextAsync(Path.Combine(generated, "static-effect.js"), $"console.log('{marker}');", stop);
+    await File.WriteAllTextAsync(Path.Combine(generated, "jazor.modules.json"), """
+        {"modules":[{"path":"static-entry.mjs"}],"assets":[{"path":"static-effect.js","kind":"static"}]}
+        """, stop);
+    var main = Path.Combine(project.FullName, "main.ts");
+    var mainSource = await File.ReadAllTextAsync(main, stop);
+    await File.AppendAllTextAsync(main, """
+
+        import '/static-effect.js';
+        import '/static-entry.mjs';
+        """, stop);
+
     await RequireSuccess(appHost, "bundle");
-    await CheckProduction();
+    var dist = Path.Combine(generated, "dist");
+    var occurrences = Directory.EnumerateFiles(Path.Combine(dist, "assets"), "*.js")
+        .Sum(file => File.ReadAllText(file).Split(marker, StringSplitOptions.None).Length - 1);
+    Require(occurrences == 1, $"Expected one bundled static module side effect, found {occurrences}.");
+    await CheckProduction(dist);
+    await File.WriteAllTextAsync(main, mainSource, stop);
     await RequireTypeScriptDefinition(jsx, editor, 0);
 
     using (var server = new ObservedProcess(Start(appHost, "dev", ".", "--port", AvailablePort())))
@@ -177,7 +204,7 @@ try
     await NodeToolchain.RestoreAsync(project.FullName, store, stop, Console.Out);
     await RequireVueTypeCheck();
     await RequireSuccess(Environment.ProcessPath!, "--build-consumer", project.FullName);
-    await CheckProduction();
+    await CheckProduction(Path.Combine(project.FullName, "dist"));
     Console.WriteLine("Verified mixed source and installed mixed library in Chromium.");
 }
 finally
@@ -204,8 +231,10 @@ async Task CheckModuleHandoff(string package)
     var host = scratch.CreateSubdirectory("Host").FullName;
     WriteProject(library, "Library");
     WriteProject(host, "Host",
-        new XElement("PropertyGroup", new XElement("OutputType", "Exe"), new XElement("JazorMode", "debug"),
-            new XElement("JazorDir", "$(MSBuildProjectDirectory)/../frontend/jazor/")),
+        new XElement("PropertyGroup", new XElement("OutputType", "Exe"),
+            new XElement("JazorDir", "$(MSBuildProjectDirectory)/../frontend/.jazor/")),
+        new XElement("Target", new XAttribute("Name", "RefreshHandoff"), new XAttribute("AfterTargets", "Build"),
+            new XAttribute("DependsOnTargets", "JazorModules")),
         new XElement("ItemGroup", new XElement("ProjectReference", new XAttribute("Include", "../Library/Library.csproj"))));
     await File.WriteAllTextAsync(Path.Combine(library, "Greeting.cs"), """
         [ECMAScript.ECMAScriptModule("messages/greeting.mjs")]
@@ -227,7 +256,7 @@ async Task CheckModuleHandoff(string package)
     await File.WriteAllTextAsync(Path.Combine(project.FullName, "App.vue"), """
         <script setup>
         import Message from './Message.jazor';
-        import { Read } from './jazor/ui-message.mjs';
+        import { Read } from '/ui-message.mjs';
         </script>
         <template><Message :Text="Read()" /></template>
         """, stop);
@@ -243,7 +272,7 @@ async Task CheckModuleHandoff(string package)
     watchStart.Environment["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
     using var watch = new ObservedProcess(watchStart);
     await watch.WaitFor(line => line.Contains("Exited", StringComparison.Ordinal), stop);
-    var delivery = Path.Combine(project.FullName, "jazor");
+    var delivery = Path.Combine(project.FullName, ".jazor");
     var greeting = Path.Combine(delivery, "messages", "greeting.mjs");
     var bridge = Path.Combine(delivery, "ui-message.mjs");
     var map = greeting + ".map";
@@ -276,7 +305,7 @@ async Task CheckModuleHandoff(string package)
         await File.ReadAllTextAsync(keep, stop) == "application-owned",
         "The renamed DLL module did not replace its previous module/map and preserve the neighboring file.");
     await RequireSuccess(appHost, "bundle", ".");
-    await CheckProduction("--module-handoff");
+    await CheckProduction(Path.Combine(project.FullName, ".jazor", "dist"), "--module-handoff");
     foreach (var (name, content) in authored)
         Require(await File.ReadAllTextAsync(Path.Combine(project.FullName, name), stop) == content, $"The handoff changed frontend/{name}.");
     Console.WriteLine("Verified DLL catalog, source map, dotnet watch rebuild and update in the open Jolt page, and the standalone production bundle.");
@@ -351,9 +380,8 @@ async Task RequireSuccess(string file, params string[] arguments)
     Require(result.ExitCode == 0, $"{file} {string.Join(' ', arguments)} exited with code {result.ExitCode}.");
 }
 
-async Task CheckProduction(string browserMode = "--mixed")
+async Task CheckProduction(string dist, string browserMode = "--mixed")
 {
-    var dist = Path.Combine(project.FullName, "dist");
     var assets = Path.Combine(dist, "assets");
     Require(Directory.EnumerateFiles(assets, "*.js").Any(), "Expected a JavaScript bundle.");
     if (browserMode == "--mixed")
@@ -418,6 +446,14 @@ static void Require(bool condition, string message)
 {
     if (!condition)
         throw new InvalidOperationException(message);
+}
+
+static async Task VerifyPackageBoundaries(string repo, string scriptDirectory)
+{
+    var root = Directory.CreateDirectory(Path.Combine(repo, "test", "jolt", "mixed")).FullName;
+    using var environment = new NodeEnvironment(root);
+    Console.WriteLine(await environment.InvokeAsync(Path.Combine(scriptDirectory, "fixtures", "jolt-vite-package-boundaries.cjs"),
+        "run", root, Path.Combine(repo, "src", "Jolt.Vite", "tooling", "jolt-vite.cjs")));
 }
 
 static string ScriptPath([System.Runtime.CompilerServices.CallerFilePath] string path = "") => path;

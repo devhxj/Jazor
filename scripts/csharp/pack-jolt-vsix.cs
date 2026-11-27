@@ -34,7 +34,7 @@ Put("extension.vsixmanifest", new XElement(schema + "PackageManifest", new XAttr
         new XAttribute("Type", "Microsoft.VisualStudio.Code.Manifest"), new XAttribute("Path", "extension/package.json"),
         new XAttribute("Addressable", "true")))).ToString());
 Put("extension/package.json", manifest.ToJsonString());
-var files = new List<string> { "extension.cjs", "jazor.tmLanguage.json", "README.md" };
+var files = new List<string> { "extension.cjs", "server-command.cjs", "jazor.tmLanguage.json", "README.md" };
 // NodeHost installs a hoisted tree. Include transitive client dependencies and their licenses.
 var modules = Path.Combine(client, "node_modules");
 foreach (var directory in Directory.EnumerateDirectories(modules).Where(d => !Path.GetFileName(d).StartsWith('.')))

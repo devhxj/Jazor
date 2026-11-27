@@ -44,6 +44,7 @@ public sealed partial class NpmValueMetadataProvider
     internal sealed class Validation
     {
         private readonly Dictionary<string, string?> _fingerprints = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, (string? Full, string? Selectors)> _packageFingerprints = new(StringComparer.Ordinal);
         internal Dictionary<(string Project, string Specifier, string Realpaths), string?> Resolutions { get; } = new();
 
         internal string? ReadFingerprint(string path)
@@ -53,9 +54,21 @@ public sealed partial class NpmValueMetadataProvider
             return hash;
         }
 
+        internal (string? Full, string? Selectors) ReadPackageFingerprints(string path)
+        {
+            if (!_packageFingerprints.TryGetValue(path, out var hashes))
+            {
+                hashes = NpmValueMetadataProvider.ReadPackageFingerprints(path);
+                _packageFingerprints.Add(path, hashes);
+                _fingerprints.TryAdd(path, hashes.Full);
+            }
+            return hashes;
+        }
+
         internal void Clear()
         {
             _fingerprints.Clear();
+            _packageFingerprints.Clear();
             Resolutions.Clear();
         }
     }

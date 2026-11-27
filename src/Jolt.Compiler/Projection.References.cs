@@ -115,17 +115,17 @@ internal sealed partial class Projection
         Write(" = __joltRefValue; }), ");
     }
 
-    internal void CheckReferences(SemanticModel model, INamedTypeSymbol state)
+    internal void CheckReferences(SemanticModel model, INamedTypeSymbol state, List<Diagnostic> validationDiagnostics, bool prepareLowering)
     {
         foreach (var identifier in _invalidExposedDeclarations)
-            Report("JOLT1028", identifier, "[Expose] requires a public instance method.");
+            ReportValidation(validationDiagnostics, "JOLT1028", identifier, "[Expose] requires a public instance method.");
         var exposed = ExposedMethods(state);
         foreach (var (name, _, identifier) in _exposedDeclarations)
         {
             if (!exposed.Any(method => method.Name == name))
-                Report("JOLT1028", identifier, "Use JoltAuthoring.ExposeAttribute to declare a component reference method.");
+                ReportValidation(validationDiagnostics, "JOLT1028", identifier, "Use JoltAuthoring.ExposeAttribute to declare a component reference method.");
             else if (state.GetMembers(name).OfType<IMethodSymbol>().Skip(1).Any())
-                Report("JOLT1028", identifier, "[Expose] requires a unique method name.");
+                ReportValidation(validationDiagnostics, "JOLT1028", identifier, "[Expose] requires a unique method name.");
         }
 
         var root = model.SyntaxTree.GetRoot();
@@ -150,8 +150,8 @@ internal sealed partial class Projection
                 _ => false,
             };
             if (!valid || !SymbolEqualityComparer.Default.Equals(member?.ContainingType, state))
-                Report("JOLT1028", source, "@ref requires a writable nullable instance field or property on this component.");
-            else
+                ReportValidation(validationDiagnostics, "JOLT1028", source, "@ref requires a writable nullable instance field or property on this component.");
+            else if (prepareLowering)
                 ReferenceTargets.Add(index, member!.Name);
         }
     }

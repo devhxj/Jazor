@@ -16,6 +16,8 @@ public sealed record JoltCompileOptions(
 {
     public IReadOnlyList<NpmValueExport> NpmValues { get; init; } = [];
     public IReadOnlyList<JoltSource> CSharpSources { get; init; } = [];
+    internal IReadOnlyList<JoltSource> ProjectSources { get; init; } = [];
+    internal IReadOnlyList<string> ProjectDefines { get; init; } = [];
     public IReadOnlyList<NpmVueComponent> VueComponents { get; init; } = [];
     public string VueSourceRootRelative { get; init; } = ".";
     public bool Router { get; init; }
@@ -50,7 +52,10 @@ public sealed record JoltCompileResult(IReadOnlyList<JoltModule> Modules, IReadO
 
 public sealed record JoltProjectionSpan(TextSpan Source, TextSpan Generated);
 
-public sealed record JoltLocalProperty(string Name, string? Type, bool Required, TextSpan? Source);
+public sealed record JoltLocalProperty(string Name, string? Type, bool Required, TextSpan? Source)
+{
+    internal string? DocumentationXml { get; init; }
+}
 public sealed record JoltLocalModel(string Property, string Type);
 public enum JoltMarkupKind { Component, Property, Slot }
 public sealed record JoltMarkupSymbol(string ComponentPath, JoltMarkupKind Kind, string Name = "");

@@ -6,7 +6,7 @@ try {
     for (const name of ['window', 'document', 'Element', 'SVGElement', 'Event'])
         globalThis[name] = window[name];
     const { createApp, nextTick } = await import('vue');
-    const { default: UrlParams } = await import('./.jolt/UrlParams.mjs');
+    const { default: UrlParams } = await import('./.jazor/UrlParams.mjs');
     const root = window.document.querySelector('main');
     const app = createApp(UrlParams);
     app.mount(root);

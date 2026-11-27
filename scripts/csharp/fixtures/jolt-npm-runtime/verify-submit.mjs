@@ -7,8 +7,8 @@ try {
         globalThis[name] = window[name];
     const { createApp, nextTick } = await import('vue');
     const { defineRule } = await import('vee-validate');
-    const { default: Submit } = await import('./.jolt/Submit.mjs');
-    const { default: Vee } = await import('./.jolt/Vee.mjs');
+    const { default: Submit } = await import('./.jazor/Submit.mjs');
+    const { default: Vee } = await import('./.jazor/Vee.mjs');
     const container = document.querySelector('main');
     const result = () => container.querySelector('output').textContent;
     const provided = createApp(Submit, { Provide: true });

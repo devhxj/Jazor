@@ -6,24 +6,24 @@ using Microsoft.Extensions.Options;
 namespace Jazor.AspNetCore.Dev;
 
 /// <summary>Loads the bundler's static CSS closure for the configured browser entry.</summary>
-internal sealed class JazorFrontendAssets
+internal sealed class JazorSPAAssets
 {
     private readonly Lazy<IReadOnlyList<string>> _stylesheets;
 
-    public JazorFrontendAssets(IOptions<JazorFrontendOptions> options, IWebHostEnvironment environment)
+    public JazorSPAAssets(IOptions<JazorSPAOptions> options, IWebHostEnvironment environment)
     {
-        _stylesheets = new(() => environment.IsDevelopment()
+        // Vite writes the stylesheet links into an HTML entry itself.
+        _stylesheets = new(() => environment.IsDevelopment() || options.Value.IsJoltApp
             ? Array.Empty<string>()
-            : ReadStylesheets(options.Value, environment.ContentRootPath));
+            : ReadStylesheets(options.Value, environment));
     }
 
     public IReadOnlyList<string> Stylesheets => _stylesheets.Value;
 
-    private static IReadOnlyList<string> ReadStylesheets(JazorFrontendOptions options, string contentRootPath)
+    private static IReadOnlyList<string> ReadStylesheets(JazorSPAOptions options, IWebHostEnvironment environment)
     {
         var releasePath = options.ReleaseEntryRelativePath.Replace('\\', '/');
-        var releaseDirectory = Path.GetDirectoryName(releasePath)?.Replace('\\', '/') ?? "";
-        var manifestPath = Path.Combine(options.ResolveProjectRoot(contentRootPath), releaseDirectory, "manifest.json");
+        var manifestPath = Path.Combine(options.ResolveReleaseRoot(environment.ContentRootPath, environment.WebRootPath), "manifest.json");
         using var manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
         var chunks = manifest.RootElement;
         var entry = chunks.EnumerateObject().Single(chunk =>
@@ -48,7 +48,7 @@ internal sealed class JazorFrontendAssets
                 {
                     var path = style.GetString()!;
                     if (styles.Add(path))
-                        urls.Add(options.BuildPublicUrl((releaseDirectory.Length == 0 ? "" : releaseDirectory + "/") + path));
+                        urls.Add(options.BuildPublicUrl(path));
                 }
         }
 

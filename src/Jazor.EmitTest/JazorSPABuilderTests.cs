@@ -15,12 +15,12 @@ using Microsoft.Extensions.Logging;
 namespace Jazor.EmitTest;
 
 [TestClass]
-public sealed class JazorFrontendBuilderTests
+public sealed class JazorSPABuilderTests
 {
     [TestMethod]
     [DataRow("")]
     [DataRow("/portal")]
-    public async Task Frontend_StartupFilter_ForwardsHttpBodyQueryHeadersAndResponse(string pathBase)
+    public async Task SPA_StartupFilter_ForwardsHttpBodyQueryHeadersAndResponse(string pathBase)
     {
         using var workspace = new Workspace();
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -92,7 +92,7 @@ public sealed class JazorFrontendBuilderTests
     [TestMethod]
     [DataRow("")]
     [DataRow("/portal")]
-    public async Task Frontend_StartupFilter_RelaysWebSocketBothDirectionsAndClose(string pathBase)
+    public async Task SPA_StartupFilter_RelaysWebSocketBothDirectionsAndClose(string pathBase)
     {
         using var workspace = new Workspace();
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -163,7 +163,7 @@ public sealed class JazorFrontendBuilderTests
     [TestMethod]
     [DataRow("")]
     [DataRow("/portal")]
-    public async Task Frontend_StartupFilter_ReleaseServesArtifactsWithoutStartingVite(string pathBase)
+    public async Task SPA_StartupFilter_ReleaseServesArtifactsWithoutStartingVite(string pathBase)
     {
         using var workspace = new Workspace();
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
@@ -185,21 +185,21 @@ public sealed class JazorFrontendBuilderTests
         using var host = await CreateFrameworkHostAsync(workspace.RootPath, Environments.Production,
             pathBase, new Uri("http://127.0.0.1:1"), timeout.Token);
         using var client = CreateClient(host);
-        using var bundle = await client.GetAsync(pathBase + "/frontend/dist/bundle.js", timeout.Token);
+        using var bundle = await client.GetAsync(pathBase + "/frontend/bundle.js", timeout.Token);
         Assert.AreEqual(HttpStatusCode.OK, bundle.StatusCode);
         Assert.AreEqual("import './chunks/feature.js';", await bundle.Content.ReadAsStringAsync(timeout.Token));
         AssertSharedHeaders(bundle);
         Assert.IsTrue(bundle.Headers.CacheControl?.NoCache);
         Assert.IsTrue(bundle.Headers.CacheControl?.MustRevalidate);
-        using var chunk = await client.GetAsync(pathBase + "/frontend/dist/chunks/feature.js", timeout.Token);
+        using var chunk = await client.GetAsync(pathBase + "/frontend/chunks/feature.js", timeout.Token);
         Assert.AreEqual(HttpStatusCode.OK, chunk.StatusCode);
         Assert.AreEqual("export const ready = true;", await chunk.Content.ReadAsStringAsync(timeout.Token));
         using var urls = await client.GetAsync(pathBase + "/asset-urls", timeout.Token);
         using var payload = JsonDocument.Parse(await urls.Content.ReadAsStringAsync(timeout.Token));
-        Assert.AreEqual(pathBase + "/frontend/dist/bundle.js", payload.RootElement.GetProperty("entry").GetString());
-        CollectionAssert.AreEqual(new[] { pathBase + "/frontend/dist/assets/shared.css", pathBase + "/frontend/dist/assets/site.css" },
+        Assert.AreEqual(pathBase + "/frontend/bundle.js", payload.RootElement.GetProperty("entry").GetString());
+        CollectionAssert.AreEqual(new[] { pathBase + "/frontend/assets/shared.css", pathBase + "/frontend/assets/site.css" },
             payload.RootElement.GetProperty("styles").EnumerateArray().Select(value => value.GetString()).ToArray());
-        foreach (var path in new[] { "/dist/bundle.js", "/dist/chunks/feature.js", "/dist/assets/shared.css" })
+        foreach (var path in new[] { "/bundle.js", "/chunks/feature.js", "/assets/shared.css" })
         {
             using var head = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, pathBase + "/frontend" + path), timeout.Token);
             Assert.AreEqual(HttpStatusCode.OK, head.StatusCode);
@@ -238,7 +238,7 @@ public sealed class JazorFrontendBuilderTests
                 .UseKestrel(options => options.Listen(IPAddress.Loopback, 0))
                 .ConfigureServices(services =>
                 {
-                    services.AddJazorFrontend(options =>
+                    services.AddJazorSPA(options =>
                     {
                         options.PathBase = pathBase;
                         options.RequestPath = "/frontend";
@@ -254,8 +254,8 @@ public sealed class JazorFrontendBuilderTests
                     {
                         await context.Response.WriteAsJsonAsync(new
                         {
-                            entry = JazorFrontendUrls.GetBrowserEntry(context),
-                            styles = JazorFrontendUrls.GetStylesheets(context)
+                            entry = JazorSPAUrls.GetBrowserEntry(context),
+                            styles = JazorSPAUrls.GetStylesheets(context)
                         }, cancellationToken);
                         return;
                     }
@@ -301,8 +301,8 @@ public sealed class JazorFrontendBuilderTests
             Assert.IsFalse(app is WebApplication, "This regression must exercise the framework's actual inner builder.");
             Assert.AreSame(app, app.UseJazorPathBase());
             Assert.AreSame(app, app.UseJazorPathBase());
-            Assert.AreSame(app, app.UseJazorFrontend(options => options.SecurityHeaders.AdditionalHeaders["X-Framework-Frontend"] = "registered"));
-            app.UseJazorFrontend(_ => Assert.Fail("Repeated registration must use the existing middleware."));
+            Assert.AreSame(app, app.UseJazorSPA(options => options.SecurityHeaders.AdditionalHeaders["X-Framework-Frontend"] = "registered"));
+            app.UseJazorSPA(_ => Assert.Fail("Repeated registration must use the existing middleware."));
             next(app);
         };
     }

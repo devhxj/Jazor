@@ -14,7 +14,11 @@ public static class JoltViteToolchain
         string outputDirectory, IReadOnlyList<string> modulePaths, CancellationToken cancellationToken)
         => InvokeBuildAsync(projectDirectory, "buildJoltLibrary", new { projectDirectory, generatedDirectory, outputDirectory, modulePaths }, cancellationToken);
 
-    public static async Task<bool> BuildAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
+    public static Task<bool> BuildAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
+        string? storeDirectory = null, CancellationToken cancellationToken = default)
+        => BuildAsync(projectDirectory, Path.Combine(Path.GetFullPath(projectDirectory), ".jazor"), compile, storeDirectory, cancellationToken);
+
+    internal static async Task<bool> BuildAsync(string projectDirectory, string generatedDirectory, Func<CancellationToken, Task<bool>> compile,
         string? storeDirectory = null, CancellationToken cancellationToken = default)
     {
         projectDirectory = Path.GetFullPath(projectDirectory);
@@ -22,11 +26,16 @@ public static class JoltViteToolchain
         if (!await compile(cancellationToken))
             return false;
 
-        await InvokeBuildAsync(projectDirectory, "build", new { projectDirectory }, cancellationToken);
+        await InvokeBuildAsync(projectDirectory, "build", new { projectDirectory, generatedDirectory }, cancellationToken);
         return true;
     }
 
-    public static async Task<bool> BuildSsrAsync(string projectDirectory, string serverEntry,
+    public static Task<bool> BuildSsrAsync(string projectDirectory, string serverEntry,
+        Func<CancellationToken, Task<bool>> compile, string? storeDirectory = null,
+        CancellationToken cancellationToken = default)
+        => BuildSsrAsync(projectDirectory, Path.Combine(Path.GetFullPath(projectDirectory), ".jazor"), serverEntry, compile, storeDirectory, cancellationToken);
+
+    internal static async Task<bool> BuildSsrAsync(string projectDirectory, string generatedDirectory, string serverEntry,
         Func<CancellationToken, Task<bool>> compile, string? storeDirectory = null,
         CancellationToken cancellationToken = default)
     {
@@ -45,13 +54,13 @@ public static class JoltViteToolchain
 
         var buildId = "ssr-" + Guid.NewGuid().ToString("N");
         // Keep the staged output at the same depth as dist for relative source map paths.
-        var staging = Path.Combine(projectDirectory, ".jolt-" + buildId);
-        var previousOutput = Path.Combine(projectDirectory, ".jazor", buildId);
-        var destination = Path.Combine(projectDirectory, "dist");
+        var staging = Path.Combine(generatedDirectory, "." + buildId + "-new");
+        var previousOutput = Path.Combine(generatedDirectory, "." + buildId + "-previous");
+        var destination = Path.Combine(generatedDirectory, "dist");
         try
         {
             // Publish the client and server as one generation after both builds succeed.
-            await InvokeBuildAsync(projectDirectory, "buildJoltSsr", new { projectDirectory, serverEntry = entry, outputDirectory = staging }, cancellationToken);
+            await InvokeBuildAsync(projectDirectory, "buildJoltSsr", new { projectDirectory, generatedDirectory, serverEntry = entry, outputDirectory = staging }, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(destination))
                 Directory.Move(destination, previousOutput);
@@ -79,11 +88,11 @@ public static class JoltViteToolchain
     public static async Task<JoltViteServer> ServeAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
         string? storeDirectory = null, string host = "127.0.0.1", int port = DefaultPort,
         CancellationToken cancellationToken = default, Action<Exception>? reportError = null)
-        => await ServeAsync(projectDirectory, compile, null, storeDirectory, host, port, cancellationToken, reportError);
+        => await ServeAsync(projectDirectory, Path.Combine(Path.GetFullPath(projectDirectory), ".jazor"), compile, null, storeDirectory, host, port, cancellationToken, reportError);
 
-    internal static async Task<JoltViteServer> ServeAsync(string projectDirectory, Func<CancellationToken, Task<bool>> compile,
+    internal static async Task<JoltViteServer> ServeAsync(string projectDirectory, string generatedDirectory, Func<CancellationToken, Task<bool>> compile,
         Action<Action>? subscribeExternal, string? storeDirectory = null, string host = "127.0.0.1", int port = DefaultPort,
-        CancellationToken cancellationToken = default, Action<Exception>? reportError = null)
+        CancellationToken cancellationToken = default, Action<Exception>? reportError = null, string? basePath = null)
     {
         projectDirectory = Path.GetFullPath(projectDirectory);
         await RestoreAsync(projectDirectory, storeDirectory, cancellationToken);
@@ -152,8 +161,8 @@ public static class JoltViteToolchain
                 throw new InvalidOperationException("The initial Jolt compilation failed.");
 
             vite = new NodeViteServer(projectDirectory);
-            // The author’s Vite base also drives asset URLs and the HMR socket behind a proxy.
-            var result = await vite.StartAsync(projectDirectory, host, port, null, cancellationToken, ViteModule.Materialize(projectDirectory));
+            // The host-supplied base drives asset URLs and the HMR socket behind the proxy.
+            var result = await vite.StartAsync(projectDirectory, host, port, basePath, cancellationToken, ViteModule.Materialize(projectDirectory), generatedDirectory);
             using var response = JsonDocument.Parse(result);
             var origin = new Uri(response.RootElement.GetProperty("origin").GetString()!);
             return new JoltViteServer(origin, vite, [watcher, dependencyWatcher], changes.Reader, RebuildAsync, reportError);
@@ -201,6 +210,10 @@ public static class JoltViteToolchain
 
         bool IsSource(string path)
         {
+            var generatedRelative = Path.GetRelativePath(generatedDirectory, path);
+            if (!Path.IsPathRooted(generatedRelative) && generatedRelative != ".." &&
+                !generatedRelative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+                return false;
             if (Path.GetFileName(path) != "package.json" &&
                 Path.GetExtension(path).ToLowerInvariant() is not (".jazor" or ".vue" or ".ts" or ".tsx" or ".mts" or ".cts" or ".cs"))
                 return false;

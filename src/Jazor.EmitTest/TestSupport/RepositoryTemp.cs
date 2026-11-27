@@ -65,7 +65,10 @@ internal static class RepositoryTemp
 
         var repositoryRoot = directory?.FullName
             ?? throw new InvalidOperationException("Unable to locate Jazor.slnx for the repository-owned test workspace.");
-        var root = Path.Combine(repositoryRoot, ".tmp", "test-workspaces");
+        var configuredRoot = Environment.GetEnvironmentVariable("JAZOR_TEST_WORKSPACE");
+        var root = string.IsNullOrEmpty(configuredRoot)
+            ? Path.Combine(repositoryRoot, ".tmp", "test-workspaces")
+            : Path.GetFullPath(configuredRoot, repositoryRoot);
         Directory.CreateDirectory(root);
         return root;
     }

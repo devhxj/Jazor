@@ -10478,6 +10478,43 @@ public sealed class SemanticWalkerReferenceTest
 	/// restores the bound slots.
 	/// </summary>
 	[TestMethod]
+	public void Visit_Reference_PromiseCombinators_KeepOneIterableArgument()
+	{
+		var block = GetBlockOperation("""
+            class TestClass
+            {
+                void TestMethod(IPromise left, IPromise right, IPromise<string> typed)
+                {
+                    var promises = new IPromise[] { left, right };
+                    var all = Promise.All(promises);
+                    var any = Promise.Any(left, right);
+                    var race = Promise.Race(new IPromise[0]);
+                    var settled = Promise.AllSettled(left, right);
+                    var typedAll = Promise<string>.All(typed);
+                    var values = new Number[] { 3, 4 };
+                    var rest = Math.Hypot(values);
+                }
+            }
+            """);
+
+		var script = new SemanticWalker(true).Visit(block, new SenseArgument())?.ToKnRECMAScript();
+
+		AssertScriptEqual("""
+            {
+              let promises = [left, right];
+              let all = Promise.all(promises);
+              let any = Promise.any([left, right]);
+              let race = Promise.race([]);
+              let settled = Promise.allSettled([left, right]);
+              let typedAll = Promise.all([typed]);
+              let values = [3, 4];
+              let rest = Math.hypot(...values);
+            }
+            """, script);
+		_ = new Acornima.Parser().ParseScript(script!);
+	}
+
+	[TestMethod]
 	public void Visit_Reference_ReorderedRuntimeNamedParams_UsesSourceOrderCacheAndRestSpread()
 	{
 		var block = GetBlockOperation("""

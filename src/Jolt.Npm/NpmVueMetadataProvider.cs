@@ -73,7 +73,7 @@ public sealed partial class NpmVueMetadataProvider
     {
         var result = await RunMetadataAsync(project, "component-metadata.mjs",
             [typescript, moduleSpecifier, query ?? "[]", WebIdlCarriers.Metadata], cancellationToken,
-            typeof(NpmVueMetadataProvider), ["component-metadata.mjs", "package-checker.mjs", "declaration-documentation.mjs", "typescript-input.mjs", "runtime-module.mjs", "vue-contract.mjs", "web-idl-projection.mjs"]);
+            typeof(NpmVueMetadataProvider), ["component-metadata.mjs", "package-checker.mjs", "declaration-documentation.mjs", "typescript-input.mjs", "runtime-module.mjs", "vue-contract.mjs", "vue-web-types.mjs", "web-idl-projection.mjs"]);
         return JsonSerializer.Deserialize<ComponentSnapshot>(result, JsonOptions)!;
     }
 

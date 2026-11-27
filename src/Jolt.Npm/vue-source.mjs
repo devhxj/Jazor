@@ -142,7 +142,35 @@ const contracts = paths.map((relative, index) => {
         const setup = sourceScript?.generated?.root.sfc.scriptSetup;
         component.definition ??= { path: path.resolve(modulePath), start: setup?.start ?? 0, length: 0 };
         if (setup) {
-            for (const model of vue.parseScriptSetupRanges(ts, setup.ast, vueOptions).defineModel) {
+            // Vue's generated emit overloads can omit the authored declaration and its JSDoc.
+            const ranges = vue.parseScriptSetupRanges(ts, setup.ast, vueOptions);
+            const emitType = ranges.defineEmits?.typeArg;
+            if (emitType) {
+                const authoredSetup = ts.createSourceFile(setup.ast.fileName, setup.content, ts.ScriptTarget.Latest, true);
+                const visitEmitType = node => {
+                    if (node.pos > emitType.end || node.end < emitType.start)
+                        return;
+                    if (ts.isTypeLiteralNode(node) && node.getStart(authoredSetup) === emitType.start) {
+                        for (const member of node.members) {
+                            const name = ts.isPropertySignature(member) ? member.name :
+                                ts.isCallSignatureDeclaration(member) && member.parameters[0]?.type &&
+                                    ts.isLiteralTypeNode(member.parameters[0].type) ? member.parameters[0].type.literal : null;
+                            if (!name || !(ts.isStringLiteral(name) || ts.isIdentifier(name)))
+                                continue;
+                            const event = component.events[name.text];
+                            if (!event || event.definition?.documentation)
+                                continue;
+                            const start = name.getStart(authoredSetup);
+                            event.definition ??= { path: path.resolve(modulePath), start: setup.startTagEnd + start, length: name.end - start };
+                            event.definition.documentation = declarationDocumentation(ts, member);
+                        }
+                        return;
+                    }
+                    ts.forEachChild(node, visitEmitType);
+                };
+                visitEmitType(authoredSetup);
+            }
+            for (const model of ranges.defineModel) {
                 const name = model.name ? setup.content.slice(model.name.start + 1, model.name.end - 1) : 'modelValue';
                 const target = model.name ?? model.localName ?? model.type;
                 if (!target)

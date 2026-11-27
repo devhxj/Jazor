@@ -91,6 +91,28 @@ public sealed class EmitBrowserEntryTests
     }
 
     [TestMethod]
+    public void ModuleWriter_SharedRootRejectsJoltModuleAndPreservesItsFilesOnRetry()
+    {
+        using var workspace = new Workspace();
+        var rootAssembly = Path.Combine(workspace.Root, "Host.dll");
+        var manifestPath = Path.Combine(workspace.Root, "manifest.json");
+        var module = CreateModule(rootAssembly, "Host", "Page.mjs", "export const emit = true;");
+        Assert.IsTrue(ModuleWriter.Write(rootAssembly, workspace.Output, manifestPath, [module]).IsSuccess);
+
+        var generatedModule = Path.Combine(workspace.Output, "Page.mjs");
+        File.WriteAllText(generatedModule, "export const jolt = true;");
+        File.WriteAllText(Path.Combine(workspace.Output, "jolt.modules.json"), """["Page.mjs"]""");
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            var collision = ModuleWriter.Write(rootAssembly, workspace.Output, manifestPath, [module]);
+            StringAssert.Contains(collision.Error, "Jolt and Jazor both generate 'Page.mjs'");
+            Assert.AreEqual("export const jolt = true;", File.ReadAllText(generatedModule));
+        }
+        Assert.IsTrue(ModuleWriter.Write(rootAssembly, workspace.Output, manifestPath, []).IsSuccess);
+        Assert.AreEqual("export const jolt = true;", File.ReadAllText(generatedModule));
+    }
+
+    [TestMethod]
     [DataRow("missing.js")]
     [DataRow("../app.js")]
     [DataRow("/app.js")]

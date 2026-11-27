@@ -2,30 +2,32 @@
 #:property AssemblyName=Jazor.NodeApiVerification
 #:property CETCompat=false
 #:property PublishAot=false
-#:project ../../src/Jazor.NodeHost/Jazor.NodeHost.csproj
 #:sdk Microsoft.NET.Sdk.Web
 #:project ../../src/Jazor.AspNetCore/Jazor.AspNetCore.csproj
 #:project ../../src/Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj
-#:include ../../samples/Jolt.AspNetCore/JoltDevSession.cs
+#:project ../../src/Jazor.Common/Jazor.Common.csproj
 
-using Jazor.NodeHost;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Net.WebSockets;
+using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
 using Jazor.AspNetCore;
 using Jazor.AspNetCore.Dev;
+using Jazor.Common.SourceMaps;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 var repoRoot = RequireRepoRoot();
-var temporaryRoot = Path.GetTempPath();
-ConfigureRepositoryEnvironment(repoRoot);
+var temporaryRoot = Path.Combine(repoRoot, "test", "jolt", "hmr");
+ConfigureRepositoryEnvironment(repoRoot, temporaryRoot);
 if (args is ["--jolt-force-stop", var stopFeed, var stopVersion])
 {
     await VerifyJoltForceStopAsync(repoRoot, temporaryRoot, Path.GetFullPath(stopFeed, repoRoot), stopVersion);
@@ -37,170 +39,19 @@ if (args is ["--jolt-proxy", var jolt, var chromium, var feed, var version])
         Path.GetFullPath(feed, repoRoot), version);
     return;
 }
-var workspace = Path.Combine(repoRoot, ".tmp", "development-hmr-browser", Guid.NewGuid().ToString("N"));
-var webRoot = Path.Combine(workspace, "wwwroot");
-var artifactRoot = Path.Combine(workspace, "jazor");
-var componentPath = Path.Combine(artifactRoot, "component.mjs");
-var componentSourceMapPath = componentPath + ".map";
-var manifestPath = Path.Combine(artifactRoot, "jazor-manifest.json");
-var vueRuntimePath = Path.Combine(webRoot, "vue.runtime.esm-browser.js");
-var browserSessionName = "jazor-development-hmr-" + Guid.NewGuid().ToString("N");
-var browserSessionOpened = false;
-WebApplication? app = null;
-
-try
+if (args is ["--jolt-debug", var debugJolt, var debugBrowser])
 {
-    Directory.CreateDirectory(webRoot);
-    Directory.CreateDirectory(artifactRoot);
-    await RestoreVueRuntimeAsync(repoRoot, artifactRoot);
-    var vueRuntimeSourcePath = Path.Combine(
-        artifactRoot,
-        "node_modules",
-        "vue",
-        "dist",
-        "vue.runtime.esm-browser.js");
-    if (!File.Exists(vueRuntimeSourcePath))
-        throw new InvalidOperationException("pnpm restore did not produce the Vue browser runtime at '" + vueRuntimeSourcePath + "'.");
-    File.Copy(vueRuntimeSourcePath, vueRuntimePath);
-    await WriteFixtureAsync(componentPath, componentSourceMapPath, manifestPath, "v1", "content-v1", "template-v1");
-    await File.WriteAllTextAsync(Path.Combine(artifactRoot, "entry.js"), "export {};\n");
-    var indexPath = Path.Combine(webRoot, "index.html");
-    await File.WriteAllTextAsync(indexPath, CreateBrowserHarness(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-
-    var port = AllocateLoopbackPort();
-    var baseAddress = new Uri("http://127.0.0.1:" + port + "/");
-    var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-    {
-        ContentRootPath = workspace,
-        WebRootPath = webRoot,
-        EnvironmentName = Environments.Development
-    });
-    builder.WebHost.UseUrls(baseAddress.ToString());
-    builder.Logging.SetMinimumLevel(LogLevel.Warning);
-    builder.Logging.AddFilter("Jazor.AspNetCore.Dev", LogLevel.Debug);
-    builder.Services.AddJazorReload(options =>
-    {
-        // The mapping itself must be enough to observe a custom artifact root.
-        options.WatchPaths.Clear();
-        options.HmrMappings.Clear();
-        options.HmrMappings.Add(new JazorHmrMapping
-        {
-            ArtifactRootPath = "jazor",
-            RequestPath = "/jazor"
-        });
-        options.DebounceInterval = TimeSpan.FromMilliseconds(35);
-        options.PollingInterval = TimeSpan.FromMilliseconds(75);
-    });
-
-    app = builder.Build();
-    app.UseJazorReload();
-    app.UseJazorArtifacts();
-    app.UseStaticFiles();
-    app.MapGet("/", () => Results.File(indexPath, "text/html; charset=utf-8"));
-    app.MapPost("/__jazor-hmr-fixture/update", async () =>
-    {
-        // The host deliberately falls back to a full reload before the browser advertises
-        // module-update capability. The browser waits for JazorHmr.ready before this request.
-        await Task.Delay(250);
-        await WriteFixtureAsync(componentPath, componentSourceMapPath, manifestPath, "v2", "content-v2", "template-v2");
-        // Keep the request open until watcher/poller delivery can reach the browser.
-        await Task.Delay(750);
-        return Results.NoContent();
-    });
-    await app.StartAsync();
-
-    var browserOpen = await RunPlaywrightApiAsync(repoRoot, browserSessionName, "open", baseAddress.ToString());
-    EnsureProcessSucceeded(browserOpen, "Playwright could not open the development HMR fixture.");
-    browserSessionOpened = true;
-
-    using var httpClient = new HttpClient();
-    await VerifyBrowserSourceMapAsync(httpClient, baseAddress, "v1");
-
-    var ready = await WaitForBrowserConditionAsync(
-        repoRoot,
-        browserSessionName,
-        "(() => { const component = document.getElementById('component-version')?.textContent; const count = document.getElementById('parent-count')?.textContent; return component === 'child:v1' && count === '0' ? 'ready:v1' : null; })()",
-        TimeSpan.FromSeconds(10));
-    if (!ready.Contains("ready:v1", StringComparison.Ordinal))
-    {
-        var browserState = await ReadBrowserStateAsync(repoRoot, browserSessionName);
-        throw new InvalidOperationException(
-            "Development HMR fixture did not register its v1 handler: " + ready + Environment.NewLine + browserState);
-    }
-
-    var click = await RunPlaywrightApiAsync(
-        repoRoot,
-        browserSessionName,
-        "eval",
-        "() => { document.getElementById('increment').click(); return 'clicked'; }");
-    EnsureProcessSucceeded(click, "Playwright could not increment the parent component state.");
-    var incremented = await WaitForBrowserConditionAsync(
-        repoRoot,
-        browserSessionName,
-        "(() => document.getElementById('parent-count')?.textContent === '1' ? 'parent-count:1' : null)()",
-        TimeSpan.FromSeconds(10));
-    if (!incremented.Contains("parent-count:1", StringComparison.Ordinal))
-        throw new InvalidOperationException("Development HMR fixture did not render the parent state increment: " + incremented);
-
-    using var updateResponse = await httpClient.PostAsync(
-        new Uri(baseAddress, "__jazor-hmr-fixture/update"),
-        content: null);
-    updateResponse.EnsureSuccessStatusCode();
-
-    var update = await WaitForBrowserConditionAsync(
-        repoRoot,
-        browserSessionName,
-        "(() => { const loads = sessionStorage.getItem('jazor-hmr-fixture-loads'); if (loads !== '1') return 'full-reload:' + loads; const component = document.getElementById('component-version')?.textContent; const count = document.getElementById('parent-count')?.textContent; return component === 'child:v2' && count === '1' ? 'module-update:v2:loads=' + loads : null; })()",
-        TimeSpan.FromSeconds(10));
-    if (!update.Contains("module-update:v2:loads=1", StringComparison.Ordinal))
-    {
-        throw new InvalidOperationException(
-            "Development HMR browser verification did not apply the v2 module update." + Environment.NewLine +
-            update);
-    }
-
-    await VerifyBrowserSourceMapAsync(httpClient, baseAddress, "v2");
-
-    Console.WriteLine("Development HMR browser verification passed.");
-    Console.WriteLine("  Browser: Playwright API / NodeApi");
-    Console.WriteLine("  Flow: generated-component registration -> Vue HMR reload -> parent state preserved -> authored Razor source map available");
+    await VerifyJoltDebugAsync(repoRoot, temporaryRoot, Path.GetFullPath(debugJolt, repoRoot), Path.GetFullPath(debugBrowser, repoRoot));
+    return;
 }
-finally
-{
-    if (browserSessionOpened)
-    {
-        try
-        {
-            _ = await RunPlaywrightApiAsync(repoRoot, browserSessionName, "close");
-        }
-        catch (System.ComponentModel.Win32Exception)
-        {
-        }
-    }
-
-    if (app is not null)
-    {
-        await app.StopAsync();
-        await app.DisposeAsync();
-    }
-
-    try
-    {
-        if (Directory.Exists(workspace))
-            Directory.Delete(workspace, recursive: true);
-    }
-    catch (IOException)
-    {
-    }
-    catch (UnauthorizedAccessException)
-    {
-    }
-}
+throw new ArgumentException("Usage: verify-development-hmr.cs --jolt-force-stop <feed> <version> | --jolt-proxy <jolt> <chromium> <feed> <version> | --jolt-debug <jolt> <chromium>");
 
 static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, string feed, string version)
 {
     var root = Directory.CreateDirectory(Path.Combine(temporaryRoot, "jazor-jolt-force-stop-" + Guid.NewGuid().ToString("N"))).FullName;
-    var frontend = Path.Combine(root, "frontend");
+    var frontend = root;
+    var toolDirectory = Path.Combine(root, "tool");
+    string tool = "";
     var pidPath = Path.Combine(root, "vite.pid");
     var closePath = Path.Combine(root, "vite.closed");
     var vitePort = AllocateLoopbackPort();
@@ -212,13 +63,16 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
     using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
     try
     {
-        CopyAspNetSample(repo, root);
+        CopyAspNetSample(repo, root, version);
         var program = Path.Combine(root, "Program.cs");
         var original = await File.ReadAllTextAsync(program, token);
         var isolated = original.Replace("http://127.0.0.1:15658", $"http://127.0.0.1:{vitePort}", StringComparison.Ordinal);
         if (isolated == original)
             throw new InvalidOperationException("The sample Vite origin could not be isolated.");
-        await File.WriteAllTextAsync(program, isolated, token);
+        await File.WriteAllTextAsync(program, isolated.Replace("options.PathBase", """
+            options.Vite.LaunchServer = builder.Configuration["JazorForceStop:Attach"] != "true";
+                options.PathBase
+            """, StringComparison.Ordinal), token);
         var config = Path.Combine(frontend, "vite.config.js");
         await File.AppendAllTextAsync(config,
             "\nimport { writeFileSync, appendFileSync } from 'node:fs';\nwriteFileSync(" + JsonSerializer.Serialize(pidPath) + ", String(process.pid));\n", token);
@@ -240,14 +94,15 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
             }];
             export default fixtureConfig;
             """, token);
-        await WriteJoltToolManifestAsync(root, version, token);
         var nugetConfig = Path.Combine(root, "NuGet.Config");
         new XElement("configuration", new XElement("packageSources", new XElement("clear"),
             new XElement("add", new XAttribute("key", "candidate"), new XAttribute("value", feed)),
             new XElement("add", new XAttribute("key", "nuget.org"), new XAttribute("value", "https://api.nuget.org/v3/index.json"))))
             .Save(nugetConfig);
-        using (var restore = Start("dotnet", "tool", "restore", "--configfile", nugetConfig))
+        using (var restore = Start("dotnet", "tool", "install", "Jazor.Jolt", "--version", version, "--tool-path", toolDirectory, "--configfile", nugetConfig))
             await RequireSuccess(restore);
+        tool = Directory.EnumerateFiles(toolDirectory, OperatingSystem.IsWindows() ? "Jolt.Cli.exe" : "Jolt.Cli",
+            SearchOption.AllDirectories).Single();
         using (var build = Start("dotnet", "build", "-o", "out"))
             await RequireSuccess(build);
 
@@ -278,7 +133,7 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
     {
         File.Delete(pidPath);
         File.Delete(closePath);
-        using var external = attached ? Start("dotnet", "tool", "run", "jolt", "dev", frontend, "--port", vitePort.ToString()) : null;
+        using var external = attached ? Start(tool, "dev", frontend, "--port", vitePort.ToString()) : null;
         Process? host = null;
         Process? vite = null;
         try
@@ -286,7 +141,7 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
             if (external is not null)
                 await WaitReadyAsync(vitePort, external);
             host = Start("dotnet", Path.Combine(root, "out", "Jolt.AspNetCore.dll"), "--environment", "Development",
-                "--urls", $"http://127.0.0.1:{hostPort}");
+                "--urls", $"http://127.0.0.1:{hostPort}", "--JazorForceStop:Attach", attached ? "true" : "false");
             await WaitReadyAsync(hostPort, host);
             var pid = int.Parse(await File.ReadAllTextAsync(pidPath, token), System.Globalization.CultureInfo.InvariantCulture);
             vite = Process.GetProcessById(pid);
@@ -341,9 +196,9 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
         {
             File.Delete(pidPath);
             File.Delete(closePath);
-            string[] arguments = ["tool", "run", "jolt", "dev", frontend, "--port", vitePort.ToString(),
+            string[] arguments = ["dev", frontend, "--port", vitePort.ToString(),
                 .. optIn ? new[] { "--stop-on-stdin-close" } : []];
-            using var cli = StartProcess("dotnet", arguments, redirectInput: true);
+            using var cli = StartProcess(tool, arguments, redirectInput: true);
             Process? vite = null;
             try
             {
@@ -393,7 +248,7 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
     {
         try
         {
-            using var response = await http.GetAsync($"http://127.0.0.1:{port}/portal/frontend/.jolt/Counter.mjs", token);
+            using var response = await http.GetAsync($"http://127.0.0.1:{port}/portal/frontend/Counter.mjs", token);
             return response.IsSuccessStatusCode && (await response.Content.ReadAsStringAsync(token)).Contains("Jolt counter", StringComparison.Ordinal);
         }
         catch (HttpRequestException) { return false; }
@@ -444,28 +299,23 @@ static async Task VerifyJoltForceStopAsync(string repo, string temporaryRoot, st
     }
 }
 
-static async Task WriteJoltToolManifestAsync(string root, string version, CancellationToken token)
-{
-    var manifest = Path.Combine(Directory.CreateDirectory(Path.Combine(root, ".config")).FullName, "dotnet-tools.json");
-    await File.WriteAllTextAsync(manifest, JsonSerializer.Serialize(new
-    {
-        version = 1,
-        isRoot = true,
-        tools = new Dictionary<string, object> { ["jazor.jolt"] = new { version, commands = new[] { "jolt" } } }
-    }), token);
-}
-
-static string CopyAspNetSample(string repo, string destination)
+static string CopyAspNetSample(string repo, string destination, string version)
 {
     var sample = Path.Combine(repo, "samples", "Jolt.AspNetCore");
-    var frontend = Directory.CreateDirectory(Path.Combine(destination, "frontend")).FullName;
-    foreach (var name in new[] { "Program.cs", "JoltDevSession.cs" })
+    Directory.CreateDirectory(destination);
+    foreach (var name in new[] { "Program.cs", "Counter.jazor", "index.html", "main.js", "package.json", "pnpm-lock.yaml", "vite.config.js" })
         File.Copy(Path.Combine(sample, name), Path.Combine(destination, name));
-    foreach (var file in Directory.EnumerateFiles(Path.Combine(sample, "frontend")))
-        File.Copy(file, Path.Combine(frontend, Path.GetFileName(file)));
     var project = XDocument.Load(Path.Combine(sample, "Jolt.AspNetCore.csproj"));
-    foreach (var reference in project.Descendants("ProjectReference"))
-        reference.SetAttributeValue("Include", Path.GetFullPath(reference.Attribute("Include")!.Value, sample));
+
+    project.Descendants("ProjectReference").Single(reference =>
+        Path.GetFileNameWithoutExtension(reference.Attribute("Include")!.Value) == "Jolt.Cli").Remove();
+    foreach (var element in project.Descendants().Where(element => element.Name.LocalName is "ProjectReference" or "Import"))
+    {
+        var attribute = element.Attribute(element.Name.LocalName == "Import" ? "Project" : "Include")!;
+        attribute.Value = Path.GetFullPath(attribute.Value, sample);
+    }
+    var joltImport = project.Descendants("Import").Single(element => element.Attribute("Project")!.Value.EndsWith("Jazor.Jolt.targets", StringComparison.Ordinal));
+    joltImport.AddBeforeSelf(new XElement("PropertyGroup", new XElement("_JoltToolVersion", version)));
     var path = Path.Combine(destination, "Jolt.AspNetCore.csproj");
     project.Save(path);
     return path;
@@ -473,7 +323,7 @@ static string CopyAspNetSample(string repo, string destination)
 
 static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string jolt, string chromium, string feed, string version)
 {
-    var root = Directory.CreateDirectory(Path.Combine(repo, ".tmp", "jolt-proxy-" + Guid.NewGuid().ToString("N"))).FullName;
+    var root = Directory.CreateDirectory(Path.Combine(temporaryRoot, "jolt-proxy-" + Guid.NewGuid().ToString("N"))).FullName;
     var toolRoot = Path.Combine(temporaryRoot, "jolt-proxy-tool-" + Guid.NewGuid().ToString("N"));
     var sample = Path.Combine(repo, "samples", "Jolt.Counter");
     foreach (var name in new[] { "package.json", "pnpm-lock.yaml", "index.html", "main.js", "vite.config.js" })
@@ -520,8 +370,7 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
     }
     try
     {
-        await WriteJoltToolManifestAsync(toolRoot, version, token);
-        var nugetConfig = Path.Combine(toolRoot, "NuGet.Config");
+        var nugetConfig = Path.Combine(Directory.CreateDirectory(toolRoot).FullName, "NuGet.Config");
         new XElement("configuration", new XElement("packageSources",
             new XElement("clear"), new XElement("add", new XAttribute("key", "candidate"), new XAttribute("value", feed))))
             .Save(nugetConfig);
@@ -531,7 +380,6 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
         Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", toolRoot);
         try
         {
-            await RunAsync(toolRoot, "dotnet", "tool", "restore", "--configfile", nugetConfig);
             await VerifyPortConflictAsync();
             await using var proxy = CreateProxy(owned: true);
             await proxy.StartAsync(token);
@@ -592,7 +440,9 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
                     await proxy.StartAsync(token);
                     throw new InvalidOperationException("The ASP.NET host reported readiness on an occupied Vite port.");
                 }
-                catch (InvalidOperationException exception) when (exception.Message.Contains("Jolt dev exited with code", StringComparison.Ordinal))
+                catch (InvalidOperationException exception) when (
+                    exception.Message.Contains("Jolt dev exited with code", StringComparison.Ordinal) &&
+                    exception.Message.Contains($"Port {vitePort} is already in use", StringComparison.Ordinal))
                 {
                     Console.WriteLine("The CLI and ASP.NET host failed on the occupied port. The next host launch retries that same port.");
                 }
@@ -626,8 +476,12 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
     async Task VerifyPublishedSampleAsync()
     {
         var project = Path.Combine(root, "production-project");
-        var csproj = CopyAspNetSample(repo, project);
-        var frontend = Path.Combine(project, "frontend");
+        var csproj = CopyAspNetSample(repo, project, version);
+        // dotnet publish restores and invokes this fixture's pinned tool on its own.
+        new XElement("configuration", new XElement("packageSources",
+            new XElement("add", new XAttribute("key", "candidate"), new XAttribute("value", feed))))
+            .Save(Path.Combine(project, "NuGet.Config"));
+        var frontend = project;
         var buildLog = Path.Combine(project, "vite-builds.log");
         var config = Path.Combine(frontend, "vite.config.js");
         await File.WriteAllTextAsync(config, """
@@ -636,7 +490,7 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
             export default defineConfig({
                 base: '/portal/frontend/',
                 plugins: [{ name: 'fixture-build-count', buildStart() {
-                    appendFileSync(new URL('../vite-builds.log', import.meta.url), 'build\n');
+                    appendFileSync(new URL('./vite-builds.log', import.meta.url), 'build\n');
                 } }]
             });
             """, token);
@@ -653,16 +507,15 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
                 load.textContent = message;
             };
             """, token);
-        await RunAsync(project, jolt, "bundle", frontend);
         var publish = Path.Combine(root, "published-sample");
         await RunAsync(project, "dotnet", "publish", csproj, "--nologo", "-o", publish);
         if (!(await File.ReadAllLinesAsync(buildLog, token)).SequenceEqual(["build"]))
-            throw new InvalidOperationException("Expected exactly one Vite build across Jolt bundle and .NET publish.");
-        var dist = Path.Combine(publish, "frontend", "dist");
-        var expected = Directory.EnumerateFiles(Path.Combine(frontend, "dist"), "*", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(frontend, path)).ToHashSet(StringComparer.Ordinal);
-        var actual = Directory.EnumerateFiles(Path.Combine(publish, "frontend"), "*", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(Path.Combine(publish, "frontend"), path));
+            throw new InvalidOperationException("Expected dotnet publish to run exactly one Vite build.");
+        var dist = Path.Combine(publish, "wwwroot");
+        var expected = Directory.EnumerateFiles(Path.Combine(frontend, ".jazor", "dist"), "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(Path.Combine(frontend, ".jazor", "dist"), path)).ToHashSet(StringComparer.Ordinal);
+        var actual = Directory.EnumerateFiles(Path.Combine(publish, "wwwroot"), "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(Path.Combine(publish, "wwwroot"), path));
         if (!File.Exists(Path.Combine(dist, "index.html")) || !expected.SetEquals(actual))
             throw new InvalidOperationException("The published sample must contain exactly the built frontend assets.");
         var production = new Uri($"http://127.0.0.1:{AllocateLoopbackPort()}/portal/frontend/index.html");
@@ -713,20 +566,23 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
         });
         builder.WebHost.UseUrls(host.ToString());
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
-        if (owned)
-            builder.Services.AddHostedService<JoltDevSession>();
-        builder.AddJazorFrontend(options =>
+        var application = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName($"JoltProxyFixture_{Guid.NewGuid():N}"), AssemblyBuilderAccess.Run);
+        application.SetCustomAttribute(new CustomAttributeBuilder(
+            typeof(AssemblyMetadataAttribute).GetConstructor([typeof(string), typeof(string)])!,
+            ["JoltTool", "Jazor.Jolt@" + version]));
+        builder.Environment.ApplicationName = application.GetName().Name!;
+        builder.AddJazorSPA(options =>
         {
             options.ProjectRootPath = root;
             options.PathBase = "/prefix";
             options.RequestPath = "/jazor";
             options.DevelopmentEntryRelativePath = "index.html";
             options.Vite.ServerOrigin = vite;
-            options.Vite.LaunchServer = false;
+            options.Vite.LaunchServer = owned;
         });
         var proxy = builder.Build();
         proxy.UseJazorPathBase();
-        proxy.UseJazorFrontend();
+        proxy.UseJazorSPA();
         return proxy;
     }
 
@@ -759,266 +615,319 @@ static async Task VerifyJoltProxyAsync(string repo, string temporaryRoot, string
     }
 }
 
-static async Task WriteFixtureAsync(
-    string componentPath,
-    string sourceMapPath,
-    string manifestPath,
-    string version,
-    string contentHash,
-    string templateHash)
+static async Task VerifyJoltDebugAsync(string repo, string temporaryRoot, string jolt, string chromium)
 {
-    await File.WriteAllTextAsync(
-        componentPath,
-        CreateVueComponentModule(version),
-        new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-    await using (var sourceMapStream = new FileStream(
-                     sourceMapPath,
-                     FileMode.Create,
-                     FileAccess.Write,
-                     FileShare.Read,
-                     bufferSize: 4096,
-                     useAsync: true))
-    using (var sourceMapWriter = new Utf8JsonWriter(sourceMapStream))
+    var root = Directory.CreateDirectory(Path.Combine(temporaryRoot, "debug-" + Guid.NewGuid().ToString("N"))).FullName;
+    var sample = Path.Combine(repo, "samples", "Jolt.AspNetCore");
+    foreach (var file in new[] { "package.json", "pnpm-lock.yaml", "index.html", "vite.config.js", "main.js", "Counter.jazor" })
+        File.Copy(Path.Combine(sample, file), Path.Combine(root, file));
+    await File.AppendAllTextAsync(Path.Combine(root, "main.js"), """
+
+        import.meta.hot?.on('vite:afterUpdate', () => { window.joltUpdateCount = (window.joltUpdateCount ?? 0) + 1; });
+        """);
+    var module = Path.Combine(root, "IncrementStep.cs");
+    const string original = """
+        using ECMAScript;
+
+        [ECMAScriptModule("increment-step.js")]
+        public static partial class IncrementStep
+        {
+            public static int Value() => Local() + ReferencedStep.Value();
+        }
+        """;
+    await File.WriteAllTextAsync(module, original);
+    var helper = Path.Combine(Directory.CreateDirectory(Path.Combine(root, "Logic")).FullName, "IncrementStep.Local.cs");
+    const string helperSource = "public static partial class IncrementStep { private static int Local() => 1; }";
+    await File.WriteAllTextAsync(helper, helperSource);
+    var component = Path.Combine(root, "Counter.jazor");
+    var source = (await File.ReadAllTextAsync(component)).Replace("Count++;", "Count += IncrementStep.Value();", StringComparison.Ordinal);
+    await File.WriteAllTextAsync(component, source);
+    var sourceLine = Array.FindIndex(source.ReplaceLineEndings("\n").Split('\n'), line => line.Contains("Count += ", StringComparison.Ordinal));
+    var host = new Uri($"http://127.0.0.1:{AllocateLoopbackPort()}/");
+    var vitePort = AllocateLoopbackPort();
+    var sourceRoot = Path.Combine(repo, "src").Replace('\\', '/') + "/";
+    var referencedDirectory = Directory.CreateDirectory(root + "-reference").FullName;
+    var referencedProject = Path.Combine(referencedDirectory, "ReferencedStep.csproj");
+    var referencedSourcePath = Path.Combine(referencedDirectory, "ReferencedStep.cs");
+    const string referencedSource = """
+        using ECMAScript;
+        [ECMAScriptModule("referenced-step.js")]
+        public static class ReferencedStep { public static int Value() => 0; }
+        """;
+    await File.WriteAllTextAsync(referencedSourcePath, referencedSource);
+    var analyzer = $$"""
+          <ItemGroup>
+            <ProjectReference Include="{{sourceRoot}}ECMAScript.Vue/ECMAScript.Vue.csproj" />
+            <ProjectReference Include="{{sourceRoot}}Jazor.Analyzer/Jazor.Analyzer.csproj" ReferenceOutputAssembly="false" />
+          </ItemGroup>
+          <Target Name="ResolveFixtureAnalyzer" BeforeTargets="CoreCompile">
+            <MSBuild Projects="{{sourceRoot}}Jazor.Analyzer/Jazor.Analyzer.csproj" Targets="GetTargetPath">
+              <Output TaskParameter="TargetOutputs" ItemName="_FixtureAnalyzer" />
+            </MSBuild>
+            <PropertyGroup>
+              <_FixtureAnalyzerDirectory>@(_FixtureAnalyzer->'%(RootDir)%(Directory)')</_FixtureAnalyzerDirectory>
+            </PropertyGroup>
+            <ItemGroup>
+              <Analyzer Include="$(_FixtureAnalyzerDirectory)Jazor.Analyzer.dll;$(_FixtureAnalyzerDirectory)Jazor.Compiler.dll;$(_FixtureAnalyzerDirectory)Jazor.Common.dll;$(_FixtureAnalyzerDirectory)ECMAScript.Contract.dll;$(_FixtureAnalyzerDirectory)Acornima.dll;$(_FixtureAnalyzerDirectory)Acornima.Extras.dll;$(_FixtureAnalyzerDirectory)ICSharpCode.Decompiler.dll" />
+            </ItemGroup>
+          </Target>
+        """;
+    await File.WriteAllTextAsync(referencedProject, $$"""
+        <Project Sdk="Microsoft.NET.Sdk">
+          <PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup>
+        {{analyzer}}
+        </Project>
+        """);
+    var project = Path.Combine(root, "DebugFixture.csproj");
+    await File.WriteAllTextAsync(project, $$"""
+        <Project Sdk="Microsoft.NET.Sdk.Web">
+          <Import Project="{{sourceRoot}}Jazor/build/Jazor.props" />
+          <PropertyGroup>
+            <TargetFramework>net11.0</TargetFramework>
+            <ImplicitUsings>enable</ImplicitUsings>
+            <_JazorVueProject>true</_JazorVueProject>
+            <DefaultItemExcludes>$(DefaultItemExcludes);node_modules/**;.jazor/**</DefaultItemExcludes>
+          </PropertyGroup>
+          <ItemGroup>
+            <AssemblyMetadata Include="JoltHost" Value="{{System.Security.SecurityElement.Escape(jolt)}}" />
+            <ProjectReference Include="{{referencedProject}}" />
+            <ProjectReference Include="{{sourceRoot}}Jazor.AspNetCore.Dev/Jazor.AspNetCore.Dev.csproj" />
+            <ProjectReference Include="{{sourceRoot}}Jazor.Emit/Jazor.Emit.csproj" ReferenceOutputAssembly="false" />
+          </ItemGroup>
+        {{analyzer}}
+          <Import Project="{{sourceRoot}}Jazor/build/Jazor.targets" />
+        </Project>
+        """);
+    var program = (await File.ReadAllTextAsync(Path.Combine(sample, "Program.cs"))).Replace(":15658", $":{vitePort}", StringComparison.Ordinal);
+    await File.WriteAllTextAsync(Path.Combine(root, "Program.cs"), program);
+    using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+    var token = timeout.Token;
+    Console.WriteLine($"Debug fixture: {root}");
+    using (var build = StartProcess("dotnet", "build", project, "--artifacts-path", Path.Combine(root, ".jazor", "initial-build"),
+        "-p:_JoltRefreshModules=true"))
     {
-        sourceMapWriter.WriteStartObject();
-        sourceMapWriter.WriteNumber("version", 3);
-        sourceMapWriter.WriteString("file", "component.mjs");
-        sourceMapWriter.WriteStartArray("sources");
-        sourceMapWriter.WriteStringValue("Pages/HmrFixture.razor");
-        sourceMapWriter.WriteEndArray();
-        sourceMapWriter.WriteStartArray("sourcesContent");
-        sourceMapWriter.WriteStringValue("<span>child:" + version + "</span>");
-        sourceMapWriter.WriteEndArray();
-        sourceMapWriter.WriteStartArray("names");
-        sourceMapWriter.WriteEndArray();
-        sourceMapWriter.WriteString("mappings", "AAAA");
-        sourceMapWriter.WriteEndObject();
-        await sourceMapWriter.FlushAsync();
+        await build.WaitForExitAsync(token);
+        if (build.ExitCode != 0)
+            throw new InvalidOperationException($"Debug fixture build failed with {build.ExitCode}.");
+    }
+    using var app = StartProcess("dotnet", Path.Combine(root, ".jazor", "initial-build", "bin", "DebugFixture", "debug", "DebugFixture.dll"),
+        "--environment", "Development", "--urls", host.AbsoluteUri);
+    using var health = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+    try
+    {
+    await WaitAsync(async () =>
+    {
+        if (app.HasExited)
+            throw new InvalidOperationException($"Debug host exited with {app.ExitCode}.");
+        try
+        {
+            using var response = await health.GetAsync(new Uri(host, "portal/frontend/"), token);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException) { return false; }
+        catch (TaskCanceledException) when (!token.IsCancellationRequested) { return false; }
+    });
+    var profile = Path.Combine(temporaryRoot, Path.GetFileName(root) + "-chromium");
+    var launch = new ProcessStartInfo(chromium) { UseShellExecute = false };
+    foreach (var argument in new[] { "--headless", "--disable-gpu", "--remote-debugging-port=0", $"--user-data-dir={profile}", "about:blank" })
+        launch.ArgumentList.Add(argument);
+    using var browser = Process.Start(launch)!;
+    try
+    {
+        using var http = new HttpClient();
+        using var socket = new ClientWebSocket();
+        await WaitAsync(async () =>
+        {
+            if (browser.HasExited)
+                throw new InvalidOperationException($"Chromium exited with code {browser.ExitCode}.");
+            try
+            {
+                var portFile = Path.Combine(profile, "DevToolsActivePort");
+                if (!File.Exists(portFile) || !int.TryParse((await File.ReadAllLinesAsync(portFile, token)).FirstOrDefault(), out var port))
+                    return false;
+                using var targets = JsonDocument.Parse(await http.GetStringAsync($"http://127.0.0.1:{port}/json/list", token));
+                var page = targets.RootElement.EnumerateArray().Single(target => target.GetProperty("type").GetString() == "page");
+                await socket.ConnectAsync(new Uri(page.GetProperty("webSocketDebuggerUrl").GetString()!), token);
+                return true;
+            }
+            catch (IOException) { return false; }
+        });
+
+        var parsedScripts = new List<JsonElement>();
+        JsonElement stopped = default;
+        var sameOriginSockets = new HashSet<string>(StringComparer.Ordinal);
+        var sameOriginHmrConnected = false;
+        var request = 0;
+        await SendAsync("Page.enable", new { });
+        await SendAsync("Network.enable", new { });
+        await SendAsync("Debugger.enable", new { });
+        await SendAsync("Page.navigate", new { url = new Uri(host, "portal/frontend/").AbsoluteUri });
+        await WaitAsync(async () => await EvaluateAsync("document.querySelector('#count')?.textContent === '0'") && sameOriginHmrConnected);
+        var script = parsedScripts.Last(parameters =>
+            parameters.TryGetProperty("sourceMapURL", out _) && parameters.GetProperty("url").GetString()!.Contains("/Counter.mjs", StringComparison.Ordinal));
+        var scriptUri = new Uri(script.GetProperty("url").GetString()!);
+        var mapUrl = script.GetProperty("sourceMapURL").GetString()!;
+        var mapJson = mapUrl.StartsWith("data:", StringComparison.Ordinal)
+            ? Encoding.UTF8.GetString(Convert.FromBase64String(mapUrl[(mapUrl.IndexOf(',') + 1)..]))
+            : await http.GetStringAsync(new Uri(scriptUri, mapUrl), token);
+        var map = new SourceMapReader().Read(mapJson);
+        var scriptId = script.GetProperty("scriptId").GetString();
+        // CDP speaks generated coordinates. Resolve and check both directions using the map Chromium reported.
+        var mapped = map.Segments.First(segment => segment.SourceLine == sourceLine && IsComponent(segment));
+        var binding = await SendAsync("Debugger.setBreakpoint", new
+        {
+            location = new { scriptId, lineNumber = mapped.GeneratedLine, columnNumber = mapped.GeneratedColumn }
+        });
+        var breakpointId = binding.GetProperty("breakpointId").GetString();
+        var actual = binding.GetProperty("actualLocation");
+        if (actual.GetProperty("scriptId").GetString() != scriptId || !MapsToSourceLine(actual))
+            throw new InvalidOperationException($"Chromium bound outside Counter.jazor:{sourceLine + 1}: {actual}");
+        await SendAsync("Runtime.evaluate", new { expression = "setTimeout(() => document.querySelector('#increment').click(), 0)" });
+        while (stopped.ValueKind == JsonValueKind.Undefined)
+        {
+            var message = await ReceiveAsync();
+            if (message.TryGetProperty("method", out var method) && method.GetString() == "Debugger.paused")
+                stopped = message.GetProperty("params");
+        }
+        var frame = stopped.GetProperty("callFrames")[0].GetProperty("location");
+        if (!stopped.GetProperty("hitBreakpoints").EnumerateArray().Any(id => id.GetString() == breakpointId) ||
+            frame.GetProperty("scriptId").GetString() != scriptId || !MapsToSourceLine(frame))
+            throw new InvalidOperationException($"Unexpected breakpoint stop: {frame}");
+        Console.WriteLine($"Chromium bound and hit Counter.jazor:{sourceLine + 1} through the ASP.NET host.");
+        await SendAsync("Debugger.removeBreakpoint", new { breakpointId });
+        await SendAsync("Debugger.resume", new { });
+        await WaitAsync(() => EvaluateAsync("document.querySelector('#count')?.textContent === '1'"));
+
+        await EvaluateAsync("(window.debugHmrPage = true) && ((window.joltUpdateCount = 0) === 0)");
+        File.Delete(helper);
+        var replacementDirectory = Directory.CreateDirectory(Path.Combine(root, "ReplacementLogic")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(replacementDirectory, "IncrementStep.Local.cs"),
+            helperSource.Replace("=> 1;", "=> 2;", StringComparison.Ordinal), token);
+        // A plain module update must reach the running application before its next click.
+        await WaitAsync(() => EvaluateAsync("""
+            window.joltUpdateCount > 0 && performance.getEntriesByType('resource').some(entry =>
+                entry.name.includes('/increment-step.js?') && new URL(entry.name).searchParams.has('t'))
+            """));
+        await EvaluateAsync("document.querySelector('#increment').click()");
+        await WaitAsync(() => EvaluateAsync("document.querySelector('#count')?.textContent === '3' && window.debugHmrPage === true"));
+        await EvaluateAsync("window.joltUpdateCount = 0");
+        File.Delete(referencedSourcePath);
+        var referenceReplacement = Directory.CreateDirectory(Path.Combine(referencedDirectory, "Nested")).FullName;
+        await File.WriteAllTextAsync(Path.Combine(referenceReplacement, "ReferencedStep.cs"),
+            referencedSource.Replace("=> 0;", "=> 4;", StringComparison.Ordinal), token);
+        await WaitAsync(() => EvaluateAsync("""
+            window.joltUpdateCount > 0 && performance.getEntriesByType('resource').some(entry =>
+                entry.name.includes('/referenced-step.js?') && new URL(entry.name).searchParams.has('t'))
+            """));
+        await EvaluateAsync("document.querySelector('#increment').click()");
+        await WaitAsync(() => EvaluateAsync("document.querySelector('#count')?.textContent === '9' && window.debugHmrPage === true"));
+        await File.WriteAllTextAsync(component, source.Replace("Jolt counter", "Updated Jolt counter", StringComparison.Ordinal), token);
+        await WaitAsync(() => EvaluateAsync("document.querySelector('h1')?.textContent === 'Updated Jolt counter' && document.querySelector('#count')?.textContent === '9' && window.debugHmrPage === true"));
+        Console.WriteLine("Host helper, referenced C# module and .jazor saves reached Chromium over same-origin HMR; count and page identity were preserved.");
+
+        bool IsComponent(SourceMapSegment segment) =>
+            map.Sources[segment.SourceIndex].Path.Replace('\\', '/').Split('/')[^1] == "Counter.jazor";
+
+        bool MapsToSourceLine(JsonElement location)
+        {
+            var line = location.GetProperty("lineNumber").GetInt32();
+            var column = location.GetProperty("columnNumber").GetInt32();
+            return map.Segments.LastOrDefault(segment => segment.GeneratedLine == line && segment.GeneratedColumn <= column) is { } segment
+                && segment.SourceLine == sourceLine && IsComponent(segment);
+        }
+
+        async Task<bool> EvaluateAsync(string expression)
+        {
+            var response = await SendAsync("Runtime.evaluate", new { expression, returnByValue = true });
+            if (response.TryGetProperty("exceptionDetails", out var error))
+                throw new InvalidOperationException(error.ToString());
+            return response.GetProperty("result").TryGetProperty("value", out var value) && value.ValueKind == JsonValueKind.True;
+        }
+
+        async Task<JsonElement> SendAsync(string method, object parameters)
+        {
+            var id = ++request;
+            await socket.SendAsync(JsonSerializer.SerializeToUtf8Bytes(new { id, method, @params = parameters }),
+                WebSocketMessageType.Text, true, token);
+            while (true)
+            {
+                var message = await ReceiveAsync();
+                if (message.TryGetProperty("id", out var responseId) && responseId.GetInt32() == id)
+                {
+                    if (message.TryGetProperty("error", out var error))
+                        throw new InvalidOperationException($"{method}: {error}");
+                    return message.GetProperty("result");
+                }
+                if (message.TryGetProperty("method", out var eventMethod))
+                {
+                    if (eventMethod.GetString() == "Debugger.scriptParsed")
+                        parsedScripts.Add(message.GetProperty("params"));
+                    if (eventMethod.GetString() == "Debugger.paused")
+                        stopped = message.GetProperty("params");
+                    if (eventMethod.GetString() == "Network.webSocketCreated")
+                    {
+                        var details = message.GetProperty("params");
+                        var endpoint = new Uri(details.GetProperty("url").GetString()!);
+                        if (endpoint.Authority == host.Authority && endpoint.AbsolutePath == "/portal/frontend/")
+                            sameOriginSockets.Add(details.GetProperty("requestId").GetString()!);
+                    }
+                    if (eventMethod.GetString() == "Network.webSocketHandshakeResponseReceived")
+                    {
+                        var details = message.GetProperty("params");
+                        sameOriginHmrConnected |= sameOriginSockets.Contains(details.GetProperty("requestId").GetString()!)
+                            && details.GetProperty("response").GetProperty("status").GetInt32() == 101;
+                    }
+                }
+            }
+        }
+
+        async Task<JsonElement> ReceiveAsync()
+        {
+            using var message = new MemoryStream();
+            var buffer = new byte[16 * 1024];
+            WebSocketReceiveResult result;
+            do
+            {
+                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+                if (result.MessageType == WebSocketMessageType.Close)
+                    throw new InvalidOperationException("Chromium closed the debug connection.");
+                message.Write(buffer, 0, result.Count);
+            } while (!result.EndOfMessage);
+            return JsonSerializer.Deserialize<JsonElement>(message.ToArray());
+        }
+    }
+    finally
+    {
+        if (!browser.HasExited)
+            browser.Kill(entireProcessTree: true);
+        await browser.WaitForExitAsync();
+    }
+    }
+    finally
+    {
+        if (!app.HasExited)
+            app.Kill(entireProcessTree: true);
+        await app.WaitForExitAsync();
     }
 
-    await using var manifestStream = new FileStream(
-        manifestPath,
-        FileMode.Create,
-        FileAccess.Write,
-        FileShare.Read,
-        bufferSize: 4096,
-        useAsync: true);
-    using var writer = new Utf8JsonWriter(manifestStream);
-    writer.WriteStartObject();
-    writer.WriteNumber("schemaVersion", 1);
-    writer.WriteNumber("runtimeProtocolVersion", 1);
-    writer.WriteString("rootAssemblyName", "HmrFixture");
-    writer.WriteStartArray("entries");
-    writer.WriteStringValue("component.mjs");
-    writer.WriteEndArray();
-    writer.WriteStartArray("modules");
-    writer.WriteStartObject();
-    writer.WriteString("assemblyName", "HmrFixture");
-    writer.WriteString("typeName", "Fixture.Component");
-    writer.WriteString("id", "Fixture.Component");
-    writer.WriteString("path", "component.mjs");
-    writer.WriteString("contentHash", contentHash);
-    writer.WriteStartObject("hmr");
-    writer.WriteString("providerId", "jazor.vue");
-    writer.WriteString("moduleId", "fixture:component");
-    writer.WriteStartObject("data");
-    writer.WriteString("componentId", "Fixture.Component");
-    writer.WriteString("descriptorHash", "descriptor-v1");
-    writer.WriteString("templateHash", templateHash);
-    writer.WriteString("logicHash", "logic-v1");
-    writer.WriteString("boundaryKind", "template-only");
-    writer.WriteEndObject();
-    writer.WriteEndObject();
-    writer.WriteEndObject();
-    writer.WriteEndArray();
-    writer.WriteEndObject();
-    await writer.FlushAsync();
+    Process StartProcess(string file, params string[] arguments)
+    {
+        var processStart = new ProcessStartInfo(file) { WorkingDirectory = root, UseShellExecute = false };
+        foreach (var argument in arguments)
+            processStart.ArgumentList.Add(argument);
+        return Process.Start(processStart)!;
+    }
+    async Task WaitAsync(Func<Task<bool>> condition)
+    {
+        while (!await condition())
+            await Task.Delay(100, token);
+    }
 }
-
-static string CreateVueComponentModule(string version)
-    => $$"""
-        import { defineComponent, h } from "/vue.runtime.esm-browser.js";
-        const __jazorComponent = defineComponent({
-          name: "JazorHmrFixtureComponent",
-          setup() {
-            return () => h("span", { id: "component-version" }, "child:{{version}}");
-          }
-        });
-        if (globalThis.JazorHmr && typeof globalThis.JazorHmr.registerVueComponent === "function") {
-          globalThis.JazorHmr.registerVueComponent("fixture:component", __jazorComponent);
-        }
-        export default __jazorComponent;
-        //# sourceMappingURL=component.mjs.map
-        """;
-
-static string CreateBrowserHarness()
-    => """
-        <!doctype html>
-        <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <title>Jazor Development HMR Fixture</title>
-          </head>
-          <body>
-            <div id="app"></div>
-            <script type="module">
-              import { createApp, defineComponent, h, ref } from "/vue.runtime.esm-browser.js";
-
-              const trace = JSON.parse(sessionStorage.getItem("jazor-hmr-fixture-trace") || "[]");
-              const record = value => {
-                trace.push(value);
-                sessionStorage.setItem("jazor-hmr-fixture-trace", JSON.stringify(trace));
-              };
-              const complete = value => {
-                sessionStorage.setItem("jazor-hmr-fixture-result", value);
-                document.documentElement.setAttribute("data-jazor-hmr-result", value);
-              };
-              const loads = Number(sessionStorage.getItem("jazor-hmr-fixture-loads") || "0") + 1;
-              sessionStorage.setItem("jazor-hmr-fixture-loads", String(loads));
-              window.addEventListener("jazor:module-update", event => {
-                record("event:" + event.detail.moduleUpdates.map(update => update.moduleId).join(","));
-              });
-
-              async function waitForHmr() {
-                for (let index = 0; index < 120; index++) {
-                  if (window.JazorHmr) {
-                    return window.JazorHmr;
-                  }
-                  await new Promise(resolve => setTimeout(resolve, 25));
-                }
-                throw new Error("JazorHmr was not initialized");
-              }
-
-              try {
-                if (loads > 1) {
-                  complete("full-reload:" + (sessionStorage.getItem("jazor-hmr-fixture-result") || "before-handler") + ":" + trace.join(","));
-                } else {
-                  const hmr = await waitForHmr();
-                  document.documentElement.setAttribute("data-jazor-hmr-phase", "transport-pending");
-                  await hmr.ready;
-                  document.documentElement.setAttribute("data-jazor-hmr-phase", "transport-ready");
-                  const initial = await import("/jazor/component.mjs");
-                  const host = defineComponent({
-                    setup() {
-                      const count = ref(0);
-                      return () => h("section", null, [
-                        h("button", { id: "increment", onClick: () => { count.value++; } }, "increment"),
-                        h("output", { id: "parent-count" }, String(count.value)),
-                        h(initial.default)
-                      ]);
-                    }
-                  });
-                  createApp(host).mount("#app");
-                  record("component-registered");
-                  complete("ready:" + document.getElementById("component-version")?.textContent);
-                }
-              } catch (error) {
-                complete("error:" + (error instanceof Error ? error.message : String(error)));
-              }
-            </script>
-          </body>
-        </html>
-        """;
-
 static int AllocateLoopbackPort()
 {
     using var listener = new TcpListener(IPAddress.Loopback, 0);
     listener.Start();
     return ((IPEndPoint)listener.LocalEndpoint).Port;
-}
-
-static async Task<string> WaitForBrowserConditionAsync(
-    string repoRoot,
-    string browserSessionName,
-    string conditionExpression,
-    TimeSpan timeout)
-{
-    ProcessResult? lastFailure = null;
-    for (var attempt = 0; attempt < 3; attempt++)
-    {
-        var result = await RunPlaywrightApiAsync(
-            repoRoot,
-            browserSessionName,
-            "eval",
-            "async () => { const deadline = Date.now() + " +
-            timeout.TotalMilliseconds.ToString(System.Globalization.CultureInfo.InvariantCulture) +
-            "; while (Date.now() < deadline) { const error = document.documentElement.getAttribute('data-jazor-hmr-result'); if (error && error.startsWith('error:')) return error; const value = (" +
-            conditionExpression +
-            "); if (value) return value; await new Promise(resolve => setTimeout(resolve, 50)); } return 'timeout:' + (document.documentElement.getAttribute('data-jazor-hmr-result') || 'pending'); }");
-        if (result.ExitCode == 0)
-            return result.StandardOutput;
-
-        lastFailure = result;
-        await Task.Delay(TimeSpan.FromMilliseconds(250));
-    }
-
-    EnsureProcessSucceeded(lastFailure!, "Playwright could not read the development HMR fixture state.");
-    throw new InvalidOperationException("Unreachable.");
-}
-
-static Task<ProcessResult> RunPlaywrightApiAsync(
-    string repoRoot, string browserSessionName, string command, params string[] commandArguments)
-    => HmrBrowser.RunAsync(repoRoot, command, commandArguments);
-static async Task<string> ReadBrowserStateAsync(string repoRoot, string browserSessionName)
-{
-    var result = await RunPlaywrightApiAsync(
-        repoRoot,
-        browserSessionName,
-        "eval",
-        "() => ({ href: location.href, result: document.documentElement.getAttribute('data-jazor-hmr-result'), phase: document.documentElement.getAttribute('data-jazor-hmr-phase'), component: document.getElementById('component-version')?.textContent, count: document.getElementById('parent-count')?.textContent, loads: sessionStorage.getItem('jazor-hmr-fixture-loads'), hmr: typeof window.JazorHmr, ready: typeof window.JazorHmr?.ready })");
-    return result.StandardOutput + Environment.NewLine + result.StandardError;
-}
-
-static async Task VerifyBrowserSourceMapAsync(HttpClient httpClient, Uri baseAddress, string expectedVersion)
-{
-    var moduleText = await httpClient.GetStringAsync(new Uri(baseAddress, "jazor/component.mjs"));
-    if (!moduleText.Contains("//# sourceMappingURL=component.mjs.map", StringComparison.Ordinal))
-    {
-        throw new InvalidOperationException("Development HMR fixture module did not declare its source map.");
-    }
-
-    var sourceMapResponse = await httpClient.GetAsync(new Uri(baseAddress, "jazor/component.mjs.map?version=" + expectedVersion));
-    sourceMapResponse.EnsureSuccessStatusCode();
-    using var sourceMap = JsonDocument.Parse(await sourceMapResponse.Content.ReadAsStringAsync());
-    if (!sourceMap.RootElement.TryGetProperty("sources", out var sources) ||
-        !sources.EnumerateArray().Any(static source => source.GetString() == "Pages/HmrFixture.razor") ||
-        !sourceMap.RootElement.TryGetProperty("sourcesContent", out var sourceContents) ||
-        !sourceContents.EnumerateArray().Any(source =>
-            source.ValueKind == JsonValueKind.String &&
-            source.GetString()?.Contains("child:" + expectedVersion, StringComparison.Ordinal) == true))
-    {
-        throw new InvalidOperationException("Development HMR fixture source map did not expose authored Razor v" + expectedVersion + ".");
-    }
-}
-
-static async Task RestoreVueRuntimeAsync(string repoRoot, string artifactRoot)
-{
-    var packageJsonPath = Path.Combine(artifactRoot, "package.json");
-    await File.WriteAllTextAsync(
-        packageJsonPath,
-        """
-        {
-          "name": "@jazor/development-hmr-fixture",
-          "private": true,
-          "type": "module",
-          "dependencies": {
-            "vue": "3.5.42"
-          }
-        }
-        """ + Environment.NewLine,
-        new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-
-    await NodeToolchain.RestoreAsync(artifactRoot, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
-        CancellationToken.None, Console.Out);
-}
-static void EnsureProcessSucceeded(ProcessResult result, string message)
-{
-    if (result.ExitCode == 0)
-        return;
-
-    throw new InvalidOperationException(
-        message + " Exit code: " + result.ExitCode + Environment.NewLine +
-        result.StandardOutput + Environment.NewLine + result.StandardError);
 }
 
 static string RequireRepoRoot()
@@ -1034,12 +943,11 @@ static string RequireRepoRoot()
     throw new InvalidOperationException("Run this script from the Jazor repository root.");
 }
 
-static void ConfigureRepositoryEnvironment(string repoRoot)
+static void ConfigureRepositoryEnvironment(string repoRoot, string tempDirectory)
 {
-    var tempDirectory = Path.Combine(repoRoot, ".tmp", "development-hmr-temp");
     var nugetPackages = Path.Combine(repoRoot, ".dotnet", ".nuget", "packages") + Path.DirectorySeparatorChar;
-    var nugetHttpCache = Path.Combine(repoRoot, ".tmp", "nuget-http-cache");
-    var npmCache = Path.Combine(repoRoot, ".tmp", "npm-cache");
+    var nugetHttpCache = Path.Combine(tempDirectory, "nuget-http-cache");
+    var npmCache = Path.Combine(tempDirectory, "npm-cache");
 
     foreach (var directory in new[] { tempDirectory, nugetPackages, nugetHttpCache, npmCache, Path.Combine(repoRoot, ".dotnet") })
     {
@@ -1048,77 +956,14 @@ static void ConfigureRepositoryEnvironment(string repoRoot)
 
     Environment.SetEnvironmentVariable("TEMP", tempDirectory);
     Environment.SetEnvironmentVariable("TMP", tempDirectory);
+    Environment.SetEnvironmentVariable("TMPDIR", tempDirectory);
     Environment.SetEnvironmentVariable("DOTNET_CLI_HOME", Path.Combine(repoRoot, ".dotnet"));
     Environment.SetEnvironmentVariable("NUGET_PACKAGES", nugetPackages);
     Environment.SetEnvironmentVariable("NUGET_HTTP_CACHE_PATH", nugetHttpCache);
-    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Path.Combine(repoRoot, ".tmp", "nodeapi-store"));
+    Environment.SetEnvironmentVariable("JazorPnpmStoreDirectory", Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
+        ?? Path.Combine(repoRoot, "test", "jolt", "pnpm-store"));
     Environment.SetEnvironmentVariable("NPM_CONFIG_CACHE", npmCache);
     Environment.SetEnvironmentVariable("npm_config_cache", npmCache);
     Environment.SetEnvironmentVariable("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
     Environment.SetEnvironmentVariable("MSBUILDDISABLENODEREUSE", "1");
-}
-
-internal sealed record ProcessResult(int ExitCode, string StandardOutput, string StandardError);
-
-static class HmrBrowser
-{
-    private static NodeEnvironment? _environment;
-    private static string? _module;
-
-    public static async Task<ProcessResult> RunAsync(string repoRoot, string command, string[] arguments)
-    {
-        try
-        {
-            if (_environment is null)
-            {
-                var root = Path.Combine(repoRoot, ".tmp", "nodeapi-browser");
-                Directory.CreateDirectory(root);
-                await File.WriteAllTextAsync(Path.Combine(root, "package.json"),
-                    """{"private":true,"type":"module","dependencies":{"playwright-core":"1.65.0"}}""");
-                await NodeToolchain.RestoreAsync(root, Path.Combine(repoRoot, ".tmp", "nodeapi-store"),
-                    CancellationToken.None, Console.Out);
-                _module = Path.Combine(root, "hmr-browser.cjs");
-                await File.WriteAllTextAsync(_module, """
-                    const { chromium } = require('playwright-core');
-                    let browser, page;
-                    exports.run = async (requestJson) => {
-                        const { command, arguments: args, executablePath } = JSON.parse(requestJson);
-                        switch (command) {
-                            case 'open':
-                                browser = await chromium.launch(executablePath
-                                    ? { executablePath, headless: true }
-                                    : { channel: 'chrome', headless: true });
-                                page = await browser.newPage();
-                                await page.goto(args[0]);
-                                return 'opened';
-                            case 'eval':
-                                return JSON.stringify(await page.evaluate('(' + args[0] + ')()'));
-                            case 'close':
-                                await browser.close();
-                                browser = page = undefined;
-                                return 'closed';
-                            default:
-                                throw new Error('Unsupported browser operation: ' + command);
-                        }
-                    };
-                    """);
-                _environment = new NodeEnvironment(root);
-            }
-            var output = await _environment.InvokeAsync(_module!, "run",
-                JsonSerializer.Serialize(new { command, arguments, executablePath = Environment.GetEnvironmentVariable("JAZOR_BROWSER_EXE") }));
-            return new ProcessResult(0, output, "");
-        }
-        catch (Exception exception)
-        {
-            return new ProcessResult(1, "", exception.ToString());
-        }
-        finally
-        {
-            if (command == "close")
-            {
-                _environment?.Dispose();
-                _environment = null;
-            }
-        }
-    }
 }

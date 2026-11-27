@@ -28,6 +28,6 @@ internal static class JoltClrRuntime
             foreach (var dependency in entry.GetProperty("moduleDependencies").EnumerateArray())
                 paths.Enqueue(dependency.GetString()!);
         }
-        return modules;
+        return modules.ToDictionary(pair => ".jolt-runtime/" + pair.Key, pair => pair.Value, StringComparer.Ordinal);
     }
 }

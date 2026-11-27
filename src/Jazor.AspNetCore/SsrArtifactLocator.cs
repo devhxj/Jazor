@@ -102,8 +102,9 @@ internal sealed class SsrArtifactLocator
             yield break;
         }
 
-        // SSR and the JavaScript web service consume the same standard project root.
+        // Source builds use JazorDir. Published SSR remains outside the public web root.
         yield return Path.GetFullPath(Path.Combine(_environment.ContentRootPath, JazorArtifactDefaults.DirectoryName));
+        yield return Path.GetFullPath(Path.Combine(_environment.ContentRootPath, "jazor"));
     }
 
     private string ResolveConfiguredArtifactRoot(string configuredPath)

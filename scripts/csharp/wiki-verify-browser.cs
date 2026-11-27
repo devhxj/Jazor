@@ -50,7 +50,7 @@ var effectiveConfiguration = options.Publish && !options.ConfigurationWasExplici
 var isPublished = options.Publish || options.PublishedRoot is not null;
 
 string hostRoot = sampleRoot;
-string jazorRoot = Path.Combine(sampleRoot, "jazor");
+string jazorRoot = Path.Combine(sampleRoot, ".jazor");
 
 Trace("Starting wiki browser verification.");
 
@@ -60,7 +60,7 @@ try
     {
         Trace("Using an existing Wiki release publish.");
         hostRoot = publishRoot;
-        jazorRoot = Path.Combine(hostRoot, "jazor");
+        jazorRoot = Path.Combine(hostRoot, "wwwroot");
     }
     else if (options.Publish)
     {
@@ -101,7 +101,7 @@ try
         Trace("Publish completed.");
 
         hostRoot = publishRoot;
-        jazorRoot = Path.Combine(hostRoot, "jazor");
+        jazorRoot = Path.Combine(hostRoot, "wwwroot");
     }
     else if (options.BuildLocal)
     {
@@ -392,8 +392,8 @@ void AssertDebugArtifacts(string artifactRoot)
 
 void AssertReleaseArtifacts(string artifactRoot)
 {
-    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "dist", "bundle.js"), "production browser bundle");
-    if (File.Exists(Path.Combine(artifactRoot, "dist", "bundle.js.map")))
+    WikiScriptHelpers.EnsureFileExists(Path.Combine(artifactRoot, "bundle.js"), "production browser bundle");
+    if (File.Exists(Path.Combine(artifactRoot, "bundle.js.map")))
     {
         throw new InvalidOperationException("Release publish included source maps without JazorPublishSourceMaps=true.");
     }

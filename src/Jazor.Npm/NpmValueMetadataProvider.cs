@@ -21,6 +21,7 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
     internal static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     internal static readonly ConcurrentDictionary<string, SemaphoreSlim> ProjectGates = new();
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> ToolGates = new();
+    private static readonly ConcurrentDictionary<(Type Owner, string Prefix), string> ToolVersions = new();
     private readonly ConcurrentDictionary<(string Project, string Specifier, string Mode, string? Query), CacheEntry<ValueSnapshot>> _cache = new();
 
     public async Task<NpmValueExport> ReadValueAsync(string documentPath, string moduleSpecifier, string exportName,
@@ -333,18 +334,21 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
     private async Task<string> RestoreToolsAsync(string store, CancellationToken cancellationToken, Type resourceOwner,
         string resourcePrefix, Validation? validation = null)
     {
-        using var manifest = OpenResource("package.json");
-        using var lockfile = OpenResource("pnpm-lock.yaml");
-        var version = Convert.ToHexString(SHA256.HashData(lockfile));
-        lockfile.Position = 0;
+        // The embedded lockfile is immutable for this loaded assembly. Keep
+        // validating the on-disk tool inputs on every restore.
+        var version = ToolVersions.GetOrAdd((resourceOwner, resourcePrefix), static key =>
+        {
+            using var lockfile = OpenResource(key.Owner, key.Prefix, "pnpm-lock.yaml");
+            return Convert.ToHexString(SHA256.HashData(lockfile));
+        });
         var tools = Path.Combine(store, "npm-metadata", version);
         var gate = ToolGates.GetOrAdd(tools, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken);
         try
         {
             Directory.CreateDirectory(tools);
-            WriteResource(manifest, Path.Combine(tools, "package.json"));
-            WriteResource(lockfile, Path.Combine(tools, "pnpm-lock.yaml"));
+            WriteResource("package.json");
+            WriteResource("pnpm-lock.yaml");
             if (await RestoreWithStampAsync(tools, store, cancellationToken, standaloneTool: true) != "")
                 validation?.Clear();
             return tools;
@@ -354,13 +358,15 @@ public sealed partial class NpmValueMetadataProvider(string? storeDirectory = nu
             gate.Release();
         }
 
-        Stream OpenResource(string name) =>
-            resourceOwner.Assembly.GetManifestResourceStream(resourceOwner.Namespace + "." + resourcePrefix + name)!;
+        static Stream OpenResource(Type owner, string prefix, string name) =>
+            owner.Assembly.GetManifestResourceStream(owner.Namespace + "." + prefix + name)!;
 
-        static void WriteResource(Stream resource, string path)
+        void WriteResource(string name)
         {
+            var path = Path.Combine(tools, name);
             if (File.Exists(path))
                 return;
+            using var resource = OpenResource(resourceOwner, resourcePrefix, name);
             // ToolGates protects only this process. Publish a complete file before another process can restore it.
             var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
             try
