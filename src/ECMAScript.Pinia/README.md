@@ -11,8 +11,8 @@ C# 模块生成到消费程序集的 `Jazor.Generated.ModuleCatalog`，不会改
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.7.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.7.2" />
+  <PackageReference Include="Jazor" Version="2.7.4" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.7.4" />
 </ItemGroup>
 ```
 

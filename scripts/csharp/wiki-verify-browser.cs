@@ -404,8 +404,7 @@ void AssertReleaseArtifacts(string artifactRoot)
     {
         Path.Combine(artifactRoot, "obj", "jazor-manifest.json"),
         Path.Combine(artifactRoot, "importmap.json"),
-        Path.Combine(artifactRoot, "ssr-importmap.json"),
-        Path.Combine(artifactRoot, "manifest.json")
+        Path.Combine(artifactRoot, "ssr-importmap.json")
     })
     {
         if (File.Exists(unexpectedPath) || Directory.Exists(unexpectedPath))

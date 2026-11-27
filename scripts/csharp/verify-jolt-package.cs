@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 const string packageId = "Jazor.Jolt";
@@ -89,8 +90,9 @@ try
     await RunProcessAsync("dotnet", consumer, null,
         ["tool", "install", packageId, "--version", version, "--tool-path", tools, "--configfile", config, "--no-cache"],
         packageCache: Path.Combine(scratch.FullName, "nuget"));
-    // RID tools use an SDK-generated .cmd launcher on Windows.
-    var commandPath = OperatingSystem.IsWindows() ? "cmd.exe" : Path.Combine(tools, "jolt");
+    // Windows SDK versions can produce either an executable or a command shim.
+    var useCommandShim = OperatingSystem.IsWindows() && !File.Exists(Path.Combine(tools, "jolt.exe"));
+    var commandPath = useCommandShim ? "cmd.exe" : Path.Combine(tools, OperatingSystem.IsWindows() ? "jolt.exe" : "jolt");
     var output = Path.Combine(consumer, ".jazor");
     var npmStore = Path.GetFullPath(Environment.GetEnvironmentVariable("JazorPnpmStoreDirectory")
         ?? Path.Combine(scratch.FullName, "npm-store"));
@@ -107,10 +109,18 @@ try
         || !File.Exists(Path.Combine(output, "App.mjs.map"))
         || !File.Exists(Path.Combine(output, "CounterButton.mjs")))
         throw new InvalidOperationException("Installed Jolt did not emit the npm import, author source map and local child module.");
-    if (editorFeatures && (!File.Exists(Path.Combine(output, "TypedTable.mjs")) ||
-        !File.Exists(Path.Combine(output, "clr", "System", "StringModule.js")) ||
-        File.Exists(Path.Combine(output, "_Imports.mjs"))))
-        throw new InvalidOperationException("Installed Jolt failed to materialize the typed table or its fixture's shared CLR modules, or emitted _Imports.jazor as a component.");
+    if (editorFeatures)
+    {
+        if (!File.Exists(Path.Combine(output, "TypedTable.mjs")) || File.Exists(Path.Combine(output, "_Imports.mjs")))
+            throw new InvalidOperationException("Installed Jolt must emit TypedTable.mjs and omit _Imports.mjs.");
+        var nativeForm = Path.Combine(output, "NativeForm.mjs");
+        var stringModule = Regex.Match(await File.ReadAllTextAsync(nativeForm),
+            """
+            \bfrom\s+"(?<path>\.{1,2}/[^"]*clr/System/StringModule\.js)"
+            """).Groups["path"].Value;
+        if (stringModule.Length == 0 || !File.Exists(Path.Combine(Path.GetDirectoryName(nativeForm)!, stringModule)))
+            throw new InvalidOperationException("Installed Jolt did not emit and materialize the NativeForm StringModule import.");
+    }
     if (editorFeatures)
     {
         var counter = await File.ReadAllTextAsync(Path.Combine(output, "NpmCounter.mjs"));
@@ -198,7 +208,7 @@ try
         if (extraArgument is not null)
             arguments = [.. arguments, extraArgument];
         return RunProcessAsync(commandPath, consumer, npmStore,
-            OperatingSystem.IsWindows() ? ["/d", "/c", "jolt.cmd", .. arguments] : arguments,
+            useCommandShim ? ["/d", "/c", "%JOLT_PACKAGE_SHIM%", .. arguments] : arguments,
             tools, expectedError: expectedError, captureOutput: captureOutput);
     }
 }
@@ -245,7 +255,7 @@ static async Task<string> RunProcessAsync(string program, string workingDirector
 {
     var start = new ProcessStartInfo(program) { WorkingDirectory = workingDirectory, UseShellExecute = false };
     if (toolDirectory is not null)
-        start.Environment["PATH"] = toolDirectory + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+        start.Environment["JOLT_PACKAGE_SHIM"] = '"' + Path.Combine(toolDirectory, "jolt.cmd") + '"';
     if (npmStore is not null)
         start.Environment["JazorPnpmStoreDirectory"] = npmStore;
     if (packageCache is not null)

@@ -693,6 +693,7 @@ internal static partial class Importer
 internal static class LinkRewriter
 {
     private const string RepositoryBlobBaseUrl = "https://github.com/devhxj/Jazor/blob/main/";
+    private const string RepositoryTreeBaseUrl = "https://github.com/devhxj/Jazor/tree/main/";
 
     public static void Rewrite(PageModel page, Dictionary<string, string> routeByDocsPath, string repoRoot)
     {
@@ -744,8 +745,11 @@ internal static class LinkRewriter
         if (routeByDocsPath.TryGetValue(repoRelative, out var route))
             return route + fragment;
 
-        if (File.Exists(Path.Combine(repoRoot, repoRelative.Replace('/', Path.DirectorySeparatorChar))))
+        var repositoryPath = Path.Combine(repoRoot, repoRelative.Replace('/', Path.DirectorySeparatorChar));
+        if (File.Exists(repositoryPath))
             return RepositoryBlobBaseUrl + repoRelative + fragment;
+        if (Directory.Exists(repositoryPath))
+            return RepositoryTreeBaseUrl + repoRelative + fragment;
 
         Console.WriteLine("wiki-import-docs: warning: unresolved link '" + href + "' in " + page.SourceFile);
         return href;
