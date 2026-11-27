@@ -1,6 +1,6 @@
 # npm/JSR 包绑定指南
 
-> 面向：为上游 JavaScript/JSR 库创建 `ECMAScript.<Name>` 强类型绑定的仓库维护者。当前源码候选通过进程内 NodeApi 调用 pnpm、Vite 和 Vue SSR API，直接消费标准 `jazor/` 项目。
+> 面向：为上游 JavaScript/JSR 库创建 `ECMAScript.<Name>` 强类型绑定的仓库维护者。当前源码候选通过进程内 NodeApi 调用 pnpm、Vite 和 Vue SSR API，直接消费标准 `.jazor/` 项目。
 
 ## 绑定交付模型
 
@@ -12,7 +12,7 @@
 
 运行时包由 npm 或 JSR 提供。绑定包中的 manifest、inventory、许可证和上游快照记录来源、版本、完整性与导出证据；这些资料帮助生成器和测试校验契约，项目运行时解析使用恢复后的标准 `package.json`。
 
-ECMAScript 自有 MJS 属于源码库输入。`src/ECMAScript/clr/**` 写入 `jazor/clr/**`，其他 `ECMAScriptModule` 写入其声明的项目源码路径。源码模块使用相对 import，并与应用生成模块共同组成项目源码树。
+ECMAScript 自有 MJS 属于源码库输入。`src/ECMAScript/clr/**` 写入 `.jazor/clr/**`，其他 `ECMAScriptModule` 写入其声明的项目源码路径。源码模块使用相对 import，并与应用生成模块共同组成项目源码树。
 
 ## 上游锁定
 
@@ -134,7 +134,7 @@ MSBuild 执行 Emit 时，绑定包参与以下步骤：
 2. 让 Emit 把标准 bare import 写入项目源码；
 3. 让 Emit 生成 `entry.js`、可选的 `ssr-entry.js` 和根 `package.json`；
 4. 由 pnpm API 恢复 `node_modules`、生成或校验 `pnpm-lock.yaml`，再检查语法与 Vite 模块图；
-5. 由项目配置的 JavaScript 构建工具从同一 `jazor/` 根读取上游 `exports`、conditions、`sideEffects` 和 ESM 资源图。
+5. 由项目配置的 JavaScript 构建工具从同一 `.jazor/` 根读取上游 `exports`、conditions、`sideEffects` 和 ESM 资源图。
 
 最终宿主统一生成项目入口、恢复依赖并构建 bundle，使源码 ProjectReference、NuGet consumer、浏览器构建与 SSR 共享同一标准项目。
 
@@ -157,7 +157,7 @@ MSBuild 执行 Emit 时，绑定包参与以下步骤：
 
 1. package identity、版本、integrity、exports、conditions 和 peer dependency 与上游快照一致；
 2. 每个 `[ECMAScript]` specifier 与上游公开入口和 export name 一致；
-3. 生成源码中的 bare import 都能在 `jazor/package.json` 找到 dependency key；
+3. 生成源码中的 bare import 都能在 `.jazor/package.json` 找到 dependency key；
 4. 项目源码的相对 import、source map 和本地资源路径可解析；
 5. pnpm API 恢复、lock 冻结和恢复后的模块图检查通过；
 6. 构建工具提供的 metafile 或等价输出证明单组件/单函数入口只保留可达 JS、CSS、worker 和静态资源；
@@ -182,7 +182,7 @@ dotnet test src/Jazor.EmitTest/Jazor.EmitTest.csproj
 - `buildTransitive` locator，使最终宿主能够发现 binding declaration；
 - README 与版本升级说明。
 
-项目构建输出由最终宿主的 Emit 写入 `jazor/`。绑定包的版本与 Jazor 其他包保持 lockstep。
+项目构建输出由最终宿主的 Emit 写入 `.jazor/`。绑定包的版本与 Jazor 其他包保持 lockstep。
 
 ## 交付检查表
 

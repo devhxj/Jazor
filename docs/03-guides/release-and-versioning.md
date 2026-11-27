@@ -1,6 +1,6 @@
 # 发版与版本规则
 
-> 当前版本：[2.7.2（2026-11-26）](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
+> 本次发布：[2.7.4（2026-11-27）](../../CHANGELOG.md#jazor-274)，使用 .NET 11 GA。版本变化与预览版迁移说明见 [CHANGELOG](../../CHANGELOG.md)。
 
 > 面向：Jazor 仓库维护者与贡献者。规则适用于所有 NuGet 包的版本决策、发布门禁与 CHANGELOG 记录。
 
@@ -49,6 +49,10 @@ Jazor 统一管理用户级投影缓存。直接使用 Jolt 编译器的调用�
 ### 2.7.1 宿主名称迁移例外
 
 维护者指定这次绑定契约变更以 2.7.1 发布。使用旧空名称截断规则的绑定须迁移到 `[Boundary]` 并重新编译。这是本次 PATCH 的版本例外。详见 [CHANGELOG](../../CHANGELOG.md#jazor-271)。
+
+### 2.7.4 ASP.NET Core SPA 迁移例外
+
+维护者指定从 2.7.2 直接发布 2.7.4，跳过 2.7.3。2.7.2 的公开宿主 API 使用 `AddJazorFrontend` 和 `UseJazorFrontend`。本次将其迁移至 `AddJazorSPA` 和 `UseJazorSPA`，同时移除独立浏览器刷新 API 和旧端点。现有使用者须按 [CHANGELOG](../../CHANGELOG.md#jazor-274) 迁移。这是一次性的 PATCH 例外，后续版本继续执行 MAJOR 规则、冻结基线和发布门禁。
 
 ## 发版节奏
 

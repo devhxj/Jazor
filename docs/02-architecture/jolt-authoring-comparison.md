@@ -17,7 +17,7 @@
 | 输出文本、属性和多个相邻节点 | `@name`、`@(price * count)`、`class="row-@index"`、`@@`、`@* 注释 *@`、`<text>`、`@:` | 保留现有 Razor 入口。测试相邻文本与空白、多根和条件分支，不引入可见的包裹元素。 |
 | 写带标记的 C# 语句 | `@{ var page = pages[i]; }`、`@for`、`@switch`、`case … when …`、`break`、`continue` | 在现有 `@if` / `@foreach` 上补齐常用控制流，再扩展 `@while`、`@do` 和带标记的 `@try` / `catch` / `finally`。保留局部作用域、退出目标和求值次数。模板同步产生 VNode，异步取数放到事件、setup 或 SSR 钩子。 |
 | 管理 C# 语句中的资源 | `@using (var scope = OpenScope()) { … }`、`@lock (gate) { … }` | 资源语句与导入指令分别解析。前者仅在核心支持相应释放协议时开放，保证退出与异常时各释放一次。涉及锁或跨线程同步的标记暂缓，须先定义可观察的宿主行为。 |
-| 组织跨文件的组件和 C# | `@using App.Shared`、`@namespace Shop.Orders`、`_Imports.jazor`、`OrderRow.jazor.cs` | 已有目录命名空间、`@using`、`@code` / `@functions`。目标由项目加载器按祖先到当前目录合并共享指令，文件级覆盖单值设置；共享文件不生成组件。同名 partial 文件复用同一实例类型和源码映射。 |
+| 组织跨文件的组件和 C# | `@using App.Shared`、`@namespace Shop.Orders`、`_Imports.jazor`、`OrderRowState.cs` | 目录共享导入由外向内应用。组件在 `@code` 声明实例成员，跨文件状态和 DTO 用普通 C# 类型，通过字段、参数或方法显式引用。 |
 | 声明可检查的参数和泛型 | `[Parameter, EditorRequired]`、`@typeparam TItem where TItem : IRow`、再声明 `@typeparam TKey` | 保留已有必填参数、默认值和单参数推断。补多参数、约束及明确传参，静态检查后擦除。级联泛型按祖先契约传播，不能确定就让作者指定类型。 |
 | 控制节点身份、引用和透传 | `<li @key="row.Id">`、`<input @ref="searchBox" />`、`<button @attributes="attrs">` | 现有普通 `key` 能传给 Vue。目标让 `@key` 使用同一 VNode key；DOM ref 挂载后赋值，卸载时清空，组件 ref 仅暴露声明的实例 API。展开按书写顺序求值，普通同名属性后者优先，class、style 和监听器按 Vue 合并规则处理。 |
 | 收取 DOM 事件 | `@onkeydown="HandleKey"`、`@onsubmit:preventDefault="true"`、`@onclick:stopPropagation="enabled"` | 从现有无参委托扩展到 WebIDL 事件参数、无参或有参的异步处理器。修饰符在事件发生时生效，拒绝无效组合。阻止传播按浏览器事件范围执行；Vue 接收返回的 Promise 并沿其错误处理路径传播。 |
@@ -176,7 +176,7 @@ return () => <SearchBox modelValue={query.value}
 | 责任层 | 本轮设计分工 |
 | --- | --- |
 | SDK Razor 与 `Jolt.Syntax` | 继续用组件模式的 Razor 标记 IR、Roslyn tokenizer 和原始区间；扩展语句、指令属性、模板片段和恢复节点。每项新指令先保留结构、参数和修饰符的位置。未知或尚未实现的框架指令给出定点诊断，普通 HTML、Web Components 和 `data-*` 继续可用。 |
-| `Jolt.Project`、`Jolt.Compiler` 投影 | Project 管目录、共享 imports、partial 来源、模块解析和未保存缓冲。Projection 与 ComponentContract 统一描述本地、SFC 和 npm 组件的外部名称、值类型、事件与插槽，并生成让 Roslyn 能检查的赋值、委托和泛型调用。绑定读取、写回和订阅各有源位置。现有公开 prop 使用作者大小写，导出 Vue model 前要用旧 JS 调用方验证兼容性，并处理显式监听器与模型监听器重复的情况。 |
+| `Jolt.Project`、`Jolt.Compiler` 投影 | Project 读取项目目录、共享 imports 和普通 C# 项目输入，解析模块并跟踪未保存的缓冲区。Projection 与 ComponentContract 统一描述本地、SFC 和 npm 组件的外部名称、值类型、事件与插槽，并生成让 Roslyn 能检查的赋值、委托和泛型调用。绑定读取、写回和订阅各有源位置。现有公开 prop 使用作者大小写，导出 Vue model 前要用旧 JS 调用方验证兼容性，并处理显式监听器与模型监听器重复的情况。 |
 | `Jolt.Npm` 与现有 `ECMAScript.*` | Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 提供长期维护的手写契约。其他 npm 应用库按用到的导出推导，复用宿主的 Date、DOM 及 Vue ref 类型。根据真实用例补充通用的重载、闭合联合和泛型规则，保留 JS 的缺省、显式 null 和字面量约束。缺少可用声明时由类型包、项目内窄 `.d.ts` 或 typed ESM 模块提供契约。无法表达的已使用成员需要可定位的诊断。 |
 | Roslyn、`Jazor.Compiler` 与 CLR/WebIDL | Roslyn 决定符号、约束、重载和可写性，SemanticWalker 在运行时敏感的使用点检查并降低 `IOperation`。闭合值域优先用原生 C# union；分支存在可赋值关系时按仓库规则保留标签。编译期擦除泛型。核心维护求值顺序、单次副作用、确定性导入和 source origin。 |
 | `Jolt.Compiler` 的 VueLowering 与 Vue | Jolt 通过现有 host hooks 生成 VNode、model 监听器、slot 函数、setup 外壳与明确的 Vue helper 导入。Vue 拥有组件实例、响应式调度、DOM patch 和生命周期。带副作用的 getter、动态键和捕获循环变量的闭包均按原语义求值。 |
@@ -235,11 +235,11 @@ flowchart TD
     Vite --> Runtime["Vue · 响应式与渲染"]
 ```
 
-1. **加载**。CLI 和语言服务共用项目加载器。它以目录为单位发现 `.jazor`，组件名来自文件名，命名空间由 `package.json` 的 `jolt.rootNamespace`（默认 `App`）与相对目录组成。当前和祖先命名空间的本地组件可见，其他命名空间经 `@using` 引入。编辑器可把未保存内容覆盖到同一文件集合。 [项目加载](../../src/Jolt.Project/JoltProjectLoader.cs) · [组件可见性](../../src/Jolt.Compiler/JoltProjectCompiler.cs)
+1. **加载**。CLI 和语言服务共用项目加载器。它以目录为单位发现 `.jazor`，组件名来自文件名。在 .NET 项目中，默认命名空间由项目根命名空间与相对目录组成。纯前端目录默认使用 `App`，也可以显式设置 `jolt.rootNamespace`。当前和祖先命名空间的本地组件可见，其他命名空间经 `@using` 引入。编辑器可把未保存内容覆盖到同一文件集合。[项目加载](../../src/Jolt.Project/JoltProjectLoader.cs) · [组件可见性](../../src/Jolt.Compiler/JoltProjectCompiler.cs)
 2. **解析**。SDK Razor 组件解析器使用 Roslyn tokenizer。Jolt 在 Razor 的最终 C# 生成之前读取标记 IR，保留作者标记边界与文本区间，重组元素、表达式、条件、循环与声明区块。这里采用空的 Razor Tag Helper 集合，组件与事件属性随后由 Jolt 自己绑定。Razor 能识别某条指令，只说明它进入了上游解析过程。 [解析和投影](../../src/Jolt.Syntax/JoltParser.cs) · [文档节点](../../src/Jolt.Syntax/JoltDocument.cs)
 3. **绑定**。每份文件投影为一个 C# `public static` 模块类以及它内部的实例状态类。Jolt 把模板写成合成渲染方法和带类型的调用，使 Roslyn 能检查作用域、表达式、委托、组件参数与插槽载荷。构建先提取组件声明，在需要时探测插槽载荷和泛型，再校验完整的渲染投影。所生成的 C# 提供语义模型与 `IOperation`。 [C# 投影](../../src/Jolt.Compiler/Projection.cs) · [Roslyn 绑定](../../src/Jolt.Compiler/JoltProjectCompiler.cs)
 4. **降低**。Jazor `AstConverter` 与 `SemanticWalker` 处理 C# 语义，Jolt 的 Vue hooks 把合成调用换成 `h`、`renderSlot` 和 `toDisplayString` 等调用。组件默认导出为 `defineComponent(...)`。每次 `setup` 创建独立的响应式状态，接入 Vue 的 props 和 slots，并返回渲染函数。生成的 render 直接构造 VNode，产物可以从 `.jazor` 追溯。 [Vue 降低](../../src/Jolt.Compiler/VueLowering.cs) · [编译器边界](./compiler.md)
-5. **物化和服务**。`jolt build` 默认写出 `.jolt/*.mjs`、对应 `.mjs.map`、有需要的 `.jolt.css`、CLR 辅助模块和 `jolt.modules.json`。`jolt dev` 监听落盘的作者文件并重新编译，Vite 插件读取模块和映射，开发模式注册 Vue HMR 并在更新后调用组件 reload。`jolt bundle` 使用项目的 Vite 配置构建生产资源。npm 还原、TypeScript 检查器和 Vite 经进程内 NodeApi、LibNode 和固定 pnpm API 运行。 [CLI](../../src/Jolt.Cli/Program.cs) · [产物写出](../../src/Jolt.Cli/JoltOutput.cs) · [监听与打包](../../src/Jolt.Vite/JoltViteToolchain.cs) · [Vite 插件](../../src/Jazor.NodeHost/tooling/toolchain.cjs)
+5. **物化和服务**。组件模块、映射、样式和清单默认写在 `.jazor/`。同一项目的普通 C# 模块按声明路径写入该根目录。Vite 插件解析源码组件导入和根相对的模块导入，开发时向 Vue 交付 HMR 更新。`jolt bundle` 使用项目的 Vite 配置构建生产资源。npm 还原、TypeScript 检查器和 Vite 经进程内 NodeApi、LibNode 和固定 pnpm API 运行。[CLI](../../src/Jolt.Cli/Program.cs) · [产物写出](../../src/Jolt.Cli/JoltOutput.cs) · [Vite 插件](../../src/Jolt.Vite/tooling/jolt-vite.cjs)
 
 ### 静态模块、具名导出与实例状态
 
@@ -263,7 +263,7 @@ flowchart TD
 在项目根目录的 JavaScript 中，可以同时导入组件和静态成员。产物中的 `Initial` 是 `export const`，此例的可写 `Step` 是 `export let`，`Advance` 是 `export function`。ESM 的导入端读取活绑定，不能在导入方对 `Step` 赋值。多个组件实例共享模块的 `Step`，各自持有 `Count`。
 
 ```javascript
-import Exports, { Advance, Initial, Step } from './.jolt/Exports.mjs';
+import Exports, { Advance, Initial, Step } from './Exports.jazor';
 ```
 
 ## 2. 可嵌入的代码段

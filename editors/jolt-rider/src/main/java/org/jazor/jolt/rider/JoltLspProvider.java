@@ -14,6 +14,8 @@ import com.intellij.platform.lsp.api.LspIntegrationProvider;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 public final class JoltLspProvider implements LspIntegrationProvider {
     @Override
@@ -28,13 +30,27 @@ public final class JoltLspProvider implements LspIntegrationProvider {
     }
 
     private static VirtualFile workspaceFor(Project project, VirtualFile file) {
+        VirtualFile npmWorkspace = null;
         for (var directory = file.getParent(); directory != null; directory = directory.getParent()) {
-            if (directory.findChild("package.json") != null)
-                return directory;
+            var projectFile = projectFile(directory);
+            if (projectFile != null) return directory;
+            if (npmWorkspace == null && directory.findChild("package.json") != null)
+                npmWorkspace = directory;
         }
+        if (npmWorkspace != null) return npmWorkspace;
         var basePath = project.getBasePath();
         var base = basePath == null ? null : LocalFileSystem.getInstance().findFileByPath(basePath);
         return base != null && VfsUtilCore.isAncestor(base, file, true) ? base : file.getParent();
+    }
+
+    private static VirtualFile projectFile(VirtualFile directory) {
+        VirtualFile project = null;
+        for (var child : directory.getChildren()) {
+            if (child.isDirectory() || !"csproj".equalsIgnoreCase(child.getExtension())) continue;
+            if (project != null) return null;
+            project = child;
+        }
+        return project;
     }
 
     private static boolean hasLocalTool(Path workspace) {
@@ -63,7 +79,51 @@ public final class JoltLspProvider implements LspIntegrationProvider {
         return false;
     }
 
-    private static GeneralCommandLine command(Path workspace) throws ExecutionException {
+    private static GeneralCommandLine projectCommand(Path project) throws ExecutionException {
+        var workspace = project.getParent().toFile();
+        var startInfo = new ProcessBuilder("dotnet", "msbuild", project.toString(), "-nologo", "-v:q",
+            "-t:_ResolveJoltTool", "-getProperty:_JoltHost,_JoltPackageSpec,_JoltRoot");
+        try {
+            var process = startInfo.directory(workspace).redirectErrorStream(true).start();
+            try {
+                var output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                if (process.waitFor() != 0) {
+                    // A plain C# project is allowed to declare Jolt in a local tool manifest.
+                    if (output.contains("MSB4057")) return null;
+                    throw new ExecutionException(output.strip());
+                }
+                var properties = JsonParser.parseString(output).getAsJsonObject().getAsJsonObject("Properties");
+                var appHost = properties.get("_JoltHost").getAsString();
+                var packageSpec = properties.get("_JoltPackageSpec").getAsString();
+                var root = properties.get("_JoltRoot").getAsString();
+                GeneralCommandLine selected = null;
+                if (!appHost.isBlank())
+                    selected = new GeneralCommandLine(appHost, "lsp");
+                else if (!packageSpec.isBlank())
+                    selected = new GeneralCommandLine("dotnet", "tool", "exec", packageSpec, "-v", "quiet", "--", "lsp");
+                if (selected != null) {
+                    if (!root.isBlank()) selected.withEnvironment("JAZOR_GENERATED_ROOT", root);
+                    return selected.withWorkDirectory(workspace);
+                }
+            } finally {
+                if (process.isAlive()) process.destroy();
+            }
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+            throw new ExecutionException("Jolt project evaluation was interrupted.", error);
+        } catch (IOException | com.google.gson.JsonParseException | IllegalStateException error) {
+            throw new ExecutionException("Could not evaluate the project Jolt tool.", error);
+        }
+        return null;
+    }
+
+    private static GeneralCommandLine command(VirtualFile directory) throws ExecutionException {
+        var workspace = directory.toNioPath();
+        var project = projectFile(directory);
+        if (project != null) {
+            var projectCommand = projectCommand(project.toNioPath());
+            if (projectCommand != null) return projectCommand;
+        }
         if (hasLocalTool(workspace))
             return new GeneralCommandLine("dotnet", "tool", "run", "jolt", "--", "lsp").withWorkDirectory(workspace.toFile());
         var dotnetHome = System.getenv("DOTNET_CLI_HOME");
@@ -105,7 +165,7 @@ public final class JoltLspProvider implements LspIntegrationProvider {
 
         @Override
         public GeneralCommandLine createCommandLine() throws ExecutionException {
-            return command(workspace.toNioPath());
+            return command(workspace);
         }
     }
 }

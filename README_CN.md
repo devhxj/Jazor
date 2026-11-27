@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.7.2"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.7.2&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.7.4"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.7.4&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -19,7 +19,7 @@
   <a href="docs/04-roadmap/current-status.md"><img alt="编译器分支覆盖率至少 97%" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
-<p><a href="docs/03-guides/jolt-authoring.md">Jolt 快速开始</a> · <a href="samples/Jolt.Counter/README.md">计数器示例</a> · <a href="docs/README.md">文档</a> · <a href="CHANGELOG.md">更新日志</a></p>
+<p><a href="docs/03-guides/jolt-authoring.md">Jolt 快速开始</a> · <a href="samples/Jero/README.md">C# SPA 示例</a> · <a href="docs/README.md">文档</a> · <a href="CHANGELOG.md">更新日志</a></p>
 
 <p><a href="README.md">English</a> · <strong>简体中文</strong></p>
 
@@ -27,14 +27,14 @@
 
 ## 运行 Jolt 应用
 
-在 Windows 或 glibc Linux（x64 或 ARM64）上安装 .NET 11 SDK。克隆仓库，在仓库根目录运行以下命令。
+使用 .NET 11 SDK，在 Visual Studio 打开 `samples/Jolt.AspNetCore/Jolt.AspNetCore.csproj`，选择同名启动配置，按 **F5**。在终端也可以从仓库根目录进入项目后运行。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.2
-jolt dev samples/Jolt.Counter --port 15658
+cd samples/Jolt.AspNetCore
+dotnet run
 ```
 
-已安装工具时，使用 `dotnet tool update --global Jazor.Jolt --version 2.7.2`。打开终端打印的网址，点击 **Increment**。子组件通过类型化回调更新父组件的计数及 Reka UI 组件的状态。 [计数器项目](samples/Jolt.Counter/README.md)
+打开 `http://localhost:5168/portal/frontend/index.html`，点击计数器，再修改项目根目录下 `Counter.jazor` 中的标题。页面会更新并保留计数。Web 宿主启动由本仓库源码构建的 Jolt 开发服务。Jero 管理应用也可以按 F5 或运行 `dotnet run` 启动。[计数器项目](samples/Jolt.AspNetCore/README.md) · [Jero 开发说明](samples/Jero/README.md)
 
 在 `.jazor` 文件中编写标记和 C#。
 
@@ -53,20 +53,20 @@ jolt dev samples/Jolt.Counter --port 15658
 
 | 编辑器 | 扩展 |
 | --- | --- |
-| VS Code | 在扩展菜单中选择 **Install from VSIX**，安装 `jolt-2.7.2.vsix`。 [VS Code 配置](editors/jolt/README.md) |
+| VS Code | 在扩展菜单中选择 **Install from VSIX**，安装 `jolt-2.7.4.vsix`。 [VS Code 配置](editors/jolt/README.md) |
 | Visual Studio 2026（Windows x64） | 双击 `Jolt.VisualStudio.vsix`，通过 VSIX Installer 安装。 [Visual Studio 配置](editors/jolt-visual-studio/README.md) |
-| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.2.zip`。 [Rider 配置](editors/jolt-rider/README.md) |
+| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.4.zip`。 [Rider 配置](editors/jolt-rider/README.md) |
 
-从与 CLI 同一版本的发布页下载扩展，将 `samples/Jolt.Counter` 作为文件夹打开。在 `App.jazor` 中试用语义高亮、类型化补全和转到定义。 [2.7.2 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
+2.7.4 的编辑器扩展通过同版 .NET 工具启动语言服务。按照上表的编辑器配置安装后，打开示例项目的 `Counter.jazor` 即可使用补全和转到定义。[2.7.4 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.4)
 
-`jolt build samples/Jolt.Counter` 将模块和源码映射写入 `samples/Jolt.Counter/.jolt/`。`jolt bundle samples/Jolt.Counter` 将生产资源写入 `samples/Jolt.Counter/dist/`。
+在 Web 项目目录运行 `dotnet build` 构建项目，`dotnet publish -c Release` 将宿主、前端入口和生产资源一起发布。[计数器项目的发布目标](samples/Jolt.AspNetCore/Jolt.AspNetCore.csproj)
 
 ## 编译 C# 模块
 
 在 .NET 项目中引用 `Jazor` SDK，即可编译带 `[ECMAScriptModule]` 的类。该包包含编译器、分析器、产物工具和 ASP.NET Core 集成。 [C# 模块快速开始](docs/03-guides/quick-start.md)
 
 ```sh
-dotnet add package Jazor --version 2.7.2
+dotnet add package Jazor --version 2.7.4
 ```
 
 | 主题 | 文档 |
@@ -90,7 +90,7 @@ dotnet run --file scripts/csharp/test-dotnet.cs
 
 ## 最新发布
 
-Jazor 2.7.2 改进 Jolt 在空白标记行和 HTML 开始标签中的补全，提供 npm 导入建议，并支持从 `.jazor` 跳转到共享 C# 声明。普通 C# 的设计时构建也修复了 npm 输入文件缺失的问题。[发布说明](CHANGELOG.md#jazor-272)
+Jazor 2.7.4 让 Emit 和 Jolt 共用 `.jazor/` 产物目录。ASP.NET Core 宿主通过 `AddJazorSPA` 和 `UseJazorSPA` 接入 Jolt，按 F5 或执行 `dotnet run` 即可启动。Jolt 会跟踪 C# 源码依赖的变化。已有项目升级前请查看[发布说明](CHANGELOG.md#jazor-274)中的破坏性变更及迁移步骤。
 
 ## AI 协作开发
 

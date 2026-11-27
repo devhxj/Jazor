@@ -11,8 +11,10 @@ Jazor 用户可以只交付一个 ES module 类库。项目引用 Jazor、编写
 | 在普通 C# 中引用 npm 函数、类型或常量 | Jazor 的 Roslyn 投影工具链 | IDE 能发现成员，Roslyn 检查参数与返回类型，干净检出第一次构建就能产生带原始 ESM 导入的模块 |
 | 编译、引用或运行普通 C# 模块 | .NET SDK、Jazor.Compiler、Emit 和通用模块宿主 | 类库的 DLL 携带模块。最终宿主消费依赖、写出模块及 map，按已有宿主契约运行或发布 |
 | 编写 Vue 组件或从 SFC、TSX 使用它 | Jolt 编译器和语言服务 | 获取 Vue 组件契约、模板诊断、渲染模块、类型声明与源位置 |
-| 启动 Vue 应用并编辑页面 | Jolt | CLI 和 IDE 启动同一种开发会话。每个运行中的应用实例使用一个 Vite 服务与一条浏览器 HMR 通道 |
-| 构建并发布 Vue 应用 | Jolt 编排组件编译与 Vite 打包，宿主或部署工具发布 | 独立前端交付 Vite 产物；ASP.NET Core 的发布步骤收集同一次构建的 SPA 或 SSR 产物 |
+| 启动 C# Web 项目并编辑 Vue 页面 | .NET 宿主启动开发会话，Jolt 提供 Vue 编译和 Vite HMR | Visual Studio F5 和项目目录的 `dotnet run` 使用同一启动配置。宿主管理自己启动的前端服务 |
+| 构建并发布 C# Web 项目 | .NET 项目负责构建和发布，Jolt 执行组件编译与 Vite 打包 | 开发者运行 `dotnet build` 或 `dotnet publish`。发布目录同时包含宿主及其前端资源 |
+
+Jolt 的 apphost 供项目和编辑器调用。C# Web 项目可以使用 .NET 工具包，仓库内的 Jero 则直接引用当前源码。独立 npm/Vite 工程仍可通过工具入口集成组件、SSR 或组件库。普通 C# ES 模块继续沿用 Jazor SDK 的构建流程。[小型 Web 项目](../../samples/Jolt.AspNetCore/Jolt.AspNetCore.csproj) · [Jero 启动项目](../../samples/Jero/src/Jero.Web/Jero.Web.csproj)
 
 当前源码中，普通类库在 `.cs` 中使用 `using`，组件在 `.jazor` 中使用 `@using`。两端共享 Jazor 的 npm 值投影。旧版的 `jolt bindings` 已移除。普通 `.cs` 通过 SDK 接入构建，编辑中的导入和成员请求由 Jazor 的 Roslyn 编辑器组件接收。[SDK 构建入口](../../src/Jazor/build/Jazor.Npm.targets) · [Jolt CLI](../../src/Jolt.Cli/Program.cs)
 
@@ -154,6 +156,6 @@ Emit 继续拥有 DLL catalog 与资源清单到模块、map 和资源的物化�
 
 同一份模块 DLL 可以同时供独立 Jazor 宿主和 Jolt 应用使用。独立宿主从程序集依赖闭包还原 npm 身份，Jolt 在自己管理的 Vite 模块图中从应用根解析这些已登记的导入。应用与 DLL 因而可以共享同一个包实例，类库中的 CLR 相对导入仍由 Emit 交付。[类库产物契约](./library-artifact-contract.md) · [包引用验收](../../scripts/csharp/verify-jazor-module-handoff.cs)
 
-沿用 `JazorMode` 的原定义。普通 MSBuild 构建留空时按 `none` 处理，类库在 DLL 内交付 catalog。最终可执行宿主可显式选择 `debug` 或 `release`。`JazorDir` 只指定目录，默认是项目下的 `jazor/`。直接调用 Emit CLI 省略 `--mode` 默认走开发构建，`development` 与 `production` 仍是 `debug` 与 `release` 的 CLI 别名。这些行为与 Vue 会话选择相互独立。[SDK targets](../../src/Jazor/build/Jazor.targets) · [SDK props](../../src/Jazor/build/Jazor.props) · [Emit 参数](../../src/Jazor.Emit/EmitOptions.cs)
+沿用 `JazorMode` 的原定义。普通 MSBuild 构建留空时按 `none` 处理，类库在 DLL 内交付 catalog。独立可执行宿主可显式选择 `debug` 或 `release`。Vue Web 应用使用普通的 .NET Debug 构建检查组件，Release 和发布构建调用 Vite。`JazorDir` 是 Emit 和 Jolt 的开发与测试生成根，默认在项目下的 `.jazor/`。模块声明决定导入路径。例如 `[ECMAScriptModule("cart/checkout.mjs")]` 对应 `/cart/checkout.mjs`。Vite 的生产输出在 `$(JazorDir)/dist/`，Web SDK 集成将其中的文件发布到 `wwwroot/`。[SDK targets](../../src/Jazor/build/Jazor.targets) · [SDK props](../../src/Jazor/build/Jazor.props) · [Web 构建目标](../../src/Jazor/build/Jazor.Jolt.targets)
 
 已确认移除 `jolt bindings`，普通 C# 采用 F12 到生成声明与悬停到原始声明两个入口。宿主启动 Vue 开发会话时可使用 `jolt dev --stop-on-stdin-close` 传递会话生命周期。其余新增公开属性、命令、包、宿主注册方法、跨程序集契约变化以及 Vue 项目接管 F5 默认入口，按具体调用示例、对现有用户的影响和验收证据单独审计。[调整方案](../04-roadmap/jazor-jolt-migration.md)

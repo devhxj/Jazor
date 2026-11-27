@@ -2,6 +2,52 @@
 
 本文件按日期记录发布与面向用户的变更。它保留版本演进历史，不替代当前产品契约、测试结果或架构文档。
 
+## 2026-11-27
+
+### Jazor 2.7.4
+
+中文 | English
+
+#### 其他变更
+
+- **单次补丁破坏性迁移。** 维护者指定从 2.7.2 直接发布 2.7.4，跳过 2.7.3。将 2.7.2 的 `AddJazorFrontend` / `UseJazorFrontend` 改为 `AddJazorSPA` / `UseJazorSPA`，显式引用的 `JazorFrontendExtensions`、`JazorFrontendOptions`、`JazorFrontendUrls` 改用对应的 `JazorSPA` 类型。`UseJazorPathBase` 调用保持原样。by @codex
+- 移除独立浏览器刷新。删除 `AddJazorReload`、`UseJazorReload`、`JazorReloadOptions`、`JazorHmrMapping` 及对 `/@jazor/client`、`/@jazor/reload` 的引用。Vue 项目改用 `AddJazorSPA` / `UseJazorSPA` 接入 Jolt 热更新，普通 C# 模块应用可继续使用通用 Vite 集成。by @codex
+- Vue 项目的 Emit 和 Jolt 共用 `JazorDir`，默认为项目下的 `.jazor/`。入口和导入改用模块声明路径，例如 `/components/app-bootstrap.js`。Vite 输出到生成根的 `dist/`，ASP.NET Core 将浏览器资产发布到 `wwwroot/`。by @codex
+
+#### 体验优化
+
+- ASP.NET Core Vue 项目按 F5 或运行 `dotnet run` 即可随宿主启动 Jolt。保存 `.jazor` 和浏览器 C# 源码可触发热更新，包括引用项目中的模块。生产环境支持直接访问前端深链接，保留的后端路由前缀可通过 `options.Fallback.ExcludedPathPrefixes` 配置。by @codex
+- `.jazor` 编辑器读取宿主工程纳入编译的 C# 文件，普通工程源码无需再手工列入 `jolt.csharpSources`。Jero 示例使用公共 SPA 宿主和项目源码布局。by @codex
+- C# 模块可通过 `Global.Import<TModule>(specifier)` 按需加载类型化的模块。Jero 将编辑器和设计器延迟到相应页面加载，并在菜单、主题和通知更新之间复用侧栏导航。by @codex
+- Vite 开发会话复用 Emit 模块清单和 npm 包边界查询。在开发期间新增、替换或移除包清单会更新解析结果。by @codex
+
+#### 问题修复
+
+- 修复 Windows 生产打包时，绝对和相对导入同一模块会产生两份模块状态的问题。by @codex
+- 修复 ASP.NET Vue 项目显式设置 `JazorMode` 时，独立 Emit 与 Jolt 重复处理生成目录的问题。Jolt 发布仅包含 Vite 的浏览器构建产物。by @codex
+- Jolt 启动失败时，ASP.NET Core 宿主会报告子进程退出码及启动错误。by @codex
+- 修复源码引用的 Jolt 工具依赖更新后仍发布旧浏览器包，以及 Jero 打印设计器、支付金额和二维码操作读错 JavaScript 属性的问题。by @codex
+
+Other Changes
+
+- **One-time breaking migration in a patch.** The maintainer chose to release 2.7.4 directly after 2.7.2, skipping 2.7.3. Replace the 2.7.2 methods `AddJazorFrontend` and `UseJazorFrontend` with `AddJazorSPA` and `UseJazorSPA`. Change explicit references to `JazorFrontendExtensions`, `JazorFrontendOptions`, and `JazorFrontendUrls` to their `JazorSPA` counterparts. Keep existing `UseJazorPathBase` calls. by @codex
+- Standalone browser reload has been removed. Delete `AddJazorReload`, `UseJazorReload`, `JazorReloadOptions`, `JazorHmrMapping`, and references to `/@jazor/client` and `/@jazor/reload`. Vue projects use `AddJazorSPA` and `UseJazorSPA` for Jolt HMR. Ordinary C# module applications can continue to use the generic Vite integration. by @codex
+- Emit and Jolt share `JazorDir` in Vue projects. It defaults to `.jazor/` under the project. Update entries and imports to the declared module paths, such as `/components/app-bootstrap.js`. Vite builds into `dist/` under the generated root, and ASP.NET Core publishes the browser assets to `wwwroot/`. by @codex
+
+Improvements
+
+- Press F5 or run `dotnet run` to start Jolt with an ASP.NET Core Vue host. Saving `.jazor` components or browser C# sources can trigger HMR, including for modules in referenced projects. Production hosts support direct navigation to SPA deep links. Set `options.Fallback.ExcludedPathPrefixes` for reserved backend route prefixes. by @codex
+- The `.jazor` editor reads C# sources included in the host project's compilation. Regular project sources no longer need manual entries in `jolt.csharpSources`. The Jero sample uses the shared SPA host API and project source layout. by @codex
+- C# modules can load typed exports on demand with `Global.Import<TModule>(specifier)`. Jero loads editors and designers on the pages that use them and reuses sidebar navigation across account menu, theme and notification updates. by @codex
+- Vite development sessions reuse the Emit inventory and npm package boundary lookups. Adding, replacing or removing a package manifest during development updates resolution. by @codex
+
+Bug Fixes
+
+- Fixed Windows production builds creating two copies of module state when absolute and relative imports pointed to the same module. by @codex
+- Fixed standalone Emit and Jolt both processing the generated root when an ASP.NET Vue project explicitly set `JazorMode`. Jolt publish now includes Vite's browser build output. by @codex
+- ASP.NET Core reports the Jolt child process exit code and startup error when Jolt fails to start. by @codex
+- Fixed stale browser bundles after a source-built Jolt tool dependency changed. Corrected JavaScript property mappings in Jero's print designer, payment amounts and QR payment action. by @codex
+
 ## 2026-11-26
 
 ### Jazor 2.7.2

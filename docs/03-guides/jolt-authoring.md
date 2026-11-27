@@ -6,37 +6,43 @@ Jolt 是用 C# 编写 Vue 3 单文件组件的工具。一份 `.jazor` 文件对
 
 ## 安装并运行
 
-Jolt CLI 使用 .NET 11，发布包覆盖 Windows 和 glibc Linux 的 x64 与 ARM64。在克隆的仓库根目录执行以下命令。
+用 .NET 11 SDK 打开 `samples/Jero/src/Jero.slnx`，选择启动项目 **Jero.Web** 和同名配置，按 **F5**。终端从仓库根目录执行以下命令可启动同一应用。
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.2
-jolt dev samples/Jolt.Counter --port 15658
+cd samples/Jero/src/Jero.Web
+dotnet run
 ```
 
-已有 CLI 时，请用 `dotnet tool update --global Jazor.Jolt --version 2.7.2`。打开终端打印的网址，点击 **Increment**。子组件通过 `Action<int>` 回调通知父组件，父组件更新计数并控制 Reka UI 组件的打开状态。 [父组件](../../samples/Jolt.Counter/App.jazor) · [子组件](../../samples/Jolt.Counter/CounterButton.jazor)
+在 `http://localhost:5095` 访问页面。打开 `Pages/` 下的组件并保存，宿主会把 Vite 热更新转发给浏览器。日常构建使用 `dotnet build`；交付使用 `dotnet publish -c Release`，发布目录同时包含 Web 宿主和 SPA 资源。仓库中的 Jero 从源码构建所需工具。[Jero 项目](../../samples/Jero/README.md)
+
+只想试一个页面时，用同一套命令运行 `samples/Jolt.AspNetCore`。这个小项目使用当前仓库的 Jolt 源码。在 `http://localhost:5168/portal/frontend/index.html` 打开计数器。在通过 NuGet 引用 Jazor 和 ECMAScript.Vue 的 Web 应用中，SDK 构建目标按包版本选择 Jolt 工具。[小型 Web 项目](../../samples/Jolt.AspNetCore/README.md)
+
+### 工具集成
+
+下表供宿主、构建系统和编辑器接入 Vue 工具时查阅。纯前端目录的独立调用示例见[无宿主计数器](../../samples/Jolt.Counter/README.md)。
 
 | 命令 | 结果 |
 | --- | --- |
 | `jolt dev <project>` | 启动 Vite 并监听作者文件。默认使用 `http://127.0.0.1:15658/`，可用 `--port <端口>` 覆盖。宿主自启时可传 `--stop-on-stdin-close` 并持有标准输入的写端，关闭写端会让 Jolt 停止 Vite 并退出。 |
-| `jolt build <project>` | 在 `.jolt/` 生成组件模块、源码映射与模块清单。可用 `--output <目录>` 指定输出。 |
-| `jolt bundle <project>` | 用项目的 Vite 配置生成生产资源。计数器示例输出到 `dist/`。 |
-| `jolt bundle <project> --ssr <server-entry>` | 从同一次组件编译生成 `dist/client` 和 `dist/server`。服务端入口相对于项目根目录解析。 |
+| `jolt build <project>` | 在 `.jazor/` 生成组件模块、源码映射与模块清单。可用 `--output <目录>` 指定输出。 |
+| `jolt bundle <project>` | 用项目的 Vite 配置生成生产资源，默认输出到 `.jazor/dist/`。 |
+| `jolt bundle <project> --ssr <server-entry>` | 从同一次组件编译生成 `.jazor/dist/client` 和 `.jazor/dist/server`。服务端入口相对于项目根目录解析。 |
 | `jolt library <project>` | 生成可安装的 ESM 组件包、TypeScript 声明和样式，默认输出到项目的 `dist/`。支持 `--output <目录>`。 |
 | `jolt lsp` | 通过标准输入输出启动编辑器使用的语言服务。 |
 
-从仓库源码运行时，将 `jolt` 替换为 `dotnet run --project src/Jolt.Cli --`。 [示例与浏览器测试](../../samples/Jolt.Counter/README.md)
+在含有 .NET 项目的目录独立运行工具时，Jolt 读取 MSBuild 求值后的 `JazorDir`，包括从 `.props` 导入的值。模块的公开导入路径始终由模块声明决定。从仓库根目录调试工具实现时，可以使用 `dotnet run --project src/Jolt.Cli -- <子命令>`。
 
 ## 配置编辑器
 
-在发布页下载与 CLI 同一发行版的扩展，将示例的 `samples/Jolt.Counter` 作为文件夹打开，再打开 `App.jazor`。 [2.7.2 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
+打开应用运行配置和安装编辑器语言服务是两个步骤。发布版 2.7.4 的扩展从同版本的 .NET 工具启动语言服务，按所用编辑器的配置说明安装后，打开 `Jero.Web/Pages` 中的任意组件。[2.7.4 下载](https://github.com/devhxj/Jazor/releases/tag/v2.7.4)
 
 | 编辑器 | 安装 |
 | --- | --- |
-| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.2.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
+| VS Code | 选择 **Extensions: Install from VSIX**，安装 `jolt-2.7.4.vsix`。 [VS Code 配置](../../editors/jolt/README.md) |
 | Visual Studio 2026 18.12 及以上（Windows x64） | 关闭 Visual Studio，再用 VSIX Installer 打开 `Jolt.VisualStudio.vsix`。 [Visual Studio 配置](../../editors/jolt-visual-studio/README.md) |
-| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.2.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
+| JetBrains Rider 2026.3 | 在 **Settings → Plugins** 中从磁盘安装 `jolt-rider-2.7.4.zip`，还原 Jolt CLI 后打开 `.jazor`。 [Rider 配置](../../editors/jolt-rider/README.md) |
 
-在 `@code` 内输入成员名可检查 C# 补全，在 `CollapsibleRoot` 上执行转到定义可检查 npm 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
+在 `@code` 内输入成员名可检查 C# 补全，在 Jero 的 `ElButton` 上执行转到定义可检查 Element Plus 声明导航。首次还原 npm 依赖时，本地 C# 与本地组件仍可补全和导航，npm 类型就绪后编辑器会刷新相关诊断和语义高亮。
 
 ## 直接使用 npm 组件
 
@@ -80,11 +86,11 @@ jolt dev samples/Jolt.Counter --port 15658
 
 这里的 `@oncurrent-change` 生成 `onCurrentChange`。Element Plus 在决定是否展示分页控件时会检查该监听器。需要读取点击位置时，`ElButton` 的处理器可以接收 `ECMAScript.MouseEvent`。组件上的 `class` 和 `style` 接受 Vue 对应的属性类型。[事件与渲染回归](../../src/Jolt.Compiler.Test/ProjectCompilerTests.cs)
 
-当宿主和 Jolt 都消费同一数据传输类型时，将它放在共享的普通 C# 文件中。在组件项目的 `package.json` 里通过 `"jolt": { "csharpSources": ["Contracts/Notice.cs"] }` 列出源码，让 .NET 宿主项目也编译该文件。构建和编辑器按同一份定义检查字段。在本地 SFC 中可以声明 `rows: readonly Readonly<{ id: string; title: string }>[]`，在 Jolt 中直接传入 `public sealed record Notice(string id, string title)` 的数组。投影按字段的 JavaScript 名称、是否必有值和标量类型核对，额外字段可留给业务代码使用，渲染时传递原数组。[共享源码测试](../../src/Jolt.Compiler.Test/SharedCSharpSourcesTests.cs) · [npm 与 SFC 契约验收](../../src/Jolt.Npm/verify.cs)
+宿主和组件共用 DTO 时，按普通 C# 项目习惯将它写在 `Contracts/Notice.cs` 中，或通过项目引用使用已有类型。Jolt 从同目录的 .NET 项目读取编译输入、命名空间和引用。比如在 SFC 中声明 `rows: readonly Readonly<{ id: string; title: string }>[]`，在 Jolt 中可直接传入 `public sealed record Notice(string id, string title)` 的数组。投影按字段的 JavaScript 名称、是否必有值和标量类型核对，额外字段可留给业务使用，渲染时传递原数组。纯前端目录可以在 `package.json` 的 `jolt.csharpSources` 中显式列出共享源码。[项目输入](../../src/Jolt.Project/JoltProjectLoader.DotNet.cs) · [共享源码测试](../../src/Jolt.Compiler.Test/SharedCSharpSourcesTests.cs)
 
 `csharpSources` 也接受相对于 `package.json` 所在目录的 glob。比如用 `["**/*Contracts.cs"]` 匹配根目录和各级子目录中的契约文件，或用 `["Contracts/*.cs"]` 只匹配 `Contracts` 目录中的 C# 文件。可以混用路径与 glob，重复匹配的文件只编译一次。显式路径缺失时报错，glob 没有命中时得到空集合。glob 跳过隐藏项、文件和目录链接，以及 `bin`、`obj`、`dist` 和 `node_modules`。匹配的未保存编辑以及新建文件同样参与编辑器检查。
 
-表格列的插槽若在上游声明里只公开 `any`，应用可以在一个本地 SFC 内声明实际的行类型，对外只公开只读行数组和带类型的详情事件。Jero 的站内信列表在这层完成列渲染，再将点中的消息 ID 传回宿主的已读接口。[组件运行验收](../../scripts/csharp/verify-zero-jolt.cs)
+表格列的插槽若在上游声明里只公开 `any`，应用可以在一个本地 SFC 内声明实际的行类型，对外只公开只读行数组和带类型的详情事件。Jero 的站内信列表在这层完成列渲染，再将点中的消息 ID 传回宿主的已读接口。[组件运行验收](../../samples/Jero/scripts/csharp/verify-jolt-routes.cs)
 
 ### 直接调用 npm 函数
 
@@ -359,7 +365,7 @@ var (count, events) = form.DefineField(row => row.Count,
 
 ### 普通 C# 类库的公开投影
 
-普通 `.csproj` 直接引用Jazor 2.7.2，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
+普通 `.csproj` 直接引用Jazor 2.7.4，在 `package.json` 声明 `date-fns` 并提供 `pnpm-lock.yaml` 后，即可在 `.cs` 文件中写 `using Dates = Npm.DateFns.Exports;`。项目加载时，生成器先提供包根的 `Exports` 类型。首次输入别名时就有可绑定的类型，输入 `Dates.` 可从实际导出索引补全 `AddDays` 等成员。
 
 对于项目打开时已有的依赖，VS Code C# 语言服务的 `Balanced` 模式可立即解析未保存的别名。首次调用尚未投影的 `Dates.AddDays` 时，成员处可能出现 `CS0117`。保存该文件即可获得方法签名。如果第二个参数传了 `true`，诊断会指向这个实参并报告 `CS1503`。
 
@@ -416,7 +422,7 @@ string french = Dates.FormatDistance(new ECMAScript.Date(2026, 0, 17),
 
 #### 在桌面 Visual Studio 验收普通 C# 编辑反馈
 
-使用临时解决方案和Jazor 2.7.2 包。项目目标为 `net11.0`，语言版本为 `preview`，直接引用该包，并在 `package.json` 和 `pnpm-lock.yaml` 中锁定 `date-fns`。先只保存空的 `Calendar.cs`，打开解决方案并等待 NuGet 还原和项目加载完成。以下按 C# 源生成器的 Automatic 模式操作。桌面 VS 缺省使用 Balanced，输入新调用后先保存一次，再检查成员签名与 F12。
+使用临时解决方案和Jazor 2.7.4 包。项目目标为 `net11.0`，语言版本为 `preview`，直接引用该包，并在 `package.json` 和 `pnpm-lock.yaml` 中锁定 `date-fns`。先只保存空的 `Calendar.cs`，打开解决方案并等待 NuGet 还原和项目加载完成。以下按 C# 源生成器的 Automatic 模式操作。桌面 VS 缺省使用 Balanced，输入新调用后先保存一次，再检查成员签名与 F12。
 
 1. 输入 `using Dates = Npm.`，按 Ctrl+Space 查看 `DateFns`。继续输入 `Npm.DateFns.` 查看 `Exports`，完成 `using Dates = Npm.DateFns.Exports;`。
 2. 在类内写一个调用 `Dates.AddDays(new ECMAScript.Date(2024, 0, 31), 2)` 的方法。输入 `Dates.` 时检查 `AddDays`，再检查调用签名。把 `2` 改为 `true`，检查 `CS1503` 是否出现在该参数；改回 `2`，检查诊断清除。用另一个编辑器或终端读取 `Calendar.cs`，确认磁盘上仍是原来的空文件。
@@ -445,31 +451,31 @@ internal static class CellContracts
 
 ### 在 Vue 应用中使用普通 Jazor 类库的模块
 
-Web 宿主也可以直接编译应用目录中的 C# 浏览器模块。例如将 `JazorDir` 设为 `App/.jazor/modules`，让运行 `jolt bundle App` 的 MSBuild 目标在宿主构建后显式依赖 `JazorDebug`。保持 `JazorMode` 为空时，这个依赖会生成普通 ES 模块，发布目标只需收集 Jolt 生成的 `App/dist`。应用目录中的 `package.json` 与 `pnpm-lock.yaml` 同时用于 C# 的 npm 投影和 Jolt 打包。将该目录下的业务 `.cs` 列入宿主的 `Compile`，排除依赖、缓存与生成目录。
+Jero 的 Web 项目同时编译 C# 浏览器模块和 `.jazor` 组件。Debug 构建从程序集读取模块 catalog，Emit 按模块声明路径写入 `$(JazorDir)`，Jolt 在同一目录生成组件并检查作者代码。默认目录是项目下的 `.jazor/`。例如 `[ECMAScriptModule("components/app-bootstrap.js")]` 对应 HTML 中的 `src="/components/app-bootstrap.js"`。开发时宿主代理 Vite，发布时 `dotnet publish` 把 `$(JazorDir)/dist/` 内的浏览器资源放入 `wwwroot/`。修改 `JazorDir` 时保持模块声明和导入原样。[Jero 宿主项目](../../samples/Jero/src/Jero.Web/Jero.Web.csproj) · [入口 HTML](../../samples/Jero/src/Jero.Web/index.html)
 
 如果解决方案已有可执行 .NET 宿主，宿主可以用普通 `ProjectReference` 引用类库，由 Jazor Emit 把宿主及其引用模块交付到前端目录。以下示例假定 `Host/`、`Library/` 和 `frontend/` 是同级目录，宿主和类库均直接引用 Jazor。宿主项目使用已有的设置：
 
 ```xml
 <PropertyGroup>
-  <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)/../frontend/jazor/</JazorDir>
+  <JazorDir>$(MSBuildProjectDirectory)/../frontend/.jazor/</JazorDir>
 </PropertyGroup>
 <ItemGroup>
   <ProjectReference Include="../Library/Library.csproj" />
 </ItemGroup>
+<Target Name="RefreshHandoff" AfterTargets="Build" DependsOnTargets="JazorModules" />
 ```
 
-类库中的 `Greeting.Read()` 导出到 `messages/greeting.mjs`。宿主的 `ui-message.mjs` 模块在 C# 中调用它。运行 `dotnet build Host/Host.csproj` 后，Vue SFC 即可通过普通 ESM 导入使用宿主模块；Jolt 组件通过 prop 接收结果：
+类库中的 `Greeting.Read()` 导出到 `messages/greeting.mjs`。宿主的 `ui-message.mjs` 模块在 C# 中调用它。运行 `dotnet build Host/Host.csproj` 后，示例中的 `RefreshHandoff` 目标会把两者写入前端的生成目录。Vue SFC 用普通 ESM 导入读取结果，再用 prop 传给组件。
 
 ```vue
 <script setup>
 import Message from './Message.jazor';
-import { Read } from './jazor/ui-message.mjs';
+import { Read } from '/ui-message.mjs';
 </script>
 <template><Message :Text="Read()" /></template>
 ```
 
-开发时运行 `jolt dev frontend`。在另一个终端运行 `dotnet watch --project Host/Host.csproj --no-hot-reload run`。保存 `Library/Greeting.cs` 后，.NET 会重建引用和宿主，Emit 更新 `frontend/jazor/` 中的模块，已打开的页面随 Vite 更新。准备分发时，先构建宿主交付 ESM，再运行 `jolt bundle frontend`，由 Jolt 从作者的入口生成 `frontend/dist/`。示例把 `JazorDir` 指向单独的子目录，因为 Emit 会在其中写自己的入口、包清单和锁文件。[项目引用的自动重建与页面状态验收](../../scripts/csharp/verify-jolt-mixed.cs)
+在前端目录单独运行 Jolt 时，`jolt dev frontend` 启动开发服务。重新构建并交付引用模块后，Vite 读取更新的文件。准备分发时运行 `jolt bundle frontend`，输出在 `frontend/.jazor/dist/`。单一 Web 项目的 F5 和发布由 SDK 自动衔接这两个步骤。[项目引用与页面状态验收](../../scripts/csharp/verify-jolt-mixed.cs)
 
 换成 `PackageReference` 时，宿主按同一流程交付 DLL 中的模块。如果模块使用了投影的 npm 包，例如 `date-fns`，请在 Vue 应用的 `package.json` 和锁文件中声明应用要运行的版本。这样，从应用直接导入的 `addDays` 与经过 C# 类库导出的 `addDays` 在开发和生产中都是同一个函数；独立 Jazor 宿主则可以使用生产者锁定的版本。[同一 NuGet 的两种宿主验收](../../scripts/csharp/verify-jazor-module-handoff.cs)
 
@@ -656,10 +662,12 @@ registration.Off();
 执行 `jolt build .` 后，项目根目录的 JavaScript 入口可同时导入组件和静态成员。
 
 ```javascript
-import Counter, { Advance, Initial, Step } from './.jolt/Counter.mjs';
+import Counter, { Advance, Initial, Step } from './Counter.jazor';
 ```
 
 `Count` 随组件实例创建。`Step` 是模块级状态，`Advance` 使用该模块的当前值。
+
+需要把代码分到多个文件时，可将页面状态或 DTO 声明为普通 C# 类型并在组件中引用。组件的实例成员在 `@code` 中声明，单独的 `.jazor.cs` 文件按普通 C# 源文件编译。Jero 的用户页通过一个 `[Parameter] UserPageModel Model` 接收页面状态，列表和编辑器共享同一个账户草稿。[用户页](../../samples/Jero/src/Jero.Web/Pages/User/UserPage.jazor) · [状态和表格契约](../../samples/Jero/src/Jero.Web/Pages/User/UserContracts.cs)
 
 ## 组件参数、插槽和重构
 
@@ -754,7 +762,7 @@ import Counter, { Advance, Initial, Step } from './.jolt/Counter.mjs';
 
 键入 `@using Npm.` 即可从当前项目的 `package.json` 选择包。导入后，读取导出清单即可补全组件名。组件声明就绪后可补全属性和事件，在组件标签、属性或具名插槽上悬停或按 F12 可读取上游文档和声明位置。
 
-在 `.jazor` 的 C# 表达式中，F12 可以跳到 `jolt.csharpSources` 选中的共享 C# 源文件。VS Code 根据尚未保存的 C# 缓冲区更新补全和跳转位置。Visual Studio 扩展从 0.1.10 开始监听共享文件的保存、新增和删除。
+在 `.jazor` 的 C# 表达式中，F12 可以跳到项目中的共享 C# 声明。VS Code 根据尚未保存的 C# 缓冲区更新补全和跳转位置，Visual Studio 扩展监听共享文件的保存、新增和删除。
 
 编辑器提供查找引用、改名、格式化和快捷修复。跨文件改名按 Roslyn 符号和组件绑定更新 C#、参数、委托和具名插槽。支持文件操作的编辑器还可以从标签改名组件及其同目录文件。格式化调整 C# 和标签内的属性缩进，保留渲染文本与换行风格。未知的本地组件可以用快捷修复添加 `@using`，缺少必填参数时可以匹配当前组件的同名同类型字段或可读属性。
 
@@ -829,24 +837,24 @@ const name = ref('First draft');
 
 在 `MixedEditor.jazor` 内，`<NameInput Limit="@Limit" @bind-Text:get="Text" @bind-Text:set="Save" />` 调用 `NameInput.vue`。Jolt 读取 Vue 组件的公开声明，识别 `limit: number` 和 `defineModel<string>('text')`，校验传入值与回写委托。跨目录使用 `@using <组件命名空间>`，规则与本地 Jolt 组件一致。 [Jolt 调用方](../../samples/Jolt.Mixed/editors/MixedEditor.jazor) · [Vue 输入组件](../../samples/Jolt.Mixed/editors/NameInput.vue)
 
-项目声明 `vue`、`vite` 和 `@vitejs/plugin-vue`，用 `jolt dev` 或 `jolt bundle` 运行。标准 Vue 与 TypeScript 编辑工具通过生成的声明识别源码导入。首次运行 `jolt build` 或 `jolt dev` 后，在项目的 `tsconfig.json` 中使用下面两项配置。`jolt dev` 在编辑时更新 `.jolt/` 下的声明和映射，Vue Language Tools 可检查 SFC 和 TSX 调用方。 [完整 tsconfig](../../samples/Jolt.Mixed/tsconfig.json) · [TSX 源码调用](../../samples/Jolt.Mixed/probe.tsx)
+项目声明 `vue`、`vite` 和 `@vitejs/plugin-vue`，用 `jolt dev` 或 `jolt bundle` 运行。Vue 与 TypeScript 编辑工具通过生成的声明识别源码导入。`jolt dev` 在编辑时更新生成目录下的声明和映射。以下配置使用默认生成根，覆盖输出目录时同步调整 `rootDirs`。[完整 tsconfig](../../samples/Jolt.Mixed/tsconfig.json) · [TSX 源码调用](../../samples/Jolt.Mixed/probe.tsx)
 
 ```json
 {
     "compilerOptions": {
         "moduleResolution": "Bundler",
         "allowArbitraryExtensions": true,
-        "rootDirs": [".", "./.jolt"]
+        "rootDirs": [".", "./.jazor"]
     }
 }
 ```
 
 ### 通过 Vue Router 使用 `@page` 和 `@layout`
 
-安装 `vue-router` 并在应用的 `package.json` 中设置 `"jolt": { "router": true }`。从构建目录导入 `routes`，将它传给应用已有的 `createRouter`，也可以和手写路由合用。
+安装 `vue-router` 并在应用的 `package.json` 中设置 `"jolt": { "router": true }`。从生成的路由模块导入 `routes`，将它传给应用已有的 `createRouter`，也可以和手写路由合用。
 
 ```ts
-import { routes } from './.jolt/_routes.mjs'
+import { routes } from '/_routes.mjs'
 
 const router = createRouter({ history, routes })
 ```
@@ -884,7 +892,7 @@ dotnet run --project src/Jolt.Cli -- bundle samples/Jolt.Mixed.Ssr/frontend --ss
 dotnet run --project samples/Jolt.Mixed.Ssr -- --urls http://127.0.0.1:5168
 ```
 
-**构建与部署。** `index.html` 提供 Vue 挂载节点、状态和 Teleport 目标的位置。Vite 生成带哈希的脚本和 CSS，两个入口都成功后替换项目的 `dist/`。样例的 ASP.NET Core 项目将整个目录随 `dotnet publish` 交付。部署新产物后重启宿主。如果应用位于子路径，Vite 的 `base`、Vue Router 的 history base 和 ASP.NET Core 的 `PathBase` 应一致。 [文档模板](../../samples/Jolt.Mixed.Ssr/frontend/index.html) · [发布配置](../../samples/Jolt.Mixed.Ssr/Jolt.Mixed.Ssr.csproj)
+**构建与部署。** `index.html` 提供 Vue 挂载节点、状态和 Teleport 目标的位置。Vite 生成带哈希的脚本和 CSS，两个入口都成功后替换项目的 `.jazor/dist/`。SSR 样例将客户端和私有服务端入口随宿主部署，由 SSR 中间件提供公共资源。部署新产物后重启宿主。如果应用位于子路径，Vite 的 `base`、Vue Router 的 history base 和 ASP.NET Core 的 `PathBase` 应一致。[文档模板](../../samples/Jolt.Mixed.Ssr/frontend/index.html) · [发布配置](../../samples/Jolt.Mixed.Ssr/Jolt.Mixed.Ssr.csproj)
 
 **每请求渲染。** 在宿主中注册 `AddJoltSsr("frontend/dist")`，通过 `UseJoltSsr` 的请求工厂提供 props 和 provider。服务端入口导出 `render({ url, state })`，为该请求创建 Vue app、memory history 和 Pinia。等待路由和预取完成，将最终 store 快照写回 `state.props`，并返回根 HTML 和 Vue 的 Teleport 片段。宿主把结果和序列化状态填入同一份构建模板。 [ASP.NET Core 入口](../../samples/Jolt.Mixed.Ssr/Program.cs) · [服务端入口](../../samples/Jolt.Mixed.Ssr/frontend/entry-server.ts)
 

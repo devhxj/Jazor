@@ -4,7 +4,9 @@
 
 ## Jolt 应用的构建入口
 
-Jolt 将 `.jazor` 编译为 Vue 组件模块。`jolt bundle` 使用应用自己的入口、包描述、锁文件和 Vite 配置。普通 C# 类库把模块和 source map 随 DLL 内的 `ModuleCatalog` 交付给最终宿主。[类库契约](./library-artifact-contract.md)
+普通 C# 类库把模块和 source map 随 DLL 内的 `ModuleCatalog` 交付。Web 项目构建后，Emit 按模块声明的路径物化文件，Jolt 将 `.jazor` 组件编译到同一生成根。根目录取自 `JazorDir`，默认是项目的 `.jazor/`。例如声明 `cart/checkout.mjs` 的模块写到 `.jazor/cart/checkout.mjs`，Vite 中的导入为 `/cart/checkout.mjs`。开发和生产构建都使用应用自己的入口、包描述、锁文件和 Vite 配置。[类库契约](./library-artifact-contract.md) · [Web 构建目标](../../src/Jazor/build/Jazor.Jolt.targets)
+
+ILSpy 参与的是更早的 C# 编译阶段。当浏览器模块调用需要从普通 .NET 实现 DLL 恢复的成员时，Jazor 编译器用 `ICSharpCode.Decompiler` 取得实现，交给 Roslyn 绑定并转换可达成员。对于引用库已提供的 `ModuleCatalog`，Emit 直接读取其中的 JavaScript 和映射。F5 的 Vite 会话消费磁盘文件，发布从同一份模块图打包。[程序集实现恢复](../../src/Jazor.Compiler/OrdinaryLibraryImportPlan.cs) · [Emit 读取和写出](../../src/Jazor.Emit/EmitPipeline.cs)
 
 ## Emit 管理的前端项目
 
@@ -15,7 +17,7 @@ ModuleCatalog + ECMAScript 源码 + binding declarations
                          |
                      Jazor.Emit
                          |
-           jazor/（源码、入口、package.json）
+           .jazor/（源码、入口、package.json）
                          |
           +--------------+---------------+
           |              |               |
@@ -40,7 +42,7 @@ Emit 在 MSBuild 阶段将 carrier 物化为标准项目，再经共享 `Jazor.N
 ## 固定数据流
 
 1. 收集最终宿主根程序集、参与程序集、Entries、ModuleCatalog、源码 carrier 和绑定声明。
-2. 就地准备最终 `jazor/` 项目。单文件以临时文件加 rename 发布，内容不变时保留时间戳。
+2. 在 `JazorDir` 中准备生成项目。单文件以临时文件加 rename 发布，内容不变时保留时间戳。
 3. 写入源码、source map 和资源。项目内模块按最终位置写 `./` 或 `../`；外部 import 保留声明的 bare specifier。
 4. 生成浏览器 `entry.js`；启用 SSR 时生成 `ssr-entry.js`，按请求选择组件，不提前执行浏览器启动代码。
 5. 合并根 `package.json` 的 dependencies、exports 和默认 Vite 配置。
@@ -82,8 +84,8 @@ SSR 不再通过 loopback HTTP 或 package task 启动，`TaskName` 设置已移
 
 相同源码、SDK、固定运行时、依赖身份和构建选项应产生稳定路径、入口、声明、lock 与 bundle 元数据。模块按稳定路径与内容去重；外部包版本或资源冲突在恢复前失败。相同外部包可由多个不同绑定声明，但其身份与资源边必须一致。
 
-写入就地生效，失败或中断后由下一次构建收敛，不对整个项目根做快照或回滚。诊断 manifest 位于 obj，是构建证据；浏览器、Vite 与 SSR 不依赖它解析模块。
+写入就地生效，失败或中断后由下一次构建收敛。Emit 将诊断清单写入 `obj/`。模块交接目标将清单复制到生成根，Vite 从清单登记的模块路径解析以 `/` 开头的作者导入。
 
-`dotnet publish` 仅交付 `dist/**` 和启用后的 `ssr/**`，运行时所需 NodeApi/libnode 资产随宿主发布。Windows 应启动该构建的 apphost，以保留 `CETCompat=false`，不要用另一个工具宿主替代。
+ASP.NET Core 的 `dotnet publish` 将 `$(JazorDir)/dist/` 的浏览器文件合并进发布目录的 `wwwroot/`。独立 Emit 的私有 SSR 文件发布到 `jazor/ssr/`。非 Web 宿主的浏览器文件交付在 `jazor/dist/`。运行时所需 NodeApi/libnode 资产随宿主发布。Windows 应启动该构建的 apphost，以使用该构建的 `CETCompat=false`。
 
 当前 Windows x64 的真实证据包含 pnpm/JSR 解析、Vite/HMR、Pinia/VueRoute DOM、Wiki PathBase，以及从 NuGet 发布到干净目录的 SPA/SSR 和 hydration。跨平台、覆盖率与全仓库门禁仍须按迁移方案完成，不能据此扩大支持声明。

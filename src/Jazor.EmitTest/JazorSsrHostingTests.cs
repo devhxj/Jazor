@@ -26,7 +26,7 @@ public sealed partial class JazorSsrHostingTests
             app =>
             {
                 app.UsePathBase("/docs");
-                app.UseJazorArtifacts();
+                app.UseJazorArtifacts(options => options.RootPath = artifactRoot);
                 app.UseJazorSsr(new JazorSsrRequest(
                     "components/counter.js",
                     new { Title = "SSR <title>" },

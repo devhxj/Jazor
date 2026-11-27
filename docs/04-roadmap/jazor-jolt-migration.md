@@ -131,10 +131,14 @@ Monaco 在开发服务与生产静态包中运行同一组浏览器交互。停�
 | 未保存源码与干净 CI | 未保存的 `using` 可补全、报错、撤销；CI 通过独立还原与构建得到已保存源码对应的签名。IDE 关闭或清空缓存后仍可构建 | [真实 C# 语言服务与候选包](../../scripts/csharp/verify-jazor-npm-editor.cs)；[现有 Jolt LSP 夹具](../../src/Jolt.LanguageServer/verify.cs) 对照另一入口 |
 | 七库与等价本地声明 | date-fns 日期传递、Floating UI 元素、VueUse ref、Vue Query 的 `useQuery/useMutation`、VeeValidate 的 `useField`、Vue I18n 泛型和 Monaco 编辑器／模型／worker；核对完整调用与运行结果 | [七库对照](../../scripts/csharp/verify-jolt-binding-projection.cs) · [真实 npm 调用](../../scripts/csharp/verify-jolt-npm-runtime.cs) · [Monaco 浏览器夹具](../../scripts/csharp/fixtures/jolt-monaco-browser/) |
 | 热缓存及失败恢复 | 使用点换序维持源码字节和时间戳；重导出声明的变化使元数据正确失效。冷、热和计算键期间取消后均可重试。破坏组件索引的 JSON 后，重建恢复原索引字节并保留源码时间戳，下一次热构建直接复用两者 | [代码缓存](../../scripts/csharp/verify-jolt-projection-cache.cs) · [声明缓存](../../scripts/csharp/verify-jolt-npm-cache.cs) |
-| Vue Dev 与通用运行 | 一次模板更改只产生一次有效更新；修改 C# 后浏览器读到新值；启动失败可重试，关闭释放端口，附接者退出后外部会话可继续使用 | [Jolt 开发依赖](../../scripts/csharp/verify-jolt-dev-dependencies.cs) · [ASP.NET Core 前端测试](../../src/Jazor.EmitTest/JazorFrontendBuilderTests.cs) |
+| Vue Dev 与通用运行 | 一次模板更改只产生一次有效更新；修改 C# 后浏览器读到新值；启动失败可重试，关闭释放端口，附接者退出后外部会话可继续使用 | [Jolt 开发依赖](../../scripts/csharp/verify-jolt-dev-dependencies.cs) · [ASP.NET Core 前端测试](../../src/Jazor.EmitTest/JazorSPABuilderTests.cs) |
 | 生产与分发 | 安装 Jazor 能独立运行；安装 Jolt 能编译 Vue；SPA、SSR 和路径前缀部署可加载，浏览器 hydration、延迟导入及 worker 成功；帮助与指南和实际安装包一致 | [打包](../../scripts/csharp/verify-jolt-package.cs) · [SSR 宿主](../../src/Jazor.EmitTest/JoltSsrHostingTests.cs) |
 
 实施前后在同一机器、SDK、锁文件、fixture 及缓存条件下采样。分别记录首次构建耗时、无改动再次构建的 checker 启动次数与文件写入、首个补全耗时、编辑到诊断／DOM 更新的 p50 和 p95、实际运行的 Vite 实例数。性能比较沿用[现有混编基线](../../samples/Jolt.Mixed/EditFeedback-baseline.md)的方法。只有定位到具体重复工作或性能回退，才调整现有通用运行路径。
+
+普通 `.cs` 单独计时首次 npm 成员补全和未保存编辑后的悬停；`.jazor` 单独计时冷启动补全、打开第二个组件后的跨文件 F12 和同一文档的热请求。每组保留样本数与缓存状态。TypeScript 查询次数、传输层读取次数、累计分配量和峰值内存各有不同含义，交互延迟以对应编辑器请求的实测时间为准。
+
+复用语义快照时，将相同源码和打开文件集合分别交给增量路径与完整分析，比对诊断、声明位置及未保存修改后的编辑结果。覆盖关闭再打开组件、继承的 `_Imports.jazor`、在另一个组件编辑后首次验证本文件的 `@ref` 与 `[Setup]`，以及包声明保留时间戳但内容已变的情形。[编辑器快照回归](../../src/Jolt.Compiler.Test/EditorAnalysisTests.cs) · [npm 声明缓存验收](../../scripts/csharp/verify-jolt-npm-cache.cs)
 
 Windows 隔离源码计数显示，普通 C# 有实际 npm 调用时，首次构建执行 3 次 `ts.createProgram`，无改动重建为 0 次，生成投影的时间戳保持不变。相同清单和锁文件下移除源码中的 npm 调用，两次构建均为 0 次。混编应用从启动到五轮热编辑只创建了一个 Vite 开发服务。2.5.0 与候选版同机各十次热编辑的 `.jazor` 保存到 DOM 更新 p50 分别为 379 和 385 ms，p95 分别为 511 和 446 ms。[测试条件、源码计数位置及样本](../../samples/Jolt.Mixed/EditFeedback-baseline.md)
 

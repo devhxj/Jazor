@@ -23,7 +23,7 @@ ECMAScript 源码 + ModuleCatalog + npm/JSR 绑定声明
                      Jazor.Emit
                          |
                          v
-      jazor/（源码、入口、package.json、lock、node_modules）
+      .jazor/（源码、入口、package.json、lock、node_modules）
                          |
              +-----------+-----------+
              |                       |
@@ -35,17 +35,17 @@ ECMAScript 源码 + ModuleCatalog + npm/JSR 绑定声明
 
 | 类型 | 交付内容 | 进入项目的方式 |
 | --- | --- | --- |
-| ECMAScript 源码库 | `src/ECMAScript/clr/**` 中的 MJS、source map 与源码资源 | 按相对路径写入 `jazor/clr/**` |
+| ECMAScript 源码库 | `src/ECMAScript/clr/**` 中的 MJS、source map 与源码资源 | 按相对路径写入 `.jazor/clr/**` |
 | ECMAScript 绑定库 | 强类型 C# API、npm/JSR identity、标准 ESM specifier、上游证据 | dependency 写入根 `package.json`，生成源码保留 bare import |
 
-`ECMAScriptModule` 和 `Jazor.Generated.ModuleCatalog` 产生的模块也是项目源码，按声明的模块路径写入 `jazor/`。ECMAScript 是源码库；其他 `ECMAScript.*` 绑定库的运行时代码由 npm 或 JSR 恢复。
+`ECMAScriptModule` 和 `Jazor.Generated.ModuleCatalog` 产生的模块也是项目源码，按声明的模块路径写入 `.jazor/`。ECMAScript 是源码库；其他 `ECMAScript.*` 绑定库的运行时代码由 npm 或 JSR 恢复。
 
 现有 metadata 的 `embedded-mjs` 值映射到 ECMAScript 源码输入。目标项目将这些文件作为普通源码处理。
 
 ## 标准项目布局
 
 ```text
-jazor/
+.jazor/
   package.json
   pnpm-lock.yaml
   node_modules/
@@ -71,8 +71,8 @@ Release 发布只复制 `dist/**` 与启用 SSR 时的 `ssr/**`。后者拥有�
 ## 源码契约
 
 ```text
-src/ECMAScript/clr/**         -> jazor/clr/**
-ECMAScriptModule.RelativePath -> jazor/<RelativePath>
+src/ECMAScript/clr/**         -> .jazor/clr/**
+ECMAScriptModule.RelativePath -> .jazor/<RelativePath>
 ```
 
 项目内模块根据 importer 与目标文件的最终位置写出 `./` 或 `../` specifier。源码、source map 和源码直接引用的 CSS、worker、字体、图片或 wasm 保持稳定相对路径。
@@ -253,7 +253,7 @@ import "element-plus/es/components/affix/style/css.mjs";
 ```text
 A：提供 ModuleCatalog，或提供 npm/JSR binding declaration
 B：通过 ProjectReference/PackageReference 使用 A
-最终宿主：收集实际 Entries 和 package imports，生成一次 jazor/ 项目
+最终宿主：收集实际 Entries 和 package imports，生成一次 .jazor/ 项目
 ```
 
 直接引用 `Jazor` 可启用其 MSBuild 工具。源码 carrier、`ModuleCatalog` 与 binding declaration 随普通项目引用传递；最终 `Exe`、`WinExe` 或 Web 宿主直接引用 `Jazor`，配置并拥有 `JazorDir`。
@@ -283,7 +283,7 @@ Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑
 ## Emit 写入
 
 1. 收集应用 Entries、生成模块、ECMAScript 源码、package imports 和本地资源。
-2. 在最终 `jazor/` 按最终路径写出源码、source map 与本地资源；单文件使用临时文件加 rename。
+2. 在最终 `.jazor/` 按最终路径写出源码、source map 与本地资源；单文件使用临时文件加 rename。
 3. 生成 `entry.js`、可选 `ssr-entry.js` 和根 `package.json`。
 4. 调用 pnpm API 恢复依赖、生成或验证 `pnpm-lock.yaml`；Acornima 检查语法，Vite 检查所有入口的解析图。
 5. Release 模式让选定的标准前端工具从同一项目根生成 `dist/`，启用 SSR 时另生成 `ssr/` 运行闭包。
@@ -299,7 +299,7 @@ Emit 在项目边界完成两种转换：源码 carrier 变成项目文件，绑
 - package 内部 import、peer dependency、初始化和 `sideEffects` 由上游 package 保持。
 - Debug、Release、HMR 和 SSR 构建使用同一项目根、源码树、dependency identity 与恢复结果；发布只交付运行闭包。
 - 项目生成、恢复、检查或构建失败时显式返回错误，不做整目录回滚；下一次构建按同一规则收敛。
-- NodeApi 在 `jazor/` 直接调用恢复、检查和构建 API，不需要全局 JavaScript 工具。
-- 选定的标准前端工具能从 `jazor/entry.js` 解析 `node_modules` 并输出 `jazor/dist/`；NetPack 不是验收前提。
+- NodeApi 在 `.jazor/` 直接调用恢复、检查和构建 API，不需要全局 JavaScript 工具。
+- 选定的标准前端工具能从 `.jazor/entry.js` 解析 `node_modules` 并输出 `.jazor/dist/`；NetPack 不是验收前提。
 - NodeApi 能从开发项目根加载 `ssr-entry.js`，并从独立发布目录加载 `ssr/ssr-entry.js`。
 - 单组件或单函数 consumer 只保留入口可达的 ESM 与资源，同时保留组件内部依赖和必要副作用。

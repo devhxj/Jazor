@@ -9,7 +9,7 @@
 <p>
   <a href="https://dotnet.microsoft.com/"><img alt=".NET 11" src="https://img.shields.io/badge/.NET-11-512BD4?logo=dotnet&amp;logoColor=white" /></a>
   <a href="https://www.nuget.org/packages/Jazor"><img alt="NuGet" src="https://img.shields.io/nuget/v/Jazor?logo=nuget&amp;label=NuGet" /></a>
-  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.7.2"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.7.2&amp;display_name=tag&amp;label=release" /></a>
+  <a href="https://github.com/devhxj/Jazor/releases/tag/v2.7.4"><img alt="GitHub release" src="https://img.shields.io/github/v/tag/devhxj/Jazor?tag=v2.7.4&amp;display_name=tag&amp;label=release" /></a>
   <a href="LICENSE.txt"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2ea44f" /></a>
 </p>
 
@@ -19,7 +19,7 @@
   <a href="docs/04-roadmap/current-status.md"><img alt="At least 97 percent compiler branch coverage" src="https://img.shields.io/badge/compiler%20branch%20coverage-97%25%2B-2ea44f" /></a>
 </p>
 
-<p><a href="docs/03-guides/jolt-authoring.md">Get started with Jolt</a> · <a href="samples/Jolt.Counter/README.md">Counter example</a> · <a href="docs/README.md">Documentation</a> · <a href="CHANGELOG.md">Changelog</a></p>
+<p><a href="docs/03-guides/jolt-authoring.md">Get started with Jolt</a> · <a href="samples/Jero/README.en.md">C# SPA example</a> · <a href="docs/README.md">Documentation</a> · <a href="CHANGELOG.md">Changelog</a></p>
 
 <p><strong>English</strong> · <a href="README_CN.md">简体中文</a></p>
 
@@ -27,14 +27,14 @@
 
 ## Run a Jolt app
 
-Install the .NET 11 SDK on Windows or glibc Linux (x64 or ARM64). Clone the repository and run these commands from its root.
+With the .NET 11 SDK, open `samples/Jolt.AspNetCore/Jolt.AspNetCore.csproj` in Visual Studio, select the **Jolt.AspNetCore** launch profile, and press **F5**. To start the same application in a terminal, run from the repository root.
 
 ```sh
-dotnet tool install --global Jazor.Jolt --version 2.7.2
-jolt dev samples/Jolt.Counter --port 15658
+cd samples/Jolt.AspNetCore
+dotnet run
 ```
 
-If the tool is already installed, use `dotnet tool update --global Jazor.Jolt --version 2.7.2`. Open the URL printed in the terminal and click **Increment**. A typed callback updates the parent’s count and the state of a Reka UI component. [Counter project](samples/Jolt.Counter/README.md)
+Open `http://localhost:5168/portal/frontend/index.html`, increment the counter, and edit the heading in `Counter.jazor` at the project root. The page updates and keeps the count. The web host starts the Jolt development service built from this repository. Jero, a full administration app, follows the same F5 and `dotnet run` workflow. [Counter project](samples/Jolt.AspNetCore/README.md) · [Jero development guide](samples/Jero/README.en.md)
 
 A `.jazor` file combines markup and C#.
 
@@ -53,20 +53,20 @@ Each `.jazor` file becomes one ES module. The Vue component is the default expor
 
 | Editor | Extension |
 | --- | --- |
-| VS Code | Install `jolt-2.7.2.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
+| VS Code | Install `jolt-2.7.4.vsix` with **Extensions: Install from VSIX**. [VS Code setup](editors/jolt/README.md) |
 | Visual Studio 2026 on Windows x64 | Open `Jolt.VisualStudio.vsix` with the VSIX Installer. [Visual Studio setup](editors/jolt-visual-studio/README.md) |
-| JetBrains Rider 2026.3 | Install `jolt-rider-2.7.2.zip` from disk in **Settings → Plugins**. [Rider setup](editors/jolt-rider/README.md) |
+| JetBrains Rider 2026.3 | Install `jolt-rider-2.7.4.zip` from disk in **Settings → Plugins**. [Rider setup](editors/jolt-rider/README.md) |
 
-Get the CLI and your editor’s extension from the same release. Open `samples/Jolt.Counter` as a folder, then open `App.jazor`. [2.7.2 release](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
+The 2.7.4 extensions launch the language server from the matching .NET tool. Follow the setup for your editor above, then open `Counter.jazor` in the sample project to use completion and go to definition. [2.7.4 release](https://github.com/devhxj/Jazor/releases/tag/v2.7.4)
 
-`jolt build samples/Jolt.Counter` writes modules and source maps to `samples/Jolt.Counter/.jolt/`. `jolt bundle samples/Jolt.Counter` writes production assets to `samples/Jolt.Counter/dist/`.
+From the web project directory, use `dotnet build` to build the project and `dotnet publish -c Release` to publish the host, frontend entry and production assets together. [Counter project publish target](samples/Jolt.AspNetCore/Jolt.AspNetCore.csproj)
 
 ## Compile C# modules
 
 Add the `Jazor` SDK to a .NET project to compile `[ECMAScriptModule]` classes. The SDK includes the compiler, analyzer, Emit tooling and ASP.NET Core integration. [C# module quickstart](docs/03-guides/quick-start.md)
 
 ```sh
-dotnet add package Jazor --version 2.7.2
+dotnet add package Jazor --version 2.7.4
 ```
 
 | Topic | Documentation |
@@ -90,7 +90,7 @@ The Jolt release workflow verifies an isolated CLI install, the language server 
 
 ## Latest release
 
-Jazor 2.7.2 improves Jolt completion in blank markup and HTML start tags, adds npm import suggestions, and enables F12 navigation from `.jazor` to shared C# declarations. It also fixes missing npm inputs in ordinary C# design-time builds. [Release notes](CHANGELOG.md#jazor-272)
+Jazor 2.7.4 shares the `.jazor/` output directory between Emit and Jolt. ASP.NET Core hosts use `AddJazorSPA` and `UseJazorSPA` to start Jolt with F5 or `dotnet run`. Jolt tracks changes in C# source dependencies. Existing projects should review the breaking changes and migration steps in the [release notes](CHANGELOG.md#jazor-274).
 
 ## AI-assisted development
 

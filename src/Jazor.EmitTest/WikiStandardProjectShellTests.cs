@@ -12,15 +12,16 @@ public sealed class WikiStandardProjectShellTests
 {
     [TestMethod]
     [DataRow("Development", "/jazor/entry.js", true)]
-    [DataRow("Production", "/jazor/dist/bundle.js", false)]
+    [DataRow("Production", "/jazor/bundle.js", false)]
     public async Task Shell_UsesStandardEntryWithoutRuntimeManifest(string environment, string entry, bool hmr)
     {
         var root = Path.Combine(RepositoryTemp.Root, "jazor-wiki-shell-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "host"));
-        Directory.CreateDirectory(Path.Combine(root, "jazor", "dist"));
+        Directory.CreateDirectory(Path.Combine(root, ".jazor"));
+        Directory.CreateDirectory(Path.Combine(root, "wwwroot", "jazor"));
         // Both source and build output coexist in a standard project. Environment selects the entry.
-        await File.WriteAllTextAsync(Path.Combine(root, "jazor", "entry.js"), "export {};");
-        await File.WriteAllTextAsync(Path.Combine(root, "jazor", "dist", "bundle.js"), "export {};");
+        await File.WriteAllTextAsync(Path.Combine(root, ".jazor", "entry.js"), "export {};");
+        await File.WriteAllTextAsync(Path.Combine(root, "wwwroot", "jazor", "bundle.js"), "export {};");
         var repository = new DirectoryInfo(AppContext.BaseDirectory);
         while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "Jazor.slnx")))
             repository = repository.Parent;

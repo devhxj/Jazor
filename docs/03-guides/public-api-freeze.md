@@ -17,7 +17,7 @@
 | 包 | 稳定用途 | 公开命名空间 | 冻结意见 |
 | --- | --- | --- | --- |
 | `Jazor` | 编译器、Emit、MSBuild 与 ASP.NET Core 生产宿主集成 | `Jazor.*`、`Jazor.AspNetCore` | 保持 |
-| `Jazor.AspNetCore.Dev`（`Jazor` 包内程序集） | 统一 frontend orchestration 与 Development reload/HMR | `Jazor.AspNetCore.Dev` | 不新增独立 NuGet 包 |
+| `Jazor.AspNetCore.Dev`（`Jazor` 包内程序集） | 统一前端配置、Vite 开发代理与发布产物托管 | `Jazor.AspNetCore.Dev` | 不新增独立 NuGet 包 |
 | `ECMAScript.*` | ECMAScript、Vue 生态与样式绑定 | 各包现有命名空间 | 按各自 binding 审查，不在本表重命名 |
 
 包名、程序集名、RootNamespace 和 README 安装示例保持一致。未来拆分 `Jazor.AspNetCore` 包或改变资源 carrier 进入 MAJOR 版本通道。
@@ -37,10 +37,9 @@
 
 | API 家族 | 当前公开入口 | 1.0 决策 |
 | --- | --- | --- |
-| Frontend | `AddJazorFrontend`, `UseJazorPathBase`, `UseJazorFrontend`, `JazorFrontendUrls` | 统一项目目录、PathBase、Vite 启停/代理与 Release 托管；替代已删除的 Vite proxy API |
-| Reload | `AddJazorReload`, `UseJazorReload` | 保持；生产环境必须 no-op，Development 才启用 transport |
+| SPA | `AddJazorSPA`, `UseJazorPathBase`, `UseJazorSPA`, `JazorSPAUrls` | 统一项目目录、PathBase、Vite 启停/代理与 Release 托管；替代已删除的 Vite proxy API |
 
-统一 frontend 扩展同时支持 `WebApplicationBuilder` / `WebApplication` 与 `IServiceCollection` / `IApplicationBuilder`，让 Startup 或框架提供的 builder 直接完成注册和中间件组合；对应重载共享实现，并返回原 builder。底层 SSR/reload 扩展继续使用现有 ASP.NET Core 链式返回类型。空参数、无效路径、未注册服务和错误环境通过显式异常或 no-op 表达处理结果。
+统一 frontend 扩展同时支持 `WebApplicationBuilder` / `WebApplication` 与 `IServiceCollection` / `IApplicationBuilder`，让 Startup 或框架提供的 builder 直接完成注册和中间件组合；对应重载共享实现，并返回原 builder。底层 SSR 扩展继续使用现有 ASP.NET Core 链式返回类型。空参数、无效路径、未注册服务和错误环境通过显式异常或 no-op 表达处理结果。
 
 ## 配置模型基线
 
@@ -52,17 +51,16 @@
 - `JazorArtifactOptions`：`RequestPath`、`RootPath`、`DirectoryName`、探针集合、缓存前缀、响应回调和 miss 行为。
 - `JazorSpaFallbackOptions`：排除前缀、允许后缀和 HTML Accept 约束。
 - `JazorSsrOptions`：artifact root、request path、mount element 和 worker 数量。
-- `JazorFrontendOptions`：request path、PathBase、项目根、Development/Release 入口和 `Vite` 子配置。
+- `JazorSPAOptions`：request path、PathBase、项目根、Development/Release 入口、`Vite` 子配置和只读的 `Fallback` 配置属性。
 - `JazorViteServerOptions`：server origin、Vite API 配置、是否启动、启动与停止超时。
-- `JazorReloadOptions`：client/WebSocket path、观察路径、HMR mapping、节流/轮询/心跳与 HTML 注入开关。
 
-以上记录 1.0.0 的冻结表面。1.1.0 直接调用 Vite 与 SSR API，移除 Vite/SSR 的 `TaskName`；维护者指定该底层重构使用 MINOR，迁移步骤见 CHANGELOG。已审阅签名由 `public-api-reviewed-removals.snapshot.md` 显式列出，既有稳定 tag 和冻结快照保持不变。
+1.0.0 的完整冻结表面见公开签名快照，其中仍记录了现已退役的独立 reload API。1.1.0 直接调用 Vite 与 SSR API，移除 Vite/SSR 的 `TaskName`；维护者指定该底层重构使用 MINOR，迁移步骤见 CHANGELOG。已审阅签名由 `public-api-reviewed-removals.snapshot.md` 显式列出，既有稳定 tag 和冻结快照保持不变。
 
 1.2.0 类型语义调整将 `ErrorOptions`、`PropertyDescriptorRef` 和 WebIDL callback literal 从 class 迁移为 record，并清理许可用途的标注。该版本按维护者批准的 MINOR 例外交付；破坏性迁移说明与发布门禁仍适用，冻结快照继续报告差异。迁移路径见[类型指南](./type-semantics.md)、[版本规则例外](./release-and-versioning.md#120-类型语义调整例外)与 CHANGELOG。
 
 当前候选的机器签名比较沿用既有已审阅删除记录后通过；该检查没有完整表达 class→record 的继承和对象模型变化，因此仍按上述破坏性迁移处理。
 
-集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`entry.js`、`dist/bundle.js`、`http://127.0.0.1:5173`、`/@jazor/client`、`/@jazor/reload`、安全头、探针文件和缓存策略。
+集合属性继续使用可变 `IList<T>` 是当前配置 authoring 约定；如果未来改为不可变或替换为 options binding，需要单独设计迁移路径。所有默认值必须在测试中断言，尤其是 `/jazor`、`entry.js`、`dist/bundle.js`、`http://127.0.0.1:5173`、安全头、探针文件和缓存策略。
 
 ## SSR 数据模型
 
@@ -108,7 +106,7 @@ dotnet run --file scripts/csharp/inspect-public-api.cs -- --output artifacts/api
 dotnet run --file scripts/csharp/compare-public-api.cs -- --current artifacts/api/public-api.md --baseline docs/03-guides/public-api-baseline.snapshot.md --approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md --output artifacts/api/public-api-compatibility.md
 ```
 
-首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，未审阅的删除或签名变化会使命令失败。1.1.0 的 TaskName 删除通过显式 `--approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md` 放行，报告仍保留差异。快照覆盖宿主、开发 reload 和纳入发布的 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common 和 Contract 程序集不计入作者 API 冻结面。
+首次建立候选快照时可以省略 `--baseline`，或显式传 `--allow-missing-baseline`，脚本会生成“baseline missing”报告；这不代表兼容性已经通过。CI 不传该选项，基线缺失会阻断门禁。存在基线时，新增 API 会列在报告中，未审阅的删除或签名变化会使命令失败。1.1.0 的 TaskName 删除通过显式 `--approved-removals docs/03-guides/public-api-reviewed-removals.snapshot.md` 放行，报告仍保留差异。快照覆盖 ASP.NET Core 宿主程序集和纳入发布的 ECMAScript 绑定程序集；仅作为包内实现载体的 Compiler、Common 和 Contract 程序集不计入作者 API 冻结面。
 
 ## 变更规则
 

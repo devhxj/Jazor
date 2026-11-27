@@ -34,6 +34,8 @@ permissions:
 jobs:
   verify-pinia:
     uses: ./.github/workflows/pinia-verify.yml
+    with:
+      release_ref: ${{ github.event_name == 'workflow_dispatch' && inputs.release_ref || github.ref_name }}
 
   verify-quality:
     uses: ./.github/workflows/quality-gates.yml
@@ -112,6 +114,15 @@ jobs:
         run: |
           $chrome = Join-Path $env:ProgramFiles 'Google\Chrome\Application\chrome.exe'
           dotnet run --file ./scripts/csharp/verify-jolt-package.cs -- --package-source $env:JAZOR_PACKAGE_OUTPUT --editor-features --browser $chrome
+
+      - name: Verify packaged ASP.NET SPA consumer
+        shell: pwsh
+        run: |
+          # A manual run can still verify earlier release refs.
+          if (Test-Path -LiteralPath './scripts/csharp/verify-jolt-spa-package.cs') {
+            dotnet run --file ./scripts/csharp/verify-jolt-spa-package.cs -- $env:JAZOR_PACKAGE_OUTPUT
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
 
       - name: Package Jolt VS Code extension
         if: steps.release_ref.outputs.create_release == 'true'

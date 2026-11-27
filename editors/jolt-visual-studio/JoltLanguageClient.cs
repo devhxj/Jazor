@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.LanguageServer.Client;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Utilities;
 
@@ -33,6 +35,7 @@ public sealed class JoltLanguageClient : ILanguageClient
         {
             "**/*.jazor", "**/*.cs", "**/*.vue", "**/*.ts", "**/*.tsx", "**/*.mts", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs",
             "**/tsconfig*.json", "**/package.json", "**/pnpm-lock.yaml", "**/.npmrc",
+            "**/*.csproj", "**/*.props", "**/*.targets", "**/project.inputs", "**/project.assets.json", "**/global.json",
             "**/node_modules/**/*.d.ts", "**/node_modules/**/*.d.mts", "**/node_modules/**/*.d.cts",
         };
     public bool ShowNotificationOnInitializeFailed => true;
@@ -43,26 +46,39 @@ public sealed class JoltLanguageClient : ILanguageClient
 
     public Task OnLoadedAsync() => StartAsync.InvokeAsync(this, EventArgs.Empty);
 
-    public Task<Connection?> ActivateAsync(CancellationToken cancellationToken)
+    public async Task<Connection?> ActivateAsync(CancellationToken cancellationToken)
     {
+        await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+        var dte = Package.GetGlobalService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
+        var document = dte?.ActiveDocument;
+        var project = FindProject(dte, document);
+        var directory = Path.GetDirectoryName(document?.FullName) ?? Path.GetDirectoryName(project)
+            ?? Path.GetDirectoryName(dte?.Solution?.FullName) ?? Environment.CurrentDirectory;
+        var configuration = dte?.Solution?.SolutionBuild?.ActiveConfiguration?.Name;
+        var startInfo = await JoltServerCommand.ResolveAsync(directory, project, configuration).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        string cliHome = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")
-            ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        string toolsDirectory = Path.Combine(cliHome, ".dotnet", "tools");
-        if (!File.Exists(Path.Combine(toolsDirectory, "jolt.cmd")))
-            throw new FileNotFoundException("Install the Jazor.Jolt .NET tool from the matching Jolt release, then restart Visual Studio.");
-
-        // The .NET SDK writes a .cmd shim for RID tools. It launches the packaged CET-disabled apphost.
-        var startInfo = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), @"/d /c .\jolt.cmd lsp")
-        {
-            WorkingDirectory = toolsDirectory,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-        };
+        startInfo.RedirectStandardInput = true;
+        startInfo.RedirectStandardOutput = true;
         using var process = Process.Start(startInfo) ?? throw new InvalidOperationException("Could not start the Jolt language server.");
-        return Task.FromResult<Connection?>(new Connection(process.StandardOutput.BaseStream, process.StandardInput.BaseStream));
+        return new Connection(process.StandardOutput.BaseStream, process.StandardInput.BaseStream);
+    }
+
+    private static string? FindProject(EnvDTE.DTE? dte, EnvDTE.Document? document)
+    {
+        ThreadHelper.ThrowIfNotOnUIThread();
+        var project = document?.ProjectItem?.ContainingProject;
+        if (IsCSharpProject(project)) return project!.FullName;
+        foreach (var selected in (dte?.ActiveSolutionProjects as object[] ?? Array.Empty<object>()).OfType<EnvDTE.Project>())
+        {
+            if (IsCSharpProject(selected)) return selected.FullName;
+        }
+        return null;
+    }
+
+    private static bool IsCSharpProject(EnvDTE.Project? project)
+    {
+        ThreadHelper.ThrowIfNotOnUIThread();
+        return string.Equals(Path.GetExtension(project?.FullName), ".csproj", StringComparison.OrdinalIgnoreCase);
     }
 
     public Task OnServerInitializedAsync() => Task.CompletedTask;

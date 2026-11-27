@@ -12,7 +12,7 @@ public sealed class SdkTargetsTests
 
         Assert.IsFalse(props.Contains("<JazorMode", StringComparison.Ordinal), "Project-authored conditional settings must run before the default.");
         StringAssert.Contains(targets, "<JazorMode Condition=\"'$(JazorMode)' == ''\">none</JazorMode>", StringComparison.Ordinal);
-        StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\jazor\\</JazorDir>", StringComparison.Ordinal);
+        StringAssert.Contains(props, "<JazorDir Condition=\"'$(JazorDir)' == ''\">$(MSBuildProjectDirectory)\\.jazor\\</JazorDir>", StringComparison.Ordinal);
         Assert.IsFalse(props.Contains("JazorTool", StringComparison.Ordinal), props);
         Assert.IsFalse(targets.Contains("toolchain build --manifest", StringComparison.Ordinal), targets);
         Assert.IsFalse(targets.Contains("manifest materialize", StringComparison.Ordinal), targets);

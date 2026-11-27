@@ -4,11 +4,11 @@
 
 ## 开始使用
 
-安装 Jolt CLI 和对应的编辑器扩展，在计数器示例中试用 `.jazor` 和 npm 组件。
+在 Visual Studio 打开 `samples/Jero/src/Jero.slnx` 并启动 Jero.Web，或在 Web 项目目录运行 `dotnet run`。编辑器扩展为 `.jazor` 提供补全和导航。
 
 | 我想做什么 | 从这里开始 |
 | --- | --- |
-| 运行第一个 `.jazor` 应用 | [Jolt 作者指南](./03-guides/jolt-authoring.md) · [计数器示例](../samples/Jolt.Counter/README.md) |
+| 运行第一个 `.jazor` 应用 | [Jolt 作者指南](./03-guides/jolt-authoring.md) · [Jero](../samples/Jero/README.md) · [小型 ASP.NET Core 计数器](../samples/Jolt.AspNetCore/README.md) |
 | 配置语义高亮、补全和导航 | [VS Code](../editors/jolt/README.md) · [Visual Studio 2026](../editors/jolt-visual-studio/README.md) |
 | 核对当前能力和验证命令 | [当前状态](./04-roadmap/current-status.md) · [开发与测试](./03-guides/development-and-testing.md) |
 

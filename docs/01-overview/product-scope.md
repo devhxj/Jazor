@@ -18,10 +18,10 @@ Jolt 是应用开发主线。它将 .jazor 中的模板与 C# 语义投影到 Vu
 | --- | --- | --- | --- | --- |
 | 核心平台 | ECMAScript 模块 | 标注为 `[ECMAScriptModule]` 的 C# 模块 | `.mjs`、源映射与 manifest | 引用 `Jazor` |
 | 核心平台 | 浏览器交付 | 程序集内 `ModuleCatalog`、npm/JSR package metadata 与明确声明的 embedded carrier 组成的显式依赖图 | debug 模块或项目配置的生产构建输出 | 在最终宿主项目设置 `JazorMode` |
-| 应用主线 | Jolt | .jazor 与 npm 声明 | Vue render-function 模块、源映射与 Vite 应用 | 安装 Jazor.Jolt |
+| 应用主线 | Jolt | .jazor 与 npm 声明 | Vue render-function 模块、源映射与 Vite 应用 | C# Web 项目通过 F5 或 `dotnet run` 启动，`dotnet publish` 交付前端资源 |
 | 应用方向 | ASP.NET Core SSR | 物化后的 Vue 模块图 | 服务器渲染 HTML 与客户端 hydration | 设置 `JazorSSR` 并注册 SSR 服务 |
 
-Jazor 维护并发布 Vue、Vue Router、Pinia、Pinia Testing、Vue Devtools 的手写绑定，以及 CSS-in-JS 样式库。其他 npm 应用库通过 Jolt 从锁定版本的公开声明推导。 [平台与绑定](../02-architecture/platform-and-bindings.md)
+Jazor 维护并发布 Vue、Vue Router、Pinia、Pinia Testing、Vue Devtools 的手写绑定，以及 CSS-in-JS 样式库。普通 npm 值由 Jazor 从锁定版本的公开声明推导，Jolt 为 Vue 组件提供标签、属性、事件和插槽检查。[平台与绑定](../02-architecture/platform-and-bindings.md)
 
 ## 范围边界
 

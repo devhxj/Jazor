@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-当前正式版本为 **2.7.2**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.7.2 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.2)
+当前正式版本为 **2.7.4**。Jazor 与 ECMAScript 包使用同一版本。需要从旧版本迁移 class、record 或宿主配置时，见下文和 CHANGELOG。 [2.7.4 发布页](https://github.com/devhxj/Jazor/releases/tag/v2.7.4)
 
 开发新的 Jolt 组件时，直接在项目的 `package.json` 声明应用所需的 npm 包，在 `.jazor` 中导入投影的类型。Vue、Pinia、Vue Router、Pinia Testing 和 Vue Devtools 的手写绑定与 Jazor、Jolt 和 Style 一起发布。旧的七个应用级绑定仍可按 2.3.0 安装。 [投影用法与示例](./jolt-authoring.md#直接调用-npm-函数)
 
@@ -37,7 +37,7 @@ live DOM、BigInt JSON、原生 DOM 事件示例见[浏览器互操作](./browse
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="Jazor" Version="2.7.2" />
+  <PackageReference Include="Jazor" Version="2.7.4" />
 </ItemGroup>
 ```
 
@@ -47,22 +47,22 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="ECMAScript.Style" Version="2.7.2" />
-  <PackageReference Include="ECMAScript.Pinia" Version="2.7.2" />
-  <PackageReference Include="ECMAScript.VueRoute" Version="2.7.2" />
+  <PackageReference Include="ECMAScript.Style" Version="2.7.4" />
+  <PackageReference Include="ECMAScript.Pinia" Version="2.7.4" />
+  <PackageReference Include="ECMAScript.VueRoute" Version="2.7.4" />
 </ItemGroup>
 ```
 
 测试项目需要创建测试 Pinia 时，添加同版本的 Pinia Testing。 [测试用例](../../src/ECMAScript.Pinia.Testing.Test/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.7.2" />
+<PackageReference Include="ECMAScript.Pinia.Testing" Version="2.7.4" />
 ```
 
 定义 Vue Devtools 插件的项目添加同版本的 Devtools 绑定。 [插件样例](../../samples/ECMAScript.Vue.Devtools.Plugin/README.md)
 
 ```xml
-<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.2" />
+<PackageReference Include="ECMAScript.Vue.Devtools" Version="2.7.4" />
 ```
 
 ## 配置产物输出
@@ -86,28 +86,27 @@ Vue 类型、运行时和组件契约由 `ECMAScript.Vue` 提供。共享绑定�
 ```xml
 <PropertyGroup>
   <JazorMode>debug</JazorMode>
-  <JazorDir>$(MSBuildProjectDirectory)\jazor\</JazorDir>
 </PropertyGroup>
 ```
 
 | 属性 | 默认值 | 说明 |
 | --- | --- | --- |
 | `JazorMode` | `none` | 项目留空时使用默认值，模块随 DLL 交付。最终宿主选 `debug` 生成开发项目，选 `release` 生成生产资源。 |
-| `JazorDir` | `$(MSBuildProjectDirectory)\jazor\` | 指定宿主启用 Emit 后的输出目录。 |
+| `JazorDir` | 项目下的 `.jazor/` | Emit 和 Jolt 共同使用的开发与测试生成根。作者按声明的模块路径导入，Vite 默认将生产构建放入此根下的 `dist/`。 |
 | `JazorSSR` | `false` | 生成开发 SSR 入口；Release 另构建 `ssr/` 运行闭包 |
 | `JazorPnpmStoreDirectory` | 用户本地 Jazor store | 共享 pnpm store；不要求生产部署恢复依赖 |
 | `JazorPublishSourceMaps` | `false` | 默认发布 `dist/**` 与启用 SSR 时的 `ssr/**`；设置为 `true` 可额外发布这两个目录内的 source map |
 | `RuntimeIdentifier` | 未设置 | 优先传入指定 RID，未设置时使用 SDK 当前 RID；同时传入 SDK runtime graph，先选择兼容 runtime asset 再对程序集身份去重 |
 
-`debug` 与 `release` 是互斥输出模式。`release` 从 `jazor/` 入口调用 Vite build API；构建定制放入 Vite 配置。任意 shell scripts 不在进程内执行契约中。
+`debug` 与 `release` 是互斥输出模式。独立模块宿主在 `release` 模式从生成根的入口调用 Vite build API，构建定制放入 Vite 配置。
 
-Folder Publish 使用 Release 构建运行闭包，发布后的 `jazor/` 包含 `dist/` 和可选 `ssr/`；源码、根 lock 和 `node_modules` 保留在本地生成项目中。
+发布 ASP.NET Core 项目时，SDK 将 `$(JazorDir)/dist/` 中的浏览器文件放入发布目录的 `wwwroot/`。独立 Emit 的服务端 SSR 入口和运行时文件部署到私有的 `jazor/ssr/`。非 Web 宿主使用 `jazor/dist/` 和可选的 `jazor/ssr/`。
 
 ## 升级与开发输出
 
 升级时统一所有 Jazor/生态包的版本，并审阅[工具链](./toolchain-migration.md)和[类型语义](./type-semantics.md)的迁移步骤。含作者配置的 `JazorDir` 应先保留和合并；确认可再生后再清理旧安装结果。历史 API 与目录布局见[演进记录](../05-history/evolution.md)。
 
-开发时使用 `dotnet watch run` 触发最终宿主重新构建；启用 `AddJazorReload()` 时，reload 服务消费本次 Emit 成功物化的 HMR 元数据和模块输出。生成资源不参与 MSBuild 作者输入，`JazorDir` 中的作者 `.cs` 文件保留；更新缺少安全热替换证据时，服务执行整页刷新。
+在 ASP.NET Core Vue 项目中，直接按 F5 或运行 `dotnet run` 即可启动宿主和 Jolt 开发服务。修改 `.jazor` 组件或浏览器 C# 模块时，页面会热更新。需要监听服务端 C# 改动时可运行 `dotnet watch run`。组件和 C# 源码放在项目源码目录；Emit 与 Jolt 把生成文件写入 `JazorDir`。例如模块声明路径为 `components/app-bootstrap.js`，页面入口写 `/components/app-bootstrap.js`。
 
 `ECMAScript.Style` 的 DSL 使用 `lower_snake_case`，例如 CSS 声明使用 `background_color`，并生成 CSS `background-color`。WebIDL 生成的 DOM 对象按规范使用 `backgroundColor`。两套 C# 表面分别维持既定命名：`CssRule`、`CssDeclarations`、`CssAtRule`、`CssShadow`、`CssChild` 和 `CssOptions` 等 CLR 模型采用 PascalCase，生成 CSS、`style.js` 与浏览器 HMR 协议。
 

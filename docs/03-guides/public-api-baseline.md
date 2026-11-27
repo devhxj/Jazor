@@ -1,6 +1,6 @@
 # 公共作者 API 与冻结基线
 
-本文是当前公开作者面的人工可读索引，覆盖宿主、SSR、开发 reload 与重点绑定契约。正式冻结基线保存在机器快照中，当前完整签名和差异以实际发布候选程序集的 API 兼容性工具结果为准。
+本文是当前公开作者面的人工可读索引，覆盖宿主、SSR、Vite 前端集成与重点绑定契约。正式冻结基线保存在机器快照中，当前完整签名和差异以实际发布候选程序集的 API 兼容性工具结果为准。
 
 ## 包与命名空间
 
@@ -41,19 +41,15 @@
 
 ## `Jazor.AspNetCore.Dev`
 
-- `JazorFrontendExtensions.AddJazorFrontend(WebApplicationBuilder, Action<JazorFrontendOptions>?)`
-- `JazorFrontendExtensions.AddJazorFrontend(IServiceCollection, Action<JazorFrontendOptions>?)`
-- `JazorFrontendExtensions.UseJazorPathBase(WebApplication)` / `UseJazorPathBase(IApplicationBuilder)`
-- `JazorFrontendExtensions.UseJazorFrontend(WebApplication, Action<JazorHostOptions>?)` / `UseJazorFrontend(IApplicationBuilder, Action<JazorHostOptions>?)`
-- `JazorFrontendOptions`
+- `JazorSPAExtensions.AddJazorSPA(WebApplicationBuilder, Action<JazorSPAOptions>?)`
+- `JazorSPAExtensions.AddJazorSPA(IServiceCollection, Action<JazorSPAOptions>?)`
+- `JazorSPAExtensions.UseJazorPathBase(WebApplication)` / `UseJazorPathBase(IApplicationBuilder)`
+- `JazorSPAExtensions.UseJazorSPA(WebApplication, Action<JazorHostOptions>?)` / `UseJazorSPA(IApplicationBuilder, Action<JazorHostOptions>?)`
+- `JazorSPAOptions`
 - `JazorViteServerOptions`
-- `JazorFrontendUrls`
-- `JazorReloadExtensions.AddJazorReload`
-- `JazorReloadExtensions.UseJazorReload`
-- `JazorReloadOptions`
-- `JazorHmrMapping`
+- `JazorSPAUrls`
 
-frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。`UseJazorReload` 是独立的低层 reload/HMR 能力，在非 Development 环境保持 no-op。1.0.0 冻结快照仍保留为兼容性比较基线；Vite/SSR `TaskName` 删除按维护者指定的 1.1.0 工具链重构例外发布，迁移步骤见[发版规则](./release-and-versioning.md)。`public-api-reviewed-removals.snapshot.md` 只放行已确认签名，报告仍列出删除，旧冻结快照保持不变。
+frontend API 在 Development 通过 NodeApi 管理 Vite 生命周期并代理 HTTP/HMR，其他环境托管 Release 产物。静态宿主的独立刷新已退役，开发期的 HMR 由 Vite 提供。1.0.0 冻结快照仍保留为兼容性比较基线；Vite/SSR `TaskName` 删除按维护者指定的 1.1.0 工具链重构例外发布，迁移步骤见[发版规则](./release-and-versioning.md)。`public-api-reviewed-removals.snapshot.md` 只放行已确认签名，报告仍列出删除，旧冻结快照保持不变。
 
 ## ECMAScript 绑定命名
 

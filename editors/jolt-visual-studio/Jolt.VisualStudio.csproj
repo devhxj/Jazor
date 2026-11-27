@@ -11,11 +11,11 @@
         <ProjectReference Include="../jazor-visual-studio/Jazor.VisualStudio.csproj"
                           ReferenceOutputAssembly="false" IncludeOutputGroupsInVSIX="BuiltProjectOutputGroup" />
         <Reference Include="System.ComponentModel.Composition" />
+        <Reference Include="System.Web.Extensions" />
         <PackageReference Include="Microsoft.VisualStudio.LanguageServer.Client" Version="17.14.60" ExcludeAssets="runtime" />
         <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="17.14.249" ExcludeAssets="runtime" />
-        <PackageReference Include="Microsoft.VisualStudio.Telemetry" Version="17.14.2" ExcludeAssets="runtime" />
         <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="17.14.249" ExcludeAssets="runtime" />
-        <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="17.13.40008" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="17.14.40264" PrivateAssets="all" ExcludeAssets="runtime" />
         <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="18.12.1606" PrivateAssets="all" />
         <Content Include="Jolt.pkgdef" IncludeInVSIX="true" />
         <Content Include="../jolt/jazor.tmLanguage.json" Link="Grammars/jazor.tmLanguage.json" IncludeInVSIX="true" />
